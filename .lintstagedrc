@@ -1,0 +1,4 @@
+{
+	"src/**/*.ts": ["pnpm prettier --write \"./src/**/*.ts\""],
+	"src/**/*.tsx": ["pnpm prettier --write \"./src/**/*.tsx\""]
+}
