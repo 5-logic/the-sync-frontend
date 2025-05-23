@@ -28,10 +28,18 @@ const rootDir = path.resolve(__dirname, '..');
 
 // Check if the current branch is main
 try {
-	const currentBranch = execSync('git rev-parse --abbrev-ref HEAD', {
+	// Use spawn with full path to git and shell: false for security
+	const gitPath =
+		process.platform === 'win32'
+			? 'C:\\Program Files\\Git\\cmd\\git.exe'
+			: '/usr/bin/git';
+	const gitResult = execSync(`"${gitPath}" rev-parse --abbrev-ref HEAD`, {
 		encoding: 'utf8',
 		cwd: rootDir,
+		shell: false,
 	}).trim();
+
+	const currentBranch = gitResult;
 
 	if (currentBranch !== 'main') {
 		console.error(
@@ -70,18 +78,32 @@ try {
 	console.log(
 		`${COLORS.yellow}Creating tag ${currentVersion} and pushing to remote...${COLORS.reset}`,
 	);
-
 	try {
+		// Use full path to git and shell: false for security
+		const gitPath =
+			process.platform === 'win32'
+				? 'C:\\Program Files\\Git\\cmd\\git.exe'
+				: '/usr/bin/git';
+
 		// Create a git tag with the current version
-		execSync(`git tag -a ${currentVersion} -m "Release ${currentVersion}"`, {
-			stdio: 'inherit',
-			cwd: rootDir,
-		});
+		console.log(
+			`${COLORS.blue}Creating tag ${currentVersion}...${COLORS.reset}`,
+		);
+		execSync(
+			`"${gitPath}" tag -a ${currentVersion} -m "Release ${currentVersion}"`,
+			{
+				stdio: 'inherit',
+				cwd: rootDir,
+				shell: false,
+			},
+		);
 
 		// Push the tag to the remote repository
-		execSync('git push origin --tags', {
+		console.log(`${COLORS.blue}Pushing tag to remote...${COLORS.reset}`);
+		execSync(`"${gitPath}" push origin --tags`, {
 			stdio: 'inherit',
 			cwd: rootDir,
+			shell: false,
 		});
 
 		console.log(
