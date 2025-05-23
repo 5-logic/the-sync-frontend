@@ -6,7 +6,8 @@
 		"dev": "next dev",
 		"build": "next build",
 		"start": "next start",
-		"lint": "next lint"
+		"lint": "next lint",
+		"prepare": "husky"
 	},
 	"dependencies": {
 		"@ant-design/nextjs-registry": "1.0.2",
@@ -19,12 +20,16 @@
 		"tailwindcss": "4.1.7"
 	},
 	"devDependencies": {
+		"@commitlint/cli": "19.8.1",
+		"@commitlint/config-conventional": "19.8.1",
 		"@trivago/prettier-plugin-sort-imports": "5.2.2",
 		"@types/node": "20.17.50",
 		"@types/react": "18.3.22",
 		"@types/react-dom": "18.3.7",
 		"eslint": "8.57.1",
 		"eslint-config-next": "14.2.29",
+		"husky": "9.1.7",
+		"lint-staged": "16.0.0",
 		"prettier": "3.5.3",
 		"typescript": "5.8.3"
 	}
