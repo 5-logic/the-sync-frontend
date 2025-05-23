@@ -26,9 +26,31 @@ const COLORS = {
 // Get the root directory of the project
 const rootDir = path.resolve(__dirname, '..');
 
+// Check if the current branch is main
+try {
+	const currentBranch = execSync('git rev-parse --abbrev-ref HEAD', {
+		encoding: 'utf8',
+		cwd: rootDir,
+	}).trim();
+
+	if (currentBranch !== 'main') {
+		console.error(
+			`${COLORS.red}Error: You must be on the 'main' branch to create a release. Current branch: ${currentBranch}${COLORS.reset}`,
+		);
+		exit(1);
+	}
+	console.log(`${COLORS.green}✓ Current branch is main${COLORS.reset}`);
+} catch (error) {
+	console.error(
+		`${COLORS.red}Error checking git branch: ${error.message}${COLORS.reset}`,
+	);
+	exit(1);
+}
+
 // Read package.json to get the current version
 try {
 	console.log(`${COLORS.blue}Reading package.json...${COLORS.reset}`);
+
 	const packageJsonPath = path.join(rootDir, 'package.json');
 	const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
 	const currentVersion = packageJson.version;
