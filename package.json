@@ -7,7 +7,8 @@
 		"build": "next build",
 		"start": "next start",
 		"lint": "next lint",
-		"prepare": "husky"
+		"prepare": "husky",
+		"release": "node scripts/release.js"
 	},
 	"dependencies": {
 		"@ant-design/nextjs-registry": "1.0.2",
