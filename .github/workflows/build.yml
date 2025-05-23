@@ -26,7 +26,7 @@ jobs:
       - name: 💚 Setup Node.js environment
         uses: actions/setup-node@v4
         with:
-          node-version: 20.19.1
+          node-version: 20.19.2
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
 
