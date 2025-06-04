@@ -1,7 +1,8 @@
 import * as z from 'zod';
-import { User } from './user';
-import { Group } from './group';
+
 import { Feedback } from './feedback';
+import { Group } from './group';
+import { User } from './user';
 
 export const lecturerSchema = z.object({
 	fullName: z
@@ -20,7 +21,7 @@ export const lecturerSchema = z.object({
 		.nonempty({ message: 'Phone number is required' }),
 
 	gender: z.enum(['Male', 'Female'], {
-		errorMap: () => ({ message: 'Gender must be Male or Female' }),
+		required_error: 'Gender is required',
 	}),
 });
 

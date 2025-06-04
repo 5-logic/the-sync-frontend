@@ -1,7 +1,8 @@
 import * as z from 'zod';
-import { User } from './user';
-import { Major } from './major';
+
 import { Group } from './group';
+import { Major } from './major';
+import { User } from './user';
 
 export const studentSchema = z.object({
 	fullName: z
@@ -14,12 +15,10 @@ export const studentSchema = z.object({
 		.email({ message: 'Invalid email address' })
 		.nonempty({ message: 'Email is required' }),
 
-	studentId: z
-		.string()
-		.nonempty({ message: 'Student ID is required' }),
+	studentId: z.string().nonempty({ message: 'Student ID is required' }),
 
 	gender: z.enum(['Male', 'Female'], {
-		errorMap: () => ({ message: 'Gender must be Male or Female' }),
+		required_error: 'Gender is required',
 	}),
 });
 

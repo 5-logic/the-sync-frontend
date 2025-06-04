@@ -1,4 +1,5 @@
 import * as z from 'zod';
+
 import { Lecturer } from './lecturer';
 import { Student } from './student';
 import { Thesis } from './thesis';
@@ -20,10 +21,10 @@ export const userSchema = z.object({
 		.max(100, { message: 'Password must be less than 100 characters' }),
 
 	gender: z.enum(['Male', 'Female'], {
-		errorMap: () => ({ message: 'Gender must be Male or Female' }),
+		required_error: 'Gender is required',
 	}),
 
-	phoneNumber: z
+	phoneNumber: zpnpm
 		.string()
 		.regex(/^\+?[0-9]{7,15}$/, { message: 'Phone number is invalid' })
 		.nonempty({ message: 'Phone number is required' }),
