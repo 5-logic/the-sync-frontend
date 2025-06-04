@@ -1,6 +1,7 @@
 import * as z from 'zod';
-import { User } from './user';
+
 import { Group } from './group';
+import { User } from './user';
 
 export const thesisSchema = z.object({
 	englishName: z
@@ -18,13 +19,9 @@ export const thesisSchema = z.object({
 		.nonempty({ message: 'Abbreviation is required' })
 		.max(20, { message: 'Abbreviation must be less than 20 characters' }),
 
-	domain: z
-		.string()
-		.nonempty({ message: 'Domain is required' }),
+	domain: z.string().nonempty({ message: 'Domain is required' }),
 
-	context: z
-		.string()
-		.nonempty({ message: 'Context is required' }),
+	context: z.string().nonempty({ message: 'Context is required' }),
 
 	expectedOutcome: z
 		.string()

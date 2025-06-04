@@ -24,7 +24,7 @@ export const userSchema = z.object({
 		required_error: 'Gender is required',
 	}),
 
-	phoneNumber: zpnpm
+	phoneNumber: z
 		.string()
 		.regex(/^\+?[0-9]{7,15}$/, { message: 'Phone number is invalid' })
 		.nonempty({ message: 'Phone number is required' }),

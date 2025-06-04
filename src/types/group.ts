@@ -1,7 +1,8 @@
 import * as z from 'zod';
-import { Thesis } from './thesis';
+
 import { Lecturer } from './lecturer';
 import { Semester } from './semestor';
+import { Thesis } from './thesis';
 import { TrackingDetail } from './trackingDetail';
 
 export const groupSchema = z.object({
@@ -31,9 +32,7 @@ export const groupSchema = z.object({
 		.max(300, { message: 'Expected roles must be less than 300 characters' }),
 });
 
-
 export type GroupData = z.infer<typeof groupSchema>;
-
 
 export interface Group extends GroupData {
 	id: string;

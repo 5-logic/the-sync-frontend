@@ -1,8 +1,8 @@
-import { Student } from "./student";
+import { Student } from './student';
 
 export interface Major {
-  id: string;
-  name: string;
-  code: string;
-  students?: Student[];
+	id: string;
+	name: string;
+	code: string;
+	students?: Student[];
 }
