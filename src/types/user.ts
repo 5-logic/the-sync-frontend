@@ -1,14 +1,10 @@
 import * as z from 'zod';
 
-import { Lecturer } from './lecturer';
-import { Student } from './student';
-import { Thesis } from './thesis';
-
 export const userSchema = z.object({
 	email: z
 		.string()
-		.email({ message: 'Invalid email address' })
-		.nonempty({ message: 'Email is required' }),
+		.nonempty({ message: 'Email is required' })
+		.email({ message: 'Invalid email address' }),
 
 	fullName: z
 		.string()
@@ -26,8 +22,8 @@ export const userSchema = z.object({
 
 	phoneNumber: z
 		.string()
-		.regex(/^\+?[0-9]{7,15}$/, { message: 'Phone number is invalid' })
-		.nonempty({ message: 'Phone number is required' }),
+		.nonempty({ message: 'Phone number is required' })
+		.regex(/^\+?[0-9]{7,15}$/, { message: 'Phone number is invalid' }),
 });
 
 export type UserData = z.infer<typeof userSchema>;
@@ -35,8 +31,4 @@ export type UserData = z.infer<typeof userSchema>;
 export interface User extends UserData {
 	id: string;
 	isActive?: boolean;
-
-	lecturer?: Lecturer;
-	student?: Student;
-	theses?: Thesis;
 }

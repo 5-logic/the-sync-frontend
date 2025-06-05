@@ -1,10 +1,5 @@
 import * as z from 'zod';
 
-import { Lecturer } from './lecturer';
-import { Semester } from './semestor';
-import { Thesis } from './thesis';
-import { TrackingDetail } from './trackingDetail';
-
 export const groupSchema = z.object({
 	name: z
 		.string()
@@ -40,10 +35,6 @@ export interface Group extends GroupData {
 	semesterId: string;
 	leaderId: string;
 	thesisId?: string;
-
-	thesis?: Thesis;
-	leader?: Lecturer;
-	semester?: Semester;
-	lecturers?: Lecturer[];
-	trackingDetails?: TrackingDetail[];
+	lecturers?: string[];
+	trackingDetails?: string[];
 }

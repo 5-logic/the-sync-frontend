@@ -1,8 +1,5 @@
 import * as z from 'zod';
 
-import { Semester } from './semestor';
-import { TrackingDetail } from './trackingDetail';
-
 export const milestoneSchema = z
 	.object({
 		semesterId: z.string().nonempty({ message: 'Semester is required' }),
@@ -29,7 +26,4 @@ export type MilestoneData = z.infer<typeof milestoneSchema>;
 export interface Milestone extends MilestoneData {
 	id: string;
 	name: string;
-
-	semester?: Semester;
-	trackingDetails?: TrackingDetail[];
 }

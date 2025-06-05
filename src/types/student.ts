@@ -1,9 +1,5 @@
 import * as z from 'zod';
 
-import { Group } from './group';
-import { Major } from './major';
-import { User } from './user';
-
 export const studentSchema = z.object({
 	fullName: z
 		.string()
@@ -12,8 +8,8 @@ export const studentSchema = z.object({
 
 	email: z
 		.string()
-		.email({ message: 'Invalid email address' })
-		.nonempty({ message: 'Email is required' }),
+		.nonempty({ message: 'Email is required' })
+		.email({ message: 'Invalid email address' }),
 
 	studentId: z.string().nonempty({ message: 'Student ID is required' }),
 
@@ -30,8 +26,5 @@ export interface Student extends StudentData {
 	skills?: string;
 	academicInterests?: string;
 	majorId: string;
-
-	user?: User;
-	major?: Major;
-	groups?: Group[];
+	groupsId?: string;
 }

@@ -1,8 +1,5 @@
 import * as z from 'zod';
 
-import { Group } from './group';
-import { User } from './user';
-
 export const thesisSchema = z.object({
 	englishName: z
 		.string()
@@ -21,7 +18,7 @@ export const thesisSchema = z.object({
 
 	domain: z.string().nonempty({ message: 'Domain is required' }),
 
-	context: z.string().nonempty({ message: 'Context is required' }),
+	context: z.string().nonempty({ message: 'Thesis description is required' }),
 
 	expectedOutcome: z
 		.string()
@@ -40,10 +37,8 @@ export type ThesisData = z.infer<typeof thesisSchema>;
 
 export interface Thesis extends ThesisData {
 	id: string;
-	status: 'New' | 'Pending' | 'Rejecte' | 'Approve';
-	supportingDocument?: string;
+	status: 'New' | 'Pending' | 'Reject' | 'Approve';
+	supportingDocument: string;
 	userId: string;
-
-	user?: User;
-	group?: Group;
+	groupId: string;
 }
