@@ -23,7 +23,7 @@ export const userSchema = z.object({
 	phoneNumber: z
 		.string()
 		.nonempty({ message: 'Phone number is required' })
-		.regex(/^\+?[0-9]{7,15}$/, { message: 'Phone number is invalid' }),
+		.regex(/^\+?\d{7,15}$/, { message: 'Phone number is invalid' }),
 });
 
 export type UserData = z.infer<typeof userSchema>;

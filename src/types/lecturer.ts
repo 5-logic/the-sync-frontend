@@ -14,7 +14,7 @@ export const lecturerSchema = z.object({
 	phoneNumber: z
 		.string()
 		.nonempty({ message: 'Phone number is required' })
-		.regex(/^\+?[0-9]{7,15}$/, { message: 'Phone number is invalid' }),
+		.regex(/^\+?\d{7,15}$/, { message: 'Phone number is invalid' }),
 
 	gender: z.enum(['Male', 'Female'], {
 		required_error: 'Gender is required',
