@@ -11,7 +11,7 @@ const authOptions: NextAuthOptions = {
 				password: { label: 'Password', type: 'password' },
 			},
 			async authorize(credentials) {
-				console.log('🔐 NextAuth Authorize called with:', credentials);
+				console.log('🔐 NextAuth Authorize called');
 
 				if (!credentials?.username || !credentials?.password) {
 					console.log('❌ Missing credentials');
