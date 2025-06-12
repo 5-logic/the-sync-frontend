@@ -1,4 +1,4 @@
-import AdminHeader from '@/components/layout/Header/AdminHeader';
+import Header from '@/components/common/Header';
 import AdminSidebar from '@/components/layout/Sidebar/AdminSidebar';
 
 export default function AdminLayout({
@@ -8,19 +8,16 @@ export default function AdminLayout({
 }) {
 	return (
 		<div className="min-h-screen">
-			<header className="fixed top-0 left-0 w-full z-50 h-12">
-				<AdminHeader />
+			<header className="fixed top-0 left-0 w-full z-50">
+				<Header userRole="Admin" avatarSrc="/images/Avatar.png" />
 			</header>
 
 			<div className="pt-12 flex">
-				<aside className="fixed top-12 left-0 w-52 h-[calc(100vh-3rem)] bg-white shadow-md z-40">
+				<aside className="fixed top-12 left-0 w-60 h-[calc(100vh-3rem)] bg-white shadow-md z-40">
 					<AdminSidebar />
 				</aside>
 
-				<main className="ml-52 flex-1 p-5">
-					<h2 className="text-xl font-semibold mb-4">Admin Dashboard</h2>
-					{children}
-				</main>
+				<main className="ml-60 flex-1 p-5">{children}</main>
 			</div>
 		</div>
 	);
