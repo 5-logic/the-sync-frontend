@@ -8,16 +8,16 @@ export default function AdminLayout({
 }) {
 	return (
 		<div className="min-h-screen">
-			<header className="fixed top-0 left-0 w-full z-50">
+			<header className="fixed top-0 left-0 w-full z-50 h-12">
 				<AdminHeader />
 			</header>
 
-			<div className="pt-16 flex">
-				<aside className="fixed top-12 left-0 w-64 h-[calc(100vh-4rem)] bg-white shadow-md z-40">
+			<div className="pt-12 flex">
+				<aside className="fixed top-12 left-0 w-52 h-[calc(100vh-3rem)] bg-white shadow-md z-40">
 					<AdminSidebar />
 				</aside>
 
-				<main className="ml-64 flex-1 p-5">
+				<main className="ml-52 flex-1 p-5">
 					<h2 className="text-xl font-semibold mb-4">Admin Dashboard</h2>
 					{children}
 				</main>
