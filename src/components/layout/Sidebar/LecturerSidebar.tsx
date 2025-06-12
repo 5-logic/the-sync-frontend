@@ -42,7 +42,7 @@ const links = [
 	},
 ];
 
-const LecturerHeader: React.FC = () => {
+const LecturerSidebar: React.FC = () => {
 	const pathname = usePathname();
 
 	return (
@@ -70,4 +70,4 @@ const LecturerHeader: React.FC = () => {
 	);
 };
 
-export default LecturerHeader;
+export default LecturerSidebar;

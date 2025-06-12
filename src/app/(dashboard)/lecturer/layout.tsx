@@ -1,7 +1,7 @@
 import Header from '@/components/common/Header';
 import LecturerSidebar from '@/components/layout/Sidebar/LecturerSidebar';
 
-export default function AdminLayout({
+export default function LecturerLayout({
 	children,
 }: {
 	children: React.ReactNode;
