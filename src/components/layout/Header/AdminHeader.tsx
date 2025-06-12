@@ -1,10 +1,7 @@
-'use client';
-
 import Image from 'next/image';
 import React from 'react';
 import { IoMdNotificationsOutline } from 'react-icons/io';
 
-// Logo Component
 const Logo = () => (
 	<div className="flex items-center space-x-2">
 		<Image
@@ -15,11 +12,10 @@ const Logo = () => (
 			className="w-8 h-8 object-contain"
 			priority
 		/>
-		<span className="text-2xl font-bold text-blue-600">TheSync</span>
+		<span className="text-2xl font-bold text-blue-700">TheSync</span>
 	</div>
 );
 
-// Notification Component
 const NotificationIcon = () => (
 	<button className="relative text-gray-600 hover:text-blue-600 transition">
 		<IoMdNotificationsOutline size={24} />
@@ -27,7 +23,6 @@ const NotificationIcon = () => (
 	</button>
 );
 
-// Admin Info Component
 const AdminInfo = () => (
 	<div className="flex items-center space-x-2">
 		<Image
@@ -43,10 +38,9 @@ const AdminInfo = () => (
 	</div>
 );
 
-// Main Header Component
 const Header: React.FC = () => {
 	return (
-		<div className="fixed top-0 left-0 w-full h-16 bg-white shadow z-50 flex items-center justify-between px-6">
+		<div className="fixed top-0 left-0 w-full h-14 bg-white shadow z-50 flex items-center justify-between px-6">
 			<Logo />
 			<div className="flex items-center space-x-4">
 				<NotificationIcon />
