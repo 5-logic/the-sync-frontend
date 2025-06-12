@@ -1,16 +1,58 @@
-import { Button } from 'antd';
+'use client';
+
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+
+import Loading from '@/components/common/Loading';
 
 const Home = () => {
+	const { data: session, status } = useSession();
+	const router = useRouter();
+
+	useEffect(() => {
+		// Đợi cho đến khi session status được xác định
+		if (status === 'loading') return;
+
+		if (status === 'unauthenticated') {
+			// Chưa đăng nhập -> redirect về login
+			console.log('🔄 Not authenticated, redirecting to login...');
+			router.push('/login');
+		} else if (status === 'authenticated' && session?.user) {
+			// Đã đăng nhập -> redirect về dashboard tương ứng với role
+			console.log(
+				'🔄 Authenticated, redirecting to dashboard...',
+				session.user,
+			);
+
+			const { role } = session.user;
+
+			// Redirect dựa vào role
+			if (role === 'admin') {
+				router.push('/admin');
+			} else if (role === 'lecturer') {
+				// Kiểm tra xem có phải moderator không
+				const isModerator = session.user.isModerator;
+				console.log('👨‍🏫 Lecturer login, isModerator:', isModerator);
+				router.push('/lecturer');
+			} else if (role === 'student') {
+				router.push('/student');
+			} else {
+				// Default fallback
+				console.log('⚠️ Unknown role, defaulting to student dashboard');
+				router.push('/student');
+			}
+		}
+	}, [status, session, router]);
+
+	// Hiển thị loading spinner trong khi đang check authentication
 	return (
-		<div className="flex flex-col items-center justify-center min-h-screen w-full max-w-4xl mx-auto px-4 py-8">
-			<h1 className="text-3xl font-bold underline">Five Logic</h1>
-			<Button
-				type="primary"
-				className="mt-4 px-6 py-2 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 text-lg w-48 h-12"
-			>
-				Nhót
-			</Button>
-		</div>
+		<Loading
+			message={
+				status === 'loading' ? 'Checking authentication...' : 'Redirecting...'
+			}
+			description="Please wait while we redirect you"
+		/>
 	);
 };
 
