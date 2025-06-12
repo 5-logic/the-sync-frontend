@@ -30,7 +30,7 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ userRole, avatarSrc }) => {
 	return (
-		<div className="fixed top-0 left-0 w-full h-12 bg-white shadow z-50 flex items-center justify-between px-6">
+		<div className="fixed w-full h-12 bg-white shadow z-50 flex items-center justify-between px-6">
 			<Logo />
 			<div className="flex items-center space-x-4">
 				<NotificationIcon />
