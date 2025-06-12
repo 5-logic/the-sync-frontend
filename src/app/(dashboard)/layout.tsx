@@ -22,6 +22,7 @@ export default function DashboardLayout({
 		status,
 	);
 	// Show loading while checking authentication or redirecting
+	// isAuthorized === null means authorization check is still in progress
 	if (isLoading || status === 'loading' || isAuthorized === null) {
 		return (
 			<Loading

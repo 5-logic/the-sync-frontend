@@ -24,23 +24,14 @@ export default function SignInPage() {
 				password: values.password,
 				redirect: false,
 			});
-
 			if (result?.error) {
 				message.error('Invalid email or password');
 			} else {
 				message.success('Login successful!');
 
-				// ✅ Redirect dựa trên email để phân biệt role
-				if (values.email.includes('student')) {
-					router.push('/student');
-				} else if (
-					values.email.includes('lecturer') ||
-					values.email.includes('moderator')
-				) {
-					router.push('/lecturer');
-				} else {
-					router.push('/student'); // default
-				}
+				// Redirect will be handled by session callback and route protection
+				// Let NextAuth handle the authentication flow and automatic redirect
+				router.push('/'); // Redirect to home, auth system will handle role-based routing
 			}
 		} catch (error) {
 			console.error('Login error:', error);
@@ -64,12 +55,12 @@ export default function SignInPage() {
 				password: values.password,
 				redirect: false,
 			});
-
 			if (result?.error) {
 				message.error('Invalid username or password');
 			} else {
 				message.success('Admin login successful!');
-				router.push('/admin');
+				// Redirect will be handled by auth system based on user role
+				router.push('/'); // Let auth system handle role-based routing
 			}
 		} catch (error) {
 			console.error('Admin login error:', error);
