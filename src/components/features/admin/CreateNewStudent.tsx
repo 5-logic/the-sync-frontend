@@ -5,7 +5,6 @@ import { useState } from 'react';
 
 const { Option } = Select;
 
-// ---------------- Header ----------------
 const PageHeader = () => (
 	<div className="mb-8 -ml-8 text-left">
 		<h1 className="text-3xl font-bold">Create New Student</h1>
@@ -13,7 +12,6 @@ const PageHeader = () => (
 	</div>
 );
 
-// ---------------- Tabs ----------------
 const TabNavigation = ({
 	activeTab,
 	setActiveTab,
@@ -27,7 +25,7 @@ const TabNavigation = ({
 	];
 
 	return (
-		<div className="mb-6 -ml-8 border-b border-gray-200 text-left">
+		<div className="mb-6 -ml-8 border-b border-gray-200 w-215">
 			<nav className="flex space-x-8">
 				{tabs.map((tab) => (
 					<button
@@ -47,7 +45,6 @@ const TabNavigation = ({
 	);
 };
 
-// ---------------- Form ----------------
 const StudentForm = () => {
 	const [form] = Form.useForm();
 
@@ -153,25 +150,26 @@ const StudentForm = () => {
 	);
 };
 
-// ---------------- Main Page ----------------
 export default function CreateNewStudent() {
 	const [activeTab, setActiveTab] = useState('manual');
 
 	return (
-		<div className="max-w-2xl">
-			<PageHeader />
-			<TabNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
-			{activeTab === 'manual' ? (
-				<div className="bg-white border border-gray-200 rounded-xl shadow p-10 w-full max-w-3xl mx-auto">
-					<StudentForm />
-				</div>
-			) : (
-				<div className="bg-white p-6 rounded-lg shadow">
-					<p className="text-gray-600">
-						Excel import functionality coming soon...
-					</p>
-				</div>
-			)}
+		<div className="flex justify-center items-start min-h-screen px-4">
+			<div className="w-full max-w-3xl">
+				<PageHeader />
+				<TabNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
+				{activeTab === 'manual' ? (
+					<div className="bg-white border border-gray-200 rounded-xl shadow p-10">
+						<StudentForm />
+					</div>
+				) : (
+					<div className="bg-white p-6 rounded-lg shadow">
+						<p className="text-gray-600">
+							Excel import functionality coming soon...
+						</p>
+					</div>
+				)}
+			</div>
 		</div>
 	);
 }
