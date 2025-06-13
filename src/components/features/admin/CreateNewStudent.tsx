@@ -7,7 +7,7 @@ const { Option } = Select;
 
 // ---------------- Header ----------------
 const PageHeader = () => (
-	<div className="mb-8 pl-2 text-left">
+	<div className="mb-8 -ml-8 text-left">
 		<h1 className="text-3xl font-bold">Create New Student</h1>
 		<p className="text-gray-500">Add new students to the capstone ecosystem</p>
 	</div>
@@ -27,7 +27,7 @@ const TabNavigation = ({
 	];
 
 	return (
-		<div className="mb-6 border-b border-gray-200 pl-2 text-left">
+		<div className="mb-6 -ml-8 border-b border-gray-200 text-left">
 			<nav className="flex space-x-8">
 				{tabs.map((tab) => (
 					<button
