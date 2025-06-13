@@ -1,10 +1,10 @@
 'use client';
 
 import {
-	DatabaseOutlined,
+	CalendarOutlined,
+	DashboardOutlined,
 	SettingOutlined,
 	TeamOutlined,
-	TrophyOutlined,
 	UserOutlined,
 } from '@ant-design/icons';
 import { Menu } from 'antd';
@@ -19,13 +19,13 @@ export default function AdminSidebar() {
 	const adminMenuItems = [
 		{
 			key: DASHBOARD_PATHS.ADMIN,
-			icon: <TrophyOutlined />,
+			icon: <DashboardOutlined />,
 			label: <Link href={DASHBOARD_PATHS.ADMIN}>Dashboard</Link>,
 		},
 		{
 			key: '/admin/students-management',
 			icon: <UserOutlined />,
-			label: <Link href="/admin/students-management">Students Management</Link>,
+			label: <Link href="/admin/students-management">Student Management</Link>,
 		},
 		{
 			key: '/admin/lecture-management',
@@ -33,42 +33,28 @@ export default function AdminSidebar() {
 			label: <Link href="/admin/lecture-management">Lecturer Management</Link>,
 		},
 		{
-			key: '/admin/create-new-student',
-			icon: <UserOutlined />,
-			label: <Link href="/admin/create-new-student">Create New Student</Link>,
-		},
-		{
-			key: '/admin/create-new-lecture',
-			icon: <TeamOutlined />,
-			label: <Link href="/admin/create-new-lecture">Create New Lecturer</Link>,
-		},
-		{
-			key: '/admin/semester-settings',
-			icon: <SettingOutlined />,
-			label: <Link href="/admin/semester-settings">Semester Settings</Link>,
-		},
-		{
 			key: '/admin/milestone-management',
-			icon: <DatabaseOutlined />,
+			icon: <CalendarOutlined />,
 			label: (
 				<Link href="/admin/milestone-management">Milestone Management</Link>
 			),
 		},
+		{
+			key: '/admin/semester-settings',
+			icon: <SettingOutlined />,
+			label: <Link href="/admin/semester-settings">Semester Management</Link>,
+		},
 	];
-
 	return (
-		<div className="h-full bg-white border-r border-gray-200">
-			<div className="p-4">
-				<h2 className="text-lg font-semibold text-gray-800 mb-4">
-					👨‍💻 Admin Portal
-				</h2>
-				<Menu
-					mode="inline"
-					selectedKeys={[pathname]}
-					items={adminMenuItems}
-					className="border-0"
-				/>
-			</div>
-		</div>
+		<Menu
+			theme="light"
+			mode="inline"
+			selectedKeys={[pathname]}
+			items={adminMenuItems}
+			style={{
+				border: 'none',
+				height: '100%',
+			}}
+		/>
 	);
 }
