@@ -1,12 +1,12 @@
+import CollapsibleLayout from '@/components/layout/CollapsibleLayout';
+import AdminSidebar from '@/components/layout/Sidebar/AdminSidebar';
+
 export default function AdminLayout({
 	children,
 }: {
 	children: React.ReactNode;
 }) {
 	return (
-		<div>
-			<h2 className="text-xl font-semibold mb-4">Admin Dashboard</h2>
-			{children}
-		</div>
+		<CollapsibleLayout sidebar={<AdminSidebar />}>{children}</CollapsibleLayout>
 	);
 }

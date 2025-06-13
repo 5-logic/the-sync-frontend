@@ -63,6 +63,11 @@ the-sync-frontend/
 │   │   └── validations.ts          # Form validation schemas
 │   │
 │   ├── hooks/                      # 🪝 Custom React hooks
+│   ├── store/                      # 🏪 Zustand global state stores
+│   │   ├── index.ts                # Store exports
+│   │   ├── useAppStore.ts          # App-wide state (UI, preferences)
+│   │   ├── useNotificationStore.ts # Notification system
+│   │   └── useThemeStore.ts        # Theme & UI settings
 │   ├── types/                      # 📝 TypeScript type definitions
 │   ├── styles/                     # 🎨 Additional styling files
 │   └── middleware.ts               # 🛡️ Route protection middleware

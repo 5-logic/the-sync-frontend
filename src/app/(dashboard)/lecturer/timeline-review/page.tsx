@@ -4,10 +4,10 @@ import { Typography } from 'antd';
 
 const { Title } = Typography;
 
-export default function StudentJoinGroupPage() {
+export default function TimelineReviewPage() {
 	return (
 		<div className="p-6">
-			<Title level={2}>👥 Form / Join Group</Title>
+			<Title level={2}>⏰ Timeline Review</Title>
 		</div>
 	);
 }

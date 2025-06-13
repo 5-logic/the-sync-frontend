@@ -1,12 +1,14 @@
+import CollapsibleLayout from '@/components/layout/CollapsibleLayout';
+import LecturerSidebar from '@/components/layout/Sidebar/LecturerSidebar';
+
 export default function LecturerLayout({
 	children,
 }: {
 	children: React.ReactNode;
 }) {
 	return (
-		<div>
-			<h2 className="text-xl font-semibold mb-4">Lecturer Dashboard</h2>
+		<CollapsibleLayout sidebar={<LecturerSidebar />}>
 			{children}
-		</div>
+		</CollapsibleLayout>
 	);
 }
