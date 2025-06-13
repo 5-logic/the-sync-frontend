@@ -76,6 +76,8 @@ const StudentForm = () => {
 				<Select placeholder="Select semester">
 					<Option value="Spring 2025">Spring 2025</Option>
 					<Option value="Fall 2025">Fall 2025</Option>
+					<Option value="Summer 2026">Spring 2026</Option>
+					<Option value="Fall 2026">Fall 2026</Option>
 				</Select>
 			</Form.Item>
 
