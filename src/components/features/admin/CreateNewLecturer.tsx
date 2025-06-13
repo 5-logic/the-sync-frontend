@@ -46,7 +46,7 @@ const TabNavigation = ({
 	);
 };
 
-const StudentForm = () => {
+const LecturerForm = () => {
 	const [form] = Form.useForm();
 
 	const handleSubmit = (values: unknown) => {
@@ -163,7 +163,7 @@ const StudentForm = () => {
 	);
 };
 
-export default function CreateNewStudent() {
+export default function CreateNewLecturer() {
 	const [activeTab, setActiveTab] = useState('manual');
 
 	return (
@@ -173,7 +173,7 @@ export default function CreateNewStudent() {
 				<TabNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
 				{activeTab === 'manual' ? (
 					<div className="bg-white border border-gray-200 rounded-xl shadow p-10">
-						<StudentForm />
+						<LecturerForm />
 					</div>
 				) : (
 					<div className="bg-white p-6 rounded-lg shadow">
