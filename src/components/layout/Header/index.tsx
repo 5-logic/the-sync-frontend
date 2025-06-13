@@ -1,81 +1,64 @@
-'use client';
+import { HeaderSectionProps } from '../CollapsibleLayout/CollapsibleLayout.types';
+import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
+import { Button, Layout } from 'antd';
+import React from 'react';
 
-import {
-	LogoutOutlined,
-	SettingOutlined,
-	UserOutlined,
-} from '@ant-design/icons';
-import { Avatar, Badge, Button, Dropdown, Layout, Typography } from 'antd';
-import { useSession } from 'next-auth/react';
-import Image from 'next/image';
-import Link from 'next/link';
-
-import LogoutButton from '@/components/common/LogoutButton';
+import NotificationIcon from './NotificationIcon';
+import UserProfile from './UserProfile';
 
 const { Header } = Layout;
-const { Text } = Typography;
 
-export default function DashboardHeader() {
-	const { data: session } = useSession();
-
-	const userMenuItems = [
-		{
-			key: 'profile',
-			icon: <UserOutlined />,
-			label: <Link href="/profile">Profile</Link>,
-		},
-		{
-			key: 'settings',
-			icon: <SettingOutlined />,
-			label: <Link href="/settings">Settings</Link>,
-		},
-		{
-			type: 'divider' as const,
-		},
-		{
-			key: 'logout',
-			icon: <LogoutOutlined />,
-			label: <LogoutButton type="text" size="small" />,
-		},
-	];
-
+export const HeaderSection: React.FC<HeaderSectionProps> = ({
+	collapsed,
+	onToggle,
+	colorBgContainer,
+}) => {
 	return (
 		<Header
 			style={{
-				padding: '0 24px',
-				background: '#fff',
-				borderBottom: '1px solid #f0f0f0',
+				padding: 0,
+				background: colorBgContainer,
 				display: 'flex',
-				justifyContent: 'space-between',
 				alignItems: 'center',
+				justifyContent: 'space-between',
+				boxShadow: '0 1px 4px rgba(0,21,41,.08)',
+				zIndex: 50,
+				position: 'sticky',
+				top: 0,
 			}}
 		>
-			{' '}
-			{/* Logo/Title */}
 			<div style={{ display: 'flex', alignItems: 'center' }}>
-				<Image
-					src="/images/TheSync_logo.png"
-					alt="The Sync"
-					width={32}
-					height={32}
-					style={{ marginRight: 16 }}
+				<Button
+					type="text"
+					icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+					onClick={onToggle}
+					style={{
+						fontSize: '16px',
+						width: 64,
+						height: 64,
+					}}
 				/>
-				<Text strong style={{ fontSize: 18 }}>
-					The Sync
-				</Text>
-			</div>
-			{/* User Menu */}
-			<div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-				<Text type="secondary">Welcome, {session?.user?.name}</Text>
-
-				{session?.user?.isModerator && <Badge count="Moderator" color="gold" />}
-
-				<Dropdown menu={{ items: userMenuItems }} placement="bottomRight" arrow>
-					<Button type="text" style={{ padding: 0 }}>
-						<Avatar icon={<UserOutlined />} />
-					</Button>
-				</Dropdown>
+				{/* Page Title Area */}
+				<div
+					style={{
+						fontSize: 16,
+						fontWeight: 500,
+						color: '#434343',
+					}}
+				></div>
+			</div>{' '}
+			{/* User Actions */}
+			<div
+				style={{
+					paddingRight: 24,
+					display: 'flex',
+					alignItems: 'center',
+					gap: 2,
+				}}
+			>
+				<NotificationIcon />
+				<UserProfile />
 			</div>
 		</Header>
 	);
-}
+};
