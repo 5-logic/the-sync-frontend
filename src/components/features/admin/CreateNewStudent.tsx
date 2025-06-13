@@ -62,7 +62,7 @@ const StudentForm = () => {
 			layout="vertical"
 			onFinish={handleSubmit}
 			requiredMark={false}
-			className="bg-white p-8 rounded-lg shadow space-y-6"
+			className="bg-white p-8 space-y-6"
 		>
 			<Form.Item
 				name="semester"
@@ -160,7 +160,9 @@ export default function CreateNewStudent() {
 			<PageHeader />
 			<TabNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
 			{activeTab === 'manual' ? (
-				<StudentForm />
+				<div className="bg-white border border-gray-200 rounded-xl shadow p-10 w-full max-w-3xl mx-auto">
+					<StudentForm />
+				</div>
 			) : (
 				<div className="bg-white p-6 rounded-lg shadow">
 					<p className="text-gray-600">

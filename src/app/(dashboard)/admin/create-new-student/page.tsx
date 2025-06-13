@@ -1,4 +1,4 @@
-import CreateNewStudent from '@/components/features/admin/create-new-student';
+import CreateNewStudent from '@/components/features/admin/CreateNewStudent';
 
 export default function AdminCreateNewStudentPage() {
 	return (
