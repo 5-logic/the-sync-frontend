@@ -1,73 +1,107 @@
 'use client';
 
+import {
+	BookOutlined,
+	SettingOutlined,
+	TeamOutlined,
+	TrophyOutlined,
+	UserAddOutlined,
+	UserOutlined,
+} from '@ant-design/icons';
+import { Badge, Menu } from 'antd';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import React from 'react';
-import { MdOutlineSettingsSuggest } from 'react-icons/md';
-import { MdOutlineTopic } from 'react-icons/md';
-import { MdOutlineAssignmentReturn } from 'react-icons/md';
-import { RiBarChartGroupedLine } from 'react-icons/ri';
-import { RiDashboard3Line } from 'react-icons/ri';
 
-const links = [
-	{
-		href: '/dashboard',
-		label: 'Dashboard',
-		icon: <RiDashboard3Line size={20} />,
-	},
-	{
-		href: '/thesis',
-		label: 'Thesis',
-		icon: <MdOutlineTopic size={20} />,
-	},
-	{
-		href: '/group-progress',
-		label: 'Group Progress',
-		icon: <RiBarChartGroupedLine size={20} />,
-	},
-	{
-		href: '/assign-supervisors',
-		label: 'Assign Supervisors',
-		icon: <MdOutlineAssignmentReturn size={20} />,
-	},
-	{
-		href: '/assign-students',
-		label: 'Assign Students',
-		icon: <MdOutlineAssignmentReturn size={20} />,
-	},
-	{
-		href: '/profile-settings',
-		label: 'Profile Settings',
-		icon: <MdOutlineSettingsSuggest size={20} />,
-	},
-];
+import { usePermissions } from '@/hooks/usePermissions';
+import { DASHBOARD_PATHS } from '@/lib/auth/auth-constants';
 
-const LecturerSidebar: React.FC = () => {
+export default function LecturerSidebar() {
 	const pathname = usePathname();
+	const { canAccessModeratorFeatures } = usePermissions();
+
+	const basicMenuItems = [
+		{
+			key: DASHBOARD_PATHS.LECTURER,
+			icon: <TrophyOutlined />,
+			label: <Link href={DASHBOARD_PATHS.LECTURER}>Dashboard</Link>,
+		},
+		{
+			key: '/lecturer/thesis-management',
+			icon: <BookOutlined />,
+			label: <Link href="/lecturer/thesis-management">Thesis Management</Link>,
+		},
+		{
+			key: '/lecturer/group-progress',
+			icon: <TeamOutlined />,
+			label: <Link href="/lecturer/group-progress">Group Progress</Link>,
+		},
+		{
+			key: '/lecturer/profile-settings',
+			icon: <SettingOutlined />,
+			label: <Link href="/lecturer/profile-settings">Profile Settings</Link>,
+		},
+	];
+
+	const moderatorMenuItems = [
+		{
+			type: 'divider' as const,
+		},
+		{
+			key: 'moderator-section',
+			label: (
+				<span className="text-yellow-600 font-semibold">
+					<Badge color="gold" /> Moderator Panel
+				</span>
+			),
+			type: 'group' as const,
+			children: [
+				{
+					key: DASHBOARD_PATHS.LECTURER_ASSIGN_STUDENT_LIST,
+					icon: <UserAddOutlined />,
+					label: (
+						<Link href={DASHBOARD_PATHS.LECTURER_ASSIGN_STUDENT_LIST}>
+							Assign Students
+						</Link>
+					),
+				},
+				{
+					key: DASHBOARD_PATHS.LECTURER_ASSIGN_SUPERVISOR,
+					icon: <UserOutlined />,
+					label: (
+						<Link href={DASHBOARD_PATHS.LECTURER_ASSIGN_SUPERVISOR}>
+							Assign Supervisor
+						</Link>
+					),
+				},
+			],
+		},
+	];
+
+	const lecturerMenuItems = canAccessModeratorFeatures
+		? [...basicMenuItems, ...moderatorMenuItems]
+		: basicMenuItems;
 
 	return (
-		<aside className="w-60 bg-white shadow-md min-h-screen p-5">
-			<nav className="space-y-3">
-				{links.map((link) => {
-					const isActive = pathname === link.href;
-					return (
-						<Link
-							key={link.href}
-							href={link.href}
-							className={`flex items-center space-x-2 px-4 py-2 rounded-md text-sm whitespace-nowrap overflow-hidden text-ellipsis transition-colors ${
-								isActive
-									? 'bg-blue-200 text-blue-700 font-semibold'
-									: 'text-gray-600 hover:bg-blue-50 hover:text-blue-600'
-							}`}
-						>
-							<span>{link.icon}</span>
-							<span>{link.label}</span>
-						</Link>
-					);
-				})}
-			</nav>
-		</aside>
+		<div className="h-full bg-white border-r border-gray-200">
+			<div className="p-4">
+				<h2 className="text-lg font-semibold text-gray-800 mb-4">
+					👨‍🏫 Lecturer Portal
+					{canAccessModeratorFeatures && (
+						<Badge
+							count="Moderator"
+							color="gold"
+							size="small"
+							className="ml-2"
+						/>
+					)}
+				</h2>
+				<Menu
+					mode="inline"
+					selectedKeys={[pathname]}
+					items={lecturerMenuItems}
+					className="border-0"
+				/>
+			</div>
+		</div>
 	);
-};
-
-export default LecturerSidebar;
+}

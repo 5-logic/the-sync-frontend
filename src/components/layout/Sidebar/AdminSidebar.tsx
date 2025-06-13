@@ -1,68 +1,74 @@
 'use client';
 
+import {
+	DatabaseOutlined,
+	SettingOutlined,
+	TeamOutlined,
+	TrophyOutlined,
+	UserOutlined,
+} from '@ant-design/icons';
+import { Menu } from 'antd';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import React from 'react';
-import { FaChalkboardTeacher } from 'react-icons/fa';
-import { MdOutlineSettingsSuggest } from 'react-icons/md';
-import { PiStudent } from 'react-icons/pi';
-import { RiDashboard3Line } from 'react-icons/ri';
-import { VscMilestone } from 'react-icons/vsc';
 
-const links = [
-	{
-		href: '/dashboard',
-		label: 'Dashboard',
-		icon: <RiDashboard3Line size={20} />,
-	},
-	{
-		href: '/students',
-		label: 'Students Management',
-		icon: <PiStudent size={20} />,
-	},
-	{
-		href: '/lecturers',
-		label: 'Lecturers Management',
-		icon: <FaChalkboardTeacher size={20} />,
-	},
-	{
-		href: '/milestones',
-		label: 'Milestone Management',
-		icon: <VscMilestone size={20} />,
-	},
-	{
-		href: '/semesters',
-		label: 'Semester Settings',
-		icon: <MdOutlineSettingsSuggest size={20} />,
-	},
-];
+import { DASHBOARD_PATHS } from '@/lib/auth/auth-constants';
 
-const AdminSidebar: React.FC = () => {
+export default function AdminSidebar() {
 	const pathname = usePathname();
 
-	return (
-		<aside className="w-60 bg-white shadow-md min-h-screen p-5">
-			<nav className="space-y-3">
-				{links.map((link) => {
-					const isActive = pathname === link.href;
-					return (
-						<Link
-							key={link.href}
-							href={link.href}
-							className={`flex items-center space-x-2 px-4 py-2 rounded-md text-sm whitespace-nowrap overflow-hidden text-ellipsis transition-colors ${
-								isActive
-									? 'bg-blue-200 text-blue-700 font-semibold'
-									: 'text-gray-600 hover:bg-blue-50 hover:text-blue-600'
-							}`}
-						>
-							<span>{link.icon}</span>
-							<span>{link.label}</span>
-						</Link>
-					);
-				})}
-			</nav>
-		</aside>
-	);
-};
+	const adminMenuItems = [
+		{
+			key: DASHBOARD_PATHS.ADMIN,
+			icon: <TrophyOutlined />,
+			label: <Link href={DASHBOARD_PATHS.ADMIN}>Dashboard</Link>,
+		},
+		{
+			key: '/admin/students-management',
+			icon: <UserOutlined />,
+			label: <Link href="/admin/students-management">Students Management</Link>,
+		},
+		{
+			key: '/admin/lecture-management',
+			icon: <TeamOutlined />,
+			label: <Link href="/admin/lecture-management">Lecturer Management</Link>,
+		},
+		{
+			key: '/admin/create-new-student',
+			icon: <UserOutlined />,
+			label: <Link href="/admin/create-new-student">Create New Student</Link>,
+		},
+		{
+			key: '/admin/create-new-lecture',
+			icon: <TeamOutlined />,
+			label: <Link href="/admin/create-new-lecture">Create New Lecturer</Link>,
+		},
+		{
+			key: '/admin/semester-settings',
+			icon: <SettingOutlined />,
+			label: <Link href="/admin/semester-settings">Semester Settings</Link>,
+		},
+		{
+			key: '/admin/milestone-management',
+			icon: <DatabaseOutlined />,
+			label: (
+				<Link href="/admin/milestone-management">Milestone Management</Link>
+			),
+		},
+	];
 
-export default AdminSidebar;
+	return (
+		<div className="h-full bg-white border-r border-gray-200">
+			<div className="p-4">
+				<h2 className="text-lg font-semibold text-gray-800 mb-4">
+					👨‍💻 Admin Portal
+				</h2>
+				<Menu
+					mode="inline"
+					selectedKeys={[pathname]}
+					items={adminMenuItems}
+					className="border-0"
+				/>
+			</div>
+		</div>
+	);
+}
