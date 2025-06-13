@@ -4,8 +4,6 @@ import { Badge, Card, Typography } from 'antd';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 
-import LogoutButton from '@/components/common/LogoutButton';
-
 const { Title, Text } = Typography;
 
 export default function LecturerAssignStudentDetailPage() {
@@ -29,13 +27,12 @@ export default function LecturerAssignStudentDetailPage() {
 						<Text className="cursor-pointer hover:text-blue-600">
 							← Back to Student List
 						</Text>
-					</Link>
+					</Link>{' '}
 					<Link href="/lecturer">
 						<Text className="cursor-pointer hover:text-blue-600">
 							← Dashboard
 						</Text>
 					</Link>
-					<LogoutButton />
 				</div>
 			</div>
 

@@ -18,7 +18,7 @@ export default function LecturerDashboard() {
 					{isModerator && (
 						<Badge count="Moderator" color="gold" className="ml-3" />
 					)}
-				</Title>
+				</Title>{' '}
 				<Text type="secondary">Welcome back, {session?.user?.name}!</Text>
 			</div>
 			{/* User Info Card */}
