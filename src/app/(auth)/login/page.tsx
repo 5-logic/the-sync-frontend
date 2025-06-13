@@ -280,9 +280,9 @@ export default function SignInPage() {
 					<Tabs defaultActiveKey="user" centered items={tabItems} />
 				</Card>
 
-				<div className="text-center">
+				<div className="text-center mt-6">
 					<p className="text-xs text-gray-500">
-						© 2025 TheSync - FPT University
+						© 2025 TheSync - Five Logic. All rights reserved.
 					</p>
 				</div>
 			</div>
