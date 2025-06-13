@@ -1,5 +1,6 @@
 'use client';
 
+import { EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons';
 import { Button, Form, Input, Radio, Select, message } from 'antd';
 import { useState } from 'react';
 
@@ -8,8 +9,8 @@ const { Option } = Select;
 // ---------------- Header ----------------
 const PageHeader = () => (
 	<div className="mb-8 -ml-8 text-left">
-		<h1 className="text-3xl font-bold">Create New Student</h1>
-		<p className="text-gray-500">Add new students to the capstone ecosystem</p>
+		<h1 className="text-3xl font-bold">Create New Lecturer</h1>
+		<p className="text-gray-500">Add new lecturer to the capstone ecosystem</p>
 	</div>
 );
 
@@ -109,15 +110,27 @@ const StudentForm = () => {
 			</Form.Item>
 
 			<Form.Item
-				name="studentId"
+				name="phoneNumber"
 				label={
 					<span>
-						Student ID <span className="text-red-500">*</span>
+						Phone Number <span className="text-red-500">*</span>
 					</span>
 				}
-				rules={[{ required: true, message: 'Please enter Student ID' }]}
+				rules={[
+					{ required: true, message: 'Please enter your phone number' },
+					{
+						pattern: /^(0|\+84)(\d{9})$/,
+						message: 'Please enter a valid Vietnamese phone number',
+					},
+				]}
 			>
-				<Input placeholder="Enter Student ID" />
+				<Input.Password
+					placeholder="Enter your phone number"
+					size="large"
+					iconRender={(visible) =>
+						visible ? <EyeInvisibleOutlined /> : <EyeOutlined />
+					}
+				/>
 			</Form.Item>
 
 			<Form.Item
@@ -145,7 +158,7 @@ const StudentForm = () => {
 						htmlType="submit"
 						className="bg-blue-600 hover:bg-blue-700"
 					>
-						Create User
+						Create Lecturer
 					</Button>
 				</div>
 			</Form.Item>
