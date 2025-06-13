@@ -7,15 +7,15 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-// 🔁 Component tái sử dụng cho Remember me + Forgot password
 const RememberAndForgot = () => (
-	<div className="flex items-center justify-between mb-4">
+	<div className="flex flex-row flex-wrap items-center justify-between mb-4 gap-2 text-sm">
+		{' '}
 		<Form.Item name="remember" valuePropName="checked" noStyle>
 			<Checkbox>Remember me</Checkbox>
 		</Form.Item>
 		<a
 			href="/forgot-password"
-			className="text-blue-500 hover:underline text-sm"
+			className="text-blue-500 hover:underline text-sm text-right"
 		>
 			Forgot password?
 		</a>
@@ -257,7 +257,7 @@ export default function SignInPage() {
 
 	return (
 		<div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-			<div className="max-w-md w-full space-y-8">
+			<div className="w-full max-w-md space-y-8">
 				<div className="text-center flex flex-col items-center space-y-2">
 					<Image
 						src="/images/TheSync_logo.png"
@@ -271,7 +271,7 @@ export default function SignInPage() {
 					<h2 className="mt-4 text-3xl font-extrabold text-gray-900">
 						TheSync
 					</h2>
-					<p className="mt-2 text-sm text-gray-600">
+					<p className="mt-2 text-sm text-gray-600 text-center">
 						Group Formation and Capstone Thesis Development
 					</p>
 				</div>
