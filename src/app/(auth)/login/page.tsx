@@ -1,24 +1,37 @@
 'use client';
 
 import { LockOutlined, MailOutlined, UserOutlined } from '@ant-design/icons';
-import { Button, Card, Form, Input, Tabs, message } from 'antd';
+import { Button, Card, Checkbox, Form, Input, Tabs, message } from 'antd';
 import { signIn } from 'next-auth/react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+
+// 🔁 Component tái sử dụng cho Remember me + Forgot password
+const RememberAndForgot = () => (
+	<div className="flex items-center justify-between mb-4">
+		<Form.Item name="remember" valuePropName="checked" noStyle>
+			<Checkbox>Remember me</Checkbox>
+		</Form.Item>
+		<a
+			href="/forgot-password"
+			className="text-blue-500 hover:underline text-sm"
+		>
+			Forgot password?
+		</a>
+	</div>
+);
 
 export default function SignInPage() {
 	const [loading, setLoading] = useState(false);
 	const router = useRouter();
 
-	// Handle User Login (Students & Lecturers)
 	const handleUserLogin = async (values: {
 		email: string;
 		password: string;
 	}) => {
 		setLoading(true);
 		try {
-			console.log('🔐 User login attempt:', values.email);
-
 			const result = await signIn('credentials', {
 				username: values.email,
 				password: values.password,
@@ -28,10 +41,7 @@ export default function SignInPage() {
 				message.error('Invalid email or password');
 			} else {
 				message.success('Login successful!');
-
-				// Redirect will be handled by session callback and route protection
-				// Let NextAuth handle the authentication flow and automatic redirect
-				router.push('/'); // Redirect to home, auth system will handle role-based routing
+				router.push('/');
 			}
 		} catch (error) {
 			console.error('Login error:', error);
@@ -41,15 +51,12 @@ export default function SignInPage() {
 		}
 	};
 
-	// Handle Admin Login
 	const handleAdminLogin = async (values: {
 		username: string;
 		password: string;
 	}) => {
 		setLoading(true);
 		try {
-			console.log('🔐 Admin login attempt:', values.username);
-
 			const result = await signIn('credentials', {
 				username: values.username,
 				password: values.password,
@@ -59,8 +66,7 @@ export default function SignInPage() {
 				message.error('Invalid username or password');
 			} else {
 				message.success('Admin login successful!');
-				// Redirect will be handled by auth system based on user role
-				router.push('/'); // Let auth system handle role-based routing
+				router.push('/');
 			}
 		} catch (error) {
 			console.error('Admin login error:', error);
@@ -70,7 +76,6 @@ export default function SignInPage() {
 		}
 	};
 
-	// User Login Form (Students & Lecturers)
 	const UserLoginForm = (
 		<Form
 			name="user-login"
@@ -79,7 +84,11 @@ export default function SignInPage() {
 			requiredMark={false}
 		>
 			<Form.Item
-				label="Email"
+				label={
+					<span>
+						Email <span className="text-red-500">*</span>
+					</span>
+				}
 				name="email"
 				rules={[
 					{ required: true, message: 'Please input your email!' },
@@ -94,7 +103,11 @@ export default function SignInPage() {
 			</Form.Item>
 
 			<Form.Item
-				label="Password"
+				label={
+					<span>
+						Password <span className="text-red-500">*</span>
+					</span>
+				}
 				name="password"
 				rules={[{ required: true, message: 'Please input your password!' }]}
 			>
@@ -104,6 +117,8 @@ export default function SignInPage() {
 					size="large"
 				/>
 			</Form.Item>
+
+			<RememberAndForgot />
 
 			<Form.Item>
 				<Button
@@ -117,7 +132,6 @@ export default function SignInPage() {
 				</Button>
 			</Form.Item>
 
-			{/* Demo credentials for testing */}
 			<div className="mt-4 p-4 bg-blue-50 rounded-lg text-sm space-y-2">
 				<p className="font-medium text-blue-800 mb-2">
 					🧪 Test Accounts (Password: test123):
@@ -140,7 +154,6 @@ export default function SignInPage() {
 		</Form>
 	);
 
-	// Admin Login Form
 	const AdminLoginForm = (
 		<Form
 			name="admin-login"
@@ -149,7 +162,11 @@ export default function SignInPage() {
 			requiredMark={false}
 		>
 			<Form.Item
-				label="Username"
+				label={
+					<span>
+						Username <span className="text-red-500">*</span>
+					</span>
+				}
 				name="username"
 				rules={[{ required: true, message: 'Please input your username!' }]}
 			>
@@ -161,7 +178,11 @@ export default function SignInPage() {
 			</Form.Item>
 
 			<Form.Item
-				label="Password"
+				label={
+					<span>
+						Password <span className="text-red-500">*</span>
+					</span>
+				}
 				name="password"
 				rules={[{ required: true, message: 'Please input your password!' }]}
 			>
@@ -172,6 +193,8 @@ export default function SignInPage() {
 				/>
 			</Form.Item>
 
+			<RememberAndForgot />
+
 			<Form.Item>
 				<Button
 					type="primary"
@@ -180,11 +203,10 @@ export default function SignInPage() {
 					loading={loading}
 					block
 				>
-					Sign In as Admin
+					Sign In
 				</Button>
 			</Form.Item>
 
-			{/* Demo credentials for testing */}
 			<div className="mt-4 p-4 bg-red-50 rounded-lg text-sm">
 				<p className="font-medium text-red-800 mb-1">🧪 Admin Test Account:</p>
 				<div className="p-2 bg-white rounded border">
@@ -196,7 +218,6 @@ export default function SignInPage() {
 		</Form>
 	);
 
-	// Define tab items using new Ant Design format
 	const tabItems = [
 		{
 			key: 'user',
@@ -209,7 +230,7 @@ export default function SignInPage() {
 			children: (
 				<div className="pt-4">
 					<p className="text-center text-gray-600 mb-6">
-						For Students & Lecturers
+						Sign in to access your account
 					</p>
 					{UserLoginForm}
 				</div>
@@ -226,7 +247,7 @@ export default function SignInPage() {
 			children: (
 				<div className="pt-4">
 					<p className="text-center text-gray-600 mb-6">
-						For System Administrators
+						Sign in to access your account
 					</p>
 					{AdminLoginForm}
 				</div>
@@ -237,20 +258,28 @@ export default function SignInPage() {
 	return (
 		<div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
 			<div className="max-w-md w-full space-y-8">
-				{/* Header */}
-				<div className="text-center">
-					<h2 className="mt-6 text-3xl font-extrabold text-gray-900">
-						Welcome to TheSync
+				<div className="text-center flex flex-col items-center space-y-2">
+					<Image
+						src="/images/TheSync_logo.png"
+						alt="TheSync Logo"
+						width={130}
+						height={130}
+						className="object-contain"
+						priority
+					/>
+
+					<h2 className="mt-4 text-3xl font-extrabold text-gray-900">
+						TheSync
 					</h2>
-					<p className="mt-2 text-sm text-gray-600">Sign in to your account</p>
+					<p className="mt-2 text-sm text-gray-600">
+						Group Formation and Capstone Thesis Development
+					</p>
 				</div>
 
-				{/* Login Card with Tabs */}
 				<Card className="shadow-lg">
 					<Tabs defaultActiveKey="user" centered items={tabItems} />
 				</Card>
 
-				{/* Footer */}
 				<div className="text-center">
 					<p className="text-xs text-gray-500">
 						© 2025 TheSync - FPT University
