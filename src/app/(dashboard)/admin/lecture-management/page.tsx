@@ -1,9 +1,9 @@
-import LecturersManagement from '@/components/features/admin/LecturersManagement';
+import LecturerManagement from '@/components/features/admin/LectureManagement/LecturerManagement';
 
 export default function AdminLectureManagementPage() {
 	return (
 		<div className="p-6">
-			<LecturersManagement />
+			<LecturerManagement />
 		</div>
 	);
 }
