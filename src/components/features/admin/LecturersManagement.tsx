@@ -1,6 +1,6 @@
 'use client';
 
-import { PlusOutlined } from '@ant-design/icons';
+import { PlusOutlined, SearchOutlined } from '@ant-design/icons';
 import { Button, Input, Select, Switch, Table, Tag } from 'antd';
 import { useState } from 'react';
 
@@ -103,7 +103,6 @@ export default function LecturerManagement() {
 			title: 'Phone Number',
 			dataIndex: 'phoneNumber',
 			key: 'phoneNumber',
-			render: (text: string) => <strong>{text}</strong>,
 		},
 		{
 			title: 'Instruction Groups',
@@ -133,31 +132,43 @@ export default function LecturerManagement() {
 
 	return (
 		<div className="p-6">
-			<div className="flex justify-between items-center mb-4">
+			{/* Tiêu đề */}
+			<div className="mb-4">
 				<h2 className="text-2xl font-semibold">Lecturers Management</h2>
-				<Button icon={<PlusOutlined />} type="primary">
-					Create New Lecture
+			</div>
+
+			{/* Thanh điều khiển: Search, Filter, Create Button */}
+			<div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-4 flex-wrap">
+				<div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
+					<Select
+						defaultValue="All"
+						onChange={(value) => setStatusFilter(value)}
+						className="w-full md:w-40"
+					>
+						<Option value="All">All Status</Option>
+						<Option value="Active">Active</Option>
+						<Option value="Inactive">Inactive</Option>
+					</Select>
+
+					<Input
+						placeholder="Search by name, email"
+						value={searchText}
+						onChange={(e) => setSearchText(e.target.value)}
+						prefix={<SearchOutlined className="text-gray-400" />}
+						className="w-full md:w-60" // Giảm từ w-80 xuống w-60
+					/>
+				</div>
+
+				<Button
+					icon={<PlusOutlined />}
+					type="primary"
+					className="w-full md:w-auto"
+				>
+					Create New Lecturer
 				</Button>
 			</div>
 
-			<div className="flex flex-col md:flex-row gap-2 mb-4">
-				<Select
-					defaultValue="All"
-					onChange={(value) => setStatusFilter(value)}
-					className="w-full md:w-40"
-				>
-					<Option value="All">All Status</Option>
-					<Option value="Active">Active</Option>
-					<Option value="Inactive">Inactive</Option>
-				</Select>
-				<Input
-					placeholder="Search by name, email"
-					value={searchText}
-					onChange={(e) => setSearchText(e.target.value)}
-					className="w-full md:w-80"
-				/>
-			</div>
-
+			{/* Bảng dữ liệu */}
 			<Table
 				columns={columns}
 				dataSource={filteredData}
