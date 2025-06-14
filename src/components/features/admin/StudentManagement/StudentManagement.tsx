@@ -48,12 +48,9 @@ export default function StudentManagement() {
 
 		const matchesMajor = majorFilter === 'All' || student.major === majorFilter;
 
-		const matchesSearch =
-			(student.name ?? '').toLowerCase().includes(searchText.toLowerCase()) ||
-			(student.email ?? '').toLowerCase().includes(searchText.toLowerCase()) ||
-			(student.studentID ?? '')
-				.toLowerCase()
-				.includes(searchText.toLowerCase());
+		const matchesSearch = [student.name, student.email, student.studentID].some(
+			(field) => (field ?? '').toLowerCase().includes(searchText.toLowerCase()),
+		);
 
 		return matchesStatus && matchesMajor && matchesSearch;
 	});
