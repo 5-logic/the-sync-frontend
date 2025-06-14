@@ -93,7 +93,7 @@ export default function LecturerManagement() {
 	};
 
 	return (
-		<div className="p-6">
+		<div className="px-4 py-4 sm:px-6 lg:px-8">
 			<h2 className="text-2xl font-semibold mb-6">Lecturer Management</h2>
 
 			<LecturerFilterBar

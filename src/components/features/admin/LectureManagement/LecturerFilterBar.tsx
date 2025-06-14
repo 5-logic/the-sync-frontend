@@ -38,7 +38,7 @@ export default function LecturerFilterBar({
 					value={searchText}
 					onChange={(e) => setSearchText(e.target.value)}
 					prefix={<SearchOutlined className="text-gray-400" />}
-					className="w-full md:w-60"
+					className="w-full md:w-60 flex-1"
 				/>
 			</div>
 

@@ -46,6 +46,7 @@ export default function LecturerTable({ data, onTogglePermission }: Props) {
 			dataSource={data}
 			pagination={{ pageSize: 10 }}
 			rowKey="key"
+			scroll={{ x: 'max-content' }}
 		/>
 	);
 }
