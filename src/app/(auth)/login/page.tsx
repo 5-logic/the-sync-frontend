@@ -86,8 +86,11 @@ const TestAccountCard = ({
 	<div className={`mt-4 p-4 ${bgColor} rounded-lg text-sm space-y-2`}>
 		<p className="font-medium text-blue-800 mb-2">{title}</p>
 		<div className="grid grid-cols-1 gap-2">
-			{accounts.map((account, index) => (
-				<div key={index} className="p-2 bg-white rounded border">
+			{accounts.map((account) => (
+				<div
+					key={`${account.role}-${account.credential}`}
+					className="p-2 bg-white rounded border"
+				>
 					<p className={`font-medium ${account.color}`}>{account.role}</p>
 					<p className={account.color.replace('text-', 'text-')}>
 						{account.credential}
