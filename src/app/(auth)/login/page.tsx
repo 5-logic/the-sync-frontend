@@ -1,12 +1,25 @@
 'use client';
 
 import { LockOutlined, MailOutlined, UserOutlined } from '@ant-design/icons';
-import { Button, Card, Checkbox, Form, Input, Tabs, message } from 'antd';
+import {
+	Button,
+	Card,
+	Checkbox,
+	Form,
+	Input,
+	Layout,
+	Space,
+	Tabs,
+	Typography,
+	message,
+} from 'antd';
 import { signIn } from 'next-auth/react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+const { Content } = Layout;
+const { Title, Text } = Typography;
 const RememberAndForgot = () => (
 	<div className="flex flex-row flex-wrap items-center justify-between mb-4 gap-2 text-sm">
 		{' '}
@@ -256,36 +269,67 @@ export default function SignInPage() {
 	];
 
 	return (
-		<div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-			<div className="w-full max-w-md space-y-8">
-				<div className="text-center flex flex-col items-center space-y-2">
-					<Image
-						src="/images/TheSync_logo.png"
-						alt="TheSync Logo"
-						width={130}
-						height={130}
-						className="object-contain"
-						priority
-					/>
+		<Layout style={{ minHeight: '100vh', backgroundColor: '#f9fafb' }}>
+			<Content
+				style={{
+					display: 'flex',
+					alignItems: 'center',
+					justifyContent: 'center',
+					padding: '48px 16px',
+				}}
+			>
+				<div style={{ width: '100%', maxWidth: '448px' }}>
+					<Space direction="vertical" size="large" style={{ width: '100%' }}>
+						<Space
+							direction="vertical"
+							size="small"
+							align="center"
+							style={{ width: '100%' }}
+						>
+							<Image
+								src="/icons/thesync-logo.svg"
+								alt="TheSync Logo"
+								width={150}
+								height={150}
+							/>
 
-					<h2 className="mt-4 text-3xl font-extrabold text-gray-900">
-						TheSync
-					</h2>
-					<p className="mt-2 text-sm text-gray-600 text-center">
-						Group Formation and Capstone Thesis Development
-					</p>
+							<Title
+								level={1}
+								style={{
+									fontSize: '30px',
+									fontWeight: 800,
+									color: '#111827',
+									marginTop: '16px',
+									marginBottom: 0,
+								}}
+							>
+								TheSync
+							</Title>
+
+							<Text
+								style={{
+									fontSize: '14px',
+									color: '#4b5563',
+									textAlign: 'center',
+									marginTop: '8px',
+								}}
+							>
+								Group Formation and Capstone Thesis Development
+							</Text>
+						</Space>
+
+						<Card style={{ boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}>
+							<Tabs defaultActiveKey="user" centered items={tabItems} />
+						</Card>
+
+						<div style={{ textAlign: 'center', marginTop: '24px' }}>
+							<Text style={{ fontSize: '12px', color: '#6b7280' }}>
+								© 2025 TheSync - Five Logic. All rights reserved.
+							</Text>
+						</div>
+					</Space>
 				</div>
-
-				<Card className="shadow-lg">
-					<Tabs defaultActiveKey="user" centered items={tabItems} />
-				</Card>
-
-				<div className="text-center mt-6">
-					<p className="text-xs text-gray-500">
-						© 2025 TheSync - Five Logic. All rights reserved.
-					</p>
-				</div>
-			</div>
-		</div>
+			</Content>
+		</Layout>
 	);
 }
