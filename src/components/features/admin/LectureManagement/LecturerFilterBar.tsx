@@ -5,13 +5,13 @@ import { Button, Input, Select } from 'antd';
 
 const { Option } = Select;
 
-interface Props {
+type Props = Readonly<{
 	statusFilter: string;
 	setStatusFilter: (value: string) => void;
 	searchText: string;
 	setSearchText: (value: string) => void;
 	onCreateLecturer: () => void;
-}
+}>;
 
 export default function LecturerFilterBar({
 	statusFilter,

@@ -4,9 +4,9 @@ import { Table, Tag } from 'antd';
 
 import { Student } from './StudentManagement';
 
-interface Props {
+type Props = Readonly<{
 	data: Student[];
-}
+}>;
 
 export default function StudentTable({ data }: Props) {
 	const columns = [

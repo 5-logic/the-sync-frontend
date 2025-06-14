@@ -4,10 +4,10 @@ import { Switch, Table, Tag } from 'antd';
 
 import { Lecturer } from './LecturerManagement';
 
-interface Props {
+type Props = Readonly<{
 	data: Lecturer[];
 	onTogglePermission: (key: string) => void;
-}
+}>;
 
 export default function LecturerTable({ data, onTogglePermission }: Props) {
 	const columns = [
