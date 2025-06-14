@@ -72,8 +72,9 @@ export default function LecturerManagement() {
 		const matchesStatus =
 			statusFilter === 'All' || lecturer.status === statusFilter;
 		const matchesSearch =
-			lecturer.name.toLowerCase().includes(searchText.toLowerCase()) ||
-			lecturer.email.toLowerCase().includes(searchText.toLowerCase());
+			(lecturer.name ?? '').toLowerCase().includes(searchText.toLowerCase()) ||
+			(lecturer.email ?? '').toLowerCase().includes(searchText.toLowerCase());
+
 		return matchesStatus && matchesSearch;
 	});
 
