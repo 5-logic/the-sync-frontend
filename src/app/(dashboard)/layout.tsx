@@ -4,7 +4,6 @@ import { useSession } from 'next-auth/react';
 import { usePathname } from 'next/navigation';
 
 import Loading from '@/components/common/Loading';
-import DashboardLayoutComponent from '@/components/layout/DashboardLayout';
 import { AUTH_MESSAGES } from '@/lib/auth/auth-constants';
 import { useRouteProtection } from '@/lib/auth/auth-helpers';
 
@@ -41,5 +40,7 @@ export default function DashboardLayout({
 			/>
 		);
 	}
-	return <DashboardLayoutComponent>{children}</DashboardLayoutComponent>;
+
+	// Return children directly - let role-specific layouts handle the UI
+	return <>{children}</>;
 }

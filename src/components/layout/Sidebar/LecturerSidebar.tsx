@@ -2,9 +2,11 @@
 
 import {
 	BookOutlined,
-	SettingOutlined,
+	ClockCircleOutlined,
+	CrownOutlined,
+	DashboardOutlined,
+	ScheduleOutlined,
 	TeamOutlined,
-	TrophyOutlined,
 	UserAddOutlined,
 	UserOutlined,
 } from '@ant-design/icons';
@@ -22,7 +24,7 @@ export default function LecturerSidebar() {
 	const basicMenuItems = [
 		{
 			key: DASHBOARD_PATHS.LECTURER,
-			icon: <TrophyOutlined />,
+			icon: <DashboardOutlined />,
 			label: <Link href={DASHBOARD_PATHS.LECTURER}>Dashboard</Link>,
 		},
 		{
@@ -36,21 +38,25 @@ export default function LecturerSidebar() {
 			label: <Link href="/lecturer/group-progress">Group Progress</Link>,
 		},
 		{
-			key: '/lecturer/profile-settings',
-			icon: <SettingOutlined />,
-			label: <Link href="/lecturer/profile-settings">Profile Settings</Link>,
+			key: '/lecturer/timeline-review',
+			icon: <ClockCircleOutlined />,
+			label: <Link href="/lecturer/timeline-review">Timeline Review</Link>,
 		},
 	];
-
 	const moderatorMenuItems = [
 		{
 			type: 'divider' as const,
+			style: { margin: '8px 16px' },
 		},
 		{
 			key: 'moderator-section',
 			label: (
-				<span className="text-yellow-600 font-semibold">
-					<Badge color="gold" /> Moderator Panel
+				<span className="text-yellow-600 font-semibold flex items-center">
+					<Badge color="gold" className="mr-1 hidden-when-collapsed" />
+					<span className="hidden-when-collapsed ml-2">Moderator Panel</span>
+					<span className="visible-when-collapsed flex justify-center items-center text-yellow-500">
+						<CrownOutlined style={{ fontSize: '16px' }} />
+					</span>
 				</span>
 			),
 			type: 'group' as const,
@@ -60,7 +66,7 @@ export default function LecturerSidebar() {
 					icon: <UserAddOutlined />,
 					label: (
 						<Link href={DASHBOARD_PATHS.LECTURER_ASSIGN_STUDENT_LIST}>
-							Assign Students
+							Assign Student
 						</Link>
 					),
 				},
@@ -73,6 +79,15 @@ export default function LecturerSidebar() {
 						</Link>
 					),
 				},
+				{
+					key: '/lecturer/assign-lecturer-review',
+					icon: <ScheduleOutlined />,
+					label: (
+						<Link href="/lecturer/assign-lecturer-review">
+							Assign Lecturer Review
+						</Link>
+					),
+				},
 			],
 		},
 	];
@@ -80,28 +95,16 @@ export default function LecturerSidebar() {
 	const lecturerMenuItems = canAccessModeratorFeatures
 		? [...basicMenuItems, ...moderatorMenuItems]
 		: basicMenuItems;
-
 	return (
-		<div className="h-full bg-white border-r border-gray-200">
-			<div className="p-4">
-				<h2 className="text-lg font-semibold text-gray-800 mb-4">
-					👨‍🏫 Lecturer Portal
-					{canAccessModeratorFeatures && (
-						<Badge
-							count="Moderator"
-							color="gold"
-							size="small"
-							className="ml-2"
-						/>
-					)}
-				</h2>
-				<Menu
-					mode="inline"
-					selectedKeys={[pathname]}
-					items={lecturerMenuItems}
-					className="border-0"
-				/>
-			</div>
-		</div>
+		<Menu
+			theme="light"
+			mode="inline"
+			selectedKeys={[pathname]}
+			items={lecturerMenuItems}
+			style={{
+				border: 'none',
+				height: '100%',
+			}}
+		/>
 	);
 }
