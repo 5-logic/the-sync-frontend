@@ -12,8 +12,6 @@ import {
 } from 'antd';
 import { useState } from 'react';
 
-import LogoutButton from '@/components/common/LogoutButton';
-
 const { Title, Text } = Typography;
 const { Option } = Select;
 
@@ -100,10 +98,9 @@ export default function AssignStudentPage() {
 						👥 Assign Student to Supervisor
 					</Title>
 					<Text type="secondary">
-						Moderator Panel - Assign students to lecturers for supervision
+						Moderator Panel - Assign students to lecturers for supervision{' '}
 					</Text>
 				</div>
-				<LogoutButton type="primary" />
 			</div>
 
 			{/* Assignment Form */}

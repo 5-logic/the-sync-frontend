@@ -1,0 +1,106 @@
+'use client';
+
+import {
+	LogoutOutlined,
+	SettingOutlined,
+	UserOutlined,
+} from '@ant-design/icons';
+import { Avatar, Dropdown, MenuProps, Modal } from 'antd';
+import { signOut, useSession } from 'next-auth/react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import React from 'react';
+
+import { useResponsiveLayout } from '@/hooks/useResponsiveLayout';
+
+const UserProfile: React.FC = () => {
+	const { data: session } = useSession();
+	const router = useRouter();
+	const { isMobile } = useResponsiveLayout();
+
+	const userName = session?.user?.name ?? 'User';
+	const avatarSrc = session?.user?.image ?? '/images/user_avatar.png';
+
+	const handleLogoutClick = () => {
+		Modal.confirm({
+			title: 'Confirm Logout',
+			content: (
+				<div>
+					<p>Are you sure you want to logout?</p>
+					<p className="text-sm text-gray-500 mt-2">
+						You will be redirected to the login page.
+					</p>
+				</div>
+			),
+			okText: 'Yes, Logout',
+			cancelText: 'Cancel',
+			okType: 'danger',
+			icon: <LogoutOutlined />,
+			maskClosable: true,
+			closable: true,
+			onOk: async () => {
+				try {
+					console.log('🔐 Logging out user:', session?.user?.email);
+					await signOut({ redirect: false });
+					console.log('✅ Logout successful');
+					router.push('/login');
+				} catch (error) {
+					console.error('❌ Logout error:', error);
+				}
+			},
+		});
+	};
+
+	const menuItems: MenuProps['items'] = [
+		{
+			key: 'profile',
+			icon: <UserOutlined />,
+			label: <Link href="/profile">Profile</Link>,
+		},
+		{
+			key: 'settings',
+			icon: <SettingOutlined />,
+			label: <Link href="/settings">Settings</Link>,
+		},
+		{
+			type: 'divider',
+		},
+		{
+			key: 'logout',
+			icon: <LogoutOutlined />,
+			label: 'Logout',
+			onClick: handleLogoutClick,
+		},
+	];
+
+	return (
+		<Dropdown
+			menu={{ items: menuItems }}
+			placement="bottomRight"
+			trigger={['click']}
+			arrow
+		>
+			<div className="flex items-center cursor-pointer hover:bg-gray-50 rounded-lg px-2 py-1 transition-colors">
+				{session?.user?.image ? (
+					<Image
+						src={avatarSrc}
+						alt={`${userName} Avatar`}
+						width={32}
+						height={32}
+						className="w-8 h-8 rounded-full object-cover"
+					/>
+				) : (
+					<Avatar icon={<UserOutlined />} size={32} />
+				)}
+				{!isMobile && (
+					<div className="text-sm text-gray-700 ml-3">
+						<p className="font-medium">{userName}</p>
+					</div>
+				)}
+			</div>
+		</Dropdown>
+	);
+};
+
+export default UserProfile;
