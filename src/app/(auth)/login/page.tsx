@@ -272,7 +272,7 @@ export default function SignInPage() {
 							style={{ width: '100%' }}
 						>
 							<Image
-								src="/icons/thesync-logo.svg"
+								src="/images/thesync-logo.svg"
 								alt="TheSync Logo"
 								width={150}
 								height={150}

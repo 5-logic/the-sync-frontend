@@ -4,7 +4,7 @@ import React from 'react';
 const Logo: React.FC = () => (
 	<div className="flex items-center space-x-2">
 		<Image
-			src="/images/TheSync_logo.png"
+			src="/images/thesync-logo.svg"
 			alt="TheSync Logo"
 			width={32}
 			height={32}
