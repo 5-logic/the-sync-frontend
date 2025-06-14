@@ -12,7 +12,6 @@ type UserFormProps = {
 
 const UserForm = ({ formType, onSubmit }: UserFormProps) => {
 	const [form] = Form.useForm();
-
 	const isStudent = formType === 'student';
 
 	return (
@@ -63,7 +62,6 @@ const UserForm = ({ formType, onSubmit }: UserFormProps) => {
 
 			{/* Conditional Field */}
 			{isStudent ? (
-				// Student ID
 				<Form.Item
 					name="studentId"
 					label={<Label text="Student ID" />}
@@ -72,7 +70,6 @@ const UserForm = ({ formType, onSubmit }: UserFormProps) => {
 					<Input placeholder="Enter Student ID" />
 				</Form.Item>
 			) : (
-				// Lecturer Phone Number
 				<Form.Item
 					name="phoneNumber"
 					label={<Label text="Phone Number" />}
@@ -87,9 +84,7 @@ const UserForm = ({ formType, onSubmit }: UserFormProps) => {
 					<Input.Password
 						placeholder="Enter phone number"
 						size="large"
-						iconRender={(visible) =>
-							visible ? <EyeInvisibleOutlined /> : <EyeOutlined />
-						}
+						iconRender={passwordIconRender}
 					/>
 				</Form.Item>
 			)}
@@ -126,6 +121,9 @@ const UserForm = ({ formType, onSubmit }: UserFormProps) => {
 };
 
 export default UserForm;
+
+const passwordIconRender = (visible: boolean) =>
+	visible ? <EyeInvisibleOutlined /> : <EyeOutlined />;
 
 const Label = ({ text }: { text: string }) => (
 	<span>
