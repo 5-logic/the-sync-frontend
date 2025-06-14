@@ -18,18 +18,17 @@ const SearchFilterBar = ({
 	searchText: string;
 	setSearchText: (value: string) => void;
 }) => (
-	<div className="flex items-center justify-between mb-4">
+	<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
 		<Input
 			prefix={<SearchOutlined className="text-gray-400" />}
 			placeholder="Search"
-			className="w-28"
-			style={{ width: '300px' }}
+			className="w-full sm:w-80"
 			value={searchText}
 			onChange={(e) => setSearchText(e.target.value)}
 		/>
 
 		<Select
-			style={{ width: 150 }}
+			className="w-full sm:w-48"
 			value={statusFilter}
 			onChange={setStatusFilter}
 		>

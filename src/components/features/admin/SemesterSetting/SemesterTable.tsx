@@ -92,6 +92,7 @@ const SemesterTable = ({
 				pageSize: 10,
 				showTotal: (total) => `Total ${total} items`,
 			}}
+			scroll={{ x: 'max-content' }}
 		/>
 	);
 };
