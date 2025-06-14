@@ -37,7 +37,7 @@ const BaseFormLayout = ({
 					</div>
 				) : (
 					<div className="bg-white border border-gray-200 rounded-xl shadow p-4 sm:p-6 md:p-10">
-						{ExcelPlaceholder || (
+						{ExcelPlaceholder ?? (
 							<p className="text-gray-600">
 								Excel import functionality coming soon...
 							</p>
