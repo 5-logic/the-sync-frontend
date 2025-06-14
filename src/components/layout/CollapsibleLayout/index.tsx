@@ -33,7 +33,13 @@ const CollapsibleLayout: React.FC<CollapsibleLayoutProps> = ({
 	};
 
 	// Calculate main layout margin left
-	const mainLayoutMarginLeft = isMobile ? 0 : sidebarCollapsed ? 80 : 250;
+	const getMarginLeft = () => {
+		if (isMobile) {
+			return 0;
+		}
+		return sidebarCollapsed ? 80 : 250;
+	};
+	const mainLayoutMarginLeft = getMarginLeft();
 
 	return (
 		<div
