@@ -1,4 +1,4 @@
-import CreateNewLecturer from '@/components/features/admin/CreateNewLecturer';
+import CreateNewLecturer from '@/components/features/admin/CreateNewUser/CreateNewLecturer';
 
 export default function CreateNewLecturerPage() {
 	return (
