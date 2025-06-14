@@ -1,7 +1,5 @@
 'use client';
 
-import { PlusOutlined } from '@ant-design/icons';
-import { Button } from 'antd';
 import { useState } from 'react';
 
 import StudentFilterBar from './StudentFilterBar';
@@ -71,13 +69,6 @@ export default function StudentManagement() {
 					searchText={searchText}
 					setSearchText={setSearchText}
 				/>
-				<Button
-					icon={<PlusOutlined />}
-					type="primary"
-					className="w-full md:w-auto"
-				>
-					Create New Student
-				</Button>
 			</div>
 
 			<StudentTable data={filteredData} />
