@@ -108,7 +108,7 @@ export default function SignInPage() {
 	const handleLogin = async (values: LoginValues, isAdmin = false) => {
 		setLoading(true);
 		try {
-			const username = values.email || values.username;
+			const username = values.email ?? values.username;
 			const result = await signIn('credentials', {
 				username,
 				password: values.password,
