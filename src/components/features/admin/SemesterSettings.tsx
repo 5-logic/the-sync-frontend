@@ -173,7 +173,7 @@ const SemesterTable = ({
 			title: 'Status',
 			dataIndex: 'status',
 			key: 'status',
-			render: (status: SemesterStatus) => statusTag[status] || status,
+			render: (status: SemesterStatus) => statusTag[status] ?? status,
 		},
 		{
 			title: 'Actions',
