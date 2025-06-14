@@ -1,9 +1,9 @@
-import StudentsManagement from '@/components/features/admin/StudentsManagement';
+import StudentManagement from '@/components/features/admin/StudentManagement/StudentManagement';
 
 export default function AdminStudentsManagementPage() {
 	return (
 		<div className="p-6">
-			<StudentsManagement />
+			<StudentManagement />
 		</div>
 	);
 }
