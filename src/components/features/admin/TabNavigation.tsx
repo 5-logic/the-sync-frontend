@@ -11,8 +11,8 @@ const tabs = [
 ];
 
 const TabNavigation = ({ activeTab, setActiveTab }: Props) => (
-	<div className="mb-6 -ml-8 border-b border-gray-200 text-left">
-		<nav className="flex space-x-8">
+	<div className="mb-6 border-b border-gray-200 text-left">
+		<nav className="flex flex-wrap gap-4 sm:space-x-8 px-4 sm:px-0">
 			{tabs.map((tab) => (
 				<button
 					key={tab.key}

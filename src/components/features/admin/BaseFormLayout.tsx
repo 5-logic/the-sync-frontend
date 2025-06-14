@@ -20,21 +20,24 @@ const BaseFormLayout = ({
 	const [activeTab, setActiveTab] = useState('manual');
 
 	return (
-		<div className="flex justify-center items-start min-h-screen px-4">
-			<div className="w-full max-w-3xl">
-				<div className="mb-8 -ml-8 text-left">
+		<div className="flex justify-center items-start min-h-screen px-4 py-6">
+			<div className="w-full max-w-3xl space-y-6">
+				{/* Header */}
+				<div className="text-left px-2 sm:px-0">
 					<h1 className="text-3xl font-bold">{pageTitle}</h1>
 					<p className="text-gray-500">{description}</p>
 				</div>
 
+				{/* Tab navigation */}
 				<TabNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
 
+				{/* Content based on tab */}
 				{activeTab === 'manual' ? (
-					<div className="bg-white border border-gray-200 rounded-xl shadow p-10">
+					<div className="bg-white border border-gray-200 rounded-xl shadow p-4 sm:p-6 md:p-10">
 						{ManualForm}
 					</div>
 				) : (
-					<div className="bg-white p-6 rounded-lg shadow">
+					<div className="bg-white border border-gray-200 rounded-xl shadow p-4 sm:p-6 md:p-10">
 						{ExcelPlaceholder || (
 							<p className="text-gray-600">
 								Excel import functionality coming soon...
