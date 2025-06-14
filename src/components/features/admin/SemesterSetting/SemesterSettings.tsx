@@ -21,7 +21,7 @@ export default function SemesterSettings() {
 			<h1 className="text-2xl font-semibold mb-1">
 				Semester & Academic Settings
 			</h1>
-			<p className="text-gray-500 mb-6">
+			<p className="text-gray-500 mb-12">
 				Create and manage semesters, registration windows, and capstone-specific
 				rules
 			</p>

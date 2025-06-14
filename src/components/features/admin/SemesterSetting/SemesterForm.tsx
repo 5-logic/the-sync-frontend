@@ -6,10 +6,9 @@ import type { FormInstance } from 'antd/es/form';
 const { Option } = Select;
 
 const SemesterForm = ({ form }: { form: FormInstance }) => (
-	<div className="bg-white border border-gray-300 rounded-lg p-6 mb-6">
+	<div className="bg-white border border-gray-300 rounded-lg p-6 mb-15">
 		<h2 className="text-lg font-semibold mb-4">Add New Semester</h2>
 		<Form form={form} layout="vertical">
-			{/* Row 1: Season & Year */}
 			<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 				<Form.Item
 					name="season"
@@ -46,7 +45,6 @@ const SemesterForm = ({ form }: { form: FormInstance }) => (
 				</Form.Item>
 			</div>
 
-			{/* Row 2: Max Group */}
 			<div className="mt-4">
 				<h3 className="text-base font-medium mb-2">Semester Policy</h3>
 				<Form.Item name="maxGroup" label="Max Group">
@@ -54,7 +52,6 @@ const SemesterForm = ({ form }: { form: FormInstance }) => (
 				</Form.Item>
 			</div>
 
-			{/* Action buttons */}
 			<div className="flex justify-end space-x-2">
 				<Button onClick={() => form.resetFields()}>Clear Form</Button>
 				<Button type="primary" htmlType="submit">
