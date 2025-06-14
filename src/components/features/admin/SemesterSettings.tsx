@@ -88,16 +88,24 @@ const SemesterForm = ({ form }: { form: FormInstance }) => (
 const SearchFilterBar = ({
 	statusFilter,
 	setStatusFilter,
+	searchText,
+	setSearchText,
 }: {
 	statusFilter: SemesterStatus | 'All';
 	setStatusFilter: (value: SemesterStatus | 'All') => void;
+	searchText: string;
+	setSearchText: (value: string) => void;
 }) => (
 	<div className="flex items-center justify-between mb-4">
 		<Input
-			prefix={<SearchOutlined />}
-			placeholder="Search semester"
-			style={{ width: 300 }}
+			prefix={<SearchOutlined className="text-gray-400" />}
+			placeholder="Search"
+			className="w-28"
+			style={{ width: '300px' }}
+			value={searchText}
+			onChange={(e) => setSearchText(e.target.value)}
 		/>
+
 		<Select
 			style={{ width: 150 }}
 			value={statusFilter}
@@ -113,8 +121,10 @@ const SearchFilterBar = ({
 
 const SemesterTable = ({
 	statusFilter,
+	searchText,
 }: {
 	statusFilter: SemesterStatus | 'All';
+	searchText: string;
 }) => {
 	const data: SemesterData[] = [
 		{
@@ -146,6 +156,15 @@ const SemesterTable = ({
 		End: <Tag color="gray">End</Tag>,
 	};
 
+	// ✅ Lọc dữ liệu theo status và searchText
+	const filteredData = data.filter((item) => {
+		const matchStatus = statusFilter === 'All' || item.status === statusFilter;
+		const matchSearch = item.name
+			.toLowerCase()
+			.includes(searchText.toLowerCase());
+		return matchStatus && matchSearch;
+	});
+
 	const columns = [
 		{ title: 'Semester Name', dataIndex: 'name', key: 'name' },
 		{ title: 'Semester Code', dataIndex: 'code', key: 'code' },
@@ -154,8 +173,7 @@ const SemesterTable = ({
 			title: 'Status',
 			dataIndex: 'status',
 			key: 'status',
-			render: (status: SemesterStatus) =>
-				statusTag[status as SemesterStatus] || status,
+			render: (status: SemesterStatus) => statusTag[status] || status,
 		},
 		{
 			title: 'Actions',
@@ -176,11 +194,7 @@ const SemesterTable = ({
 	return (
 		<Table
 			columns={columns}
-			dataSource={
-				statusFilter === 'All'
-					? data
-					: data.filter((item) => item.status === statusFilter)
-			}
+			dataSource={filteredData}
 			pagination={{
 				pageSize: 10,
 				showTotal: (total) => `Total ${total} items`,
@@ -196,6 +210,7 @@ export default function SemesterSettings() {
 	const [statusFilter, setStatusFilter] = useState<SemesterStatus | 'All'>(
 		'All',
 	);
+	const [searchText, setSearchText] = useState<string>('');
 
 	return (
 		<div className="p-6">
@@ -212,9 +227,11 @@ export default function SemesterSettings() {
 			<SearchFilterBar
 				statusFilter={statusFilter}
 				setStatusFilter={setStatusFilter}
+				searchText={searchText}
+				setSearchText={setSearchText}
 			/>
 
-			<SemesterTable statusFilter={statusFilter} />
+			<SemesterTable statusFilter={statusFilter} searchText={searchText} />
 		</div>
 	);
 }
