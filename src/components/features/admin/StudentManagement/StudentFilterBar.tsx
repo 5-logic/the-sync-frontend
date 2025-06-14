@@ -23,7 +23,7 @@ export default function StudentFilterBar({
 	setSearchText,
 }: Props) {
 	return (
-		<div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
+		<div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-4 flex-wrap">
 			<Select
 				value={statusFilter}
 				onChange={setStatusFilter}
@@ -49,7 +49,7 @@ export default function StudentFilterBar({
 				value={searchText}
 				onChange={(e) => setSearchText(e.target.value)}
 				prefix={<SearchOutlined className="text-gray-400" />}
-				className="w-full md:w-72"
+				className="w-full md:w-72 flex-1"
 			/>
 		</div>
 	);

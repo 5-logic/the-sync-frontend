@@ -57,7 +57,7 @@ export default function StudentManagement() {
 	});
 
 	return (
-		<div className="p-6">
+		<div className="px-4 py-4 sm:px-6 lg:px-8">
 			<h2 className="text-2xl font-semibold mb-6">Student Management</h2>
 
 			<div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-4 flex-wrap">
