@@ -134,7 +134,7 @@ export default function LecturerManagement() {
 		<div className="p-6">
 			{/* Tiêu đề */}
 			<div className="mb-4">
-				<h2 className="text-2xl font-semibold">Lecturers Management</h2>
+				<h2 className="text-2xl font-semibold">Lecturer Management</h2>
 			</div>
 
 			{/* Thanh điều khiển: Search, Filter, Create Button */}
@@ -155,7 +155,7 @@ export default function LecturerManagement() {
 						value={searchText}
 						onChange={(e) => setSearchText(e.target.value)}
 						prefix={<SearchOutlined className="text-gray-400" />}
-						className="w-full md:w-60" // Giảm từ w-80 xuống w-60
+						className="w-full md:w-60"
 					/>
 				</div>
 
