@@ -45,7 +45,9 @@ export default function StudentManagement() {
 	const filteredData = data.filter((student) => {
 		const matchesStatus =
 			statusFilter === 'All' || student.status === statusFilter;
+
 		const matchesMajor = majorFilter === 'All' || student.major === majorFilter;
+
 		const matchesSearch =
 			(student.name ?? '').toLowerCase().includes(searchText.toLowerCase()) ||
 			(student.email ?? '').toLowerCase().includes(searchText.toLowerCase()) ||
