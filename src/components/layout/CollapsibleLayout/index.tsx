@@ -25,13 +25,16 @@ const CollapsibleLayout: React.FC<CollapsibleLayoutProps> = ({
 	const {
 		token: { colorBgContainer, borderRadiusLG },
 	} = theme.useToken();
-
 	const handleMobileMenuClick = () => {
 		// Auto close sidebar on mobile when clicking menu items
 		if (isMobile) {
 			setSidebarCollapsed(true);
 		}
 	};
+
+	// Calculate main layout margin left
+	const mainLayoutMarginLeft = isMobile ? 0 : sidebarCollapsed ? 80 : 250;
+
 	return (
 		<div
 			style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}
@@ -42,7 +45,6 @@ const CollapsibleLayout: React.FC<CollapsibleLayoutProps> = ({
 					isVisible={isMobile && !sidebarCollapsed}
 					onClose={() => setSidebarCollapsed(true)}
 				/>
-
 				{/* Sidebar */}
 				<SidebarSection
 					collapsed={sidebarCollapsed}
@@ -50,12 +52,11 @@ const CollapsibleLayout: React.FC<CollapsibleLayoutProps> = ({
 					onMenuClick={handleMobileMenuClick}
 				>
 					{sidebar}
-				</SidebarSection>
-
+				</SidebarSection>{' '}
 				{/* Main Layout */}
 				<Layout
 					style={{
-						marginLeft: isMobile ? 0 : sidebarCollapsed ? 80 : 250,
+						marginLeft: mainLayoutMarginLeft,
 						transition: 'margin-left 0.2s',
 					}}
 				>
