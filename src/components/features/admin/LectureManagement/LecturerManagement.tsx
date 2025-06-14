@@ -71,9 +71,9 @@ export default function LecturerManagement() {
 	const filteredData = data.filter((lecturer) => {
 		const matchesStatus =
 			statusFilter === 'All' || lecturer.status === statusFilter;
-		const matchesSearch =
-			(lecturer.name ?? '').toLowerCase().includes(searchText.toLowerCase()) ||
-			(lecturer.email ?? '').toLowerCase().includes(searchText.toLowerCase());
+		const matchesSearch = [lecturer.name, lecturer.email].some((field) =>
+			(field ?? '').toLowerCase().includes(searchText.toLowerCase()),
+		);
 
 		return matchesStatus && matchesSearch;
 	});
