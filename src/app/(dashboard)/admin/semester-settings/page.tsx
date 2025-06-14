@@ -1,4 +1,4 @@
-import SemesterSettings from '@/components/features/admin/SemesterSettings';
+import SemesterSettings from '@/components/features/admin/SemesterSetting/SemesterSettings';
 
 export default function AdminSemesterSettingsPage() {
 	return (
