@@ -1,0 +1,58 @@
+import { Student } from '@/types/student';
+
+export const mockStudents: Student[] = [
+	{
+		key: '1',
+		name: 'Alice Nguyen',
+		email: 'alice.nguyen@student.edu',
+		studentID: 'ST0001',
+		major: 'SE',
+		gender: 'Female',
+		status: 'Active',
+	},
+	{
+		key: '2',
+		name: 'Bob Tran',
+		email: 'bob.tran@student.edu',
+		studentID: 'ST0002',
+		major: 'AI',
+		gender: 'Male',
+		status: 'Inactive',
+	},
+	{
+		key: '3',
+		name: 'Alice Nguyen',
+		email: 'alice.nguyen@student.edu',
+		studentID: 'ST0003',
+		major: 'SE',
+		gender: 'Female',
+		status: 'Active',
+	},
+	{
+		key: '4',
+		name: 'Bob Tran',
+		email: 'bob.tran@student.edu',
+		studentID: 'ST0004',
+		major: 'AI',
+		gender: 'Male',
+		status: 'Inactive',
+	},
+	{
+		key: '5',
+		name: 'Alice Nguyen',
+		email: 'alice.nguyen@student.edu',
+		studentID: 'ST0005',
+		major: 'SE',
+		gender: 'Female',
+		status: 'Active',
+	},
+	{
+		key: '6',
+		name: 'Bob Tran',
+		email: 'bob.tran@student.edu',
+		studentID: 'ST0006',
+		major: 'AI',
+		gender: 'Male',
+		status: 'Inactive',
+	},
+];

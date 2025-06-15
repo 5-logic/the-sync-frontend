@@ -2,45 +2,17 @@
 
 import { useState } from 'react';
 
+import { mockStudents } from '@/data/student';
+import { Student } from '@/types/student';
+
 import StudentFilterBar from './StudentFilterBar';
 import StudentTable from './StudentTable';
-
-export interface Student {
-	key: string;
-	name: string;
-	email: string;
-	studentID: string;
-	major: string;
-	gender: 'Male' | 'Female';
-	status: 'Active' | 'Inactive';
-}
-
-const initialData: Student[] = [
-	{
-		key: '1',
-		name: 'Alice Nguyen',
-		email: 'alice.nguyen@student.edu',
-		studentID: 'ST0001',
-		major: 'SE',
-		gender: 'Female',
-		status: 'Active',
-	},
-	{
-		key: '2',
-		name: 'Bob Tran',
-		email: 'bob.tran@student.edu',
-		studentID: 'ST0002',
-		major: 'AI',
-		gender: 'Male',
-		status: 'Inactive',
-	},
-];
 
 export default function StudentManagement() {
 	const [statusFilter, setStatusFilter] = useState('All');
 	const [majorFilter, setMajorFilter] = useState('All');
 	const [searchText, setSearchText] = useState('');
-	const [data] = useState<Student[]>(initialData);
+	const [data] = useState<Student[]>(mockStudents);
 
 	const filteredData = data.filter((student) => {
 		const matchesStatus =
