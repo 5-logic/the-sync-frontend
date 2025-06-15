@@ -1,11 +1,11 @@
 'use client';
 
 import { SearchOutlined } from '@ant-design/icons';
-import { Input, Select } from 'antd';
+import { Col, Input, Row, Select } from 'antd';
+
+import { SemesterStatus, SemesterStatusSchema } from '@/schemas/_enums';
 
 const { Option } = Select;
-
-type SemesterStatus = 'Not yet' | 'On-going' | 'End';
 
 const SearchFilterBar = ({
 	statusFilter,
@@ -17,27 +17,52 @@ const SearchFilterBar = ({
 	setStatusFilter: (value: SemesterStatus | 'All') => void;
 	searchText: string;
 	setSearchText: (value: string) => void;
-}) => (
-	<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-		<Input
-			prefix={<SearchOutlined className="text-gray-400" />}
-			placeholder="Search"
-			className="w-full sm:w-80"
-			value={searchText}
-			onChange={(e) => setSearchText(e.target.value)}
-		/>
+}) => {
+	const getStatusLabel = (status: SemesterStatus): string => {
+		const statusLabels: Record<SemesterStatus, string> = {
+			NotYet: 'Not Yet',
+			Preparing: 'Preparing',
+			Picking: 'Picking',
+			Ongoing: 'Ongoing',
+			End: 'End',
+		};
+		return statusLabels[status];
+	};
 
-		<Select
-			className="w-full sm:w-48"
-			value={statusFilter}
-			onChange={setStatusFilter}
+	return (
+		<Row
+			justify="space-between"
+			align="middle"
+			style={{ marginBottom: '16px' }}
 		>
-			<Option value="All">All Status</Option>
-			<Option value="Not yet">Not yet</Option>
-			<Option value="On-going">On-going</Option>
-			<Option value="End">End</Option>
-		</Select>
-	</div>
-);
+			<Col xs={24} sm={12}>
+				<Input
+					prefix={<SearchOutlined style={{ color: '#d9d9d9' }} />}
+					placeholder="Search Semester"
+					style={{ width: '100%', maxWidth: '320px' }}
+					value={searchText}
+					onChange={(e) => setSearchText(e.target.value)}
+				/>
+			</Col>
+
+			<Col xs={24} sm={12}>
+				<div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+					<Select
+						style={{ width: '100%', maxWidth: '192px' }}
+						value={statusFilter}
+						onChange={setStatusFilter}
+					>
+						<Option value="All">All Status</Option>
+						{SemesterStatusSchema.options.map((status) => (
+							<Option key={status} value={status}>
+								{getStatusLabel(status)}
+							</Option>
+						))}
+					</Select>
+				</div>
+			</Col>
+		</Row>
+	);
+};
 
 export default SearchFilterBar;
