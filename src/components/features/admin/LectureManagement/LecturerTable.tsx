@@ -1,10 +1,11 @@
 'use client';
 
-import { Lecturer } from '.';
 import { Switch, Table, Tag } from 'antd';
 
+import { ExtendedLecturer } from '@/types/lecturer';
+
 type Props = Readonly<{
-	data: Lecturer[];
+	data: ExtendedLecturer[];
 	onTogglePermission: (key: string) => void;
 }>;
 
@@ -30,7 +31,7 @@ export default function LecturerTable({ data, onTogglePermission }: Props) {
 			title: 'Special Permission',
 			dataIndex: 'specialPermission',
 			key: 'specialPermission',
-			render: (_: string, record: Lecturer) => (
+			render: (_: string, record: ExtendedLecturer) => (
 				<Switch
 					checked={record.specialPermission}
 					onChange={() => onTogglePermission(record.key)}
