@@ -1,32 +1,30 @@
 import { z } from 'zod';
 
 export const ApiResponseSchema = <T extends z.ZodTypeAny>(dataSchema: T) =>
-	z.object({
-		data: dataSchema,
-		message: z.string().optional(),
-		success: z.boolean(),
-	});
-
-export const PaginatedResponseSchema = <T extends z.ZodTypeAny>(
-	dataSchema: T,
-) =>
-	z.object({
-		data: z.array(dataSchema),
-		total: z.number().int().nonnegative(),
-		page: z.number().int().positive(),
-		limit: z.number().int().positive(),
-	});
+	z.discriminatedUnion('success', [
+		// Success case
+		z.object({
+			success: z.literal(true),
+			statusCode: z.number(),
+			data: dataSchema,
+		}),
+		// Error case
+		z.object({
+			success: z.literal(false),
+			statusCode: z.number(),
+			error: z.string(),
+		}),
+	]);
 
 // Export inferred types
-export type ApiResponse<T> = {
-	data: T;
-	message?: string;
-	success: boolean;
-};
-
-export type PaginatedResponse<T> = {
-	data: T[];
-	total: number;
-	page: number;
-	limit: number;
-};
+export type ApiResponse<T> =
+	| {
+			success: true;
+			statusCode: number;
+			data: T;
+	  }
+	| {
+			success: false;
+			statusCode: number;
+			error: string;
+	  };
