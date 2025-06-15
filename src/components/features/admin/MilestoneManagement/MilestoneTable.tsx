@@ -1,7 +1,7 @@
 'use client';
 
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
-import { Table } from 'antd';
+import { Button, Space, Table, Tooltip } from 'antd';
 
 import { Milestone } from '@/types/milestone';
 
@@ -19,10 +19,14 @@ export default function MilestoneTable({ data }: Props) {
 			title: 'Actions',
 			key: 'actions',
 			render: () => (
-				<div className="flex gap-2">
-					<EditOutlined className="text-yellow-500 cursor-pointer" />
-					<DeleteOutlined className="text-red-500 cursor-pointer" />
-				</div>
+				<Space size="middle">
+					<Tooltip title="Edit">
+						<Button icon={<EditOutlined />} size="small" type="text" />
+					</Tooltip>
+					<Tooltip title="Delete">
+						<Button icon={<DeleteOutlined />} size="small" danger type="text" />
+					</Tooltip>
+				</Space>
 			),
 		},
 	];
