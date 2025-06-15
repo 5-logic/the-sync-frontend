@@ -21,8 +21,8 @@ export const mockStudents: Student[] = [
 	},
 	{
 		key: '3',
-		name: 'Alice Nguyen',
-		email: 'alice.nguyen@student.edu',
+		name: 'hihi',
+		email: 'rfc@student.edu',
 		studentID: 'ST0003',
 		major: 'SE',
 		gender: 'Female',
@@ -30,8 +30,8 @@ export const mockStudents: Student[] = [
 	},
 	{
 		key: '4',
-		name: 'Bob Tran',
-		email: 'bob.tran@student.edu',
+		name: 'huhu',
+		email: 'azxdf@student.edu',
 		studentID: 'ST0004',
 		major: 'AI',
 		gender: 'Male',
@@ -39,8 +39,8 @@ export const mockStudents: Student[] = [
 	},
 	{
 		key: '5',
-		name: 'Alice Nguyen',
-		email: 'alice.nguyen@student.edu',
+		name: 'haha',
+		email: 'ert@student.edu',
 		studentID: 'ST0005',
 		major: 'SE',
 		gender: 'Female',
@@ -48,8 +48,8 @@ export const mockStudents: Student[] = [
 	},
 	{
 		key: '6',
-		name: 'Bob Tran',
-		email: 'bob.tran@student.edu',
+		name: 'hohho',
+		email: 'jhgf@student.edu',
 		studentID: 'ST0006',
 		major: 'AI',
 		gender: 'Male',
