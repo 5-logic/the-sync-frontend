@@ -1,8 +1,7 @@
 'use client';
 
+import { Lecturer } from '.';
 import { Switch, Table, Tag } from 'antd';
-
-import { Lecturer } from './LecturerManagement';
 
 type Props = Readonly<{
 	data: Lecturer[];

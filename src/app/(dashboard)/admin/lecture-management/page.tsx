@@ -1,4 +1,4 @@
-import LecturerManagement from '@/components/features/admin/LectureManagement/LecturerManagement';
+import LecturerManagement from '@/components/features/admin/LectureManagement';
 
 export default function AdminLectureManagementPage() {
 	return (
