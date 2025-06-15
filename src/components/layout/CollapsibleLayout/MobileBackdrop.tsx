@@ -10,7 +10,6 @@ export const MobileBackdrop: React.FC<MobileBackdropProps> = ({
 	onClose,
 }) => {
 	if (!isVisible) return null;
-
 	return (
 		<div
 			style={{
@@ -24,6 +23,14 @@ export const MobileBackdrop: React.FC<MobileBackdropProps> = ({
 				transition: 'opacity 0.2s',
 			}}
 			onClick={onClose}
+			role="button"
+			tabIndex={0}
+			onKeyDown={(e) => {
+				if (e.key === 'Enter' || e.key === ' ') {
+					onClose();
+				}
+			}}
+			aria-label="Close modal"
 		/>
 	);
 };
