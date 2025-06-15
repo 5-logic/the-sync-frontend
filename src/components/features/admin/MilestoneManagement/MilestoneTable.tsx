@@ -5,9 +5,9 @@ import { Button, Space, Table, Tooltip } from 'antd';
 
 import { Milestone } from '@/types/milestone';
 
-type Props = {
+type Props = Readonly<{
 	data: Milestone[];
-};
+}>;
 
 export default function MilestoneTable({ data }: Props) {
 	const columns = [

@@ -19,16 +19,20 @@ export default function MilestoneManagement() {
 
 			<div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-white p-4 rounded-xl shadow mb-6">
 				<div>
-					<label className="block text-sm font-medium mb-1">
+					<label
+						htmlFor="milestoneName"
+						className="block text-sm font-medium mb-1"
+					>
 						Milestone Name<span className="text-red-500">*</span>
 					</label>
-					<Input placeholder="Enter milestone name" />
+					<Input id="milestoneName" placeholder="Enter milestone name" />
 				</div>
 				<div>
-					<label className="block text-sm font-medium mb-1">
+					<label htmlFor="semester" className="block text-sm font-medium mb-1">
 						Semester<span className="text-red-500">*</span>
 					</label>
 					<Select
+						id="semester"
 						placeholder="Select semester"
 						options={[
 							{ value: 'Fall 2023', label: 'Fall 2023' },
@@ -39,11 +43,12 @@ export default function MilestoneManagement() {
 					/>
 				</div>
 				<div>
-					<label className="block text-sm font-medium mb-1">
+					<label id="duration-label" className="block text-sm font-medium mb-1">
 						Duration<span className="text-red-500">*</span>
 					</label>
-					<RangePicker className="w-full" />
+					<RangePicker className="w-full" aria-labelledby="duration-label" />
 				</div>
+
 				<div className="md:col-span-3 text-right">
 					<Button type="primary">+ Create New Milestone</Button>
 				</div>
