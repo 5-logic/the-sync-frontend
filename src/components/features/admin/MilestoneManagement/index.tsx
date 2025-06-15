@@ -43,10 +43,13 @@ export default function MilestoneManagement() {
 					/>
 				</div>
 				<div>
-					<label id="duration-label" className="block text-sm font-medium mb-1">
+					<label
+						htmlFor="duration-picker"
+						className="block text-sm font-medium mb-1"
+					>
 						Duration<span className="text-red-500">*</span>
 					</label>
-					<RangePicker className="w-full" aria-labelledby="duration-label" />
+					<RangePicker id="duration-picker" className="w-full" />
 				</div>
 
 				<div className="md:col-span-3 text-right">
