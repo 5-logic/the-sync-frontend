@@ -37,7 +37,6 @@ export default function MilestoneTable({ data }: Props) {
 					`${range[0]}-${range[1]} of ${total} items`,
 				showSizeChanger: true,
 				pageSizeOptions: ['5', '10', '20', '50'],
-				defaultPageSize: 5,
 			}}
 			scroll={{ x: 'max-content' }}
 		/>

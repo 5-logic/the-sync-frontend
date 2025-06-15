@@ -33,6 +33,7 @@ export default function MilestoneManagement() {
 						options={[
 							{ value: 'Fall 2023', label: 'Fall 2023' },
 							{ value: 'Spring 2024', label: 'Spring 2024' },
+							{ value: 'Summer 2024', label: 'Summer 2024' },
 						]}
 						className="w-full"
 					/>
