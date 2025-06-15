@@ -1,8 +1,7 @@
 'use client';
 
+import { Student } from '.';
 import { Table, Tag } from 'antd';
-
-import { Student } from './StudentManagement';
 
 type Props = Readonly<{
 	data: Student[];

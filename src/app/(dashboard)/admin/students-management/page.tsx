@@ -1,4 +1,4 @@
-import StudentManagement from '@/components/features/admin/StudentManagement/StudentManagement';
+import StudentManagement from '@/components/features/admin/StudentManagement';
 
 export default function AdminStudentsManagementPage() {
 	return (
