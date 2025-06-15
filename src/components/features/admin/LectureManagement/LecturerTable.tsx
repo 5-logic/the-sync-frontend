@@ -44,7 +44,12 @@ export default function LecturerTable({ data, onTogglePermission }: Props) {
 		<Table
 			columns={columns}
 			dataSource={data}
-			pagination={{ pageSize: 10 }}
+			pagination={{
+				showTotal: (total, range) =>
+					`${range[0]}-${range[1]} of ${total} items`,
+				showSizeChanger: true,
+				pageSizeOptions: ['5', '10', '20', '50'],
+			}}
 			rowKey="key"
 			scroll={{ x: 'max-content' }}
 		/>
