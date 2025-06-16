@@ -1,7 +1,7 @@
 'use client';
 
 import { PlusOutlined, SearchOutlined } from '@ant-design/icons';
-import { Button, Input, Select } from 'antd';
+import { Button, Col, Input, Row, Select } from 'antd';
 
 const { Option } = Select;
 
@@ -12,6 +12,7 @@ type Props = Readonly<{
 	setMajorFilter: (value: string) => void;
 	searchText: string;
 	setSearchText: (value: string) => void;
+	onCreateStudent: () => void;
 }>;
 
 export default function StudentFilterBar({
@@ -21,45 +22,66 @@ export default function StudentFilterBar({
 	setMajorFilter,
 	searchText,
 	setSearchText,
+	onCreateStudent,
 }: Props) {
 	return (
-		<div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-4 flex-wrap">
-			<div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
-				<Select
-					value={statusFilter}
-					onChange={setStatusFilter}
-					className="w-full md:w-40"
-				>
-					<Option value="All">All Status</Option>
-					<Option value="Active">Active</Option>
-					<Option value="Inactive">Inactive</Option>
-				</Select>
+		<Row
+			gutter={[8, 16]}
+			align="middle"
+			justify="space-between"
+			style={{ marginBottom: 16 }}
+		>
+			<Col xs={24} md={18}>
+				<Row gutter={[8, 8]} wrap>
+					<Col>
+						<Select
+							value={statusFilter}
+							onChange={setStatusFilter}
+							style={{ width: 120 }}
+							size="middle"
+						>
+							<Option value="All">All Status</Option>
+							<Option value="Active">Active</Option>
+							<Option value="Inactive">Inactive</Option>
+						</Select>
+					</Col>
 
-				<Select
-					value={majorFilter}
-					onChange={setMajorFilter}
-					className="w-full md:w-40"
-				>
-					<Option value="All">All Majors</Option>
-					<Option value="SE">SE</Option>
-					<Option value="AI">AI</Option>
-				</Select>
+					<Col>
+						<Select
+							value={majorFilter}
+							onChange={setMajorFilter}
+							style={{ width: 120 }}
+							size="middle"
+						>
+							<Option value="All">All Majors</Option>
+							<Option value="SE">SE</Option>
+							<Option value="AI">AI</Option>
+						</Select>
+					</Col>
 
-				<Input
-					placeholder="Search by name, email, or student ID"
-					value={searchText}
-					onChange={(e) => setSearchText(e.target.value)}
-					prefix={<SearchOutlined className="text-gray-400" />}
-					className="w-full md:w-150 mr-45"
-				/>
-			</div>
-			<Button
-				icon={<PlusOutlined />}
-				type="primary"
-				className="w-full md:w-auto"
-			>
-				Create New Student
-			</Button>
-		</div>
+					<Col>
+						<Input
+							placeholder="Search by name, email, ID"
+							value={searchText}
+							onChange={(e) => setSearchText(e.target.value)}
+							prefix={<SearchOutlined />}
+							style={{ width: 220 }}
+							size="middle"
+						/>
+					</Col>
+				</Row>
+			</Col>
+
+			<Col xs={24} md={6} style={{ textAlign: 'right' }}>
+				<Button
+					icon={<PlusOutlined />}
+					type="primary"
+					block
+					onClick={onCreateStudent}
+				>
+					Create New Student
+				</Button>
+			</Col>
+		</Row>
 	);
 }

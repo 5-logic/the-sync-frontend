@@ -1,9 +1,10 @@
 'use client';
 
+import { Typography } from 'antd';
 import { useState } from 'react';
 
 import { mockStudents } from '@/data/student';
-import { Student } from '@/types/student';
+import { Student } from '@/schemas/student';
 
 import StudentFilterBar from './StudentFilterBar';
 import StudentTable from './StudentTable';
@@ -16,20 +17,28 @@ export default function StudentManagement() {
 
 	const filteredData = data.filter((student) => {
 		const matchesStatus =
-			statusFilter === 'All' || student.status === statusFilter;
+			statusFilter === 'All' ||
+			student.isActive === (statusFilter === 'Active');
 
-		const matchesMajor = majorFilter === 'All' || student.major === majorFilter;
+		const matchesMajor =
+			majorFilter === 'All' || student.majorId === majorFilter;
 
-		const matchesSearch = [student.name, student.email, student.studentID].some(
-			(field) => (field ?? '').toLowerCase().includes(searchText.toLowerCase()),
+		const matchesSearch = [
+			student.fullName,
+			student.email,
+			student.studentId,
+		].some((field) =>
+			(field ?? '').toLowerCase().includes(searchText.toLowerCase()),
 		);
 
 		return matchesStatus && matchesMajor && matchesSearch;
 	});
 
+	const { Title } = Typography;
 	return (
-		<div className="px-4 py-4 sm:px-6 lg:px-8">
-			<h2 className="text-2xl font-semibold mb-6">Student Management</h2>
+		<div style={{ padding: 24 }}>
+			<Title level={2}>Student Management</Title>
+
 			<StudentFilterBar
 				statusFilter={statusFilter}
 				setStatusFilter={setStatusFilter}
@@ -37,7 +46,11 @@ export default function StudentManagement() {
 				setMajorFilter={setMajorFilter}
 				searchText={searchText}
 				setSearchText={setSearchText}
+				onCreateStudent={function (): void {
+					throw new Error('Function not implemented.');
+				}}
 			/>
+
 			<StudentTable data={filteredData} />
 		</div>
 	);

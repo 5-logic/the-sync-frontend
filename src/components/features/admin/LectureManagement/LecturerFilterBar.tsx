@@ -1,7 +1,7 @@
 'use client';
 
 import { PlusOutlined, SearchOutlined } from '@ant-design/icons';
-import { Button, Input, Select } from 'antd';
+import { Button, Col, Input, Row, Select } from 'antd';
 
 const { Option } = Select;
 
@@ -21,35 +21,48 @@ export default function LecturerFilterBar({
 	onCreateLecturer,
 }: Props) {
 	return (
-		<div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-4 flex-wrap">
-			<div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
-				<Select
-					value={statusFilter}
-					onChange={setStatusFilter}
-					className="w-full md:w-40"
+		<Row
+			gutter={[8, 16]}
+			align="middle"
+			justify="space-between"
+			style={{ marginBottom: 16 }}
+		>
+			<Col xs={24} md={18}>
+				<Row gutter={[8, 8]} wrap>
+					<Col>
+						<Select
+							value={statusFilter}
+							onChange={setStatusFilter}
+							style={{ width: 120 }}
+							placeholder="Select Status"
+						>
+							<Option value="all">All Status</Option>
+							<Option value="active">Active</Option>
+							<Option value="inactive">Inactive</Option>
+						</Select>
+					</Col>
+					<Col>
+						<Input
+							placeholder="Search by name, email"
+							value={searchText}
+							onChange={(e) => setSearchText(e.target.value)}
+							prefix={<SearchOutlined style={{ color: '#aaa' }} />}
+							style={{ width: 200 }}
+						/>
+					</Col>
+				</Row>
+			</Col>
+
+			<Col xs={24} md={6} style={{ textAlign: 'right' }}>
+				<Button
+					icon={<PlusOutlined />}
+					type="primary"
+					onClick={onCreateLecturer}
+					block
 				>
-					<Option value="all">All Status</Option>
-					<Option value="active">Active</Option>
-					<Option value="inactive">Inactive</Option>
-				</Select>
-
-				<Input
-					placeholder="Search by name, email"
-					value={searchText}
-					onChange={(e) => setSearchText(e.target.value)}
-					prefix={<SearchOutlined className="text-gray-400" />}
-					className="w-full md:w-60 flex-1"
-				/>
-			</div>
-
-			<Button
-				icon={<PlusOutlined />}
-				type="primary"
-				className="w-full md:w-auto"
-				onClick={onCreateLecturer}
-			>
-				Create New Lecturer
-			</Button>
-		</div>
+					Create New Lecturer
+				</Button>
+			</Col>
+		</Row>
 	);
 }
