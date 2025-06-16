@@ -6,27 +6,46 @@ import {
 	Col,
 	Form,
 	Input,
+	InputNumber,
 	Row,
-	Select,
 	Space,
 	Typography,
+	message,
 } from 'antd';
 import type { FormInstance } from 'antd/es/form';
 
-const { Option } = Select;
+import semesterService from '@/lib/services/semesters.service';
+import { SemesterCreate } from '@/schemas/semester';
+
 const { Title } = Typography;
 
-const SemesterForm = ({ form }: { form: FormInstance }) => {
-	const generateYearOptions = () => {
-		const currentYear = new Date().getFullYear();
-		const years = [];
-		for (let i = 0; i <= 20; i++) {
-			years.push(currentYear + i);
-		}
-		return years;
-	};
+interface SemesterFormProps {
+	form: FormInstance;
+	onSuccess?: () => void;
+}
 
-	const yearOptions = generateYearOptions();
+const SemesterForm = ({ form, onSuccess }: SemesterFormProps) => {
+	const handleSubmit = async (values: SemesterCreate) => {
+		try {
+			const semesterData: SemesterCreate = {
+				...values,
+				status: 'NotYet',
+			};
+
+			const response = await semesterService.create(semesterData);
+
+			if (response.success) {
+				message.success('Semester created successfully');
+				form.resetFields();
+				onSuccess?.();
+			} else {
+				message.error('Failed to create semester');
+			}
+		} catch (error) {
+			console.error('Error creating semester:', error);
+			message.error('Error creating semester');
+		}
+	};
 
 	return (
 		<Card>
@@ -35,41 +54,42 @@ const SemesterForm = ({ form }: { form: FormInstance }) => {
 					Add New Semester
 				</Title>
 
-				<Form form={form} layout="vertical">
+				<Form form={form} layout="vertical" onFinish={handleSubmit}>
 					<Row gutter={16}>
 						<Col xs={24} md={12}>
 							<Form.Item
-								name="season"
-								label="Season"
+								name="name"
+								label="Semester Name"
 								rules={[
-									{ required: true, message: 'Season of semester is required' },
+									{ required: true, message: 'Semester name is required' },
+									{
+										max: 100,
+										message: 'Name must be less than 100 characters',
+									},
 								]}
 								required
 							>
-								<Select placeholder="Select the season of semester">
-									<Option value="Spring">Spring</Option>
-									<Option value="Summer">Summer</Option>
-									<Option value="Fall">Fall</Option>
-								</Select>
+								<Input
+									placeholder="Enter semester name (e.g., Spring 2025)"
+									maxLength={100}
+								/>
 							</Form.Item>
 						</Col>
 
 						<Col xs={24} md={12}>
 							<Form.Item
-								name="year"
-								label="Year"
+								name="code"
+								label="Semester Code"
 								rules={[
-									{ required: true, message: 'Year for semester is required' },
+									{ required: true, message: 'Semester code is required' },
+									{ max: 20, message: 'Code must be less than 20 characters' },
 								]}
 								required
 							>
-								<Select placeholder="Select the year for semester">
-									{yearOptions.map((year) => (
-										<Option key={year} value={year.toString()}>
-											{year}
-										</Option>
-									))}
-								</Select>
+								<Input
+									placeholder="Enter semester code (e.g., SP25)"
+									maxLength={20}
+								/>
 							</Form.Item>
 						</Col>
 					</Row>
@@ -79,9 +99,10 @@ const SemesterForm = ({ form }: { form: FormInstance }) => {
 							Semester Policy
 						</Title>
 						<Form.Item name="maxGroup" label="Max Group">
-							<Input
+							<InputNumber
 								placeholder="Enter maximum number of groups"
-								type="number"
+								min={1}
+								style={{ width: '100%' }}
 							/>
 						</Form.Item>
 					</Space>
