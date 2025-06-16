@@ -1,10 +1,11 @@
 'use client';
 
-import { Button, DatePicker, Input, Select } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
+import { Button, Col, DatePicker, Form, Input, Row, Select } from 'antd';
 import { useState } from 'react';
 
 import { initialMilestoneData } from '@/data/mileStone';
-import { Milestone } from '@/types/milestone';
+import { Milestone } from '@/schemas/milestone';
 
 import MilestoneTable from './MilestoneTable';
 
@@ -14,50 +15,63 @@ export default function MilestoneManagement() {
 	const [data] = useState<Milestone[]>(initialMilestoneData);
 
 	return (
-		<div className="px-4 py-4 sm:px-6 lg:px-8">
-			<h2 className="text-2xl font-semibold mb-6">Milestones Management</h2>
+		<div style={{ padding: 24 }}>
+			<h2 style={{ fontSize: 24, fontWeight: 600, marginBottom: 24 }}>
+				Milestones Management
+			</h2>
 
-			<div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-white p-4 rounded-xl shadow mb-6">
-				<div>
-					<label
-						htmlFor="milestoneName"
-						className="block text-sm font-medium mb-1"
-					>
-						Milestone Name<span className="text-red-500">*</span>
-					</label>
-					<Input id="milestoneName" placeholder="Enter milestone name" />
-				</div>
-				<div>
-					<label htmlFor="semester" className="block text-sm font-medium mb-1">
-						Semester<span className="text-red-500">*</span>
-					</label>
-					<Select
-						id="semester"
-						placeholder="Select semester"
-						options={[
-							{ value: 'Fall 2023', label: 'Fall 2023' },
-							{ value: 'Spring 2024', label: 'Spring 2024' },
-							{ value: 'Summer 2024', label: 'Summer 2024' },
-						]}
-						className="w-full"
-					/>
-				</div>
-				<div>
-					<label
-						htmlFor="duration-picker"
-						className="block text-sm font-medium mb-1"
-					>
-						Duration<span className="text-red-500">*</span>
-					</label>
-					<RangePicker id="duration-picker" className="w-full" />
-				</div>
+			<Form layout="vertical">
+				<Row gutter={16}>
+					<Col xs={24} md={8}>
+						<Form.Item
+							label="Milestone Name"
+							name="milestoneName"
+							rules={[
+								{ required: true, message: 'Please enter milestone name' },
+							]}
+						>
+							<Input placeholder="Enter milestone name" />
+						</Form.Item>
+					</Col>
 
-				<div className="md:col-span-3 text-right">
-					<Button type="primary">+ Create New Milestone</Button>
-				</div>
+					<Col xs={24} md={8}>
+						<Form.Item
+							label="Semester"
+							name="semester"
+							rules={[{ required: true, message: 'Please select semester' }]}
+						>
+							<Select
+								placeholder="Select semester"
+								options={[
+									{ value: 'Fall 2023', label: 'Fall 2023' },
+									{ value: 'Spring 2024', label: 'Spring 2024' },
+									{ value: 'Summer 2024', label: 'Summer 2024' },
+								]}
+							/>
+						</Form.Item>
+					</Col>
+
+					<Col xs={24} md={8}>
+						<Form.Item
+							label="Duration"
+							name="duration"
+							rules={[{ required: true, message: 'Please select duration' }]}
+						>
+							<RangePicker className="w-full" />
+						</Form.Item>
+					</Col>
+				</Row>
+
+				<Row justify="end">
+					<Button type="primary" icon={<PlusOutlined />}>
+						Create New Milestone
+					</Button>
+				</Row>
+			</Form>
+
+			<div style={{ marginTop: 32 }}>
+				<MilestoneTable data={data} />
 			</div>
-
-			<MilestoneTable data={data} />
 		</div>
 	);
 }

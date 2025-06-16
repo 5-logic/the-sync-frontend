@@ -1,39 +1,55 @@
-import { Milestone } from '@/types/milestone';
+import { Milestone } from '@/schemas/milestone';
+
+// Tạm thời hard-code semesterId (giống database UUID)
+const SEMESTERS = {
+	FALL_2023: 'f1234567-aaaa-bbbb-cccc-111111111111',
+	SPRING_2024: 's1234567-aaaa-bbbb-cccc-222222222222',
+};
+
+function createMilestone(
+	name: string,
+	semesterId: string,
+	start: string,
+	end: string,
+): Milestone {
+	return {
+		id: crypto.randomUUID(),
+		name,
+		semesterId,
+		startDate: new Date(start),
+		endDate: new Date(end),
+	};
+}
 
 export const initialMilestoneData: Milestone[] = [
-	{
-		key: '1',
-		name: 'Project Proposal',
-		semester: 'Fall 2023',
-		startDate: '2023-09-01',
-		endDate: '2023-09-15',
-	},
-	{
-		key: '2',
-		name: 'Literature Review',
-		semester: 'Fall 2023',
-		startDate: '2023-09-16',
-		endDate: '2023-10-15',
-	},
-	{
-		key: '3',
-		name: 'Methodology',
-		semester: 'Fall 2023',
-		startDate: '2023-10-16',
-		endDate: '2023-11-15',
-	},
-	{
-		key: '4',
-		name: 'Progress Report',
-		semester: 'Spring 2024',
-		startDate: '2024-01-15',
-		endDate: '2024-02-15',
-	},
-	{
-		key: '5',
-		name: 'Final Presentation',
-		semester: 'Spring 2024',
-		startDate: '2024-04-15',
-		endDate: '2024-05-15',
-	},
+	createMilestone(
+		'Project Proposal',
+		SEMESTERS.FALL_2023,
+		'2023-09-01',
+		'2023-09-15',
+	),
+	createMilestone(
+		'Literature Review',
+		SEMESTERS.FALL_2023,
+		'2023-09-16',
+		'2023-10-15',
+	),
+	createMilestone(
+		'Methodology',
+		SEMESTERS.FALL_2023,
+		'2023-10-16',
+		'2023-11-15',
+	),
+	createMilestone(
+		'Progress Report',
+		SEMESTERS.SPRING_2024,
+		'2024-01-15',
+		'2024-02-15',
+	),
+	createMilestone(
+		'Final Presentation',
+		SEMESTERS.SPRING_2024,
+		'2024-04-15',
+		'2024-05-15',
+	),
 ];
