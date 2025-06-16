@@ -1,10 +1,10 @@
 import { z } from 'zod';
 
 import { SkillLevelSchema } from '@/schemas/_enums';
+import { UserSchema } from '@/schemas/user';
 
-export const StudentSchema = z.object({
-	userId: z.string().uuid(),
-	studentId: z.string().min(1),
+export const StudentSchema = UserSchema.extend({
+	studentId: z.string().min(1).max(6),
 	majorId: z.string().uuid(),
 });
 
