@@ -13,8 +13,9 @@ import {
 	Table,
 	Tag,
 	Tooltip,
-	message,
+	notification,
 } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
 import {
 	forwardRef,
 	useCallback,
@@ -34,6 +35,30 @@ export interface SemesterTableRef {
 	refresh: () => Promise<void>;
 }
 
+const STATUS_ORDER: SemesterStatus[] = [
+	'NotYet',
+	'Preparing',
+	'Picking',
+	'Ongoing',
+	'End',
+];
+
+const STATUS_TAG: Record<SemesterStatus, JSX.Element> = {
+	NotYet: <Tag color="blue">Not Yet</Tag>,
+	Preparing: <Tag color="orange">Preparing</Tag>,
+	Picking: <Tag color="purple">Picking</Tag>,
+	Ongoing: <Tag color="green">Ongoing</Tag>,
+	End: <Tag color="gray">End</Tag>,
+};
+
+const STATUS_LABELS: Record<SemesterStatus, string> = {
+	NotYet: 'Not Yet',
+	Preparing: 'Preparing',
+	Picking: 'Picking',
+	Ongoing: 'Ongoing',
+	End: 'End',
+};
+
 const SemesterTable = forwardRef<
 	SemesterTableRef,
 	{
@@ -49,34 +74,8 @@ const SemesterTable = forwardRef<
 	>();
 	const [semesters, setSemesters] = useState<Semester[]>([]);
 	const [loading, setLoading] = useState(false);
+	const [updateLoading, setUpdateLoading] = useState(false);
 	const [isFormChanged, setIsFormChanged] = useState(false);
-
-	const statusOrder: SemesterStatus[] = useMemo(
-		() => ['NotYet', 'Preparing', 'Picking', 'Ongoing', 'End'],
-		[],
-	);
-
-	const statusTag: Record<SemesterStatus, JSX.Element> = useMemo(
-		() => ({
-			NotYet: <Tag color="blue">Not Yet</Tag>,
-			Preparing: <Tag color="orange">Preparing</Tag>,
-			Picking: <Tag color="purple">Picking</Tag>,
-			Ongoing: <Tag color="green">Ongoing</Tag>,
-			End: <Tag color="gray">End</Tag>,
-		}),
-		[],
-	);
-
-	const statusLabels: Record<SemesterStatus, string> = useMemo(
-		() => ({
-			NotYet: 'Not Yet',
-			Preparing: 'Preparing',
-			Picking: 'Picking',
-			Ongoing: 'Ongoing',
-			End: 'End',
-		}),
-		[],
-	);
 
 	const fetchSemesters = useCallback(async () => {
 		try {
@@ -85,11 +84,19 @@ const SemesterTable = forwardRef<
 			if (response.success && response.data) {
 				setSemesters(response.data);
 			} else {
-				message.error('Failed to fetch semesters');
+				notification.error({
+					message: 'Error',
+					description: 'Failed to fetch semesters',
+					placement: 'bottomRight',
+				});
 			}
 		} catch (error) {
 			console.error('Error fetching semesters:', error);
-			message.error('Error fetching semesters');
+			notification.error({
+				message: 'Error',
+				description: 'Error fetching semesters',
+				placement: 'bottomRight',
+			});
 		} finally {
 			setLoading(false);
 		}
@@ -109,26 +116,27 @@ const SemesterTable = forwardRef<
 
 	const getAvailableStatuses = useCallback(
 		(currentStatus: SemesterStatus): SemesterStatus[] => {
-			const currentIndex = statusOrder.indexOf(currentStatus);
-			if (currentIndex === -1) return statusOrder;
-			const availableStatuses: SemesterStatus[] = [];
-			availableStatuses.push(currentStatus);
-			if (currentIndex < statusOrder.length - 1) {
-				availableStatuses.push(statusOrder[currentIndex + 1]);
+			const currentIndex = STATUS_ORDER.indexOf(currentStatus);
+			if (currentIndex === -1) return STATUS_ORDER;
+			const availableStatuses: SemesterStatus[] = [currentStatus];
+			if (currentIndex < STATUS_ORDER.length - 1) {
+				availableStatuses.push(STATUS_ORDER[currentIndex + 1]);
 			}
 			return availableStatuses;
 		},
-		[statusOrder],
+		[],
 	);
 
 	const filteredData = useMemo(() => {
+		if (!semesters.length) return [];
+
+		const searchLower = searchText.toLowerCase();
 		return semesters
 			.filter((item) => {
 				const matchStatus =
 					statusFilter === 'All' || item.status === statusFilter;
-				const matchSearch = item.name
-					.toLowerCase()
-					.includes(searchText.toLowerCase());
+				const matchSearch =
+					!searchText || item.name.toLowerCase().includes(searchLower);
 				return matchStatus && matchSearch;
 			})
 			.reverse();
@@ -152,6 +160,7 @@ const SemesterTable = forwardRef<
 	);
 
 	const handleEditSubmit = useCallback(async () => {
+		setUpdateLoading(true);
 		try {
 			const values = await form.validateFields();
 			if (editingRecord) {
@@ -168,19 +177,33 @@ const SemesterTable = forwardRef<
 					payload,
 				);
 				if (response.success) {
-					message.success('Semester updated successfully');
+					notification.success({
+						message: 'Success',
+						description: 'Semester updated successfully',
+						placement: 'bottomRight',
+					});
 					setIsEditModalOpen(false);
 					setEditingRecord(null);
 					setSelectedStatus(undefined);
 					form.resetFields();
 					await fetchSemesters();
 				} else {
-					message.error('Failed to update semester');
+					notification.error({
+						message: 'Error',
+						description: 'Failed to update semester',
+						placement: 'bottomRight',
+					});
 				}
 			}
 		} catch (error) {
 			console.error('Error updating semester:', error);
-			message.error('Error updating semester');
+			notification.error({
+				message: 'Error',
+				description: 'Error updating semester',
+				placement: 'bottomRight',
+			});
+		} finally {
+			setUpdateLoading(false);
 		}
 	}, [form, editingRecord, fetchSemesters]);
 
@@ -219,14 +242,26 @@ const SemesterTable = forwardRef<
 					try {
 						const response = await semesterService.delete(record.id);
 						if (response.success) {
-							message.success('Semester deleted successfully');
+							notification.success({
+								message: 'Success',
+								description: 'Semester deleted successfully',
+								placement: 'bottomRight',
+							});
 							await fetchSemesters();
 						} else {
-							message.error('Failed to delete semester');
+							notification.error({
+								message: 'Error',
+								description: 'Failed to delete semester',
+								placement: 'bottomRight',
+							});
 						}
 					} catch (error) {
 						console.error('Error deleting semester:', error);
-						message.error('Error deleting semester');
+						notification.error({
+							message: 'Error',
+							description: 'Error deleting semester',
+							placement: 'bottomRight',
+						});
 					}
 				},
 			});
@@ -244,27 +279,44 @@ const SemesterTable = forwardRef<
 			status: editingRecord.status,
 			ongoingPhase: editingRecord.ongoingPhase,
 		};
-		type FieldKey = keyof typeof original;
-		const changed = (Object.keys(original) as FieldKey[]).some(
-			(key) => current[key] !== original[key],
+
+		const changed = Object.keys(original).some(
+			(key) => current[key] !== original[key as keyof typeof original],
 		);
 		setIsFormChanged(changed);
 	}, [form, editingRecord]);
 
-	const columns = useMemo(
+	const columns: ColumnsType<Semester> = useMemo(
 		() => [
-			{ title: 'Semester Name', dataIndex: 'name', key: 'name' },
-			{ title: 'Semester Code', dataIndex: 'code', key: 'code' },
-			{ title: 'Max group', dataIndex: 'maxGroup', key: 'maxGroup' },
+			{
+				title: 'Semester Name',
+				dataIndex: 'name',
+				key: 'name',
+				width: 200,
+			},
+			{
+				title: 'Semester Code',
+				dataIndex: 'code',
+				key: 'code',
+				width: 150,
+			},
+			{
+				title: 'Max group',
+				dataIndex: 'maxGroup',
+				key: 'maxGroup',
+				width: 120,
+			},
 			{
 				title: 'Status',
 				dataIndex: 'status',
 				key: 'status',
-				render: (status: SemesterStatus) => statusTag[status] ?? status,
+				width: 120,
+				render: (status: SemesterStatus) => STATUS_TAG[status] ?? status,
 			},
 			{
 				title: 'Actions',
 				key: 'actions',
+				width: 100,
 				render: (_: unknown, record: Semester) => (
 					<Space size="middle">
 						<Tooltip title="Edit">
@@ -288,14 +340,14 @@ const SemesterTable = forwardRef<
 				),
 			},
 		],
-		[statusTag, handleEdit, handleDelete],
+		[handleEdit, handleDelete],
 	);
 
 	const availableStatuses = useMemo(() => {
 		return editingRecord
 			? getAvailableStatuses(editingRecord.status)
-			: statusOrder;
-	}, [editingRecord, getAvailableStatuses, statusOrder]);
+			: STATUS_ORDER;
+	}, [editingRecord, getAvailableStatuses]);
 
 	return (
 		<>
@@ -309,8 +361,10 @@ const SemesterTable = forwardRef<
 						`${range[0]}-${range[1]} of ${total} items`,
 					showSizeChanger: true,
 					pageSizeOptions: ['5', '10', '20', '50'],
+					showQuickJumper: true,
 				}}
 				scroll={{ x: 'max-content' }}
+				size="middle"
 			/>
 
 			<Modal
@@ -322,7 +376,15 @@ const SemesterTable = forwardRef<
 				cancelText="Cancel"
 				width={500}
 				centered
-				okButtonProps={{ disabled: !isFormChanged }}
+				okButtonProps={{
+					disabled: !isFormChanged,
+					loading: updateLoading,
+				}}
+				cancelButtonProps={{
+					disabled: updateLoading,
+				}}
+				closable={!updateLoading}
+				maskClosable={!updateLoading}
 			>
 				<Form
 					form={form}
@@ -334,37 +396,51 @@ const SemesterTable = forwardRef<
 						<Col xs={24} md={12}>
 							<Form.Item
 								name="name"
-								label={<span>Semester Name</span>}
+								label="Semester Name"
 								rules={[
 									{ required: true, message: 'Semester name is required' },
 								]}
 							>
-								<Input placeholder="Enter semester name (e.g., Spring 2025)" />
+								<Input
+									placeholder="Enter semester name (e.g., Spring 2025)"
+									disabled={updateLoading}
+								/>
 							</Form.Item>
 						</Col>
 
 						<Col xs={24} md={12}>
 							<Form.Item
 								name="code"
-								label={<span>Semester Code</span>}
+								label="Semester Code"
 								rules={[
 									{ required: true, message: 'Semester code is required' },
 								]}
 							>
-								<Input placeholder="Enter semester code (e.g., SP25)" />
+								<Input
+									placeholder="Enter semester code (e.g., SP25)"
+									disabled={updateLoading}
+								/>
 							</Form.Item>
 						</Col>
 					</Row>
 
 					<Form.Item name="maxGroup" label="Max Group">
-						<Input placeholder="Enter maximum number of groups" type="number" />
+						<Input
+							placeholder="Enter maximum number of groups"
+							type="number"
+							disabled={updateLoading}
+						/>
 					</Form.Item>
 
 					<Form.Item name="status" label="Status">
-						<Select placeholder="Select status" onChange={handleStatusChange}>
+						<Select
+							placeholder="Select status"
+							onChange={handleStatusChange}
+							disabled={updateLoading}
+						>
 							{availableStatuses.map((status) => (
 								<Option key={status} value={status}>
-									{statusLabels[status]}
+									{STATUS_LABELS[status]}
 								</Option>
 							))}
 						</Select>
@@ -381,7 +457,10 @@ const SemesterTable = forwardRef<
 								},
 							]}
 						>
-							<Select placeholder="Select ongoing phase">
+							<Select
+								placeholder="Select ongoing phase"
+								disabled={updateLoading}
+							>
 								<Option value="ScopeAdjustable">Scope Adjustable</Option>
 								<Option value="ScopeLocked">Scope Locked</Option>
 							</Select>
