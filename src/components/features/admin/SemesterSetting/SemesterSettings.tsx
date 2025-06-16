@@ -1,11 +1,13 @@
 'use client';
 
 import { Divider, Form, Space, Typography } from 'antd';
-import { useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 import SearchFilterBar from '@/components/features/admin/SemesterSetting/SearchFilterBar';
 import SemesterForm from '@/components/features/admin/SemesterSetting/SemesterForm';
-import SemesterTable from '@/components/features/admin/SemesterSetting/SemesterTable';
+import SemesterTable, {
+	SemesterTableRef,
+} from '@/components/features/admin/SemesterSetting/SemesterTable';
 import { SemesterStatus } from '@/schemas/_enums';
 
 const { Title, Paragraph } = Typography;
@@ -16,6 +18,19 @@ export default function SemesterSettings() {
 		'All',
 	);
 	const [searchText, setSearchText] = useState('');
+	const [refreshLoading, setRefreshLoading] = useState(false);
+	const semesterTableRef = useRef<SemesterTableRef>(null);
+
+	const handleRefresh = useCallback(async () => {
+		if (!semesterTableRef.current) return;
+
+		setRefreshLoading(true);
+		try {
+			await semesterTableRef.current.refresh();
+		} finally {
+			setRefreshLoading(false);
+		}
+	}, []);
 
 	return (
 		<div style={{ padding: '24px' }}>
@@ -39,9 +54,15 @@ export default function SemesterSettings() {
 					setStatusFilter={setStatusFilter}
 					searchText={searchText}
 					setSearchText={setSearchText}
+					onRefresh={handleRefresh}
+					loading={refreshLoading}
 				/>
 
-				<SemesterTable statusFilter={statusFilter} searchText={searchText} />
+				<SemesterTable
+					ref={semesterTableRef}
+					statusFilter={statusFilter}
+					searchText={searchText}
+				/>
 			</Space>
 		</div>
 	);
