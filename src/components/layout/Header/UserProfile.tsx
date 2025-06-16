@@ -19,8 +19,8 @@ const UserProfile: React.FC = () => {
 	const router = useRouter();
 	const { isMobile } = useResponsiveLayout();
 
-	const userName = session?.user?.name || 'User';
-	const avatarSrc = session?.user?.image || '/images/user_avatar.png';
+	const userName = session?.user?.name ?? 'User';
+	const avatarSrc = session?.user?.image ?? '/images/user_avatar.png';
 
 	const handleLogoutClick = () => {
 		Modal.confirm({

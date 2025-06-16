@@ -1,34 +1,38 @@
 'use client';
 
+import { Typography } from 'antd';
 import { useState } from 'react';
 
 import { mockLecturers } from '@/data/lecturers';
-import { ExtendedLecturer } from '@/types/lecturer';
+import { Lecturer } from '@/schemas/lecturer';
 
 import LecturerFilterBar from './LecturerFilterBar';
 import LecturerTable from './LecturerTable';
 
 export default function LecturerManagement() {
-	const [statusFilter, setStatusFilter] = useState<string>('All');
+	const [statusFilter, setStatusFilter] = useState<
+		'all' | 'active' | 'inactive'
+	>('all');
 	const [searchText, setSearchText] = useState<string>('');
-	const [data, setData] = useState<ExtendedLecturer[]>(mockLecturers);
-
+	const [data, setData] =
+		useState<(Lecturer & { instructionGroups: string })[]>(mockLecturers);
 	const filteredData = data.filter((lecturer) => {
 		const matchesStatus =
-			statusFilter === 'All' || lecturer.status === statusFilter;
-		const matchesSearch = [lecturer.name, lecturer.email].some((field) =>
+			statusFilter === 'all' ||
+			(statusFilter === 'active' && lecturer.isActive) ||
+			(statusFilter === 'inactive' && !lecturer.isActive);
+
+		const matchesSearch = [lecturer.fullName, lecturer.email].some((field) =>
 			(field ?? '').toLowerCase().includes(searchText.toLowerCase()),
 		);
 
 		return matchesStatus && matchesSearch;
 	});
 
-	const handleTogglePermission = (key: string) => {
+	const handleTogglePermission = (id: string) => {
 		setData((prev) =>
 			prev.map((item) =>
-				item.key === key
-					? { ...item, specialPermission: !item.specialPermission }
-					: item,
+				item.id === id ? { ...item, isModerator: !item.isModerator } : item,
 			),
 		);
 	};
@@ -37,9 +41,10 @@ export default function LecturerManagement() {
 		console.log('Create new lecturer clicked');
 	};
 
+	const { Title } = Typography;
 	return (
 		<div className="px-4 py-4 sm:px-6 lg:px-8">
-			<h2 className="text-2xl font-semibold mb-6">Lecturer Management</h2>
+			<Title level={2}>Lecturer Management</Title>
 
 			<LecturerFilterBar
 				statusFilter={statusFilter}

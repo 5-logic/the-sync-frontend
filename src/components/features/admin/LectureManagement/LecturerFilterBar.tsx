@@ -6,8 +6,8 @@ import { Button, Input, Select } from 'antd';
 const { Option } = Select;
 
 type Props = Readonly<{
-	statusFilter: string;
-	setStatusFilter: (value: string) => void;
+	statusFilter: 'all' | 'active' | 'inactive';
+	setStatusFilter: (value: 'all' | 'active' | 'inactive') => void;
 	searchText: string;
 	setSearchText: (value: string) => void;
 	onCreateLecturer: () => void;
@@ -28,9 +28,9 @@ export default function LecturerFilterBar({
 					onChange={setStatusFilter}
 					className="w-full md:w-40"
 				>
-					<Option value="All">All Status</Option>
-					<Option value="Active">Active</Option>
-					<Option value="Inactive">Inactive</Option>
+					<Option value="all">All Status</Option>
+					<Option value="active">Active</Option>
+					<Option value="inactive">Inactive</Option>
 				</Select>
 
 				<Input

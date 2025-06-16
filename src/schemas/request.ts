@@ -11,7 +11,7 @@ export const RequestSchema = z.object({
 });
 
 export const RequestCreateSchema = RequestSchema.omit({ id: true }).extend({
-	status: RequestStatusSchema.optional().default('pending'),
+	status: RequestStatusSchema.optional().default('Pending'),
 });
 
 export const RequestUpdateSchema = RequestSchema.pick({

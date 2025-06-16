@@ -1,17 +1,15 @@
-'use client';
-
 import { Switch, Table, Tag } from 'antd';
 
-import { ExtendedLecturer } from '@/types/lecturer';
+import { Lecturer } from '@/schemas/lecturer';
 
 type Props = Readonly<{
-	data: ExtendedLecturer[];
-	onTogglePermission: (key: string) => void;
+	data: (Lecturer & { instructionGroups: string })[];
+	onTogglePermission: (id: string) => void;
 }>;
 
 export default function LecturerTable({ data, onTogglePermission }: Props) {
 	const columns = [
-		{ title: 'Name', dataIndex: 'name', key: 'name' },
+		{ title: 'Name', dataIndex: 'fullName', key: 'fullName' },
 		{ title: 'Email', dataIndex: 'email', key: 'email' },
 		{ title: 'Phone Number', dataIndex: 'phoneNumber', key: 'phoneNumber' },
 		{
@@ -21,20 +19,25 @@ export default function LecturerTable({ data, onTogglePermission }: Props) {
 		},
 		{
 			title: 'Status',
-			dataIndex: 'status',
-			key: 'status',
-			render: (status: string) => (
-				<Tag color={status === 'Active' ? 'green' : 'default'}>{status}</Tag>
+			dataIndex: 'isActive',
+			key: 'isActive',
+			render: (isActive: boolean) => (
+				<Tag color={isActive ? 'green' : 'default'}>
+					{isActive ? 'Active' : 'Inactive'}
+				</Tag>
 			),
 		},
 		{
-			title: 'Special Permission',
-			dataIndex: 'specialPermission',
-			key: 'specialPermission',
-			render: (_: string, record: ExtendedLecturer) => (
+			title: 'Moderator',
+			dataIndex: 'isModerator',
+			key: 'isModerator',
+			render: (
+				_: boolean,
+				record: Lecturer & { instructionGroups: string },
+			) => (
 				<Switch
-					checked={record.specialPermission}
-					onChange={() => onTogglePermission(record.key)}
+					checked={record.isModerator}
+					onChange={() => onTogglePermission(record.id)}
 				/>
 			),
 		},
@@ -44,14 +47,14 @@ export default function LecturerTable({ data, onTogglePermission }: Props) {
 		<Table
 			columns={columns}
 			dataSource={data}
+			rowKey="id"
+			scroll={{ x: 'max-content' }}
 			pagination={{
 				showTotal: (total, range) =>
 					`${range[0]}-${range[1]} of ${total} items`,
 				showSizeChanger: true,
 				pageSizeOptions: ['5', '10', '20', '50'],
 			}}
-			rowKey="key"
-			scroll={{ x: 'max-content' }}
 		/>
 	);
 }

@@ -12,7 +12,7 @@ export const ChecklistSchema = z.object({
 export const ChecklistItemSchema = z.object({
 	id: z.string().uuid(),
 	name: z.string().min(1).max(100),
-	acceptance: ChecklistReviewAcceptanceSchema.default('not_available'),
+	acceptance: ChecklistReviewAcceptanceSchema.default('NotAvailable'),
 	description: z.string().optional(),
 	isRequired: z.boolean().default(false),
 	checklistId: z.string().uuid(),
