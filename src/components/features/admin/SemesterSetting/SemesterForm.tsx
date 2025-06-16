@@ -10,9 +10,10 @@ import {
 	Row,
 	Space,
 	Typography,
-	message,
+	notification,
 } from 'antd';
 import type { FormInstance } from 'antd/es/form';
+import { memo, useCallback, useState } from 'react';
 
 import semesterService from '@/lib/services/semesters.service';
 import { SemesterCreate } from '@/schemas/semester';
@@ -24,28 +25,67 @@ interface SemesterFormProps {
 	onSuccess?: () => void;
 }
 
-const SemesterForm = ({ form, onSuccess }: SemesterFormProps) => {
-	const handleSubmit = async (values: SemesterCreate) => {
-		try {
-			const semesterData: SemesterCreate = {
-				...values,
-				status: 'NotYet',
-			};
+const SemesterForm = memo<SemesterFormProps>(({ form, onSuccess }) => {
+	const [loading, setLoading] = useState(false);
+	const watchedValues = Form.useWatch([], form);
 
-			const response = await semesterService.create(semesterData);
+	const isFormValid = Boolean(
+		watchedValues?.name?.trim() && watchedValues?.code?.trim(),
+	);
 
-			if (response.success) {
-				message.success('Semester created successfully');
-				form.resetFields();
-				onSuccess?.();
-			} else {
-				message.error('Failed to create semester');
+	const handleSubmit = useCallback(
+		async (values: SemesterCreate) => {
+			setLoading(true);
+			try {
+				const semesterData: SemesterCreate = {
+					...values,
+					status: 'NotYet',
+				};
+
+				const response = await semesterService.create(semesterData);
+
+				if (response.success) {
+					notification.success({
+						message: 'Success',
+						description: 'Semester created successfully',
+						placement: 'bottomRight',
+					});
+					form.resetFields();
+					onSuccess?.();
+				} else {
+					notification.error({
+						message: 'Error',
+						description: 'Failed to create semester',
+						placement: 'bottomRight',
+					});
+				}
+			} catch (error) {
+				console.error('Error creating semester:', error);
+				notification.error({
+					message: 'Error',
+					description: 'Error creating semester',
+					placement: 'bottomRight',
+				});
+			} finally {
+				setLoading(false);
 			}
-		} catch (error) {
-			console.error('Error creating semester:', error);
-			message.error('Error creating semester');
-		}
-	};
+		},
+		[form, onSuccess],
+	);
+
+	const handleClearForm = useCallback(() => {
+		form.resetFields();
+	}, [form]);
+
+	const nameRules = [
+		{ required: true, message: 'Semester name is required' },
+		{ max: 100, message: 'Name must be less than 100 characters' },
+	];
+
+	const codeRules = [
+		{ required: true, message: 'Semester code is required' },
+		{ max: 20, message: 'Code must be less than 20 characters' },
+	];
 
 	return (
 		<Card>
@@ -60,18 +100,13 @@ const SemesterForm = ({ form, onSuccess }: SemesterFormProps) => {
 							<Form.Item
 								name="name"
 								label="Semester Name"
-								rules={[
-									{ required: true, message: 'Semester name is required' },
-									{
-										max: 100,
-										message: 'Name must be less than 100 characters',
-									},
-								]}
+								rules={nameRules}
 								required
 							>
 								<Input
 									placeholder="Enter semester name (e.g., Spring 2025)"
 									maxLength={100}
+									disabled={loading}
 								/>
 							</Form.Item>
 						</Col>
@@ -80,15 +115,13 @@ const SemesterForm = ({ form, onSuccess }: SemesterFormProps) => {
 							<Form.Item
 								name="code"
 								label="Semester Code"
-								rules={[
-									{ required: true, message: 'Semester code is required' },
-									{ max: 20, message: 'Code must be less than 20 characters' },
-								]}
+								rules={codeRules}
 								required
 							>
 								<Input
 									placeholder="Enter semester code (e.g., SP25)"
 									maxLength={20}
+									disabled={loading}
 								/>
 							</Form.Item>
 						</Col>
@@ -101,16 +134,35 @@ const SemesterForm = ({ form, onSuccess }: SemesterFormProps) => {
 						<Form.Item name="maxGroup" label="Max Group">
 							<InputNumber
 								placeholder="Enter maximum number of groups"
-								min={1}
+								min={1 as number}
+								max={1000 as number}
+								precision={0}
+								parser={(value) =>
+									Number((value ?? '').replace(/\$\s?|(,*)/g, ''))
+								}
+								formatter={(value) =>
+									`${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+								}
 								style={{ width: '100%' }}
+								disabled={loading}
+								controls={true}
+								keyboard={true}
+								stringMode={false}
 							/>
 						</Form.Item>
 					</Space>
 
 					<Row justify="end">
 						<Space>
-							<Button onClick={() => form.resetFields()}>Clear Form</Button>
-							<Button type="primary" htmlType="submit">
+							<Button onClick={handleClearForm} disabled={loading}>
+								Clear Form
+							</Button>
+							<Button
+								type="primary"
+								htmlType="submit"
+								disabled={!isFormValid}
+								loading={loading}
+							>
 								Create Semester
 							</Button>
 						</Space>
@@ -119,6 +171,8 @@ const SemesterForm = ({ form, onSuccess }: SemesterFormProps) => {
 			</Space>
 		</Card>
 	);
-};
+});
+
+SemesterForm.displayName = 'SemesterForm';
 
 export default SemesterForm;
