@@ -1,7 +1,7 @@
 'use client';
 
-import { SearchOutlined } from '@ant-design/icons';
-import { Col, Input, Row, Select } from 'antd';
+import { ReloadOutlined, SearchOutlined } from '@ant-design/icons';
+import { Button, Col, Input, Row, Select } from 'antd';
 
 import { SemesterStatus, SemesterStatusSchema } from '@/schemas/_enums';
 
@@ -12,11 +12,15 @@ const SearchFilterBar = ({
 	setStatusFilter,
 	searchText,
 	setSearchText,
+	onRefresh,
+	loading,
 }: {
 	statusFilter: SemesterStatus | 'All';
 	setStatusFilter: (value: SemesterStatus | 'All') => void;
 	searchText: string;
 	setSearchText: (value: string) => void;
+	onRefresh: () => void;
+	loading?: boolean;
 }) => {
 	const getStatusLabel = (status: SemesterStatus): string => {
 		const statusLabels: Record<SemesterStatus, string> = {
@@ -30,36 +34,33 @@ const SearchFilterBar = ({
 	};
 
 	return (
-		<Row
-			justify="space-between"
-			align="middle"
-			style={{ marginBottom: '16px' }}
-		>
-			<Col xs={24} sm={12}>
+		<Row gutter={16} style={{ marginBottom: '16px' }}>
+			<Col flex="auto">
 				<Input
 					prefix={<SearchOutlined style={{ color: '#d9d9d9' }} />}
 					placeholder="Search Semester"
-					style={{ width: '100%', maxWidth: '320px' }}
 					value={searchText}
 					onChange={(e) => setSearchText(e.target.value)}
 				/>
 			</Col>
-
-			<Col xs={24} sm={12}>
-				<div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-					<Select
-						style={{ width: '100%', maxWidth: '192px' }}
-						value={statusFilter}
-						onChange={setStatusFilter}
-					>
-						<Option value="All">All Status</Option>
-						{SemesterStatusSchema.options.map((status) => (
-							<Option key={status} value={status}>
-								{getStatusLabel(status)}
-							</Option>
-						))}
-					</Select>
-				</div>
+			<Col flex="192px">
+				<Select
+					style={{ width: '100%' }}
+					value={statusFilter}
+					onChange={setStatusFilter}
+				>
+					<Option value="All">All Status</Option>
+					{SemesterStatusSchema.options.map((status) => (
+						<Option key={status} value={status}>
+							{getStatusLabel(status)}
+						</Option>
+					))}
+				</Select>
+			</Col>
+			<Col flex="none">
+				<Button icon={<ReloadOutlined />} onClick={onRefresh} loading={loading}>
+					Refresh
+				</Button>
 			</Col>
 		</Row>
 	);
