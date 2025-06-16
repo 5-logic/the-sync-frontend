@@ -32,6 +32,10 @@ export default function SemesterSettings() {
 		}
 	}, []);
 
+	const handleSemesterCreated = useCallback(async () => {
+		await handleRefresh();
+	}, [handleRefresh]);
+
 	return (
 		<div style={{ padding: '24px' }}>
 			<Space direction="vertical" size="large" style={{ width: '100%' }}>
@@ -45,7 +49,7 @@ export default function SemesterSettings() {
 					</Paragraph>
 				</div>
 
-				<SemesterForm form={form} />
+				<SemesterForm form={form} onSuccess={handleSemesterCreated} />
 
 				<Divider />
 
