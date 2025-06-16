@@ -3,7 +3,7 @@ import { ApiResponse } from '@/schemas/_common';
 import { Semester, SemesterCreate, SemesterUpdate } from '@/schemas/semester';
 
 class SemesterService {
-	private baseUrl = '/semesters';
+	private readonly baseUrl = '/semesters';
 
 	async findAll(): Promise<ApiResponse<Semester[]>> {
 		const response = await httpClient.get<ApiResponse<Semester[]>>(
