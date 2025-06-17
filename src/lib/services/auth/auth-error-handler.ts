@@ -17,10 +17,9 @@ export class AuthErrorHandler {
 				'Connection timeout. The server may be starting up. Please wait a moment and try again.',
 			);
 		}
-
 		// Handle Axios response errors
 		if (this.isAxiosError(error)) {
-			this.handleAxiosLoginError(error as AxiosError);
+			this.handleAxiosLoginError(error);
 		}
 
 		// Handle network errors
@@ -117,15 +116,14 @@ export class AuthErrorHandler {
 	}
 	/**
 	 * Handle 400 Bad Request errors
-	 */
-	private static handle400Error(responseData: {
+	 */ private static handle400Error(responseData: {
 		error?: string | string[];
 		message?: string;
 		[key: string]: unknown;
 	}): never {
 		// Handle array of errors
 		if (responseData?.error && Array.isArray(responseData.error)) {
-			const errorArray = responseData.error as string[];
+			const errorArray = responseData.error;
 			const passwordError = errorArray.find(
 				(err: string) =>
 					err.includes('password must match') ||

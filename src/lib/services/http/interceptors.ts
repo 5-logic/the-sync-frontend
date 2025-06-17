@@ -8,10 +8,24 @@ import {
 import { TokenManager } from '@/lib/utils/auth/token-manager';
 
 /**
+ * Extended request config to include retry flag
+ */
+interface ExtendedAxiosRequestConfig extends InternalAxiosRequestConfig {
+	_retry?: boolean;
+}
+/**
  * 🔧 HTTP Interceptors
  * Request and response interceptors for handling authentication and token refresh
  */
 export class HttpInterceptors {
+	/**
+	 * Type guard to check if request has retry capability
+	 */
+	private static isRetryableRequest(
+		config: InternalAxiosRequestConfig,
+	): config is ExtendedAxiosRequestConfig {
+		return typeof config === 'object' && config !== null;
+	}
 	/**
 	 * 👉 Request Interceptor: Add access token to requests
 	 */
@@ -74,18 +88,23 @@ export class HttpInterceptors {
 			if (!error.config) {
 				console.error(
 					'API Error (no config):',
-					error.response?.data || error.message,
+					error.response?.data ?? error.message,
 				);
 				const errorToReject =
 					error instanceof Error ? error : new Error(String(error));
 				return Promise.reject(errorToReject);
 			}
-
 			const originalRequest = error.config;
 
-			const requestWithRetry = originalRequest as typeof originalRequest & {
-				_retry?: boolean;
-			}; // Skip token refresh for auth endpoints (login/refresh)
+			// Ensure we can add retry flag to the request
+			if (!HttpInterceptors.isRetryableRequest(originalRequest)) {
+				console.error('Invalid request config for retry');
+				const errorToReject =
+					error instanceof Error ? error : new Error(String(error));
+				return Promise.reject(errorToReject);
+			}
+
+			// Skip token refresh for auth endpoints (login/refresh)
 			const authEndpoints = [
 				'/auth/admin/login',
 				'/auth/user/login',
@@ -94,23 +113,21 @@ export class HttpInterceptors {
 			];
 			const isAuthEndpoint = authEndpoints.some((endpoint) =>
 				originalRequest.url?.includes(endpoint),
-			);
-
-			// Handle 401 Unauthorized (token expired) - but NOT for auth endpoints
+			); // Handle 401 Unauthorized (token expired) - but NOT for auth endpoints
 			if (
 				error.response?.status === 401 &&
-				!requestWithRetry._retry &&
+				!originalRequest._retry &&
 				!isAuthEndpoint
 			) {
-				requestWithRetry._retry = true;
+				originalRequest._retry = true;
 
 				const newAccessToken = await TokenManager.refreshAccessToken();
 
 				if (newAccessToken) {
 					// Retry original request with new token
-					requestWithRetry.headers = requestWithRetry.headers ?? {};
-					requestWithRetry.headers.Authorization = `Bearer ${newAccessToken}`;
-					return httpClient(requestWithRetry);
+					originalRequest.headers = originalRequest.headers ?? {};
+					originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+					return httpClient(originalRequest);
 				} else {
 					// Refresh failed, redirect to login
 					TokenManager.clearTokens();
