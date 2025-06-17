@@ -1,13 +1,12 @@
 'use client';
 
-import { Typography } from 'antd';
+import { Card, Typography } from 'antd';
 import { useState } from 'react';
 
+import StudentFilterBar from '@/components/features/admin/StudentManagement/StudentFilterBar';
+import StudentTable from '@/components/features/admin/StudentManagement/StudentTable';
 import { mockStudents } from '@/data/student';
 import { Student } from '@/schemas/student';
-
-import StudentFilterBar from './StudentFilterBar';
-import StudentTable from './StudentTable';
 
 export default function StudentManagement() {
 	const [statusFilter, setStatusFilter] = useState('All');
@@ -36,7 +35,7 @@ export default function StudentManagement() {
 
 	const { Title } = Typography;
 	return (
-		<div style={{ padding: 24 }}>
+		<Card bordered={false} style={{ padding: 0 }}>
 			<Title level={2}>Student Management</Title>
 
 			<StudentFilterBar
@@ -52,6 +51,6 @@ export default function StudentManagement() {
 			/>
 
 			<StudentTable data={filteredData} />
-		</div>
+		</Card>
 	);
 }

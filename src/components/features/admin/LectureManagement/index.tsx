@@ -1,6 +1,6 @@
 'use client';
 
-import { Typography } from 'antd';
+import { Card, Typography } from 'antd';
 import { useState } from 'react';
 
 import { mockLecturers } from '@/data/lecturers';
@@ -43,7 +43,7 @@ export default function LecturerManagement() {
 
 	const { Title } = Typography;
 	return (
-		<div className="px-4 py-4 sm:px-6 lg:px-8">
+		<Card bordered={false} style={{ padding: 0 }}>
 			<Title level={2}>Lecturer Management</Title>
 
 			<LecturerFilterBar
@@ -58,6 +58,6 @@ export default function LecturerManagement() {
 				data={filteredData}
 				onTogglePermission={handleTogglePermission}
 			/>
-		</div>
+		</Card>
 	);
 }
