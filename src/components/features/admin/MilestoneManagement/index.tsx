@@ -20,11 +20,15 @@ export default function MilestoneManagement() {
 				Milestones Management
 			</h2>
 
-			<Form layout="vertical">
+			<Form layout="vertical" requiredMark={false}>
 				<Row gutter={16}>
 					<Col xs={24} md={8}>
 						<Form.Item
-							label="Milestone Name"
+							label={
+								<>
+									Milestone Name<span style={{ color: 'red' }}> *</span>
+								</>
+							}
 							name="milestoneName"
 							rules={[
 								{ required: true, message: 'Please enter milestone name' },
@@ -36,7 +40,11 @@ export default function MilestoneManagement() {
 
 					<Col xs={24} md={8}>
 						<Form.Item
-							label="Semester"
+							label={
+								<>
+									Semester<span style={{ color: 'red' }}> *</span>
+								</>
+							}
 							name="semester"
 							rules={[{ required: true, message: 'Please select semester' }]}
 						>
@@ -53,11 +61,15 @@ export default function MilestoneManagement() {
 
 					<Col xs={24} md={8}>
 						<Form.Item
-							label="Duration"
+							label={
+								<>
+									Duration<span style={{ color: 'red' }}> *</span>
+								</>
+							}
 							name="duration"
 							rules={[{ required: true, message: 'Please select duration' }]}
 						>
-							<RangePicker className="w-full" />
+							<RangePicker className="w-full" format="YYYY-MM-DD" />
 						</Form.Item>
 					</Col>
 				</Row>
