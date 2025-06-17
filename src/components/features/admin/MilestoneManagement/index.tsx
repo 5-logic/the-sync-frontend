@@ -69,7 +69,7 @@ export default function MilestoneManagement() {
 							name="duration"
 							rules={[{ required: true, message: 'Please select duration' }]}
 						>
-							<RangePicker className="w-full" format="YYYY-MM-DD" />
+							<RangePicker className="w-full" />
 						</Form.Item>
 					</Col>
 				</Row>
