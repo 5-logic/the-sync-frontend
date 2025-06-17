@@ -35,7 +35,7 @@ export class HttpInterceptors {
 			try {
 				const accessToken = await TokenManager.getValidAccessToken();
 				if (accessToken) {
-					config.headers = config.headers || {};
+					config.headers = config.headers ?? {};
 					config.headers.Authorization = `Bearer ${accessToken}`;
 				}
 			} catch (error) {
@@ -46,14 +46,16 @@ export class HttpInterceptors {
 			return config;
 		};
 	}
-
 	/**
 	 * 🚨 Request Error Handler
 	 */
 	static createRequestErrorHandler() {
 		return (error: AxiosError) => {
 			console.error('Request Error:', error);
-			return Promise.reject(error);
+			// Ensure error is an Error instance
+			const errorToReject =
+				error instanceof Error ? error : new Error(String(error));
+			return Promise.reject(errorToReject);
 		};
 	}
 
@@ -66,14 +68,24 @@ export class HttpInterceptors {
 
 	/**
 	 * 👉 Response Error Handler: Handle token refresh on 401
-	 */
-	static createResponseErrorHandler(httpClient: AxiosInstance) {
+	 */ static createResponseErrorHandler(httpClient: AxiosInstance) {
 		return async (error: AxiosError) => {
-			const originalRequest = error.config as InternalAxiosRequestConfig & {
-				_retry?: boolean;
-			};
+			// Handle case where config might be undefined
+			if (!error.config) {
+				console.error(
+					'API Error (no config):',
+					error.response?.data || error.message,
+				);
+				const errorToReject =
+					error instanceof Error ? error : new Error(String(error));
+				return Promise.reject(errorToReject);
+			}
 
-			// Skip token refresh for auth endpoints (login/refresh)
+			const originalRequest = error.config;
+
+			const requestWithRetry = originalRequest as typeof originalRequest & {
+				_retry?: boolean;
+			}; // Skip token refresh for auth endpoints (login/refresh)
 			const authEndpoints = [
 				'/auth/admin/login',
 				'/auth/user/login',
@@ -87,18 +99,18 @@ export class HttpInterceptors {
 			// Handle 401 Unauthorized (token expired) - but NOT for auth endpoints
 			if (
 				error.response?.status === 401 &&
-				!originalRequest._retry &&
+				!requestWithRetry._retry &&
 				!isAuthEndpoint
 			) {
-				originalRequest._retry = true;
+				requestWithRetry._retry = true;
 
 				const newAccessToken = await TokenManager.refreshAccessToken();
 
 				if (newAccessToken) {
 					// Retry original request with new token
-					originalRequest.headers = originalRequest.headers || {};
-					originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-					return httpClient(originalRequest);
+					requestWithRetry.headers = requestWithRetry.headers ?? {};
+					requestWithRetry.headers.Authorization = `Bearer ${newAccessToken}`;
+					return httpClient(requestWithRetry);
 				} else {
 					// Refresh failed, redirect to login
 					TokenManager.clearTokens();
@@ -109,9 +121,11 @@ export class HttpInterceptors {
 					}
 				}
 			}
-
-			console.error('API Error:', error.response?.data || error.message);
-			return Promise.reject(error);
+			console.error('API Error:', error.response?.data ?? error.message);
+			// Ensure error is an Error instance
+			const errorToReject =
+				error instanceof Error ? error : new Error(String(error));
+			return Promise.reject(errorToReject);
 		};
 	}
 }

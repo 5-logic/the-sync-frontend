@@ -19,7 +19,7 @@ export function getUserPermissions(
 	}
 
 	const role = session.user.role as UserRole;
-	const isModerator = session.user.isModerator || false;
+	const isModerator = session.user.isModerator ?? false;
 	return {
 		role,
 		isModerator,
@@ -76,7 +76,7 @@ export function canAccessRoute(
 	if (!hasRequiredRole(userRole, requiredRole)) {
 		return {
 			hasAccess: false,
-			reason: `Required role: ${requiredRole}, User role: ${userRole || 'undefined'}`,
+			reason: `Required role: ${requiredRole}, User role: ${userRole ?? 'undefined'}`,
 		};
 	}
 

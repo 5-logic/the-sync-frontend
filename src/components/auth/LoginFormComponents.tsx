@@ -1,4 +1,5 @@
 import { Checkbox, Flex, Form, Input, Typography } from 'antd';
+import type { Rule } from 'antd/es/form';
 
 const { Link, Text } = Typography;
 
@@ -22,6 +23,15 @@ export const RememberAndForgot = () => (
 	</Flex>
 );
 
+interface FormFieldProps {
+	readonly name: string;
+	readonly label: string;
+	readonly type?: 'text' | 'email' | 'password';
+	readonly icon: React.ReactNode;
+	readonly placeholder: string;
+	readonly rules: Rule[];
+}
+
 /**
  * 📝 Reusable Form Field Component
  */
@@ -32,15 +42,7 @@ export const FormField = ({
 	icon,
 	placeholder,
 	rules,
-}: {
-	name: string;
-	label: string;
-	type?: 'text' | 'email' | 'password';
-	icon: React.ReactNode;
-	placeholder: string;
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	rules: any[];
-}) => (
+}: FormFieldProps) => (
 	<Form.Item
 		label={
 			<Text>

@@ -59,7 +59,7 @@ export function useRouteProtection(
 			role?: string,
 			isMod?: boolean,
 		) => {
-			const key = `${route?.path || 'none'}:${role}:${isMod}`;
+			const key = `${route?.path ?? 'none'}:${role}:${isMod}`;
 			if (permissionCache.has(key)) {
 				return permissionCache.get(key)!;
 			}

@@ -14,8 +14,8 @@ import {
 } from './LoginFormComponents';
 
 interface AdminLoginFormProps {
-	onFinish: (values: LoginValues) => void;
-	loading: boolean;
+	readonly onFinish: (values: LoginValues) => void;
+	readonly loading: boolean;
 }
 
 /**

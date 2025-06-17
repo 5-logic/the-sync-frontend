@@ -16,13 +16,13 @@ export class UserAuthService extends BaseAuthService {
 	 * 🔐 User Login (Student/Lecturer)
 	 */
 	static async login(credentials: UserLogin): Promise<TokenData> {
-		return this.performLogin('/auth/user/login', credentials);
+		return super.performLogin('/auth/user/login', credentials);
 	}
 
 	/**
 	 * 🔄 User Token Refresh
 	 */
 	static async refresh(refreshToken: RefreshToken): Promise<RefreshTokenData> {
-		return this.performRefresh('/auth/user/refresh', refreshToken);
+		return super.performRefresh('/auth/user/refresh', refreshToken);
 	}
 }

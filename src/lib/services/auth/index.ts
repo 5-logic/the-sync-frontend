@@ -21,18 +21,20 @@ export { BaseAuthService } from './base-auth.service';
  */
 export class AuthService {
 	// Admin methods
-	static adminLogin = AdminAuthService.login;
-	static adminRefresh = AdminAuthService.refresh;
+	static readonly adminLogin = AdminAuthService.login;
+	static readonly adminRefresh = AdminAuthService.refresh;
 
 	// User methods
-	static userLogin = UserAuthService.login;
-	static userRefresh = UserAuthService.refresh;
+	static readonly userLogin = UserAuthService.login;
+	static readonly userRefresh = UserAuthService.refresh;
 
 	// Token utility methods
-	static getUserFromToken = TokenUtilsService.getUserFromToken;
-	static isTokenExpired = TokenUtilsService.isTokenExpired;
-	static getTokenExpirationTime = TokenUtilsService.getTokenExpirationTime;
-	static getTimeUntilExpiration = TokenUtilsService.getTimeUntilExpiration;
+	static readonly getUserFromToken = TokenUtilsService.getUserFromToken;
+	static readonly isTokenExpired = TokenUtilsService.isTokenExpired;
+	static readonly getTokenExpirationTime =
+		TokenUtilsService.getTokenExpirationTime;
+	static readonly getTimeUntilExpiration =
+		TokenUtilsService.getTimeUntilExpiration;
 
 	/**
 	 * 🚪 Logout: Clear tokens and NextAuth session

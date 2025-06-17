@@ -37,7 +37,7 @@ export const credentialsProvider = CredentialsProvider({
 			} // Decode user info from access token
 			const userInfo = AuthService.getUserFromToken(tokenData.accessToken);
 
-			if (!userInfo || !userInfo.sub || !userInfo.role) {
+			if (!userInfo?.sub || !userInfo?.role) {
 				return null;
 			}
 
@@ -49,24 +49,24 @@ export const credentialsProvider = CredentialsProvider({
 					// Set name based on role and available data
 					if (userInfo.role === 'admin') {
 						return (
-							userInfo.fullName ||
-							userInfo.username ||
-							credentials.username ||
+							userInfo.fullName ??
+							userInfo.username ??
+							credentials.username ??
 							'Admin'
 						);
 					} else {
 						return (
-							userInfo.fullName ||
-							userInfo.username ||
-							userInfo.email ||
-							credentials.username ||
+							userInfo.fullName ??
+							userInfo.username ??
+							userInfo.email ??
+							credentials.username ??
 							'User'
 						);
 					}
 				})(),
-				email: isEmail ? credentials.username : userInfo.email || '',
-				username: !isEmail ? credentials.username : userInfo.username,
-				isModerator: userInfo.isModerator || false,
+				email: isEmail ? credentials.username : (userInfo?.email ?? ''),
+				username: !isEmail ? credentials.username : userInfo?.username,
+				isModerator: userInfo?.isModerator || false,
 				// Include tokens in user object to pass to JWT callback
 				accessToken: tokenData.accessToken,
 				refreshToken: tokenData.refreshToken,

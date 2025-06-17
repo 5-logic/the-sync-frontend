@@ -2,8 +2,8 @@ import { Space, Typography } from 'antd';
 import { ReactNode } from 'react';
 
 interface LoginFormLayoutProps {
-	title: string;
-	children: ReactNode;
+	readonly title: string;
+	readonly children: ReactNode;
 }
 
 /**

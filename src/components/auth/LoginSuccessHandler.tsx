@@ -15,26 +15,19 @@ export class LoginSuccessHandler {
 			const session = await fetch('/api/auth/session').then((res) =>
 				res.json(),
 			);
-			const userRole = session?.user?.role;
-
-			// Determine redirect path based on actual user role
+			const userRole = session?.user?.role; // Determine redirect path based on actual user role
 			let redirectPath = '/student'; // default
 			let dashboardName = 'student';
 
 			if (userRole === 'admin') {
 				redirectPath = '/admin';
 				dashboardName = 'admin';
-			} else if (userRole === 'lecturer') {
+			} else if (userRole === 'lecturer' || userRole === 'moderator') {
+				// Both lecturer and moderator go to lecturer dashboard
 				redirectPath = '/lecturer';
 				dashboardName = 'lecturer';
-			} else if (userRole === 'moderator') {
-				// Moderator also goes to lecturer dashboard
-				redirectPath = '/lecturer';
-				dashboardName = 'lecturer';
-			} else if (userRole === 'student') {
-				redirectPath = '/student';
-				dashboardName = 'student';
 			}
+			// student is default, no need to reassign
 
 			notification.success({
 				message: 'Login Successful',

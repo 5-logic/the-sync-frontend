@@ -64,7 +64,7 @@ async function enrichTokenWithProfile(token: JWT, user: User): Promise<void> {
 		const profile = await fetchUserProfile({
 			id: user.id,
 			role: user.role,
-			accessToken: user.accessToken || '',
+			accessToken: user.accessToken ?? '',
 		});
 
 		if (profile) {

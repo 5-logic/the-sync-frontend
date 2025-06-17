@@ -8,9 +8,9 @@ import UserLoginForm from './UserLoginForm';
 const { Text } = Typography;
 
 interface LoginTabsProps {
-	loading: boolean;
-	onUserLogin: (values: LoginValues) => void;
-	onAdminLogin: (values: LoginValues) => void;
+	readonly loading: boolean;
+	readonly onUserLogin: (values: LoginValues) => void;
+	readonly onAdminLogin: (values: LoginValues) => void;
 }
 
 /**

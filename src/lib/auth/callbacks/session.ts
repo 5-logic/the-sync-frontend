@@ -19,7 +19,7 @@ export async function sessionCallback({
 
 		// Use fullName if available, otherwise fallback to email
 		session.user.name =
-			token.fullName || session.user.email || session.user.name;
+			token.fullName ?? session.user.email ?? session.user.name;
 		// Add isModerator to session if exists
 		if (token.isModerator !== undefined) {
 			session.user.isModerator = token.isModerator;
@@ -32,7 +32,7 @@ export async function sessionCallback({
 
 		// Add common user profile data to session (UserSchema fields)
 		session.user.fullName = token.fullName;
-		session.user.email = token.email || session.user.email;
+		session.user.email = token.email ?? session.user.email;
 		session.user.phoneNumber = token.phoneNumber;
 		session.user.gender = token.gender;
 		session.user.isActive = token.isActive;

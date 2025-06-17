@@ -53,7 +53,7 @@ export function useAuthGuard({
 		loading: status === 'loading' || isAuthorized === null, // ✅ Loading until authorization is determined
 		isAuthenticated: status === 'authenticated',
 		isAuthorized, // ✅ Explicit authorization state
-		user: session?.user || null,
+		user: session?.user ?? null,
 	};
 }
 

@@ -88,22 +88,22 @@ export function mapProfileToToken(
 	switch (role) {
 		case 'admin':
 			// Admin-specific fields (from AdminSchema)
-			mappedData.username = profile.username || fallbackData.username;
+			mappedData.username = profile.username ?? fallbackData.username;
 			mappedData.fullName =
-				profile.username || fallbackData.username || 'Admin';
-			mappedData.email = profile.email || fallbackData.email;
+				profile.username ?? fallbackData.username ?? 'Admin';
+			mappedData.email = profile.email ?? fallbackData.email;
 			break;
 
 		case 'student':
 			// Student-specific fields (from StudentSchema)
 			mappedData.fullName =
-				profile.fullName || profile.name || fallbackData.email || 'Student';
-			mappedData.email = profile.email || fallbackData.email;
+				profile.fullName ?? profile.name ?? fallbackData.email ?? 'Student';
+			mappedData.email = profile.email ?? fallbackData.email;
 			mappedData.phoneNumber = profile.phoneNumber;
 			mappedData.gender = profile.gender;
 			mappedData.isActive = profile.isActive;
 			mappedData.avatar = profile.avatar;
-			mappedData.studentId = profile.studentId || profile.studentCode;
+			mappedData.studentId = profile.studentId ?? profile.studentCode;
 			mappedData.majorId = profile.majorId;
 			mappedData.major = profile.major;
 			break;
@@ -111,20 +111,20 @@ export function mapProfileToToken(
 		case 'lecturer':
 			// Lecturer-specific fields (from LecturerSchema)
 			mappedData.fullName =
-				profile.fullName || profile.name || fallbackData.email || 'Lecturer';
-			mappedData.email = profile.email || fallbackData.email;
+				profile.fullName ?? profile.name ?? fallbackData.email ?? 'Lecturer';
+			mappedData.email = profile.email ?? fallbackData.email;
 			mappedData.phoneNumber = profile.phoneNumber;
 			mappedData.gender = profile.gender;
 			mappedData.isActive = profile.isActive;
 			mappedData.avatar = profile.avatar;
-			mappedData.isModerator = profile.isModerator || false;
+			mappedData.isModerator = profile.isModerator ?? false;
 			break;
 
 		case 'moderator':
 			// Moderator-specific fields (same as lecturer but force isModerator = true)
 			mappedData.fullName =
-				profile.fullName || profile.name || fallbackData.email || 'Moderator';
-			mappedData.email = profile.email || fallbackData.email;
+				profile.fullName ?? profile.name ?? fallbackData.email ?? 'Moderator';
+			mappedData.email = profile.email ?? fallbackData.email;
 			mappedData.phoneNumber = profile.phoneNumber;
 			mappedData.gender = profile.gender;
 			mappedData.isActive = profile.isActive;
@@ -132,7 +132,7 @@ export function mapProfileToToken(
 			mappedData.isModerator = true; // Force true for moderators
 			break;
 		default:
-			mappedData.fullName = fallbackData.email || 'User';
+			mappedData.fullName = fallbackData.email ?? 'User';
 	}
 
 	return mappedData;
@@ -147,14 +147,14 @@ export function getFallbackName(
 ): string {
 	switch (role) {
 		case 'admin':
-			return fallbackData.username || 'Admin';
+			return fallbackData.username ?? 'Admin';
 		case 'student':
-			return fallbackData.email || 'Student';
+			return fallbackData.email ?? 'Student';
 		case 'lecturer':
-			return fallbackData.email || 'Lecturer';
+			return fallbackData.email ?? 'Lecturer';
 		case 'moderator':
-			return fallbackData.email || 'Moderator';
+			return fallbackData.email ?? 'Moderator';
 		default:
-			return fallbackData.email || 'User';
+			return fallbackData.email ?? 'User';
 	}
 }

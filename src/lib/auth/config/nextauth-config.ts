@@ -1,5 +1,4 @@
-import NextAuth from 'next-auth';
-import { NextAuthOptions } from 'next-auth';
+import NextAuth, { NextAuthOptions } from 'next-auth';
 
 import { jwtCallback } from '@/lib/auth/callbacks/jwt';
 import { sessionCallback } from '@/lib/auth/callbacks/session';

@@ -16,13 +16,13 @@ export class AdminAuthService extends BaseAuthService {
 	 * 🔐 Admin Login
 	 */
 	static async login(credentials: AdminLogin): Promise<TokenData> {
-		return this.performLogin('/auth/admin/login', credentials);
+		return super.performLogin('/auth/admin/login', credentials);
 	}
 
 	/**
 	 * 🔄 Admin Token Refresh
 	 */
 	static async refresh(refreshToken: RefreshToken): Promise<RefreshTokenData> {
-		return this.performRefresh('/auth/admin/refresh', refreshToken);
+		return super.performRefresh('/auth/admin/refresh', refreshToken);
 	}
 }
