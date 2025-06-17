@@ -1,5 +1,6 @@
 'use client';
 
+import Script from 'next/script';
 import { useEffect } from 'react';
 
 declare global {
@@ -16,21 +17,19 @@ const ChatbotWidget = () => {
 			window.chatbaseConfig = {
 				chatbotId: process.env.NEXT_PUBLIC_CHATBOT_ID,
 			};
-
-			const script = document.createElement('script');
-			script.src =
-				process.env.NEXT_PUBLIC_CHATBOT_URL ??
-				'https://www.chatbase.co/embed.min.js';
-			script.id = process.env.NEXT_PUBLIC_CHATBOT_ID ?? 'chatbase-script';
-			script.defer = true;
-
-			if (!document.getElementById(script.id)) {
-				document.body.appendChild(script);
-			}
 		}
 	}, []);
 
-	return null;
+	return (
+		<Script
+			src={
+				process.env.NEXT_PUBLIC_CHATBOT_URL ??
+				'https://www.chatbase.co/embed.min.js'
+			}
+			id={process.env.NEXT_PUBLIC_CHATBOT_ID ?? 'chatbase-script'}
+			strategy="lazyOnload"
+		/>
+	);
 };
 
 export default ChatbotWidget;
