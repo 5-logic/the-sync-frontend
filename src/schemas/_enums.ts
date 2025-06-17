@@ -24,7 +24,12 @@ export const SemesterStatusSchema = z.enum([
 	'End',
 ]);
 export const OngoingPhaseSchema = z.enum(['ScopeAdjustable', 'ScopeLocked']);
-export const EnrollmentStatusSchema = z.enum(['Failed', 'Ongoing', 'Passed']);
+export const EnrollmentStatusSchema = z.enum([
+	'NotYet',
+	'Failed',
+	'Ongoing',
+	'Passed',
+]);
 export const ChecklistReviewAcceptanceSchema = z.enum([
 	'Yes',
 	'No',
