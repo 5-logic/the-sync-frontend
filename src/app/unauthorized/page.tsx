@@ -12,24 +12,31 @@ import { useRouter } from 'next/navigation';
 export default function UnauthorizedPage() {
 	const router = useRouter();
 	const { data: session, status } = useSession();
-
 	const handleGoToDashboard = () => {
+		console.log('🏠 Go to dashboard clicked. Session:', session);
+
 		if (!session?.user?.role) {
+			console.log('❌ No session or role, redirecting to login');
 			router.push('/login');
 			return;
 		}
 
 		const role = session.user.role;
+		console.log('🎯 User role:', role);
 		const dashboards = {
 			student: '/student',
 			lecturer: '/lecturer',
+			moderator: '/lecturer', // Moderator uses lecturer dashboard
 			admin: '/admin',
 		};
 
 		const dashboardRoute = dashboards[role as keyof typeof dashboards];
+		console.log('🚀 Dashboard route:', dashboardRoute);
+
 		if (dashboardRoute) {
 			router.push(dashboardRoute);
 		} else {
+			console.log('❌ No dashboard route found for role:', role);
 			router.push('/login');
 		}
 	};
