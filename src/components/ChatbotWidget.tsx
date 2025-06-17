@@ -19,9 +19,9 @@ const ChatbotWidget = () => {
 
 			const script = document.createElement('script');
 			script.src =
-				process.env.NEXT_PUBLIC_CHATBOT_URL ||
+				process.env.NEXT_PUBLIC_CHATBOT_URL ??
 				'https://www.chatbase.co/embed.min.js';
-			script.id = process.env.NEXT_PUBLIC_CHATBOT_ID || 'chatbase-script';
+			script.id = process.env.NEXT_PUBLIC_CHATBOT_ID ?? 'chatbase-script';
 			script.defer = true;
 
 			if (!document.getElementById(script.id)) {
