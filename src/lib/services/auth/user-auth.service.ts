@@ -1,64 +1,28 @@
-import httpClient from '../_httpClient';
-
-import { TokenManager } from '@/lib/utils/auth/token-manager';
 import {
-	LoginResponseSchema,
-	RefreshResponseSchema,
 	RefreshToken,
 	RefreshTokenData,
 	TokenData,
 	UserLogin,
 } from '@/schemas/auth';
 
-import { AuthErrorHandler } from './auth-error-handler';
+import { BaseAuthService } from './base-auth.service';
 
 /**
  * 👤 User Authentication Service
  * Handles user (student/lecturer) login and token refresh
  */
-export class UserAuthService {
+export class UserAuthService extends BaseAuthService {
 	/**
 	 * 🔐 User Login (Student/Lecturer)
 	 */
 	static async login(credentials: UserLogin): Promise<TokenData> {
-		try {
-			// Clear any existing tokens to prevent conflicts
-			TokenManager.clearTokens();
-
-			const response = await httpClient.post('/auth/user/login', credentials);
-
-			// Validate response with schema
-			const parsed = LoginResponseSchema.parse(response.data);
-			if (!parsed.success) {
-				throw new Error(parsed.error);
-			}
-
-			return parsed.data;
-		} catch (error: unknown) {
-			AuthErrorHandler.handleLoginError(error);
-		}
+		return this.performLogin('/auth/user/login', credentials);
 	}
 
 	/**
 	 * 🔄 User Token Refresh
-	 */ static async refresh(
-		refreshToken: RefreshToken,
-	): Promise<RefreshTokenData> {
-		try {
-			const response = await httpClient.post(
-				'/auth/user/refresh',
-				refreshToken,
-			);
-
-			// Validate response with schema
-			const parsed = RefreshResponseSchema.parse(response.data);
-			if (!parsed.success) {
-				throw new Error(parsed.error);
-			}
-
-			return parsed.data;
-		} catch (error: unknown) {
-			AuthErrorHandler.handleRefreshError(error);
-		}
+	 */
+	static async refresh(refreshToken: RefreshToken): Promise<RefreshTokenData> {
+		return this.performRefresh('/auth/user/refresh', refreshToken);
 	}
 }

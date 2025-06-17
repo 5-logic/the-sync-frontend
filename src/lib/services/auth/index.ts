@@ -12,6 +12,7 @@ export { AdminAuthService } from './admin-auth.service';
 export { UserAuthService } from './user-auth.service';
 export { TokenUtilsService } from './token-utils.service';
 export { AuthErrorHandler } from './auth-error-handler';
+export { BaseAuthService } from './base-auth.service';
 
 /**
  * 🔐 Unified Authentication Service

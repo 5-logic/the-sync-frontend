@@ -1,64 +1,28 @@
-import httpClient from '../_httpClient';
-
-import { TokenManager } from '@/lib/utils/auth/token-manager';
 import {
 	AdminLogin,
-	LoginResponseSchema,
-	RefreshResponseSchema,
 	RefreshToken,
 	RefreshTokenData,
 	TokenData,
 } from '@/schemas/auth';
 
-import { AuthErrorHandler } from './auth-error-handler';
+import { BaseAuthService } from './base-auth.service';
 
 /**
  * 👩‍💼 Admin Authentication Service
  * Handles admin login and token refresh
  */
-export class AdminAuthService {
+export class AdminAuthService extends BaseAuthService {
 	/**
 	 * 🔐 Admin Login
 	 */
 	static async login(credentials: AdminLogin): Promise<TokenData> {
-		try {
-			// Clear any existing tokens to prevent conflicts
-			TokenManager.clearTokens();
-
-			const response = await httpClient.post('/auth/admin/login', credentials);
-
-			// Validate response with schema
-			const parsed = LoginResponseSchema.parse(response.data);
-			if (!parsed.success) {
-				throw new Error(parsed.error);
-			}
-
-			return parsed.data;
-		} catch (error: unknown) {
-			AuthErrorHandler.handleLoginError(error);
-		}
+		return this.performLogin('/auth/admin/login', credentials);
 	}
 
 	/**
 	 * 🔄 Admin Token Refresh
-	 */ static async refresh(
-		refreshToken: RefreshToken,
-	): Promise<RefreshTokenData> {
-		try {
-			const response = await httpClient.post(
-				'/auth/admin/refresh',
-				refreshToken,
-			);
-
-			// Validate response with schema
-			const parsed = RefreshResponseSchema.parse(response.data);
-			if (!parsed.success) {
-				throw new Error(parsed.error);
-			}
-
-			return parsed.data;
-		} catch (error: unknown) {
-			AuthErrorHandler.handleRefreshError(error);
-		}
+	 */
+	static async refresh(refreshToken: RefreshToken): Promise<RefreshTokenData> {
+		return this.performRefresh('/auth/admin/refresh', refreshToken);
 	}
 }
