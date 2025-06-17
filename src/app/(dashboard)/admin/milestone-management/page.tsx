@@ -1,9 +1,12 @@
-import MilestoneManagement from '@/components/features/admin/MilestoneManagement';
+import { createMetadata } from '@/app/metadata';
+import MilestoneManagementClient from '@/components/pages/MilestoneManagementClient';
+
+export const metadata = createMetadata({
+	title: 'Admin Milestone Management',
+	description:
+		'Admin Milestone Management for TheSync - Group Formation and Capstone Thesis Development',
+});
 
 export default function AdminMilestoneManagementPage() {
-	return (
-		<div className="p-6">
-			<MilestoneManagement />
-		</div>
-	);
+	return <MilestoneManagementClient />;
 }

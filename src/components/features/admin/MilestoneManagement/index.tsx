@@ -2,11 +2,14 @@
 
 import { PlusOutlined } from '@ant-design/icons';
 import { Button, Col, DatePicker, Form, Input, Row, Select } from 'antd';
+import { Space, Typography } from 'antd';
 import { useState } from 'react';
 
 import MilestoneTable from '@/components/features/admin/MilestoneManagement/MilestoneTable';
 import { initialMilestoneData } from '@/data/mileStone';
 import { Milestone } from '@/schemas/milestone';
+
+const { Title } = Typography;
 
 const { RangePicker } = DatePicker;
 
@@ -14,10 +17,14 @@ export default function MilestoneManagement() {
 	const [data] = useState<Milestone[]>(initialMilestoneData);
 
 	return (
-		<div style={{ padding: 24 }}>
-			<h2 style={{ fontSize: 24, fontWeight: 600, marginBottom: 24 }}>
+		<Space
+			direction="vertical"
+			size="large"
+			style={{ width: '100%', padding: 24 }}
+		>
+			<Title level={3} style={{ margin: 0 }}>
 				Milestones Management
-			</h2>
+			</Title>
 
 			<Form layout="vertical" requiredMark={false}>
 				<Row gutter={16}>
@@ -80,9 +87,9 @@ export default function MilestoneManagement() {
 				</Row>
 			</Form>
 
-			<div style={{ marginTop: 32 }}>
+			<Space direction="vertical" size="large" style={{ width: '100%' }}>
 				<MilestoneTable data={data} />
-			</div>
-		</div>
+			</Space>
+		</Space>
 	);
 }
