@@ -30,7 +30,8 @@ export default function StudentTable({ data }: Props) {
 			title: 'Gender',
 			dataIndex: 'gender',
 			key: 'gender',
-			render: (gender: string) => gender.charAt(0).toUpperCase() + gender.slice(1),
+			render: (gender: string) =>
+				gender.charAt(0).toUpperCase() + gender.slice(1),
 		},
 		{
 			title: 'Status',
@@ -50,7 +51,8 @@ export default function StudentTable({ data }: Props) {
 			dataSource={data}
 			rowKey="id"
 			pagination={{
-				showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} items`,
+				showTotal: (total, range) =>
+					`${range[0]}-${range[1]} of ${total} items`,
 				showSizeChanger: true,
 				pageSizeOptions: ['5', '10', '20', '50'],
 			}}
