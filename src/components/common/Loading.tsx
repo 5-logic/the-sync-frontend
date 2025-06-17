@@ -12,7 +12,7 @@ export default function Loading({
 	description,
 	type = 'default',
 	size = 'large',
-}: LoadingProps) {
+}: Readonly<LoadingProps>) {
 	const textColors = {
 		default: 'text-gray-600',
 		error: 'text-red-600',
