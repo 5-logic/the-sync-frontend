@@ -1,6 +1,9 @@
 import { useSession } from 'next-auth/react';
 
-import { UserPermissions, getUserPermissions } from '@/lib/auth/permissions';
+import {
+	UserPermissions,
+	getUserPermissions,
+} from '@/lib/auth/guards/permissions';
 
 export interface UsePermissionsReturn {
 	permissions: UserPermissions | null;

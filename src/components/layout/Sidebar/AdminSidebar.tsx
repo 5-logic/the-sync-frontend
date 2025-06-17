@@ -11,7 +11,7 @@ import { Menu } from 'antd';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-import { DASHBOARD_PATHS } from '@/lib/auth/auth-constants';
+import { DASHBOARD_PATHS } from '@/lib/auth/config/auth-constants';
 
 export default function AdminSidebar() {
 	const pathname = usePathname();
@@ -42,7 +42,7 @@ export default function AdminSidebar() {
 		{
 			key: '/admin/semester-settings',
 			icon: <SettingOutlined />,
-			label: <Link href="/admin/semester-settings">Semester Management</Link>,
+			label: <Link href="/admin/semester-settings">Semester Setting</Link>,
 		},
 	];
 	return (

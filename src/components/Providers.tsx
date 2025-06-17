@@ -7,7 +7,7 @@ interface ProvidersProps {
 	children: React.ReactNode;
 }
 
-export default function Providers({ children }: ProvidersProps) {
+export default function Providers({ children }: Readonly<ProvidersProps>) {
 	return (
 		<SessionProvider>
 			<AntdRegistry>{children}</AntdRegistry>
