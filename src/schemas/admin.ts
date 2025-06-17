@@ -19,7 +19,10 @@ export const AdminUpdateSchema = AdminSchema.pick({
 	email: true,
 }).partial();
 
+export const AdminProfileSchema = AdminSchema.omit({ password: true });
+
 // Export inferred types
 export type Admin = z.infer<typeof AdminSchema>;
 export type AdminCreate = z.infer<typeof AdminCreateSchema>;
 export type AdminUpdate = z.infer<typeof AdminUpdateSchema>;
+export type AdminProfile = z.infer<typeof AdminProfileSchema>;

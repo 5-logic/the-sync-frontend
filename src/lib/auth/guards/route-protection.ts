@@ -1,4 +1,9 @@
-import { DASHBOARD_PATHS, USER_ROLES, UserRole } from './auth-constants';
+import {
+	DASHBOARD_PATHS,
+	USER_ROLES,
+	UserRole,
+} from '@/lib/auth/config/auth-constants';
+
 import { canAccessRoute } from './permissions';
 
 export interface RouteConfig {
