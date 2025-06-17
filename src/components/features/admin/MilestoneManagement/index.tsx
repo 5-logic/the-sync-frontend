@@ -4,10 +4,9 @@ import { PlusOutlined } from '@ant-design/icons';
 import { Button, Col, DatePicker, Form, Input, Row, Select } from 'antd';
 import { useState } from 'react';
 
+import MilestoneTable from '@/components/features/admin/MilestoneManagement/MilestoneTable';
 import { initialMilestoneData } from '@/data/mileStone';
 import { Milestone } from '@/schemas/milestone';
-
-import MilestoneTable from './MilestoneTable';
 
 const { RangePicker } = DatePicker;
 
