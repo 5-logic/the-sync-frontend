@@ -1,8 +1,11 @@
 import { LockOutlined, MailOutlined } from '@ant-design/icons';
 import { Button, Form } from 'antd';
-import { z } from 'zod';
 
-import { UserLoginSchema } from '@/schemas/auth';
+import LoginFormLayout from '@/components/layout/LoginFormLayout';
+import {
+	getUserEmailValidationRules,
+	getUserPasswordValidationRules,
+} from '@/lib/utils/auth/login-validation';
 
 import {
 	FormField,
@@ -23,56 +26,8 @@ export default function UserLoginForm({
 	onFinish,
 	loading,
 }: UserLoginFormProps) {
-	// Validation rules for user login (email-based)
-	const getEmailValidationRules = () => [
-		{
-			validator: (_: unknown, value: string) => {
-				if (!value) {
-					return Promise.reject(new Error('Email is required'));
-				}
-				try {
-					const emailSchema = z.object({
-						email: UserLoginSchema.shape.email,
-					});
-					emailSchema.parse({ email: value });
-					return Promise.resolve();
-				} catch (error) {
-					if (error instanceof z.ZodError) {
-						return Promise.reject(new Error(error.errors[0].message));
-					}
-					return Promise.reject(new Error('Invalid email'));
-				}
-			},
-		},
-	];
-
-	const getPasswordValidationRules = () => [
-		{
-			validator: (_: unknown, value: string) => {
-				if (!value) {
-					return Promise.reject(new Error('Password is required'));
-				}
-				try {
-					const passwordSchema = z.object({
-						password: UserLoginSchema.shape.password,
-					});
-					passwordSchema.parse({ password: value });
-					return Promise.resolve();
-				} catch (error) {
-					if (error instanceof z.ZodError) {
-						return Promise.reject(new Error(error.errors[0].message));
-					}
-					return Promise.reject(new Error('Invalid password'));
-				}
-			},
-		},
-	];
-
 	return (
-		<div className="pt-4">
-			<p className="text-center text-gray-600 mb-6">
-				Sign in with your email address
-			</p>
+		<LoginFormLayout title="Sign in with your email address">
 			<Form
 				name="user-login"
 				onFinish={onFinish}
@@ -86,7 +41,7 @@ export default function UserLoginForm({
 					type="email"
 					icon={<MailOutlined />}
 					placeholder="Enter your email"
-					rules={getEmailValidationRules()}
+					rules={getUserEmailValidationRules()}
 				/>
 				<FormField
 					name="password"
@@ -94,7 +49,7 @@ export default function UserLoginForm({
 					type="password"
 					icon={<LockOutlined />}
 					placeholder="Enter your password"
-					rules={getPasswordValidationRules()}
+					rules={getUserPasswordValidationRules()}
 				/>
 				<RememberAndForgot />
 				<Form.Item>
@@ -106,9 +61,9 @@ export default function UserLoginForm({
 						block
 					>
 						Sign In
-					</Button>
+					</Button>{' '}
 				</Form.Item>
 			</Form>
-		</div>
+		</LoginFormLayout>
 	);
 }

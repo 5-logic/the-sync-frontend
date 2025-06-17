@@ -1,9 +1,11 @@
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
-import { Tabs } from 'antd';
+import { Flex, Tabs, Typography } from 'antd';
 
 import AdminLoginForm from './AdminLoginForm';
 import { LoginValues } from './LoginFormComponents';
 import UserLoginForm from './UserLoginForm';
+
+const { Text } = Typography;
 
 interface LoginTabsProps {
 	loading: boolean;
@@ -24,20 +26,20 @@ export default function LoginTabs({
 		{
 			key: 'user',
 			label: (
-				<span className="flex items-center gap-2">
+				<Flex align="center" gap="small">
 					<UserOutlined />
-					Student/Lecturer
-				</span>
+					<Text>Student/Lecturer</Text>
+				</Flex>
 			),
 			children: <UserLoginForm onFinish={onUserLogin} loading={loading} />,
 		},
 		{
 			key: 'admin',
 			label: (
-				<span className="flex items-center gap-2">
+				<Flex align="center" gap="small">
 					<LockOutlined />
-					Admin Login
-				</span>
+					<Text>Admin Login</Text>
+				</Flex>
 			),
 			children: <AdminLoginForm onFinish={onAdminLogin} loading={loading} />,
 		},

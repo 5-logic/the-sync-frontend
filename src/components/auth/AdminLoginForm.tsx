@@ -1,8 +1,11 @@
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { Button, Form } from 'antd';
-import { z } from 'zod';
 
-import { AdminLoginSchema } from '@/schemas/auth';
+import LoginFormLayout from '@/components/layout/LoginFormLayout';
+import {
+	getAdminPasswordValidationRules,
+	getAdminUsernameValidationRules,
+} from '@/lib/utils/auth/login-validation';
 
 import {
 	FormField,
@@ -23,56 +26,8 @@ export default function AdminLoginForm({
 	onFinish,
 	loading,
 }: AdminLoginFormProps) {
-	// Validation rules for admin login (username-based)
-	const getUsernameValidationRules = () => [
-		{
-			validator: (_: unknown, value: string) => {
-				if (!value) {
-					return Promise.reject(new Error('Username is required'));
-				}
-				try {
-					const usernameSchema = z.object({
-						username: AdminLoginSchema.shape.username,
-					});
-					usernameSchema.parse({ username: value });
-					return Promise.resolve();
-				} catch (error) {
-					if (error instanceof z.ZodError) {
-						return Promise.reject(new Error(error.errors[0].message));
-					}
-					return Promise.reject(new Error('Invalid username'));
-				}
-			},
-		},
-	];
-
-	const getPasswordValidationRules = () => [
-		{
-			validator: (_: unknown, value: string) => {
-				if (!value) {
-					return Promise.reject(new Error('Password is required'));
-				}
-				try {
-					const passwordSchema = z.object({
-						password: AdminLoginSchema.shape.password,
-					});
-					passwordSchema.parse({ password: value });
-					return Promise.resolve();
-				} catch (error) {
-					if (error instanceof z.ZodError) {
-						return Promise.reject(new Error(error.errors[0].message));
-					}
-					return Promise.reject(new Error('Invalid password'));
-				}
-			},
-		},
-	];
-
 	return (
-		<div className="pt-4">
-			<p className="text-center text-gray-600 mb-6">
-				Admin access only - sign in with username
-			</p>
+		<LoginFormLayout title="Admin access only - sign in with username">
 			<Form
 				name="admin-login"
 				onFinish={onFinish}
@@ -86,7 +41,7 @@ export default function AdminLoginForm({
 					type="text"
 					icon={<UserOutlined />}
 					placeholder="Enter your username"
-					rules={getUsernameValidationRules()}
+					rules={getAdminUsernameValidationRules()}
 				/>
 				<FormField
 					name="password"
@@ -94,7 +49,7 @@ export default function AdminLoginForm({
 					type="password"
 					icon={<LockOutlined />}
 					placeholder="Enter your password"
-					rules={getPasswordValidationRules()}
+					rules={getAdminPasswordValidationRules()}
 				/>
 				<RememberAndForgot />
 				<Form.Item>
@@ -106,9 +61,9 @@ export default function AdminLoginForm({
 						block
 					>
 						Sign In
-					</Button>
+					</Button>{' '}
 				</Form.Item>
 			</Form>
-		</div>
+		</LoginFormLayout>
 	);
 }

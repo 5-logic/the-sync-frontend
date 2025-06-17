@@ -1,20 +1,25 @@
-import { Checkbox, Form, Input } from 'antd';
+import { Checkbox, Flex, Form, Input, Typography } from 'antd';
+
+const { Link, Text } = Typography;
 
 /**
  * 🔗 Remember Me and Forgot Password Component
  */
 export const RememberAndForgot = () => (
-	<div className="flex flex-row flex-wrap items-center justify-between mb-4 gap-2 text-sm">
+	<Flex
+		justify="space-between"
+		align="center"
+		wrap="wrap"
+		gap="small"
+		style={{ marginBottom: '1rem' }}
+	>
 		<Form.Item name="remember" valuePropName="checked" noStyle>
 			<Checkbox>Remember me</Checkbox>
 		</Form.Item>
-		<a
-			href="/forgot-password"
-			className="text-blue-500 hover:underline text-sm text-right"
-		>
+		<Link href="/forgot-password" style={{ fontSize: '14px' }}>
 			Forgot password?
-		</a>
-	</div>
+		</Link>
+	</Flex>
 );
 
 /**
@@ -38,9 +43,9 @@ export const FormField = ({
 }) => (
 	<Form.Item
 		label={
-			<span>
-				{label} <span className="text-red-500">*</span>
-			</span>
+			<Text>
+				{label} <Text style={{ color: '#ef4444' }}>*</Text>
+			</Text>
 		}
 		name={name}
 		rules={rules}
