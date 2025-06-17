@@ -12,7 +12,7 @@ import { Menu } from 'antd';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-import { DASHBOARD_PATHS } from '@/lib/auth/auth-constants';
+import { DASHBOARD_PATHS } from '@/lib/auth/config/auth-constants';
 
 const studentMenuItems = [
 	{

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
-import { TokenManager } from '@/lib/auth/token-manager';
 import { AuthService } from '@/lib/services/auth';
+import { TokenManager } from '@/lib/utils/auth/token-manager';
 
 interface TokenStatus {
 	hasAccessToken: boolean;

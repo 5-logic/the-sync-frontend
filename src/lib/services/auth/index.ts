@@ -1,7 +1,7 @@
 // Unified AuthService class for backward compatibility
 import { signOut } from 'next-auth/react';
 
-import { TokenManager } from '@/lib/auth/token-manager';
+import { TokenManager } from '@/lib/utils/auth/token-manager';
 
 import { AdminAuthService } from './admin-auth.service';
 import { TokenUtilsService } from './token-utils.service';

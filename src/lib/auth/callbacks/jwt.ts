@@ -1,10 +1,11 @@
+import { User } from 'next-auth';
+import { JWT } from 'next-auth/jwt';
+
 import {
 	fetchUserProfile,
 	getFallbackName,
 	mapProfileToToken,
-} from '../profile-fetcher';
-import { User } from 'next-auth';
-import { JWT } from 'next-auth/jwt';
+} from '@/lib/utils/auth/profile-fetcher';
 
 /**
  * 🔐 JWT Callback Handler

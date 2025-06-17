@@ -1,7 +1,7 @@
 import { useSession } from 'next-auth/react';
 import { useEffect } from 'react';
 
-import { TokenManager } from '@/lib/auth/token-manager';
+import { TokenManager } from '@/lib/utils/auth/token-manager';
 
 /**
  * Hook to sync tokens from NextAuth session to TokenManager

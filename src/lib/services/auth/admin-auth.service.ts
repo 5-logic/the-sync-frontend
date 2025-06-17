@@ -1,6 +1,6 @@
 import httpClient from '../_httpClient';
 
-import { TokenManager } from '@/lib/auth/token-manager';
+import { TokenManager } from '@/lib/utils/auth/token-manager';
 import {
 	AdminLogin,
 	LoginResponseSchema,

@@ -2,14 +2,12 @@ import { Session } from 'next-auth';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { AUTH_MESSAGES } from './auth-constants';
-import { checkRoutePermission, findMatchingRoute } from './route-protection';
-
-export interface AuthState {
-	isAuthorized: boolean | null;
-	isLoading: boolean;
-	error?: string;
-}
+import { AUTH_MESSAGES } from '@/lib/auth/config/auth-constants';
+import {
+	checkRoutePermission,
+	findMatchingRoute,
+} from '@/lib/auth/guards/route-protection';
+import { AuthState } from '@/types/auth';
 
 // Cache for route permissions to avoid repeated calculations
 const permissionCache = new Map<
@@ -94,7 +92,11 @@ export function useRouteProtection(
 		}
 
 		// Reset state when checking
-		setAuthState((prev) => ({ ...prev, isLoading: true, error: undefined }));
+		setAuthState((prev: AuthState) => ({
+			...prev,
+			isLoading: true,
+			error: undefined,
+		}));
 
 		// Still loading session
 		if (status === 'loading') {

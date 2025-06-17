@@ -1,12 +1,5 @@
 import httpClient from '@/lib/services/_httpClient';
 
-export interface UserProfile {
-	id: string;
-	role: string;
-	accessToken: string;
-	[key: string]: unknown;
-}
-
 export interface ProfileData {
 	fullName?: string;
 	name?: string;
@@ -26,9 +19,11 @@ export interface ProfileData {
 /**
  * 🔍 Fetch user profile data based on role
  */
-export async function fetchUserProfile(
-	user: UserProfile,
-): Promise<ProfileData | null> {
+export async function fetchUserProfile(user: {
+	id: string;
+	role: string;
+	accessToken: string;
+}): Promise<ProfileData | null> {
 	try {
 		// Determine endpoint based on user role
 		const endpoint = getProfileEndpoint(user.role, user.id);

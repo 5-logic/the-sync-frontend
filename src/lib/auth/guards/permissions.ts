@@ -1,6 +1,6 @@
 import { Session } from 'next-auth';
 
-import { USER_ROLES, UserRole } from './auth-constants';
+import { USER_ROLES, UserRole } from '@/lib/auth/config/auth-constants';
 
 export interface UserPermissions {
 	role: UserRole;

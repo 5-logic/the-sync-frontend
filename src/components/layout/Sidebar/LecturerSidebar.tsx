@@ -15,7 +15,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 import { usePermissions } from '@/hooks/auth';
-import { DASHBOARD_PATHS } from '@/lib/auth/auth-constants';
+import { DASHBOARD_PATHS } from '@/lib/auth/config/auth-constants';
 
 export default function LecturerSidebar() {
 	const pathname = usePathname();
