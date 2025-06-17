@@ -41,7 +41,7 @@ export default function SemesterSettings() {
 			<Space direction="vertical" size="large" style={{ width: '100%' }}>
 				<div>
 					<Title level={2} style={{ marginBottom: '4px' }}>
-						Semester & Academic Settings
+						Semester Settings
 					</Title>
 					<Paragraph type="secondary" style={{ marginBottom: 0 }}>
 						Create and manage semesters, registration windows, and
