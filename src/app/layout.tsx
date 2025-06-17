@@ -1,29 +1,22 @@
-import type { Metadata } from 'next';
-
 import '@/app/globals.css';
+import ChatbotWidget from '@/components/ChatbotWidget';
 import Providers from '@/components/Providers';
 
-export const metadata: Metadata = {
-	title: 'TheSync',
-	description: 'Group Formation and Capstone Thesis Development',
-	icons: {
-		icon: '/icons/TheSyncLogo.ico',
-		shortcut: '/icons/TheSyncLogo.ico',
-	},
-};
+export { metadata } from '@/app/metadata';
 
-const RootLayout = ({
+export default function RootLayout({
 	children,
-}: Readonly<{
+}: {
 	children: React.ReactNode;
-}>) => {
+}) {
 	return (
-		<html lang="en" suppressHydrationWarning>
-			<body suppressHydrationWarning={true}>
-				<Providers>{children}</Providers>
+		<html lang="en">
+			<body suppressHydrationWarning>
+				<Providers>
+					{children}
+					<ChatbotWidget />
+				</Providers>
 			</body>
 		</html>
 	);
-};
-
-export default RootLayout;
+}
