@@ -1,34 +1,34 @@
 import { z } from 'zod';
 
-export const GenderSchema = z.enum(['male', 'female']);
+export const GenderSchema = z.enum(['Male', 'Female']);
 export const ThesisStatusSchema = z.enum([
-	'new',
-	'pending',
-	'approved',
-	'rejected',
+	'New',
+	'Pending',
+	'Approved',
+	'Rejected',
 ]);
 export const SkillLevelSchema = z.enum([
-	'beginner',
-	'intermediate',
-	'proficient',
-	'advanced',
-	'expert',
+	'Beginner',
+	'Intermediate',
+	'Proficient',
+	'Advanced',
+	'Expert',
 ]);
-export const RequestTypeSchema = z.enum(['invite', 'join']);
-export const RequestStatusSchema = z.enum(['pending', 'approved', 'rejected']);
+export const RequestTypeSchema = z.enum(['Invite', 'Join']);
+export const RequestStatusSchema = z.enum(['Pending', 'Approved', 'Rejected']);
 export const SemesterStatusSchema = z.enum([
-	'not_yet',
-	'preparing',
-	'picking',
-	'ongoing',
-	'end',
+	'NotYet',
+	'Preparing',
+	'Picking',
+	'Ongoing',
+	'End',
 ]);
-export const OngoingPhaseSchema = z.enum(['scope_adjustable', 'scope_locked']);
-export const EnrollmentStatusSchema = z.enum(['failed', 'ongoing', 'passed']);
+export const OngoingPhaseSchema = z.enum(['ScopeAdjustable', 'ScopeLocked']);
+export const EnrollmentStatusSchema = z.enum(['Failed', 'Ongoing', 'Passed']);
 export const ChecklistReviewAcceptanceSchema = z.enum([
-	'accepted',
-	'rejected',
-	'not_available',
+	'Yes',
+	'No',
+	'NotAvailable',
 ]);
 
 // Export inferred types

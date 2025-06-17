@@ -1,8 +1,24 @@
+'use client';
+
+import { Layout } from 'antd';
+
+import SemesterSettings from '@/components/features/admin/SemesterSetting/SemesterSettings';
+
+const { Content } = Layout;
+
 export default function AdminSemesterSettingsPage() {
 	return (
-		<div className="p-6">
-			<h1 className="text-2xl font-bold mb-4">Semester Settings</h1>
-			<p className="text-gray-600">Configure semester settings and schedules</p>
-		</div>
+		<Layout style={{ minHeight: '100vh', backgroundColor: '#ffffff' }}>
+			<Content
+				style={{
+					maxWidth: '1152px',
+					margin: '0 auto',
+					padding: '24px 16px',
+					width: '100%',
+				}}
+			>
+				<SemesterSettings />
+			</Content>
+		</Layout>
 	);
 }
