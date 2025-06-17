@@ -3,11 +3,10 @@
 import { Card, Typography } from 'antd';
 import { useState } from 'react';
 
+import LecturerFilterBar from '@/components/features/admin/LectureManagement/LecturerFilterBar';
+import LecturerTable from '@/components/features/admin/LectureManagement/LecturerTable';
 import { mockLecturers } from '@/data/lecturers';
 import { Lecturer } from '@/schemas/lecturer';
-
-import LecturerFilterBar from './LecturerFilterBar';
-import LecturerTable from './LecturerTable';
 
 export default function LecturerManagement() {
 	const [statusFilter, setStatusFilter] = useState<
