@@ -52,7 +52,7 @@ export const SidebarSection: React.FC<SidebarSectionProps> = ({
 				{collapsed ? (
 					// Only display logo image when collapsed
 					<Image
-						src="/images/TheSync_logo.png"
+						src="/images/thesync-logo.svg"
 						alt="TheSync Logo"
 						width={32}
 						height={32}
@@ -62,15 +62,25 @@ export const SidebarSection: React.FC<SidebarSectionProps> = ({
 					// Display full logo component when expanded
 					<Logo />
 				)}
-			</div>
-
+			</div>{' '}
 			{/* Divider */}
 			<div style={{ padding: '0 16px' }}>
 				<Divider style={{ margin: '0 0 8px 0' }} />
 			</div>
-
 			{/* Sidebar Content */}
-			<div onClick={onMenuClick}>{children}</div>
+			<div
+				onClick={onMenuClick}
+				role="button"
+				tabIndex={0}
+				onKeyDown={(e) => {
+					if (e.key === 'Enter' || e.key === ' ') {
+						onMenuClick();
+					}
+				}}
+				aria-label="Menu navigation"
+			>
+				{children}
+			</div>
 		</Sider>
 	);
 };

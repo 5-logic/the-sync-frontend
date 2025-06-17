@@ -1,8 +1,12 @@
-export default function AdminSemesterSettingsPage() {
-	return (
-		<div className="p-6">
-			<h1 className="text-2xl font-bold mb-4">Semester Settings</h1>
-			<p className="text-gray-600">Configure semester settings and schedules</p>
-		</div>
-	);
+import { createMetadata } from '@/app/metadata';
+import SemesterSettingsClient from '@/components/pages/SemesterSettingsClient';
+
+export const metadata = createMetadata({
+	title: 'Admin Semester Settings',
+	description:
+		'Admin Semester Settings for TheSync - Group Formation and Capstone Thesis Development',
+});
+
+export default function Page() {
+	return <SemesterSettingsClient />;
 }

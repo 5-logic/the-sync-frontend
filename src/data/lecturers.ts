@@ -1,0 +1,48 @@
+import { Lecturer } from '@/schemas/lecturer';
+
+export const mockLecturers: (Lecturer & { instructionGroups: string })[] = [
+	{
+		id: '1',
+		fullName: 'Sarah Wilson',
+		email: 'sarah.wilson@university.edu',
+		phoneNumber: '0444444444',
+		password: '',
+		gender: 'Female',
+		isActive: true,
+		isModerator: false,
+		instructionGroups: '03',
+	},
+	{
+		id: '2',
+		fullName: 'Michael Chen',
+		email: 'michael.chen@university.edu',
+		phoneNumber: '0555555555',
+		password: '',
+		gender: 'Male',
+		isActive: true,
+		isModerator: true,
+		instructionGroups: '03',
+	},
+	{
+		id: '3',
+		fullName: 'Emily Davis',
+		email: 'emily.davis@university.edu',
+		phoneNumber: '0666666666',
+		password: '',
+		gender: 'Female',
+		isActive: false,
+		isModerator: false,
+		instructionGroups: '03',
+	},
+	{
+		id: '4',
+		fullName: 'David Lee',
+		email: 'david.lee@university.edu',
+		phoneNumber: '0888888888',
+		password: '',
+		gender: 'Male',
+		isActive: true,
+		isModerator: false,
+		instructionGroups: '03',
+	},
+];

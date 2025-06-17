@@ -1,8 +1,12 @@
+import { createMetadata } from '@/app/metadata';
+import LecturerManagementClient from '@/components/pages/LecturerManagementClient';
+
+export const metadata = createMetadata({
+	title: 'Admin Lecturer Management',
+	description:
+		'Admin Lecturer Management for TheSync - Group Formation and Capstone Thesis Development',
+});
+
 export default function AdminLectureManagementPage() {
-	return (
-		<div className="p-6">
-			<h1 className="text-2xl font-bold mb-4">Lecture Management</h1>
-			<p className="text-gray-600">Manage all lecturers in the system</p>
-		</div>
-	);
+	return <LecturerManagementClient />;
 }

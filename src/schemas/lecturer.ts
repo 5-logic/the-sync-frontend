@@ -1,12 +1,13 @@
 import { z } from 'zod';
 
-export const LecturerSchema = z.object({
-	userId: z.string().uuid(),
+import { UserSchema } from '@/schemas/user';
+
+export const LecturerSchema = UserSchema.extend({
 	isModerator: z.boolean().default(false),
 });
 
 export const LecturerCreateSchema = LecturerSchema.pick({
-	userId: true,
+	id: true,
 }).extend({
 	isModerator: z.boolean().optional(),
 });

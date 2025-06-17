@@ -1,0 +1,62 @@
+'use client';
+
+import { Card, Typography } from 'antd';
+import { useState } from 'react';
+
+import LecturerFilterBar from '@/components/features/admin/LectureManagement/LecturerFilterBar';
+import LecturerTable from '@/components/features/admin/LectureManagement/LecturerTable';
+import { mockLecturers } from '@/data/lecturers';
+import { Lecturer } from '@/schemas/lecturer';
+
+export default function LecturerManagement() {
+	const [statusFilter, setStatusFilter] = useState<
+		'all' | 'active' | 'inactive'
+	>('all');
+	const [searchText, setSearchText] = useState<string>('');
+	const [data, setData] =
+		useState<(Lecturer & { instructionGroups: string })[]>(mockLecturers);
+	const filteredData = data.filter((lecturer) => {
+		const matchesStatus =
+			statusFilter === 'all' ||
+			(statusFilter === 'active' && lecturer.isActive) ||
+			(statusFilter === 'inactive' && !lecturer.isActive);
+
+		const matchesSearch = [lecturer.fullName, lecturer.email].some((field) =>
+			(field ?? '').toLowerCase().includes(searchText.toLowerCase()),
+		);
+
+		return matchesStatus && matchesSearch;
+	});
+
+	const handleTogglePermission = (id: string) => {
+		setData((prev) =>
+			prev.map((item) =>
+				item.id === id ? { ...item, isModerator: !item.isModerator } : item,
+			),
+		);
+	};
+
+	const handleCreateLecturer = () => {
+		console.log('Create new lecturer clicked');
+	};
+
+	const { Title } = Typography;
+	return (
+		<Card bordered={false} style={{ padding: 0 }}>
+			<Title level={2}>Lecturer Management</Title>
+
+			<LecturerFilterBar
+				statusFilter={statusFilter}
+				setStatusFilter={setStatusFilter}
+				searchText={searchText}
+				setSearchText={setSearchText}
+				onCreateLecturer={handleCreateLecturer}
+			/>
+
+			<LecturerTable
+				data={filteredData}
+				onTogglePermission={handleTogglePermission}
+			/>
+		</Card>
+	);
+}
