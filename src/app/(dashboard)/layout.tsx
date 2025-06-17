@@ -4,13 +4,13 @@ import { useSession } from 'next-auth/react';
 import { usePathname } from 'next/navigation';
 
 import Loading from '@/components/common/Loading';
-import { AUTH_MESSAGES } from '@/lib/auth/auth-constants';
-import { useRouteProtection } from '@/lib/auth/auth-helpers';
+import { AUTH_MESSAGES } from '@/lib/auth/config/auth-constants';
+import { useRouteProtection } from '@/lib/utils/auth/auth-helpers';
 
 export default function DashboardLayout({
 	children,
 }: {
-	children: React.ReactNode;
+	readonly children: React.ReactNode;
 }) {
 	const { data: session, status } = useSession();
 	const pathname = usePathname();
@@ -36,7 +36,7 @@ export default function DashboardLayout({
 		return (
 			<Loading
 				message={AUTH_MESSAGES.LOADING.REDIRECTING}
-				description={error || AUTH_MESSAGES.LOADING.REDIRECTING_DESC}
+				description={error ?? AUTH_MESSAGES.LOADING.REDIRECTING_DESC}
 			/>
 		);
 	}

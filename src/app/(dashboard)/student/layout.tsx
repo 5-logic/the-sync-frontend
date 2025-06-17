@@ -4,7 +4,7 @@ import StudentSidebar from '@/components/layout/Sidebar/StudentSidebar';
 export default function StudentLayout({
 	children,
 }: {
-	children: React.ReactNode;
+	readonly children: React.ReactNode;
 }) {
 	return (
 		<CollapsibleLayout sidebar={<StudentSidebar />}>
