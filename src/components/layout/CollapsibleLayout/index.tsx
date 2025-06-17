@@ -5,7 +5,7 @@ import { HeaderSection } from '../Header';
 import { Layout, theme } from 'antd';
 import React from 'react';
 
-import { useResponsiveLayout } from '@/hooks/useResponsiveLayout';
+import { useResponsiveLayout } from '@/hooks/ui';
 import { useAppStore } from '@/store/useAppStore';
 
 import { CollapsibleLayoutProps } from './CollapsibleLayout.types';

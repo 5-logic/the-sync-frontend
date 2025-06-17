@@ -12,7 +12,6 @@ import { useRouter } from 'next/navigation';
 export default function UnauthorizedPage() {
 	const router = useRouter();
 	const { data: session, status } = useSession();
-
 	const handleGoToDashboard = () => {
 		if (!session?.user?.role) {
 			router.push('/login');
@@ -23,10 +22,12 @@ export default function UnauthorizedPage() {
 		const dashboards = {
 			student: '/student',
 			lecturer: '/lecturer',
+			moderator: '/lecturer', // Moderator uses lecturer dashboard
 			admin: '/admin',
 		};
 
 		const dashboardRoute = dashboards[role as keyof typeof dashboards];
+
 		if (dashboardRoute) {
 			router.push(dashboardRoute);
 		} else {
