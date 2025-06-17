@@ -39,6 +39,7 @@ const SemesterForm = memo<SemesterFormProps>(({ form, onSuccess }) => {
 			try {
 				const semesterData: SemesterCreate = {
 					...values,
+					code: values.code.trim().toUpperCase(),
 					status: 'NotYet',
 				};
 
@@ -141,7 +142,9 @@ const SemesterForm = memo<SemesterFormProps>(({ form, onSuccess }) => {
 									Number((value ?? '').replace(/\$\s?|(,*)/g, ''))
 								}
 								formatter={(value) =>
-									`${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+									value !== undefined && value !== null
+										? Number(value).toLocaleString('en-US')
+										: ''
 								}
 								style={{ width: '100%' }}
 								disabled={loading}
