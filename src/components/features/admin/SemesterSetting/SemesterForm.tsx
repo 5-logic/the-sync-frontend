@@ -135,8 +135,8 @@ const SemesterForm = memo<SemesterFormProps>(({ form, onSuccess }) => {
 						<Form.Item name="maxGroup" label="Max Group">
 							<InputNumber
 								placeholder="Enter maximum number of groups"
-								min={1 as number}
-								max={1000 as number}
+								min={1}
+								max={1000}
 								precision={0}
 								parser={(value) =>
 									Number((value ?? '').replace(/\$\s?|(,*)/g, ''))
