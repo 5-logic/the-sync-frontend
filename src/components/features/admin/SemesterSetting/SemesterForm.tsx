@@ -1,65 +1,181 @@
 'use client';
 
-import { Button, Form, Input, Select } from 'antd';
+import {
+	Button,
+	Card,
+	Col,
+	Form,
+	Input,
+	InputNumber,
+	Row,
+	Space,
+	Typography,
+	notification,
+} from 'antd';
 import type { FormInstance } from 'antd/es/form';
+import { memo, useCallback, useState } from 'react';
 
-const { Option } = Select;
+import semesterService from '@/lib/services/semesters.service';
+import { SemesterCreate } from '@/schemas/semester';
 
-const SemesterForm = ({ form }: { form: FormInstance }) => (
-	<div className="bg-white border border-gray-300 rounded-lg p-6 mb-15">
-		<h2 className="text-lg font-semibold mb-4">Add New Semester</h2>
-		<Form form={form} layout="vertical">
-			<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-				<Form.Item
-					name="season"
-					label={
-						<span>
-							Season <span className="text-red-500">*</span>
-						</span>
-					}
-					rules={[{ required: true, message: 'Season is required' }]}
-					required={false}
-				>
-					<Select placeholder="Select the season of semester">
-						<Option value="Spring">Spring</Option>
-						<Option value="Summer">Summer</Option>
-						<Option value="Fall">Fall</Option>
-					</Select>
-				</Form.Item>
+const { Title } = Typography;
 
-				<Form.Item
-					name="year"
-					label={
-						<span>
-							Year <span className="text-red-500">*</span>
-						</span>
-					}
-					rules={[{ required: true, message: 'Year is required' }]}
-					required={false}
-				>
-					<Select placeholder="Select the year for semester">
-						<Option value="2025">2025</Option>
-						<Option value="2026">2026</Option>
-						<Option value="2027">2027</Option>
-					</Select>
-				</Form.Item>
-			</div>
+interface SemesterFormProps {
+	form: FormInstance;
+	onSuccess?: () => void;
+}
 
-			<div className="mt-4">
-				<h3 className="text-base font-medium mb-2">Semester Policy</h3>
-				<Form.Item name="maxGroup" label="Max Group">
-					<Input placeholder="Enter maximum number of groups" type="number" />
-				</Form.Item>
-			</div>
+const SemesterForm = memo<SemesterFormProps>(({ form, onSuccess }) => {
+	const [loading, setLoading] = useState(false);
+	const watchedValues = Form.useWatch([], form);
 
-			<div className="flex justify-end space-x-2">
-				<Button onClick={() => form.resetFields()}>Clear Form</Button>
-				<Button type="primary" htmlType="submit">
-					Save Semester
-				</Button>
-			</div>
-		</Form>
-	</div>
-);
+	const isFormValid = Boolean(
+		watchedValues?.name?.trim() && watchedValues?.code?.trim(),
+	);
+
+	const handleSubmit = useCallback(
+		async (values: SemesterCreate) => {
+			setLoading(true);
+			try {
+				const semesterData: SemesterCreate = {
+					...values,
+					code: values.code.trim().toUpperCase(),
+					status: 'NotYet',
+				};
+
+				const response = await semesterService.create(semesterData);
+
+				if (response.success) {
+					notification.success({
+						message: 'Success',
+						description: 'Semester created successfully',
+						placement: 'bottomRight',
+					});
+					form.resetFields();
+					onSuccess?.();
+				} else {
+					notification.error({
+						message: 'Error',
+						description: 'Failed to create semester',
+						placement: 'bottomRight',
+					});
+				}
+			} catch (error) {
+				console.error('Error creating semester:', error);
+				notification.error({
+					message: 'Error',
+					description: 'Error creating semester',
+					placement: 'bottomRight',
+				});
+			} finally {
+				setLoading(false);
+			}
+		},
+		[form, onSuccess],
+	);
+
+	const handleClearForm = useCallback(() => {
+		form.resetFields();
+	}, [form]);
+
+	const nameRules = [
+		{ required: true, message: 'Semester name is required' },
+		{ max: 100, message: 'Name must be less than 100 characters' },
+	];
+
+	const codeRules = [
+		{ required: true, message: 'Semester code is required' },
+		{ max: 20, message: 'Code must be less than 20 characters' },
+	];
+
+	return (
+		<Card>
+			<Space direction="vertical" size="middle" style={{ width: '100%' }}>
+				<Title level={4} style={{ marginBottom: 0 }}>
+					Add New Semester
+				</Title>
+
+				<Form form={form} layout="vertical" onFinish={handleSubmit}>
+					<Row gutter={16}>
+						<Col xs={24} md={12}>
+							<Form.Item
+								name="name"
+								label="Semester Name"
+								rules={nameRules}
+								required
+							>
+								<Input
+									placeholder="Enter semester name (e.g., Spring 2025)"
+									maxLength={100}
+									disabled={loading}
+								/>
+							</Form.Item>
+						</Col>
+
+						<Col xs={24} md={12}>
+							<Form.Item
+								name="code"
+								label="Semester Code"
+								rules={codeRules}
+								required
+							>
+								<Input
+									placeholder="Enter semester code (e.g., SP25)"
+									maxLength={20}
+									disabled={loading}
+								/>
+							</Form.Item>
+						</Col>
+					</Row>
+
+					<Space direction="vertical" size="small" style={{ width: '100%' }}>
+						<Title level={5} style={{ marginBottom: 8 }}>
+							Semester Policy
+						</Title>
+						<Form.Item name="maxGroup" label="Max Group">
+							<InputNumber
+								placeholder="Enter maximum number of groups"
+								min={1}
+								max={1000}
+								precision={0}
+								parser={(value) =>
+									Number((value ?? '').replace(/\$\s?|(,*)/g, ''))
+								}
+								formatter={(value) =>
+									value !== undefined && value !== null
+										? Number(value).toLocaleString('en-US')
+										: ''
+								}
+								style={{ width: '100%' }}
+								disabled={loading}
+								controls={true}
+								keyboard={true}
+								stringMode={false}
+							/>
+						</Form.Item>
+					</Space>
+
+					<Row justify="end">
+						<Space>
+							<Button onClick={handleClearForm} disabled={loading}>
+								Clear Form
+							</Button>
+							<Button
+								type="primary"
+								htmlType="submit"
+								disabled={!isFormValid}
+								loading={loading}
+							>
+								Create Semester
+							</Button>
+						</Space>
+					</Row>
+				</Form>
+			</Space>
+		</Card>
+	);
+});
+
+SemesterForm.displayName = 'SemesterForm';
 
 export default SemesterForm;

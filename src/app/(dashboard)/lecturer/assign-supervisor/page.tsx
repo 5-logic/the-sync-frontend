@@ -37,7 +37,7 @@ export default function LecturerAssignSupervisorPage() {
 					supervision relationships.
 				</Text>
 
-				{/* TODO: Add actual supervisor assignment logic here */}
+				{/* Add actual supervisor assignment logic here */}
 				<div className="mt-4 p-4 bg-blue-50 rounded-lg">
 					<Text>
 						<strong>Moderator Privileges:</strong> This page is only accessible

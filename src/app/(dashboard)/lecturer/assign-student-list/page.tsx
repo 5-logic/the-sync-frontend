@@ -39,7 +39,7 @@ export default function LecturerAssignStudentListPage() {
 					assignment process.
 				</Text>
 
-				{/* TODO: Add actual student assignment list logic here */}
+				{/* Add actual student assignment list logic here */}
 				<div className="mt-4 p-4 bg-blue-50 rounded-lg">
 					<Text>
 						<strong>Moderator Privileges:</strong> This page is only accessible

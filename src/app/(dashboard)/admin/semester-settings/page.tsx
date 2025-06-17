@@ -1,11 +1,12 @@
-import SemesterSettings from '@/components/features/admin/SemesterSetting/SemesterSettings';
+import { createMetadata } from '@/app/metadata';
+import SemesterSettingsClient from '@/components/pages/SemesterSettingsClient';
 
-export default function AdminSemesterSettingsPage() {
-	return (
-		<div className="min-h-screen w-full">
-			<div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-				<SemesterSettings />
-			</div>
-		</div>
-	);
+export const metadata = createMetadata({
+	title: 'Admin Semester Settings',
+	description:
+		'Admin Semester Settings for TheSync - Group Formation and Capstone Thesis Development',
+});
+
+export default function Page() {
+	return <SemesterSettingsClient />;
 }
