@@ -1,13 +1,16 @@
 'use client';
 
-import { Form } from 'antd';
-import { useState } from 'react';
+import { Divider, Form, Space, Typography } from 'antd';
+import { useCallback, useRef, useState } from 'react';
 
 import SearchFilterBar from '@/components/features/admin/SemesterSetting/SearchFilterBar';
 import SemesterForm from '@/components/features/admin/SemesterSetting/SemesterForm';
-import SemesterTable from '@/components/features/admin/SemesterSetting/SemesterTable';
+import SemesterTable, {
+	SemesterTableRef,
+} from '@/components/features/admin/SemesterSetting/SemesterTable';
+import { SemesterStatus } from '@/schemas/_enums';
 
-type SemesterStatus = 'Not yet' | 'On-going' | 'End';
+const { Title, Paragraph } = Typography;
 
 export default function SemesterSettings() {
 	const [form] = Form.useForm();
@@ -15,27 +18,56 @@ export default function SemesterSettings() {
 		'All',
 	);
 	const [searchText, setSearchText] = useState('');
+	const [refreshLoading, setRefreshLoading] = useState(false);
+	const semesterTableRef = useRef<SemesterTableRef>(null);
+
+	const handleRefresh = useCallback(async () => {
+		if (!semesterTableRef.current) return;
+
+		setRefreshLoading(true);
+		try {
+			await semesterTableRef.current.refresh();
+		} finally {
+			setRefreshLoading(false);
+		}
+	}, []);
+
+	const handleSemesterCreated = useCallback(async () => {
+		await handleRefresh();
+	}, [handleRefresh]);
 
 	return (
-		<div className="p-6">
-			<h1 className="text-2xl font-semibold mb-1">
-				Semester & Academic Settings
-			</h1>
-			<p className="text-gray-500 mb-12">
-				Create and manage semesters, registration windows, and capstone-specific
-				rules
-			</p>
+		<div style={{ padding: '24px' }}>
+			<Space direction="vertical" size="large" style={{ width: '100%' }}>
+				<div>
+					<Title level={2} style={{ marginBottom: '4px' }}>
+						Semester & Academic Settings
+					</Title>
+					<Paragraph type="secondary" style={{ marginBottom: 0 }}>
+						Create and manage semesters, registration windows, and
+						capstone-specific rules
+					</Paragraph>
+				</div>
 
-			<SemesterForm form={form} />
+				<SemesterForm form={form} onSuccess={handleSemesterCreated} />
 
-			<SearchFilterBar
-				statusFilter={statusFilter}
-				setStatusFilter={setStatusFilter}
-				searchText={searchText}
-				setSearchText={setSearchText}
-			/>
+				<Divider />
 
-			<SemesterTable statusFilter={statusFilter} searchText={searchText} />
+				<SearchFilterBar
+					statusFilter={statusFilter}
+					setStatusFilter={setStatusFilter}
+					searchText={searchText}
+					setSearchText={setSearchText}
+					onRefresh={handleRefresh}
+					loading={refreshLoading}
+				/>
+
+				<SemesterTable
+					ref={semesterTableRef}
+					statusFilter={statusFilter}
+					searchText={searchText}
+				/>
+			</Space>
 		</div>
 	);
 }
