@@ -14,7 +14,7 @@ import { Badge, Menu } from 'antd';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-import { usePermissions } from '@/hooks/usePermissions';
+import { usePermissions } from '@/hooks/auth';
 import { DASHBOARD_PATHS } from '@/lib/auth/auth-constants';
 
 export default function LecturerSidebar() {

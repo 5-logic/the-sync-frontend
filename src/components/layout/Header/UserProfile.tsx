@@ -6,13 +6,14 @@ import {
 	UserOutlined,
 } from '@ant-design/icons';
 import { Avatar, Dropdown, MenuProps, Modal } from 'antd';
-import { signOut, useSession } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { useResponsiveLayout } from '@/hooks/useResponsiveLayout';
+import { useResponsiveLayout } from '@/hooks/ui';
+import { AuthService } from '@/lib/services/auth';
 
 const UserProfile: React.FC = () => {
 	const { data: session } = useSession();
@@ -42,7 +43,7 @@ const UserProfile: React.FC = () => {
 			onOk: async () => {
 				try {
 					console.log('🔐 Logging out user:', session?.user?.email);
-					await signOut({ redirect: false });
+					await AuthService.logout({ redirect: false });
 					console.log('✅ Logout successful');
 					router.push('/login');
 				} catch (error) {
