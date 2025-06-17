@@ -6,9 +6,17 @@ export const EnrollmentSchema = z.object({
 	studentId: z.string(),
 	semesterId: z.string().uuid(),
 	status: EnrollmentStatusSchema,
+	createdAt: z.date(),
+	updatedAt: z.date(),
 });
 
-export const EnrollmentCreateSchema = EnrollmentSchema;
+export const EnrollmentCreateSchema = EnrollmentSchema.omit({
+	createdAt: true,
+	updatedAt: true,
+}).extend({
+	status: EnrollmentStatusSchema.default('NotYet'),
+});
+
 export const EnrollmentUpdateSchema = EnrollmentSchema.pick({
 	status: true,
 });
