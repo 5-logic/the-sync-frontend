@@ -1,8 +1,12 @@
 import '@/app/globals.css';
+import { createMetadata } from '@/app/metadata';
 import ChatbotWidget from '@/components/ChatbotWidget';
 import Providers from '@/components/Providers';
 
-export { metadata } from '@/app/metadata';
+export const metadata = createMetadata({
+	title: 'Login',
+	description: 'Group Formation and Capstone Thesis Development',
+});
 
 export default function RootLayout({
 	children,

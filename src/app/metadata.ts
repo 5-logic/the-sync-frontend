@@ -1,10 +1,20 @@
 import { Metadata } from 'next';
 
-export const metadata: Metadata = {
-	title: 'TheSync',
-	description: 'Group Formation and Capstone Thesis Development',
-	icons: {
-		icon: '/icons/TheSyncLogo.ico',
-		shortcut: '/icons/TheSyncLogo.ico',
-	},
-};
+interface MetadataConfig {
+	title: string;
+	description: string;
+}
+
+export function createMetadata({
+	title,
+	description,
+}: MetadataConfig): Metadata {
+	return {
+		title: `TheSync | ${title}`,
+		description,
+		icons: {
+			icon: '/icons/TheSyncLogo.ico',
+			shortcut: '/icons/TheSyncLogo.ico',
+		},
+	};
+}
