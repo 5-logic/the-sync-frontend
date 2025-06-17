@@ -2,6 +2,28 @@ import { notification } from 'antd';
 import { useRouter } from 'next/navigation';
 
 /**
+ * Utility function to wait for session to be updated
+ */
+const waitForSessionUpdate = async (
+	maxAttempts = 5,
+	delayMs = 200,
+): Promise<{ user?: { role?: string } } | null> => {
+	for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+		const session = await fetch('/api/auth/session').then((res) => res.json());
+
+		if (session?.user?.role) {
+			return session;
+		}
+
+		if (attempt < maxAttempts) {
+			await new Promise((resolve) => setTimeout(resolve, delayMs));
+		}
+	}
+
+	throw new Error('Session update timeout');
+};
+
+/**
  * ✅ Login Success Handler
  * Handles successful login and routing logic
  */
@@ -11,11 +33,11 @@ export class LoginSuccessHandler {
 	 */
 	static async handleLoginSuccess(router: ReturnType<typeof useRouter>) {
 		try {
-			// Get the updated session to access user role
-			const session = await fetch('/api/auth/session').then((res) =>
-				res.json(),
-			);
-			const userRole = session?.user?.role; // Determine redirect path based on actual user role
+			// Wait for session to be properly updated with retry logic
+			const session = await waitForSessionUpdate();
+			const userRole = session?.user?.role;
+
+			// Determine redirect path based on actual user role
 			let redirectPath = '/student'; // default
 			let dashboardName = 'student';
 
@@ -36,10 +58,8 @@ export class LoginSuccessHandler {
 				placement: 'bottomRight',
 			});
 
-			// Add a small delay to ensure session is fully updated
-			setTimeout(() => {
-				router.push(redirectPath);
-			}, 100);
+			// Session is already verified from waitForSessionUpdate
+			router.push(redirectPath);
 
 			return true;
 		} catch (sessionError) {

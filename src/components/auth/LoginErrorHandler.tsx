@@ -9,10 +9,13 @@ export class LoginErrorHandler {
 	 * Handle different types of login errors with specific notifications
 	 */
 	static handleLoginError(errorMessage: string, isAdmin = false) {
+		// Normalize error message for case-insensitive comparison
+		const normalizedErrorMessage = errorMessage.toLowerCase();
+
 		// Connection and timeout errors
 		if (
-			errorMessage.includes('timeout') ||
-			errorMessage.includes('ECONNABORTED')
+			normalizedErrorMessage.includes('timeout') ||
+			normalizedErrorMessage.includes('econnaborted')
 		) {
 			notification.error({
 				message: 'Connection Error',
@@ -24,9 +27,9 @@ export class LoginErrorHandler {
 		}
 		// Password validation errors
 		else if (
-			errorMessage.includes('Password does not meet requirements') ||
-			errorMessage.includes('password must match') ||
-			errorMessage.includes('regular expression')
+			normalizedErrorMessage.includes('password does not meet requirements') ||
+			normalizedErrorMessage.includes('password must match') ||
+			normalizedErrorMessage.includes('regular expression')
 		) {
 			notification.error({
 				message: 'Password Requirements',
@@ -38,10 +41,9 @@ export class LoginErrorHandler {
 		}
 		// Invalid credentials
 		else if (
-			errorMessage.includes('Invalid credentials') ||
-			errorMessage.includes('Incorrect email') ||
-			errorMessage.includes('invalid') ||
-			errorMessage.includes('Invalid')
+			normalizedErrorMessage.includes('invalid credentials') ||
+			normalizedErrorMessage.includes('incorrect email') ||
+			normalizedErrorMessage.includes('invalid')
 		) {
 			notification.error({
 				message: 'Login Failed',
@@ -52,8 +54,8 @@ export class LoginErrorHandler {
 		}
 		// Account deactivated
 		else if (
-			errorMessage.includes('deactivated') ||
-			errorMessage.includes('inactive')
+			normalizedErrorMessage.includes('deactivated') ||
+			normalizedErrorMessage.includes('inactive')
 		) {
 			notification.error({
 				message: 'Account Disabled',
@@ -62,11 +64,10 @@ export class LoginErrorHandler {
 				duration: 6,
 				placement: 'bottomRight',
 			});
-		}
-		// Server errors
+		} // Server errors
 		else if (
-			errorMessage.includes('Server error') ||
-			errorMessage.includes('500')
+			normalizedErrorMessage.includes('server error') ||
+			normalizedErrorMessage.includes('500')
 		) {
 			notification.error({
 				message: 'Server Error',
@@ -75,11 +76,10 @@ export class LoginErrorHandler {
 				duration: 5,
 				placement: 'bottomRight',
 			});
-		}
-		// Network connection errors
+		} // Network connection errors
 		else if (
-			errorMessage.includes('Cannot connect') ||
-			errorMessage.includes('ECONNREFUSED')
+			normalizedErrorMessage.includes('cannot connect') ||
+			normalizedErrorMessage.includes('econnrefused')
 		) {
 			notification.error({
 				message: 'Connection Error',
@@ -88,9 +88,8 @@ export class LoginErrorHandler {
 				duration: 5,
 				placement: 'bottomRight',
 			});
-		}
-		// Rate limiting
-		else if (errorMessage.includes('Too many')) {
+		} // Rate limiting
+		else if (normalizedErrorMessage.includes('too many')) {
 			notification.error({
 				message: 'Too Many Attempts',
 				description:

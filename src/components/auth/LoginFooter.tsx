@@ -10,7 +10,7 @@ export default function LoginFooter() {
 	return (
 		<Flex justify="center" style={{ marginTop: '24px' }}>
 			<Text style={{ fontSize: '12px', color: '#6b7280' }}>
-				© 2025 TheSync - Five Logic. All rights reserved.
+				© {new Date().getFullYear()} TheSync - Five Logic. All rights reserved.
 			</Text>
 		</Flex>
 	);
