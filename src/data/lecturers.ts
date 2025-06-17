@@ -11,6 +11,8 @@ export const mockLecturers: (Lecturer & { instructionGroups: string })[] = [
 		isActive: true,
 		isModerator: false,
 		instructionGroups: '03',
+		createdAt: new Date('2024-01-01'),
+		updatedAt: new Date('2024-06-01'),
 	},
 	{
 		id: '2',
@@ -22,6 +24,8 @@ export const mockLecturers: (Lecturer & { instructionGroups: string })[] = [
 		isActive: true,
 		isModerator: true,
 		instructionGroups: '03',
+		createdAt: new Date('2024-02-15'),
+		updatedAt: new Date('2024-06-01'),
 	},
 	{
 		id: '3',
@@ -33,6 +37,8 @@ export const mockLecturers: (Lecturer & { instructionGroups: string })[] = [
 		isActive: false,
 		isModerator: false,
 		instructionGroups: '03',
+		createdAt: new Date('2023-11-20'),
+		updatedAt: new Date('2024-05-20'),
 	},
 	{
 		id: '4',
@@ -44,5 +50,7 @@ export const mockLecturers: (Lecturer & { instructionGroups: string })[] = [
 		isActive: true,
 		isModerator: false,
 		instructionGroups: '03',
+		createdAt: new Date('2024-03-01'),
+		updatedAt: new Date('2024-06-01'),
 	},
 ];

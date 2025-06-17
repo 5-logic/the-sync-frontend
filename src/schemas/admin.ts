@@ -5,6 +5,8 @@ export const AdminSchema = z.object({
 	username: z.string().min(6).max(50),
 	password: z.string().min(12),
 	email: z.string().email().optional(),
+	createdAt: z.date(),
+	updatedAt: z.date(),
 });
 
 export const AdminCreateSchema = AdminSchema.pick({

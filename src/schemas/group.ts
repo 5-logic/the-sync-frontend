@@ -2,11 +2,13 @@ import { z } from 'zod';
 
 export const GroupSchema = z.object({
 	id: z.string().uuid(),
-	code: z.string().min(1).max(50),
-	name: z.string().min(1).max(100),
-	projectDirection: z.string().optional(),
+	code: z.string().min(1),
+	name: z.string().min(1),
+	projectDirection: z.string().nullable().optional(),
 	semesterId: z.string().uuid(),
-	thesisId: z.string().uuid().optional(),
+	thesisId: z.string().uuid().nullable().optional(),
+	createdAt: z.date(),
+	updatedAt: z.date(),
 });
 
 export const GroupRequiredSkillSchema = z.object({
@@ -14,8 +16,17 @@ export const GroupRequiredSkillSchema = z.object({
 	skillId: z.string().uuid(),
 });
 
-export const GroupCreateSchema = GroupSchema.omit({ id: true });
-export const GroupUpdateSchema = GroupSchema.omit({ id: true }).partial();
+export const GroupCreateSchema = GroupSchema.omit({
+	id: true,
+	createdAt: true,
+	updatedAt: true,
+});
+
+export const GroupUpdateSchema = GroupSchema.omit({
+	id: true,
+	createdAt: true,
+	updatedAt: true,
+}).partial();
 
 // Export inferred types
 export type Group = z.infer<typeof GroupSchema>;

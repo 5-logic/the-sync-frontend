@@ -14,6 +14,8 @@ export const mockStudents: Student[] = [
 		studentId: 'ST0001',
 		majorId: 'SE',
 		password: mockSecret,
+		createdAt: new Date('2024-01-01'),
+		updatedAt: new Date('2024-06-01'),
 	},
 	{
 		id: '2',
@@ -25,5 +27,7 @@ export const mockStudents: Student[] = [
 		studentId: 'ST0002',
 		majorId: 'AI',
 		password: mockSecret,
+		createdAt: new Date('2024-02-15'),
+		updatedAt: new Date('2024-06-01'),
 	},
 ];
