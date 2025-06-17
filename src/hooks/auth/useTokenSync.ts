@@ -14,11 +14,9 @@ export function useTokenSync() {
 		if (session?.accessToken && session?.refreshToken) {
 			// Sync tokens from session to TokenManager
 			TokenManager.setTokens(session.accessToken, session.refreshToken);
-			console.log('🔄 Tokens synced from session to TokenManager');
 		} else if (!session) {
 			// Clear tokens when session is null
 			TokenManager.clearTokens();
-			console.log('🧹 Tokens cleared from TokenManager');
 		}
 	}, [session]);
 

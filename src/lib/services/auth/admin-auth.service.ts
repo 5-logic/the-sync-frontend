@@ -25,17 +25,14 @@ export class AdminAuthService {
 			// Clear any existing tokens to prevent conflicts
 			TokenManager.clearTokens();
 
-			console.log('🔄 Making admin login request to:', '/auth/admin/login');
 			const response = await httpClient.post('/auth/admin/login', credentials);
 
 			// Validate response with schema
 			const parsed = LoginResponseSchema.parse(response.data);
-
 			if (!parsed.success) {
 				throw new Error(parsed.error);
 			}
 
-			console.log('✅ Admin login successful');
 			return parsed.data;
 		} catch (error: unknown) {
 			AuthErrorHandler.handleLoginError(error);
@@ -44,10 +41,10 @@ export class AdminAuthService {
 
 	/**
 	 * 🔄 Admin Token Refresh
-	 */
-	static async refresh(refreshToken: RefreshToken): Promise<RefreshTokenData> {
+	 */ static async refresh(
+		refreshToken: RefreshToken,
+	): Promise<RefreshTokenData> {
 		try {
-			console.log('🔄 Making admin refresh request to:', '/auth/admin/refresh');
 			const response = await httpClient.post(
 				'/auth/admin/refresh',
 				refreshToken,
@@ -55,12 +52,10 @@ export class AdminAuthService {
 
 			// Validate response with schema
 			const parsed = RefreshResponseSchema.parse(response.data);
-
 			if (!parsed.success) {
 				throw new Error(parsed.error);
 			}
 
-			console.log('✅ Admin refresh successful');
 			return parsed.data;
 		} catch (error: unknown) {
 			AuthErrorHandler.handleRefreshError(error);

@@ -12,8 +12,6 @@ export async function sessionCallback({
 	session: Session;
 	token: JWT;
 }): Promise<Session> {
-	console.log('🔐 Session callback - session:', session, 'token:', token);
-
 	// Send properties to the client
 	if (session.user && token.id && token.role) {
 		session.user.id = token.id;
@@ -22,18 +20,10 @@ export async function sessionCallback({
 		// Use fullName if available, otherwise fallback to email
 		session.user.name =
 			token.fullName || session.user.email || session.user.name;
-
 		// Add isModerator to session if exists
 		if (token.isModerator !== undefined) {
 			session.user.isModerator = token.isModerator;
 		}
-
-		console.log('🔍 Session user after setting role and isModerator:', {
-			id: session.user.id,
-			role: session.user.role,
-			isModerator: session.user.isModerator,
-			name: session.user.name,
-		});
 
 		// Add username for admin
 		if (token.username) {
@@ -62,11 +52,6 @@ export async function sessionCallback({
 	if (token.refreshToken) {
 		session.refreshToken = token.refreshToken;
 	}
-
-	console.log(
-		'✅ Final session object returned to client:',
-		JSON.stringify(session, null, 2),
-	);
 
 	return session;
 }

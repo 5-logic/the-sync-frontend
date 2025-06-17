@@ -26,11 +26,8 @@ export class HttpInterceptors {
 			];
 			const isAuthEndpoint = authEndpoints.some((endpoint) =>
 				config.url?.includes(endpoint),
-			);
-
-			// For auth endpoints, don't add any Authorization header
+			); // For auth endpoints, don't add any Authorization header
 			if (isAuthEndpoint) {
-				console.log('🔐 Skipping token for auth endpoint:', config.url);
 				return config;
 			}
 
@@ -40,9 +37,6 @@ export class HttpInterceptors {
 				if (accessToken) {
 					config.headers = config.headers || {};
 					config.headers.Authorization = `Bearer ${accessToken}`;
-					console.log('🔐 Added auth token to request:', config.url);
-				} else {
-					console.log('🔐 No valid token available for:', config.url);
 				}
 			} catch (error) {
 				console.warn('🔐 Failed to get valid token for:', config.url, error);
@@ -98,8 +92,6 @@ export class HttpInterceptors {
 			) {
 				originalRequest._retry = true;
 
-				console.log('🔄 Received 401, attempting token refresh...');
-
 				const newAccessToken = await TokenManager.refreshAccessToken();
 
 				if (newAccessToken) {
@@ -109,7 +101,6 @@ export class HttpInterceptors {
 					return httpClient(originalRequest);
 				} else {
 					// Refresh failed, redirect to login
-					console.log('❌ Token refresh failed, redirecting to login');
 					TokenManager.clearTokens();
 
 					// Only redirect if we're in the browser

@@ -118,23 +118,12 @@ export function useRouteProtection(
 
 		// Use cached route finding
 		const matchedRoute = getMatchedRoute(pathname);
-
 		// Use cached permission checking
 		const permissionCheck = getPermissionCheck(
 			matchedRoute,
 			userRole,
 			isModerator,
 		);
-
-		console.log('🔍 Route protection check (optimized):', {
-			pathname,
-			userRole,
-			isModerator,
-			matchedRoute,
-			cached: permissionCache.has(cacheKey),
-		});
-
-		console.log('🎯 Permission check result:', permissionCheck);
 
 		if (!permissionCheck.hasAccess) {
 			router.push('/unauthorized');

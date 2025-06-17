@@ -42,9 +42,7 @@ const UserProfile: React.FC = () => {
 			closable: true,
 			onOk: async () => {
 				try {
-					console.log('🔐 Logging out user:', session?.user?.email);
 					await AuthService.logout({ redirect: false });
-					console.log('✅ Logout successful');
 					router.push('/login');
 				} catch (error) {
 					console.error('❌ Logout error:', error);

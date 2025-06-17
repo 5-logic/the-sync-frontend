@@ -14,10 +14,7 @@ export const credentialsProvider = CredentialsProvider({
 		password: { label: 'Password', type: 'password' },
 	},
 	async authorize(credentials) {
-		console.log('🔐 NextAuth Authorize called');
-
 		if (!credentials?.username || !credentials?.password) {
-			console.log('❌ Missing credentials');
 			return null;
 		}
 
@@ -25,41 +22,24 @@ export const credentialsProvider = CredentialsProvider({
 			// Determine if it's admin login (username) or user login (email)
 			const isEmail = credentials.username.includes('@');
 			let tokenData;
-
 			if (isEmail) {
 				// User login (Student/Lecturer)
-				console.log('📧 User login attempt for:', credentials.username);
 				tokenData = await AuthService.userLogin({
 					email: credentials.username,
 					password: credentials.password,
 				});
 			} else {
 				// Admin login
-				console.log('👤 Admin login attempt for:', credentials.username);
 				tokenData = await AuthService.adminLogin({
 					username: credentials.username,
 					password: credentials.password,
 				});
-			}
-
-			// Decode user info from access token
+			} // Decode user info from access token
 			const userInfo = AuthService.getUserFromToken(tokenData.accessToken);
 
-			console.log('🔍 JWT Token decoded info:', {
-				sub: userInfo?.sub,
-				role: userInfo?.role,
-				fullName: userInfo?.fullName,
-				username: userInfo?.username,
-				email: userInfo?.email,
-				allFields: userInfo,
-			});
-
 			if (!userInfo || !userInfo.sub || !userInfo.role) {
-				console.log('❌ Failed to decode user info from token');
 				return null;
 			}
-
-			console.log('✅ Tokens obtained, will be stored in JWT callback');
 
 			// Return user object for NextAuth with tokens
 			const user = {
@@ -92,19 +72,10 @@ export const credentialsProvider = CredentialsProvider({
 				refreshToken: tokenData.refreshToken,
 			};
 
-			console.log('✅ Authentication successful for:', {
-				name: user.name,
-				email: user.email,
-				role: user.role,
-			});
-
 			// ⚠️ Additional validation: Check if user account is active
 			await validateUserAccount(user);
-
 			return user;
 		} catch (error) {
-			console.log('❌ Authentication failed:', error);
-
 			// Extract meaningful error message to pass to the client
 			if (error instanceof Error) {
 				throw new Error(error.message);
@@ -157,20 +128,10 @@ async function validateUserAccount(user: {
 				profileResponse.data?.success &&
 				profileResponse.data?.data
 			) {
-				const profileData = profileResponse.data.data;
-
-				// Check if user account is active
+				const profileData = profileResponse.data.data; // Check if user account is active
 				if (profileData.isActive === false) {
-					console.log('❌ User account is inactive:', {
-						id: user.id,
-						email: user.email,
-						fullName: profileData.fullName,
-						isActive: profileData.isActive,
-					});
 					throw new Error('Account is inactive');
 				}
-
-				console.log('✅ User account is active, proceeding with login');
 			}
 		}
 	} catch (profileError) {

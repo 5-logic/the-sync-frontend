@@ -15,16 +15,7 @@ export class LoginSuccessHandler {
 			const session = await fetch('/api/auth/session').then((res) =>
 				res.json(),
 			);
-
-			console.log(
-				'🔍 Session data after login:',
-				JSON.stringify(session, null, 2),
-			);
-
 			const userRole = session?.user?.role;
-			const isModerator = session?.user?.isModerator;
-
-			console.log('🎯 User role:', userRole, 'isModerator:', isModerator);
 
 			// Determine redirect path based on actual user role
 			let redirectPath = '/student'; // default
@@ -44,8 +35,6 @@ export class LoginSuccessHandler {
 				redirectPath = '/student';
 				dashboardName = 'student';
 			}
-
-			console.log('🚀 Redirecting to:', redirectPath);
 
 			notification.success({
 				message: 'Login Successful',

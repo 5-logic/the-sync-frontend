@@ -30,11 +30,6 @@ export async function fetchUserProfile(
 	user: UserProfile,
 ): Promise<ProfileData | null> {
 	try {
-		console.log('🔍 Fetching user profile for:', {
-			id: user.id,
-			role: user.role,
-		});
-
 		// Determine endpoint based on user role
 		const endpoint = getProfileEndpoint(user.role, user.id);
 
@@ -55,7 +50,6 @@ export async function fetchUserProfile(
 			response.data?.data
 		) {
 			const profileData = response.data.data;
-			console.log('✅ Profile data fetched:', profileData);
 			return profileData;
 		} else {
 			console.warn('⚠️ Failed to fetch profile:', response.status);
@@ -142,9 +136,7 @@ export function mapProfileToToken(
 			mappedData.avatar = profile.avatar;
 			mappedData.isModerator = true; // Force true for moderators
 			break;
-
 		default:
-			console.warn('⚠️ Unknown user role:', role);
 			mappedData.fullName = fallbackData.email || 'User';
 	}
 

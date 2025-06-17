@@ -19,8 +19,6 @@ export async function jwtCallback({
 	user?: User;
 	account?: Record<string, unknown> | null;
 }): Promise<JWT> {
-	console.log('🔐 JWT callback - token:', token, 'user:', user);
-
 	// Add user data to token on first sign in
 	if (user) {
 		token.role = user.role;
@@ -73,19 +71,8 @@ async function enrichTokenWithProfile(token: JWT, user: User): Promise<void> {
 			const mappedData = mapProfileToToken(profile, user.role, {
 				username: token.username,
 				email: token.email,
-			});
-
-			// Apply mapped data to token
+			}); // Apply mapped data to token
 			Object.assign(token, mappedData);
-
-			console.log('✅ Profile stored in token:', {
-				fullName: token.fullName,
-				role: user.role,
-				studentId: token.studentId,
-				majorId: token.majorId,
-				isModerator: token.isModerator,
-				isActive: token.isActive,
-			});
 		} else {
 			// Fallback if profile fetch fails
 			const fallbackName = getFallbackName(user.role, {

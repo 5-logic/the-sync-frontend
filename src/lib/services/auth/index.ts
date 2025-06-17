@@ -35,18 +35,13 @@ export class AuthService {
 
 	/**
 	 * 🚪 Logout: Clear tokens and NextAuth session
-	 */
-	static async logout(options?: { redirect?: boolean }): Promise<void> {
+	 */ static async logout(options?: { redirect?: boolean }): Promise<void> {
 		try {
-			console.log('🔐 Starting logout process...');
-
 			// Clear tokens from storage
 			TokenManager.clearTokens();
-			console.log('🧹 Tokens cleared from storage');
 
 			// Clear NextAuth session
 			await signOut({ redirect: options?.redirect ?? false });
-			console.log('✅ Logout completed successfully');
 		} catch (error) {
 			console.error('❌ Logout error:', error);
 			// Still clear tokens even if signOut fails

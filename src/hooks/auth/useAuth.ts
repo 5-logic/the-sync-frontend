@@ -22,10 +22,8 @@ export function useAuthGuard({
 			setIsAuthorized(null); // Still checking
 			return;
 		}
-
 		// Not authenticated → login
 		if (status === 'unauthenticated') {
-			console.log('🔒 useAuthGuard: Not authenticated, redirecting to login');
 			setIsAuthorized(false);
 			router.push('/login');
 			return;
@@ -33,31 +31,18 @@ export function useAuthGuard({
 
 		// Check permissions if user is authenticated
 		if (status === 'authenticated' && session?.user) {
-			const { role, isModerator } = session.user;
-
-			// Check role permissions
+			const { role, isModerator } = session.user; // Check role permissions
 			if (allowedRoles.length > 0 && !allowedRoles.includes(role)) {
-				console.log('🚫 useAuthGuard: Role not allowed:', {
-					userRole: role,
-					allowedRoles,
-				});
 				setIsAuthorized(false);
 				router.push(redirectTo);
 				return;
-			}
-
-			// Check moderator permissions
+			} // Check moderator permissions
 			if (requireModerator && !isModerator) {
-				console.log('🚫 useAuthGuard: Moderator access required');
 				setIsAuthorized(false);
 				router.push(redirectTo);
 				return;
 			}
 
-			console.log('✅ useAuthGuard: Access granted for:', {
-				role,
-				isModerator,
-			});
 			setIsAuthorized(true); // ✅ Authorized
 		}
 	}, [status, session, router, allowedRoles, requireModerator, redirectTo]);
