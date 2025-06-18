@@ -1,11 +1,17 @@
+'use client';
+
+import { Layout } from 'antd';
+
 import CreateNewLecturer from '@/components/features/admin/CreateNewUser/CreateNewLecturer';
+
+const { Content } = Layout;
 
 export default function CreateNewLecturerPage() {
 	return (
-		<div className="w-full h-full">
-			<div className="max-w-4xl mx-auto px-6 py-6">
+		<Layout style={{ minHeight: '100vh', background: 'transparent' }}>
+			<Content style={{ padding: '24px' }}>
 				<CreateNewLecturer />
-			</div>
-		</div>
+			</Content>
+		</Layout>
 	);
 }

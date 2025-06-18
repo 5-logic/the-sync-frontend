@@ -1,9 +1,17 @@
+'use client';
+
+import { Layout } from 'antd';
+
 import CreateNewStudent from '@/components/features/admin/CreateNewUser/CreateNewStudent';
+
+const { Content } = Layout;
 
 export default function AdminCreateNewStudentPage() {
 	return (
-		<div className="w-full px-4 sm:px-6 md:px-8 max-w-3xl mx-auto">
-			<CreateNewStudent />
-		</div>
+		<Layout style={{ minHeight: '100vh', background: 'transparent' }}>
+			<Content style={{ padding: '24px' }}>
+				<CreateNewStudent />
+			</Content>
+		</Layout>
 	);
 }

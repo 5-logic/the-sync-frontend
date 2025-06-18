@@ -1,9 +1,10 @@
 'use client';
 
 import { EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons';
-import { Button, Form, Input, Radio, Select } from 'antd';
+import { Button, Form, Input, Radio, Select, Space, Typography } from 'antd';
 
 const { Option } = Select;
+const { Text } = Typography;
 
 type UserFormProps = {
 	formType: 'student' | 'lecturer';
@@ -19,8 +20,11 @@ const UserForm = ({ formType, onSubmit }: UserFormProps) => {
 			form={form}
 			layout="vertical"
 			onFinish={onSubmit}
-			requiredMark={false}
-			className="bg-white p-8 space-y-6"
+			requiredMark="optional"
+			style={{
+				padding: 20,
+				borderRadius: 8,
+			}}
 		>
 			{/* Semester */}
 			<Form.Item
@@ -39,7 +43,7 @@ const UserForm = ({ formType, onSubmit }: UserFormProps) => {
 				</Select>
 			</Form.Item>
 
-			{/* Full name */}
+			{/* Full Name */}
 			<Form.Item
 				name="fullName"
 				label={<Label text="Full Name" />}
@@ -60,7 +64,7 @@ const UserForm = ({ formType, onSubmit }: UserFormProps) => {
 				<Input placeholder="Enter email address" />
 			</Form.Item>
 
-			{/* Conditional Field */}
+			{/* Student ID / Phone Number */}
 			{isStudent ? (
 				<Form.Item
 					name="studentId"
@@ -101,20 +105,14 @@ const UserForm = ({ formType, onSubmit }: UserFormProps) => {
 				</Radio.Group>
 			</Form.Item>
 
-			{/* Submit */}
+			{/* Submit Buttons */}
 			<Form.Item>
-				<div className="flex justify-end gap-4">
-					<Button htmlType="button" className="border border-gray-300">
-						Cancel
+				<Space style={{ width: '100%', justifyContent: 'flex-end' }}>
+					<Button htmlType="button">Cancel</Button>
+					<Button type="primary" htmlType="submit">
+						{isStudent ? 'Create Student' : 'Create Lecturer'}
 					</Button>
-					<Button
-						type="primary"
-						htmlType="submit"
-						className="bg-blue-600 hover:bg-blue-700"
-					>
-						{isStudent ? 'Create User' : 'Create Lecturer'}
-					</Button>
-				</div>
+				</Space>
 			</Form.Item>
 		</Form>
 	);
@@ -126,7 +124,7 @@ const passwordIconRender = (visible: boolean) =>
 	visible ? <EyeInvisibleOutlined /> : <EyeOutlined />;
 
 const Label = ({ text }: { text: string }) => (
-	<span>
-		{text} <span className="text-red-500">*</span>
-	</span>
+	<Text strong>
+		{text} <Text type="danger">*</Text>
+	</Text>
 );
