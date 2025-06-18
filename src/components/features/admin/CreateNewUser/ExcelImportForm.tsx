@@ -50,7 +50,7 @@ export default function ExcelImportForm<T extends { id: string }>({
 	const [data, setData] = useState<T[]>([]);
 
 	const handleUpload = () => {
-		setData(mockData);
+		setData(mockData); // replace with actual Excel parsing logic
 		message.success(`${mockData.length} users data imported successfully`);
 		return false;
 	};
@@ -69,6 +69,7 @@ export default function ExcelImportForm<T extends { id: string }>({
 		...fields.map((field) => ({
 			title: field.title,
 			dataIndex: field.key as string,
+			width: 200,
 			render: (_: unknown, record: T) =>
 				field.type === 'text' ? (
 					<Input
@@ -133,18 +134,13 @@ export default function ExcelImportForm<T extends { id: string }>({
 					background: '#fafafa',
 				}}
 			>
-				<Row
-					align="middle"
-					justify="space-between"
-					gutter={[16, 16]}
-					wrap={false}
-				>
-					<Col flex="auto">
+				<Row align="middle" justify="space-between" gutter={[16, 16]} wrap>
+					<Col xs={24} sm={24} md={16}>
 						<Typography.Text type="secondary" style={{ display: 'block' }}>
 							{note}
 						</Typography.Text>
 					</Col>
-					<Col>
+					<Col xs={24} sm={24} md={8} style={{ textAlign: 'right' }}>
 						<Button icon={<DownloadOutlined />} type="default">
 							Download Template
 						</Button>
@@ -190,6 +186,7 @@ export default function ExcelImportForm<T extends { id: string }>({
 						pagination={false}
 						bordered
 						rowKey="id"
+						scroll={{ x: '850' }}
 					/>
 
 					<Row justify="end" gutter={8}>

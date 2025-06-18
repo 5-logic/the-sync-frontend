@@ -11,6 +11,15 @@ type UserFormProps = {
 	onSubmit: (values: Record<string, unknown>) => void;
 };
 
+const passwordIconRender = (visible: boolean) =>
+	visible ? <EyeInvisibleOutlined /> : <EyeOutlined />;
+
+const Label = ({ text }: { text: string }) => (
+	<Text strong>
+		{text} <Text type="danger">*</Text>
+	</Text>
+);
+
 const UserForm = ({ formType, onSubmit }: UserFormProps) => {
 	const [form] = Form.useForm();
 	const isStudent = formType === 'student';
@@ -113,12 +122,3 @@ const UserForm = ({ formType, onSubmit }: UserFormProps) => {
 };
 
 export default UserForm;
-
-const passwordIconRender = (visible: boolean) =>
-	visible ? <EyeInvisibleOutlined /> : <EyeOutlined />;
-
-const Label = ({ text }: { text: string }) => (
-	<Text strong>
-		{text} <Text type="danger">*</Text>
-	</Text>
-);
