@@ -32,31 +32,33 @@ const BaseFormLayout = ({
 					justifyContent: 'center',
 				}}
 			>
-				<div style={{ width: '100%', maxWidth: '768px' }}>
-					<Row>
-						<Col span={24}>
-							<Title level={2} style={{ marginBottom: 0 }}>
-								{pageTitle}
-							</Title>
-							<Paragraph type="secondary" style={{ marginBottom: 16 }}>
-								{description}
-							</Paragraph>
+				<Row justify="center">
+					<Col style={{ width: '100%', maxWidth: 768 }}>
+						<Row>
+							<Col span={24}>
+								<Title level={2} style={{ marginBottom: 0 }}>
+									{pageTitle}
+								</Title>
+								<Paragraph type="secondary" style={{ marginBottom: 16 }}>
+									{description}
+								</Paragraph>
 
-							<TabNavigation
-								activeTab={activeTab}
-								setActiveTab={setActiveTab}
-							/>
-						</Col>
-					</Row>
+								<TabNavigation
+									activeTab={activeTab}
+									setActiveTab={setActiveTab}
+								/>
+							</Col>
+						</Row>
 
-					<Row style={{ marginTop: 24 }}>
-						<Col span={24}>
-							<Card>
-								{activeTab === 'manual' ? ManualForm : ExcelPlaceholder}
-							</Card>
-						</Col>
-					</Row>
-				</div>
+						<Row style={{ marginTop: 24 }}>
+							<Col span={24}>
+								<Card>
+									{activeTab === 'manual' ? ManualForm : ExcelPlaceholder}
+								</Card>
+							</Col>
+						</Row>
+					</Col>
+				</Row>
 			</Content>
 		</Layout>
 	);

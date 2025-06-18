@@ -1,6 +1,6 @@
 'use client';
 
-import { Typography } from 'antd';
+import { Col, Row, Typography } from 'antd';
 
 const { Title, Paragraph } = Typography;
 
@@ -10,14 +10,16 @@ type PageHeaderProps = {
 };
 
 const PageHeader = ({ title, subtitle }: PageHeaderProps) => (
-	<div style={{ marginBottom: 32 }}>
-		<Title level={2} style={{ marginBottom: 0 }}>
-			{title}
-		</Title>
-		<Paragraph type="secondary" style={{ marginTop: 4 }}>
-			{subtitle}
-		</Paragraph>
-	</div>
+	<Row style={{ marginBottom: 32 }}>
+		<Col span={24}>
+			<Title level={2} style={{ marginBottom: 0 }}>
+				{title}
+			</Title>
+			<Paragraph type="secondary" style={{ marginTop: 4 }}>
+				{subtitle}
+			</Paragraph>
+		</Col>
+	</Row>
 );
 
 export default PageHeader;

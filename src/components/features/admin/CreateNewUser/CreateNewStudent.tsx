@@ -32,7 +32,6 @@ export default function CreateNewStudent() {
 					mockData={mockStudents}
 					onImport={(data) => {
 						console.log('Imported students:', data);
-						// TODO: Gửi lên backend
 					}}
 				/>
 			}

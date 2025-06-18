@@ -26,7 +26,6 @@ const UserForm = ({ formType, onSubmit }: UserFormProps) => {
 				borderRadius: 8,
 			}}
 		>
-			{/* Semester */}
 			<Form.Item
 				name="semester"
 				label={<Label text="Semester" />}
@@ -43,7 +42,6 @@ const UserForm = ({ formType, onSubmit }: UserFormProps) => {
 				</Select>
 			</Form.Item>
 
-			{/* Full Name */}
 			<Form.Item
 				name="fullName"
 				label={<Label text="Full Name" />}
@@ -52,7 +50,6 @@ const UserForm = ({ formType, onSubmit }: UserFormProps) => {
 				<Input placeholder="Enter full name" />
 			</Form.Item>
 
-			{/* Email */}
 			<Form.Item
 				name="email"
 				label={<Label text="Email Address" />}
@@ -64,7 +61,6 @@ const UserForm = ({ formType, onSubmit }: UserFormProps) => {
 				<Input placeholder="Enter email address" />
 			</Form.Item>
 
-			{/* Student ID / Phone Number */}
 			{isStudent ? (
 				<Form.Item
 					name="studentId"
@@ -93,7 +89,6 @@ const UserForm = ({ formType, onSubmit }: UserFormProps) => {
 				</Form.Item>
 			)}
 
-			{/* Gender */}
 			<Form.Item
 				name="gender"
 				label={<Label text="Gender" />}
@@ -105,7 +100,6 @@ const UserForm = ({ formType, onSubmit }: UserFormProps) => {
 				</Radio.Group>
 			</Form.Item>
 
-			{/* Submit Buttons */}
 			<Form.Item>
 				<Space style={{ width: '100%', justifyContent: 'flex-end' }}>
 					<Button htmlType="button">Cancel</Button>

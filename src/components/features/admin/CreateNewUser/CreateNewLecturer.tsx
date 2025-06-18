@@ -32,7 +32,6 @@ export default function CreateNewLecturer() {
 					mockData={mockLecturers}
 					onImport={(data) => {
 						console.log('Imported lecturers:', data);
-						// TODO: Gửi lên backend
 					}}
 				/>
 			}

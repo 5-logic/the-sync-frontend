@@ -8,6 +8,7 @@ import {
 import {
 	Alert,
 	Button,
+	Card,
 	Col,
 	Form,
 	Input,
@@ -26,8 +27,7 @@ import { useState } from 'react';
 
 const { Dragger } = Upload;
 
-type ExcelImportFormProps<T> = {
-	title?: string;
+type ExcelImportFormProps<T extends { id: string }> = Readonly<{
 	note: string;
 	fields: {
 		title: string;
@@ -37,7 +37,7 @@ type ExcelImportFormProps<T> = {
 	}[];
 	mockData: T[];
 	onImport: (data: T[]) => void;
-};
+}>;
 
 export default function ExcelImportForm<T extends { id: string }>({
 	note,
@@ -50,7 +50,7 @@ export default function ExcelImportForm<T extends { id: string }>({
 	const [data, setData] = useState<T[]>([]);
 
 	const handleUpload = () => {
-		setData(mockData); // replace with actual Excel parsing logic
+		setData(mockData);
 		message.success(`${mockData.length} users data imported successfully`);
 		return false;
 	};
@@ -126,11 +126,10 @@ export default function ExcelImportForm<T extends { id: string }>({
 				</Form.Item>
 			</Form>
 
-			<div
+			<Card
 				style={{
 					border: '1px solid #f0f0f0',
 					borderRadius: 8,
-					padding: 10,
 					background: '#fafafa',
 				}}
 			>
@@ -151,8 +150,7 @@ export default function ExcelImportForm<T extends { id: string }>({
 						</Button>
 					</Col>
 				</Row>
-			</div>
-
+			</Card>
 			<Dragger
 				name="file"
 				beforeUpload={handleUpload}
