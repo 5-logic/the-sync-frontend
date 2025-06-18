@@ -5,42 +5,73 @@ import {
 	ClockCircleOutlined,
 	CrownOutlined,
 	DashboardOutlined,
+	LoadingOutlined,
 	ScheduleOutlined,
 	TeamOutlined,
 	UserAddOutlined,
 	UserOutlined,
 } from '@ant-design/icons';
 import { Badge, Menu } from 'antd';
-import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-import { usePermissions } from '@/hooks/auth';
+import { useNavigationLoader, usePermissions } from '@/hooks';
 import { DASHBOARD_PATHS } from '@/lib/auth/config/auth-constants';
 
 export default function LecturerSidebar() {
 	const pathname = usePathname();
 	const { canAccessModeratorFeatures } = usePermissions();
+	const { isNavigating, targetPath, navigateWithLoading } =
+		useNavigationLoader();
+
+	// Check if a specific menu item is loading
+	const isMenuItemLoading = (path: string) => {
+		return isNavigating && targetPath === path;
+	};
 
 	const basicMenuItems = [
 		{
 			key: DASHBOARD_PATHS.LECTURER,
-			icon: <DashboardOutlined />,
-			label: <Link href={DASHBOARD_PATHS.LECTURER}>Dashboard</Link>,
+			icon: isMenuItemLoading(DASHBOARD_PATHS.LECTURER) ? (
+				<LoadingOutlined spin />
+			) : (
+				<DashboardOutlined />
+			),
+			label: 'Dashboard',
+			onClick: () => navigateWithLoading(DASHBOARD_PATHS.LECTURER),
+			disabled: isNavigating && targetPath !== DASHBOARD_PATHS.LECTURER,
 		},
 		{
 			key: '/lecturer/thesis-management',
-			icon: <BookOutlined />,
-			label: <Link href="/lecturer/thesis-management">Thesis Management</Link>,
+			icon: isMenuItemLoading('/lecturer/thesis-management') ? (
+				<LoadingOutlined spin />
+			) : (
+				<BookOutlined />
+			),
+			label: 'Thesis Management',
+			onClick: () => navigateWithLoading('/lecturer/thesis-management'),
+			disabled: isNavigating && targetPath !== '/lecturer/thesis-management',
 		},
 		{
 			key: '/lecturer/group-progress',
-			icon: <TeamOutlined />,
-			label: <Link href="/lecturer/group-progress">Group Progress</Link>,
+			icon: isMenuItemLoading('/lecturer/group-progress') ? (
+				<LoadingOutlined spin />
+			) : (
+				<TeamOutlined />
+			),
+			label: 'Group Progress',
+			onClick: () => navigateWithLoading('/lecturer/group-progress'),
+			disabled: isNavigating && targetPath !== '/lecturer/group-progress',
 		},
 		{
 			key: '/lecturer/timeline-review',
-			icon: <ClockCircleOutlined />,
-			label: <Link href="/lecturer/timeline-review">Timeline Review</Link>,
+			icon: isMenuItemLoading('/lecturer/timeline-review') ? (
+				<LoadingOutlined spin />
+			) : (
+				<ClockCircleOutlined />
+			),
+			label: 'Timeline Review',
+			onClick: () => navigateWithLoading('/lecturer/timeline-review'),
+			disabled: isNavigating && targetPath !== '/lecturer/timeline-review',
 		},
 	];
 	const moderatorMenuItems = [
@@ -63,30 +94,48 @@ export default function LecturerSidebar() {
 			children: [
 				{
 					key: DASHBOARD_PATHS.LECTURER_ASSIGN_STUDENT_LIST,
-					icon: <UserAddOutlined />,
-					label: (
-						<Link href={DASHBOARD_PATHS.LECTURER_ASSIGN_STUDENT_LIST}>
-							Assign Student
-						</Link>
+					icon: isMenuItemLoading(
+						DASHBOARD_PATHS.LECTURER_ASSIGN_STUDENT_LIST,
+					) ? (
+						<LoadingOutlined spin />
+					) : (
+						<UserAddOutlined />
 					),
+					label: 'Assign Student',
+					onClick: () =>
+						navigateWithLoading(DASHBOARD_PATHS.LECTURER_ASSIGN_STUDENT_LIST),
+					disabled:
+						isNavigating &&
+						targetPath !== DASHBOARD_PATHS.LECTURER_ASSIGN_STUDENT_LIST,
 				},
 				{
 					key: DASHBOARD_PATHS.LECTURER_ASSIGN_SUPERVISOR,
-					icon: <UserOutlined />,
-					label: (
-						<Link href={DASHBOARD_PATHS.LECTURER_ASSIGN_SUPERVISOR}>
-							Assign Supervisor
-						</Link>
+					icon: isMenuItemLoading(
+						DASHBOARD_PATHS.LECTURER_ASSIGN_SUPERVISOR,
+					) ? (
+						<LoadingOutlined spin />
+					) : (
+						<UserOutlined />
 					),
+					label: 'Assign Supervisor',
+					onClick: () =>
+						navigateWithLoading(DASHBOARD_PATHS.LECTURER_ASSIGN_SUPERVISOR),
+					disabled:
+						isNavigating &&
+						targetPath !== DASHBOARD_PATHS.LECTURER_ASSIGN_SUPERVISOR,
 				},
 				{
 					key: '/lecturer/assign-lecturer-review',
-					icon: <ScheduleOutlined />,
-					label: (
-						<Link href="/lecturer/assign-lecturer-review">
-							Assign Lecturer Review
-						</Link>
+					icon: isMenuItemLoading('/lecturer/assign-lecturer-review') ? (
+						<LoadingOutlined spin />
+					) : (
+						<ScheduleOutlined />
 					),
+					label: 'Assign Lecturer Review',
+					onClick: () =>
+						navigateWithLoading('/lecturer/assign-lecturer-review'),
+					disabled:
+						isNavigating && targetPath !== '/lecturer/assign-lecturer-review',
 				},
 			],
 		},

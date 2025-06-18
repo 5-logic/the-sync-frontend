@@ -5,50 +5,94 @@ import {
 	BookOutlined,
 	DashboardOutlined,
 	FileTextOutlined,
+	LoadingOutlined,
 	TeamOutlined,
 	UserAddOutlined,
 } from '@ant-design/icons';
 import { Menu } from 'antd';
-import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
+import { useNavigationLoader } from '@/hooks';
 import { DASHBOARD_PATHS } from '@/lib/auth/config/auth-constants';
-
-const studentMenuItems = [
-	{
-		key: DASHBOARD_PATHS.STUDENT,
-		icon: <DashboardOutlined />,
-		label: <Link href={DASHBOARD_PATHS.STUDENT}>Home</Link>,
-	},
-	{
-		key: '/student/list-thesis',
-		icon: <BookOutlined />,
-		label: <Link href="/student/list-thesis">List Thesis</Link>,
-	},
-	{
-		key: '/student/join-group',
-		icon: <UserAddOutlined />,
-		label: <Link href="/student/join-group">Form / Join Group</Link>,
-	},
-	{
-		key: '/student/register-thesis',
-		icon: <FileTextOutlined />,
-		label: <Link href="/student/register-thesis">Register Thesis</Link>,
-	},
-	{
-		key: '/student/group-dashboard',
-		icon: <TeamOutlined />,
-		label: <Link href="/student/group-dashboard">Group Dashboard</Link>,
-	},
-	{
-		key: '/student/track-progress',
-		icon: <BarChartOutlined />,
-		label: <Link href="/student/track-progress">Tracking Progress</Link>,
-	},
-];
 
 export default function StudentSidebar() {
 	const pathname = usePathname();
+	const { isNavigating, targetPath, navigateWithLoading } =
+		useNavigationLoader();
+
+	// Check if a specific menu item is loading
+	const isMenuItemLoading = (path: string) => {
+		return isNavigating && targetPath === path;
+	};
+
+	const studentMenuItems = [
+		{
+			key: DASHBOARD_PATHS.STUDENT,
+			icon: isMenuItemLoading(DASHBOARD_PATHS.STUDENT) ? (
+				<LoadingOutlined spin />
+			) : (
+				<DashboardOutlined />
+			),
+			label: 'Home',
+			onClick: () => navigateWithLoading(DASHBOARD_PATHS.STUDENT),
+			disabled: isNavigating && targetPath !== DASHBOARD_PATHS.STUDENT,
+		},
+		{
+			key: '/student/list-thesis',
+			icon: isMenuItemLoading('/student/list-thesis') ? (
+				<LoadingOutlined spin />
+			) : (
+				<BookOutlined />
+			),
+			label: 'List Thesis',
+			onClick: () => navigateWithLoading('/student/list-thesis'),
+			disabled: isNavigating && targetPath !== '/student/list-thesis',
+		},
+		{
+			key: '/student/join-group',
+			icon: isMenuItemLoading('/student/join-group') ? (
+				<LoadingOutlined spin />
+			) : (
+				<UserAddOutlined />
+			),
+			label: 'Form / Join Group',
+			onClick: () => navigateWithLoading('/student/join-group'),
+			disabled: isNavigating && targetPath !== '/student/join-group',
+		},
+		{
+			key: '/student/register-thesis',
+			icon: isMenuItemLoading('/student/register-thesis') ? (
+				<LoadingOutlined spin />
+			) : (
+				<FileTextOutlined />
+			),
+			label: 'Register Thesis',
+			onClick: () => navigateWithLoading('/student/register-thesis'),
+			disabled: isNavigating && targetPath !== '/student/register-thesis',
+		},
+		{
+			key: '/student/group-dashboard',
+			icon: isMenuItemLoading('/student/group-dashboard') ? (
+				<LoadingOutlined spin />
+			) : (
+				<TeamOutlined />
+			),
+			label: 'Group Dashboard',
+			onClick: () => navigateWithLoading('/student/group-dashboard'),
+			disabled: isNavigating && targetPath !== '/student/group-dashboard',
+		},
+		{
+			key: '/student/track-progress',
+			icon: isMenuItemLoading('/student/track-progress') ? (
+				<LoadingOutlined spin />
+			) : (
+				<BarChartOutlined />
+			),
+			label: 'Tracking Progress',
+			onClick: () => navigateWithLoading('/student/track-progress'),
+			disabled: isNavigating && targetPath !== '/student/track-progress',
+		},
+	];
 
 	return (
 		<Menu

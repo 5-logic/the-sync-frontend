@@ -5,6 +5,8 @@ import { HeaderSection } from '../Header';
 import { Layout, theme } from 'antd';
 import React from 'react';
 
+import NavigationLoader from '@/components/common/NavigationLoader';
+import { ContentLoader } from '@/components/common/loading';
 import { useResponsiveLayout } from '@/hooks/ui';
 import { useAppStore } from '@/store/useAppStore';
 
@@ -40,57 +42,58 @@ const CollapsibleLayout: React.FC<CollapsibleLayoutProps> = ({
 		return sidebarCollapsed ? 80 : 250;
 	};
 	const mainLayoutMarginLeft = getMarginLeft();
-
 	return (
-		<div
-			style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}
-		>
-			<Layout style={{ flex: 1 }}>
-				{/* Mobile Backdrop Overlay */}
-				<MobileBackdrop
-					isVisible={isMobile && !sidebarCollapsed}
-					onClose={() => setSidebarCollapsed(true)}
-				/>
-				{/* Sidebar */}
-				<SidebarSection
-					collapsed={sidebarCollapsed}
-					isMobile={isMobile}
-					onMenuClick={handleMobileMenuClick}
-				>
-					{sidebar}
-				</SidebarSection>{' '}
-				{/* Main Layout */}
-				<Layout
-					style={{
-						marginLeft: mainLayoutMarginLeft,
-						transition: 'margin-left 0.2s',
-					}}
-				>
-					{/* Header */}
-					<HeaderSection
-						collapsed={sidebarCollapsed}
-						onToggle={toggleSidebar}
-						colorBgContainer={colorBgContainer}
+		<NavigationLoader>
+			<div
+				style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}
+			>
+				<Layout style={{ flex: 1 }}>
+					{/* Mobile Backdrop Overlay */}
+					<MobileBackdrop
+						isVisible={isMobile && !sidebarCollapsed}
+						onClose={() => setSidebarCollapsed(true)}
 					/>
-					{/* Content */}
-					<Content
+					{/* Sidebar */}
+					<SidebarSection
+						collapsed={sidebarCollapsed}
+						isMobile={isMobile}
+						onMenuClick={handleMobileMenuClick}
+					>
+						{sidebar}
+					</SidebarSection>{' '}
+					{/* Main Layout */}
+					<Layout
 						style={{
-							margin: '24px 16px 24px 16px',
-							padding: 24,
-							minHeight: 'calc(100vh - 164px)', // Adjusted for header + footer
-							background: colorBgContainer,
-							borderRadius: borderRadiusLG,
-							overflow: 'auto',
+							marginLeft: mainLayoutMarginLeft,
+							transition: 'margin-left 0.2s',
 						}}
 					>
-						{children}
-					</Content>
+						{/* Header */}
+						<HeaderSection
+							collapsed={sidebarCollapsed}
+							onToggle={toggleSidebar}
+							colorBgContainer={colorBgContainer}
+						/>{' '}
+						{/* Content */}
+						<Content
+							style={{
+								margin: '24px 16px 24px 16px',
+								padding: 24,
+								minHeight: 'calc(100vh - 164px)', // Adjusted for header + footer
+								background: colorBgContainer,
+								borderRadius: borderRadiusLG,
+								overflow: 'auto',
+							}}
+						>
+							<ContentLoader>{children}</ContentLoader>
+						</Content>
+					</Layout>
 				</Layout>
-			</Layout>
 
-			{/* Footer - Outside main layout to span full width */}
-			<Footer />
-		</div>
+				{/* Footer - Outside main layout to span full width */}
+				<Footer />
+			</div>
+		</NavigationLoader>
 	);
 };
 
