@@ -90,6 +90,63 @@ export default function NavigationLoader({ children }: NavigationLoaderProps) {
 			(hasUIElements || hasQueryableElements) // Check for common UI indicators
 		);
 	}, []);
+	// Helper function to perform stability check
+	const performStabilityCheck = useCallback(
+		(
+			contentElement: Element,
+			attempts: number,
+			maxAttempts: number,
+			resolve: () => void,
+			checkContent: () => void,
+		): void => {
+			if (contentElement.innerHTML.length > 200) {
+				resolve();
+			} else if (attempts < maxAttempts) {
+				setTimeout(checkContent, 80);
+			} else {
+				resolve();
+			}
+		},
+		[],
+	);
+
+	// Helper function to handle content check iteration
+	const handleContentCheckIteration = useCallback(
+		(
+			attempts: number,
+			maxAttempts: number,
+			resolve: () => void,
+			checkContent: () => void,
+		): void => {
+			const contentElement =
+				document.querySelector('.ant-layout-content') ||
+				document.querySelector('[role="main"]') ||
+				document.querySelector('main');
+
+			if (contentElement && hasGoodContent(contentElement)) {
+				// Quick stability check with reduced nesting
+				setTimeout(
+					() =>
+						performStabilityCheck(
+							contentElement,
+							attempts,
+							maxAttempts,
+							resolve,
+							checkContent,
+						),
+					30,
+				);
+				return;
+			}
+
+			if (attempts >= maxAttempts) {
+				resolve();
+			} else {
+				setTimeout(checkContent, 80);
+			}
+		},
+		[hasGoodContent, performStabilityCheck],
+	);
 
 	// Helper function to create content checking strategy
 	const createContentCheckStrategy = useCallback((): Promise<void> => {
@@ -97,39 +154,34 @@ export default function NavigationLoader({ children }: NavigationLoaderProps) {
 			let attempts = 0;
 			const maxAttempts = 15; // Reduced attempts
 
-			const checkContent = () => {
+			const checkContent = (): void => {
 				attempts++;
-
-				// Simple content presence check
-				const contentElement =
-					document.querySelector('.ant-layout-content') ||
-					document.querySelector('[role="main"]') ||
-					document.querySelector('main');
-
-				if (contentElement && hasGoodContent(contentElement)) {
-					// Quick stability check
-					setTimeout(() => {
-						if (contentElement.innerHTML.length > 200) {
-							resolve();
-						} else if (attempts < maxAttempts) {
-							setTimeout(checkContent, 80);
-						} else {
-							resolve();
-						}
-					}, 30);
-					return;
-				}
-
-				if (attempts >= maxAttempts) {
-					resolve();
-				} else {
-					setTimeout(checkContent, 80);
-				}
+				handleContentCheckIteration(
+					attempts,
+					maxAttempts,
+					resolve,
+					checkContent,
+				);
 			};
 
 			checkContent();
 		});
-	}, [hasGoodContent]);
+	}, [handleContentCheckIteration]);
+	// Helper function to handle navigation completion with delay
+	const handleNavigationCompletion = useCallback(async (): Promise<void> => {
+		// Small delay for smooth transition
+		await new Promise((resolve) => setTimeout(resolve, 50));
+		completeNavigation();
+	}, [completeNavigation]);
+
+	// Helper function to handle navigation errors
+	const handleNavigationError = useCallback(
+		(error: unknown): void => {
+			console.warn('Navigation detection error:', error);
+			setTimeout(completeNavigation, 50);
+		},
+		[completeNavigation],
+	);
 
 	// Helper function to detect when page is ready
 	const detectPageReady = useCallback(async () => {
@@ -144,37 +196,36 @@ export default function NavigationLoader({ children }: NavigationLoaderProps) {
 		try {
 			// Use the fastest strategy
 			await Promise.race(strategies);
-
-			// Small delay for smooth transition
-			await new Promise((resolve) => setTimeout(resolve, 50));
-
-			completeNavigation();
+			await handleNavigationCompletion();
 		} catch (error) {
-			console.warn('Navigation detection error:', error);
-			setTimeout(completeNavigation, 50);
+			handleNavigationError(error);
 		}
-	}, [createContentCheckStrategy, completeNavigation]);
+	}, [
+		createContentCheckStrategy,
+		handleNavigationCompletion,
+		handleNavigationError,
+	]);
 
 	// Enhanced navigation completion detection - simplified and more reliable
 	useEffect(() => {
 		if (isNavigating && targetPath === pathname) {
 			detectPageReady();
 		}
-	}, [pathname, isNavigating, targetPath, detectPageReady]); // Safety timeout - reduced for better responsiveness
-	useEffect(() => {
-		if (isNavigating) {
-			timeoutRef.current = setTimeout(() => {
-				completeNavigation();
-			}, 2500); // Reduced to 2.5 seconds
-
-			return () => {
-				if (timeoutRef.current) {
-					clearTimeout(timeoutRef.current);
-					timeoutRef.current = undefined;
-				}
-			};
+	}, [pathname, isNavigating, targetPath, detectPageReady]); // Helper function to clear timeout
+	const clearNavigationTimeout = useCallback((): void => {
+		if (timeoutRef.current) {
+			clearTimeout(timeoutRef.current);
+			timeoutRef.current = undefined;
 		}
-	}, [isNavigating, completeNavigation]);
+	}, []);
+
+	// Safety timeout - reduced for better responsiveness
+	useEffect(() => {
+		if (!isNavigating) return;
+
+		timeoutRef.current = setTimeout(completeNavigation, 2500); // Reduced to 2.5 seconds
+		return clearNavigationTimeout;
+	}, [isNavigating, completeNavigation, clearNavigationTimeout]);
 
 	const contextValue: NavigationContextType = useMemo(
 		() => ({
