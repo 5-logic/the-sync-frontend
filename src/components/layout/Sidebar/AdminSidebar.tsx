@@ -76,7 +76,7 @@ export default function AdminSidebar() {
 			) : (
 				<SettingOutlined />
 			),
-			label: 'Semester Setting',
+			label: 'Semester Settings',
 			onClick: () => navigateWithLoading('/admin/semester-settings'),
 			disabled: isNavigating && targetPath !== '/admin/semester-settings',
 		},
