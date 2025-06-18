@@ -57,7 +57,7 @@ export class LoginSuccessHandler {
 			if (userRole === 'admin') {
 				// For admin: try username first, then name, then email
 				const adminName =
-					username || session?.user?.name || session?.user?.email;
+					username ?? session?.user?.name ?? session?.user?.email;
 				if (adminName) {
 					welcomeMessage = `Welcome back, ${adminName}!`;
 				}
@@ -68,7 +68,7 @@ export class LoginSuccessHandler {
 			) {
 				// For students/lecturers: try fullName first, then name, then email
 				const userDisplayName =
-					fullName || session?.user?.name || session?.user?.email;
+					fullName ?? session?.user?.name ?? session?.user?.email;
 				if (userDisplayName) {
 					welcomeMessage = `Welcome back, ${userDisplayName}!`;
 				}

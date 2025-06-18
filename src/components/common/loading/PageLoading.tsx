@@ -3,10 +3,10 @@
 import { Card, Flex, Skeleton, SkeletonProps, Spin, SpinProps } from 'antd';
 
 interface PageLoadingProps {
-	type?: 'skeleton' | 'spinner';
-	size?: 'small' | 'default' | 'large';
-	rows?: number;
-	tip?: string;
+	readonly type?: 'skeleton' | 'spinner';
+	readonly size?: 'small' | 'default' | 'large';
+	readonly rows?: number;
+	readonly tip?: string;
 }
 
 /**

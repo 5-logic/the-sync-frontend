@@ -5,10 +5,10 @@ import { Card, Flex, Space, Spin, Typography } from 'antd';
 const { Title, Text } = Typography;
 
 interface FullPageLoaderProps {
-	message?: string;
-	description?: string;
-	type?: 'default' | 'error' | 'warning';
-	size?: 'small' | 'default' | 'large';
+	readonly message?: string;
+	readonly description?: string;
+	readonly type?: 'default' | 'error' | 'warning';
+	readonly size?: 'small' | 'default' | 'large';
 }
 
 /**

@@ -90,8 +90,7 @@ export function useRouteProtection(
 			return result;
 		},
 		[],
-	);
-	// Fast token check
+	); // Fast token check
 	const [hasValidTokens, setHasValidTokens] = useState(false);
 
 	useEffect(() => {
@@ -111,10 +110,88 @@ export function useRouteProtection(
 
 		checkTokens();
 	}, [session]);
-	useEffect(() => {
-		// Fast path: Use cached tokens if available
+
+	// Handle fast authentication path
+	const handleFastAuth = useCallback(() => {
 		if (hasValidTokens && status === 'authenticated' && session?.user) {
 			const matchedRoute = getMatchedRoute(pathname);
+			const permissionCheck = getPermissionCheck(
+				matchedRoute,
+				userRole,
+				isModerator,
+			);
+
+			if (!permissionCheck.hasAccess) {
+				router.push('/unauthorized');
+				setAuthState({
+					isAuthorized: false,
+					isLoading: false,
+					error: permissionCheck.reason,
+				});
+				return true;
+			}
+
+			setAuthState({
+				isAuthorized: true,
+				isLoading: false,
+			});
+			return true;
+		}
+		return false;
+	}, [
+		hasValidTokens,
+		status,
+		session,
+		pathname,
+		getMatchedRoute,
+		getPermissionCheck,
+		userRole,
+		isModerator,
+		router,
+	]);
+
+	// Handle cached permission check
+	const handleCachedPermission = useCallback(() => {
+		if (
+			permissionCache.has(cacheKey) &&
+			status === 'authenticated' &&
+			session
+		) {
+			const cachedResult = permissionCache.get(cacheKey)!;
+			if (Date.now() - cachedResult.timestamp < CACHE_TTL) {
+				setAuthState({
+					isAuthorized: cachedResult.hasAccess,
+					isLoading: false,
+					error: cachedResult.reason,
+				});
+				return true;
+			}
+		}
+		return false;
+	}, [cacheKey, status, session]);
+
+	// Handle unauthenticated state
+	const handleUnauthenticated = useCallback(() => {
+		TokenManager.clearTokens();
+		router.push('/api/auth/signin');
+		setAuthState({
+			isAuthorized: false,
+			isLoading: false,
+			error: AUTH_MESSAGES.ERROR.AUTH_REQUIRED,
+		});
+	}, [router]);
+
+	// Handle authenticated state with permission check
+	const handleAuthenticated = useCallback(() => {
+		if (status === 'authenticated' && session?.user) {
+			// Sync tokens from session
+			if (session.accessToken && session.refreshToken) {
+				TokenManager.setTokens(session.accessToken, session.refreshToken);
+			}
+
+			// Use cached route finding
+			const matchedRoute = getMatchedRoute(pathname);
+			// Use cached permission checking
 			const permissionCheck = getPermissionCheck(
 				matchedRoute,
 				userRole,
@@ -131,28 +208,32 @@ export function useRouteProtection(
 				return;
 			}
 
+			// All checks passed
 			setAuthState({
 				isAuthorized: true,
 				isLoading: false,
 			});
+		}
+	}, [
+		status,
+		session,
+		getMatchedRoute,
+		pathname,
+		getPermissionCheck,
+		userRole,
+		isModerator,
+		router,
+	]);
+
+	useEffect(() => {
+		// Fast path: Use cached tokens if available
+		if (handleFastAuth()) {
 			return;
 		}
 
 		// Fast path: if we have cached result and user/route hasn't changed, use it
-		if (
-			permissionCache.has(cacheKey) &&
-			status === 'authenticated' &&
-			session
-		) {
-			const cachedResult = permissionCache.get(cacheKey)!;
-			if (Date.now() - cachedResult.timestamp < CACHE_TTL) {
-				setAuthState({
-					isAuthorized: cachedResult.hasAccess,
-					isLoading: false,
-					error: cachedResult.reason,
-				});
-				return;
-			}
+		if (handleCachedPermission()) {
+			return;
 		}
 
 		// Reset state when checking
@@ -162,69 +243,23 @@ export function useRouteProtection(
 			error: undefined,
 		}));
 
-		// Still loading session
+		// Handle different session states
 		if (status === 'loading') {
 			setAuthState({
 				isAuthorized: null,
 				isLoading: true,
 			});
-			return;
+		} else if (status === 'unauthenticated') {
+			handleUnauthenticated();
+		} else {
+			handleAuthenticated();
 		}
-		// Not authenticated - redirect to login
-		if (status === 'unauthenticated') {
-			TokenManager.clearTokens();
-			router.push('/api/auth/signin');
-			setAuthState({
-				isAuthorized: false,
-				isLoading: false,
-				error: AUTH_MESSAGES.ERROR.AUTH_REQUIRED,
-			});
-			return;
-		}
-
-		// Authenticated - sync tokens and check permissions
-		if (status === 'authenticated' && session?.user) {
-			// Sync tokens from session
-			if (session.accessToken && session.refreshToken) {
-				TokenManager.setTokens(session.accessToken, session.refreshToken);
-			}
-		}
-
-		// Use cached route finding
-		const matchedRoute = getMatchedRoute(pathname);
-		// Use cached permission checking
-		const permissionCheck = getPermissionCheck(
-			matchedRoute,
-			userRole,
-			isModerator,
-		);
-
-		if (!permissionCheck.hasAccess) {
-			router.push('/unauthorized');
-			setAuthState({
-				isAuthorized: false,
-				isLoading: false,
-				error: permissionCheck.reason,
-			});
-			return;
-		}
-
-		// All checks passed
-		setAuthState({
-			isAuthorized: true,
-			isLoading: false,
-		});
 	}, [
-		pathname,
-		session,
+		handleFastAuth,
+		handleCachedPermission,
 		status,
-		router,
-		userRole,
-		isModerator,
-		cacheKey,
-		getMatchedRoute,
-		getPermissionCheck,
-		hasValidTokens,
+		handleUnauthenticated,
+		handleAuthenticated,
 	]);
 
 	return authState;
