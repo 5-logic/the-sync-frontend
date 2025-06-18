@@ -1,10 +1,10 @@
 'use client';
 
-import { Card, Typography } from 'antd';
+import { Space, Typography } from 'antd';
 import { useState } from 'react';
 
-import LecturerFilterBar from '@/components/features/admin/LectureManagement/LecturerFilterBar';
-import LecturerTable from '@/components/features/admin/LectureManagement/LecturerTable';
+import LecturerFilterBar from '@/components/features/admin/LecturerManagement/LecturerFilterBar';
+import LecturerTable from '@/components/features/admin/LecturerManagement/LecturerTable';
 import { mockLecturers } from '@/data/lecturers';
 import { Lecturer } from '@/schemas/lecturer';
 
@@ -40,10 +40,18 @@ export default function LecturerManagement() {
 		console.log('Create new lecturer clicked');
 	};
 
-	const { Title } = Typography;
+	const { Title, Paragraph } = Typography;
 	return (
-		<Card bordered={false} style={{ padding: 0 }}>
-			<Title level={2}>Lecturer Management</Title>
+		<Space direction="vertical" size="large" style={{ width: '100%' }}>
+			<div>
+				<Title level={2} style={{ marginBottom: '4px' }}>
+					Lecturer Management
+				</Title>
+				<Paragraph type="secondary" style={{ marginBottom: 0 }}>
+					Create and manage lecturers, registration windows, and
+					capstone-specific rules
+				</Paragraph>
+			</div>
 
 			<LecturerFilterBar
 				statusFilter={statusFilter}
@@ -57,6 +65,6 @@ export default function LecturerManagement() {
 				data={filteredData}
 				onTogglePermission={handleTogglePermission}
 			/>
-		</Card>
+		</Space>
 	);
 }

@@ -41,13 +41,12 @@ export default function LecturerFilterBar({
 							<Option value="inactive">Inactive</Option>
 						</Select>
 					</Col>
-					<Col>
+					<Col flex="auto">
 						<Input
 							placeholder="Search by name, email"
 							value={searchText}
 							onChange={(e) => setSearchText(e.target.value)}
 							prefix={<SearchOutlined style={{ color: '#aaa' }} />}
-							style={{ width: 200 }}
 						/>
 					</Col>
 				</Row>

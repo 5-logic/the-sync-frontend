@@ -1,6 +1,6 @@
 'use client';
 
-import { Card, Typography } from 'antd';
+import { Space, Typography } from 'antd';
 import { useState } from 'react';
 
 import StudentFilterBar from '@/components/features/admin/StudentManagement/StudentFilterBar';
@@ -33,10 +33,18 @@ export default function StudentManagement() {
 		return matchesStatus && matchesMajor && matchesSearch;
 	});
 
-	const { Title } = Typography;
+	const { Title, Paragraph } = Typography;
 	return (
-		<Card bordered={false} style={{ padding: 0 }}>
-			<Title level={2}>Student Management</Title>
+		<Space direction="vertical" size="large" style={{ width: '100%' }}>
+			<div>
+				<Title level={2} style={{ marginBottom: '4px' }}>
+					Student Management
+				</Title>
+				<Paragraph type="secondary" style={{ marginBottom: 0 }}>
+					Create and manage students, registration windows, and
+					capstone-specific rules
+				</Paragraph>
+			</div>
 
 			<StudentFilterBar
 				statusFilter={statusFilter}
@@ -51,6 +59,6 @@ export default function StudentManagement() {
 			/>
 
 			<StudentTable data={filteredData} />
-		</Card>
+		</Space>
 	);
 }

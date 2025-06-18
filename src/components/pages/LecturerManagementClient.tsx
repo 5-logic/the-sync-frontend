@@ -2,7 +2,7 @@
 
 import { Layout } from 'antd';
 
-import LecturerManagement from '@/components/features/admin/LectureManagement';
+import LecturerManagement from '@/components/features/admin/LecturerManagement';
 
 const { Content } = Layout;
 

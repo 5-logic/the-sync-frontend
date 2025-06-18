@@ -59,13 +59,12 @@ export default function StudentFilterBar({
 						</Select>
 					</Col>
 
-					<Col>
+					<Col flex="auto">
 						<Input
 							placeholder="Search by name, email, ID"
 							value={searchText}
 							onChange={(e) => setSearchText(e.target.value)}
 							prefix={<SearchOutlined />}
-							style={{ width: 220 }}
 							size="middle"
 						/>
 					</Col>
