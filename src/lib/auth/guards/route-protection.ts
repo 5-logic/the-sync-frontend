@@ -3,8 +3,7 @@ import {
 	USER_ROLES,
 	UserRole,
 } from '@/lib/auth/config/auth-constants';
-
-import { canAccessRoute } from './permissions';
+import { canAccessRoute } from '@/lib/auth/guards/permissions';
 
 export interface RouteConfig {
 	path: string;

@@ -1,5 +1,5 @@
 import { createMetadata } from '@/app/metadata';
-import SemesterSettingsClient from '@/components/pages/SemesterSettingsClient';
+import SemesterSettingsClient from '@/components/pages/admin/SemesterSettingsClient';
 
 export const metadata = createMetadata({
 	title: 'Admin Semester Settings',

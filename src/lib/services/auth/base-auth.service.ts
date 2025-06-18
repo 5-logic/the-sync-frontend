@@ -1,5 +1,5 @@
-import httpClient from '../_httpClient';
-
+import httpClient from '@/lib/services/_httpClient';
+import { AuthErrorHandler } from '@/lib/services/auth/auth-error-handler';
 import { TokenManager } from '@/lib/utils/auth/token-manager';
 import {
 	LoginResponseSchema,
@@ -8,8 +8,6 @@ import {
 	RefreshTokenData,
 	TokenData,
 } from '@/schemas/auth';
-
-import { AuthErrorHandler } from './auth-error-handler';
 
 /**
  * 🔐 Base Authentication Service

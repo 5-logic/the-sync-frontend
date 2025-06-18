@@ -1,10 +1,10 @@
-import { HeaderSectionProps } from '../CollapsibleLayout/CollapsibleLayout.types';
 import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 import { Button, Layout } from 'antd';
 import React from 'react';
 
-import NotificationIcon from './NotificationIcon';
-import UserProfile from './UserProfile';
+import { HeaderSectionProps } from '@/components/layout/CollapsibleLayout/CollapsibleLayout.types';
+import NotificationIcon from '@/components/layout/Header/NotificationIcon';
+import UserProfile from '@/components/layout/Header/UserProfile';
 
 const { Header } = Layout;
 

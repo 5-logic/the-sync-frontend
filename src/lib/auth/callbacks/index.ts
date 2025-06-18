@@ -1,3 +1,3 @@
 // Callback exports
-export * from './jwt';
-export * from './session';
+export * from '@/lib/auth/callbacks/jwt';
+export * from '@/lib/auth/callbacks/session';

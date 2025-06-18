@@ -1,2 +1,2 @@
 // Provider exports
-export * from './credentials';
+export * from '@/lib/auth/providers/credentials';

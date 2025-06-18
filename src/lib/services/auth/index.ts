@@ -1,18 +1,17 @@
 // Unified AuthService class for backward compatibility
 import { signOut } from 'next-auth/react';
 
+import { AdminAuthService } from '@/lib/services/auth/admin-auth.service';
+import { TokenUtilsService } from '@/lib/services/auth/token-utils.service';
+import { UserAuthService } from '@/lib/services/auth/user-auth.service';
 import { TokenManager } from '@/lib/utils/auth/token-manager';
 
-import { AdminAuthService } from './admin-auth.service';
-import { TokenUtilsService } from './token-utils.service';
-import { UserAuthService } from './user-auth.service';
-
 // Export all auth services from a single entry point
-export { AdminAuthService } from './admin-auth.service';
-export { UserAuthService } from './user-auth.service';
-export { TokenUtilsService } from './token-utils.service';
-export { AuthErrorHandler } from './auth-error-handler';
-export { BaseAuthService } from './base-auth.service';
+export { AdminAuthService } from '@/lib/services/auth/admin-auth.service';
+export { UserAuthService } from '@/lib/services/auth/user-auth.service';
+export { TokenUtilsService } from '@/lib/services/auth/token-utils.service';
+export { AuthErrorHandler } from '@/lib/services/auth/auth-error-handler';
+export { BaseAuthService } from '@/lib/services/auth/base-auth.service';
 
 /**
  * 🔐 Unified Authentication Service

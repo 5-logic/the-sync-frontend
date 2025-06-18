@@ -1,6 +1,6 @@
 'use client';
 
-import UserForm from './UserForm';
+import UserForm from '@/components/features/admin/CreateNewUser/UserForm';
 
 const StudentForm = () => {
 	const handleSubmit = (values: Record<string, unknown>) => {

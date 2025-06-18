@@ -1,2 +1,2 @@
 // Store exports
-export { useAppStore } from './useAppStore';
+export { useAppStore } from '@/store/useAppStore';

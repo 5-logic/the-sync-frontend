@@ -1,5 +1,5 @@
 import { createMetadata } from '@/app/metadata';
-import StudentManagementClient from '@/components/pages/StudentManagementClient';
+import StudentManagementClient from '@/components/pages/admin/StudentManagementClient';
 
 export const metadata = createMetadata({
 	title: 'Admin Student Management',

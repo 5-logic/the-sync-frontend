@@ -1,2 +1,2 @@
 // UI/Layout hooks - centralized exports
-export * from './useResponsiveLayout';
+export * from '@/hooks/ui/useResponsiveLayout';

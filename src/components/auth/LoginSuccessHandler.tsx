@@ -1,4 +1,5 @@
 import { notification } from 'antd';
+import { Session } from 'next-auth';
 import { useRouter } from 'next/navigation';
 
 /**
@@ -7,7 +8,7 @@ import { useRouter } from 'next/navigation';
 const waitForSessionUpdate = async (
 	maxAttempts = 5,
 	delayMs = 200,
-): Promise<{ user?: { role?: string } } | null> => {
+): Promise<Session> => {
 	for (let attempt = 1; attempt <= maxAttempts; attempt++) {
 		const session = await fetch('/api/auth/session').then((res) => res.json());
 
@@ -36,24 +37,46 @@ export class LoginSuccessHandler {
 			// Wait for session to be properly updated with retry logic
 			const session = await waitForSessionUpdate();
 			const userRole = session?.user?.role;
+			const fullName = session?.user?.fullName;
+			const username = session?.user?.username;
 
 			// Determine redirect path based on actual user role
 			let redirectPath = '/student'; // default
-			let dashboardName = 'student';
 
 			if (userRole === 'admin') {
 				redirectPath = '/admin';
-				dashboardName = 'admin';
 			} else if (userRole === 'lecturer' || userRole === 'moderator') {
 				// Both lecturer and moderator go to lecturer dashboard
 				redirectPath = '/lecturer';
-				dashboardName = 'lecturer';
 			}
 			// student is default, no need to reassign
 
+			// Create personalized welcome message
+			let welcomeMessage = 'Welcome back!';
+
+			if (userRole === 'admin') {
+				// For admin: try username first, then name, then email
+				const adminName =
+					username ?? session?.user?.name ?? session?.user?.email;
+				if (adminName) {
+					welcomeMessage = `Welcome back, ${adminName}!`;
+				}
+			} else if (
+				userRole === 'student' ||
+				userRole === 'lecturer' ||
+				userRole === 'moderator'
+			) {
+				// For students/lecturers: try fullName first, then name, then email
+				const userDisplayName =
+					fullName ?? session?.user?.name ?? session?.user?.email;
+				if (userDisplayName) {
+					welcomeMessage = `Welcome back, ${userDisplayName}!`;
+				}
+			}
+
 			notification.success({
 				message: 'Login Successful',
-				description: `🎉 Welcome back! Redirecting to ${dashboardName} dashboard...`,
+				description: `🎉 ${welcomeMessage}`,
 				duration: 3,
 				placement: 'bottomRight',
 			});
@@ -67,18 +90,25 @@ export class LoginSuccessHandler {
 			return false;
 		}
 	}
-
 	/**
 	 * Fallback redirect when session fetch fails
 	 */
 	static handleFallbackRedirect(
 		router: ReturnType<typeof useRouter>,
 		isAdmin = false,
+		fallbackName?: string,
 	) {
 		const redirectPath = isAdmin ? '/admin' : '/student';
+
+		// Create personalized welcome message if name is available
+		let welcomeMessage = 'Welcome back!';
+		if (fallbackName) {
+			welcomeMessage = `Welcome back, ${fallbackName}!`;
+		}
+
 		notification.success({
 			message: 'Login Successful',
-			description: `🎉 Welcome back! Redirecting to dashboard...`,
+			description: `🎉 ${welcomeMessage}`,
 			duration: 3,
 			placement: 'bottomRight',
 		});

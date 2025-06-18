@@ -2,13 +2,10 @@
 // Export all hooks from their respective categories
 
 // Auth-related hooks
-export * from './auth';
+export * from '@/hooks/auth';
 
 // UI/Layout hooks
-export * from './ui';
+export * from '@/hooks/ui';
 
-// You can add more categories here as your app grows:
-// export * from './data';     // Data fetching hooks
-// export * from './form';     // Form handling hooks
-// export * from './api';      // API-related hooks
-// export * from './utils';    // Utility hooks
+// UX/Navigation hooks
+export * from '@/hooks/ux';

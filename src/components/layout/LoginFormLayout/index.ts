@@ -1,1 +1,1 @@
-export { default } from './LoginFormLayout';
+export { default } from '@/components/layout/LoginFormLayout/LoginFormLayout';

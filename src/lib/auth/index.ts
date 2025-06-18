@@ -1,5 +1,5 @@
 // Main auth exports - centralized access point
-export * from './config';
-export * from './guards';
-export * from './callbacks';
-export * from './providers';
+export * from '@/lib/auth/config';
+export * from '@/lib/auth/guards';
+export * from '@/lib/auth/callbacks';
+export * from '@/lib/auth/providers';

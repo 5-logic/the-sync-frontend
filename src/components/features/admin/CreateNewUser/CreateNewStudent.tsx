@@ -1,7 +1,7 @@
 'use client';
 
-import BaseFormLayout from './BaseFormLayout';
-import StudentForm from './StudentForm';
+import BaseFormLayout from '@/components/features/admin/CreateNewUser/BaseFormLayout';
+import StudentForm from '@/components/features/admin/CreateNewUser/StudentForm';
 
 export default function CreateNewStudent() {
 	return (

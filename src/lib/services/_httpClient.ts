@@ -1,8 +1,7 @@
 import axios from 'axios';
 
 import { API_BASE_URL } from '@/lib/constants';
-
-import { HttpInterceptors } from './http/interceptors';
+import { HttpInterceptors } from '@/lib/services/http/interceptors';
 
 /**
  * 🌐 Main HTTP Client for the application
