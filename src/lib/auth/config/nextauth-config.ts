@@ -26,8 +26,8 @@ export const authOptions: NextAuthOptions = {
 	session: {
 		strategy: 'jwt',
 	},
-	// Enable debug in development
-	debug: process.env.NODE_ENV === 'development',
+	// Disable debug for better performance
+	debug: false,
 };
 
 const handler = NextAuth(authOptions);
