@@ -1,5 +1,5 @@
 import { createMetadata } from '@/app/metadata';
-import MilestoneManagementClient from '@/components/pages/MilestoneManagementClient';
+import MilestoneManagementClient from '@/components/pages/admin/MilestoneManagementClient';
 
 export const metadata = createMetadata({
 	title: 'Admin Milestone Management',

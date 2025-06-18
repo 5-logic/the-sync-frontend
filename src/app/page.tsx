@@ -4,7 +4,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
-import Loading from '@/components/common/Loading';
+import { FullPageLoader } from '@/components/common/loading';
 
 const Home = () => {
 	const { data: session, status } = useSession();
@@ -36,7 +36,7 @@ const Home = () => {
 
 	// Hiển thị loading spinner trong khi đang check authentication
 	return (
-		<Loading
+		<FullPageLoader
 			message={
 				status === 'loading' ? 'Checking authentication...' : 'Redirecting...'
 			}

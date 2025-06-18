@@ -3,7 +3,7 @@
 import { useSession } from 'next-auth/react';
 import { usePathname } from 'next/navigation';
 
-import Loading from '@/components/common/Loading';
+import { FullPageLoader } from '@/components/common/loading';
 import { AUTH_MESSAGES } from '@/lib/auth/config/auth-constants';
 import { useRouteProtection } from '@/lib/utils/auth/auth-helpers';
 
@@ -19,12 +19,11 @@ export default function DashboardLayout({
 		pathname,
 		session,
 		status,
-	);
-	// Show loading while checking authentication or redirecting
+	); // Show loading while checking authentication or redirecting
 	// isAuthorized === null means authorization check is still in progress
 	if (isLoading || status === 'loading' || isAuthorized === null) {
 		return (
-			<Loading
+			<FullPageLoader
 				message={AUTH_MESSAGES.LOADING.VERIFYING}
 				description={AUTH_MESSAGES.LOADING.VERIFYING_DESC}
 			/>
@@ -34,7 +33,7 @@ export default function DashboardLayout({
 	// Show loading while redirecting (unauthorized or unauthenticated)
 	if (status === 'unauthenticated' || !isAuthorized) {
 		return (
-			<Loading
+			<FullPageLoader
 				message={AUTH_MESSAGES.LOADING.REDIRECTING}
 				description={error ?? AUTH_MESSAGES.LOADING.REDIRECTING_DESC}
 			/>
