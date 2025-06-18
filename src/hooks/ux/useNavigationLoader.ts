@@ -31,15 +31,15 @@ export function useNavigationLoader(): NavigationLoaderState {
 	const isNavigating = context?.isNavigating ?? fallbackNavigating;
 	const targetPath = context?.targetPath ?? fallbackTargetPath;
 	const startNavigation = context?.startNavigation;
-
-	// Reset fallback state when pathname changes
+	// Reset fallback state when pathname changes (immediate completion)
 	useEffect(() => {
 		if (!context && fallbackNavigating && fallbackTargetPath === pathname) {
+			// Immediate completion for faster response
 			setFallbackNavigating(false);
 			setFallbackTargetPath(null);
 		}
 	}, [pathname, fallbackNavigating, fallbackTargetPath, context]);
-	// Enhanced navigation function with immediate loading state
+	// Enhanced navigation function with compilation awareness
 	const navigateWithLoading = useCallback(
 		(path: string) => {
 			if (path === pathname) {
@@ -55,9 +55,13 @@ export function useNavigationLoader(): NavigationLoaderState {
 				setFallbackTargetPath(path);
 			}
 
-			// Immediate navigation for better responsiveness
-			// The loading state is already set above
-			router.push(path);
+			// Immediate navigation for responsiveness
+			// Use replace for faster navigation within same app section
+			if (path.startsWith('/admin') && pathname.startsWith('/admin')) {
+				router.replace(path);
+			} else {
+				router.push(path);
+			}
 		},
 		[router, pathname, startNavigation],
 	);
