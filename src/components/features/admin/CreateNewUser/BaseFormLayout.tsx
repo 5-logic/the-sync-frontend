@@ -5,8 +5,6 @@ import { ReactNode, useState } from 'react';
 
 import TabNavigation from '@/components/features/admin/CreateNewUser/TabNavigation';
 
-import StudentExcelImport from './StudentExcelImport';
-
 const { Title, Paragraph } = Typography;
 const { Content } = Layout;
 
@@ -54,9 +52,7 @@ const BaseFormLayout = ({
 					<Row style={{ marginTop: 24 }}>
 						<Col span={24}>
 							<Card>
-								{activeTab === 'manual'
-									? ManualForm
-									: (ExcelPlaceholder ?? <StudentExcelImport />)}
+								{activeTab === 'manual' ? ManualForm : ExcelPlaceholder}
 							</Card>
 						</Col>
 					</Row>
