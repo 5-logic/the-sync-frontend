@@ -18,7 +18,7 @@ import MilestoneTable from '@/components/features/admin/MilestoneManagement/Mile
 import { initialMilestoneData } from '@/data/mileStone';
 import { Milestone } from '@/schemas/milestone';
 
-const { Title } = Typography;
+const { Title, Paragraph } = Typography;
 
 const { RangePicker } = DatePicker;
 
@@ -31,10 +31,15 @@ export default function MilestoneManagement() {
 			size="large"
 			style={{ width: '100%', padding: 24 }}
 		>
-			<Title level={3} style={{ margin: 0 }}>
-				Milestones Management
-			</Title>
-
+			<div>
+				<Title level={2} style={{ marginBottom: '4px' }}>
+					Milestones Management
+				</Title>
+				<Paragraph type="secondary" style={{ marginBottom: 0 }}>
+					Create and manage milestone, registration windows, and
+					capstone-specific rules
+				</Paragraph>
+			</div>
 			<Form layout="vertical" requiredMark={false}>
 				<Row gutter={16}>
 					<Col xs={24} md={8}>
