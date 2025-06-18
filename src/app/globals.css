@@ -1,1 +1,16 @@
-@import 'tailwindcss';
+@import "tailwindcss";
+
+/* Sidebar collapsed state styles */
+.ant-layout-sider-collapsed .hidden-when-collapsed {
+    display: none;
+}
+
+.ant-layout-sider-collapsed .visible-when-collapsed {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.visible-when-collapsed {
+    display: none;
+}
