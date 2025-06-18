@@ -1,7 +1,14 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { createContext, useContext, useEffect, useRef, useState } from 'react';
+import {
+	createContext,
+	useCallback,
+	useContext,
+	useEffect,
+	useRef,
+	useState,
+} from 'react';
 
 interface NavigationContextType {
 	isNavigating: boolean;
@@ -39,8 +46,7 @@ export default function NavigationLoader({ children }: NavigationLoaderProps) {
 			completedRef.current = false;
 		}
 	};
-
-	const completeNavigation = () => {
+	const completeNavigation = useCallback(() => {
 		if (!completedRef.current) {
 			completedRef.current = true;
 			setIsNavigating(false);
@@ -50,116 +56,102 @@ export default function NavigationLoader({ children }: NavigationLoaderProps) {
 				timeoutRef.current = undefined;
 			}
 		}
-	}; // Enhanced navigation completion detection
+	}, []); // Enhanced navigation completion detection - simplified and more reliable
 	useEffect(() => {
 		if (isNavigating && targetPath === pathname) {
 			const detectPageReady = async () => {
-				// Strategy 1: Fast React completion check (prioritized)
-				const reactReadyPromise = new Promise<void>((resolve) => {
-					// Use immediate RAF for faster response
-					requestAnimationFrame(() => {
-						requestAnimationFrame(() => resolve());
-					});
-				});
+				// Simplified detection with multiple strategies
+				const strategies = [
+					// Strategy 1: Quick content check
+					new Promise<void>((resolve) => {
+						let attempts = 0;
+						const maxAttempts = 15; // Reduced attempts
 
-				// Strategy 2: DOM content check
-				const contentReadyPromise = new Promise<void>((resolve) => {
-					let attempts = 0;
-					const maxAttempts = 10; // Reduced for faster response
+						const checkContent = () => {
+							attempts++;
 
-					const checkContent = () => {
-						attempts++;
+							// Simple content presence check
+							const contentElement =
+								document.querySelector('.ant-layout-content') ||
+								document.querySelector('[role="main"]') ||
+								document.querySelector('main');
+							if (contentElement) {
+								const content = contentElement.innerHTML;
 
-						// Check for main content containers
-						const contentSelectors = [
-							'.ant-layout-content',
-							'[role="main"]',
-							'main',
-							'.main-content',
-							'.page-content',
-						];
+								// Generic checks for meaningful content (not hardcoded keywords)
+								const hasGoodContent =
+									content.length > 200 && // Has substantial content
+									contentElement.children.length > 0 && // Has child elements
+									// Check for common UI indicators (more generic)
+									(content.includes('ant-') || // Ant Design components
+										content.includes('class=') || // Has styled elements
+										content.includes('button') || // Interactive elements
+										content.includes('form') || // Form elements
+										content.includes('table') || // Data display
+										content.includes('card') || // Card components
+										content.includes('menu') || // Navigation
+										content.includes('list') || // List components
+										content.includes('input') || // Input fields
+										content.includes('div') || // Basic HTML elements
+										contentElement.querySelector('button') || // Has buttons
+										contentElement.querySelector('form') || // Has forms
+										contentElement.querySelector('table') || // Has tables
+										contentElement.querySelector('input') || // Has inputs
+										contentElement.querySelector('.ant-') || // Ant Design elements
+										contentElement.querySelector('[class*="ant-"]') || // Any Ant Design class
+										contentElement.querySelector('[class]')); // Any element with class
 
-						let hasValidContent = false;
-
-						for (const selector of contentSelectors) {
-							const element = document.querySelector(selector);
-							if (element) {
-								// Check if element has meaningful content
-								const hasChildren = element.children.length > 0;
-								const hasText = (element.textContent?.trim().length ?? 0) > 10;
-								const hasMinHeight =
-									element.getBoundingClientRect().height > 100;
-
-								if (hasChildren || hasText || hasMinHeight) {
-									hasValidContent = true;
-									break;
+								if (hasGoodContent) {
+									// Quick stability check
+									setTimeout(() => {
+										if (contentElement.innerHTML.length > 200) {
+											resolve();
+										} else if (attempts < maxAttempts) {
+											setTimeout(checkContent, 80);
+										} else {
+											resolve();
+										}
+									}, 30);
+									return;
 								}
 							}
-						}
 
-						if (hasValidContent || attempts >= maxAttempts) {
-							resolve();
-						} else {
-							setTimeout(checkContent, 15); // Faster polling
-						}
-					};
-
-					checkContent();
-				});
-
-				// Strategy 3: Document ready state
-				const documentReadyPromise = new Promise<void>((resolve) => {
-					if (document.readyState === 'complete') {
-						resolve();
-					} else {
-						const handler = () => {
-							if (document.readyState === 'complete') {
-								document.removeEventListener('readystatechange', handler);
+							if (attempts >= maxAttempts) {
 								resolve();
+							} else {
+								setTimeout(checkContent, 80);
 							}
 						};
-						document.addEventListener('readystatechange', handler);
 
-						// Quick timeout for this strategy
-						setTimeout(() => {
-							document.removeEventListener('readystatechange', handler);
-							resolve();
-						}, 150);
-					}
-				});
+						checkContent();
+					}),
+
+					// Strategy 2: Fast fallback
+					new Promise<void>((resolve) => setTimeout(resolve, 1500)),
+				];
 
 				try {
-					// Wait for the fastest strategy to complete
-					await Promise.race([
-						reactReadyPromise,
-						contentReadyPromise,
-						documentReadyPromise,
-						// Fallback after short delay
-						new Promise<void>((resolve) => setTimeout(resolve, 100)),
-					]);
+					// Use the fastest strategy
+					await Promise.race(strategies);
 
-					// Minimal buffer for smooth UI transition
-					await new Promise((resolve) => setTimeout(resolve, 25));
+					// Small delay for smooth transition
+					await new Promise((resolve) => setTimeout(resolve, 50));
 
 					completeNavigation();
 				} catch (error) {
 					console.warn('Navigation detection error:', error);
-					// Quick emergency fallback
 					setTimeout(completeNavigation, 50);
 				}
 			};
 
 			detectPageReady();
 		}
-	}, [pathname, isNavigating, targetPath]);
-
-	// Safety timeout - reduced for better responsiveness
+	}, [pathname, isNavigating, targetPath, completeNavigation]); // Safety timeout - reduced for better responsiveness
 	useEffect(() => {
 		if (isNavigating) {
 			timeoutRef.current = setTimeout(() => {
-				console.warn('Navigation timeout - completing forcefully');
 				completeNavigation();
-			}, 2000); // Reduced from 3000ms
+			}, 2500); // Reduced to 2.5 seconds
 
 			return () => {
 				if (timeoutRef.current) {
@@ -168,7 +160,7 @@ export default function NavigationLoader({ children }: NavigationLoaderProps) {
 				}
 			};
 		}
-	}, [isNavigating]);
+	}, [isNavigating, completeNavigation]);
 	const contextValue: NavigationContextType = {
 		isNavigating,
 		targetPath,
