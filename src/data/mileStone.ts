@@ -10,16 +10,19 @@ function createMilestone(
 	semesterId: string,
 	start: string,
 	end: string,
-	createdAt?: Date,
-	updatedAt?: Date,
+	createdAt?: string,
+	updatedAt?: string,
+	checklistId?: string | null,
 ): Milestone {
-	console.log(`createdAt: ${createdAt}, updatedAt: ${updatedAt}`);
 	return {
 		id: crypto.randomUUID(),
 		name,
 		semesterId,
 		startDate: new Date(start),
 		endDate: new Date(end),
+		checklistId: checklistId ?? null,
+		createdAt: createdAt ? new Date(createdAt) : new Date(),
+		updatedAt: updatedAt ? new Date(updatedAt) : new Date(),
 	};
 }
 
@@ -29,6 +32,8 @@ export const initialMilestoneData: Milestone[] = [
 		SEMESTERS.FALL_2023,
 		'2023-09-01',
 		'2023-09-15',
+		'2023-08-01T10:00:00Z',
+		'2023-08-01T10:00:00Z',
 	),
 	createMilestone(
 		'Literature Review',
