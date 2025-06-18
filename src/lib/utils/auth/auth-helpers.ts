@@ -7,13 +7,20 @@ import {
 	checkRoutePermission,
 	findMatchingRoute,
 } from '@/lib/auth/guards/route-protection';
+import { TokenManager } from '@/lib/utils/auth/token-manager';
 import { AuthState } from '@/types/auth';
 
+// Enhanced caching with TTL
+interface CachedPermission {
+	hasAccess: boolean;
+	reason?: string;
+	timestamp: number;
+}
+
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
 // Cache for route permissions to avoid repeated calculations
-const permissionCache = new Map<
-	string,
-	{ hasAccess: boolean; reason?: string }
->();
+const permissionCache = new Map<string, CachedPermission>();
 
 // Cache for route matching to avoid repeated regex operations
 const routeMatchCache = new Map<string, ReturnType<typeof findMatchingRoute>>();
@@ -51,8 +58,7 @@ export function useRouteProtection(
 		routeMatchCache.set(path, route);
 		return route;
 	}, []);
-
-	// Cached permission checker
+	// Cached permission checker with TTL
 	const getPermissionCheck = useCallback(
 		(
 			route: ReturnType<typeof findMatchingRoute>,
@@ -60,22 +66,78 @@ export function useRouteProtection(
 			isMod?: boolean,
 		) => {
 			const key = `${route?.path ?? 'none'}:${role}:${isMod}`;
-			if (permissionCache.has(key)) {
-				return permissionCache.get(key)!;
-			}
-			if (!route) {
-				const result = { hasAccess: true, reason: undefined };
-				permissionCache.set(key, result);
-				return result;
+			const cached = permissionCache.get(key);
+
+			// Return cached result if still valid
+			if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+				return { hasAccess: cached.hasAccess, reason: cached.reason };
 			}
 
-			const result = checkRoutePermission(route, role, isMod);
-			permissionCache.set(key, result);
+			// Compute new result
+			let result: { hasAccess: boolean; reason?: string };
+			if (!route) {
+				result = { hasAccess: true, reason: undefined };
+			} else {
+				result = checkRoutePermission(route, role, isMod);
+			}
+
+			// Cache with timestamp
+			permissionCache.set(key, {
+				...result,
+				timestamp: Date.now(),
+			});
+
 			return result;
 		},
 		[],
 	);
+	// Fast token check
+	const [hasValidTokens, setHasValidTokens] = useState(false);
+
 	useEffect(() => {
+		const checkTokens = () => {
+			// Use fast token validation first
+			const fastToken = TokenManager.getFastAccessToken();
+			if (fastToken) {
+				setHasValidTokens(true);
+				return;
+			}
+
+			// Quick check for token existence
+			const accessToken = TokenManager.getAccessToken();
+			const refreshToken = TokenManager.getRefreshToken();
+			setHasValidTokens(!!(accessToken && refreshToken));
+		};
+
+		checkTokens();
+	}, [session]);
+	useEffect(() => {
+		// Fast path: Use cached tokens if available
+		if (hasValidTokens && status === 'authenticated' && session?.user) {
+			const matchedRoute = getMatchedRoute(pathname);
+			const permissionCheck = getPermissionCheck(
+				matchedRoute,
+				userRole,
+				isModerator,
+			);
+
+			if (!permissionCheck.hasAccess) {
+				router.push('/unauthorized');
+				setAuthState({
+					isAuthorized: false,
+					isLoading: false,
+					error: permissionCheck.reason,
+				});
+				return;
+			}
+
+			setAuthState({
+				isAuthorized: true,
+				isLoading: false,
+			});
+			return;
+		}
+
 		// Fast path: if we have cached result and user/route hasn't changed, use it
 		if (
 			permissionCache.has(cacheKey) &&
@@ -83,12 +145,14 @@ export function useRouteProtection(
 			session
 		) {
 			const cachedResult = permissionCache.get(cacheKey)!;
-			setAuthState({
-				isAuthorized: cachedResult.hasAccess,
-				isLoading: false,
-				error: cachedResult.reason,
-			});
-			return;
+			if (Date.now() - cachedResult.timestamp < CACHE_TTL) {
+				setAuthState({
+					isAuthorized: cachedResult.hasAccess,
+					isLoading: false,
+					error: cachedResult.reason,
+				});
+				return;
+			}
 		}
 
 		// Reset state when checking
@@ -106,9 +170,9 @@ export function useRouteProtection(
 			});
 			return;
 		}
-
 		// Not authenticated - redirect to login
 		if (status === 'unauthenticated') {
+			TokenManager.clearTokens();
 			router.push('/api/auth/signin');
 			setAuthState({
 				isAuthorized: false,
@@ -116,6 +180,14 @@ export function useRouteProtection(
 				error: AUTH_MESSAGES.ERROR.AUTH_REQUIRED,
 			});
 			return;
+		}
+
+		// Authenticated - sync tokens and check permissions
+		if (status === 'authenticated' && session?.user) {
+			// Sync tokens from session
+			if (session.accessToken && session.refreshToken) {
+				TokenManager.setTokens(session.accessToken, session.refreshToken);
+			}
 		}
 
 		// Use cached route finding
@@ -152,6 +224,7 @@ export function useRouteProtection(
 		cacheKey,
 		getMatchedRoute,
 		getPermissionCheck,
+		hasValidTokens,
 	]);
 
 	return authState;

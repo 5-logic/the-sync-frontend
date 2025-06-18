@@ -26,13 +26,47 @@ export class TokenManager {
 			return sessionStorage.getItem(this.REFRESH_TOKEN_KEY);
 		}
 		return null;
+	} // 🔄 Fast token validation (without API call)
+	static isTokenValid(token: string): boolean {
+		try {
+			// Quick format check
+			if (!token || typeof token !== 'string') return false;
+
+			// Check if token has proper JWT format (3 parts separated by dots)
+			const parts = token.split('.');
+			if (parts.length !== 3) return false;
+
+			// Decode payload to check expiration
+			const payload = JSON.parse(atob(parts[1]));
+			const currentTime = Math.floor(Date.now() / 1000);
+
+			// Check if token is expired (with 30 second buffer)
+			return payload.exp && payload.exp > currentTime + 30;
+		} catch {
+			return false;
+		}
 	}
+
+	// 🚀 Fast access token check (prioritizes cached validation)
+	static getFastAccessToken(): string | null {
+		const accessToken = this.getAccessToken();
+		if (!accessToken) return null;
+
+		// Fast validation without API call
+		if (this.isTokenValid(accessToken)) {
+			return accessToken;
+		}
+		return null;
+	}
+
 	static clearTokens(): void {
 		if (typeof window !== 'undefined') {
 			sessionStorage.removeItem(this.ACCESS_TOKEN_KEY);
 			sessionStorage.removeItem(this.REFRESH_TOKEN_KEY);
 		}
-	} // 🔄 Refresh token and update storage
+	}
+
+	// 🔄 Refresh token and update storage
 	static async refreshAccessToken(): Promise<string | null> {
 		try {
 			const refreshToken = this.getRefreshToken();
