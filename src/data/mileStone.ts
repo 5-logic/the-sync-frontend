@@ -1,6 +1,5 @@
 import { Milestone } from '@/schemas/milestone';
 
-// Tạm thời hard-code semesterId (giống database UUID)
 const SEMESTERS = {
 	FALL_2023: 'f1234567-aaaa-bbbb-cccc-111111111111',
 	SPRING_2024: 's1234567-aaaa-bbbb-cccc-222222222222',
@@ -11,7 +10,10 @@ function createMilestone(
 	semesterId: string,
 	start: string,
 	end: string,
+	createdAt?: Date,
+	updatedAt?: Date,
 ): Milestone {
+	console.log(`createdAt: ${createdAt}, updatedAt: ${updatedAt}`);
 	return {
 		id: crypto.randomUUID(),
 		name,
