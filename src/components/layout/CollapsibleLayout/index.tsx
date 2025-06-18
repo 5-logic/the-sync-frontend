@@ -1,18 +1,17 @@
 'use client';
 
-import Footer from '../Footer';
-import { HeaderSection } from '../Header';
 import { Layout, theme } from 'antd';
 import React from 'react';
 
 import NavigationLoader from '@/components/common/NavigationLoader';
 import { ContentLoader } from '@/components/common/loading';
+import { CollapsibleLayoutProps } from '@/components/layout/CollapsibleLayout/CollapsibleLayout.types';
+import { MobileBackdrop } from '@/components/layout/CollapsibleLayout/MobileBackdrop';
+import { SidebarSection } from '@/components/layout/CollapsibleLayout/SidebarSection';
+import Footer from '@/components/layout/Footer';
+import { HeaderSection } from '@/components/layout/Header';
 import { useResponsiveLayout } from '@/hooks/ui';
 import { useAppStore } from '@/store/useAppStore';
-
-import { CollapsibleLayoutProps } from './CollapsibleLayout.types';
-import { MobileBackdrop } from './MobileBackdrop';
-import { SidebarSection } from './SidebarSection';
 
 const { Content } = Layout;
 

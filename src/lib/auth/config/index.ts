@@ -1,3 +1,3 @@
 // Config exports
-export * from './nextauth-config';
-export * from './auth-constants';
+export * from '@/lib/auth/config/nextauth-config';
+export * from '@/lib/auth/config/auth-constants';

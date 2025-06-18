@@ -2,16 +2,16 @@
 // Export all loading-related components
 
 // Main loading component
-export { default } from './PageLoading';
-export { default as PageLoading } from './PageLoading';
+export { default } from '@/components/common/loading/PageLoading';
+export { default as PageLoading } from '@/components/common/loading/PageLoading';
 
 // Skeleton components
-export { default as PageContentSkeleton } from './PageContentSkeleton';
-export { default as TableLoadingSkeleton } from './TableLoadingSkeleton';
-export { default as CardLoadingSkeleton } from './CardLoadingSkeleton';
+export { default as PageContentSkeleton } from '@/components/common/loading/PageContentSkeleton';
+export { default as TableLoadingSkeleton } from '@/components/common/loading/TableLoadingSkeleton';
+export { default as CardLoadingSkeleton } from '@/components/common/loading/CardLoadingSkeleton';
 
 // Navigation loading
-export { default as ContentLoader } from './ContentLoader';
+export { default as ContentLoader } from '@/components/common/loading/ContentLoader';
 
 // Full screen loading
-export { default as FullPageLoader } from './FullPageLoader';
+export { default as FullPageLoader } from '@/components/common/loading/FullPageLoader';

@@ -1,7 +1,7 @@
 'use client';
 
-import BaseFormLayout from './BaseFormLayout';
-import LecturerForm from './LecturerForm';
+import BaseFormLayout from '@/components/features/admin/CreateNewUser/BaseFormLayout';
+import LecturerForm from '@/components/features/admin/CreateNewUser/LecturerForm';
 
 export default function CreateNewLecturer() {
 	return (

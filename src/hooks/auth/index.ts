@@ -1,10 +1,10 @@
 // Auth hooks - centralized exports
-export * from './useAuth';
-export * from './usePermissions';
-export * from './useTokenStatus';
-export * from './useTokenSync';
+export * from '@/hooks/auth/useAuth';
+export * from '@/hooks/auth/usePermissions';
+export * from '@/hooks/auth/useTokenStatus';
+export * from '@/hooks/auth/useTokenSync';
 
 // Re-export commonly used hooks with shorter names
-export { useAuthGuard as useAuth } from './useAuth';
-export { useTokenStatus } from './useTokenStatus';
-export { usePermissions } from './usePermissions';
+export { useAuthGuard as useAuth } from '@/hooks/auth/useAuth';
+export { useTokenStatus } from '@/hooks/auth/useTokenStatus';
+export { usePermissions } from '@/hooks/auth/usePermissions';

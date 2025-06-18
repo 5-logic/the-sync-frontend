@@ -1,11 +1,10 @@
+import { BaseAuthService } from '@/lib/services/auth/base-auth.service';
 import {
 	AdminLogin,
 	RefreshToken,
 	RefreshTokenData,
 	TokenData,
 } from '@/schemas/auth';
-
-import { BaseAuthService } from './base-auth.service';
 
 /**
  * 👩‍💼 Admin Authentication Service

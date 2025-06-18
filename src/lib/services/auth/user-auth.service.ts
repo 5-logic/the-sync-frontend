@@ -1,11 +1,10 @@
+import { BaseAuthService } from '@/lib/services/auth/base-auth.service';
 import {
 	RefreshToken,
 	RefreshTokenData,
 	TokenData,
 	UserLogin,
 } from '@/schemas/auth';
-
-import { BaseAuthService } from './base-auth.service';
 
 /**
  * 👤 User Authentication Service

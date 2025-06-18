@@ -1,4 +1,4 @@
 // 🔄 UX/Navigation hooks
 // Export all UX-related hooks
 
-export * from './useNavigationLoader';
+export * from '@/hooks/ux/useNavigationLoader';

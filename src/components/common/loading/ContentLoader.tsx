@@ -1,7 +1,8 @@
 'use client';
 
-import { useNavigationContext } from '../NavigationLoader';
 import { Card, Spin } from 'antd';
+
+import { useNavigationContext } from '@/components/common/NavigationLoader';
 
 interface ContentLoaderProps {
 	readonly children: React.ReactNode;

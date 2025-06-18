@@ -2,9 +2,8 @@ import { Divider, Layout } from 'antd';
 import Image from 'next/image';
 import React from 'react';
 
+import { SidebarSectionProps } from '@/components/layout/CollapsibleLayout/CollapsibleLayout.types';
 import Logo from '@/components/layout/Header/Logo';
-
-import { SidebarSectionProps } from './CollapsibleLayout.types';
 
 const { Sider } = Layout;
 

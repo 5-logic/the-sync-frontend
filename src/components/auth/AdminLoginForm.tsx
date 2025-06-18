@@ -1,17 +1,16 @@
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { Button, Form } from 'antd';
 
+import {
+	FormField,
+	LoginValues,
+	RememberAndForgot,
+} from '@/components/auth/LoginFormComponents';
 import LoginFormLayout from '@/components/layout/LoginFormLayout';
 import {
 	getAdminPasswordValidationRules,
 	getAdminUsernameValidationRules,
 } from '@/lib/utils/auth/login-validation';
-
-import {
-	FormField,
-	LoginValues,
-	RememberAndForgot,
-} from './LoginFormComponents';
 
 interface AdminLoginFormProps {
 	readonly onFinish: (values: LoginValues) => void;

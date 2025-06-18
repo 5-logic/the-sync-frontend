@@ -1,9 +1,9 @@
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { Flex, Tabs, Typography } from 'antd';
 
-import AdminLoginForm from './AdminLoginForm';
-import { LoginValues } from './LoginFormComponents';
-import UserLoginForm from './UserLoginForm';
+import AdminLoginForm from '@/components/auth/AdminLoginForm';
+import { LoginValues } from '@/components/auth/LoginFormComponents';
+import UserLoginForm from '@/components/auth/UserLoginForm';
 
 const { Text } = Typography;
 

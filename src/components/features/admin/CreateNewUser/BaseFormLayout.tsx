@@ -2,7 +2,7 @@
 
 import { ReactNode, useState } from 'react';
 
-import TabNavigation from './TabNavigation';
+import TabNavigation from '@/components/features/admin/CreateNewUser/TabNavigation';
 
 type Props = {
 	pageTitle: string;
