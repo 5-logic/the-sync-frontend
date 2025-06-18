@@ -7,6 +7,9 @@ export * from './auth';
 // UI/Layout hooks
 export * from './ui';
 
+// UX/Navigation hooks
+export * from './ux';
+
 // You can add more categories here as your app grows:
 // export * from './data';     // Data fetching hooks
 // export * from './form';     // Form handling hooks
