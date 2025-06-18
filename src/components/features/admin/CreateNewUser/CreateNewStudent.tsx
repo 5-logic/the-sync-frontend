@@ -1,11 +1,10 @@
 'use client';
 
 import BaseFormLayout from '@/components/features/admin/CreateNewUser/BaseFormLayout';
+import ExcelImportForm from '@/components/features/admin/CreateNewUser/ExcelImportForm';
 import StudentForm from '@/components/features/admin/CreateNewUser/StudentForm';
 import { mockStudents } from '@/data/student';
 import { Student } from '@/schemas/student';
-
-import ExcelImportForm from './ExcelImportForm';
 
 export default function CreateNewStudent() {
 	return (
@@ -33,7 +32,7 @@ export default function CreateNewStudent() {
 					mockData={mockStudents}
 					onImport={(data) => {
 						console.log('Imported students:', data);
-						// TODO: Gửi lên backend nếu cần
+						// TODO: Gửi lên backend
 					}}
 				/>
 			}

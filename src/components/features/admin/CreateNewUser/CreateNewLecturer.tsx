@@ -1,11 +1,10 @@
 'use client';
 
 import BaseFormLayout from '@/components/features/admin/CreateNewUser/BaseFormLayout';
+import ExcelImportForm from '@/components/features/admin/CreateNewUser/ExcelImportForm';
 import LecturerForm from '@/components/features/admin/CreateNewUser/LecturerForm';
 import { mockLecturers } from '@/data/lecturers';
 import { Lecturer } from '@/schemas/lecturer';
-
-import ExcelImportForm from './ExcelImportForm';
 
 export default function CreateNewLecturer() {
 	return (
@@ -33,7 +32,7 @@ export default function CreateNewLecturer() {
 					mockData={mockLecturers}
 					onImport={(data) => {
 						console.log('Imported lecturers:', data);
-						// TODO: Gửi lên backend nếu cần
+						// TODO: Gửi lên backend
 					}}
 				/>
 			}

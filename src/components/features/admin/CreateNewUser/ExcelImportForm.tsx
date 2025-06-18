@@ -40,7 +40,6 @@ type ExcelImportFormProps<T> = {
 };
 
 export default function ExcelImportForm<T extends { id: string }>({
-	// title = 'Import Users',
 	note,
 	fields,
 	mockData,
@@ -93,7 +92,7 @@ export default function ExcelImportForm<T extends { id: string }>({
 				),
 		})),
 		{
-			title: 'Actions',
+			title: 'Action',
 			render: (_: unknown, record: T) => (
 				<Tooltip title="Delete">
 					<Button
