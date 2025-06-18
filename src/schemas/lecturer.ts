@@ -4,10 +4,13 @@ import { UserSchema } from '@/schemas/user';
 
 export const LecturerSchema = UserSchema.extend({
 	isModerator: z.boolean().default(false),
+	createdAt: z.date(),
+	updatedAt: z.date(),
 });
 
-export const LecturerCreateSchema = LecturerSchema.pick({
-	id: true,
+export const LecturerCreateSchema = LecturerSchema.omit({
+	createdAt: true,
+	updatedAt: true,
 }).extend({
 	isModerator: z.boolean().optional(),
 });

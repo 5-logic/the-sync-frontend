@@ -8,10 +8,16 @@ export const RequestSchema = z.object({
 	status: RequestStatusSchema,
 	studentId: z.string(),
 	groupId: z.string().uuid(),
+	createdAt: z.date(),
+	updatedAt: z.date(),
 });
 
-export const RequestCreateSchema = RequestSchema.omit({ id: true }).extend({
-	status: RequestStatusSchema.optional().default('Pending'),
+export const RequestCreateSchema = RequestSchema.omit({
+	id: true,
+	createdAt: true,
+	updatedAt: true,
+}).extend({
+	status: RequestStatusSchema.default('Pending'),
 });
 
 export const RequestUpdateSchema = RequestSchema.pick({
