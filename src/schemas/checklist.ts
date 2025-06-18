@@ -4,34 +4,49 @@ import { ChecklistReviewAcceptanceSchema } from '@/schemas/_enums';
 
 export const ChecklistSchema = z.object({
 	id: z.string().uuid(),
-	name: z.string().min(1).max(100),
-	description: z.string().optional(),
-	milestoneId: z.string().uuid(),
+	name: z.string().min(1),
+	description: z.string().nullable().optional(),
+	createdAt: z.date(),
+	updatedAt: z.date(),
 });
 
 export const ChecklistItemSchema = z.object({
 	id: z.string().uuid(),
-	name: z.string().min(1).max(100),
+	name: z.string().min(1),
 	acceptance: ChecklistReviewAcceptanceSchema.default('NotAvailable'),
-	description: z.string().optional(),
+	description: z.string().nullable().optional(),
 	isRequired: z.boolean().default(false),
 	checklistId: z.string().uuid(),
+	createdAt: z.date(),
+	updatedAt: z.date(),
 });
 
-export const ChecklistCreateSchema = ChecklistSchema.omit({ id: true });
+export const ChecklistCreateSchema = ChecklistSchema.omit({
+	id: true,
+	createdAt: true,
+	updatedAt: true,
+});
+
 export const ChecklistUpdateSchema = ChecklistSchema.omit({
 	id: true,
+	createdAt: true,
+	updatedAt: true,
 }).partial();
 
 export const ChecklistItemCreateSchema = ChecklistItemSchema.omit({
 	id: true,
+	createdAt: true,
+	updatedAt: true,
 }).extend({
 	acceptance: ChecklistReviewAcceptanceSchema.optional(),
 	isRequired: z.boolean().optional(),
 });
+
 export const ChecklistItemUpdateSchema = ChecklistItemSchema.omit({
 	id: true,
 	checklistId: true,
+	createdAt: true,
+	updatedAt: true,
 }).partial();
 
 // Export inferred types

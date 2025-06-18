@@ -11,7 +11,7 @@ export const metadata = createMetadata({
 export default function AdminLayout({
 	children,
 }: {
-	children: React.ReactNode;
+	readonly children: React.ReactNode;
 }) {
 	return (
 		<CollapsibleLayout sidebar={<AdminSidebar />}>{children}</CollapsibleLayout>

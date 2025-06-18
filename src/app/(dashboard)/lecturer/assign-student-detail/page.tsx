@@ -44,7 +44,7 @@ export default function LecturerAssignStudentDetailPage() {
 					changes as needed.
 				</Text>
 
-				{/* TODO: Add actual student detail logic here */}
+				{/* Add actual student detail logic here */}
 				<div className="mt-4 p-4 bg-blue-50 rounded-lg">
 					<Text>
 						<strong>Moderator Privileges:</strong> This page is only accessible
