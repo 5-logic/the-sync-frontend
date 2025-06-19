@@ -2,11 +2,15 @@
 
 import { Space, Typography } from 'antd';
 
-import ThesisForm from './ThesisForm';
+import ThesisForm from '@/components/features/lecturer/CreateThesis/ThesisForm';
 
 const { Title, Paragraph } = Typography;
 
 export default function CreateThesis() {
+	const handleSubmit = (values: unknown) => {
+		console.log('Create new thesis:', values);
+	};
+
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
 			<div>
@@ -15,7 +19,7 @@ export default function CreateThesis() {
 					Register a new thesis proposal and validate for similarity
 				</Paragraph>
 			</div>
-			<ThesisForm />
+			<ThesisForm mode="create" onSubmit={handleSubmit} />
 		</Space>
 	);
 }

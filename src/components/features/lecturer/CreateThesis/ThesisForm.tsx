@@ -13,13 +13,15 @@ import ThesisDuplicateList from '@/components/features/lecturer/CreateThesis/The
 const { TextArea } = Input;
 const { Option } = Select;
 
-export default function ThesisForm() {
+type Props = {
+	mode: 'create' | 'edit';
+	initialValues?: Record<string, unknown>;
+	onSubmit: (values: Record<string, unknown>) => void;
+};
+
+export default function ThesisForm({ mode, initialValues, onSubmit }: Props) {
 	const [form] = Form.useForm();
 	const [showDuplicateList, setShowDuplicateList] = useState(false);
-
-	const handleSubmit = (values: unknown) => {
-		console.log('Form values:', values);
-	};
 
 	const uploadProps = {
 		beforeUpload: (file: File) => {
@@ -27,7 +29,6 @@ export default function ThesisForm() {
 				file.type === 'application/pdf' ||
 				file.type.includes('word') ||
 				file.name.endsWith('.docx');
-
 			if (!isAllowed) {
 				message.error('Only PDF, DOC, DOCX files are allowed!');
 			}
@@ -40,19 +41,20 @@ export default function ThesisForm() {
 		<Form
 			form={form}
 			layout="vertical"
-			onFinish={handleSubmit}
 			requiredMark="optional"
 			style={{ width: '100%' }}
+			initialValues={initialValues}
+			onFinish={onSubmit}
 		>
-			{/* Basic Fields */}
+			{/* Title */}
 			<Form.Item
 				name="titleEn"
 				label={
-					<span>
+					<>
 						Thesis Title (English name) <span style={{ color: 'red' }}>*</span>
-					</span>
+					</>
 				}
-				rules={[{ required: true, message: 'Please enter the English title' }]}
+				rules={[{ required: true }]}
 			>
 				<Input placeholder="Enter your thesis title" />
 			</Form.Item>
@@ -60,14 +62,12 @@ export default function ThesisForm() {
 			<Form.Item
 				name="titleVi"
 				label={
-					<span>
+					<>
 						Thesis Title (Vietnamese name){' '}
 						<span style={{ color: 'red' }}>*</span>
-					</span>
+					</>
 				}
-				rules={[
-					{ required: true, message: 'Please enter the Vietnamese title' },
-				]}
+				rules={[{ required: true }]}
 			>
 				<Input placeholder="Enter your thesis title" />
 			</Form.Item>
@@ -75,20 +75,16 @@ export default function ThesisForm() {
 			<Form.Item
 				name="abbreviation"
 				label={
-					<span>
+					<>
 						Abbreviation <span style={{ color: 'red' }}>*</span>
-					</span>
+					</>
 				}
-				rules={[{ required: true, message: 'Please enter the Abbreviation' }]}
+				rules={[{ required: true }]}
 			>
-				<Input placeholder="Enter your thesis title abbreviation" />
+				<Input placeholder="Enter abbreviation" />
 			</Form.Item>
 
-			<Form.Item
-				name="field"
-				label="Field / Domain"
-				rules={[{ required: false }]}
-			>
+			<Form.Item name="field" label="Field / Domain">
 				<Select placeholder="Select field of study">
 					<Option value="Computer Science">Computer Science</Option>
 					<Option value="Software Engineering">Software Engineering</Option>
@@ -98,20 +94,16 @@ export default function ThesisForm() {
 			<Form.Item
 				name="description"
 				label={
-					<span>
+					<>
 						Thesis Description <span style={{ color: 'red' }}>*</span>
-					</span>
+					</>
 				}
-				rules={[{ required: true, message: 'Please describe your thesis' }]}
+				rules={[{ required: true }]}
 			>
-				<TextArea placeholder="Describe your thesis" maxLength={500} rows={4} />
+				<TextArea maxLength={500} rows={4} placeholder="Describe your thesis" />
 			</Form.Item>
 
-			<Form.Item
-				name="skills"
-				label="Required Skills"
-				rules={[{ required: false }]}
-			>
+			<Form.Item name="skills" label="Required Skills">
 				<Select mode="tags" placeholder="Add skills">
 					<Option value="Python">Python</Option>
 					<Option value="Machine Learning">Machine Learning</Option>
@@ -124,7 +116,8 @@ export default function ThesisForm() {
 				<Row justify="space-between" align="middle" style={{ marginBottom: 8 }}>
 					<Col>
 						<span style={{ fontWeight: 500 }}>
-							Supporting Documents <span style={{ color: 'red' }}>*</span>
+							Supporting Documents
+							{mode === 'create' && <span style={{ color: 'red' }}> *</span>}
 						</span>
 					</Col>
 					<Col>
@@ -133,47 +126,49 @@ export default function ThesisForm() {
 						</Button>
 					</Col>
 				</Row>
+
 				<Form.Item
 					name="supportingDocument"
 					valuePropName="fileList"
 					getValueFromEvent={(e) => (Array.isArray(e) ? e : e?.fileList)}
-					rules={[
-						{
-							required: true,
-							message: 'Please upload your supporting document',
-						},
-					]}
+					rules={
+						mode === 'create'
+							? [{ required: true, message: 'Please upload your document' }]
+							: []
+					}
 				>
 					<Upload.Dragger {...uploadProps}>
 						<p className="ant-upload-drag-icon">
 							<CloudUploadOutlined />
 						</p>
 						<p>Click or drag file to upload</p>
-						<p style={{ color: '#999' }}>
-							Support for PDF, DOC, DOCX (Max: 10MB)
-						</p>
+						<p style={{ color: '#999' }}>Support PDF, DOC, DOCX (Max: 10MB)</p>
 					</Upload.Dragger>
 				</Form.Item>
 			</div>
 
+			{/* Action Buttons */}
 			<Row justify="space-between" align="middle" style={{ marginTop: 16 }}>
-				<Col>
-					<Button
-						icon={<SearchOutlined />}
-						type="primary"
-						onClick={() => setShowDuplicateList(true)}
-					>
-						Duplicate Thesis Detection
-					</Button>
-				</Col>
+				{mode === 'create' && (
+					<Col>
+						<Button
+							icon={<SearchOutlined />}
+							type="primary"
+							onClick={() => setShowDuplicateList(true)}
+						>
+							Duplicate Thesis Detection
+						</Button>
+					</Col>
+				)}
+
 				<Col>
 					<Button type="primary" htmlType="submit">
-						Submit Registration
+						{mode === 'create' ? 'Submit Registration' : 'Save Changes'}
 					</Button>
 				</Col>
 			</Row>
 
-			{showDuplicateList && <ThesisDuplicateList />}
+			{mode === 'create' && showDuplicateList && <ThesisDuplicateList />}
 		</Form>
 	);
 }
