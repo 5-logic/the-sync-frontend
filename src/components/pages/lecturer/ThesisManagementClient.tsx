@@ -5,7 +5,6 @@ import { Suspense, lazy } from 'react';
 
 import { TableLoadingSkeleton } from '@/components/common/loading';
 
-// Lazy load component chính
 const ThesisManagement = lazy(
 	() => import('@/components/features/lecturer/ThesisManagement'),
 );

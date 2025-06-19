@@ -1,7 +1,7 @@
 'use client';
 
-import { SearchOutlined } from '@ant-design/icons';
-import { Input, Select, Space } from 'antd';
+import { PlusOutlined, SearchOutlined } from '@ant-design/icons';
+import { Button, Col, Input, Row, Select } from 'antd';
 
 interface Props {
 	search: string;
@@ -29,45 +29,62 @@ export default function ThesisFilterBar({
 	onSemesterChange,
 	semesterOptions,
 }: Props) {
-	return (
-		<Space
-			wrap
-			style={{
-				marginBottom: 16,
-				width: '100%',
-				justifyContent: 'space-between',
-			}}
-		>
-			<Input
-				allowClear
-				prefix={<SearchOutlined />}
-				placeholder="Search topics"
-				value={search}
-				onChange={(e) => onSearchChange(e.target.value)}
-				style={{ width: 240 }}
-			/>
+	function onCreateThesis(): void {
+		throw new Error('Function not implemented.');
+	}
 
-			<Space wrap>
+	return (
+		<Row
+			gutter={[12, 12]}
+			wrap
+			align="middle"
+			justify="start"
+			style={{ marginBottom: 10 }}
+		>
+			<Col flex="auto" style={{ minWidth: 200 }}>
+				<Input
+					allowClear
+					prefix={<SearchOutlined />}
+					placeholder="Search topics"
+					value={search}
+					onChange={(e) => onSearchChange(e.target.value)}
+				/>
+			</Col>
+
+			<Col style={{ width: 160 }}>
 				<Select
 					value={status}
 					options={statusOptions}
 					onChange={onStatusChange}
-					style={{ width: 140 }}
+					style={{ width: '100%' }}
 				/>
+			</Col>
 
+			<Col style={{ width: 160 }}>
 				<Select
 					allowClear
 					placeholder="Semester"
 					value={semester}
 					onChange={onSemesterChange}
-					style={{ width: 160 }}
+					style={{ width: '100%' }}
 					options={semesterOptions.map((id) => ({
 						value: id,
 						label: getSemesterLabel(id),
 					}))}
 				/>
-			</Space>
-		</Space>
+			</Col>
+
+			<Col style={{ width: 160 }}>
+				<Button
+					icon={<PlusOutlined />}
+					type="primary"
+					onClick={onCreateThesis}
+					style={{ width: '100%' }}
+				>
+					Create Thesis
+				</Button>
+			</Col>
+		</Row>
 	);
 }
 

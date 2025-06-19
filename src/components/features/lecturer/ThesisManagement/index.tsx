@@ -1,13 +1,12 @@
 'use client';
 
-import { Card } from 'antd';
+import { Space, Typography } from 'antd';
 import { useState } from 'react';
 
+import ThesisFilterBar from '@/components/features/lecturer/ThesisManagement/ThesisFilterBar';
+import ThesisTable from '@/components/features/lecturer/ThesisManagement/ThesisTable';
+import mockGroups from '@/data/group';
 import mockTheses from '@/data/thesis';
-import { Group } from '@/schemas/group';
-
-import ThesisFilterBar from './ThesisFilterBar';
-import ThesisTable from './ThesisTable';
 
 function getSemesterLabel(id: string) {
 	const year = id.slice(0, 4);
@@ -23,36 +22,6 @@ export default function ThesisManagement() {
 		'all' | 'approved' | 'pending' | 'rejected'
 	>('all');
 	const [semester, setSemester] = useState<string | undefined>();
-
-	const mockGroups: Group[] = [
-		{
-			id: 'g1',
-			code: 'G1',
-			name: 'Group 1',
-			semesterId: '20251',
-			thesisId: 't1',
-			createdAt: new Date(),
-			updatedAt: new Date(),
-		},
-		{
-			id: 'g2',
-			code: 'G2',
-			name: 'Group 2',
-			semesterId: '20242',
-			thesisId: 't2',
-			createdAt: new Date(),
-			updatedAt: new Date(),
-		},
-		{
-			id: 'g3',
-			code: 'G3',
-			name: 'Group 3',
-			semesterId: '20252',
-			thesisId: 't3',
-			createdAt: new Date(),
-			updatedAt: new Date(),
-		},
-	];
 
 	const data = mockTheses
 		.map((t) => {
@@ -76,8 +45,19 @@ export default function ThesisManagement() {
 		.map((g) => g.semesterId)
 		.filter((v, i, a) => a.indexOf(v) === i);
 
+	const { Title, Paragraph } = Typography;
 	return (
-		<Card>
+		<Space direction="vertical" size="large" style={{ width: '100%' }}>
+			<div>
+				<Title level={2} style={{ marginBottom: '4px' }}>
+					Thesis Management
+				</Title>
+				<Paragraph type="secondary" style={{ marginBottom: 0 }}>
+					Create and manage Thesis, registration windows, and capstone-specific
+					rules
+				</Paragraph>
+			</div>
+
 			<ThesisFilterBar
 				search={search}
 				onSearchChange={setSearch}
@@ -88,6 +68,6 @@ export default function ThesisManagement() {
 				semesterOptions={semesterOptions}
 			/>
 			<ThesisTable data={data} />
-		</Card>
+		</Space>
 	);
 }

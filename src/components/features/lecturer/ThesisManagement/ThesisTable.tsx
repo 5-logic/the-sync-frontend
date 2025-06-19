@@ -67,7 +67,13 @@ export default function ThesisTable({ data }: Props) {
 			columns={columns}
 			dataSource={data}
 			rowKey="id"
-			pagination={{ pageSize: 5 }}
+			pagination={{
+				showTotal: (total, range) =>
+					`${range[0]}-${range[1]} of ${total} items`,
+				showSizeChanger: true,
+				pageSizeOptions: ['5', '10', '20', '50'],
+				defaultPageSize: 10,
+			}}
 			scroll={{ x: 'max-content' }}
 		/>
 	);
