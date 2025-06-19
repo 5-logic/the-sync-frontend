@@ -15,7 +15,6 @@ export default function CreateThesisPage() {
 					Register a new thesis proposal and validate for similarity
 				</Paragraph>
 			</div>
-
 			<ThesisForm />
 		</Space>
 	);
