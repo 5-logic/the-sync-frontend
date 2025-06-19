@@ -1,8 +1,11 @@
-// import { useState } from 'react';
-import { DownloadOutlined } from '@ant-design/icons';
-import { Button, Form, Input, Select, Space, Upload, message } from 'antd';
+import {
+	CloudUploadOutlined,
+	DownloadOutlined,
+	SearchOutlined,
+} from '@ant-design/icons';
+import { Button, Col, Form, Input, Row, Select, Upload, message } from 'antd';
 
-import ThesisSimilarList from '@/components/features/lecturer/CreateThesis/ThesisSimilarList';
+import ThesisDuplicateList from '@/components/features/lecturer/CreateThesis/ThesisDuplicateList';
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -57,7 +60,9 @@ export default function ThesisForm() {
 						<span style={{ color: 'red' }}>*</span>
 					</span>
 				}
-				rules={[{ required: true }]}
+				rules={[
+					{ required: true, message: 'Please enter the Vietnamese title' },
+				]}
 			>
 				<Input placeholder="Enter your thesis title" />
 			</Form.Item>
@@ -69,19 +74,15 @@ export default function ThesisForm() {
 						Abbreviation <span style={{ color: 'red' }}>*</span>
 					</span>
 				}
-				rules={[{ required: true }]}
+				rules={[{ required: true, message: 'Please enter the Abbreviation' }]}
 			>
 				<Input placeholder="Enter your thesis title abbreviation" />
 			</Form.Item>
 
 			<Form.Item
 				name="field"
-				label={
-					<span>
-						Field / Domain <span style={{ color: 'red' }}>*</span>
-					</span>
-				}
-				rules={[{ required: true }]}
+				label="Field / Domain"
+				rules={[{ required: false }]}
 			>
 				<Select placeholder="Select field of study">
 					<Option value="Computer Science">Computer Science</Option>
@@ -96,7 +97,7 @@ export default function ThesisForm() {
 						Thesis Description <span style={{ color: 'red' }}>*</span>
 					</span>
 				}
-				rules={[{ required: true }]}
+				rules={[{ required: true, message: 'Please describe your thesis' }]}
 			>
 				<TextArea placeholder="Describe your thesis" maxLength={500} rows={4} />
 			</Form.Item>
@@ -104,7 +105,7 @@ export default function ThesisForm() {
 			<Form.Item
 				name="skills"
 				label="Required Skills"
-				rules={[{ required: true }]}
+				rules={[{ required: false }]}
 			>
 				<Select mode="tags" placeholder="Add skills">
 					<Option value="Python">Python</Option>
@@ -113,34 +114,56 @@ export default function ThesisForm() {
 				</Select>
 			</Form.Item>
 
-			{/* Upload Section Inline */}
 			<div style={{ marginBottom: 24 }}>
-				<div style={{ marginBottom: 8, fontWeight: 500 }}>
-					Supporting Documents <span style={{ color: 'red' }}>*</span>
-				</div>
-				<Upload.Dragger {...uploadProps}>
-					<p>Click or drag file to upload</p>
-					<p style={{ color: '#999' }}>
-						Support for PDF, DOC, DOCX (Max: 10MB)
-					</p>
-				</Upload.Dragger>
-				<Button
-					icon={<DownloadOutlined />}
-					type="link"
-					style={{ marginTop: 8 }}
+				<Row justify="space-between" align="middle" style={{ marginBottom: 8 }}>
+					<Col>
+						<span style={{ fontWeight: 500 }}>
+							Supporting Documents <span style={{ color: 'red' }}>*</span>
+						</span>
+					</Col>
+					<Col>
+						<Button icon={<DownloadOutlined />} type="default" size="small">
+							Download Template
+						</Button>
+					</Col>
+				</Row>
+				<Form.Item
+					name="supportingDocument"
+					valuePropName="fileList"
+					getValueFromEvent={(e) => (Array.isArray(e) ? e : e && e.fileList)}
+					rules={[
+						{
+							required: true,
+							message: 'Please upload your supporting document',
+						},
+					]}
 				>
-					Download Template
-				</Button>
+					<Upload.Dragger {...uploadProps}>
+						<p className="ant-upload-drag-icon">
+							<CloudUploadOutlined />
+						</p>
+						<p>Click or drag file to upload</p>
+						<p style={{ color: '#999' }}>
+							Support for PDF, DOC, DOCX (Max: 10MB)
+						</p>
+					</Upload.Dragger>
+				</Form.Item>{' '}
 			</div>
 
-			<Space style={{ marginTop: 16 }} wrap>
-				<Button type="primary" htmlType="submit">
-					Submit Registration
-				</Button>
-				<Button type="default">Duplicate Thesis Detection</Button>
-			</Space>
+			<Row justify="space-between" align="middle" style={{ marginTop: 16 }}>
+				<Col>
+					<Button icon={<SearchOutlined />} type="primary">
+						Duplicate Thesis Detection
+					</Button>
+				</Col>
+				<Col>
+					<Button type="primary" htmlType="submit">
+						Submit Registration
+					</Button>
+				</Col>
+			</Row>
 
-			<ThesisSimilarList />
+			<ThesisDuplicateList />
 		</Form>
 	);
 }
