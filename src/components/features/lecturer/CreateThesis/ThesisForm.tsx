@@ -13,11 +13,11 @@ import ThesisDuplicateList from '@/components/features/lecturer/CreateThesis/The
 const { TextArea } = Input;
 const { Option } = Select;
 
-type Props = {
+type Props = Readonly<{
 	mode: 'create' | 'edit';
 	initialValues?: Record<string, unknown>;
 	onSubmit: (values: Record<string, unknown>) => void;
-};
+}>;
 
 export default function ThesisForm({ mode, initialValues, onSubmit }: Props) {
 	const [form] = Form.useForm();
@@ -46,7 +46,6 @@ export default function ThesisForm({ mode, initialValues, onSubmit }: Props) {
 			initialValues={initialValues}
 			onFinish={onSubmit}
 		>
-			{/* Title */}
 			<Form.Item
 				name="titleEn"
 				label={
@@ -111,7 +110,6 @@ export default function ThesisForm({ mode, initialValues, onSubmit }: Props) {
 				</Select>
 			</Form.Item>
 
-			{/* Upload */}
 			<div style={{ marginBottom: 24 }}>
 				<Row justify="space-between" align="middle" style={{ marginBottom: 8 }}>
 					<Col>
@@ -147,7 +145,6 @@ export default function ThesisForm({ mode, initialValues, onSubmit }: Props) {
 				</Form.Item>
 			</div>
 
-			{/* Action Buttons */}
 			<Row justify="space-between" align="middle" style={{ marginTop: 16 }}>
 				{mode === 'create' && (
 					<Col>

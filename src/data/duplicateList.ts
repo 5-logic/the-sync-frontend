@@ -1,5 +1,6 @@
 const MockDuplicateList = [
 	{
+		id: 'thesis-001',
 		title: 'Machine Learning for Healthcare Data Analysis',
 		field: 'Computer Science',
 		status: 'Approved',
@@ -9,6 +10,7 @@ const MockDuplicateList = [
 			'This thesis explores the application of machine learning algorithms to improve healthcare data analysis and patient outcomes.',
 	},
 	{
+		id: 'thesis-002',
 		title: 'AI-Driven Medical Diagnosis System',
 		field: 'Information Systems',
 		status: 'Pending',
@@ -17,6 +19,7 @@ const MockDuplicateList = [
 			'A system that leverages AI models to assist medical professionals in diagnosing diseases from patient data.',
 	},
 	{
+		id: 'thesis-003',
 		title: 'Healthcare Data Mining Framework',
 		field: 'Software Engineering',
 		status: 'Rejected',
