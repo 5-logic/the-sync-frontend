@@ -26,7 +26,6 @@ export default function ThesisForm({ mode, initialValues, onSubmit }: Props) {
 	interface UploadedFile {
 		name: string;
 		size: number;
-		// add other properties if needed
 	}
 
 	const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>(null);
