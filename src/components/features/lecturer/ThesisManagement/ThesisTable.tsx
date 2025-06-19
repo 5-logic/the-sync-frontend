@@ -10,7 +10,7 @@ interface Props {
 	data: (Thesis & { semesterId?: string; semesterLabel?: string })[];
 }
 
-export default function ThesisTable({ data }: Props) {
+export default function ThesisTable({ data }: Readonly<Props>) {
 	const columns: ColumnsType<Props['data'][number]> = [
 		{
 			title: 'Title',
@@ -23,7 +23,7 @@ export default function ThesisTable({ data }: Props) {
 			dataIndex: 'semesterLabel',
 			key: 'semester',
 			sorter: (a, b) =>
-				(a.semesterLabel || '').localeCompare(b.semesterLabel || ''),
+				(a.semesterLabel ?? '').localeCompare(b.semesterLabel ?? ''),
 		},
 		{
 			title: 'Status',
@@ -35,7 +35,7 @@ export default function ThesisTable({ data }: Props) {
 					Pending: 'gold',
 					Rejected: 'red',
 				};
-				return <Tag color={colorMap[status] || 'default'}>{status}</Tag>;
+				return <Tag color={colorMap[status] ?? 'default'}>{status}</Tag>;
 			},
 		},
 		{

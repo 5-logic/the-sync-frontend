@@ -28,7 +28,7 @@ export default function ThesisFilterBar({
 	semester,
 	onSemesterChange,
 	semesterOptions,
-}: Props) {
+}: Readonly<Props>) {
 	function onCreateThesis(): void {
 		throw new Error('Function not implemented.');
 	}
@@ -92,6 +92,6 @@ function getSemesterLabel(id: string) {
 	const year = id.slice(0, 4);
 	const term = id.slice(4);
 	const termName =
-		{ '1': 'Spring', '2': 'Summer', '3': 'Fall' }[term] || 'Unknown';
+		{ '1': 'Spring', '2': 'Summer', '3': 'Fall' }[term] ?? 'Unknown';
 	return `${termName} ${year}`;
 }
