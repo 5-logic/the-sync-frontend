@@ -2,6 +2,7 @@
 
 import {
 	CloudUploadOutlined,
+	DeleteOutlined,
 	DownloadOutlined,
 	SearchOutlined,
 } from '@ant-design/icons';
@@ -22,6 +23,13 @@ type Props = Readonly<{
 export default function ThesisForm({ mode, initialValues, onSubmit }: Props) {
 	const [form] = Form.useForm();
 	const [showDuplicateList, setShowDuplicateList] = useState(false);
+	interface UploadedFile {
+		name: string;
+		size: number;
+		// add other properties if needed
+	}
+
+	const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>(null);
 
 	const uploadProps = {
 		beforeUpload: (file: File) => {
@@ -135,13 +143,87 @@ export default function ThesisForm({ mode, initialValues, onSubmit }: Props) {
 							: []
 					}
 				>
-					<Upload.Dragger {...uploadProps}>
-						<p className="ant-upload-drag-icon">
-							<CloudUploadOutlined />
-						</p>
-						<p>Click or drag file to upload</p>
-						<p style={{ color: '#999' }}>Support PDF, DOC, DOCX (Max: 10MB)</p>
-					</Upload.Dragger>
+					{!uploadedFile ? (
+						<Upload.Dragger
+							{...uploadProps}
+							onChange={({ file }) => {
+								if (file.status === 'done') {
+									setUploadedFile({
+										name: file.name,
+										size: file.size ?? 0,
+									});
+								}
+							}}
+							showUploadList={false}
+						>
+							<p className="ant-upload-drag-icon">
+								<CloudUploadOutlined />
+							</p>
+							<p>Click or drag file to upload</p>
+							<p style={{ color: '#999' }}>
+								Support PDF, DOC, DOCX (Max: 10MB)
+							</p>
+						</Upload.Dragger>
+					) : (
+						<div
+							style={{
+								border: '1px solid #d9d9d9',
+								borderRadius: 8,
+								padding: 16,
+								background: '#fafafa',
+							}}
+						>
+							<div
+								style={{
+									display: 'flex',
+									justifyContent: 'space-between',
+									alignItems: 'flex-start',
+								}}
+							>
+								<div>
+									<div style={{ fontWeight: 500 }}>{uploadedFile.name}</div>
+									<div style={{ color: '#666', fontSize: 13 }}>
+										{(uploadedFile.size / 1024 / 1024).toFixed(1)} MB • Uploaded
+										on{' '}
+										{new Date().toLocaleDateString('en-US', {
+											month: 'short',
+											day: 'numeric',
+											year: 'numeric',
+										})}
+									</div>
+								</div>
+								<DeleteOutlined
+									style={{ color: 'red', cursor: 'pointer', fontSize: 16 }}
+									onClick={() => {
+										setUploadedFile(null);
+										form.setFieldValue('supportingDocument', []);
+									}}
+								/>
+							</div>
+
+							<div style={{ marginTop: 16 }}>
+								<Upload
+									{...uploadProps}
+									onChange={({ file }) => {
+										if (file.status === 'done') {
+											setUploadedFile({
+												name: file.name,
+												size: file.size ?? 0,
+											});
+										}
+									}}
+									showUploadList={false}
+								>
+									<Button icon={<CloudUploadOutlined />}>
+										Upload New File
+									</Button>
+								</Upload>
+								<div style={{ fontSize: 12, color: '#999', marginTop: 4 }}>
+									Support for PDF, DOC, DOCX (Max: 10MB)
+								</div>
+							</div>
+						</div>
+					)}
 				</Form.Item>
 			</div>
 
