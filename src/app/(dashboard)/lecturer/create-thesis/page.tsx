@@ -1,8 +1,22 @@
-export default function LecturerCreateThesisPage() {
+'use client';
+
+import { Space, Typography } from 'antd';
+
+import ThesisForm from '@/components/features/lecturer/CreateThesis/ThesisForm';
+
+const { Title, Paragraph } = Typography;
+
+export default function CreateThesisPage() {
 	return (
-		<div className="p-6">
-			<h1 className="text-2xl font-bold mb-4">Create Thesis</h1>
-			<p className="text-gray-600">Create a new thesis topic proposal</p>
-		</div>
+		<Space direction="vertical" size="large" style={{ width: '100%' }}>
+			<div>
+				<Title level={2}>Create New Thesis</Title>
+				<Paragraph type="secondary">
+					Register a new thesis proposal and validate for similarity
+				</Paragraph>
+			</div>
+
+			<ThesisForm />
+		</Space>
 	);
 }
