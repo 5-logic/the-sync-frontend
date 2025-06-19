@@ -7,7 +7,7 @@ import {
 	SearchOutlined,
 } from '@ant-design/icons';
 import { Button, Col, Form, Input, Row, Select, Upload, message } from 'antd';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import ThesisDuplicateList from '@/components/features/lecturer/CreateThesis/ThesisDuplicateList';
 
@@ -20,14 +20,14 @@ type Props = Readonly<{
 	onSubmit: (values: Record<string, unknown>) => void;
 }>;
 
+interface UploadedFile {
+	name: string;
+	size: number;
+}
+
 export default function ThesisForm({ mode, initialValues, onSubmit }: Props) {
 	const [form] = Form.useForm();
 	const [showDuplicateList, setShowDuplicateList] = useState(false);
-	interface UploadedFile {
-		name: string;
-		size: number;
-	}
-
 	const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>(null);
 
 	const uploadProps = {
@@ -43,6 +43,21 @@ export default function ThesisForm({ mode, initialValues, onSubmit }: Props) {
 		},
 		maxCount: 1,
 	};
+
+	// Set file nếu ở chế độ edit
+	useEffect(() => {
+		if (
+			mode === 'edit' &&
+			Array.isArray(initialValues?.supportingDocument) &&
+			initialValues.supportingDocument.length > 0
+		) {
+			const file = initialValues.supportingDocument[0];
+			setUploadedFile({
+				name: file.name,
+				size: file.size,
+			});
+		}
+	}, [mode, initialValues]);
 
 	return (
 		<Form
@@ -125,11 +140,13 @@ export default function ThesisForm({ mode, initialValues, onSubmit }: Props) {
 							{mode === 'create' && <span style={{ color: 'red' }}> *</span>}
 						</span>
 					</Col>
-					<Col>
-						<Button icon={<DownloadOutlined />} type="default" size="small">
-							Download Template
-						</Button>
-					</Col>
+					{mode === 'create' && (
+						<Col>
+							<Button icon={<DownloadOutlined />} type="default" size="small">
+								Download Template
+							</Button>
+						</Col>
+					)}
 				</Row>
 
 				<Form.Item
@@ -227,17 +244,15 @@ export default function ThesisForm({ mode, initialValues, onSubmit }: Props) {
 			</div>
 
 			<Row justify="space-between" align="middle" style={{ marginTop: 16 }}>
-				{mode === 'create' && (
-					<Col>
-						<Button
-							icon={<SearchOutlined />}
-							type="primary"
-							onClick={() => setShowDuplicateList(true)}
-						>
-							Duplicate Thesis Detection
-						</Button>
-					</Col>
-				)}
+				<Col>
+					<Button
+						icon={<SearchOutlined />}
+						type="primary"
+						onClick={() => setShowDuplicateList(true)}
+					>
+						Duplicate Thesis Detection
+					</Button>
+				</Col>
 
 				<Col>
 					<Button type="primary" htmlType="submit">
@@ -246,7 +261,7 @@ export default function ThesisForm({ mode, initialValues, onSubmit }: Props) {
 				</Col>
 			</Row>
 
-			{mode === 'create' && showDuplicateList && <ThesisDuplicateList />}
+			{showDuplicateList && <ThesisDuplicateList />}
 		</Form>
 	);
 }
