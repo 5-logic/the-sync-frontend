@@ -1,10 +1,8 @@
 'use client';
 
-import { Card, Col, Row, Tag, Typography } from 'antd';
+import { Card, Col, Row, Tag } from 'antd';
 
 import MockDuplicateList from '@/data/duplicateList';
-
-const { Paragraph } = Typography;
 
 export default function ThesisDuplicateList() {
 	return (
@@ -25,40 +23,74 @@ export default function ThesisDuplicateList() {
 							break;
 					}
 
+					const cardStyle = thesis.highlight
+						? {
+								border: '2px solid gold',
+								boxShadow: '0 0 6px rgba(255, 215, 0, 0.5)',
+								backgroundColor: '#fff8e1',
+								height: '100%',
+							}
+						: { height: '100%' };
+
 					return (
-						<Col xs={24} md={8} key={thesis.id}>
-							<Card
-								extra={
-									thesis.highlight && <Tag color="gold">{thesis.highlight}</Tag>
-								}
-								title={thesis.title}
-								size="small"
-								style={
-									thesis.highlight
-										? {
-												border: '2px solid gold',
-												boxShadow: '0 0 6px rgba(255, 215, 0, 0.5)',
-												backgroundColor: '#fff8e1',
-											}
-										: {}
-								}
+						<Col xs={24} md={8} style={{ height: '100%' }} key={thesis.id}>
+							<div
+								style={{
+									height: '100%',
+									display: 'flex',
+									flexDirection: 'column',
+								}}
 							>
-								<Tag color="blue">{thesis.field}</Tag>
+								<Card
+									extra={
+										thesis.highlight && (
+											<Tag color="gold">{thesis.highlight}</Tag>
+										)
+									}
+									title={thesis.title}
+									size="small"
+									style={{
+										...cardStyle,
+										flex: 1,
+										display: 'flex',
+										flexDirection: 'column',
+									}}
+									bodyStyle={{
+										display: 'flex',
+										flexDirection: 'column',
+										justifyContent: 'space-between',
+										flex: 1,
+									}}
+								>
+									<div>
+										<Tag color="blue">{thesis.field}</Tag>
 
-								<div style={{ marginTop: 8 }}>
-									{thesis.skills.map((skill) => (
-										<Tag key={skill}>{skill}</Tag>
-									))}
-								</div>
+										<div style={{ marginTop: 8 }}>
+											{thesis.skills.map((skill) => (
+												<Tag key={skill}>{skill}</Tag>
+											))}
+										</div>
 
-								<div style={{ marginTop: 8 }}>
-									<Tag color={statusColor}>{thesis.status}</Tag>
-								</div>
+										<div style={{ marginTop: 8 }}>
+											<Tag color={statusColor}>{thesis.status}</Tag>
+										</div>
+									</div>
 
-								<Paragraph style={{ marginTop: 12 }} type="secondary">
-									{thesis.description}
-								</Paragraph>
-							</Card>
+									<div
+										style={{
+											marginTop: 12,
+											color: 'rgba(0, 0, 0, 0.45)',
+											overflow: 'hidden',
+											textOverflow: 'ellipsis',
+											display: '-webkit-box',
+											WebkitLineClamp: 3,
+											WebkitBoxOrient: 'vertical',
+										}}
+									>
+										{thesis.description}
+									</div>
+								</Card>
+							</div>
 						</Col>
 					);
 				})}
