@@ -160,7 +160,7 @@ export default function ThesisForm({ mode, initialValues, onSubmit }: Props) {
 
 				<Col>
 					<Button type="primary" htmlType="submit">
-						{mode === 'create' ? 'Submit Registration' : 'Save Changes'}
+						{mode === 'create' ? 'Submit Registration' : 'Resubmit Thesis'}
 					</Button>
 				</Col>
 			</Row>
