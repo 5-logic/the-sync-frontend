@@ -17,7 +17,6 @@ export default function ThesisDuplicateList() {
 							: thesis.status === 'Pending'
 								? 'orange'
 								: 'red';
-
 					return (
 						<Col xs={24} md={8} key={thesis.id}>
 							<Card
