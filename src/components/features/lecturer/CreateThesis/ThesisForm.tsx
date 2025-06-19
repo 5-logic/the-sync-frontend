@@ -1,9 +1,12 @@
+'use client';
+
 import {
 	CloudUploadOutlined,
 	DownloadOutlined,
 	SearchOutlined,
 } from '@ant-design/icons';
 import { Button, Col, Form, Input, Row, Select, Upload, message } from 'antd';
+import { useState } from 'react';
 
 import ThesisDuplicateList from '@/components/features/lecturer/CreateThesis/ThesisDuplicateList';
 
@@ -12,6 +15,7 @@ const { Option } = Select;
 
 export default function ThesisForm() {
 	const [form] = Form.useForm();
+	const [showDuplicateList, setShowDuplicateList] = useState(false);
 
 	const handleSubmit = (values: unknown) => {
 		console.log('Form values:', values);
@@ -40,6 +44,7 @@ export default function ThesisForm() {
 			requiredMark="optional"
 			style={{ width: '100%' }}
 		>
+			{/* Basic Fields */}
 			<Form.Item
 				name="titleEn"
 				label={
@@ -114,6 +119,7 @@ export default function ThesisForm() {
 				</Select>
 			</Form.Item>
 
+			{/* Upload */}
 			<div style={{ marginBottom: 24 }}>
 				<Row justify="space-between" align="middle" style={{ marginBottom: 8 }}>
 					<Col>
@@ -130,7 +136,7 @@ export default function ThesisForm() {
 				<Form.Item
 					name="supportingDocument"
 					valuePropName="fileList"
-					getValueFromEvent={(e) => (Array.isArray(e) ? e : e && e.fileList)}
+					getValueFromEvent={(e) => (Array.isArray(e) ? e : e?.fileList)}
 					rules={[
 						{
 							required: true,
@@ -147,12 +153,16 @@ export default function ThesisForm() {
 							Support for PDF, DOC, DOCX (Max: 10MB)
 						</p>
 					</Upload.Dragger>
-				</Form.Item>{' '}
+				</Form.Item>
 			</div>
 
 			<Row justify="space-between" align="middle" style={{ marginTop: 16 }}>
 				<Col>
-					<Button icon={<SearchOutlined />} type="primary">
+					<Button
+						icon={<SearchOutlined />}
+						type="primary"
+						onClick={() => setShowDuplicateList(true)}
+					>
 						Duplicate Thesis Detection
 					</Button>
 				</Col>
@@ -163,7 +173,7 @@ export default function ThesisForm() {
 				</Col>
 			</Row>
 
-			<ThesisDuplicateList />
+			{showDuplicateList && <ThesisDuplicateList />}
 		</Form>
 	);
 }
