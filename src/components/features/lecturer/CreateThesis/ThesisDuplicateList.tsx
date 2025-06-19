@@ -11,12 +11,20 @@ export default function ThesisDuplicateList() {
 		<div style={{ marginTop: 32 }}>
 			<Row gutter={[16, 16]}>
 				{MockDuplicateList.map((thesis) => {
-					const statusColor =
-						thesis.status === 'Approved'
-							? 'green'
-							: thesis.status === 'Pending'
-								? 'orange'
-								: 'red';
+					let statusColor: string;
+
+					switch (thesis.status) {
+						case 'Approved':
+							statusColor = 'green';
+							break;
+						case 'Pending':
+							statusColor = 'orange';
+							break;
+						default:
+							statusColor = 'red';
+							break;
+					}
+
 					return (
 						<Col xs={24} md={8} key={thesis.id}>
 							<Card
