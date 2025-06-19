@@ -20,7 +20,7 @@ export default function EditThesis() {
 				uid: '-1',
 				name: 'thesis_proposal_v1.pdf',
 				status: 'done',
-				url: '/uploads/thesis_proposal_v1.pdf', // Nếu backend trả về
+				url: '/uploads/thesis_proposal_v1.pdf',
 				size: 2500000,
 				uploadDate: '2024-01-15',
 			},
@@ -29,7 +29,6 @@ export default function EditThesis() {
 
 	const handleUpdate = (values: unknown) => {
 		console.log('Updated thesis:', values);
-		// TODO: gọi API update ở đây
 	};
 
 	return (
