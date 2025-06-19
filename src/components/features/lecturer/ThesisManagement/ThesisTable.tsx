@@ -1,50 +1,74 @@
+'use client';
+
 import { EditOutlined, EyeOutlined } from '@ant-design/icons';
-import { Table, Tag } from 'antd';
+import { Button, Space, Table, Tag, Tooltip } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
 
 import { Thesis } from '@/schemas/thesis';
 
-type Props = {
-	data: Thesis[];
-};
+interface Props {
+	data: (Thesis & { semesterId?: string; semesterLabel?: string })[];
+}
 
 export default function ThesisTable({ data }: Props) {
+	const columns: ColumnsType<Props['data'][number]> = [
+		{
+			title: 'Title',
+			dataIndex: 'englishName',
+			key: 'title',
+			sorter: (a, b) => a.englishName.localeCompare(b.englishName),
+		},
+		{
+			title: 'Semester',
+			dataIndex: 'semesterLabel',
+			key: 'semester',
+			sorter: (a, b) =>
+				(a.semesterLabel || '').localeCompare(b.semesterLabel || ''),
+		},
+		{
+			title: 'Status',
+			dataIndex: 'status',
+			key: 'status',
+			render: (status: string) => {
+				const colorMap: Record<string, string> = {
+					Approved: 'green',
+					Pending: 'gold',
+					Rejected: 'red',
+				};
+				return <Tag color={colorMap[status] || 'default'}>{status}</Tag>;
+			},
+		},
+		{
+			title: 'Summit date',
+			dataIndex: 'createdAt',
+			key: 'summitDate',
+			sorter: (a, b) =>
+				new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+			render: (date: Date) => date.toISOString().split('T')[0],
+		},
+		{
+			title: 'Actions',
+			key: 'actions',
+			render: () => (
+				<Space>
+					<Tooltip title="Edit">
+						<Button icon={<EditOutlined />} type="text" />
+					</Tooltip>
+					<Tooltip title="View">
+						<Button icon={<EyeOutlined />} type="text" />
+					</Tooltip>
+				</Space>
+			),
+		},
+	];
+
 	return (
 		<Table
+			columns={columns}
 			dataSource={data}
 			rowKey="id"
-			columns={[
-				{ title: 'Title', dataIndex: 'title', key: 'title' },
-				{ title: 'Semester', dataIndex: 'semester', key: 'semester' },
-				{
-					title: 'Status',
-					dataIndex: 'status',
-					key: 'status',
-					render: (status: string) => {
-						const colorMap: Record<string, string> = {
-							approved: 'green',
-							rejected: 'red',
-							pending: 'gold',
-						};
-						return <Tag color={colorMap[status] || 'default'}>{status}</Tag>;
-					},
-				},
-				{
-					title: 'Summit Date',
-					dataIndex: 'submitDate',
-					key: 'submitDate',
-				},
-				{
-					title: 'Actions',
-					key: 'actions',
-					render: () => (
-						<>
-							<EditOutlined className="mr-2 cursor-pointer" />
-							<EyeOutlined className="cursor-pointer" />
-						</>
-					),
-				},
-			]}
 			pagination={{ pageSize: 5 }}
+			scroll={{ x: 'max-content' }}
 		/>
 	);
 }

@@ -1,87 +1,80 @@
 'use client';
 
-import { PlusOutlined, SearchOutlined } from '@ant-design/icons';
-import { Button, Col, Input, Row, Select } from 'antd';
+import { SearchOutlined } from '@ant-design/icons';
+import { Input, Select, Space } from 'antd';
 
-const { Option } = Select;
+interface Props {
+	search: string;
+	onSearchChange: (val: string) => void;
+	status: 'all' | 'approved' | 'pending' | 'rejected';
+	onStatusChange: (val: 'all' | 'approved' | 'pending' | 'rejected') => void;
+	semester?: string;
+	onSemesterChange: (val?: string) => void;
+	semesterOptions: string[];
+}
 
-type Props = Readonly<{
-	statusFilter: 'all' | 'approved' | 'rejected' | 'pending';
-	setStatusFilter: (value: 'all' | 'approved' | 'rejected' | 'pending') => void;
-	searchText: string;
-	setSearchText: (value: string) => void;
-	selectedSemester: string;
-	setSelectedSemester: (value: string) => void;
-	onCreateThesis: () => void;
-}>;
+const statusOptions = [
+	{ value: 'all', label: 'All Status' },
+	{ value: 'approved', label: 'Approved' },
+	{ value: 'pending', label: 'Pending' },
+	{ value: 'rejected', label: 'Rejected' },
+];
 
 export default function ThesisFilterBar({
-	statusFilter,
-	setStatusFilter,
-	searchText,
-	setSearchText,
-	selectedSemester,
-	setSelectedSemester,
-	onCreateThesis,
+	search,
+	onSearchChange,
+	status,
+	onStatusChange,
+	semester,
+	onSemesterChange,
+	semesterOptions,
 }: Props) {
 	return (
-		<Row
-			gutter={[8, 16]}
-			align="middle"
-			justify="space-between"
-			style={{ marginBottom: 16 }}
+		<Space
+			wrap
+			style={{
+				marginBottom: 16,
+				width: '100%',
+				justifyContent: 'space-between',
+			}}
 		>
-			<Col xs={24} md={18}>
-				<Row gutter={[8, 8]} wrap>
-					<Col>
-						<Select
-							value={statusFilter}
-							onChange={setStatusFilter}
-							style={{ width: 140 }}
-							placeholder="Select Status"
-						>
-							<Option value="all">All Status</Option>
-							<Option value="approved">Approved</Option>
-							<Option value="rejected">Rejected</Option>
-							<Option value="pending">Pending</Option>
-						</Select>
-					</Col>
+			<Input
+				allowClear
+				prefix={<SearchOutlined />}
+				placeholder="Search topics"
+				value={search}
+				onChange={(e) => onSearchChange(e.target.value)}
+				style={{ width: 240 }}
+			/>
 
-					<Col>
-						<Select
-							value={selectedSemester}
-							onChange={setSelectedSemester}
-							style={{ width: 140 }}
-							placeholder="Semester"
-						>
-							<Option value="all">All Semesters</Option>
-							<Option value="Spring 2025">Spring 2025</Option>
-							<Option value="Summer 2024">Summer 2024</Option>
-							<Option value="Summer 2025">Summer 2025</Option>
-						</Select>
-					</Col>
+			<Space wrap>
+				<Select
+					value={status}
+					options={statusOptions}
+					onChange={onStatusChange}
+					style={{ width: 140 }}
+				/>
 
-					<Col flex="auto">
-						<Input
-							placeholder="Search topics"
-							value={searchText}
-							onChange={(e) => setSearchText(e.target.value)}
-							prefix={<SearchOutlined style={{ color: '#aaa' }} />}
-						/>
-					</Col>
-				</Row>
-			</Col>
-
-			<Col xs={24} md={6} style={{ textAlign: 'right' }}>
-				<Button
-					icon={<PlusOutlined />}
-					type="primary"
-					onClick={onCreateThesis}
-					block
-				>
-					Create Thesis
-				</Button>
-			</Col>
-		</Row>
+				<Select
+					allowClear
+					placeholder="Semester"
+					value={semester}
+					onChange={onSemesterChange}
+					style={{ width: 160 }}
+					options={semesterOptions.map((id) => ({
+						value: id,
+						label: getSemesterLabel(id),
+					}))}
+				/>
+			</Space>
+		</Space>
 	);
+}
+
+function getSemesterLabel(id: string) {
+	const year = id.slice(0, 4);
+	const term = id.slice(4);
+	const termName =
+		{ '1': 'Spring', '2': 'Summer', '3': 'Fall' }[term] || 'Unknown';
+	return `${termName} ${year}`;
 }
