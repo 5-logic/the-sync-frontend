@@ -50,7 +50,7 @@ export default function ExcelImportForm<T extends { id: string }>({
 	const [data, setData] = useState<T[]>([]);
 
 	const handleUpload = () => {
-		setData(mockData); // replace with actual Excel parsing logic
+		setData(mockData);
 		message.success(`${mockData.length} users data imported successfully`);
 		return false;
 	};

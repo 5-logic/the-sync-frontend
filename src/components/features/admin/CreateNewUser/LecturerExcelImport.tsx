@@ -1,7 +1,6 @@
+import ExcelImportForm from '@/components/features/admin/CreateNewUser/ExcelImportForm';
 import { mockLecturers } from '@/data/lecturers';
 import { Lecturer } from '@/schemas/lecturer';
-
-import ExcelImportForm from './ExcelImportForm';
 
 export default function LecturerExcelImport() {
 	return (

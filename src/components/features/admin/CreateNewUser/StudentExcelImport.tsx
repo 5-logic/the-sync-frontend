@@ -1,9 +1,8 @@
 'use client';
 
+import ExcelImportForm from '@/components/features/admin/CreateNewUser/ExcelImportForm';
 import { mockStudents } from '@/data/student';
 import { Student } from '@/schemas/student';
-
-import ExcelImportForm from './ExcelImportForm';
 
 export default function StudentExcelImport() {
 	return (
