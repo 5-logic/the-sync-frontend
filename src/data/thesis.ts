@@ -9,6 +9,7 @@ export type ExtendedThesis = Thesis & {
 		phone: string;
 		email: string;
 	};
+	rejectReasons: string;
 };
 
 export const mockTheses: ExtendedThesis[] = [
@@ -17,7 +18,8 @@ export const mockTheses: ExtendedThesis[] = [
 		englishName: 'AI-Powered Smart City Infrastructure Management',
 		vietnameseName: 'Phân tích AI trong y tế',
 		abbreviation: 'AIHCA',
-		description: 'Thesis on applying AI in healthcare.',
+		description:
+			'Thesis on applying AI in healthcare. Predictive algorithms form the core of smart city operations. These systems analyze historical patterns in traffic flow, energy consumption, and public service usage to optimize resource allocation. Machine learning models, particularly deep learning networks, enable automated decision-making for traffic signal timing, power grid load balancing, and emergency response routing.',
 		domain: 'AI',
 		status: 'Approved',
 		isPublish: true,
@@ -33,6 +35,7 @@ export const mockTheses: ExtendedThesis[] = [
 			phone: '0123456789',
 			email: 'sarah.chen@university.edu',
 		},
+		rejectReasons: 'N/A',
 	},
 	{
 		id: 't2',
@@ -54,6 +57,7 @@ export const mockTheses: ExtendedThesis[] = [
 			phone: '0987654321',
 			email: 'alex.nguyen@university.edu',
 		},
+		rejectReasons: 'N/A',
 	},
 	{
 		id: 't3',
@@ -75,5 +79,6 @@ export const mockTheses: ExtendedThesis[] = [
 			phone: '0111222333',
 			email: 'emily.tran@university.edu',
 		},
+		rejectReasons: 'Topic is not aligned with the students or groups major.',
 	},
 ];
