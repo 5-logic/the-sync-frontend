@@ -21,7 +21,7 @@ export default function SupportingDocumentField({
 	mode,
 	initialFile,
 	onFileChange,
-}: Props) {
+}: Readonly<Props>) {
 	const [uploadedFile, setUploadedFile] = useState(initialFile || null);
 
 	useEffect(() => {
