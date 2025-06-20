@@ -2,15 +2,14 @@
 
 import { Card, Col, Row, Tag } from 'antd';
 
-import MockDuplicateList from '@/data/duplicateList';
+import { mockTheses } from '@/data/thesis';
 
 export default function ThesisDuplicateList() {
 	return (
 		<div style={{ marginTop: 32 }}>
 			<Row gutter={[16, 16]}>
-				{MockDuplicateList.map((thesis) => {
+				{mockTheses.map((thesis) => {
 					let statusColor: string;
-
 					switch (thesis.status) {
 						case 'Approved':
 							statusColor = 'green';
@@ -33,7 +32,7 @@ export default function ThesisDuplicateList() {
 						: { height: '100%' };
 
 					return (
-						<Col xs={24} md={8} style={{ height: '100%' }} key={thesis.id}>
+						<Col xs={24} md={8} key={thesis.id}>
 							<div
 								style={{
 									height: '100%',
@@ -42,12 +41,12 @@ export default function ThesisDuplicateList() {
 								}}
 							>
 								<Card
+									title={thesis.englishName}
 									extra={
 										thesis.highlight && (
 											<Tag color="gold">{thesis.highlight}</Tag>
 										)
 									}
-									title={thesis.title}
 									size="small"
 									style={{
 										...cardStyle,
@@ -63,10 +62,10 @@ export default function ThesisDuplicateList() {
 									}}
 								>
 									<div>
-										<Tag color="blue">{thesis.field}</Tag>
+										<Tag color="blue">{thesis.domain}</Tag>
 
 										<div style={{ marginTop: 8 }}>
-											{thesis.skills.map((skill) => (
+											{thesis.skills?.map((skill) => (
 												<Tag key={skill}>{skill}</Tag>
 											))}
 										</div>

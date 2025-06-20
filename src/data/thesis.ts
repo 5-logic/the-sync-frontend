@@ -1,6 +1,9 @@
 import { Thesis } from '@/schemas/thesis';
 
-const mockTheses: Thesis[] = [
+export const mockTheses: (Thesis & {
+	skills: string[];
+	highlight?: string;
+})[] = [
 	{
 		id: 't1',
 		englishName: 'AI for Healthcare Analysis',
@@ -14,6 +17,8 @@ const mockTheses: Thesis[] = [
 		lecturerId: 'lect1',
 		createdAt: new Date('2024-01-10'),
 		updatedAt: new Date(),
+		skills: ['Python', 'AI', 'Healthcare'],
+		highlight: 'High Similarity',
 	},
 	{
 		id: 't2',
@@ -28,6 +33,7 @@ const mockTheses: Thesis[] = [
 		lecturerId: 'lect2',
 		createdAt: new Date('2024-01-08'),
 		updatedAt: new Date(),
+		skills: ['Blockchain', 'Logistics'],
 	},
 	{
 		id: 't3',
@@ -42,7 +48,6 @@ const mockTheses: Thesis[] = [
 		lecturerId: 'lect3',
 		createdAt: new Date('2024-01-05'),
 		updatedAt: new Date(),
+		skills: ['IoT', 'Smart City', 'Infrastructure'],
 	},
 ];
-
-export default mockTheses;

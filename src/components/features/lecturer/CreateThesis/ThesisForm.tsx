@@ -50,7 +50,7 @@ export default function ThesisForm({ mode, initialValues, onSubmit }: Props) {
 			onFinish={onSubmit}
 		>
 			<Form.Item
-				name="titleEn"
+				name="englishName"
 				label={
 					<>
 						Thesis Title (English name) <span style={{ color: 'red' }}>*</span>
@@ -62,7 +62,7 @@ export default function ThesisForm({ mode, initialValues, onSubmit }: Props) {
 			</Form.Item>
 
 			<Form.Item
-				name="titleVi"
+				name="vietnameseName"
 				label={
 					<>
 						Thesis Title (Vietnamese name){' '}
@@ -86,7 +86,7 @@ export default function ThesisForm({ mode, initialValues, onSubmit }: Props) {
 				<Input placeholder="Enter abbreviation" />
 			</Form.Item>
 
-			<Form.Item name="field" label="Field / Domain">
+			<Form.Item name="domain" label="Field / Domain">
 				<Select placeholder="Select field of study">
 					<Option value="Computer Science">Computer Science</Option>
 					<Option value="Software Engineering">Software Engineering</Option>
