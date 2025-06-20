@@ -1,14 +1,25 @@
-const PageHeader = ({
-	title,
-	subtitle,
-}: {
+'use client';
+
+import { Col, Row, Typography } from 'antd';
+
+const { Title, Paragraph } = Typography;
+
+type PageHeaderProps = {
 	title: string;
 	subtitle: string;
-}) => (
-	<div className="mb-8 -ml-8 text-left">
-		<h1 className="text-3xl font-bold">{title}</h1>
-		<p className="text-gray-500">{subtitle}</p>
-	</div>
+};
+
+const PageHeader = ({ title, subtitle }: PageHeaderProps) => (
+	<Row style={{ marginBottom: 32 }}>
+		<Col span={24}>
+			<Title level={2} style={{ marginBottom: 0 }}>
+				{title}
+			</Title>
+			<Paragraph type="secondary" style={{ marginTop: 4 }}>
+				{subtitle}
+			</Paragraph>
+		</Col>
+	</Row>
 );
 
 export default PageHeader;
