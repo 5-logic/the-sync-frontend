@@ -10,12 +10,12 @@ import {
 	Row,
 	Space,
 	Typography,
-	notification,
 } from 'antd';
 import type { FormInstance } from 'antd/es/form';
 import { memo, useCallback, useState } from 'react';
 
 import semesterService from '@/lib/services/semesters.service';
+import { showNotification } from '@/lib/utils/notification';
 import { SemesterCreate } from '@/schemas/semester';
 
 const { Title } = Typography;
@@ -46,27 +46,15 @@ const SemesterForm = memo<SemesterFormProps>(({ form, onSuccess }) => {
 				const response = await semesterService.create(semesterData);
 
 				if (response.success) {
-					notification.success({
-						message: 'Success',
-						description: 'Semester created successfully',
-						placement: 'bottomRight',
-					});
+					showNotification.success('Success', 'Semester created successfully');
 					form.resetFields();
 					onSuccess?.();
 				} else {
-					notification.error({
-						message: 'Error',
-						description: 'Failed to create semester',
-						placement: 'bottomRight',
-					});
+					showNotification.error('Error', 'Failed to create semester');
 				}
 			} catch (error) {
 				console.error('Error creating semester:', error);
-				notification.error({
-					message: 'Error',
-					description: 'Error creating semester',
-					placement: 'bottomRight',
-				});
+				showNotification.error('Error', 'Error creating semester');
 			} finally {
 				setLoading(false);
 			}
