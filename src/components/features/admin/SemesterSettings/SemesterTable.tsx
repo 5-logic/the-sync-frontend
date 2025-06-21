@@ -1,7 +1,8 @@
 'use client';
 
-import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
+import { EditOutlined } from '@ant-design/icons';
 import {
+	Alert,
 	Button,
 	Col,
 	Form,
@@ -13,6 +14,7 @@ import {
 	Table,
 	Tag,
 	Tooltip,
+	Typography,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import {
@@ -25,12 +27,12 @@ import {
 } from 'react';
 
 import { FormLabel } from '@/components/common/FormLabel';
-import semesterService from '@/lib/services/semesters.service';
-import { showNotification } from '@/lib/utils/notification';
 import { SemesterStatus } from '@/schemas/_enums';
-import { Semester } from '@/schemas/semester';
+import { Semester, SemesterUpdate } from '@/schemas/semester';
+import { useSemesterStore } from '@/store/useSemesterStore';
 
 const { Option } = Select;
+const { Text } = Typography;
 
 export interface SemesterTableRef {
 	refresh: () => Promise<void>;
@@ -67,34 +69,37 @@ const SemesterTable = forwardRef<
 		searchText: string;
 	}
 >(({ statusFilter, searchText }, ref) => {
+	// Use Semester Store
+	const {
+		semesters,
+		loading,
+		updating,
+		deleting,
+		fetchSemesters,
+		updateSemester,
+		clearError,
+	} = useSemesterStore();
+
 	const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 	const [editingRecord, setEditingRecord] = useState<Semester | null>(null);
 	const [form] = Form.useForm();
 	const [selectedStatus, setSelectedStatus] = useState<
 		SemesterStatus | undefined
 	>();
-	const [semesters, setSemesters] = useState<Semester[]>([]);
-	const [loading, setLoading] = useState(false);
-	const [updateLoading, setUpdateLoading] = useState(false);
 	const [isFormChanged, setIsFormChanged] = useState(false);
 
-	const fetchSemesters = useCallback(async () => {
-		try {
-			setLoading(true);
-			const response = await semesterService.findAll();
-			if (response.success && response.data) {
-				setSemesters(response.data);
-			} else {
-				showNotification.error('Error', 'Failed to fetch semesters');
-			}
-		} catch (error) {
-			console.error('Error fetching semesters:', error);
-			showNotification.error('Error', 'Error fetching semesters');
-		} finally {
-			setLoading(false);
-		}
-	}, []);
+	// Clear errors when component mounts
+	useEffect(() => {
+		clearError();
+		return () => clearError();
+	}, [clearError]);
 
+	// Fetch semesters on component mount
+	useEffect(() => {
+		fetchSemesters();
+	}, [fetchSemesters]);
+
+	// Expose refresh method to parent component
 	useImperativeHandle(
 		ref,
 		() => ({
@@ -103,18 +108,93 @@ const SemesterTable = forwardRef<
 		[fetchSemesters],
 	);
 
-	useEffect(() => {
-		fetchSemesters();
-	}, [fetchSemesters]);
+	// Check if there's another semester with active status (not NotYet or End)
+	const hasActiveSemester = useCallback(
+		(excludeId?: string): Semester | null => {
+			const activeSemester = semesters.find(
+				(semester) =>
+					semester.id !== excludeId &&
+					semester.status !== 'NotYet' &&
+					semester.status !== 'End',
+			);
+			return activeSemester || null;
+		},
+		[semesters],
+	);
+
+	// Check if status change is allowed based on business rules
+	const isStatusChangeAllowed = useCallback(
+		(
+			currentSemester: Semester,
+			newStatus: SemesterStatus,
+		): { allowed: boolean; reason?: string; activeSemester?: Semester } => {
+			// If changing to NotYet or End, always allow
+			if (newStatus === 'NotYet' || newStatus === 'End') {
+				return { allowed: true };
+			}
+
+			// If current status is already not NotYet/End, allow (same semester progression)
+			if (
+				currentSemester.status !== 'NotYet' &&
+				currentSemester.status !== 'End'
+			) {
+				return { allowed: true };
+			}
+
+			// If changing from NotYet/End to active status, check if other semesters are active
+			const activeSemester = hasActiveSemester(currentSemester.id);
+			if (activeSemester) {
+				return {
+					allowed: false,
+					reason: `Cannot change status. Another semester "${activeSemester.name}" is currently in ${activeSemester.status} status.`,
+					activeSemester,
+				};
+			}
+
+			return { allowed: true };
+		},
+		[hasActiveSemester],
+	);
+
+	// Check if semester can be edited (End status cannot be edited)
+	const canEditSemester = useCallback(
+		(semester: Semester): { canEdit: boolean; reason?: string } => {
+			if (semester.status === 'End') {
+				return {
+					canEdit: false,
+					reason: 'Cannot edit semester with End status',
+				};
+			}
+			return { canEdit: true };
+		},
+		[],
+	);
 
 	const getAvailableStatuses = useCallback(
-		(currentStatus: SemesterStatus): SemesterStatus[] => {
+		(
+			currentStatus: SemesterStatus,
+			currentPhase?: string,
+		): SemesterStatus[] => {
 			const currentIndex = STATUS_ORDER.indexOf(currentStatus);
 			if (currentIndex === -1) return STATUS_ORDER;
+
 			const availableStatuses: SemesterStatus[] = [currentStatus];
+
 			if (currentIndex < STATUS_ORDER.length - 1) {
-				availableStatuses.push(STATUS_ORDER[currentIndex + 1]);
+				const nextStatus = STATUS_ORDER[currentIndex + 1];
+
+				// Rule: If current status is Ongoing and next status is End,
+				// only allow if current phase is ScopeLocked
+				if (currentStatus === 'Ongoing' && nextStatus === 'End') {
+					if (currentPhase === 'ScopeLocked') {
+						availableStatuses.push(nextStatus);
+					}
+				} else {
+					// For other transitions, allow normal progression
+					availableStatuses.push(nextStatus);
+				}
 			}
+
 			return availableStatuses;
 		},
 		[],
@@ -137,6 +217,18 @@ const SemesterTable = forwardRef<
 
 	const handleEdit = useCallback(
 		(record: Semester) => {
+			// Check if semester can be edited
+			const editCheck = canEditSemester(record);
+			if (!editCheck.canEdit) {
+				// Show notification or modal instead of opening edit form
+				Modal.info({
+					title: 'Cannot Edit Semester',
+					content: editCheck.reason,
+					centered: true,
+				});
+				return;
+			}
+
 			setEditingRecord(record);
 			setSelectedStatus(record.status);
 			form.setFieldsValue({
@@ -144,101 +236,166 @@ const SemesterTable = forwardRef<
 				code: record.code,
 				maxGroup: record.maxGroup,
 				status: record.status,
-				ongoingPhase: record.ongoingPhase,
+				ongoingPhase: record.ongoingPhase || undefined,
 			});
 			setIsFormChanged(false);
 			setIsEditModalOpen(true);
 		},
-		[form],
+		[form, canEditSemester],
 	);
 
 	const handleEditSubmit = useCallback(async () => {
-		setUpdateLoading(true);
 		try {
 			const values = await form.validateFields();
 			if (editingRecord) {
-				const payload = {
+				// Additional check: Prevent editing End status semesters
+				if (editingRecord.status === 'End') {
+					Modal.error({
+						title: 'Edit Not Allowed',
+						content: 'Cannot edit semester with End status',
+						centered: true,
+					});
+					return;
+				}
+
+				// Rule 1: Ongoing -> End requires ScopeLocked phase
+				if (editingRecord.status === 'Ongoing' && values.status === 'End') {
+					// Lấy phase hiện tại từ form hoặc từ record
+					const currentPhase =
+						form.getFieldValue('ongoingPhase') || editingRecord.ongoingPhase;
+
+					if (currentPhase !== 'ScopeLocked') {
+						form.setFields([
+							{
+								name: 'status',
+								errors: [
+									'Cannot change status to End. Phase must be ScopeLocked first.',
+								],
+							},
+						]);
+						return;
+					}
+				}
+
+				// Rule 2: Max Group required when status is Picking
+				if (values.status === 'Picking' && !values.maxGroup) {
+					form.setFields([
+						{
+							name: 'maxGroup',
+							errors: [
+								'Maximum number of groups is required when status is Picking.',
+							],
+						},
+					]);
+					return;
+				}
+
+				// Rule 3: Only one semester can have active status at a time
+				const statusCheck = isStatusChangeAllowed(editingRecord, values.status);
+				if (!statusCheck.allowed) {
+					form.setFields([
+						{
+							name: 'status',
+							errors: [statusCheck.reason || 'Status change not allowed'],
+						},
+					]);
+					return;
+				}
+
+				// Khi status chuyển sang End, không cần gửi ongoingPhase
+				const payload: SemesterUpdate = {
 					name: values.name,
 					code: values.code,
 					maxGroup: values.maxGroup ? parseInt(values.maxGroup, 10) : undefined,
 					status: values.status,
-					ongoingPhase: values.ongoingPhase,
+					// Chỉ gửi ongoingPhase khi status là Ongoing
+					ongoingPhase:
+						values.status === 'Ongoing' ? values.ongoingPhase : undefined,
 				};
 
-				const response = await semesterService.update(
-					editingRecord.id,
-					payload,
-				);
-				if (response.success) {
-					showNotification.success('Success', 'Semester updated successfully');
+				// Use store method to update semester
+				const success = await updateSemester(editingRecord.id, payload);
+
+				if (success) {
+					// Success notification is handled in store
 					setIsEditModalOpen(false);
 					setEditingRecord(null);
 					setSelectedStatus(undefined);
 					form.resetFields();
-					await fetchSemesters();
-				} else {
-					showNotification.error('Error', 'Failed to update semester');
+					setIsFormChanged(false);
 				}
+				// Error notification is handled in store
 			}
 		} catch (error) {
-			console.error('Error updating semester:', error);
-			showNotification.error('Error', 'Error updating semester');
-		} finally {
-			setUpdateLoading(false);
+			console.error('Form validation error:', error);
 		}
-	}, [form, editingRecord, fetchSemesters]);
+	}, [form, editingRecord, updateSemester, isStatusChangeAllowed]);
 
 	const handleCancel = useCallback(() => {
+		clearError();
 		setIsEditModalOpen(false);
 		setEditingRecord(null);
 		setSelectedStatus(undefined);
 		form.resetFields();
-	}, [form]);
+		setIsFormChanged(false);
+	}, [form, clearError]);
 
 	const handleStatusChange = useCallback(
 		(value: SemesterStatus) => {
 			setSelectedStatus(value);
+
+			// Clear ongoing phase if status is not Ongoing
 			if (value !== 'Ongoing') {
 				form.setFieldValue('ongoingPhase', undefined);
 			}
+
+			// Clear max group if status is not Picking and it's empty
+			if (value !== 'Picking' && !form.getFieldValue('maxGroup')) {
+				form.setFieldValue('maxGroup', undefined);
+			}
+
+			// Clear status field error when user changes status
+			form.setFields([
+				{
+					name: 'status',
+					errors: [],
+				},
+			]);
+
+			// Clear maxGroup field error when status changes
+			form.setFields([
+				{
+					name: 'maxGroup',
+					errors: [],
+				},
+			]);
+
+			// Trigger form validation to update maxGroup field requirement
+			form.validateFields(['maxGroup']).catch(() => {
+				// Ignore validation errors, they will be shown in the form
+			});
 		},
 		[form],
 	);
 
-	const handleDelete = useCallback(
-		(record: Semester) => {
-			Modal.confirm({
-				title: 'Delete Semester',
-				content: (
-					<span>
-						Are you sure want to delete{' '}
-						<strong>&quot;{record.name}&quot;</strong>?
-					</span>
-				),
-				okText: 'Delete',
-				okType: 'danger',
-				cancelText: 'Cancel',
-				centered: true,
-				async onOk() {
-					try {
-						const response = await semesterService.delete(record.id);
-						if (response.success) {
-							showNotification.success(
-								'Success',
-								'Semester deleted successfully',
-							);
-							await fetchSemesters();
-						} else {
-							showNotification.error('Error', 'Failed to delete semester');
-						}
-					} catch (error) {
-						console.error('Error deleting semester:', error);
-						showNotification.error('Error', 'Error deleting semester');
-					}
+	const handlePhaseChange = useCallback(
+		(value: string) => {
+			// When phase changes, recalculate available statuses
+			setIsFormChanged(true);
+			form.setFieldValue('ongoingPhase', value);
+
+			// Clear status field error when phase changes
+			form.setFields([
+				{
+					name: 'status',
+					errors: [],
 				},
-			});
+			]);
+
+			// Force re-render to update available statuses
+			setSelectedStatus((prev) => prev);
 		},
-		[fetchSemesters],
+		[form],
 	);
 
 	const handleFormChange = useCallback(() => {
@@ -289,44 +446,180 @@ const SemesterTable = forwardRef<
 				title: 'Actions',
 				key: 'actions',
 				width: 100,
-				render: (_: unknown, record: Semester) => (
-					<Space size="middle">
-						<Tooltip title="Edit">
-							<Button
-								icon={<EditOutlined />}
-								size="small"
-								type="text"
-								onClick={() => handleEdit(record)}
-							/>
-						</Tooltip>
-						<Tooltip title="Delete">
-							<Button
-								icon={<DeleteOutlined />}
-								size="small"
-								danger
-								type="text"
-								onClick={() => handleDelete(record)}
-							/>
-						</Tooltip>
-					</Space>
-				),
+				render: (_: unknown, record: Semester) => {
+					const editCheck = canEditSemester(record);
+					return (
+						<Space size="middle">
+							<Tooltip
+								title={
+									editCheck.canEdit
+										? 'Edit'
+										: editCheck.reason || 'Cannot edit this semester'
+								}
+							>
+								<Button
+									icon={<EditOutlined />}
+									size="small"
+									type="text"
+									onClick={() => handleEdit(record)}
+									disabled={
+										!editCheck.canEdit || updating || deleting // Disable for End status
+									}
+									style={{
+										opacity: editCheck.canEdit ? 1 : 0.5,
+										cursor: editCheck.canEdit ? 'pointer' : 'not-allowed',
+									}}
+								/>
+							</Tooltip>
+						</Space>
+					);
+				},
 			},
 		],
-		[handleEdit, handleDelete],
+		[handleEdit, updating, deleting, canEditSemester],
 	);
 
+	// Update available statuses calculation to include current phase
 	const availableStatuses = useMemo(() => {
-		return editingRecord
-			? getAvailableStatuses(editingRecord.status)
-			: STATUS_ORDER;
-	}, [editingRecord, getAvailableStatuses]);
+		if (!editingRecord) return STATUS_ORDER;
+
+		// Ưu tiên lấy giá trị từ form trước, sau đó mới lấy từ record
+		const formPhase = form.getFieldValue('ongoingPhase');
+		const currentPhase =
+			formPhase !== undefined ? formPhase : editingRecord.ongoingPhase;
+
+		return getAvailableStatuses(editingRecord.status, currentPhase);
+	}, [editingRecord, getAvailableStatuses, form, selectedStatus]);
+
+	// Check if status option should be disabled with helpful message
+	const getStatusOptionProps = useCallback(
+		(status: SemesterStatus) => {
+			if (!editingRecord) return {};
+
+			// Ưu tiên lấy giá trị từ form trước
+			const formPhase = form.getFieldValue('ongoingPhase');
+			const currentPhase =
+				formPhase !== undefined ? formPhase : editingRecord.ongoingPhase;
+
+			// Rule 1: Ongoing -> End requires ScopeLocked phase
+			if (
+				editingRecord.status === 'Ongoing' &&
+				status === 'End' &&
+				currentPhase !== 'ScopeLocked'
+			) {
+				return {
+					disabled: true,
+					title: 'Phase must be ScopeLocked to change status to End',
+				};
+			}
+
+			// Rule 2: Check if status change is allowed (only for active statuses)
+			if (status !== 'NotYet' && status !== 'End') {
+				const statusCheck = isStatusChangeAllowed(editingRecord, status);
+				if (!statusCheck.allowed) {
+					return {
+						disabled: true,
+						title: statusCheck.reason || 'Status change not allowed',
+					};
+				}
+			}
+
+			return {};
+		},
+		[editingRecord, form, isStatusChangeAllowed],
+	);
+
+	// Show warning if there's an active semester
+	const activeSemesterWarning = useMemo(() => {
+		if (!editingRecord) return null;
+
+		const activeSemester = hasActiveSemester(editingRecord.id);
+		if (
+			activeSemester &&
+			(editingRecord.status === 'NotYet' || editingRecord.status === 'End')
+		) {
+			return (
+				<div
+					style={{
+						background: '#fff7e6',
+						border: '1px solid #ffd591',
+						borderRadius: '6px',
+						padding: '8px 12px',
+						marginBottom: '16px',
+						fontSize: '14px',
+						color: '#d48806',
+					}}
+				>
+					<strong>Notice:</strong> Semester{' '}
+					<strong>{activeSemester.name}</strong> is currently in{' '}
+					<strong>{activeSemester.status}</strong> status. You cannot change
+					status for this semester.
+				</div>
+			);
+		}
+
+		return null;
+	}, [editingRecord, hasActiveSemester]);
+
+	// Show End status warning
+	const endStatusWarning = useMemo(() => {
+		if (!editingRecord || editingRecord.status !== 'End') return null;
+
+		return (
+			<Alert
+				type="info"
+				showIcon
+				message={
+					<Text>
+						<strong>Info:</strong> This semester has ended and cannot be
+						modified.
+					</Text>
+				}
+				style={{ marginBottom: 16 }}
+			/>
+		);
+	}, [editingRecord]);
+
+	// Show End status selection warning when user selects End status
+	const endStatusSelectionWarning = useMemo(() => {
+		if (
+			!editingRecord ||
+			selectedStatus !== 'End' ||
+			editingRecord.status === 'End'
+		)
+			return null;
+
+		return (
+			<Alert
+				type="warning"
+				message="Important Warning"
+				description={
+					<>
+						<Text>
+							Once you change the status to <Text strong>End</Text>, this
+							semester will be marked as completed and{' '}
+							<Text strong>cannot be edited anymore</Text>. This action is
+							irreversible.
+						</Text>
+						<br />
+						<Text type="secondary" italic>
+							Please make sure all semester information is correct before
+							proceeding.
+						</Text>
+					</>
+				}
+				showIcon
+				style={{ marginBottom: 16 }}
+			/>
+		);
+	}, [editingRecord, selectedStatus]);
 
 	return (
 		<>
 			<Table
 				columns={columns}
 				dataSource={filteredData}
-				loading={loading}
+				loading={loading} // Use loading from store
 				rowKey="id"
 				pagination={{
 					showTotal: (total, range) =>
@@ -350,14 +643,18 @@ const SemesterTable = forwardRef<
 				centered
 				okButtonProps={{
 					disabled: !isFormChanged,
-					loading: updateLoading,
+					loading: updating, // Use updating from store
 				}}
 				cancelButtonProps={{
-					disabled: updateLoading,
+					disabled: updating, // Use updating from store
 				}}
-				closable={!updateLoading}
-				maskClosable={!updateLoading}
+				closable={!updating} // Use updating from store
+				maskClosable={!updating} // Use updating from store
 			>
+				{activeSemesterWarning}
+				{endStatusWarning}
+				{endStatusSelectionWarning}
+
 				<Form
 					form={form}
 					layout="vertical"
@@ -380,7 +677,7 @@ const SemesterTable = forwardRef<
 							>
 								<Input
 									placeholder="Enter semester name (e.g., Spring 2025)"
-									disabled={updateLoading}
+									disabled={updating} // Use updating from store
 								/>
 							</Form.Item>
 						</Col>
@@ -399,7 +696,7 @@ const SemesterTable = forwardRef<
 							>
 								<Input
 									placeholder="Enter semester code (e.g., SP25)"
-									disabled={updateLoading}
+									disabled={updating} // Use updating from store
 								/>
 							</Form.Item>
 						</Col>
@@ -411,11 +708,30 @@ const SemesterTable = forwardRef<
 							text: 'Maximum Number of Groups',
 							isBold: true,
 						})}
+						rules={[
+							{
+								required: selectedStatus === 'Picking',
+								message:
+									'Maximum number of groups is required when status is Picking',
+							},
+							{
+								type: 'number',
+								min: 1,
+								message: 'Maximum number of groups must be a positive integer',
+								transform: (value) => (value ? Number(value) : undefined),
+							},
+						]}
 					>
 						<Input
-							placeholder="Enter maximum number of groups"
+							placeholder={
+								selectedStatus === 'Picking'
+									? 'Enter maximum number of groups (required for Picking status)'
+									: 'Enter maximum number of groups (optional)'
+							}
 							type="number"
-							disabled={updateLoading}
+							min={1}
+							step={1}
+							disabled={updating}
 						/>
 					</Form.Item>
 
@@ -430,10 +746,14 @@ const SemesterTable = forwardRef<
 						<Select
 							placeholder="Select status"
 							onChange={handleStatusChange}
-							disabled={updateLoading}
+							disabled={updating} // Use updating from store
 						>
 							{availableStatuses.map((status) => (
-								<Option key={status} value={status}>
+								<Option
+									key={status}
+									value={status}
+									{...getStatusOptionProps(status)} // Add option props for disabled state
+								>
 									{STATUS_LABELS[status]}
 								</Option>
 							))}
@@ -443,7 +763,11 @@ const SemesterTable = forwardRef<
 					{selectedStatus === 'Ongoing' && (
 						<Form.Item
 							name="ongoingPhase"
-							label="Ongoing Phase"
+							label={FormLabel({
+								text: 'Ongoing Phase',
+								isRequired: true,
+								isBold: true,
+							})}
 							rules={[
 								{
 									required: true,
@@ -453,7 +777,8 @@ const SemesterTable = forwardRef<
 						>
 							<Select
 								placeholder="Select ongoing phase"
-								disabled={updateLoading}
+								disabled={updating} // Use updating from store
+								onChange={handlePhaseChange} // Add phase change handler
 							>
 								<Option value="ScopeAdjustable">Scope Adjustable</Option>
 								<Option value="ScopeLocked">Scope Locked</Option>
