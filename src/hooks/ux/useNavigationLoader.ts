@@ -53,11 +53,14 @@ export function useNavigationLoader(): NavigationLoaderState {
 				// Fallback mode without context
 				setFallbackNavigating(true);
 				setFallbackTargetPath(path);
-			}
-
-			// Immediate navigation for responsiveness
+			} // Immediate navigation for responsiveness
 			// Use replace for faster navigation within same app section
-			if (path.startsWith('/admin') && pathname.startsWith('/admin')) {
+			const isWithinSameSection =
+				(path.startsWith('/admin') && pathname.startsWith('/admin')) ||
+				(path.startsWith('/lecturer') && pathname.startsWith('/lecturer')) ||
+				(path.startsWith('/student') && pathname.startsWith('/student'));
+
+			if (isWithinSameSection) {
 				router.replace(path);
 			} else {
 				router.push(path);
