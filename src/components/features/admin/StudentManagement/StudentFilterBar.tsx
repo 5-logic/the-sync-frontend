@@ -6,12 +6,10 @@ import {
 	SearchOutlined,
 } from '@ant-design/icons';
 import { Button, Col, Input, Row, Select } from 'antd';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
-import majorService from '@/lib/services/majors.service';
-import semesterService from '@/lib/services/semesters.service';
-import { Major } from '@/schemas/major';
-import { Semester } from '@/schemas/semester';
+import { useMajorStore } from '@/store/useMajorStore';
+import { useSemesterStore } from '@/store/useSemesterStore';
 
 const { Option } = Select;
 
@@ -42,52 +40,21 @@ export default function StudentFilterBar({
 	onRefresh,
 	loading = false,
 }: Props) {
-	const [semesters, setSemesters] = useState<Semester[]>([]);
-	const [semestersLoading, setSemestersLoading] = useState(false);
-	const [majors, setMajors] = useState<Major[]>([]);
-	const [majorsLoading, setMajorsLoading] = useState(false);
+	// Use Semester Store - Replace local semester state
+	const {
+		semesters,
+		loading: semestersLoading,
+		fetchSemesters,
+	} = useSemesterStore();
 
+	// Use Major Store
+	const { majors, loading: majorsLoading, fetchMajors } = useMajorStore();
+
+	// Fetch data on component mount
 	useEffect(() => {
-		const fetchSemesters = async () => {
-			try {
-				setSemestersLoading(true);
-				const response = await semesterService.findAll();
-
-				if (response.success) {
-					setSemesters(response.data);
-				} else {
-					console.error('Failed to fetch semesters:', response.error);
-				}
-			} catch (error) {
-				console.error('Error fetching semesters:', error);
-			} finally {
-				setSemestersLoading(false);
-			}
-		};
-
 		fetchSemesters();
-	}, []);
-
-	useEffect(() => {
-		const fetchMajors = async () => {
-			try {
-				setMajorsLoading(true);
-				const response = await majorService.findAll();
-
-				if (response.success) {
-					setMajors(response.data);
-				} else {
-					console.error('Failed to fetch majors:', response.error);
-				}
-			} catch (error) {
-				console.error('Error fetching majors:', error);
-			} finally {
-				setMajorsLoading(false);
-			}
-		};
-
 		fetchMajors();
-	}, []);
+	}, [fetchSemesters, fetchMajors]);
 
 	return (
 		<Row
@@ -104,7 +71,7 @@ export default function StudentFilterBar({
 							onChange={setSemesterFilter}
 							style={{ width: 150 }}
 							size="middle"
-							loading={semestersLoading}
+							loading={semestersLoading} // Use loading from semester store
 							placeholder="Select semester"
 						>
 							<Option value="All">All Semesters</Option>
@@ -135,7 +102,7 @@ export default function StudentFilterBar({
 							onChange={setMajorFilter}
 							style={{ width: 150 }}
 							size="middle"
-							loading={majorsLoading}
+							loading={majorsLoading} // Use loading from major store
 							placeholder="Select major"
 						>
 							<Option value="All">All Majors</Option>
@@ -175,7 +142,7 @@ export default function StudentFilterBar({
 				<Button
 					icon={<PlusOutlined />}
 					type="primary"
-					block
+					size="middle"
 					onClick={onCreateStudent}
 				>
 					Create New Student
