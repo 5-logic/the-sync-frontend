@@ -14,6 +14,7 @@ import {
 import type { FormInstance } from 'antd/es/form';
 import { memo, useCallback, useState } from 'react';
 
+import { FormLabel } from '@/components/common/FormLabel';
 import semesterService from '@/lib/services/semesters.service';
 import { showNotification } from '@/lib/utils/notification';
 import { SemesterCreate } from '@/schemas/semester';
@@ -83,12 +84,21 @@ const SemesterForm = memo<SemesterFormProps>(({ form, onSuccess }) => {
 					Add New Semester
 				</Title>
 
-				<Form form={form} layout="vertical" onFinish={handleSubmit}>
+				<Form
+					form={form}
+					requiredMark={false}
+					layout="vertical"
+					onFinish={handleSubmit}
+				>
 					<Row gutter={16}>
 						<Col xs={24} md={12}>
 							<Form.Item
 								name="name"
-								label="Semester Name"
+								label={FormLabel({
+									text: 'Semester Name',
+									isRequired: true,
+									isBold: true,
+								})}
 								rules={nameRules}
 								required
 							>
@@ -103,7 +113,11 @@ const SemesterForm = memo<SemesterFormProps>(({ form, onSuccess }) => {
 						<Col xs={24} md={12}>
 							<Form.Item
 								name="code"
-								label="Semester Code"
+								label={FormLabel({
+									text: 'Semester Code',
+									isRequired: true,
+									isBold: true,
+								})}
 								rules={codeRules}
 								required
 							>
@@ -120,7 +134,13 @@ const SemesterForm = memo<SemesterFormProps>(({ form, onSuccess }) => {
 						<Title level={5} style={{ marginBottom: 8 }}>
 							Semester Policy
 						</Title>
-						<Form.Item name="maxGroup" label="Max Group">
+						<Form.Item
+							name="maxGroup"
+							label={FormLabel({
+								text: 'Maximum Number of Groups',
+								isBold: true,
+							})}
+						>
 							<InputNumber
 								placeholder="Enter maximum number of groups"
 								min={1}
