@@ -1,6 +1,10 @@
 'use client';
 
-import { PlusOutlined, SearchOutlined } from '@ant-design/icons';
+import {
+	PlusOutlined,
+	ReloadOutlined,
+	SearchOutlined,
+} from '@ant-design/icons';
 import { Button, Col, Input, Row, Select } from 'antd';
 
 const { Option } = Select;
@@ -13,6 +17,8 @@ type Props = Readonly<{
 	searchText: string;
 	setSearchText: (value: string) => void;
 	onCreateStudent: () => void;
+	onRefresh: () => void;
+	loading?: boolean;
 }>;
 
 export default function StudentFilterBar({
@@ -23,6 +29,8 @@ export default function StudentFilterBar({
 	searchText,
 	setSearchText,
 	onCreateStudent,
+	onRefresh,
+	loading = false,
 }: Props) {
 	return (
 		<Row
@@ -61,12 +69,24 @@ export default function StudentFilterBar({
 
 					<Col flex="auto">
 						<Input
-							placeholder="Search by name, email, ID"
+							placeholder="Search by Name, Email, Student ID"
 							value={searchText}
 							onChange={(e) => setSearchText(e.target.value)}
 							prefix={<SearchOutlined />}
 							size="middle"
 						/>
+					</Col>
+
+					<Col>
+						<Button
+							icon={<ReloadOutlined />}
+							onClick={onRefresh}
+							loading={loading}
+							size="middle"
+							title="Refresh data"
+						>
+							Refresh
+						</Button>
 					</Col>
 				</Row>
 			</Col>
