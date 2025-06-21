@@ -1,29 +1,13 @@
 'use client';
 
 import { CheckCircleFilled, ClockCircleOutlined } from '@ant-design/icons';
-import { Card, Col, Progress, Row, Select, Space, Typography } from 'antd';
+import { Card, Col, Row, Select, Space, Typography } from 'antd';
+
+import TimelineStats from '@/components/features/lecturer/TimelineReview/TimelineStats';
+import { timeline } from '@/data/timeline';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
-
-const timeline = [
-	{ title: 'Start', dateRange: 'Dec 1 - Dec 15', status: 'completed' },
-	{ title: 'Review 1', dateRange: 'Dec 15 - Dec 30', status: 'completed' },
-	{ title: 'Review 2', dateRange: 'Feb 1 - Feb 15', status: 'inProgress' },
-	{ title: 'Review 3', dateRange: 'Mar 15 - Mar 30', status: 'upcoming' },
-	{ title: 'Final Review', dateRange: 'Apr 30 - Apr 30', status: 'upcoming' },
-];
-
-const completedCount = timeline.filter(
-	(item) => item.status === 'completed',
-).length;
-const inProgressCount = timeline.filter(
-	(item) => item.status === 'inProgress',
-).length;
-
-const totalReviews = timeline.length - 1;
-
-const overallProgress = Math.round((completedCount / totalReviews) * 100);
 
 export default function TimelineReview() {
 	return (
@@ -89,56 +73,51 @@ export default function TimelineReview() {
 				</Row>
 			</Card>
 
-			<Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-				<Col span={8}>
-					<Card className="text-center">
-						<CheckCircleFilled style={{ fontSize: 24, color: '#52c41a' }} />
-						<Title level={3}>{completedCount}</Title>
-						<Text>Reviews Completed</Text>
-					</Card>
-				</Col>
-				<Col span={8}>
-					<Card className="text-center">
-						<ClockCircleOutlined style={{ fontSize: 24, color: '#1890ff' }} />
-						<Title level={3}>{inProgressCount}</Title>
-						<Text>Review in Progress</Text>
-					</Card>
-				</Col>
-				<Col span={8}>
-					<Card className="text-center">
-						<Space direction="vertical" align="center">
-							<Progress type="circle" percent={overallProgress} width={60} />
-							<Text>Overall Progress</Text>
-						</Space>
-					</Card>
-				</Col>
-			</Row>
+			<TimelineStats />
 
 			<Card>
 				<Title level={5}>Project Milestones</Title>
-				<Space size="large">
+				<div style={{ display: 'flex', gap: 24 }}>
 					<div>
 						<span
-							className="inline-block w-3 h-3 rounded-full mr-2"
-							style={{ backgroundColor: '#52c41a' }}
+							style={{
+								display: 'inline-block',
+								width: 12,
+								height: 12,
+								borderRadius: '50%',
+								backgroundColor: '#52c41a',
+								marginRight: 8,
+							}}
 						/>
 						<Text>Completed</Text>
 					</div>
 					<div>
 						<span
-							className="inline-block w-3 h-3 rounded-full mr-2"
-							style={{ backgroundColor: '#1890ff' }}
+							style={{
+								display: 'inline-block',
+								width: 12,
+								height: 12,
+								borderRadius: '50%',
+								backgroundColor: '#1890ff',
+								marginRight: 8,
+							}}
 						/>
 						<Text>In Progress</Text>
 					</div>
 					<div>
 						<span
-							className="inline-block w-3 h-3 rounded-full mr-2"
-							style={{ backgroundColor: '#d9d9d9' }}
+							style={{
+								display: 'inline-block',
+								width: 12,
+								height: 12,
+								borderRadius: '50%',
+								backgroundColor: '#d9d9d9',
+								marginRight: 8,
+							}}
 						/>
 						<Text>Upcoming</Text>
 					</div>
-				</Space>
+				</div>
 			</Card>
 		</div>
 	);
