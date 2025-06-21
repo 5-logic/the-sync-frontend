@@ -48,11 +48,10 @@ export default function CreateMilestoneForm({
 				endDate.isSame(existingEnd)
 			);
 		});
-	};
-	// Custom validator for date range
+	}; // Custom validator for date range
 	const validateDateRange = (_: unknown, value: [Dayjs, Dayjs] | undefined) => {
-		if (!value || !value[0] || !value[1]) {
-			return Promise.reject('Please select duration');
+		if (!value?.[0] || !value?.[1]) {
+			return Promise.reject(new Error('Please select duration'));
 		}
 
 		const [startDate, endDate] = value;
@@ -60,12 +59,12 @@ export default function CreateMilestoneForm({
 
 		// Check if start date is in the past
 		if (startDate.isBefore(dayjs(), 'day')) {
-			return Promise.reject('Start date cannot be in the past');
+			return Promise.reject(new Error('Start date cannot be in the past'));
 		}
 
 		// Check if end date is before start date
 		if (endDate.isBefore(startDate)) {
-			return Promise.reject('End date must be after start date');
+			return Promise.reject(new Error('End date must be after start date'));
 		}
 
 		// Check for overlap with existing milestones in the same semester
@@ -74,7 +73,9 @@ export default function CreateMilestoneForm({
 			checkDateOverlap(startDate, endDate, selectedSemesterId)
 		) {
 			return Promise.reject(
-				'Date range overlaps with existing milestone in this semester',
+				new Error(
+					'Date range overlaps with existing milestone in this semester',
+				),
 			);
 		}
 
@@ -87,7 +88,7 @@ export default function CreateMilestoneForm({
 			const values = await form.validateFields();
 
 			// Convert date range to individual dates
-			const [startDate, endDate] = values.duration || [];
+			const [startDate, endDate] = values.duration ?? [];
 
 			const milestoneData: MilestoneCreate = {
 				name: values.milestoneName,
