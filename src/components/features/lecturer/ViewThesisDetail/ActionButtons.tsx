@@ -23,6 +23,8 @@ export default function ThesisActionButtons({
 	onApprove,
 	onReject,
 	onExit,
+	onEdit,
+	status,
 }: Props) {
 	const [rejectModalVisible, setRejectModalVisible] = useState(false);
 	const [form] = Form.useForm();
@@ -42,7 +44,7 @@ export default function ThesisActionButtons({
 				<Row justify="end">
 					<Space>
 						<Button onClick={onExit}>Exit</Button>
-						<Button type="primary" onClick={onExit}>
+						<Button type="primary" onClick={onEdit}>
 							Edit Thesis
 						</Button>
 					</Space>
@@ -88,17 +90,17 @@ export default function ThesisActionButtons({
 				okText="Submit"
 				cancelText="Cancel"
 			>
-				<Form form={form} layout="vertical">
+				<Form form={form} layout="vertical" requiredMark={false}>
 					<Form.Item
 						label={
 							<>
-								Rejection Reason<span style={{ color: 'red' }}> *</span>
+								Rejection reason<span style={{ color: 'red' }}> *</span>
 							</>
 						}
 						name="reason"
 						rules={[
 							{
-								required: false,
+								required: true,
 								message: 'Please enter the reason for rejection',
 							},
 						]}

@@ -9,33 +9,67 @@ export type ExtendedThesis = Thesis & {
 		phone: string;
 		email: string;
 	};
-	rejectReasons: string;
+	rejectReasons: string[];
+	group?: {
+		id: string;
+		members: {
+			id: string;
+			name: string;
+			email: string;
+			isLeader?: boolean;
+			avatar?: string;
+		}[];
+	};
 };
 
 export const mockTheses: ExtendedThesis[] = [
 	{
 		id: 't1',
 		englishName: 'AI-Powered Smart City Infrastructure Management',
-		vietnameseName: 'Phân tích AI trong y tế',
-		abbreviation: 'AIHCA',
+		vietnameseName:
+			'Hệ thống quản lý cơ sở hạ tầng thành phố thông minh hỗ trợ AI',
+		abbreviation: 'SCIM',
 		description:
-			'Thesis on applying AI in healthcare. Predictive algorithms form the core of smart city operations. These systems analyze historical patterns in traffic flow, energy consumption, and public service usage to optimize resource allocation. Machine learning models, particularly deep learning networks, enable automated decision-making for traffic signal timing, power grid load balancing, and emergency response routing.',
-		domain: 'AI',
-		status: 'Approved',
+			'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+		domain: 'Blockchain',
+		status: 'Pending',
 		isPublish: true,
 		groupId: 'g1',
 		lecturerId: 'lect1',
 		createdAt: new Date('2024-01-10'),
 		updatedAt: new Date(),
-		skills: ['Python', 'AI', 'Healthcare'],
-		highlight: 'High Similarity',
+		skills: ['Statistical Analysis', 'Programming', 'Data Modeling'],
 		version: '1.0',
 		supervisor: {
 			name: 'Dr. Sarah Chen',
 			phone: '0123456789',
 			email: 'sarah.chen@university.edu',
 		},
-		rejectReasons: 'N/A',
+		rejectReasons: [],
+		group: {
+			id: 'g1',
+			members: [
+				{
+					id: 's1',
+					name: 'John Anderson',
+					email: 'john.anderson@university.edu',
+					isLeader: true,
+					avatar: '/images/avatar-john.png',
+				},
+				{
+					id: 's2',
+					name: 'Sarah Wilson',
+					email: 'sarah.wilson@university.edu',
+					avatar: '/images/avatar-sarah.png',
+				},
+				{
+					id: 's3',
+					name: 'Michael Chen',
+					email: 'michael.chen@university.edu',
+					avatar: '/images/avatar-michael.png',
+				},
+			],
+		},
 	},
 	{
 		id: 't2',
@@ -44,7 +78,7 @@ export const mockTheses: ExtendedThesis[] = [
 		abbreviation: 'BLSC',
 		description: 'Blockchain for supply chain transparency.',
 		domain: 'Blockchain',
-		status: 'Pending',
+		status: 'Approved',
 		isPublish: true,
 		groupId: 'g2',
 		lecturerId: 'lect2',
@@ -57,7 +91,7 @@ export const mockTheses: ExtendedThesis[] = [
 			phone: '0987654321',
 			email: 'alex.nguyen@university.edu',
 		},
-		rejectReasons: 'N/A',
+		rejectReasons: [],
 	},
 	{
 		id: 't3',
@@ -79,6 +113,9 @@ export const mockTheses: ExtendedThesis[] = [
 			phone: '0111222333',
 			email: 'emily.tran@university.edu',
 		},
-		rejectReasons: 'Topic is not aligned with the students or groups major.',
+		rejectReasons: [
+			"Topic is not aligned with the student's or group's major.",
+			'Incomplete or insufficient topic description.',
+		],
 	},
 ];
