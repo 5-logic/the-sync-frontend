@@ -55,7 +55,32 @@ export default function EditMilestoneDialog({
 				endDate.isSame(existingEnd)
 			);
 		});
+	}; // Custom validator for semester selection
+	const validateSemester = (_: unknown, semesterId: string | undefined) => {
+		if (!semesterId) {
+			return Promise.reject(new Error('Please select semester'));
+		}
+
+		const selectedSemester = semesters.find((s) => s.id === semesterId);
+		if (!selectedSemester) {
+			return Promise.reject(new Error('Invalid semester selected'));
+		}
+
+		// Check if semester status allows milestone creation/editing
+		if (
+			selectedSemester.status === 'NotYet' ||
+			selectedSemester.status === 'End'
+		) {
+			return Promise.reject(
+				new Error(
+					`Cannot modify milestone in semester with status: ${selectedSemester.status}`,
+				),
+			);
+		}
+
+		return Promise.resolve();
 	};
+
 	// Custom validator for date range
 	const validateDateRange = (_: unknown, value: [Dayjs, Dayjs] | undefined) => {
 		if (!value?.[0] || !value?.[1]) {
@@ -64,6 +89,13 @@ export default function EditMilestoneDialog({
 
 		const [startDate, endDate] = value;
 		const selectedSemesterId = form.getFieldValue('semesterId');
+
+		// Check if milestone has already started (cannot update milestones that have passed start date)
+		if (milestone && dayjs(milestone.startDate).isBefore(dayjs(), 'day')) {
+			return Promise.reject(
+				new Error('Cannot update milestone that has already started'),
+			);
+		}
 
 		// For edit, allow current start date even if it's in the past
 		// But new start date should not be in the past
@@ -110,9 +142,14 @@ export default function EditMilestoneDialog({
 			form.resetFields();
 		}
 	}, [open, form]);
-
 	const handleSubmit = async () => {
 		if (!milestone) return;
+
+		// Check if milestone has already started
+		if (dayjs(milestone.startDate).isBefore(dayjs(), 'day')) {
+			return;
+		}
+
 		try {
 			const values = await form.validateFields();
 
@@ -140,6 +177,10 @@ export default function EditMilestoneDialog({
 		form.resetFields();
 		onClose();
 	};
+	// Check if milestone has started
+	const milestoneHasStarted = milestone
+		? dayjs(milestone.startDate).isBefore(dayjs(), 'day')
+		: false;
 
 	return (
 		<Modal
@@ -152,12 +193,30 @@ export default function EditMilestoneDialog({
 			cancelText="Cancel"
 			width={600}
 			destroyOnClose
+			okButtonProps={{
+				disabled: milestoneHasStarted,
+			}}
 		>
+			{milestoneHasStarted && (
+				<div
+					style={{
+						padding: '12px',
+						marginBottom: '16px',
+						backgroundColor: '#fff7e6',
+						border: '1px solid #ffd591',
+						borderRadius: '6px',
+						color: '#d46b08',
+					}}
+				>
+					⚠️ This milestone has already started and cannot be edited.
+				</div>
+			)}
 			<Form
 				form={form}
 				layout="vertical"
 				requiredMark={false}
 				style={{ marginTop: 16 }}
+				disabled={milestoneHasStarted}
 			>
 				{' '}
 				<Form.Item
@@ -170,7 +229,7 @@ export default function EditMilestoneDialog({
 				<Form.Item
 					label={<FormLabel text="Semester" isRequired />}
 					name="semesterId"
-					rules={[{ required: true, message: 'Please select semester' }]}
+					rules={[{ validator: validateSemester }]}
 				>
 					<Select
 						placeholder="Select semester"
@@ -181,17 +240,16 @@ export default function EditMilestoneDialog({
 						}}
 						options={semesters.map((semester) => ({
 							value: semester.id,
-							label: `${semester.name} (${semester.code})`,
+							label: `${semester.name} (${semester.code}) - ${semester.status}`,
+							disabled:
+								semester.status === 'NotYet' || semester.status === 'End',
 						}))}
 					/>
 				</Form.Item>{' '}
 				<Form.Item
 					label={<FormLabel text="Duration" isRequired />}
 					name="duration"
-					rules={[
-						{ required: true, message: 'Please select duration' },
-						{ validator: validateDateRange },
-					]}
+					rules={[{ validator: validateDateRange }]}
 				>
 					<RangePicker
 						style={{ width: '100%' }}
