@@ -14,6 +14,8 @@ import { usePathname } from 'next/navigation';
 import { useNavigationLoader } from '@/hooks';
 import { DASHBOARD_PATHS } from '@/lib/auth/config/auth-constants';
 
+import { ADMIN_MENU_KEYS, getSelectedMenuKey } from './AdminSidebar.config';
+
 export default function AdminSidebar() {
 	const pathname = usePathname();
 	const { isNavigating, targetPath, navigateWithLoading } =
@@ -23,7 +25,6 @@ export default function AdminSidebar() {
 	const isMenuItemLoading = (path: string) => {
 		return isNavigating && targetPath === path;
 	};
-
 	const adminMenuItems = [
 		{
 			key: DASHBOARD_PATHS.ADMIN,
@@ -37,55 +38,59 @@ export default function AdminSidebar() {
 			disabled: isNavigating && targetPath !== DASHBOARD_PATHS.ADMIN,
 		},
 		{
-			key: '/admin/students-management',
-			icon: isMenuItemLoading('/admin/students-management') ? (
+			key: ADMIN_MENU_KEYS.STUDENTS_MANAGEMENT,
+			icon: isMenuItemLoading(ADMIN_MENU_KEYS.STUDENTS_MANAGEMENT) ? (
 				<LoadingOutlined spin />
 			) : (
 				<UserOutlined />
 			),
 			label: 'Student Management',
-			onClick: () => navigateWithLoading('/admin/students-management'),
-			disabled: isNavigating && targetPath !== '/admin/students-management',
+			onClick: () => navigateWithLoading(ADMIN_MENU_KEYS.STUDENTS_MANAGEMENT),
+			disabled:
+				isNavigating && targetPath !== ADMIN_MENU_KEYS.STUDENTS_MANAGEMENT,
 		},
 		{
-			key: '/admin/lecturer-management',
-			icon: isMenuItemLoading('/admin/lecturer-management') ? (
+			key: ADMIN_MENU_KEYS.LECTURER_MANAGEMENT,
+			icon: isMenuItemLoading(ADMIN_MENU_KEYS.LECTURER_MANAGEMENT) ? (
 				<LoadingOutlined spin />
 			) : (
 				<TeamOutlined />
 			),
 			label: 'Lecturer Management',
-			onClick: () => navigateWithLoading('/admin/lecturer-management'),
-			disabled: isNavigating && targetPath !== '/admin/lecturer-management',
+			onClick: () => navigateWithLoading(ADMIN_MENU_KEYS.LECTURER_MANAGEMENT),
+			disabled:
+				isNavigating && targetPath !== ADMIN_MENU_KEYS.LECTURER_MANAGEMENT,
 		},
 		{
-			key: '/admin/milestone-management',
-			icon: isMenuItemLoading('/admin/milestone-management') ? (
+			key: ADMIN_MENU_KEYS.MILESTONE_MANAGEMENT,
+			icon: isMenuItemLoading(ADMIN_MENU_KEYS.MILESTONE_MANAGEMENT) ? (
 				<LoadingOutlined spin />
 			) : (
 				<CalendarOutlined />
 			),
 			label: 'Milestone Management',
-			onClick: () => navigateWithLoading('/admin/milestone-management'),
-			disabled: isNavigating && targetPath !== '/admin/milestone-management',
+			onClick: () => navigateWithLoading(ADMIN_MENU_KEYS.MILESTONE_MANAGEMENT),
+			disabled:
+				isNavigating && targetPath !== ADMIN_MENU_KEYS.MILESTONE_MANAGEMENT,
 		},
 		{
-			key: '/admin/semester-settings',
-			icon: isMenuItemLoading('/admin/semester-settings') ? (
+			key: ADMIN_MENU_KEYS.SEMESTER_SETTINGS,
+			icon: isMenuItemLoading(ADMIN_MENU_KEYS.SEMESTER_SETTINGS) ? (
 				<LoadingOutlined spin />
 			) : (
 				<SettingOutlined />
 			),
 			label: 'Semester Settings',
-			onClick: () => navigateWithLoading('/admin/semester-settings'),
-			disabled: isNavigating && targetPath !== '/admin/semester-settings',
+			onClick: () => navigateWithLoading(ADMIN_MENU_KEYS.SEMESTER_SETTINGS),
+			disabled:
+				isNavigating && targetPath !== ADMIN_MENU_KEYS.SEMESTER_SETTINGS,
 		},
 	];
 	return (
 		<Menu
 			theme="light"
 			mode="inline"
-			selectedKeys={[pathname]}
+			selectedKeys={[getSelectedMenuKey(pathname)]}
 			items={adminMenuItems}
 			style={{
 				border: 'none',
