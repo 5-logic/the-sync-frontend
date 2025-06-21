@@ -7,6 +7,7 @@ import dayjs from 'dayjs';
 import { useState } from 'react';
 
 import EditMilestoneDialog from '@/components/features/admin/MilestoneManagement/EditMilestoneDialog';
+import { formatDate } from '@/lib/utils/dateFormat';
 import { Milestone } from '@/schemas/milestone';
 import { Semester } from '@/schemas/semester';
 
@@ -72,17 +73,18 @@ export default function MilestoneTable({
 			title: 'Start Date',
 			dataIndex: 'startDate',
 			key: 'startDate',
-			render: (date: Date) => new Date(date).toLocaleDateString(),
+			render: (date: Date) => formatDate(date),
 			sorter: (a, b) =>
 				new Date(a.startDate).getTime() - new Date(b.startDate).getTime(),
 			showSorterTooltip: false,
+			defaultSortOrder: 'ascend',
 			width: '15%',
 		},
 		{
 			title: 'End Date',
 			dataIndex: 'endDate',
 			key: 'endDate',
-			render: (date: Date) => new Date(date).toLocaleDateString(),
+			render: (date: Date) => formatDate(date),
 			sorter: (a, b) =>
 				new Date(a.endDate).getTime() - new Date(b.endDate).getTime(),
 			showSorterTooltip: false,
@@ -92,7 +94,7 @@ export default function MilestoneTable({
 			title: 'Created Date',
 			dataIndex: 'createdAt',
 			key: 'createdAt',
-			render: (date: Date) => new Date(date).toLocaleDateString(),
+			render: (date: Date) => formatDate(date),
 			sorter: (a, b) =>
 				new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
 			showSorterTooltip: false,
