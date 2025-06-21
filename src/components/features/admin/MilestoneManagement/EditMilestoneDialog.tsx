@@ -1,7 +1,6 @@
 'use client';
 
-import { Modal } from 'antd';
-import { Form } from 'antd';
+import { Form, Modal } from 'antd';
 import dayjs from 'dayjs';
 import { useEffect } from 'react';
 
@@ -86,7 +85,7 @@ export default function EditMilestoneDialog({
 			okText="Update"
 			cancelText="Cancel"
 			width={600}
-			destroyOnClose
+			destroyOnHidden
 			okButtonProps={{
 				disabled: milestoneHasStarted,
 			}}
