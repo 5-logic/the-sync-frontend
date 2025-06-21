@@ -86,6 +86,57 @@ export default function MilestoneForm({
 
 		return Promise.resolve();
 	};
+	// Helper function to check if milestone has started (for edit mode)
+	const checkMilestoneStarted = (): string | null => {
+		if (!isEditMode || !milestone) return null;
+
+		if (dayjs(milestone.startDate).isBefore(dayjs(), 'day')) {
+			return 'Cannot update milestone that has already started';
+		}
+		return null;
+	};
+
+	// Helper function to validate start date
+	const validateStartDate = (startDate: Dayjs): string | null => {
+		if (isEditMode && milestone) {
+			const currentStartDate = dayjs(milestone.startDate);
+			if (
+				!startDate.isSame(currentStartDate, 'day') &&
+				startDate.isBefore(dayjs(), 'day')
+			) {
+				return 'Start date cannot be in the past';
+			}
+		} else if (startDate.isBefore(dayjs(), 'day')) {
+			return 'Start date cannot be in the past';
+		}
+		return null;
+	};
+
+	// Helper function to validate date range order
+	const validateDateOrder = (
+		startDate: Dayjs,
+		endDate: Dayjs,
+	): string | null => {
+		if (endDate.isBefore(startDate)) {
+			return 'End date must be after start date';
+		}
+		return null;
+	};
+
+	// Helper function to validate overlap
+	const validateOverlap = (
+		startDate: Dayjs,
+		endDate: Dayjs,
+		selectedSemesterId: string,
+	): string | null => {
+		if (
+			selectedSemesterId &&
+			checkDateOverlap(startDate, endDate, selectedSemesterId)
+		) {
+			return 'Date range overlaps with existing milestone in this semester';
+		}
+		return null;
+	};
 
 	// Custom validator for date range
 	const validateDateRange = (_: unknown, value: [Dayjs, Dayjs] | undefined) => {
@@ -96,48 +147,32 @@ export default function MilestoneForm({
 		const [startDate, endDate] = value;
 		const selectedSemesterId = form.getFieldValue('semesterId');
 
-		// For edit mode: Check if milestone has already started
-		if (
-			isEditMode &&
-			milestone &&
-			dayjs(milestone.startDate).isBefore(dayjs(), 'day')
-		) {
-			return Promise.reject(
-				new Error('Cannot update milestone that has already started'),
-			);
+		// Check if milestone has already started (edit mode only)
+		const startedError = checkMilestoneStarted();
+		if (startedError) {
+			return Promise.reject(new Error(startedError));
 		}
 
-		// For edit mode: allow current start date even if it's in the past
-		// But new start date should not be in the past
-		if (isEditMode && milestone) {
-			const currentStartDate = dayjs(milestone.startDate);
-			if (!startDate.isSame(currentStartDate, 'day')) {
-				if (startDate.isBefore(dayjs(), 'day')) {
-					return Promise.reject(new Error('Start date cannot be in the past'));
-				}
-			}
-		} else {
-			// For create mode: start date cannot be in the past
-			if (startDate.isBefore(dayjs(), 'day')) {
-				return Promise.reject(new Error('Start date cannot be in the past'));
-			}
+		// Validate start date
+		const startDateError = validateStartDate(startDate);
+		if (startDateError) {
+			return Promise.reject(new Error(startDateError));
 		}
 
-		// Check if end date is before start date
-		if (endDate.isBefore(startDate)) {
-			return Promise.reject(new Error('End date must be after start date'));
+		// Validate date order
+		const dateOrderError = validateDateOrder(startDate, endDate);
+		if (dateOrderError) {
+			return Promise.reject(new Error(dateOrderError));
 		}
 
-		// Check for overlap with existing milestones in the same semester
-		if (
-			selectedSemesterId &&
-			checkDateOverlap(startDate, endDate, selectedSemesterId)
-		) {
-			return Promise.reject(
-				new Error(
-					'Date range overlaps with existing milestone in this semester',
-				),
-			);
+		// Validate overlap
+		const overlapError = validateOverlap(
+			startDate,
+			endDate,
+			selectedSemesterId,
+		);
+		if (overlapError) {
+			return Promise.reject(new Error(overlapError));
 		}
 
 		return Promise.resolve();
@@ -195,12 +230,12 @@ export default function MilestoneForm({
 					</Form.Item>
 				</Col>
 				<Col xs={24} md={isEditMode ? 24 : 8}>
+					{' '}
 					<Form.Item
 						label={<FormLabel text="Duration" isRequired />}
 						name="duration"
 						rules={[{ validator: validateDateRange }]}
 					>
-						{' '}
 						<RangePicker
 							style={{ width: '100%' }}
 							className={!isEditMode ? 'w-full' : undefined}
