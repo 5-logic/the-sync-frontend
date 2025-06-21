@@ -2,15 +2,13 @@
 
 import { Button, Col, Form, Input, Radio, Row, Select, Space } from 'antd';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
 import { FormLabel } from '@/components/common/FormLabel';
-import majorService from '@/lib/services/majors.service';
-import semesterService from '@/lib/services/semesters.service';
 import { showNotification } from '@/lib/utils/notification';
-import { Major } from '@/schemas/major';
-import { Semester } from '@/schemas/semester';
 import { StudentCreate } from '@/schemas/student';
+import { useMajorStore } from '@/store/useMajorStore';
+import { useSemesterStore } from '@/store/useSemesterStore';
 import { useStudentStore } from '@/store/useStudentStore';
 
 const { Option } = Select;
@@ -28,60 +26,39 @@ const UserForm = ({ formType }: UserFormProps) => {
 	// Use Student Store
 	const { createStudent, creating, clearError } = useStudentStore();
 
-	const [semesters, setSemesters] = useState<Semester[]>([]);
-	const [semestersLoading, setSemestersLoading] = useState(false);
-	const [majors, setMajors] = useState<Major[]>([]);
-	const [majorsLoading, setMajorsLoading] = useState(false);
+	// Use Major Store
+	const {
+		majors,
+		loading: majorsLoading,
+		fetchMajors,
+		clearError: clearMajorError,
+	} = useMajorStore();
 
-	// Clear error when component mounts or unmounts
+	// Use Semester Store - Replace local semester state
+	const {
+		semesters,
+		loading: semestersLoading,
+		fetchSemesters,
+		clearError: clearSemesterError,
+	} = useSemesterStore();
+
+	// Clear errors when component mounts or unmounts
 	useEffect(() => {
 		clearError();
-		return () => clearError();
-	}, [clearError]);
-
-	// Fetch semesters
-	useEffect(() => {
-		const fetchSemesters = async () => {
-			try {
-				setSemestersLoading(true);
-				const response = await semesterService.findAll();
-
-				if (response.success) {
-					setSemesters(response.data);
-				} else {
-					console.error('Failed to fetch semesters:', response.error);
-				}
-			} catch (error) {
-				console.error('Error fetching semesters:', error);
-			} finally {
-				setSemestersLoading(false);
-			}
+		clearMajorError();
+		clearSemesterError(); // Add semester error clearing
+		return () => {
+			clearError();
+			clearMajorError();
+			clearSemesterError(); // Add semester error clearing
 		};
+	}, [clearError, clearMajorError, clearSemesterError]);
 
-		fetchSemesters();
-	}, []);
-
-	// Fetch majors
+	// Fetch data using stores
 	useEffect(() => {
-		const fetchMajors = async () => {
-			try {
-				setMajorsLoading(true);
-				const response = await majorService.findAll();
-
-				if (response.success) {
-					setMajors(response.data);
-				} else {
-					console.error('Failed to fetch majors:', response.error);
-				}
-			} catch (error) {
-				console.error('Error fetching majors:', error);
-			} finally {
-				setMajorsLoading(false);
-			}
-		};
-
 		fetchMajors();
-	}, []);
+		fetchSemesters(); // Use semester store
+	}, [fetchMajors, fetchSemesters]);
 
 	const handleSubmit = async (values: StudentCreate) => {
 		if (isStudent) {
@@ -97,6 +74,8 @@ const UserForm = ({ formType }: UserFormProps) => {
 	const handleCreateStudent = async (values: StudentCreate) => {
 		// Clear any previous errors
 		clearError();
+		clearMajorError();
+		clearSemesterError(); // Clear semester errors too
 
 		const studentData: StudentCreate = {
 			fullName: values.fullName.trim(),
@@ -122,6 +101,8 @@ const UserForm = ({ formType }: UserFormProps) => {
 
 	const handleCancel = () => {
 		clearError();
+		clearMajorError();
+		clearSemesterError(); // Clear semester errors on cancel
 		form.resetFields();
 		router.push('/admin/students-management');
 	};
@@ -151,8 +132,8 @@ const UserForm = ({ formType }: UserFormProps) => {
 						>
 							<Select
 								placeholder="Select semester"
-								loading={semestersLoading}
-								disabled={creating} // Use creating from store
+								loading={semestersLoading} // Use loading from semester store
+								disabled={creating}
 							>
 								{semesters.map((semester) => (
 									<Option key={semester.id} value={semester.id}>
@@ -174,8 +155,8 @@ const UserForm = ({ formType }: UserFormProps) => {
 						>
 							<Select
 								placeholder="Select major"
-								loading={majorsLoading}
-								disabled={creating} // Use creating from store
+								loading={majorsLoading} // Use loading from major store
+								disabled={creating}
 							>
 								{majors.map((major) => (
 									<Option key={major.id} value={major.id}>
@@ -304,11 +285,7 @@ const UserForm = ({ formType }: UserFormProps) => {
 					<Button htmlType="button" onClick={handleCancel} disabled={creating}>
 						Cancel
 					</Button>
-					<Button
-						type="primary"
-						htmlType="submit"
-						loading={creating} // Use creating from store
-					>
+					<Button type="primary" htmlType="submit" loading={creating}>
 						{isStudent ? 'Create Student' : 'Create Lecturer'}
 					</Button>
 				</Space>
