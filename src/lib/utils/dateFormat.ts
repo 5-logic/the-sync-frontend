@@ -1,13 +1,16 @@
 import dayjs from 'dayjs';
 
 /**
+ * Type alias for date input - can be Date object, string, dayjs object, null or undefined
+ */
+type DateInput = Date | string | dayjs.Dayjs | null | undefined;
+
+/**
  * Format date to dd/mm/yyyy format
  * @param date - Date to format (Date object, string, or dayjs object)
  * @returns Formatted date string in dd/mm/yyyy format
  */
-export const formatDate = (
-	date: Date | string | dayjs.Dayjs | null | undefined,
-): string => {
+export const formatDate = (date: DateInput): string => {
 	if (!date) return '';
 
 	try {
@@ -25,8 +28,8 @@ export const formatDate = (
  * @returns Formatted date range string
  */
 export const formatDateRange = (
-	startDate: Date | string | dayjs.Dayjs | null | undefined,
-	endDate: Date | string | dayjs.Dayjs | null | undefined,
+	startDate: DateInput,
+	endDate: DateInput,
 ): string => {
 	const start = formatDate(startDate);
 	const end = formatDate(endDate);
