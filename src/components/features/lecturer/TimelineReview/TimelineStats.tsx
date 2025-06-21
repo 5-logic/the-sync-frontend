@@ -16,7 +16,7 @@ export default function TimelineStats() {
 		(item) => item.status === 'inProgress',
 	).length;
 
-	const totalReviews = timeline.length - 1; // Exclude 'Start'
+	const totalReviews = timeline.length;
 	const overallProgress = Math.round((completedCount / totalReviews) * 100);
 
 	return (

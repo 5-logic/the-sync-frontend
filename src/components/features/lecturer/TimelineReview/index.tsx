@@ -6,14 +6,21 @@ import { Card, Col, Row, Select, Space, Typography } from 'antd';
 import TimelineStats from '@/components/features/lecturer/TimelineReview/TimelineStats';
 import { timeline } from '@/data/timeline';
 
-const { Title, Text } = Typography;
+const { Title, Text, Paragraph } = Typography;
 const { Option } = Select;
 
 export default function TimelineReview() {
 	return (
 		<div style={{ padding: 24 }}>
 			<Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
-				<Title level={3}>Timeline Review</Title>
+				<div>
+					<Title level={2} style={{ marginBottom: '4px' }}>
+						Timeline Review
+					</Title>
+					<Paragraph type="secondary" style={{ marginBottom: 0 }}>
+						Review timeline, track specific capstone review timelines
+					</Paragraph>
+				</div>
 				<Select defaultValue="Summer 2022" style={{ width: 160 }}>
 					<Option value="summer2022">Summer 2022</Option>
 					<Option value="spring2022">Spring 2022</Option>
