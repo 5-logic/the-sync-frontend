@@ -3,8 +3,8 @@ import { Typography } from 'antd';
 const { Text } = Typography;
 
 interface Props {
-	reasons: string[];
-	show?: boolean;
+	readonly reasons: string[];
+	readonly show?: boolean;
 }
 
 export default function RejectReasonList({ reasons, show = false }: Props) {
@@ -14,8 +14,8 @@ export default function RejectReasonList({ reasons, show = false }: Props) {
 		<div style={{ marginBottom: 24 }}>
 			<Text strong>Reject Reasons</Text>
 			<ul style={{ marginTop: 8, paddingLeft: 20 }}>
-				{reasons.map((reason, index) => (
-					<li key={index}>
+				{reasons.map((reason) => (
+					<li key={reason}>
 						<Text>{reason}</Text>
 					</li>
 				))}

@@ -9,7 +9,6 @@ import { Button, Col, Form, Input, Modal, Row, Space } from 'antd';
 import { useState } from 'react';
 
 interface Props {
-	showDuplicate: boolean;
 	onToggleDuplicate: () => void;
 	onApprove?: () => void;
 	onReject?: (reason: string) => void;
@@ -25,7 +24,7 @@ export default function ThesisActionButtons({
 	onExit,
 	onEdit,
 	status,
-}: Props) {
+}: Readonly<Props>) {
 	const [rejectModalVisible, setRejectModalVisible] = useState(false);
 	const [form] = Form.useForm();
 

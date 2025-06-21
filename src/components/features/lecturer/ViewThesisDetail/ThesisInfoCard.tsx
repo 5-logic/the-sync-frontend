@@ -9,7 +9,7 @@ import { ExtendedThesis } from '@/data/thesis';
 const { Title, Text, Paragraph } = Typography;
 
 type Props = {
-	thesis: ExtendedThesis;
+	readonly thesis: ExtendedThesis;
 };
 
 function getStatusColor(status: string): string {
@@ -28,7 +28,6 @@ function getStatusColor(status: string): string {
 export default function ThesisInfoCard({ thesis }: Props) {
 	return (
 		<Card>
-			{/* Header */}
 			<Title level={4}>{thesis.englishName}</Title>
 			<Space wrap size={[8, 8]} style={{ marginBottom: 16 }}>
 				<Tag color="blue">{thesis.domain}</Tag>
@@ -36,7 +35,6 @@ export default function ThesisInfoCard({ thesis }: Props) {
 				<Tag color="gold">Version {thesis.version}</Tag>
 			</Space>
 
-			{/* Main Info */}
 			<Row gutter={32} style={{ marginBottom: 16 }}>
 				<Col span={12}>
 					<Text strong>Vietnamese name</Text>
@@ -62,12 +60,10 @@ export default function ThesisInfoCard({ thesis }: Props) {
 				</div>
 			</div>
 
-			{/* Supporting Doc */}
 			<Button icon={<DownloadOutlined />} style={{ marginBottom: 24 }}>
 				Download Supporting Document
 			</Button>
 
-			{/* Supervisor */}
 			<div style={{ marginBottom: 24 }}>
 				<Text strong>Supervisor Information</Text>
 				<div style={{ marginTop: 8 }}>
@@ -92,7 +88,6 @@ export default function ThesisInfoCard({ thesis }: Props) {
 				</div>
 			</div>
 
-			{/* ✅ TeamMembers và RejectReasonList nằm cùng trong Card */}
 			<TeamMembers thesis={thesis} />
 			<RejectReasonList
 				reasons={thesis.rejectReasons}

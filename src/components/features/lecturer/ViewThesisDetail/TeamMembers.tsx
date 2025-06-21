@@ -6,7 +6,7 @@ import { ExtendedThesis } from '@/data/thesis';
 const { Text, Paragraph } = Typography;
 
 interface Props {
-	thesis: ExtendedThesis;
+	readonly thesis: ExtendedThesis;
 }
 
 export default function TeamMembers({ thesis }: Props) {
