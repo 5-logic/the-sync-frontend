@@ -30,14 +30,23 @@ export default function TimelineReview() {
 			<Card style={{ marginBottom: 24 }}>
 				<Row justify="space-between">
 					{timeline.map((item, index) => {
-						const statusIcon =
-							item.status === 'completed' ? (
+						let statusIcon;
+						let color;
+
+						if (item.status === 'completed') {
+							statusIcon = (
 								<CheckCircleFilled style={{ color: 'green', fontSize: 20 }} />
-							) : item.status === 'inProgress' ? (
+							);
+							color = 'green';
+						} else if (item.status === 'inProgress') {
+							statusIcon = (
 								<ClockCircleOutlined
 									style={{ color: '#1677ff', fontSize: 20 }}
 								/>
-							) : (
+							);
+							color = '#1677ff';
+						} else {
+							statusIcon = (
 								<div
 									style={{
 										width: 20,
@@ -47,13 +56,8 @@ export default function TimelineReview() {
 									}}
 								/>
 							);
-
-						const color =
-							item.status === 'completed'
-								? 'green'
-								: item.status === 'inProgress'
-									? '#1677ff'
-									: '#ccc';
+							color = '#ccc';
+						}
 
 						return (
 							<Col key={item.title} style={{ textAlign: 'center', flex: 1 }}>
