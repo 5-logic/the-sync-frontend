@@ -1,6 +1,7 @@
 'use client';
 
 import { Space, Typography, message } from 'antd';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import StudentFilterBar from '@/components/features/admin/StudentManagement/StudentFilterBar';
@@ -14,6 +15,7 @@ export default function StudentManagement() {
 	const [searchText, setSearchText] = useState('');
 	const [data, setData] = useState<Student[]>([]);
 	const [loading, setLoading] = useState(false);
+	const router = useRouter();
 
 	const fetchStudents = async () => {
 		try {
@@ -57,7 +59,7 @@ export default function StudentManagement() {
 	});
 
 	const handleCreateStudent = () => {
-		console.log('Create student clicked');
+		router.push('/admin/create-new-student');
 	};
 
 	const handleRefresh = () => {
