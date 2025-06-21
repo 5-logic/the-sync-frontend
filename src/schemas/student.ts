@@ -8,6 +8,7 @@ export const StudentSchema = UserSchema.extend({
 	majorId: z.string().uuid(),
 	createdAt: z.date(),
 	updatedAt: z.date(),
+	semesterId: z.string().uuid().optional(),
 });
 
 export const StudentSkillSchema = z.object({
@@ -16,13 +17,19 @@ export const StudentSkillSchema = z.object({
 	level: SkillLevelSchema,
 });
 
-export const StudentCreateSchema = StudentSchema.omit({
-	studentId: true,
-	createdAt: true,
-	updatedAt: true,
-}).extend({
-	majorId: z.string().uuid(),
-});
+export const StudentCreateSchema = StudentSchema.extend({
+	semesterId: z.string().uuid(),
+})
+	.omit({
+		id: true,
+		password: true,
+		isActive: true,
+		createdAt: true,
+		updatedAt: true,
+	})
+	.extend({
+		majorId: z.string().uuid(),
+	});
 
 export const StudentUpdateSchema = StudentSchema.pick({
 	studentId: true,
