@@ -56,11 +56,10 @@ export default function EditMilestoneDialog({
 			);
 		});
 	};
-
 	// Custom validator for date range
 	const validateDateRange = (_: unknown, value: [Dayjs, Dayjs] | undefined) => {
-		if (!value || !value[0] || !value[1]) {
-			return Promise.reject('Please select duration');
+		if (!value?.[0] || !value?.[1]) {
+			return Promise.reject(new Error('Please select duration'));
 		}
 
 		const [startDate, endDate] = value;
@@ -71,13 +70,13 @@ export default function EditMilestoneDialog({
 		const currentStartDate = milestone ? dayjs(milestone.startDate) : null;
 		if (!currentStartDate || !startDate.isSame(currentStartDate, 'day')) {
 			if (startDate.isBefore(dayjs(), 'day')) {
-				return Promise.reject('Start date cannot be in the past');
+				return Promise.reject(new Error('Start date cannot be in the past'));
 			}
 		}
 
 		// Check if end date is before start date
 		if (endDate.isBefore(startDate)) {
-			return Promise.reject('End date must be after start date');
+			return Promise.reject(new Error('End date must be after start date'));
 		}
 
 		// Check for overlap with existing milestones in the same semester
@@ -86,14 +85,15 @@ export default function EditMilestoneDialog({
 			checkDateOverlap(startDate, endDate, selectedSemesterId)
 		) {
 			return Promise.reject(
-				'Date range overlaps with existing milestone in this semester',
+				new Error(
+					'Date range overlaps with existing milestone in this semester',
+				),
 			);
 		}
 
 		return Promise.resolve();
 	};
-
-	// Reset form when dialog opens/closes or milestone changes
+	// Set form values when milestone changes and dialog is open
 	useEffect(() => {
 		if (open && milestone) {
 			form.setFieldsValue({
@@ -101,19 +101,24 @@ export default function EditMilestoneDialog({
 				semesterId: milestone.semesterId,
 				duration: [dayjs(milestone.startDate), dayjs(milestone.endDate)],
 			});
-		} else {
-			form.resetFields();
 		}
 	}, [open, milestone, form]);
 
+	// Reset form when dialog closes
+	useEffect(() => {
+		if (!open) {
+			form.resetFields();
+		}
+	}, [open, form]);
+
 	const handleSubmit = async () => {
 		if (!milestone) return;
-
 		try {
 			const values = await form.validateFields();
 
 			// Convert date range to individual dates
-			const [startDate, endDate] = values.duration || [];
+			const duration = values.duration ?? [];
+			const [startDate, endDate] = duration;
 
 			const milestoneData: MilestoneUpdate = {
 				name: values.milestoneName,
