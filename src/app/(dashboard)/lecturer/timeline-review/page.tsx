@@ -1,13 +1,7 @@
 'use client';
 
-import { Typography } from 'antd';
-
-const { Title } = Typography;
+import TimelineReview from '@/components/features/lecturer/TimelineReview';
 
 export default function TimelineReviewPage() {
-	return (
-		<div className="p-6">
-			<Title level={2}>⏰ Timeline Review</Title>
-		</div>
-	);
+	return <TimelineReview />;
 }
