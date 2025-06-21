@@ -17,6 +17,11 @@ import { usePathname } from 'next/navigation';
 import { useNavigationLoader, usePermissions } from '@/hooks';
 import { DASHBOARD_PATHS } from '@/lib/auth/config/auth-constants';
 
+import {
+	LECTURER_MENU_KEYS,
+	getSelectedMenuKey,
+} from './LecturerSidebar.config';
+
 export default function LecturerSidebar() {
 	const pathname = usePathname();
 	const { canAccessModeratorFeatures } = usePermissions();
@@ -41,37 +46,40 @@ export default function LecturerSidebar() {
 			disabled: isNavigating && targetPath !== DASHBOARD_PATHS.LECTURER,
 		},
 		{
-			key: '/lecturer/thesis-management',
-			icon: isMenuItemLoading('/lecturer/thesis-management') ? (
+			key: LECTURER_MENU_KEYS.THESIS_MANAGEMENT,
+			icon: isMenuItemLoading(LECTURER_MENU_KEYS.THESIS_MANAGEMENT) ? (
 				<LoadingOutlined spin />
 			) : (
 				<BookOutlined />
 			),
 			label: 'Thesis Management',
-			onClick: () => navigateWithLoading('/lecturer/thesis-management'),
-			disabled: isNavigating && targetPath !== '/lecturer/thesis-management',
+			onClick: () => navigateWithLoading(LECTURER_MENU_KEYS.THESIS_MANAGEMENT),
+			disabled:
+				isNavigating && targetPath !== LECTURER_MENU_KEYS.THESIS_MANAGEMENT,
 		},
 		{
-			key: '/lecturer/group-progress',
-			icon: isMenuItemLoading('/lecturer/group-progress') ? (
+			key: LECTURER_MENU_KEYS.GROUP_PROGRESS,
+			icon: isMenuItemLoading(LECTURER_MENU_KEYS.GROUP_PROGRESS) ? (
 				<LoadingOutlined spin />
 			) : (
 				<TeamOutlined />
 			),
 			label: 'Group Progress',
-			onClick: () => navigateWithLoading('/lecturer/group-progress'),
-			disabled: isNavigating && targetPath !== '/lecturer/group-progress',
+			onClick: () => navigateWithLoading(LECTURER_MENU_KEYS.GROUP_PROGRESS),
+			disabled:
+				isNavigating && targetPath !== LECTURER_MENU_KEYS.GROUP_PROGRESS,
 		},
 		{
-			key: '/lecturer/timeline-review',
-			icon: isMenuItemLoading('/lecturer/timeline-review') ? (
+			key: LECTURER_MENU_KEYS.TIMELINE_REVIEW,
+			icon: isMenuItemLoading(LECTURER_MENU_KEYS.TIMELINE_REVIEW) ? (
 				<LoadingOutlined spin />
 			) : (
 				<ClockCircleOutlined />
 			),
 			label: 'Timeline Review',
-			onClick: () => navigateWithLoading('/lecturer/timeline-review'),
-			disabled: isNavigating && targetPath !== '/lecturer/timeline-review',
+			onClick: () => navigateWithLoading(LECTURER_MENU_KEYS.TIMELINE_REVIEW),
+			disabled:
+				isNavigating && targetPath !== LECTURER_MENU_KEYS.TIMELINE_REVIEW,
 		},
 	];
 	const moderatorMenuItems = [
@@ -148,7 +156,7 @@ export default function LecturerSidebar() {
 		<Menu
 			theme="light"
 			mode="inline"
-			selectedKeys={[pathname]}
+			selectedKeys={[getSelectedMenuKey(pathname)]}
 			items={lecturerMenuItems}
 			style={{
 				border: 'none',
