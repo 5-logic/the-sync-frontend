@@ -1,6 +1,6 @@
 import { createMetadata } from '@/app/metadata';
 import CollapsibleLayout from '@/components/layout/CollapsibleLayout';
-import AdminSidebar from '@/components/layout/Sidebar/AdminSidebar';
+import AdminSidebar from '@/components/layout/Sidebar/admin/AdminSidebar';
 
 export const metadata = createMetadata({
 	title: 'Admin Dashboard',
