@@ -12,12 +12,11 @@ import {
 	Typography,
 } from 'antd';
 import type { FormInstance } from 'antd/es/form';
-import { memo, useCallback, useState } from 'react';
+import { memo, useCallback, useEffect } from 'react';
 
 import { FormLabel } from '@/components/common/FormLabel';
-import semesterService from '@/lib/services/semesters.service';
-import { showNotification } from '@/lib/utils/notification';
 import { SemesterCreate } from '@/schemas/semester';
+import { useSemesterStore } from '@/store/useSemesterStore';
 
 const { Title } = Typography;
 
@@ -27,45 +26,49 @@ interface SemesterFormProps {
 }
 
 const SemesterForm = memo<SemesterFormProps>(({ form, onSuccess }) => {
-	const [loading, setLoading] = useState(false);
+	// Use Semester Store
+	const { createSemester, creating, clearError } = useSemesterStore();
+
 	const watchedValues = Form.useWatch([], form);
 
 	const isFormValid = Boolean(
 		watchedValues?.name?.trim() && watchedValues?.code?.trim(),
 	);
 
+	// Clear error when component mounts or unmounts
+	useEffect(() => {
+		clearError();
+		return () => clearError();
+	}, [clearError]);
+
 	const handleSubmit = useCallback(
 		async (values: SemesterCreate) => {
-			setLoading(true);
-			try {
-				const semesterData: SemesterCreate = {
-					...values,
-					code: values.code.trim().toUpperCase(),
-					status: 'NotYet',
-				};
+			// Clear any previous errors
+			clearError();
 
-				const response = await semesterService.create(semesterData);
+			const semesterData: SemesterCreate = {
+				...values,
+				code: values.code.trim().toUpperCase(),
+				status: 'NotYet',
+			};
 
-				if (response.success) {
-					showNotification.success('Success', 'Semester created successfully');
-					form.resetFields();
-					onSuccess?.();
-				} else {
-					showNotification.error('Error', 'Failed to create semester');
-				}
-			} catch (error) {
-				console.error('Error creating semester:', error);
-				showNotification.error('Error', 'Error creating semester');
-			} finally {
-				setLoading(false);
+			// Use store method to create semester
+			const success = await createSemester(semesterData);
+
+			if (success) {
+				// Success notification is handled in store
+				form.resetFields();
+				onSuccess?.();
 			}
+			// Error notification is handled in store
 		},
-		[form, onSuccess],
+		[createSemester, clearError, form, onSuccess],
 	);
 
 	const handleClearForm = useCallback(() => {
+		clearError();
 		form.resetFields();
-	}, [form]);
+	}, [form, clearError]);
 
 	const nameRules = [
 		{ required: true, message: 'Semester name is required' },
@@ -103,9 +106,9 @@ const SemesterForm = memo<SemesterFormProps>(({ form, onSuccess }) => {
 								required
 							>
 								<Input
-									placeholder="Enter semester name (e.g., Spring 2025)"
+									placeholder="Enter semester name (e.g., Summer 2025)"
 									maxLength={100}
-									disabled={loading}
+									disabled={creating} // Use creating from store
 								/>
 							</Form.Item>
 						</Col>
@@ -122,9 +125,9 @@ const SemesterForm = memo<SemesterFormProps>(({ form, onSuccess }) => {
 								required
 							>
 								<Input
-									placeholder="Enter semester code (e.g., SP25)"
+									placeholder="Enter semester code (e.g., SU25)"
 									maxLength={20}
-									disabled={loading}
+									disabled={creating} // Use creating from store
 								/>
 							</Form.Item>
 						</Col>
@@ -155,7 +158,7 @@ const SemesterForm = memo<SemesterFormProps>(({ form, onSuccess }) => {
 										: ''
 								}
 								style={{ width: '100%' }}
-								disabled={loading}
+								disabled={creating} // Use creating from store
 								controls={true}
 								keyboard={true}
 								stringMode={false}
@@ -165,14 +168,17 @@ const SemesterForm = memo<SemesterFormProps>(({ form, onSuccess }) => {
 
 					<Row justify="end">
 						<Space>
-							<Button onClick={handleClearForm} disabled={loading}>
+							<Button
+								onClick={handleClearForm}
+								disabled={creating} // Use creating from store
+							>
 								Clear Form
 							</Button>
 							<Button
 								type="primary"
 								htmlType="submit"
 								disabled={!isFormValid}
-								loading={loading}
+								loading={creating} // Use creating from store
 							>
 								Create Semester
 							</Button>
