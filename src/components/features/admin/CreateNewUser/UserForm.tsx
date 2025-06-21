@@ -1,7 +1,22 @@
 'use client';
 
-import { EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons';
-import { Button, Form, Input, Radio, Select, Space, Typography } from 'antd';
+import {
+	Button,
+	Col,
+	Form,
+	Input,
+	Radio,
+	Row,
+	Select,
+	Space,
+	Typography,
+} from 'antd';
+import { useEffect, useState } from 'react';
+
+import majorService from '@/lib/services/majors.service';
+import semesterService from '@/lib/services/semesters.service';
+import { Major } from '@/schemas/major';
+import { Semester } from '@/schemas/semester';
 
 const { Option } = Select;
 const { Text } = Typography;
@@ -10,9 +25,6 @@ type UserFormProps = {
 	formType: 'student' | 'lecturer';
 	onSubmit: (values: Record<string, unknown>) => void;
 };
-
-const passwordIconRender = (visible: boolean) =>
-	visible ? <EyeInvisibleOutlined /> : <EyeOutlined />;
 
 const Label = ({ text }: { text: string }) => (
 	<Text strong>
@@ -24,6 +36,55 @@ const UserForm = ({ formType, onSubmit }: UserFormProps) => {
 	const [form] = Form.useForm();
 	const isStudent = formType === 'student';
 
+	const [semesters, setSemesters] = useState<Semester[]>([]);
+	const [semestersLoading, setSemestersLoading] = useState(false);
+	const [majors, setMajors] = useState<Major[]>([]);
+	const [majorsLoading, setMajorsLoading] = useState(false);
+
+	// Fetch semesters
+	useEffect(() => {
+		const fetchSemesters = async () => {
+			try {
+				setSemestersLoading(true);
+				const response = await semesterService.findAll();
+
+				if (response.success) {
+					setSemesters(response.data);
+				} else {
+					console.error('Failed to fetch semesters:', response.error);
+				}
+			} catch (error) {
+				console.error('Error fetching semesters:', error);
+			} finally {
+				setSemestersLoading(false);
+			}
+		};
+
+		fetchSemesters();
+	}, []);
+
+	// Fetch majors
+	useEffect(() => {
+		const fetchMajors = async () => {
+			try {
+				setMajorsLoading(true);
+				const response = await majorService.findAll();
+
+				if (response.success) {
+					setMajors(response.data);
+				} else {
+					console.error('Failed to fetch majors:', response.error);
+				}
+			} catch (error) {
+				console.error('Error fetching majors:', error);
+			} finally {
+				setMajorsLoading(false);
+			}
+		};
+
+		fetchMajors();
+	}, []);
+
 	return (
 		<Form
 			form={form}
@@ -31,84 +92,118 @@ const UserForm = ({ formType, onSubmit }: UserFormProps) => {
 			onFinish={onSubmit}
 			requiredMark="optional"
 			style={{
-				padding: 20,
 				borderRadius: 8,
 			}}
 		>
-			<Form.Item
-				name="semester"
-				label={<Label text="Semester" />}
-				rules={[{ required: true, message: 'Please select a semester' }]}
-			>
-				<Select placeholder="Select semester">
-					{['Spring 2025', 'Fall 2025', 'Spring 2026', 'Fall 2026'].map(
-						(sem) => (
-							<Option key={sem} value={sem}>
-								{sem}
-							</Option>
-						),
-					)}
-				</Select>
-			</Form.Item>
+			{/* Semester and Major - Two columns */}
+			<Row gutter={16}>
+				<Col xs={24} sm={12}>
+					<Form.Item
+						name="semester"
+						label={<Label text="Semester" />}
+						rules={[{ required: true, message: 'Please select a semester' }]}
+					>
+						<Select placeholder="Select semester" loading={semestersLoading}>
+							{semesters.map((semester) => (
+								<Option key={semester.id} value={semester.id}>
+									{semester.name}
+								</Option>
+							))}
+						</Select>
+					</Form.Item>
+				</Col>
+				<Col xs={24} sm={12}>
+					<Form.Item
+						name="major"
+						label={<Label text="Major" />}
+						rules={[{ required: true, message: 'Please select a major' }]}
+					>
+						<Select placeholder="Select major" loading={majorsLoading}>
+							{majors.map((major) => (
+								<Option key={major.id} value={major.id}>
+									{major.name}
+								</Option>
+							))}
+						</Select>
+					</Form.Item>
+				</Col>
+			</Row>
 
-			<Form.Item
-				name="fullName"
-				label={<Label text="Full Name" />}
-				rules={[{ required: true, message: 'Please enter full name' }]}
-			>
-				<Input placeholder="Enter full name" />
-			</Form.Item>
+			<Row gutter={16}>
+				{isStudent && (
+					<Col xs={24} sm={12}>
+						<Form.Item
+							name="studentId"
+							label={<Label text="Student ID" />}
+							rules={[{ required: true, message: 'Please enter Student ID' }]}
+						>
+							<Input placeholder="Enter Student ID" />
+						</Form.Item>
+					</Col>
+				)}
+				<Col xs={24} sm={12}>
+					<Form.Item
+						name="gender"
+						label={<Label text="Gender" />}
+						rules={[{ required: true, message: 'Please select gender' }]}
+					>
+						<Radio.Group>
+							<Radio value="male">Male</Radio>
+							<Radio value="female">Female</Radio>
+						</Radio.Group>
+					</Form.Item>
+				</Col>
+			</Row>
 
-			<Form.Item
-				name="email"
-				label={<Label text="Email Address" />}
-				rules={[
-					{ required: true, message: 'Please enter email address' },
-					{ type: 'email', message: 'Enter a valid email address' },
-				]}
-			>
-				<Input placeholder="Enter email address" />
-			</Form.Item>
+			{/* Full Name - Full width */}
+			<Row>
+				<Col span={24}>
+					<Form.Item
+						name="fullName"
+						label={<Label text="Full Name" />}
+						rules={[{ required: true, message: 'Please enter full name' }]}
+					>
+						<Input placeholder="Enter full name" />
+					</Form.Item>
+				</Col>
+			</Row>
 
-			{isStudent ? (
-				<Form.Item
-					name="studentId"
-					label={<Label text="Student ID" />}
-					rules={[{ required: true, message: 'Please enter Student ID' }]}
-				>
-					<Input placeholder="Enter Student ID" />
-				</Form.Item>
-			) : (
-				<Form.Item
-					name="phoneNumber"
-					label={<Label text="Phone Number" />}
-					rules={[
-						{ required: true, message: 'Please enter phone number' },
-						{
-							pattern: /^(0|\+84)(\d{9})$/,
-							message: 'Please enter a valid Vietnamese phone number',
-						},
-					]}
-				>
-					<Input.Password
-						placeholder="Enter phone number"
-						size="large"
-						iconRender={passwordIconRender}
-					/>
-				</Form.Item>
-			)}
+			{/* Email - Full width */}
+			<Row>
+				<Col span={24}>
+					<Form.Item
+						name="email"
+						label={<Label text="Email Address" />}
+						rules={[
+							{ required: true, message: 'Please enter email address' },
+							{ type: 'email', message: 'Enter a valid email address' },
+						]}
+					>
+						<Input placeholder="Enter email address" />
+					</Form.Item>
+				</Col>
+			</Row>
 
-			<Form.Item
-				name="gender"
-				label={<Label text="Gender" />}
-				rules={[{ required: true, message: 'Please select gender' }]}
-			>
-				<Radio.Group>
-					<Radio value="Male">Male</Radio>
-					<Radio value="Female">Female</Radio>
-				</Radio.Group>
-			</Form.Item>
+			{/* Phone Number - Full width */}
+			<Row>
+				<Col span={24}>
+					<Form.Item
+						name="phoneNumber"
+						label={<Label text="Phone Number" />}
+						rules={[
+							{ required: true, message: 'Please enter phone number' },
+							{
+								pattern: /^(0|\+84)(\d{9})$/,
+								message: 'Please enter a valid Vietnamese phone number',
+							},
+						]}
+					>
+						<Input placeholder="Enter phone number" />
+					</Form.Item>
+				</Col>
+			</Row>
 
+			{/* Submit buttons */}
 			<Form.Item>
 				<Space style={{ width: '100%', justifyContent: 'flex-end' }}>
 					<Button htmlType="button">Cancel</Button>
