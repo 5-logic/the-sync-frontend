@@ -21,21 +21,23 @@ export default function TimelineStats() {
 
 	return (
 		<Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-			<Col span={8}>
+			<Col xs={24} sm={12} md={8}>
 				<Card className="text-center">
 					<CheckCircleFilled style={{ fontSize: 24, color: '#52c41a' }} />
 					<Title level={3}>{completedCount}</Title>
 					<Text>Reviews Completed</Text>
 				</Card>
 			</Col>
-			<Col span={8}>
+
+			<Col xs={24} sm={12} md={8}>
 				<Card className="text-center">
 					<ClockCircleOutlined style={{ fontSize: 24, color: '#1890ff' }} />
 					<Title level={3}>{inProgressCount}</Title>
 					<Text>Review in Progress</Text>
 				</Card>
 			</Col>
-			<Col span={8}>
+
+			<Col xs={24} sm={24} md={8}>
 				<Card className="text-center">
 					<Space direction="vertical" align="center">
 						<Progress type="circle" percent={overallProgress} width={60} />
