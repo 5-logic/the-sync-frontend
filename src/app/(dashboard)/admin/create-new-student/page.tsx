@@ -1,17 +1,12 @@
-'use client';
+import { createMetadata } from '@/app/metadata';
+import CreateNewStudentClient from '@/components/pages/admin/CreateNewStudentClient';
 
-import { Layout } from 'antd';
-
-import CreateNewStudent from '@/components/features/admin/CreateNewUser/CreateNewStudent';
-
-const { Content } = Layout;
+export const metadata = createMetadata({
+	title: 'Admin Create New Student',
+	description:
+		'Admin Create New Student for TheSync - Group Formation and Capstone Thesis Development',
+});
 
 export default function AdminCreateNewStudentPage() {
-	return (
-		<Layout style={{ minHeight: '100vh', background: 'transparent' }}>
-			<Content style={{ padding: '24px' }}>
-				<CreateNewStudent />
-			</Content>
-		</Layout>
-	);
+	return <CreateNewStudentClient />;
 }
