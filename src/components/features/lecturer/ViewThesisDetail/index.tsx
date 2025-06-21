@@ -1,197 +1,44 @@
 'use client';
 
-import { DownloadOutlined } from '@ant-design/icons';
-import { Button, Card, Col, Row, Space, Tag, Typography } from 'antd';
-import Image from 'next/image';
-import {
-	AwaitedReactNode,
-	JSXElementConstructor,
-	Key,
-	ReactElement,
-	ReactNode,
-	ReactPortal,
-	useState,
-} from 'react';
+import { Card, Space, Typography } from 'antd';
+import { useState } from 'react';
 
 import ThesisDuplicateList from '@/components/features/lecturer/CreateThesis/ThesisDuplicateList';
 import ThesisActionButtons from '@/components/features/lecturer/ViewThesisDetail/ActionButtons';
+import ThesisHeader from '@/components/features/lecturer/ViewThesisDetail/ThesisHeader';
+import ThesisInfoCard from '@/components/features/lecturer/ViewThesisDetail/ThesisInfoCard';
 import { mockTheses } from '@/data/thesis';
 
-const { Title, Text, Paragraph } = Typography;
+const { Paragraph, Title } = Typography;
 
 export default function ThesisDetailManagerPage() {
 	const [showDuplicate, setShowDuplicate] = useState(false);
+	const thesis = mockTheses.find((t) => t.id === 't2');
 
-	const thesis = mockTheses.find((t) => t.id === 't1');
+	if (!thesis) {
+		return (
+			<Card>
+				<Title level={4}>Thesis not found</Title>
+				<Paragraph>The requested thesis could not be found.</Paragraph>
+			</Card>
+		);
+	}
 
 	return (
-		<>
-			<Space direction="vertical" size="large" style={{ width: '100%' }}>
-				<div style={{ marginBottom: 24 }}>
-					<Title level={2} style={{ marginBottom: '4px' }}>
-						Thesis Detail
-					</Title>
-					<Paragraph type="secondary" style={{ marginBottom: 0 }}>
-						View detail and manage Thesis, registration windows, and
-						capstone-specific rules
-					</Paragraph>
-				</div>
-				{thesis ? (
-					<Card>
-						<Title level={4}>{thesis.englishName}</Title>
-						<Space wrap size={[8, 8]} style={{ marginBottom: 16 }}>
-							<Tag color="blue">{thesis.domain}</Tag>
-							<Tag color="orange">{thesis.status}</Tag>
-							<Tag color="gold">Version {thesis.version}</Tag>
-						</Space>
+		<Space direction="vertical" size="large" style={{ width: '100%' }}>
+			<ThesisHeader />
+			<ThesisInfoCard thesis={thesis} />
+			<ThesisActionButtons
+				status={thesis.status}
+				showDuplicate={showDuplicate}
+				onToggleDuplicate={() => setShowDuplicate(!showDuplicate)}
+				onExit={() => console.log('Exit')}
+				onEdit={() => console.log('Edit Thesis')}
+				onApprove={() => console.log('Approved')}
+				onReject={(reason) => console.log('Rejected with reason:', reason)}
+			/>
 
-						<Row gutter={32} style={{ marginBottom: 16 }}>
-							<Col span={12}>
-								<Text strong>Vietnamese name</Text>
-								<Paragraph>{thesis.vietnameseName}</Paragraph>
-							</Col>
-							<Col span={12}>
-								<Text strong>Abbreviation</Text>
-								<Paragraph>{thesis.abbreviation}</Paragraph>
-							</Col>
-						</Row>
-
-						<div style={{ marginBottom: 16 }}>
-							<Text strong>Description</Text>
-							<Paragraph>{thesis.description}</Paragraph>
-						</div>
-
-						<div style={{ marginBottom: 16 }}>
-							<Text strong>Required Skills</Text>
-							<div style={{ marginTop: 8 }}>
-								{thesis.skills.map((skill) => (
-									<Tag key={skill}>{skill}</Tag>
-								))}
-							</div>
-						</div>
-
-						<Button icon={<DownloadOutlined />} style={{ marginBottom: 24 }}>
-							Download Supporting Document
-						</Button>
-
-						<div style={{ marginBottom: 24 }}>
-							<Text strong>Supervisor Information</Text>
-							<div style={{ marginTop: 8 }}>
-								<Space>
-									<Image
-										src="/images/user_avatar.png"
-										alt="Supervisor Avatar"
-										width={48}
-										height={48}
-										style={{ borderRadius: '50%' }}
-									/>
-									<div>
-										<Text strong>{thesis.supervisor?.name}</Text>
-										<Paragraph style={{ marginBottom: 0 }}>
-											{thesis.supervisor?.phone}
-										</Paragraph>
-										<Paragraph style={{ marginBottom: 0 }} type="secondary">
-											{thesis.supervisor?.email}
-										</Paragraph>
-									</div>
-								</Space>
-							</div>
-						</div>
-
-						{/* Team member */}
-						{thesis.group && (
-							<div style={{ marginBottom: 24 }}>
-								<Text strong>
-									Team Members ({thesis.group.members.length}/4)
-								</Text>
-								<div style={{ marginTop: 12 }}>
-									{thesis.group.members.map((member) => (
-										<Space
-											key={member.email}
-											style={{
-												display: 'flex',
-												alignItems: 'center',
-												padding: '12px 0',
-												borderBottom: '1px solid #f0f0f0',
-											}}
-										>
-											<Image
-												src={'/images/user_avatar.png'}
-												alt={member.name}
-												width={40}
-												height={40}
-												style={{ borderRadius: '50%' }}
-											/>
-											<div style={{ flex: 1 }}>
-												<Text strong>{member.name}</Text>
-												{member.isLeader && (
-													<Tag color="red" style={{ marginLeft: 8 }}>
-														Leader
-													</Tag>
-												)}
-												<Paragraph style={{ margin: 0 }} type="secondary">
-													{member.email}
-												</Paragraph>
-											</div>
-										</Space>
-									))}
-								</div>
-							</div>
-						)}
-
-						{/* Đề tài bị reject - có thêm button reject  */}
-						{thesis.status === 'Rejected' &&
-							Array.isArray(thesis.rejectReasons) &&
-							thesis.rejectReasons.length > 0 && (
-								<div style={{ marginBottom: 24 }}>
-									<Text strong>Reject Reasons</Text>
-									<ul style={{ marginTop: 8, paddingLeft: 20 }}>
-										{thesis.rejectReasons.map(
-											(
-												reason:
-													| string
-													| number
-													| bigint
-													| boolean
-													| ReactElement<
-															unknown,
-															string | JSXElementConstructor<unknown>
-													  >
-													| Iterable<ReactNode>
-													| ReactPortal
-													| Promise<AwaitedReactNode>
-													| null
-													| undefined,
-												index: Key | null | undefined,
-											) => (
-												<li key={index}>
-													<Text>{reason}</Text>
-												</li>
-											),
-										)}
-									</ul>
-								</div>
-							)}
-					</Card>
-				) : (
-					<Card>
-						<Title level={4}>Thesis not found</Title>
-						<Paragraph>The requested thesis could not be found.</Paragraph>
-					</Card>
-				)}
-
-				<ThesisActionButtons
-					status={thesis?.status ?? ''}
-					showDuplicate={showDuplicate}
-					onToggleDuplicate={() => setShowDuplicate(!showDuplicate)}
-					onExit={() => console.log('Exit')}
-					onEdit={() => console.log('Edit Thesis')}
-					onApprove={() => console.log('Approved')}
-					onReject={(reason) => console.log('Rejected with reason:', reason)}
-				/>
-
-				{showDuplicate && <ThesisDuplicateList />}
-			</Space>
-		</>
+			{showDuplicate && <ThesisDuplicateList />}
+		</Space>
 	);
 }
