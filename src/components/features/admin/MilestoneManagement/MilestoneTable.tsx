@@ -3,6 +3,7 @@
 import { EditOutlined } from '@ant-design/icons';
 import { Button, Space, Table, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
+import dayjs from 'dayjs';
 import { useState } from 'react';
 
 import EditMilestoneDialog from '@/components/features/admin/MilestoneManagement/EditMilestoneDialog';
@@ -102,18 +103,26 @@ export default function MilestoneTable({
 			key: 'actions',
 			width: '15%',
 			align: 'center',
-			render: (_, record: Milestone) => (
-				<Space size="middle">
-					<Tooltip title="Edit">
-						<Button
-							icon={<EditOutlined />}
-							size="small"
-							type="text"
-							onClick={() => handleEdit(record)}
-						/>
-					</Tooltip>
-				</Space>
-			),
+			render: (_, record: Milestone) => {
+				const hasStarted = dayjs(record.startDate).isBefore(dayjs(), 'day');
+				return (
+					<Space size="middle">
+						<Tooltip
+							title={
+								hasStarted ? 'Cannot edit milestone that has started' : 'Edit'
+							}
+						>
+							<Button
+								icon={<EditOutlined />}
+								size="small"
+								type="text"
+								disabled={hasStarted}
+								onClick={() => handleEdit(record)}
+							/>
+						</Tooltip>
+					</Space>
+				);
+			},
 		},
 	];
 	return (
