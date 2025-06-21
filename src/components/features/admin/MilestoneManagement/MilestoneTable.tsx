@@ -60,8 +60,8 @@ export default function MilestoneTable({
 			key: 'semesterId',
 			render: (semesterId: string) => semesterMap[semesterId] ?? 'Unknown',
 			sorter: (a, b) => {
-				const semesterA = semesterMap[a.semesterId] || 'Unknown';
-				const semesterB = semesterMap[b.semesterId] || 'Unknown';
+				const semesterA = semesterMap[a.semesterId] ?? 'Unknown';
+				const semesterB = semesterMap[b.semesterId] ?? 'Unknown';
 				return semesterA.localeCompare(semesterB);
 			},
 			showSorterTooltip: false,
