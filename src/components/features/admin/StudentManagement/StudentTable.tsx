@@ -2,7 +2,10 @@
 
 import { Table, Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
+import { useEffect, useState } from 'react';
 
+import majorService from '@/lib/services/majors.service';
+import { Major } from '@/schemas/major';
 import { Student } from '@/schemas/student';
 
 type Props = Readonly<{
@@ -11,6 +14,38 @@ type Props = Readonly<{
 }>;
 
 export default function StudentTable({ data, loading }: Props) {
+	const [majors, setMajors] = useState<Major[]>([]);
+	const [majorsLoading, setMajorsLoading] = useState(false);
+
+	useEffect(() => {
+		const fetchMajors = async () => {
+			try {
+				setMajorsLoading(true);
+				const response = await majorService.findAll();
+
+				if (response.success) {
+					setMajors(response.data);
+				} else {
+					console.error('Failed to fetch majors:', response.error);
+				}
+			} catch (error) {
+				console.error('Error fetching majors:', error);
+			} finally {
+				setMajorsLoading(false);
+			}
+		};
+
+		fetchMajors();
+	}, []);
+
+	const majorMap = majors.reduce(
+		(acc, major) => {
+			acc[major.id] = major.code;
+			return acc;
+		},
+		{} as Record<string, string>,
+	);
+
 	const columns: ColumnsType<Student> = [
 		{
 			title: 'Student ID',
@@ -36,19 +71,27 @@ export default function StudentTable({ data, loading }: Props) {
 			key: 'gender',
 			width: '10%',
 			render: (gender: string) =>
-				gender.charAt(0).toUpperCase() + gender.slice(1),
+				gender?.charAt(0).toUpperCase() + gender?.slice(1),
 		},
 		{
 			title: 'Major',
 			dataIndex: 'majorId',
 			key: 'majorId',
-			width: '20%',
+			width: '10%',
 			render: (majorId: string) => {
-				const map: Record<string, string> = {
-					SE: 'Software Engineering',
-					AI: 'Artificial Intelligence',
-				};
-				return map[majorId] || majorId;
+				if (majorsLoading) {
+					return 'Loading...';
+				}
+				return majorMap[majorId] || majorId;
+			},
+		},
+		{
+			title: 'Semester',
+			dataIndex: 'semesterId',
+			key: 'semesterId',
+			width: '10%',
+			render: () => {
+				return '-';
 			},
 		},
 		{
