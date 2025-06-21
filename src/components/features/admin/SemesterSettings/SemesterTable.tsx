@@ -24,6 +24,7 @@ import {
 	useState,
 } from 'react';
 
+import { FormLabel } from '@/components/common/FormLabel';
 import semesterService from '@/lib/services/semesters.service';
 import { showNotification } from '@/lib/utils/notification';
 import { SemesterStatus } from '@/schemas/_enums';
@@ -272,7 +273,7 @@ const SemesterTable = forwardRef<
 				width: 150,
 			},
 			{
-				title: 'Max group',
+				title: 'Max Groups',
 				dataIndex: 'maxGroup',
 				key: 'maxGroup',
 				width: 120,
@@ -360,6 +361,7 @@ const SemesterTable = forwardRef<
 				<Form
 					form={form}
 					layout="vertical"
+					requiredMark={false}
 					style={{ marginTop: '16px' }}
 					onValuesChange={handleFormChange}
 				>
@@ -367,7 +369,11 @@ const SemesterTable = forwardRef<
 						<Col xs={24} md={12}>
 							<Form.Item
 								name="name"
-								label="Semester Name"
+								label={FormLabel({
+									text: 'Semester Name',
+									isRequired: true,
+									isBold: true,
+								})}
 								rules={[
 									{ required: true, message: 'Semester name is required' },
 								]}
@@ -382,7 +388,11 @@ const SemesterTable = forwardRef<
 						<Col xs={24} md={12}>
 							<Form.Item
 								name="code"
-								label="Semester Code"
+								label={FormLabel({
+									text: 'Semester Code',
+									isRequired: true,
+									isBold: true,
+								})}
 								rules={[
 									{ required: true, message: 'Semester code is required' },
 								]}
@@ -395,7 +405,13 @@ const SemesterTable = forwardRef<
 						</Col>
 					</Row>
 
-					<Form.Item name="maxGroup" label="Max Group">
+					<Form.Item
+						name="maxGroup"
+						label={FormLabel({
+							text: 'Maximum Number of Groups',
+							isBold: true,
+						})}
+					>
 						<Input
 							placeholder="Enter maximum number of groups"
 							type="number"
@@ -403,7 +419,14 @@ const SemesterTable = forwardRef<
 						/>
 					</Form.Item>
 
-					<Form.Item name="status" label="Status">
+					<Form.Item
+						name="status"
+						label={FormLabel({
+							text: 'Status',
+							isRequired: true,
+							isBold: true,
+						})}
+					>
 						<Select
 							placeholder="Select status"
 							onChange={handleStatusChange}
