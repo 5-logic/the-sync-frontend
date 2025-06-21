@@ -13,7 +13,7 @@ const { Paragraph, Title } = Typography;
 
 export default function ThesisDetailManagerPage() {
 	const [showDuplicate, setShowDuplicate] = useState(false);
-	const thesis = mockTheses.find((t) => t.id === 't2');
+	const thesis = mockTheses.find((t) => t.id === 't1');
 
 	if (!thesis) {
 		return (
