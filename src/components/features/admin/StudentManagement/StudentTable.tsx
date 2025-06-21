@@ -7,17 +7,42 @@ import { Student } from '@/schemas/student';
 
 type Props = Readonly<{
 	data: Student[];
+	loading: boolean;
 }>;
 
-export default function StudentTable({ data }: Props) {
+export default function StudentTable({ data, loading }: Props) {
 	const columns: ColumnsType<Student> = [
-		{ title: 'Name', dataIndex: 'fullName', key: 'fullName' },
-		{ title: 'Email', dataIndex: 'email', key: 'email' },
-		{ title: 'Student ID', dataIndex: 'studentId', key: 'studentId' },
+		{
+			title: 'Student ID',
+			dataIndex: 'studentId',
+			key: 'studentId',
+			width: '10%',
+		},
+		{
+			title: 'Name',
+			dataIndex: 'fullName',
+			key: 'fullName',
+			width: '25%',
+		},
+		{
+			title: 'Email',
+			dataIndex: 'email',
+			key: 'email',
+			width: '25%',
+		},
+		{
+			title: 'Gender',
+			dataIndex: 'gender',
+			key: 'gender',
+			width: '10%',
+			render: (gender: string) =>
+				gender.charAt(0).toUpperCase() + gender.slice(1),
+		},
 		{
 			title: 'Major',
 			dataIndex: 'majorId',
 			key: 'majorId',
+			width: '20%',
 			render: (majorId: string) => {
 				const map: Record<string, string> = {
 					SE: 'Software Engineering',
@@ -27,16 +52,10 @@ export default function StudentTable({ data }: Props) {
 			},
 		},
 		{
-			title: 'Gender',
-			dataIndex: 'gender',
-			key: 'gender',
-			render: (gender: string) =>
-				gender.charAt(0).toUpperCase() + gender.slice(1),
-		},
-		{
 			title: 'Status',
 			dataIndex: 'isActive',
 			key: 'isActive',
+			width: '10%',
 			render: (isActive: boolean) => (
 				<Tag color={isActive ? 'green' : 'default'}>
 					{isActive ? 'Active' : 'Inactive'}
@@ -57,6 +76,7 @@ export default function StudentTable({ data }: Props) {
 				pageSizeOptions: ['5', '10', '20', '50'],
 			}}
 			scroll={{ x: 'max-content' }}
+			loading={loading}
 		/>
 	);
 }
