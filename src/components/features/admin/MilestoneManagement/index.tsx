@@ -1,7 +1,16 @@
 'use client';
 
 import { ReloadOutlined, SearchOutlined } from '@ant-design/icons';
-import { Button, Col, Input, Row, Select, Space, Typography } from 'antd';
+import {
+	Button,
+	Col,
+	Divider,
+	Input,
+	Row,
+	Select,
+	Space,
+	Typography,
+} from 'antd';
 import { useEffect, useState } from 'react';
 
 import CreateMilestoneForm from '@/components/features/admin/MilestoneManagement/CreateMilestoneForm';
@@ -86,15 +95,16 @@ export default function MilestoneManagement() {
 		}
 	};
 	return (
-		<Space direction="vertical" size="large" style={{ width: '100%' }}>
+		<Space direction="vertical" size="middle" style={{ width: '100%' }}>
 			<div>
 				<Title level={2} style={{ marginBottom: '4px' }}>
 					Milestones Management
 				</Title>
 				<Paragraph type="secondary" style={{ marginBottom: 0 }}>
 					Create and manage milestones for each semester.
-				</Paragraph>
-			</div>{' '}
+				</Paragraph>{' '}
+			</div>
+
 			<CreateMilestoneForm
 				semesters={semesters}
 				loadingSemesters={loadingSemesters}
@@ -102,54 +112,53 @@ export default function MilestoneManagement() {
 				existingMilestones={milestones}
 				onSubmit={handleCreateMilestone}
 			/>
-			<Space direction="vertical" size="large" style={{ width: '100%' }}>
-				{' '}
-				{/* Search, Filter and Actions Section */}
-				<Row gutter={[16, 16]} align="middle">
-					{' '}
-					<Col xs={24} sm={8} md={10}>
-						<Input
-							placeholder="Search milestones..."
-							prefix={<SearchOutlined style={{ color: '#bfbfbf' }} />}
-							allowClear
-							value={searchText}
-							onChange={handleSearchChange}
-							style={{ width: '100%' }}
-						/>
-					</Col>
-					<Col xs={24} sm={8} md={6}>
-						<Select
-							placeholder="All Semesters"
-							style={{ width: '100%' }}
-							loading={loadingSemesters}
-							onChange={handleSemesterChange}
-							allowClear
-							options={semesters.map((semester) => ({
-								value: semester.id,
-								label: `${semester.name} (${semester.code})`,
-							}))}
-						/>
-					</Col>
-					<Col xs={24} sm={8} md={8}>
-						<div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-							<Button
-								icon={<ReloadOutlined />}
-								onClick={handleRefresh}
-								loading={loading}
-								title="Refresh milestones"
-								type="default"
-							>
-								Refresh
-							</Button>
-						</div>
-					</Col>
-				</Row>
-				<MilestoneTable
-					data={filteredMilestones}
-					loading={loading}
-					semesters={semesters}
-				/>
-			</Space>
+
+			<Divider />
+			{/* Search, Filter and Actions Section */}
+			<Row gutter={[16, 16]} align="middle">
+				<Col xs={24} sm={8} md={10}>
+					<Input
+						placeholder="Search milestones..."
+						prefix={<SearchOutlined style={{ color: '#bfbfbf' }} />}
+						allowClear
+						value={searchText}
+						onChange={handleSearchChange}
+						style={{ width: '100%' }}
+					/>
+				</Col>
+				<Col xs={24} sm={8} md={6}>
+					<Select
+						placeholder="All Semesters"
+						style={{ width: '100%' }}
+						loading={loadingSemesters}
+						onChange={handleSemesterChange}
+						allowClear
+						options={semesters.map((semester) => ({
+							value: semester.id,
+							label: `${semester.name} (${semester.code})`,
+						}))}
+					/>
+				</Col>
+				<Col xs={24} sm={8} md={8}>
+					<div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+						<Button
+							icon={<ReloadOutlined />}
+							onClick={handleRefresh}
+							loading={loading}
+							title="Refresh milestones"
+							type="default"
+						>
+							Refresh
+						</Button>
+					</div>
+				</Col>{' '}
+			</Row>
+
+			<MilestoneTable
+				data={filteredMilestones}
+				loading={loading}
+				semesters={semesters}
+			/>
 		</Space>
 	);
 }
