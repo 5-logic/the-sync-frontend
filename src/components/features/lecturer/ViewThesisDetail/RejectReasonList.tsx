@@ -1,5 +1,7 @@
 import { Typography } from 'antd';
 
+import { FormLabel } from '@/components/common/FormLabel';
+
 const { Text } = Typography;
 
 interface Props {
@@ -12,7 +14,7 @@ export default function RejectReasonList({ reasons, show = false }: Props) {
 
 	return (
 		<div style={{ marginBottom: 24 }}>
-			<Text strong>Reject Reasons</Text>
+			<FormLabel text="Reject Reasons" isRequired isBold />
 			<ul style={{ marginTop: 8, paddingLeft: 20 }}>
 				{reasons.map((reason) => (
 					<li key={reason}>

@@ -4,9 +4,12 @@ import {
 	CloudUploadOutlined,
 	DeleteOutlined,
 	DownloadOutlined,
+	UploadOutlined,
 } from '@ant-design/icons';
-import { Button, Col, Form, Row, Upload, message } from 'antd';
+import { Button, Col, Form, Row, Space, Upload, message } from 'antd';
 import { useEffect, useState } from 'react';
+
+import FormLabel from '@/components/common/FormLabel/FormLabel';
 
 interface Props {
 	mode: 'create' | 'edit';
@@ -51,10 +54,7 @@ export default function SupportingDocumentField({
 		<>
 			<Row justify="space-between" align="middle" style={{ marginBottom: 8 }}>
 				<Col>
-					<span style={{ fontWeight: 500 }}>
-						Supporting Documents
-						{mode === 'create' && <span style={{ color: 'red' }}> *</span>}
-					</span>
+					<FormLabel text="Supporting Documents" isRequired isBold />
 				</Col>
 				{mode === 'create' && (
 					<Col>
@@ -134,22 +134,27 @@ export default function SupportingDocumentField({
 						</div>
 
 						<div style={{ marginTop: 16 }}>
-							<Upload
-								{...uploadProps}
-								onChange={({ file }) => {
-									if (file.status === 'done') {
-										const info = {
-											name: file.name,
-											size: file.size ?? 0,
-										};
-										setUploadedFile(info);
-										onFileChange(info);
-									}
-								}}
-								showUploadList={false}
-							>
-								<Button icon={<CloudUploadOutlined />}>Upload New File</Button>
-							</Upload>
+							<Space>
+								<Upload
+									{...uploadProps}
+									onChange={({ file }) => {
+										if (file.status === 'done') {
+											const info = {
+												name: file.name,
+												size: file.size ?? 0,
+											};
+											setUploadedFile(info);
+											onFileChange(info);
+										}
+									}}
+									showUploadList={false}
+								>
+									<Button icon={<UploadOutlined />}>Upload New File</Button>
+								</Upload>
+
+								<Button icon={<DownloadOutlined />}>Download File</Button>
+							</Space>
+
 							<div style={{ fontSize: 12, color: '#999', marginTop: 4 }}>
 								Support for PDF, DOC, DOCX (Max: 10MB)
 							</div>

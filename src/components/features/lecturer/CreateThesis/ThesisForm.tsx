@@ -4,6 +4,7 @@ import { SearchOutlined } from '@ant-design/icons';
 import { Button, Col, Form, Input, Row, Select } from 'antd';
 import { useEffect, useState } from 'react';
 
+import FormLabel from '@/components/common/FormLabel/FormLabel';
 import ThesisDuplicateList from '@/components/features/lecturer/CreateThesis/ThesisDuplicateList';
 import SupportingDocumentField from '@/components/features/lecturer/CreateThesis/ThesisFileUpload';
 
@@ -52,9 +53,7 @@ export default function ThesisForm({ mode, initialValues, onSubmit }: Props) {
 			<Form.Item
 				name="englishName"
 				label={
-					<>
-						Thesis Title (English name) <span style={{ color: 'red' }}>*</span>
-					</>
+					<FormLabel text="Thesis Title (English name)" isRequired isBold />
 				}
 				rules={[{ required: true }]}
 			>
@@ -64,10 +63,7 @@ export default function ThesisForm({ mode, initialValues, onSubmit }: Props) {
 			<Form.Item
 				name="vietnameseName"
 				label={
-					<>
-						Thesis Title (Vietnamese name){' '}
-						<span style={{ color: 'red' }}>*</span>
-					</>
+					<FormLabel text="Thesis Title (Vietnamese name)" isRequired isBold />
 				}
 				rules={[{ required: true }]}
 			>
@@ -76,17 +72,16 @@ export default function ThesisForm({ mode, initialValues, onSubmit }: Props) {
 
 			<Form.Item
 				name="abbreviation"
-				label={
-					<>
-						Abbreviation <span style={{ color: 'red' }}>*</span>
-					</>
-				}
+				label={<FormLabel text="Abbreviation" isRequired isBold />}
 				rules={[{ required: true }]}
 			>
 				<Input placeholder="Enter abbreviation" />
 			</Form.Item>
 
-			<Form.Item name="domain" label="Field / Domain">
+			<Form.Item
+				name="domain"
+				label={<FormLabel text="Field / Domain" isBold />}
+			>
 				<Select placeholder="Select field of study">
 					<Option value="Computer Science">Computer Science</Option>
 					<Option value="Software Engineering">Software Engineering</Option>
@@ -95,17 +90,16 @@ export default function ThesisForm({ mode, initialValues, onSubmit }: Props) {
 
 			<Form.Item
 				name="description"
-				label={
-					<>
-						Thesis Description <span style={{ color: 'red' }}>*</span>
-					</>
-				}
+				label={<FormLabel text="Thesis Description" isRequired isBold />}
 				rules={[{ required: true }]}
 			>
 				<TextArea maxLength={500} rows={4} placeholder="Describe your thesis" />
 			</Form.Item>
 
-			<Form.Item name="skills" label="Required Skills">
+			<Form.Item
+				name="skills"
+				label={<FormLabel text="Required Skills" isBold />}
+			>
 				<Select mode="tags" placeholder="Add skills">
 					<Option value="Python">Python</Option>
 					<Option value="Machine Learning">Machine Learning</Option>
