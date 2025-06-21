@@ -30,7 +30,6 @@ export default function ThesisDetailManagerPage() {
 			<ThesisInfoCard thesis={thesis} />
 			<ThesisActionButtons
 				status={thesis.status}
-				showDuplicate={showDuplicate}
 				onToggleDuplicate={() => setShowDuplicate(!showDuplicate)}
 				onExit={() => console.log('Exit')}
 				onEdit={() => console.log('Edit Thesis')}
