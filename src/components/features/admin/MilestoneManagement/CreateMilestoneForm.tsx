@@ -48,7 +48,33 @@ export default function CreateMilestoneForm({
 				endDate.isSame(existingEnd)
 			);
 		});
-	}; // Custom validator for date range
+	}; // Custom validator for semester selection
+	const validateSemester = (_: unknown, semesterId: string | undefined) => {
+		if (!semesterId) {
+			return Promise.reject(new Error('Please select semester'));
+		}
+
+		const selectedSemester = semesters.find((s) => s.id === semesterId);
+		if (!selectedSemester) {
+			return Promise.reject(new Error('Invalid semester selected'));
+		}
+
+		// Check if semester status allows milestone creation
+		if (
+			selectedSemester.status === 'NotYet' ||
+			selectedSemester.status === 'End'
+		) {
+			return Promise.reject(
+				new Error(
+					`Cannot create milestone in semester with status: ${selectedSemester.status}`,
+				),
+			);
+		}
+
+		return Promise.resolve();
+	};
+
+	// Custom validator for date range
 	const validateDateRange = (_: unknown, value: [Dayjs, Dayjs] | undefined) => {
 		if (!value?.[0] || !value?.[1]) {
 			return Promise.reject(new Error('Please select duration'));
@@ -120,7 +146,7 @@ export default function CreateMilestoneForm({
 					<Form.Item
 						label={<FormLabel text="Semester" isRequired />}
 						name="semesterId"
-						rules={[{ required: true, message: 'Please select semester' }]}
+						rules={[{ validator: validateSemester }]}
 					>
 						<Select
 							placeholder="Select semester"
@@ -132,19 +158,18 @@ export default function CreateMilestoneForm({
 							}}
 							options={semesters.map((semester) => ({
 								value: semester.id,
-								label: `${semester.name} (${semester.code})`,
+								label: `${semester.name} (${semester.code}) - ${semester.status}`,
+								disabled:
+									semester.status === 'NotYet' || semester.status === 'End',
 							}))}
 						/>
 					</Form.Item>
-				</Col>
+				</Col>{' '}
 				<Col xs={24} md={8}>
 					<Form.Item
 						label={<FormLabel text="Duration" isRequired />}
 						name="duration"
-						rules={[
-							{ required: true, message: 'Please select duration' },
-							{ validator: validateDateRange },
-						]}
+						rules={[{ validator: validateDateRange }]}
 					>
 						<RangePicker
 							className="w-full"
