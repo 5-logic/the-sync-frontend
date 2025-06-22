@@ -15,6 +15,7 @@ interface StudentState {
 	loading: boolean;
 	creating: boolean;
 	updating: boolean;
+	creatingMany: boolean;
 
 	// Error states
 	lastError: {
@@ -32,6 +33,7 @@ interface StudentState {
 	// Actions
 	fetchStudents: () => Promise<void>;
 	createStudent: (data: StudentCreate) => Promise<boolean>;
+	createManyStudents: (data: StudentCreate[]) => Promise<boolean>;
 	updateStudent: (id: string, data: StudentUpdate) => Promise<boolean>;
 
 	// Error management
@@ -58,6 +60,7 @@ export const useStudentStore = create<StudentState>()(
 			loading: false,
 			creating: false,
 			updating: false,
+			creatingMany: false,
 			lastError: null,
 			selectedSemesterId: null,
 			selectedMajorId: null,
@@ -164,6 +167,68 @@ export const useStudentStore = create<StudentState>()(
 				return false;
 			},
 
+			createManyStudents: async (data: StudentCreate[]) => {
+				set({ creatingMany: true, lastError: null });
+				try {
+					const response = await studentService.createMany(data);
+					const result = handleApiResponse(
+						response,
+						`${data.length} students created successfully`,
+					);
+
+					if (result.success && result.data) {
+						// Add all new students to the array
+						set((state) => ({
+							students: [...state.students, ...result.data!],
+						}));
+
+						// Update filtered students
+						get().filterStudents();
+						return true;
+					} else if (result.error) {
+						const error = {
+							message: result.error.message,
+							statusCode: result.error.statusCode,
+							timestamp: new Date(),
+						};
+						set({ lastError: error });
+
+						// Display detailed error message based on status code
+						let errorTitle = 'Error';
+						switch (result.error.statusCode) {
+							case 400:
+								errorTitle = 'Validation Error';
+								break;
+							case 409:
+								errorTitle = 'Conflict Error';
+								break;
+							case 422:
+								errorTitle = 'Invalid Data';
+								break;
+							default:
+								errorTitle = `Error ${result.error.statusCode}`;
+						}
+
+						showNotification.error(errorTitle, result.error.message);
+						return false;
+					}
+				} catch (error) {
+					const apiError = handleApiError(error, 'Failed to create students');
+					const errorState = {
+						message: apiError.message,
+						statusCode: apiError.statusCode,
+						timestamp: new Date(),
+					};
+					set({ lastError: errorState });
+
+					showNotification.error(`Error`, apiError.message);
+					return false;
+				} finally {
+					set({ creatingMany: false });
+				}
+				return false;
+			},
+
 			updateStudent: async (id: string, data: StudentUpdate) => {
 				set({ updating: true, lastError: null });
 				try {
@@ -217,7 +282,7 @@ export const useStudentStore = create<StudentState>()(
 				set({ lastError: null });
 			},
 
-			// Filters (giữ nguyên như cũ)
+			// Filters
 			setSelectedSemesterId: (semesterId: string | null) => {
 				set({ selectedSemesterId: semesterId });
 				get().filterStudents();
@@ -287,6 +352,7 @@ export const useStudentStore = create<StudentState>()(
 					loading: false,
 					creating: false,
 					updating: false,
+					creatingMany: false,
 					lastError: null,
 					selectedSemesterId: null,
 					selectedMajorId: null,
