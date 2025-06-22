@@ -6,7 +6,7 @@ const CreateNewStudent = lazy(
 	() => import('@/components/features/admin/CreateNewUser/CreateNewStudent'),
 );
 
-export default function StudentManagementClient() {
+export default function CreateNewStudentClient() {
 	return (
 		<Suspense>
 			<CreateNewStudent />

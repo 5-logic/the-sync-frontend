@@ -43,7 +43,8 @@ export default function StudentManagement() {
 
 	const filteredData = data.filter((student) => {
 		// Đợi api enrollment để handle semester filter
-		const matchesSemester = semesterFilter === 'All' || '' === semesterFilter;
+		const matchesSemester =
+			semesterFilter === 'All' || student.semesterId === semesterFilter;
 
 		const matchesStatus =
 			statusFilter === 'All' ||
