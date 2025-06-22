@@ -315,7 +315,8 @@ export default function ExcelImportForm<T extends { id: string }>({
 								break;
 
 							case 'email':
-								const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+								const emailRegex =
+									/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 								if (!emailRegex.test(stringValue)) {
 									rowErrors.push(`Row ${rowNumber}: Invalid email format`);
 								}
