@@ -24,6 +24,7 @@ export default function LecturerExcelImport() {
 			onImport={(data) => {
 				console.log('Imported lecturers:', data);
 			}}
+			templateFileName="Create List Lecturer Template.xlsx"
 		/>
 	);
 }

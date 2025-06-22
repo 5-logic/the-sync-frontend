@@ -26,6 +26,9 @@ export default function StudentExcelImport() {
 			onImport={(data) => {
 				console.log('Imported students:', data);
 			}}
+			templateFileName="Create List Student Template.xlsx"
+			requireSemester={true}
+			requireMajor={true}
 		/>
 	);
 }
