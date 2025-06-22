@@ -212,7 +212,12 @@ const SemesterTable = forwardRef<
 					!searchText || item.name.toLowerCase().includes(searchLower);
 				return matchStatus && matchSearch;
 			})
-			.reverse();
+			.sort((a, b) => {
+				// Sort by createdAt descending (newest first)
+				const dateA = new Date(a.createdAt);
+				const dateB = new Date(b.createdAt);
+				return dateB.getTime() - dateA.getTime();
+			});
 	}, [semesters, statusFilter, searchText]);
 
 	const handleEdit = useCallback(
