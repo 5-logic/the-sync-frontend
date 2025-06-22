@@ -29,8 +29,10 @@ import * as XLSX from 'xlsx';
 import { FormLabel } from '@/components/common/FormLabel';
 import { showNotification } from '@/lib/utils/notification';
 import { SemesterStatus } from '@/schemas/_enums';
+import { StudentCreate } from '@/schemas/student';
 import { useMajorStore } from '@/store/useMajorStore';
 import { useSemesterStore } from '@/store/useSemesterStore';
+import { useStudentStore } from '@/store/useStudentStore';
 
 const { Dragger } = Upload;
 
@@ -91,6 +93,9 @@ export default function ExcelImportForm<T extends { id: string }>({
 		fetchMajors,
 		clearError: clearMajorError,
 	} = useMajorStore();
+
+	// Use Student Store for bulk creation
+	const { createManyStudents, creatingMany, fetchStudents } = useStudentStore();
 
 	// Fetch semesters and majors on component mount
 	useEffect(() => {
@@ -476,7 +481,7 @@ export default function ExcelImportForm<T extends { id: string }>({
 		}
 	};
 
-	const handleImportAll = () => {
+	const handleImportAll = async () => {
 		if (requireSemester && !selectedSemester) {
 			showNotification.error('Error', 'Please select a semester');
 			return;
@@ -487,11 +492,55 @@ export default function ExcelImportForm<T extends { id: string }>({
 			return;
 		}
 
-		onImport(
-			data,
-			requireSemester ? selectedSemester : undefined,
-			requireMajor ? selectedMajor : undefined,
-		);
+		// Prepare student data with required semesterId and majorId
+		const studentsToCreate: StudentCreate[] = data.map((item) => {
+			// Create the base student data from the imported item
+
+			const studentData: Partial<StudentCreate> = { ...item, id: undefined };
+
+			// Remove the temporary id field used for the table
+
+			// Add required semesterId and majorId
+			if (requireSemester && selectedSemester) {
+				studentData.semesterId = selectedSemester;
+			}
+
+			if (requireMajor && selectedMajor) {
+				studentData.majorId = selectedMajor;
+			}
+
+			return studentData as StudentCreate;
+		});
+
+		try {
+			// Use the store's createManyStudents function
+			const success = await createManyStudents(studentsToCreate);
+
+			if (success) {
+				// Refresh the students list
+				await fetchStudents();
+
+				// Clear form data
+				setData([]);
+				setFileList([]);
+				setSelectedSemester('');
+				setSelectedMajor('');
+				form.resetFields();
+
+				// Call the original onImport callback if needed for additional handling
+				onImport(
+					data,
+					requireSemester ? selectedSemester : undefined,
+					requireMajor ? selectedMajor : undefined,
+				);
+			}
+		} catch (error) {
+			console.error('Error creating students:', error);
+			showNotification.error(
+				'Error',
+				'Failed to create students. Please try again.',
+			);
+		}
 	};
 
 	// Calculate column span based on required fields
@@ -832,13 +881,17 @@ export default function ExcelImportForm<T extends { id: string }>({
 							<Button
 								type="primary"
 								onClick={handleImportAll}
+								loading={creatingMany}
 								disabled={
 									(requireSemester && !selectedSemester) ||
 									data.length === 0 ||
-									(requireMajor && !selectedMajor)
+									(requireMajor && !selectedMajor) ||
+									creatingMany
 								}
 							>
-								Import All Users ({data.length})
+								{creatingMany
+									? `Creating Students...`
+									: `Import All Users (${data.length})`}
 							</Button>
 						</Col>
 					</Row>
