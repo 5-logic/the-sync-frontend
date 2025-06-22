@@ -55,9 +55,9 @@ export default function ThesisForm({ mode, initialValues, onSubmit }: Props) {
 				label={
 					<FormLabel text="Thesis Title (English name)" isRequired isBold />
 				}
-				rules={[{ required: true }]}
+				rules={[{ required: true, message: 'Please enter your English title' }]}
 			>
-				<Input placeholder="Enter your thesis title" />
+				<Input placeholder="Enter your English title" />
 			</Form.Item>
 
 			<Form.Item
@@ -65,15 +65,17 @@ export default function ThesisForm({ mode, initialValues, onSubmit }: Props) {
 				label={
 					<FormLabel text="Thesis Title (Vietnamese name)" isRequired isBold />
 				}
-				rules={[{ required: true }]}
+				rules={[
+					{ required: true, message: 'Please enter your Vietnamese title' },
+				]}
 			>
-				<Input placeholder="Enter your thesis title" />
+				<Input placeholder="Enter your Vietnamese title" />
 			</Form.Item>
 
 			<Form.Item
 				name="abbreviation"
 				label={<FormLabel text="Abbreviation" isRequired isBold />}
-				rules={[{ required: true }]}
+				rules={[{ required: true, message: 'Please enter an abbreviation' }]}
 			>
 				<Input placeholder="Enter abbreviation" />
 			</Form.Item>
@@ -91,7 +93,7 @@ export default function ThesisForm({ mode, initialValues, onSubmit }: Props) {
 			<Form.Item
 				name="description"
 				label={<FormLabel text="Thesis Description" isRequired isBold />}
-				rules={[{ required: true }]}
+				rules={[{ required: true, message: 'Please describe your thesis' }]}
 			>
 				<TextArea maxLength={500} rows={4} placeholder="Describe your thesis" />
 			</Form.Item>

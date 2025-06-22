@@ -6,10 +6,11 @@ import {
 	DownloadOutlined,
 	UploadOutlined,
 } from '@ant-design/icons';
-import { Button, Col, Form, Row, Space, Upload, message } from 'antd';
+import { Button, Col, Form, Row, Space, Upload } from 'antd';
 import { useEffect, useState } from 'react';
 
 import FormLabel from '@/components/common/FormLabel/FormLabel';
+import { showNotification } from '@/lib/utils/notification';
 
 interface Props {
 	mode: 'create' | 'edit';
@@ -34,15 +35,13 @@ export default function SupportingDocumentField({
 	const uploadProps = {
 		beforeUpload: (file: File) => {
 			const isAllowed =
-				file.type === 'application/pdf' ||
-				file.type.includes('word') ||
-				file.name.endsWith('.docx');
+				file.type.includes('word') || file.name.endsWith('.docx');
 
 			if (!isAllowed) {
-				message.error('Only PDF, DOC, DOCX files are allowed!');
+				showNotification.error('Error', 'Only DOC, DOCX files are allowed!');
 			}
 			if (file.size / 1024 / 1024 > 10) {
-				message.error('File must be smaller than 10MB!');
+				showNotification.error('Error', 'File must be smaller than 10MB!');
 				return Upload.LIST_IGNORE;
 			}
 			return isAllowed || Upload.LIST_IGNORE;
@@ -94,7 +93,7 @@ export default function SupportingDocumentField({
 							<CloudUploadOutlined />
 						</p>
 						<p>Click or drag file to upload</p>
-						<p style={{ color: '#999' }}>Support PDF, DOC, DOCX (Max: 10MB)</p>
+						<p style={{ color: '#999' }}>Support DOC, DOCX (Max: 10MB)</p>
 					</Upload.Dragger>
 				) : (
 					<div
@@ -156,7 +155,7 @@ export default function SupportingDocumentField({
 							</Space>
 
 							<div style={{ fontSize: 12, color: '#999', marginTop: 4 }}>
-								Support for PDF, DOC, DOCX (Max: 10MB)
+								Support for DOC, DOCX (Max: 10MB)
 							</div>
 						</div>
 					</div>
