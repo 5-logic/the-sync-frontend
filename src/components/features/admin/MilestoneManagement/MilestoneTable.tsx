@@ -3,9 +3,11 @@
 import { EditOutlined } from '@ant-design/icons';
 import { Button, Space, Table, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
+import dayjs from 'dayjs';
 import { useState } from 'react';
 
 import EditMilestoneDialog from '@/components/features/admin/MilestoneManagement/EditMilestoneDialog';
+import { formatDate } from '@/lib/utils/dateFormat';
 import { Milestone } from '@/schemas/milestone';
 import { Semester } from '@/schemas/semester';
 
@@ -71,17 +73,18 @@ export default function MilestoneTable({
 			title: 'Start Date',
 			dataIndex: 'startDate',
 			key: 'startDate',
-			render: (date: Date) => new Date(date).toLocaleDateString(),
+			render: (date: Date) => formatDate(date),
 			sorter: (a, b) =>
 				new Date(a.startDate).getTime() - new Date(b.startDate).getTime(),
 			showSorterTooltip: false,
+			defaultSortOrder: 'ascend',
 			width: '15%',
 		},
 		{
 			title: 'End Date',
 			dataIndex: 'endDate',
 			key: 'endDate',
-			render: (date: Date) => new Date(date).toLocaleDateString(),
+			render: (date: Date) => formatDate(date),
 			sorter: (a, b) =>
 				new Date(a.endDate).getTime() - new Date(b.endDate).getTime(),
 			showSorterTooltip: false,
@@ -91,7 +94,7 @@ export default function MilestoneTable({
 			title: 'Created Date',
 			dataIndex: 'createdAt',
 			key: 'createdAt',
-			render: (date: Date) => new Date(date).toLocaleDateString(),
+			render: (date: Date) => formatDate(date),
 			sorter: (a, b) =>
 				new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
 			showSorterTooltip: false,
@@ -102,18 +105,26 @@ export default function MilestoneTable({
 			key: 'actions',
 			width: '15%',
 			align: 'center',
-			render: (_, record: Milestone) => (
-				<Space size="middle">
-					<Tooltip title="Edit">
-						<Button
-							icon={<EditOutlined />}
-							size="small"
-							type="text"
-							onClick={() => handleEdit(record)}
-						/>
-					</Tooltip>
-				</Space>
-			),
+			render: (_, record: Milestone) => {
+				const hasStarted = dayjs(record.startDate).isBefore(dayjs(), 'day');
+				return (
+					<Space size="middle">
+						<Tooltip
+							title={
+								hasStarted ? 'Cannot edit milestone that has started' : 'Edit'
+							}
+						>
+							<Button
+								icon={<EditOutlined />}
+								size="small"
+								type="text"
+								disabled={hasStarted}
+								onClick={() => handleEdit(record)}
+							/>
+						</Tooltip>
+					</Space>
+				);
+			},
 		},
 	];
 	return (

@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 
 import milestoneService from '@/lib/services/milestones.service';
+import { handleApiError } from '@/lib/utils/handleApi';
 import { showNotification } from '@/lib/utils/notification';
 import {
 	Milestone,
@@ -63,17 +64,19 @@ export const useMilestoneStore = create<MilestoneState>()(
 						});
 						get().filterMilestones();
 					} else {
+						// Use error message from backend response
 						showNotification.error(
 							'Error',
 							response.error || 'Failed to fetch milestones',
 						);
 					}
 				} catch (error) {
-					console.error('Error fetching milestones:', error);
-					showNotification.error(
-						'Error',
+					// Handle network/unexpected errors
+					const errorDetails = handleApiError(
+						error,
 						'An unexpected error occurred while fetching milestones',
 					);
+					showNotification.error('Error', errorDetails.message);
 				} finally {
 					set({ loading: false });
 				}
@@ -86,10 +89,13 @@ export const useMilestoneStore = create<MilestoneState>()(
 						set({ currentMilestone: response.data });
 					}
 				} catch (error) {
-					console.error('Error fetching current milestone:', error);
+					const errorDetails = handleApiError(
+						error,
+						'Error fetching current milestone',
+					);
+					console.error('Error fetching current milestone:', errorDetails);
 				}
 			},
-
 			createMilestone: async (data: MilestoneCreate) => {
 				set({ creating: true });
 				try {
@@ -100,10 +106,10 @@ export const useMilestoneStore = create<MilestoneState>()(
 							'Milestone created successfully',
 						);
 
-						// Add to milestones array
+						// Add new milestone to the top of the array
 						const newMilestone = response.data;
 						set((state) => ({
-							milestones: [...state.milestones, newMilestone],
+							milestones: [newMilestone, ...state.milestones],
 						}));
 
 						// Update filtered milestones
@@ -111,6 +117,7 @@ export const useMilestoneStore = create<MilestoneState>()(
 
 						return true;
 					} else {
+						// Use error message from backend response
 						showNotification.error(
 							'Error',
 							response.error || 'Failed to create milestone',
@@ -118,17 +125,16 @@ export const useMilestoneStore = create<MilestoneState>()(
 						return false;
 					}
 				} catch (error) {
-					console.error('Error creating milestone:', error);
-					showNotification.error(
-						'Error',
+					const errorDetails = handleApiError(
+						error,
 						'An unexpected error occurred while creating milestone',
 					);
+					showNotification.error('Error', errorDetails.message);
 					return false;
 				} finally {
 					set({ creating: false });
 				}
 			},
-
 			updateMilestone: async (id: string, data: MilestoneUpdate) => {
 				set({ updating: true });
 				try {
@@ -139,18 +145,22 @@ export const useMilestoneStore = create<MilestoneState>()(
 							'Milestone updated successfully',
 						);
 
-						// Update milestone in array
-						set((state) => ({
-							milestones: state.milestones.map((milestone) =>
-								milestone.id === id ? response.data : milestone,
-							),
-						}));
+						// Move updated milestone to the top of the array
+						set((state) => {
+							const otherMilestones = state.milestones.filter(
+								(milestone) => milestone.id !== id,
+							);
+							return {
+								milestones: [response.data, ...otherMilestones],
+							};
+						});
 
 						// Update filtered milestones
 						get().filterMilestones();
 
 						return true;
 					} else {
+						// Use error message from backend response
 						showNotification.error(
 							'Error',
 							response.error || 'Failed to update milestone',
@@ -158,11 +168,11 @@ export const useMilestoneStore = create<MilestoneState>()(
 						return false;
 					}
 				} catch (error) {
-					console.error('Error updating milestone:', error);
-					showNotification.error(
-						'Error',
+					const errorDetails = handleApiError(
+						error,
 						'An unexpected error occurred while updating milestone',
 					);
+					showNotification.error('Error', errorDetails.message);
 					return false;
 				} finally {
 					set({ updating: false });
