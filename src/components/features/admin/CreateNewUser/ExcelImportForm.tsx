@@ -51,7 +51,7 @@ type ExcelImportFormProps<
 	note: string;
 	fields: {
 		title: string;
-		width: string;
+		width?: string;
 		key: keyof T;
 		type: 'text' | 'select';
 		options?: { label: string; value: string }[];

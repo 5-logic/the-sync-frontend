@@ -1,5 +1,4 @@
 import ExcelImportForm from '@/components/features/admin/CreateNewUser/ExcelImportForm';
-import { mockLecturers } from '@/data/lecturers';
 import { Lecturer } from '@/schemas/lecturer';
 
 export default function LecturerExcelImport() {
@@ -20,7 +19,6 @@ export default function LecturerExcelImport() {
 					],
 				},
 			]}
-			mockData={mockLecturers}
 			onImport={(data) => {
 				console.log('Imported lecturers:', data);
 			}}
