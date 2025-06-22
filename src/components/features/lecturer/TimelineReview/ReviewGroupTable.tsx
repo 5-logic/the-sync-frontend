@@ -1,25 +1,41 @@
 'use client';
 
 import { Card, Table } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
 
 import { ExtendedGroup } from '@/data/group';
 
-interface Props {
+type Props = Readonly<{
 	reviewTitle: string;
 	data: ExtendedGroup[];
-}
+}>;
 
-const columns = [
-	{ title: 'Group Name', dataIndex: 'name' },
-	{ title: 'Group Code', dataIndex: 'code' },
-	{ title: 'Thesis Title', dataIndex: 'thesisTitle' },
+const columns: ColumnsType<ExtendedGroup> = [
+	{
+		title: 'Group Name',
+		dataIndex: 'name',
+	},
+	{
+		title: 'Group Code',
+		dataIndex: 'code',
+	},
+	{
+		title: 'Thesis Title',
+		dataIndex: 'thesisTitle',
+	},
 	{
 		title: 'Supervisor',
 		dataIndex: 'supervisors',
 		render: (supervisors: string[]) =>
-			supervisors.length > 0
-				? supervisors.map((sup, idx) => <div key={idx}>{sup}</div>)
-				: '-',
+			supervisors.length > 0 ? (
+				<div>
+					{supervisors.map((sup) => (
+						<div key={sup}>{sup}</div>
+					))}
+				</div>
+			) : (
+				'-'
+			),
 	},
 ];
 
