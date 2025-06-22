@@ -1,10 +1,10 @@
-import { Typography } from 'antd';
+import { Space, Typography } from 'antd';
 
 const { Title, Paragraph } = Typography;
 
 export default function ThesisHeader() {
 	return (
-		<div style={{ marginBottom: 24 }}>
+		<Space direction="vertical" size={0}>
 			<Title level={2} style={{ marginBottom: '4px' }}>
 				Thesis Detail
 			</Title>
@@ -12,6 +12,6 @@ export default function ThesisHeader() {
 				View detail and manage Thesis, registration windows, and
 				capstone-specific rules
 			</Paragraph>
-		</div>
+		</Space>
 	);
 }
