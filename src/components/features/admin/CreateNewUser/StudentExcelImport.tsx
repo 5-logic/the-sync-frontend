@@ -7,11 +7,12 @@ import { Student } from '@/schemas/student';
 export default function StudentExcelImport() {
 	return (
 		<ExcelImportForm<Student>
-			note="Please fill the template with correct user info including Name, Email, Student ID, and Gender (Male/Female)"
+			note="Please fill the template including Student ID, Full Name, Email, Phone Number, and Gender."
 			fields={[
+				{ title: 'Student ID', key: 'studentId', type: 'text' },
 				{ title: 'Full Name', key: 'fullName', type: 'text' },
 				{ title: 'Email', key: 'email', type: 'text' },
-				{ title: 'Student ID', key: 'studentId', type: 'text' },
+				{ title: 'Phone Number', key: 'phoneNumber', type: 'text' },
 				{
 					title: 'Gender',
 					key: 'gender',

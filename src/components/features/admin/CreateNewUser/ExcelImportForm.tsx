@@ -228,15 +228,6 @@ export default function ExcelImportForm<T extends { id: string }>({
 		);
 	};
 
-	// Get selected semester and major info
-	const selectedSemesterInfo = selectedSemester
-		? semesters.find((s) => s.id === selectedSemester)
-		: null;
-
-	const selectedMajorInfo = selectedMajor
-		? majors.find((m) => m.id === selectedMajor)
-		: null;
-
 	// Calculate column span based on required fields
 	const getColumnSpan = () => {
 		const requiredFields = [requireSemester, requireMajor].filter(
@@ -375,9 +366,7 @@ export default function ExcelImportForm<T extends { id: string }>({
 										{availableSemesters.map((semester) => (
 											<Select.Option key={semester.id} value={semester.id}>
 												<Space>
-													<span>
-														{semester.name} ({semester.code})
-													</span>
+													<span>{semester.name}</span>
 													{STATUS_TAG[semester.status]}
 												</Space>
 											</Select.Option>
@@ -422,34 +411,6 @@ export default function ExcelImportForm<T extends { id: string }>({
 						)}
 					</Row>
 				</Form>
-			)}
-
-			{/* Show selected semester and major info */}
-			{(selectedSemester || selectedMajor) && (
-				<Alert
-					type="info"
-					showIcon
-					message={
-						<Space direction="vertical" size={4}>
-							{selectedSemesterInfo && (
-								<Space>
-									<Typography.Text>
-										Selected Semester:{' '}
-										<strong>{selectedSemesterInfo.name}</strong> (
-										{selectedSemesterInfo.code})
-									</Typography.Text>
-									{STATUS_TAG[selectedSemesterInfo.status]}
-								</Space>
-							)}
-							{selectedMajorInfo && (
-								<Typography.Text>
-									Selected Major: <strong>{selectedMajorInfo.name}</strong>
-								</Typography.Text>
-							)}
-						</Space>
-					}
-					style={{ marginBottom: 0 }}
-				/>
 			)}
 
 			<Card
@@ -518,7 +479,7 @@ export default function ExcelImportForm<T extends { id: string }>({
 						: (requireSemester && !selectedSemester) ||
 							  (requireMajor && !selectedMajor)
 							? 'Please complete all required selections for import'
-							: 'Supports .xlsx files up to 5MB'}
+							: 'Supports .xlsx files up to 20MB'}
 				</p>
 			</Dragger>
 
@@ -532,21 +493,8 @@ export default function ExcelImportForm<T extends { id: string }>({
 								<Space>
 									<Typography.Text strong>
 										{data.length} users data imported successfully
-										{selectedSemesterInfo && (
-											<>
-												{' '}
-												for <strong>{selectedSemesterInfo.name}</strong>
-											</>
-										)}
 									</Typography.Text>
-									{selectedSemesterInfo &&
-										STATUS_TAG[selectedSemesterInfo.status]}
 								</Space>
-								{selectedMajorInfo && (
-									<Typography.Text>
-										Major: <strong>{selectedMajorInfo.name}</strong>
-									</Typography.Text>
-								)}
 							</Space>
 						}
 						style={{ borderColor: '#bbf7d0', color: '#15803d' }}

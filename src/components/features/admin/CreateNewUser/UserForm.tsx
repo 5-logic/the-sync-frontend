@@ -239,9 +239,7 @@ const UserForm = ({ formType }: UserFormProps) => {
 									{availableSemesters.map((semester) => (
 										<Option key={semester.id} value={semester.id}>
 											<Space>
-												<span>
-													{semester.name} ({semester.code})
-												</span>
+												<span>{semester.name}</span>
 												{STATUS_TAG[semester.status]}
 											</Space>
 										</Option>
