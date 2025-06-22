@@ -2,14 +2,20 @@
 
 import { CheckCircleFilled, ClockCircleOutlined } from '@ant-design/icons';
 import { Card, Col, Row, Select, Space, Typography } from 'antd';
+import { useState } from 'react';
 
+import ProjectMilestone from '@/components/features/lecturer/TimelineReview/ProjectMilestone';
+import ReviewGroupTable from '@/components/features/lecturer/TimelineReview/ReviewGroupTable';
 import TimelineStats from '@/components/features/lecturer/TimelineReview/TimelineStats';
+import { mockReviewGroups } from '@/data/group';
 import { timeline } from '@/data/timeline';
 
 const { Title, Text, Paragraph } = Typography;
 const { Option } = Select;
 
 export default function TimelineReview() {
+	const [selectedReview, setSelectedReview] = useState<string | null>(null);
+
 	return (
 		<div style={{ padding: 24 }}>
 			<Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
@@ -59,15 +65,30 @@ export default function TimelineReview() {
 							color = '#ccc';
 						}
 
+						const isSelected = selectedReview === item.title;
+
 						return (
-							<Col key={item.title} style={{ textAlign: 'center', flex: 1 }}>
+							<Col
+								key={item.title}
+								style={{
+									textAlign: 'center',
+									flex: 1,
+									cursor: 'pointer',
+									backgroundColor: isSelected ? '#f0f5ff' : 'transparent',
+									borderRadius: 8,
+									padding: 8,
+									transition: 'background 0.3s',
+								}}
+								onClick={() => setSelectedReview(item.title)}
+							>
 								<Space direction="vertical" size={4} align="center">
 									{statusIcon}
-									<Text>{item.title}</Text>
+									<Text strong={isSelected}>{item.title}</Text>
 									<Text type="secondary" style={{ fontSize: 12 }}>
 										{item.dateRange}
 									</Text>
 								</Space>
+
 								{index >= 0 && (
 									<div
 										style={{
@@ -85,51 +106,14 @@ export default function TimelineReview() {
 			</Card>
 
 			<TimelineStats />
+			<ProjectMilestone />
 
-			<Card>
-				<Title level={5}>Project Milestones</Title>
-				<div style={{ display: 'flex', gap: 24 }}>
-					<div>
-						<span
-							style={{
-								display: 'inline-block',
-								width: 12,
-								height: 12,
-								borderRadius: '50%',
-								backgroundColor: '#52c41a',
-								marginRight: 8,
-							}}
-						/>
-						<Text>Completed</Text>
-					</div>
-					<div>
-						<span
-							style={{
-								display: 'inline-block',
-								width: 12,
-								height: 12,
-								borderRadius: '50%',
-								backgroundColor: '#1890ff',
-								marginRight: 8,
-							}}
-						/>
-						<Text>In Progress</Text>
-					</div>
-					<div>
-						<span
-							style={{
-								display: 'inline-block',
-								width: 12,
-								height: 12,
-								borderRadius: '50%',
-								backgroundColor: '#d9d9d9',
-								marginRight: 8,
-							}}
-						/>
-						<Text>Upcoming</Text>
-					</div>
-				</div>
-			</Card>
+			{selectedReview && mockReviewGroups[selectedReview] && (
+				<ReviewGroupTable
+					reviewTitle={selectedReview}
+					data={mockReviewGroups[selectedReview]}
+				/>
+			)}
 		</div>
 	);
 }
