@@ -40,7 +40,7 @@ class StudentService {
 		createStudentDtos: StudentCreate[],
 	): Promise<ApiResponse<Student[]>> {
 		const response = await httpClient.post<ApiResponse<Student[]>>(
-			`${this.baseUrl}/batch`,
+			`${this.baseUrl}/import`,
 			createStudentDtos,
 		);
 		return response.data;
