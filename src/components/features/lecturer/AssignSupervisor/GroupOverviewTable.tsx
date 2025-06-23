@@ -1,5 +1,3 @@
-'use client';
-
 import { Table, Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 

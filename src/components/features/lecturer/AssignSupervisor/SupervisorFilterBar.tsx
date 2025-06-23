@@ -1,5 +1,3 @@
-'use client';
-
 import { SearchOutlined } from '@ant-design/icons';
 import { Col, Input, Row, Select } from 'antd';
 
