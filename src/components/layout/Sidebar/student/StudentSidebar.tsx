@@ -15,6 +15,8 @@ import { usePathname } from 'next/navigation';
 import { useNavigationLoader } from '@/hooks';
 import { DASHBOARD_PATHS } from '@/lib/auth/config/auth-constants';
 
+import { STUDENT_MENU_KEYS, getSelectedMenuKey } from './StudentSidebar.config';
+
 export default function StudentSidebar() {
 	const pathname = usePathname();
 	const { isNavigating, targetPath, navigateWithLoading } =
@@ -38,67 +40,68 @@ export default function StudentSidebar() {
 			disabled: isNavigating && targetPath !== DASHBOARD_PATHS.STUDENT,
 		},
 		{
-			key: '/student/list-thesis',
-			icon: isMenuItemLoading('/student/list-thesis') ? (
+			key: STUDENT_MENU_KEYS.LIST_THESIS,
+			icon: isMenuItemLoading(STUDENT_MENU_KEYS.LIST_THESIS) ? (
 				<LoadingOutlined spin />
 			) : (
 				<BookOutlined />
 			),
 			label: 'List Thesis',
-			onClick: () => navigateWithLoading('/student/list-thesis'),
-			disabled: isNavigating && targetPath !== '/student/list-thesis',
+			onClick: () => navigateWithLoading(STUDENT_MENU_KEYS.LIST_THESIS),
+			disabled: isNavigating && targetPath !== STUDENT_MENU_KEYS.LIST_THESIS,
 		},
 		{
-			key: '/student/join-group',
-			icon: isMenuItemLoading('/student/join-group') ? (
+			key: STUDENT_MENU_KEYS.JOIN_GROUP,
+			icon: isMenuItemLoading(STUDENT_MENU_KEYS.JOIN_GROUP) ? (
 				<LoadingOutlined spin />
 			) : (
 				<UserAddOutlined />
 			),
 			label: 'Form / Join Group',
-			onClick: () => navigateWithLoading('/student/join-group'),
-			disabled: isNavigating && targetPath !== '/student/join-group',
+			onClick: () => navigateWithLoading(STUDENT_MENU_KEYS.JOIN_GROUP),
+			disabled: isNavigating && targetPath !== STUDENT_MENU_KEYS.JOIN_GROUP,
 		},
 		{
-			key: '/student/register-thesis',
-			icon: isMenuItemLoading('/student/register-thesis') ? (
+			key: STUDENT_MENU_KEYS.REGISTER_THESIS,
+			icon: isMenuItemLoading(STUDENT_MENU_KEYS.REGISTER_THESIS) ? (
 				<LoadingOutlined spin />
 			) : (
 				<FileTextOutlined />
 			),
 			label: 'Register Thesis',
-			onClick: () => navigateWithLoading('/student/register-thesis'),
-			disabled: isNavigating && targetPath !== '/student/register-thesis',
+			onClick: () => navigateWithLoading(STUDENT_MENU_KEYS.REGISTER_THESIS),
+			disabled:
+				isNavigating && targetPath !== STUDENT_MENU_KEYS.REGISTER_THESIS,
 		},
 		{
-			key: '/student/group-dashboard',
-			icon: isMenuItemLoading('/student/group-dashboard') ? (
+			key: STUDENT_MENU_KEYS.GROUP_DASHBOARD,
+			icon: isMenuItemLoading(STUDENT_MENU_KEYS.GROUP_DASHBOARD) ? (
 				<LoadingOutlined spin />
 			) : (
 				<TeamOutlined />
 			),
 			label: 'Group Dashboard',
-			onClick: () => navigateWithLoading('/student/group-dashboard'),
-			disabled: isNavigating && targetPath !== '/student/group-dashboard',
+			onClick: () => navigateWithLoading(STUDENT_MENU_KEYS.GROUP_DASHBOARD),
+			disabled:
+				isNavigating && targetPath !== STUDENT_MENU_KEYS.GROUP_DASHBOARD,
 		},
 		{
-			key: '/student/track-progress',
-			icon: isMenuItemLoading('/student/track-progress') ? (
+			key: STUDENT_MENU_KEYS.TRACK_PROGRESS,
+			icon: isMenuItemLoading(STUDENT_MENU_KEYS.TRACK_PROGRESS) ? (
 				<LoadingOutlined spin />
 			) : (
 				<BarChartOutlined />
 			),
 			label: 'Tracking Progress',
-			onClick: () => navigateWithLoading('/student/track-progress'),
-			disabled: isNavigating && targetPath !== '/student/track-progress',
+			onClick: () => navigateWithLoading(STUDENT_MENU_KEYS.TRACK_PROGRESS),
+			disabled: isNavigating && targetPath !== STUDENT_MENU_KEYS.TRACK_PROGRESS,
 		},
 	];
-
 	return (
 		<Menu
 			theme="light"
 			mode="inline"
-			selectedKeys={[pathname]}
+			selectedKeys={[getSelectedMenuKey(pathname)]}
 			items={studentMenuItems}
 			style={{
 				border: 'none',
