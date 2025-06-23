@@ -2,7 +2,6 @@
 
 import { Button, Space, Table, Tag } from 'antd';
 import { Badge, Col, Row, Typography } from 'antd';
-import Link from 'next/link';
 import { useState } from 'react';
 
 import SupervisorFilterBar from '@/components/features/lecturer/AssignSupervisor/SupervisorFilterBar';
@@ -126,11 +125,6 @@ export default function AssignSupervisors() {
 						Manage supervisor assignments for thesis groups
 					</Text>
 				</div>
-				<Link href="/lecturer">
-					<Text className="cursor-pointer hover:text-blue-600">
-						← Back to Dashboard
-					</Text>
-				</Link>
 			</div>
 			<SupervisorFilterBar
 				search={search}
@@ -147,7 +141,7 @@ export default function AssignSupervisors() {
 					showTotal: (total, range) =>
 						`${range[0]}-${range[1]} of ${total} items`,
 					showSizeChanger: true,
-					pageSizeOptions: ['5', '10', '20', '50'],
+					pageSizeOptions: ['10', '20', '50', '100'],
 					defaultPageSize: 10,
 				}}
 				scroll={{ x: 'max-content' }}
