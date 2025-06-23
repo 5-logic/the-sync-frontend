@@ -48,15 +48,8 @@ const mockGroups: Group[] = [
 ];
 
 // ===== Metadata bổ sung =====
-const groupMetaMap: Record<
-	string,
-	{
-		thesisTitle: string;
-		supervisors: string[];
-		members: number;
-		status: 'Finalized' | 'Incomplete' | 'Unassigned';
-	}
-> = {
+type GroupMeta = Omit<ExtendedGroup, keyof Group>;
+const metaData: Record<string, GroupMeta> = {
 	g1: {
 		thesisTitle: 'AI-powered Healthcare System',
 		supervisors: ['Dr. Sarah Johnson', 'Dr. Davis'],
@@ -83,23 +76,16 @@ const groupMetaMap: Record<
 	},
 };
 
-// ===== Dữ liệu mở rộng cho Assigned Supervisor =====
-export const extendedGroups: ExtendedGroup[] = mockGroups.map((group) => {
-	const meta = groupMetaMap[group.id] || {
+// ===== Hàm merge gọn gàng (tránh duplication) =====
+export const extendedGroups: ExtendedGroup[] = mockGroups.map((group) => ({
+	...group,
+	...(metaData[group.id] ?? {
 		thesisTitle: 'Untitled Thesis',
 		supervisors: [],
 		members: 0,
 		status: 'Unassigned',
-	};
-
-	return {
-		...group,
-		thesisTitle: meta.thesisTitle,
-		supervisors: meta.supervisors,
-		members: meta.members,
-		status: meta.status,
-	};
-});
+	}),
+}));
 
 // ===== Dữ liệu chia theo đợt review =====
 export const mockReviewGroups: Record<string, ExtendedGroup[]> = {
@@ -110,5 +96,4 @@ export const mockReviewGroups: Record<string, ExtendedGroup[]> = {
 	'Final Review': [extendedGroups[3]],
 };
 
-// ===== Export gốc =====
 export default mockGroups;
