@@ -1,27 +1,18 @@
 'use client';
 
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
-import { Button, Modal, Space, Table, Tag, Tooltip } from 'antd';
+import { Button, Modal, Space, Table, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 import { useState } from 'react';
 
 import { FormLabel } from '@/components/common/FormLabel';
 import EditMilestoneDialog from '@/components/features/admin/MilestoneManagement/EditMilestoneDialog';
+import { SEMESTER_STATUS_TAGS } from '@/lib/constants/semester';
 import { formatDate } from '@/lib/utils/dateFormat';
-import { SemesterStatus } from '@/schemas/_enums';
 import { Milestone } from '@/schemas/milestone';
 import { Semester } from '@/schemas/semester';
 import { useMilestoneStore } from '@/store/useMilestoneStore';
-
-// Status tag mapping
-const STATUS_TAG: Record<SemesterStatus, JSX.Element> = {
-	NotYet: <Tag color="blue">Not Yet</Tag>,
-	Preparing: <Tag color="orange">Preparing</Tag>,
-	Picking: <Tag color="purple">Picking</Tag>,
-	Ongoing: <Tag color="green">Ongoing</Tag>,
-	End: <Tag color="gray">End</Tag>,
-};
 
 type Props = Readonly<{
 	data: Milestone[];
@@ -111,7 +102,7 @@ export default function MilestoneTable({
 						}}
 					>
 						<span>{semester.name}</span>
-						{STATUS_TAG[semester.status]}
+						{SEMESTER_STATUS_TAGS[semester.status]}
 					</div>
 				);
 			},

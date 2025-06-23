@@ -1,6 +1,6 @@
 'use client';
 
-import { Col, DatePicker, Form, Input, Row, Select, Tag } from 'antd';
+import { Col, DatePicker, Form, Input, Row, Select } from 'antd';
 import { FormInstance } from 'antd/es/form';
 import dayjs, { Dayjs } from 'dayjs';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
@@ -8,8 +8,8 @@ import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import { useEffect } from 'react';
 
 import { FormLabel } from '@/components/common/FormLabel';
+import { SEMESTER_STATUS_TAGS } from '@/lib/constants/semester';
 import { DATE_FORMAT } from '@/lib/utils/dateFormat';
-import { SemesterStatus } from '@/schemas/_enums';
 import { Milestone } from '@/schemas/milestone';
 import { Semester } from '@/schemas/semester';
 
@@ -17,15 +17,6 @@ dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
 
 const { RangePicker } = DatePicker;
-
-// Status tag mapping
-const STATUS_TAG: Record<SemesterStatus, JSX.Element> = {
-	NotYet: <Tag color="blue">Not Yet</Tag>,
-	Preparing: <Tag color="orange">Preparing</Tag>,
-	Picking: <Tag color="purple">Picking</Tag>,
-	Ongoing: <Tag color="green">Ongoing</Tag>,
-	End: <Tag color="gray">End</Tag>,
-};
 
 type Props = Readonly<{
 	form: FormInstance;
@@ -255,7 +246,7 @@ export default function MilestoneForm({
 												}}
 											>
 												<span>{semester.name}</span>
-												{STATUS_TAG[semester.status]}
+												{SEMESTER_STATUS_TAGS[semester.status]}
 											</div>
 										</Select.Option>
 									))}
