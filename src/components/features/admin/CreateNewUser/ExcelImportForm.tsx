@@ -606,6 +606,26 @@ export default function ExcelImportForm<
 		},
 	];
 
+	// Helper function to validate file type
+	const isExcelFile = (file: RcFile): boolean => {
+		const validMimeTypes = [
+			'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+			'application/vnd.ms-excel',
+		];
+
+		const validExtensions = ['.xlsx', '.xls'];
+
+		return (
+			validMimeTypes.includes(file.type) ||
+			validExtensions.some((ext) => file.name.endsWith(ext))
+		);
+	};
+
+	// Helper function to validate file size
+	const isValidFileSize = (file: RcFile, maxSizeMB = 100): boolean => {
+		return file.size / 1024 / 1024 < maxSizeMB;
+	};
+
 	return (
 		<Space direction="vertical" size="middle" style={{ width: '100%' }}>
 			{requireSemester && !semesterLoading && !hasAvailableSemesters && (
@@ -767,14 +787,8 @@ export default function ExcelImportForm<
 			<Dragger
 				name="file"
 				beforeUpload={(file) => {
-					const isExcel =
-						file.type ===
-							'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
-						file.type === 'application/vnd.ms-excel' ||
-						file.name.endsWith('.xlsx') ||
-						file.name.endsWith('.xls');
-
-					const isLt100MB = file.size / 1024 / 1024 < 100;
+					const isExcel = isExcelFile(file);
+					const isLt100MB = isValidFileSize(file);
 
 					if (!isExcel) {
 						showNotification.warning(
