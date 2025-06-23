@@ -9,6 +9,8 @@ import Header from '@/components/features/lecturer/AssignSupervisor/Header';
 import SupervisorFilterBar from '@/components/features/lecturer/AssignSupervisor/SupervisorFilterBar';
 import { ExtendedGroup, extendedGroups } from '@/data/group';
 
+import { baseColumns } from './SupervisorColumns';
+
 export default function AssignSupervisors() {
 	const [search, setSearch] = useState('');
 	const [selectedGroup, setSelectedGroup] = useState<ExtendedGroup | null>(
@@ -28,6 +30,24 @@ export default function AssignSupervisors() {
 			statusFilter === 'All' || item.status === statusFilter;
 		return matchesSearch && matchesStatus;
 	});
+
+	const columns = [
+		...baseColumns,
+		{
+			title: 'Action',
+			render: (_: unknown, record: ExtendedGroup) => (
+				<Button
+					type="primary"
+					onClick={() => {
+						setSelectedGroup(record);
+						setModalOpen(true);
+					}}
+				>
+					{record?.status === 'Finalized' ? 'Change' : 'Assign'}
+				</Button>
+			),
+		},
+	];
 
 	const supervisorOptions = Array.from(
 		new Set(
@@ -50,25 +70,7 @@ export default function AssignSupervisors() {
 				onStatusChange={setStatusFilter}
 			/>
 
-			<GroupOverviewTable
-				data={filteredData}
-				extraColumns={[
-					{
-						title: 'Action',
-						render: (_, record) => (
-							<Button
-								type="primary"
-								onClick={() => {
-									setSelectedGroup(record);
-									setModalOpen(true);
-								}}
-							>
-								{record.status === 'Finalized' ? 'Change' : 'Assign'}
-							</Button>
-						),
-					},
-				]}
-			/>
+			<GroupOverviewTable data={filteredData} columns={columns} />
 
 			<AssignSupervisorModal
 				open={modalOpen}
