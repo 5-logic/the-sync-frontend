@@ -99,6 +99,7 @@ export default function EditMilestoneDialog({
 			okButtonProps={{
 				disabled: isEditDisabled,
 			}}
+			centered
 		>
 			{(milestoneHasStarted || semesterNotOngoing) && (
 				<div
