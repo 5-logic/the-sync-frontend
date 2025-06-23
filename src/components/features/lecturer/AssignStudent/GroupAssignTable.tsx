@@ -5,15 +5,12 @@ import { Button } from 'antd';
 
 import type { ExtendedGroup } from '@/data/group';
 
-interface GroupAssignTableProps {
+interface Props {
 	data: ReadonlyArray<ExtendedGroup>;
 	onView?: (group: ExtendedGroup) => void;
 }
 
-export default function GroupAssignTable({
-	data,
-	onView,
-}: Readonly<GroupAssignTableProps>) {
+export default function GroupAssignTable({ data, onView }: Readonly<Props>) {
 	const columns = [
 		...baseColumns,
 		{
@@ -22,7 +19,9 @@ export default function GroupAssignTable({
 				<Button
 					type="link"
 					icon={<EyeOutlined />}
-					onClick={() => onView?.(record)}
+					onClick={() => {
+						onView?.(record);
+					}}
 				/>
 			),
 		},

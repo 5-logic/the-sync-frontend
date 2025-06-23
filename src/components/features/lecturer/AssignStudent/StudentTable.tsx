@@ -10,7 +10,8 @@ interface Props {
 	data: ReadonlyArray<Student>;
 }
 
-export default function StudentTable(props: Readonly<Props>) {
+// ✅ Mark props as readonly
+export default function StudentTable({ data }: Readonly<Props>) {
 	const columns: ColumnsType<Student> = [
 		{
 			title: 'Name',
@@ -41,7 +42,7 @@ export default function StudentTable(props: Readonly<Props>) {
 		<Table
 			rowKey="id"
 			columns={columns}
-			dataSource={props.data}
+			dataSource={data}
 			pagination={{
 				showTotal: (total, range) =>
 					`${range[0]}-${range[1]} of ${total} items`,

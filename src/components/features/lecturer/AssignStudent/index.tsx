@@ -68,7 +68,9 @@ export default function AssignStudentPage() {
 						<Button
 							type="link"
 							icon={<EyeOutlined />}
-							onClick={() => onView && onView(record)}
+							onClick={() => {
+								onView?.(record);
+							}}
 						/>
 					</Tooltip>
 				),
