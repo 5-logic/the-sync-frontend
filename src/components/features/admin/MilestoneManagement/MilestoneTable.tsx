@@ -1,7 +1,11 @@
 'use client';
 
-import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
-import { Button, Modal, Space, Table, Tooltip } from 'antd';
+import {
+	DeleteOutlined,
+	EditOutlined,
+	ExclamationCircleOutlined,
+} from '@ant-design/icons';
+import { Alert, Button, Modal, Space, Table, Tooltip, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 import { useState } from 'react';
@@ -38,25 +42,44 @@ export default function MilestoneTable({
 		setSelectedMilestone(milestone);
 		setEditDialogOpen(true);
 	};
-
 	// Handle delete milestone with confirmation
 	const handleDelete = (milestone: Milestone) => {
+		const { Text, Title } = Typography;
+
 		Modal.confirm({
-			title: 'Delete Milestone',
+			title: (
+				<Space>
+					<Title level={4} style={{ margin: 0 }}>
+						Delete Milestone
+					</Title>
+				</Space>
+			),
 			content: (
-				<div>
-					<p>Are you sure you want to delete this milestone?</p>
-					<p>
-						<strong>Milestone:</strong> {milestone.name}
-					</p>
-					<p>
-						<strong>Duration:</strong> {formatDate(milestone.startDate)} -{' '}
-						{formatDate(milestone.endDate)}
-					</p>
-					<p style={{ color: '#ff4d4f', marginTop: 12 }}>
-						⚠️ This action cannot be undone.
-					</p>
-				</div>
+				<Space direction="vertical" size="middle" style={{ width: '100%' }}>
+					<Text>Are you sure you want to delete this milestone?</Text>
+
+					<Space direction="vertical" size="small" style={{ width: '100%' }}>
+						<div>
+							<Text strong>Milestone: </Text>
+							<Text>{milestone.name}</Text>
+						</div>
+						<div>
+							<Text strong>Duration: </Text>
+							<Text>
+								{formatDate(milestone.startDate)} -{' '}
+								{formatDate(milestone.endDate)}
+							</Text>
+						</div>
+					</Space>
+
+					<Alert
+						message="This action cannot be undone."
+						type="warning"
+						icon={<ExclamationCircleOutlined />}
+						showIcon
+						style={{ marginTop: 8 }}
+					/>
+				</Space>
 			),
 			okText: 'Delete',
 			okType: 'danger',
@@ -64,6 +87,8 @@ export default function MilestoneTable({
 			onOk: async () => {
 				return await deleteMilestone(milestone.id);
 			},
+			centered: true,
+			width: 480,
 		});
 	};
 
@@ -84,7 +109,7 @@ export default function MilestoneTable({
 			title: <FormLabel text="Milestone Name" isBold />,
 			dataIndex: 'name',
 			key: 'name',
-			width: '20%',
+			width: '25%',
 		},
 		{
 			title: <FormLabel text="Semester" isBold />,
@@ -106,33 +131,36 @@ export default function MilestoneTable({
 					</div>
 				);
 			},
-			width: '20%',
+			width: '23%',
 		},
 		{
 			title: <FormLabel text="Start Date" isBold />,
 			dataIndex: 'startDate',
 			key: 'startDate',
 			render: (date: Date) => formatDate(date),
-			width: '15%',
+			width: '12%',
+			align: 'right',
 		},
 		{
 			title: <FormLabel text="End Date" isBold />,
 			dataIndex: 'endDate',
 			key: 'endDate',
 			render: (date: Date) => formatDate(date),
-			width: '15%',
+			width: '12%',
+			align: 'right',
 		},
 		{
 			title: <FormLabel text="Created Date" isBold />,
 			dataIndex: 'createdAt',
 			key: 'createdAt',
 			render: (date: Date) => formatDate(date),
-			width: '15%',
+			width: '12%',
+			align: 'right',
 		},
 		{
 			title: <FormLabel text="Actions" isBold />,
 			key: 'actions',
-			width: '15%',
+			width: '16%',
 			align: 'center',
 			render: (_, record: Milestone) => {
 				const hasStarted = dayjs(record.startDate).isBefore(dayjs(), 'day');
