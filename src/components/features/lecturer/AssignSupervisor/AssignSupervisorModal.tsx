@@ -79,10 +79,22 @@ export default function AssignSupervisorModal({
 						{
 							validator(_, value) {
 								const sup1 = form.getFieldValue('supervisor1');
-								if (!value || value !== sup1) return Promise.resolve();
-								return Promise.reject(
-									new Error('Supervisor 2 must be different from Supervisor 1'),
-								);
+
+								if (!value) {
+									return Promise.reject(
+										new Error('Please select at least one supervisor'),
+									);
+								}
+
+								if (value === sup1) {
+									return Promise.reject(
+										new Error(
+											'Supervisor 2 must be different from Supervisor 1',
+										),
+									);
+								}
+
+								return Promise.resolve();
 							},
 						},
 					]}
