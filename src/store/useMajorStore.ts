@@ -40,6 +40,9 @@ interface MajorState {
 	// Utilities
 	reset: () => void;
 	getMajorById: (id: string) => Major | undefined;
+
+	// Index signature for Zustand compatibility
+	[key: string]: unknown;
 }
 
 // Filter function for majors

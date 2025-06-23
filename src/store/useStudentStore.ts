@@ -55,6 +55,9 @@ interface StudentState {
 	// Utilities
 	reset: () => void;
 	getStudentById: (id: string) => Student | undefined;
+
+	// Index signature for Zustand compatibility
+	[key: string]: unknown;
 }
 
 // Filter function for students

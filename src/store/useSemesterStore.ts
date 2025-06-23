@@ -50,6 +50,9 @@ interface SemesterState {
 	reset: () => void;
 	getSemesterById: (id: string) => Semester | undefined;
 	getSemesterByCode: (code: string) => Semester | undefined;
+
+	// Index signature for Zustand compatibility
+	[key: string]: unknown;
 }
 
 // Filter function for semesters
