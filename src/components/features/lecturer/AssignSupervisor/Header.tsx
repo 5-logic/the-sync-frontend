@@ -1,39 +1,35 @@
 'use client';
 
-import { Badge, Col, Row, Typography } from 'antd';
+import { Badge, Typography } from 'antd';
+import React from 'react';
 
-const { Title, Text } = Typography;
+const { Title, Paragraph } = Typography;
 
-interface Props {
-	readonly title: string;
-	readonly description?: string;
-	readonly badgeText?: string;
-	readonly badgeColor?: string;
-}
+type Props = {
+	title: string;
+	description?: string;
+	badgeText?: string;
+};
 
-export default function PageHeader({
-	title,
-	description,
-	badgeText,
-	badgeColor = 'gold',
-}: Props) {
+export default function Header({ title, description, badgeText }: Props) {
 	return (
-		<div className="flex justify-between items-center mb-6">
-			<div>
-				<Row align="middle" gutter={12} className="mb-2">
-					<Col>
-						<Title level={2} style={{ marginBottom: 0 }}>
-							{title}
-						</Title>
-					</Col>
-					{badgeText && (
-						<Col>
-							<Badge count={badgeText} color={badgeColor} />
-						</Col>
-					)}
-				</Row>
-				{description && <Text type="secondary">{description}</Text>}
-			</div>
+		<div>
+			<Title level={2} style={{ marginBottom: '4px' }}>
+				{title}
+				{badgeText && (
+					<Badge
+						count={badgeText}
+						color="gold"
+						style={{ marginLeft: 12, verticalAlign: 'middle' }}
+					/>
+				)}
+			</Title>
+
+			{description && (
+				<Paragraph type="secondary" style={{ marginBottom: 0 }}>
+					{description}
+				</Paragraph>
+			)}
 		</div>
 	);
 }
