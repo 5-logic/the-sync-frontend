@@ -6,10 +6,9 @@ import { useState } from 'react';
 import AssignSupervisorModal from '@/components/features/lecturer/AssignSupervisor/AssignSupervisorModal';
 import GroupOverviewTable from '@/components/features/lecturer/AssignSupervisor/GroupOverviewTable';
 import Header from '@/components/features/lecturer/AssignSupervisor/Header';
+import { baseColumns } from '@/components/features/lecturer/AssignSupervisor/SupervisorColumns';
 import SupervisorFilterBar from '@/components/features/lecturer/AssignSupervisor/SupervisorFilterBar';
 import { ExtendedGroup, extendedGroups } from '@/data/group';
-
-import { baseColumns } from './SupervisorColumns';
 
 export default function AssignSupervisors() {
 	const [search, setSearch] = useState('');
