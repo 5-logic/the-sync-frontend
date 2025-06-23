@@ -3,6 +3,7 @@
 import { Card, Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 
+import { TablePagination } from '@/components/common/TablePagination';
 import { ExtendedGroup } from '@/data/group';
 
 type Props = Readonly<{
@@ -46,13 +47,7 @@ export default function ReviewGroupTable({ reviewTitle, data }: Props) {
 				dataSource={data}
 				columns={columns}
 				rowKey="code"
-				pagination={{
-					showTotal: (total, range) =>
-						`${range[0]}-${range[1]} of ${total} items`,
-					showSizeChanger: true,
-					pageSizeOptions: ['10', '20', '50', '100'],
-					defaultPageSize: 10,
-				}}
+				pagination={TablePagination}
 			/>
 		</Card>
 	);
