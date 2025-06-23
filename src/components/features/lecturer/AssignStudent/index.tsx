@@ -15,15 +15,13 @@ import { mockStudents } from '@/data/student';
 export default function AssignStudentPage() {
 	const [groupSearch] = useState('');
 
-	const filteredGroups = useMemo(() => {
-		return extendedGroups.filter((group) => {
-			const searchText = groupSearch.toLowerCase();
-			return (
-				group.name.toLowerCase().includes(searchText) ||
-				group.thesisTitle.toLowerCase().includes(searchText)
-			);
-		});
-	}, [groupSearch]);
+	const filteredData = extendedGroups.filter((item) => {
+		const searchText = groupSearch.toLowerCase();
+		const matchesSearch = [item.name, item.thesisTitle].some((field) =>
+			field.toLowerCase().includes(searchText),
+		);
+		return matchesSearch;
+	});
 
 	const [studentSearch, setStudentSearch] = useState('');
 	const [studentMajor, setStudentMajor] = useState('All');
@@ -80,8 +78,9 @@ export default function AssignStudentPage() {
 				badgeText="Moderator Only"
 			/>
 
+			{/*Thesis Groups  */}
 			<Card title="Thesis Groups">
-				<GroupOverviewTable data={filteredGroups} columns={groupColumns} />
+				<GroupOverviewTable data={filteredData} columns={groupColumns} />
 			</Card>
 
 			<Card title="Student List">
