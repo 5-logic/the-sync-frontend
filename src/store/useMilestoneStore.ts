@@ -14,20 +14,20 @@ interface MilestoneState {
 	// Data
 	milestones: Milestone[];
 	currentMilestone: Milestone | null;
-	filteredMilestones: Milestone[];
-	// Loading states
+	filteredMilestones: Milestone[]; // Loading states
 	loading: boolean;
 	creating: boolean;
 	updating: boolean;
+	deleting: boolean;
 
 	// UI states
 	selectedSemesterId: string | null;
-	searchText: string;
-	// Actions
+	searchText: string; // Actions
 	fetchMilestones: () => Promise<void>;
 	fetchCurrentMilestone: () => Promise<void>;
 	createMilestone: (data: MilestoneCreate) => Promise<boolean>;
 	updateMilestone: (id: string, data: MilestoneUpdate) => Promise<boolean>;
+	deleteMilestone: (id: string) => Promise<boolean>;
 
 	// Filters
 	setSelectedSemesterId: (semesterId: string | null) => void;
@@ -49,6 +49,7 @@ export const useMilestoneStore = create<MilestoneState>()(
 			loading: false,
 			creating: false,
 			updating: false,
+			deleting: false,
 			selectedSemesterId: null,
 			searchText: '',
 
@@ -179,6 +180,47 @@ export const useMilestoneStore = create<MilestoneState>()(
 				}
 			},
 
+			deleteMilestone: async (id: string) => {
+				set({ deleting: true });
+				try {
+					const response = await milestoneService.delete(id);
+					if (response.success) {
+						showNotification.success(
+							'Success',
+							'Milestone deleted successfully',
+						);
+
+						// Remove milestone from the array
+						set((state) => ({
+							milestones: state.milestones.filter(
+								(milestone) => milestone.id !== id,
+							),
+						}));
+
+						// Update filtered milestones
+						get().filterMilestones();
+
+						return true;
+					} else {
+						// Use error message from backend response
+						showNotification.error(
+							'Error',
+							response.error || 'Failed to delete milestone',
+						);
+						return false;
+					}
+				} catch (error) {
+					const errorDetails = handleApiError(
+						error,
+						'An unexpected error occurred while deleting milestone',
+					);
+					showNotification.error('Error', errorDetails.message);
+					return false;
+				} finally {
+					set({ deleting: false });
+				}
+			},
+
 			// Filters
 			setSelectedSemesterId: (semesterId: string | null) => {
 				set({ selectedSemesterId: semesterId });
@@ -222,6 +264,7 @@ export const useMilestoneStore = create<MilestoneState>()(
 					loading: false,
 					creating: false,
 					updating: false,
+					deleting: false,
 					selectedSemesterId: null,
 					searchText: '',
 				});
