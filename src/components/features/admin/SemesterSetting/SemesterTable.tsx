@@ -11,7 +11,6 @@ import {
 	Select,
 	Space,
 	Table,
-	Tag,
 	Tooltip,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
@@ -24,6 +23,7 @@ import {
 	useState,
 } from 'react';
 
+import { SEMESTER_STATUS_TAGS } from '@/lib/constants/semester';
 import semesterService from '@/lib/services/semesters.service';
 import { showNotification } from '@/lib/utils/notification';
 import { SemesterStatus } from '@/schemas/_enums';
@@ -42,14 +42,6 @@ const STATUS_ORDER: SemesterStatus[] = [
 	'Ongoing',
 	'End',
 ];
-
-const STATUS_TAG: Record<SemesterStatus, JSX.Element> = {
-	NotYet: <Tag color="blue">Not Yet</Tag>,
-	Preparing: <Tag color="orange">Preparing</Tag>,
-	Picking: <Tag color="purple">Picking</Tag>,
-	Ongoing: <Tag color="green">Ongoing</Tag>,
-	End: <Tag color="gray">End</Tag>,
-};
 
 const STATUS_LABELS: Record<SemesterStatus, string> = {
 	NotYet: 'Not Yet',
@@ -282,7 +274,8 @@ const SemesterTable = forwardRef<
 				dataIndex: 'status',
 				key: 'status',
 				width: 120,
-				render: (status: SemesterStatus) => STATUS_TAG[status] ?? status,
+				render: (status: SemesterStatus) =>
+					SEMESTER_STATUS_TAGS[status] ?? status,
 			},
 			{
 				title: 'Actions',
