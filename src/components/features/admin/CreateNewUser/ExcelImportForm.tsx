@@ -63,6 +63,52 @@ type ExcelImportFormProps<
 	requireMajor?: boolean;
 }>;
 
+// Field-specific validators
+const fieldValidators = {
+	fullName: (value: string, rowNumber: number): string[] => {
+		const errors: string[] = [];
+		if (value.length < 2) {
+			errors.push(`Row ${rowNumber}: Full name must be at least 2 characters`);
+		}
+		if (value.length > 100) {
+			errors.push(
+				`Row ${rowNumber}: Full name must be less than 100 characters`,
+			);
+		}
+		return errors;
+	},
+
+	email: (value: string, rowNumber: number): string[] => {
+		const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+		return emailRegex.test(value)
+			? []
+			: [`Row ${rowNumber}: Invalid email format`];
+	},
+
+	phoneNumber: (value: string, rowNumber: number): string[] => {
+		const phoneRegex =
+			/^(?:\+84|0084|84|0)(?:3[2-9]|5[2689]|7[06-9]|8[1-5]|9[0-4|6-9])\d{7}$/;
+		return phoneRegex.test(value)
+			? []
+			: [`Row ${rowNumber}: Invalid Vietnamese phone number format`];
+	},
+
+	studentId: (value: string, rowNumber: number): string[] => {
+		const studentIdRegex = /^[A-Za-z]{2}\d{6}$/;
+		return studentIdRegex.test(value)
+			? []
+			: [
+					`Row ${rowNumber}: Student ID must be 2 letters followed by 6 digits (e.g., QE123456)`,
+				];
+	},
+
+	gender: (value: string, rowNumber: number): string[] => {
+		return ['Male', 'Female'].includes(value)
+			? []
+			: [`Row ${rowNumber}: Gender must be either 'Male' or 'Female'`];
+	},
+} as const;
+
 // Helper function to validate field value
 function validateFieldValue<T>(
 	field: { key: keyof T; title: string; required?: boolean },
@@ -74,8 +120,7 @@ function validateFieldValue<T>(
 
 	// Required field validation
 	if (field.required && (!value || stringValue === '')) {
-		errors.push(`Row ${rowNumber}: Missing ${field.title}`);
-		return errors;
+		return [`Row ${rowNumber}: Missing ${field.title}`];
 	}
 
 	// Skip validation for empty optional fields
@@ -83,52 +128,12 @@ function validateFieldValue<T>(
 		return errors;
 	}
 
-	// Field-specific validation
-	switch (field.key) {
-		case 'fullName':
-			if (stringValue.length < 2) {
-				errors.push(
-					`Row ${rowNumber}: Full name must be at least 2 characters`,
-				);
-			}
-			if (stringValue.length > 100) {
-				errors.push(
-					`Row ${rowNumber}: Full name must be less than 100 characters`,
-				);
-			}
-			break;
+	// Apply field-specific validation if validator exists
+	const fieldKey = field.key as string;
+	const validator = fieldValidators[fieldKey as keyof typeof fieldValidators];
 
-		case 'email':
-			const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-			if (!emailRegex.test(stringValue)) {
-				errors.push(`Row ${rowNumber}: Invalid email format`);
-			}
-			break;
-
-		case 'phoneNumber':
-			const phoneRegex =
-				/^(?:\+84|0084|84|0)(?:3[2-9]|5[2689]|7[06-9]|8[1-5]|9[0-4|6-9])\d{7}$/;
-			if (!phoneRegex.test(stringValue)) {
-				errors.push(`Row ${rowNumber}: Invalid Vietnamese phone number format`);
-			}
-			break;
-
-		case 'studentId':
-			const studentIdRegex = /^[A-Za-z]{2}\d{6}$/;
-			if (!studentIdRegex.test(stringValue)) {
-				errors.push(
-					`Row ${rowNumber}: Student ID must be 2 letters followed by 6 digits (e.g., QE123456)`,
-				);
-			}
-			break;
-
-		case 'gender':
-			if (!['Male', 'Female'].includes(stringValue)) {
-				errors.push(
-					`Row ${rowNumber}: Gender must be either 'Male' or 'Female'`,
-				);
-			}
-			break;
+	if (validator) {
+		errors.push(...validator(stringValue, rowNumber));
 	}
 
 	return errors;
@@ -452,7 +457,7 @@ export default function ExcelImportForm<
 
 		reader.onerror = () =>
 			showNotification.error('Error', 'Failed to read file');
-		reader.readAsBinaryString(file);
+		reader.readAsArrayBuffer(file);
 		return false;
 	};
 
@@ -495,17 +500,15 @@ export default function ExcelImportForm<
 		}
 
 		const studentsToCreate: StudentCreate[] = data.map((item) => {
-			const studentData: Partial<StudentCreate> = { ...item, id: undefined };
+			const studentData: StudentCreate = {
+				...item,
+				id: undefined,
+				...(requireSemester &&
+					selectedSemester && { semesterId: selectedSemester }),
+				...(requireMajor && selectedMajor && { majorId: selectedMajor }),
+			};
 
-			if (requireSemester && selectedSemester) {
-				studentData.semesterId = selectedSemester;
-			}
-
-			if (requireMajor && selectedMajor) {
-				studentData.majorId = selectedMajor;
-			}
-
-			return studentData as StudentCreate;
+			return studentData;
 		});
 
 		try {
@@ -552,7 +555,7 @@ export default function ExcelImportForm<
 				</span>
 			),
 			dataIndex: field.key as string,
-			width: field.width || 200,
+			width: field.width ?? 200,
 			render: (_: unknown, record: T) =>
 				field.type === 'text' ? (
 					<Input
@@ -672,7 +675,7 @@ export default function ExcelImportForm<
 										}
 										loading={semesterLoading}
 										onChange={handleSemesterChange}
-										value={selectedSemester || undefined}
+										value={selectedSemester ?? undefined}
 										disabled={!hasAvailableSemesters}
 										notFoundContent={
 											!semesterLoading && !hasAvailableSemesters
@@ -708,7 +711,7 @@ export default function ExcelImportForm<
 										placeholder="Select major"
 										loading={majorLoading}
 										onChange={handleMajorChange}
-										value={selectedMajor || undefined}
+										value={selectedMajor ?? undefined}
 										disabled={!majors.length}
 										notFoundContent={
 											!majorLoading && !majors.length
