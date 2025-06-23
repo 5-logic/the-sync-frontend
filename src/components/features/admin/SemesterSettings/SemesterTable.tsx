@@ -468,7 +468,9 @@ const SemesterTable = forwardRef<
 									type="text"
 									onClick={() => handleEdit(record)}
 									disabled={
-										!editCheck.canEdit || updating || deleting // Disable for End status
+										Boolean(!editCheck.canEdit) ||
+										Boolean(updating) ||
+										Boolean(deleting)
 									}
 									style={{
 										opacity: editCheck.canEdit ? 1 : 0.5,
