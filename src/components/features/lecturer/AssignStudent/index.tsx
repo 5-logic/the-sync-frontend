@@ -37,10 +37,14 @@ export default function AssignStudentPage() {
 
 	const filteredStudents = useMemo(() => {
 		return mockStudents.filter((student) => {
-			const matchSearch =
-				student.fullName.toLowerCase().includes(studentSearch.toLowerCase()) ||
-				student.email.toLowerCase().includes(studentSearch.toLowerCase());
+			const fullNameMatch = student.fullName
+				.toLowerCase()
+				.includes(studentSearch.toLowerCase());
+			const emailMatch = student.email
+				.toLowerCase()
+				.includes(studentSearch.toLowerCase());
 
+			const matchSearch = fullNameMatch || emailMatch;
 			const matchMajor =
 				studentMajor === 'All' || student.majorId === studentMajor;
 
@@ -69,7 +73,7 @@ export default function AssignStudentPage() {
 							type="link"
 							icon={<EyeOutlined />}
 							onClick={() => {
-								onView?.(record);
+								console.log('View group:', record);
 							}}
 						/>
 					</Tooltip>
