@@ -229,7 +229,7 @@ const UserForm = ({ formType }: UserFormProps) => {
 											: 'No available semesters for student creation'
 									}
 									loading={semestersLoading} // Use loading from semester store
-									disabled={creating || !hasAvailableSemesters}
+									disabled={creating ?? !hasAvailableSemesters}
 									notFoundContent={
 										!semestersLoading && !hasAvailableSemesters
 											? 'No semesters with Preparing or Picking status found'
