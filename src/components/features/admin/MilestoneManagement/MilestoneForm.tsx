@@ -223,15 +223,20 @@ export default function MilestoneForm({
 								placeholder="Select semester"
 								loading={loadingSemesters}
 								allowClear
-								onChange={() => {
-									// Revalidate duration when semester changes
-									form.validateFields(['duration']);
+								onChange={(value) => {
+									// Explicitly set the form field value
+									form.setFieldValue('semesterId', value);
+									// Only revalidate duration if it has value
+									const currentDuration = form.getFieldValue('duration');
+									if (currentDuration?.[0] && currentDuration?.[1]) {
+										form.validateFields(['duration']);
+									}
 								}}
-								options={semesters
+							>
+								{semesters
 									.filter((semester) => semester.status === 'Ongoing')
-									.map((semester) => ({
-										value: semester.id,
-										label: (
+									.map((semester) => (
+										<Select.Option key={semester.id} value={semester.id}>
 											<div
 												style={{
 													display: 'flex',
@@ -242,9 +247,9 @@ export default function MilestoneForm({
 												<span>{semester.name}</span>
 												{STATUS_TAG[semester.status]}
 											</div>
-										),
-									}))}
-							/>{' '}
+										</Select.Option>
+									))}
+							</Select>
 						</Form.Item>
 					</Col>
 				)}
