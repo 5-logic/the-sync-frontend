@@ -83,7 +83,7 @@ export default function EditMilestoneDialog({
 		: null;
 	const semesterNotOngoing = semester ? semester.status !== 'Ongoing' : false;
 
-	const isEditDisabled = milestoneHasStarted || semesterNotOngoing;
+	const isEditDisabled = milestoneHasStarted ?? semesterNotOngoing;
 
 	return (
 		<Modal
