@@ -140,7 +140,9 @@ export default function MilestoneTable({
 				const semesterNotOngoing = semester
 					? semester.status !== 'Ongoing'
 					: true;
-				const isDisabled = hasStarted || semesterNotOngoing;
+
+				// Disable if milestone has started OR if semester is not ongoing
+				const isDisabled = Boolean(hasStarted) || Boolean(semesterNotOngoing);
 
 				let editTooltipTitle = 'Edit';
 				if (hasStarted) {
@@ -167,15 +169,14 @@ export default function MilestoneTable({
 								disabled={isDisabled}
 								onClick={() => handleEdit(record)}
 							/>
-						</Tooltip>
+						</Tooltip>{' '}
 						<Tooltip title={deleteTooltipTitle}>
-							{' '}
 							<Button
 								icon={<DeleteOutlined />}
 								size="small"
 								type="text"
 								danger
-								disabled={isDisabled || deleting}
+								disabled={isDisabled || Boolean(deleting)}
 								onClick={() => handleDelete(record)}
 							/>
 						</Tooltip>
