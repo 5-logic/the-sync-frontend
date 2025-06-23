@@ -117,7 +117,7 @@ const SemesterTable = forwardRef<
 					semester.status !== 'NotYet' &&
 					semester.status !== 'End',
 			);
-			return activeSemester || null;
+			return activeSemester ?? null;
 		},
 		[semesters],
 	);
@@ -241,7 +241,7 @@ const SemesterTable = forwardRef<
 				code: record.code,
 				maxGroup: record.maxGroup,
 				status: record.status,
-				ongoingPhase: record.ongoingPhase || undefined,
+				ongoingPhase: record.ongoingPhase ?? undefined,
 			});
 			setIsFormChanged(false);
 			setIsEditModalOpen(true);
@@ -267,7 +267,7 @@ const SemesterTable = forwardRef<
 				if (editingRecord.status === 'Ongoing' && values.status === 'End') {
 					// Lấy phase hiện tại từ form hoặc từ record
 					const currentPhase =
-						form.getFieldValue('ongoingPhase') || editingRecord.ongoingPhase;
+						form.getFieldValue('ongoingPhase') ?? editingRecord.ongoingPhase;
 
 					if (currentPhase !== 'ScopeLocked') {
 						form.setFields([
@@ -301,7 +301,7 @@ const SemesterTable = forwardRef<
 					form.setFields([
 						{
 							name: 'status',
-							errors: [statusCheck.reason || 'Status change not allowed'],
+							errors: [statusCheck.reason ?? 'Status change not allowed'],
 						},
 					]);
 					return;
@@ -459,7 +459,7 @@ const SemesterTable = forwardRef<
 								title={
 									editCheck.canEdit
 										? 'Edit'
-										: editCheck.reason || 'Cannot edit this semester'
+										: (editCheck.reason ?? 'Cannot edit this semester')
 								}
 							>
 								<Button
@@ -524,7 +524,7 @@ const SemesterTable = forwardRef<
 				if (!statusCheck.allowed) {
 					return {
 						disabled: true,
-						title: statusCheck.reason || 'Status change not allowed',
+						title: statusCheck.reason ?? 'Status change not allowed',
 					};
 				}
 			}
