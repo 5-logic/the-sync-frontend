@@ -183,7 +183,6 @@ export default function MilestoneForm({
 
 		return Promise.resolve();
 	};
-
 	// Set form values when milestone changes and in edit mode
 	useEffect(() => {
 		if (isEditMode && milestone) {
@@ -195,6 +194,17 @@ export default function MilestoneForm({
 		}
 	}, [isEditMode, milestone, form]);
 
+	// Helper functions to calculate grid spans (avoiding nested ternary)
+	const getNameFieldSpan = (): number => {
+		if (isEditMode) return 24;
+		return showSemesterField ? 8 : 12;
+	};
+
+	const getDurationFieldSpan = (): number => {
+		if (isEditMode) return 24;
+		return showSemesterField ? 8 : 12;
+	};
+
 	return (
 		<Form
 			form={form}
@@ -203,7 +213,7 @@ export default function MilestoneForm({
 			disabled={disabled}
 		>
 			<Row gutter={isEditMode ? [0, 16] : 16}>
-				<Col xs={24} md={isEditMode ? 24 : showSemesterField ? 8 : 12}>
+				<Col xs={24} md={getNameFieldSpan()}>
 					<Form.Item
 						label={<FormLabel text="Milestone Name" isRequired />}
 						name="milestoneName"
@@ -253,7 +263,7 @@ export default function MilestoneForm({
 						</Form.Item>
 					</Col>
 				)}
-				<Col xs={24} md={isEditMode ? 24 : showSemesterField ? 8 : 12}>
+				<Col xs={24} md={getDurationFieldSpan()}>
 					<Form.Item
 						label={<FormLabel text="Duration" isRequired />}
 						name="duration"
