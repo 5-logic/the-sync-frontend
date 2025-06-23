@@ -39,6 +39,32 @@ export const handleCreateError = (result: {
 	}
 };
 
+// Helper function to handle API errors in actions
+function handleActionError(
+	error: unknown,
+	entityName: string,
+	operation: string,
+	set: StoreApi<Record<string, unknown>>['setState'],
+): void {
+	const apiError = handleApiError(
+		error,
+		`Failed to ${operation} ${entityName}`,
+	);
+	const errorState = createErrorState(apiError);
+	set({ lastError: errorState });
+	showNotification.error('Error', apiError.message);
+}
+
+// Helper function to handle API result errors
+function handleResultError(
+	error: { message: string; statusCode: number },
+	set: StoreApi<Record<string, unknown>>['setState'],
+): void {
+	const errorState = createErrorState(error);
+	set({ lastError: errorState });
+	showNotification.error('Error', error.message);
+}
+
 // Generic batch create action
 export function createBatchCreateAction<T extends { id: string }, TCreate>(
 	service: { createMany: (data: TCreate[]) => Promise<ApiResponse<T[]>> },
@@ -87,13 +113,7 @@ export function createBatchCreateAction<T extends { id: string }, TCreate>(
 					return false;
 				}
 			} catch (error) {
-				const apiError = handleApiError(
-					error,
-					`Failed to create ${entityName}s`,
-				);
-				const errorState = createErrorState(apiError);
-				set({ lastError: errorState });
-				showNotification.error('Error', apiError.message);
+				handleActionError(error, `${entityName}s`, 'create', set);
 				return false;
 			} finally {
 				set({ [loadingField]: false });
@@ -139,25 +159,16 @@ export function createFetchAction<T extends { id: string }>(
 			try {
 				const response = await service.findAll();
 				const result = handleApiResponse(response);
-
 				if (result.success && result.data) {
 					handleFetchSuccess(result.data, entityName, set, get);
 					return;
 				}
 
 				if (result.error) {
-					const error = createErrorState(result.error);
-					set({ lastError: error });
-					showNotification.error('Error', result.error.message);
+					handleResultError(result.error, set);
 				}
 			} catch (error) {
-				const apiError = handleApiError(
-					error,
-					`Failed to fetch ${entityName}s`,
-				);
-				const errorState = createErrorState(apiError);
-				set({ lastError: errorState });
-				showNotification.error('Error', apiError.message);
+				handleActionError(error, `${entityName}s`, 'fetch', set);
 			} finally {
 				set({ loading: false });
 			}
@@ -205,7 +216,6 @@ export function createCreateAction<T extends { id: string }, TCreate>(
 					response,
 					`${entityName.charAt(0).toUpperCase() + entityName.slice(1)} created successfully`,
 				);
-
 				if (result.success && result.data) {
 					handleCreateSuccess(result.data, entityName, set, get);
 					return true;
@@ -218,13 +228,7 @@ export function createCreateAction<T extends { id: string }, TCreate>(
 					return false;
 				}
 			} catch (error) {
-				const apiError = handleApiError(
-					error,
-					`Failed to create ${entityName}`,
-				);
-				const errorState = createErrorState(apiError);
-				set({ lastError: errorState });
-				showNotification.error('Error', apiError.message);
+				handleActionError(error, entityName, 'create', set);
 				return false;
 			} finally {
 				set({ creating: false });
@@ -283,19 +287,11 @@ export function createUpdateAction<T extends { id: string }, TUpdate>(
 				}
 
 				if (result.error) {
-					const error = createErrorState(result.error);
-					set({ lastError: error });
-					showNotification.error('Error', result.error.message);
+					handleResultError(result.error, set);
 					return false;
 				}
 			} catch (error) {
-				const apiError = handleApiError(
-					error,
-					`Failed to update ${entityName}`,
-				);
-				const errorState = createErrorState(apiError);
-				set({ lastError: errorState });
-				showNotification.error('Error', apiError.message);
+				handleActionError(error, entityName, 'update', set);
 				return false;
 			} finally {
 				set({ updating: false });
@@ -347,26 +343,17 @@ export function createDeleteAction<T extends { id: string }>(
 					response,
 					`${entityName.charAt(0).toUpperCase() + entityName.slice(1)} deleted successfully`,
 				);
-
 				if (result.success) {
 					handleDeleteSuccess<T>(id, entityName, set, get);
 					return true;
 				}
 
 				if (result.error) {
-					const error = createErrorState(result.error);
-					set({ lastError: error });
-					showNotification.error('Error', result.error.message);
+					handleResultError(result.error, set);
 					return false;
 				}
 			} catch (error) {
-				const apiError = handleApiError(
-					error,
-					`Failed to delete ${entityName}`,
-				);
-				const errorState = createErrorState(apiError);
-				set({ lastError: errorState });
-				showNotification.error('Error', apiError.message);
+				handleActionError(error, entityName, 'delete', set);
 				return false;
 			} finally {
 				set({ deleting: false });
