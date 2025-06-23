@@ -1,6 +1,11 @@
 import httpClient from '@/lib/services/_httpClient';
 import { ApiResponse } from '@/schemas/_common';
-import { Student, StudentCreate, StudentUpdate } from '@/schemas/student';
+import {
+	Student,
+	StudentCreate,
+	StudentToggleStatus,
+	StudentUpdate,
+} from '@/schemas/student';
 
 class StudentService {
 	private readonly baseUrl = '/students';
@@ -42,6 +47,17 @@ class StudentService {
 		const response = await httpClient.post<ApiResponse<Student[]>>(
 			`${this.baseUrl}/import`,
 			createStudentDtos,
+		);
+		return response.data;
+	}
+
+	async toggleStatus(
+		id: string,
+		toggleStatusDto: StudentToggleStatus,
+	): Promise<ApiResponse<Student>> {
+		const response = await httpClient.patch<ApiResponse<Student>>(
+			`${this.baseUrl}/${id}/toggle-status`,
+			toggleStatusDto,
 		);
 		return response.data;
 	}
