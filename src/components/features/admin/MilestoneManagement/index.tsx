@@ -96,15 +96,14 @@ export default function MilestoneManagement() {
 	};
 	return (
 		<Space direction="vertical" size="middle" style={{ width: '100%' }}>
-			<div>
-				{' '}
-				<Title level={2} style={{ marginBottom: '4px' }}>
+			<Space direction="vertical" size="small">
+				<Title level={2} style={{ marginBottom: 0 }}>
 					Milestones Management
 				</Title>
 				<Paragraph type="secondary" style={{ marginBottom: 0 }}>
 					Create and manage milestones for each semester.
 				</Paragraph>
-			</div>
+			</Space>
 			<CreateMilestoneForm
 				semesters={semesters}
 				loadingSemesters={loadingSemesters}
@@ -112,20 +111,9 @@ export default function MilestoneManagement() {
 				existingMilestones={milestones}
 				onSubmit={handleCreateMilestone}
 			/>
-			<Divider />
-			{/* Search, Filter and Actions Section */}{' '}
+			<Divider /> {/* Search, Filter and Actions Section */}
 			<Row gutter={[16, 16]} align="middle">
-				<Col xs={24} sm={8} md={10}>
-					<Input
-						placeholder="Search milestones..."
-						prefix={<SearchOutlined style={{ color: '#bfbfbf' }} />}
-						allowClear
-						value={searchText}
-						onChange={handleSearchChange}
-						style={{ width: '100%' }}
-					/>
-				</Col>
-				<Col xs={24} sm={8} md={6}>
+				<Col xs={24} sm={12} md={8} lg={6}>
 					<Select
 						placeholder="All Semesters"
 						style={{ width: '100%' }}
@@ -138,7 +126,17 @@ export default function MilestoneManagement() {
 						}))}
 					/>
 				</Col>
-				<Col xs={24} sm={8} md={8}>
+				<Col xs={24} sm={12} md={12} lg={15}>
+					<Input
+						placeholder="Search milestones..."
+						prefix={<SearchOutlined style={{ color: '#bfbfbf' }} />}
+						allowClear
+						value={searchText}
+						onChange={handleSearchChange}
+						style={{ width: '100%' }}
+					/>
+				</Col>
+				<Col xs={24} sm={24} md={4} lg={3}>
 					<div style={{ display: 'flex', justifyContent: 'flex-end' }}>
 						<Button
 							icon={<ReloadOutlined />}
