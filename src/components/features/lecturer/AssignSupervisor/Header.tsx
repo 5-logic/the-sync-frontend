@@ -11,7 +11,11 @@ type Props = {
 	badgeText?: string;
 };
 
-export default function Header({ title, description, badgeText }: Props) {
+export default function Header({
+	title,
+	description,
+	badgeText,
+}: Readonly<Props>) {
 	return (
 		<div>
 			<Title level={2} style={{ marginBottom: '4px' }}>
