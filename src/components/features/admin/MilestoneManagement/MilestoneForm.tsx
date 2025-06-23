@@ -1,6 +1,6 @@
 'use client';
 
-import { Col, DatePicker, Form, Input, Row, Select } from 'antd';
+import { Col, DatePicker, Form, Input, Row, Select, Tag } from 'antd';
 import { FormInstance } from 'antd/es/form';
 import dayjs, { Dayjs } from 'dayjs';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
@@ -9,6 +9,7 @@ import { useEffect } from 'react';
 
 import { FormLabel } from '@/components/common/FormLabel';
 import { DATE_FORMAT } from '@/lib/utils/dateFormat';
+import { SemesterStatus } from '@/schemas/_enums';
 import { Milestone } from '@/schemas/milestone';
 import { Semester } from '@/schemas/semester';
 
@@ -17,6 +18,15 @@ dayjs.extend(isSameOrBefore);
 
 const { RangePicker } = DatePicker;
 
+// Status tag mapping
+const STATUS_TAG: Record<SemesterStatus, JSX.Element> = {
+	NotYet: <Tag color="blue">Not Yet</Tag>,
+	Preparing: <Tag color="orange">Preparing</Tag>,
+	Picking: <Tag color="purple">Picking</Tag>,
+	Ongoing: <Tag color="green">Ongoing</Tag>,
+	End: <Tag color="gray">End</Tag>,
+};
+
 type Props = Readonly<{
 	form: FormInstance;
 	semesters: Semester[];
@@ -24,6 +34,7 @@ type Props = Readonly<{
 	existingMilestones: Milestone[];
 	milestone?: Milestone | null; // For edit mode
 	disabled?: boolean;
+	showSemesterField?: boolean; // Control visibility of semester field
 }>;
 
 export default function MilestoneForm({
@@ -33,6 +44,7 @@ export default function MilestoneForm({
 	existingMilestones,
 	milestone = null,
 	disabled = false,
+	showSemesterField = true,
 }: Props) {
 	const isEditMode = !!milestone;
 
@@ -58,10 +70,13 @@ export default function MilestoneForm({
 				endDate.isSame(existingEnd)
 			);
 		});
-	};
-
-	// Custom validator for semester selection
+	}; // Custom validator for semester selection
 	const validateSemester = (_: unknown, semesterId: string | undefined) => {
+		// Skip validation if semester field is hidden (edit mode)
+		if (!showSemesterField) {
+			return Promise.resolve();
+		}
+
 		if (!semesterId) {
 			return Promise.reject(new Error('Please select semester'));
 		}
@@ -71,15 +86,12 @@ export default function MilestoneForm({
 			return Promise.reject(new Error('Invalid semester selected'));
 		}
 
-		// Check if semester status allows milestone creation/editing
-		if (
-			selectedSemester.status === 'NotYet' ||
-			selectedSemester.status === 'End'
-		) {
+		// Check if semester status allows milestone creation/editing - only Ongoing allowed
+		if (selectedSemester.status !== 'Ongoing') {
 			const action = isEditMode ? 'modify' : 'create';
 			return Promise.reject(
 				new Error(
-					`Cannot ${action} milestone in semester with status: ${selectedSemester.status}`,
+					`Cannot ${action} milestone in semester with status: ${selectedSemester.status}. Only Ongoing semesters are allowed.`,
 				),
 			);
 		}
@@ -95,18 +107,10 @@ export default function MilestoneForm({
 		}
 		return null;
 	};
-
 	// Helper function to validate start date
 	const validateStartDate = (startDate: Dayjs): string | null => {
-		if (isEditMode && milestone) {
-			const currentStartDate = dayjs(milestone.startDate);
-			if (
-				!startDate.isSame(currentStartDate, 'day') &&
-				startDate.isBefore(dayjs(), 'day')
-			) {
-				return 'Start date cannot be in the past';
-			}
-		} else if (startDate.isBefore(dayjs(), 'day')) {
+		// Start date cannot be in the past (applies to both create and edit)
+		if (startDate.isBefore(dayjs(), 'day')) {
 			return 'Start date cannot be in the past';
 		}
 		return null;
@@ -137,7 +141,6 @@ export default function MilestoneForm({
 		}
 		return null;
 	};
-
 	// Custom validator for date range
 	const validateDateRange = (_: unknown, value: [Dayjs, Dayjs] | undefined) => {
 		if (!value?.[0] || !value?.[1]) {
@@ -145,7 +148,10 @@ export default function MilestoneForm({
 		}
 
 		const [startDate, endDate] = value;
-		const selectedSemesterId = form.getFieldValue('semesterId');
+		// Get semester ID from form field or use existing milestone's semester ID if field is hidden
+		const selectedSemesterId = showSemesterField
+			? form.getFieldValue('semesterId')
+			: milestone?.semesterId;
 
 		// Check if milestone has already started (edit mode only)
 		const startedError = checkMilestoneStarted();
@@ -197,7 +203,7 @@ export default function MilestoneForm({
 			disabled={disabled}
 		>
 			<Row gutter={isEditMode ? [0, 16] : 16}>
-				<Col xs={24} md={isEditMode ? 24 : 8}>
+				<Col xs={24} md={isEditMode ? 24 : showSemesterField ? 8 : 12}>
 					<Form.Item
 						label={<FormLabel text="Milestone Name" isRequired />}
 						name="milestoneName"
@@ -206,31 +212,43 @@ export default function MilestoneForm({
 						<Input placeholder="Enter milestone name" />
 					</Form.Item>
 				</Col>
-				<Col xs={24} md={isEditMode ? 24 : 8}>
-					<Form.Item
-						label={<FormLabel text="Semester" isRequired />}
-						name="semesterId"
-						rules={[{ validator: validateSemester }]}
-					>
-						<Select
-							placeholder="Select semester"
-							loading={loadingSemesters}
-							allowClear
-							onChange={() => {
-								// Revalidate duration when semester changes
-								form.validateFields(['duration']);
-							}}
-							options={semesters.map((semester) => ({
-								value: semester.id,
-								label: `${semester.name} (${semester.code}) - ${semester.status}`,
-								disabled:
-									semester.status === 'NotYet' || semester.status === 'End',
-							}))}
-						/>
-					</Form.Item>
-				</Col>
-				<Col xs={24} md={isEditMode ? 24 : 8}>
-					{' '}
+				{showSemesterField && (
+					<Col xs={24} md={isEditMode ? 24 : 8}>
+						<Form.Item
+							label={<FormLabel text="Semester" isRequired />}
+							name="semesterId"
+							rules={[{ validator: validateSemester }]}
+						>
+							<Select
+								placeholder="Select semester"
+								loading={loadingSemesters}
+								allowClear
+								onChange={() => {
+									// Revalidate duration when semester changes
+									form.validateFields(['duration']);
+								}}
+								options={semesters
+									.filter((semester) => semester.status === 'Ongoing')
+									.map((semester) => ({
+										value: semester.id,
+										label: (
+											<div
+												style={{
+													display: 'flex',
+													justifyContent: 'space-between',
+													alignItems: 'center',
+												}}
+											>
+												<span>{semester.name}</span>
+												{STATUS_TAG[semester.status]}
+											</div>
+										),
+									}))}
+							/>{' '}
+						</Form.Item>
+					</Col>
+				)}
+				<Col xs={24} md={isEditMode ? 24 : showSemesterField ? 8 : 12}>
 					<Form.Item
 						label={<FormLabel text="Duration" isRequired />}
 						name="duration"
@@ -241,19 +259,7 @@ export default function MilestoneForm({
 							className={!isEditMode ? 'w-full' : undefined}
 							format={DATE_FORMAT}
 							disabledDate={(current) => {
-								// For edit mode, allow current dates even if in past
-								if (isEditMode && milestone) {
-									const currentStart = dayjs(milestone.startDate);
-									const currentEnd = dayjs(milestone.endDate);
-									// Allow current date range
-									if (
-										current.isSameOrAfter(currentStart, 'day') &&
-										current.isSameOrBefore(currentEnd, 'day')
-									) {
-										return false;
-									}
-								}
-								// Disable past dates for new selections
+								// Disable past dates for all cases
 								return current && current < dayjs().startOf('day');
 							}}
 						/>
