@@ -97,14 +97,14 @@ export default function MilestoneManagement() {
 	return (
 		<Space direction="vertical" size="middle" style={{ width: '100%' }}>
 			<div>
+				{' '}
 				<Title level={2} style={{ marginBottom: '4px' }}>
 					Milestones Management
 				</Title>
 				<Paragraph type="secondary" style={{ marginBottom: 0 }}>
 					Create and manage milestones for each semester.
-				</Paragraph>{' '}
+				</Paragraph>
 			</div>
-
 			<CreateMilestoneForm
 				semesters={semesters}
 				loadingSemesters={loadingSemesters}
@@ -112,9 +112,8 @@ export default function MilestoneManagement() {
 				existingMilestones={milestones}
 				onSubmit={handleCreateMilestone}
 			/>
-
 			<Divider />
-			{/* Search, Filter and Actions Section */}
+			{/* Search, Filter and Actions Section */}{' '}
 			<Row gutter={[16, 16]} align="middle">
 				<Col xs={24} sm={8} md={10}>
 					<Input
@@ -135,7 +134,7 @@ export default function MilestoneManagement() {
 						allowClear
 						options={semesters.map((semester) => ({
 							value: semester.id,
-							label: `${semester.name} (${semester.code})`,
+							label: semester.name,
 						}))}
 					/>
 				</Col>
@@ -151,9 +150,8 @@ export default function MilestoneManagement() {
 							Refresh
 						</Button>
 					</div>
-				</Col>{' '}
+				</Col>
 			</Row>
-
 			<MilestoneTable
 				data={filteredMilestones}
 				loading={loading}
