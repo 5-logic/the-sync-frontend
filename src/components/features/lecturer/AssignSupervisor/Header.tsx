@@ -5,10 +5,10 @@ import { Badge, Col, Row, Typography } from 'antd';
 const { Title, Text } = Typography;
 
 interface Props {
-	title: string;
-	description?: string;
-	badgeText?: string;
-	badgeColor?: string;
+	readonly title: string;
+	readonly description?: string;
+	readonly badgeText?: string;
+	readonly badgeColor?: string;
 }
 
 export default function PageHeader({

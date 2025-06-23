@@ -21,7 +21,7 @@ export default function AssignSupervisors() {
 
 	const filteredData = extendedGroups.filter((item) => {
 		const matchesSearch =
-			item.name.toLowerCase().includes(search.toLowerCase()) ||
+			item.name.toLowerCase().includes(search.toLowerCase()) ??
 			item.thesisTitle.toLowerCase().includes(search.toLowerCase());
 		const matchesStatus =
 			statusFilter === 'All' || item.status === statusFilter;

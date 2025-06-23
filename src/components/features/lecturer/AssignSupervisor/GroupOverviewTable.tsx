@@ -4,10 +4,10 @@ import type { ColumnsType } from 'antd/es/table';
 import { ExtendedGroup } from '@/data/group';
 
 interface Props {
-	data: ExtendedGroup[];
-	extraColumns?: ColumnsType<ExtendedGroup>;
-	showPagination?: boolean;
-	rowKey?: string;
+	readonly data: ExtendedGroup[];
+	readonly extraColumns?: ColumnsType<ExtendedGroup>;
+	readonly showPagination?: boolean;
+	readonly rowKey?: string;
 }
 
 const statusColorMap: Record<string, string> = {

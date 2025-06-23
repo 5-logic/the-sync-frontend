@@ -4,11 +4,11 @@ import React, { useEffect } from 'react';
 import { FormLabel } from '@/components/common/FormLabel';
 
 interface Props {
-	open: boolean;
-	onCancel: () => void;
-	onSubmit: (values: string[]) => void;
-	initialValues?: string[];
-	supervisorOptions: string[];
+	readonly open: boolean;
+	readonly onCancel: () => void;
+	readonly onSubmit: (values: string[]) => void;
+	readonly initialValues?: string[];
+	readonly supervisorOptions: string[];
 }
 
 export default function AssignSupervisorModal({
