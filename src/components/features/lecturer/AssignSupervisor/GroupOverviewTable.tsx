@@ -3,6 +3,7 @@
 import { Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 
+import { TablePagination } from '@/components/common/TablePagination';
 import { ExtendedGroup } from '@/data/group';
 
 interface Props {
@@ -15,7 +16,6 @@ interface Props {
 export default function GroupOverviewTable({
 	data,
 	columns,
-	showPagination = true,
 	rowKey = 'id',
 }: Props) {
 	return (
@@ -23,17 +23,7 @@ export default function GroupOverviewTable({
 			rowKey={rowKey as string}
 			columns={columns}
 			dataSource={data}
-			pagination={
-				showPagination
-					? {
-							showTotal: (total, range) =>
-								`${range[0]}-${range[1]} of ${total} items`,
-							showSizeChanger: true,
-							pageSizeOptions: ['10', '20', '50', '100'],
-							defaultPageSize: 10,
-						}
-					: false
-			}
+			pagination={TablePagination}
 			scroll={{ x: 'max-content' }}
 		/>
 	);

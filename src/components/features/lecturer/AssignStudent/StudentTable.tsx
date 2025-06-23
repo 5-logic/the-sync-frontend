@@ -3,6 +3,7 @@
 import { Badge, Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 
+import { TablePagination } from '@/components/common/TablePagination';
 import { majorMap } from '@/data/major';
 import { Student } from '@/schemas/student';
 
@@ -43,13 +44,7 @@ export default function StudentTable({ data }: Readonly<Props>) {
 			rowKey="id"
 			columns={columns}
 			dataSource={data}
-			pagination={{
-				showTotal: (total, range) =>
-					`${range[0]}-${range[1]} of ${total} items`,
-				showSizeChanger: true,
-				pageSizeOptions: ['10', '20', '50', '100'],
-				defaultPageSize: 10,
-			}}
+			pagination={TablePagination}
 			scroll={{ x: 'max-content' }}
 		/>
 	);
