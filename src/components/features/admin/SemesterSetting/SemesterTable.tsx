@@ -24,6 +24,7 @@ import {
 	useState,
 } from 'react';
 
+import { TablePagination } from '@/components/common/TablePagination';
 import semesterService from '@/lib/services/semesters.service';
 import { showNotification } from '@/lib/utils/notification';
 import { SemesterStatus } from '@/schemas/_enums';
@@ -327,13 +328,7 @@ const SemesterTable = forwardRef<
 				dataSource={filteredData}
 				loading={loading}
 				rowKey="id"
-				pagination={{
-					showTotal: (total, range) =>
-						`${range[0]}-${range[1]} of ${total} items`,
-					showSizeChanger: true,
-					pageSizeOptions: ['5', '10', '20', '50'],
-					showQuickJumper: true,
-				}}
+				pagination={TablePagination}
 				scroll={{ x: 'max-content' }}
 				size="middle"
 			/>
