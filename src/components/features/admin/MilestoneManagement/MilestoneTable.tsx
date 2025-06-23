@@ -1,7 +1,7 @@
 'use client';
 
-import { EditOutlined } from '@ant-design/icons';
-import { Button, Space, Table, Tag, Tooltip } from 'antd';
+import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
+import { Button, Modal, Space, Table, Tag, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 import { useState } from 'react';
@@ -12,6 +12,7 @@ import { formatDate } from '@/lib/utils/dateFormat';
 import { SemesterStatus } from '@/schemas/_enums';
 import { Milestone } from '@/schemas/milestone';
 import { Semester } from '@/schemas/semester';
+import { useMilestoneStore } from '@/store/useMilestoneStore';
 
 // Status tag mapping
 const STATUS_TAG: Record<SemesterStatus, JSX.Element> = {
@@ -38,10 +39,41 @@ export default function MilestoneTable({
 		null,
 	);
 
+	// Get delete function from store
+	const { deleteMilestone, deleting } = useMilestoneStore();
+
 	// Handle edit milestone
 	const handleEdit = (milestone: Milestone) => {
 		setSelectedMilestone(milestone);
 		setEditDialogOpen(true);
+	};
+
+	// Handle delete milestone with confirmation
+	const handleDelete = (milestone: Milestone) => {
+		Modal.confirm({
+			title: 'Delete Milestone',
+			content: (
+				<div>
+					<p>Are you sure you want to delete this milestone?</p>
+					<p>
+						<strong>Milestone:</strong> {milestone.name}
+					</p>
+					<p>
+						<strong>Duration:</strong> {formatDate(milestone.startDate)} -{' '}
+						{formatDate(milestone.endDate)}
+					</p>
+					<p style={{ color: '#ff4d4f', marginTop: 12 }}>
+						⚠️ This action cannot be undone.
+					</p>
+				</div>
+			),
+			okText: 'Delete',
+			okType: 'danger',
+			cancelText: 'Cancel',
+			onOk: async () => {
+				return await deleteMilestone(milestone.id);
+			},
+		});
 	};
 
 	// Handle close edit dialog
@@ -119,22 +151,40 @@ export default function MilestoneTable({
 					: true;
 				const isDisabled = hasStarted || semesterNotOngoing;
 
-				let tooltipTitle = 'Edit';
+				let editTooltipTitle = 'Edit';
 				if (hasStarted) {
-					tooltipTitle = 'Cannot edit milestone that has started';
+					editTooltipTitle = 'Cannot edit milestone that has started';
 				} else if (semesterNotOngoing) {
-					tooltipTitle = 'Cannot edit milestone in non-ongoing semester';
+					editTooltipTitle = 'Cannot edit milestone in non-ongoing semester';
+				}
+
+				let deleteTooltipTitle = 'Delete';
+				if (hasStarted) {
+					deleteTooltipTitle = 'Cannot delete milestone that has started';
+				} else if (semesterNotOngoing) {
+					deleteTooltipTitle =
+						'Cannot delete milestone in non-ongoing semester';
 				}
 
 				return (
 					<Space size="middle">
-						<Tooltip title={tooltipTitle}>
+						<Tooltip title={editTooltipTitle}>
 							<Button
 								icon={<EditOutlined />}
 								size="small"
 								type="text"
 								disabled={isDisabled}
 								onClick={() => handleEdit(record)}
+							/>
+						</Tooltip>
+						<Tooltip title={deleteTooltipTitle}>
+							<Button
+								icon={<DeleteOutlined />}
+								size="small"
+								type="text"
+								danger
+								disabled={isDisabled || deleting}
+								onClick={() => handleDelete(record)}
 							/>
 						</Tooltip>
 					</Space>
