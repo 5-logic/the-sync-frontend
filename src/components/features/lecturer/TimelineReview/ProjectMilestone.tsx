@@ -1,54 +1,36 @@
 'use client';
 
-import { Card, Typography } from 'antd';
+import { Card, Space, Tag, Typography } from 'antd';
 
-const { Title, Text } = Typography;
+const { Title } = Typography;
 
 export default function ProjectMilestones() {
 	return (
 		<Card>
 			<Title level={5}>Project Milestones</Title>
-			<div style={{ display: 'flex', gap: 24 }}>
-				<div>
-					<span
-						style={{
-							display: 'inline-block',
-							width: 12,
-							height: 12,
-							borderRadius: '50%',
-							backgroundColor: '#52c41a',
-							marginRight: 8,
-						}}
+			<Space size="large">
+				<Space>
+					<Tag
+						color="#52c41a"
+						style={{ borderRadius: '50%', width: 12, height: 12, padding: 0 }}
 					/>
-					<Text>Completed</Text>
-				</div>
-				<div>
-					<span
-						style={{
-							display: 'inline-block',
-							width: 12,
-							height: 12,
-							borderRadius: '50%',
-							backgroundColor: '#1890ff',
-							marginRight: 8,
-						}}
+					<span>Completed</span>
+				</Space>
+				<Space>
+					<Tag
+						color="#1890ff"
+						style={{ borderRadius: '50%', width: 12, height: 12, padding: 0 }}
 					/>
-					<Text>In Progress</Text>
-				</div>
-				<div>
-					<span
-						style={{
-							display: 'inline-block',
-							width: 12,
-							height: 12,
-							borderRadius: '50%',
-							backgroundColor: '#d9d9d9',
-							marginRight: 8,
-						}}
+					<span>In Progress</span>
+				</Space>
+				<Space>
+					<Tag
+						color="#d9d9d9"
+						style={{ borderRadius: '50%', width: 12, height: 12, padding: 0 }}
 					/>
-					<Text>Upcoming</Text>
-				</div>
-			</div>
+					<span>Upcoming</span>
+				</Space>
+			</Space>
 		</Card>
 	);
 }
