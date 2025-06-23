@@ -64,8 +64,8 @@ export default function StudentFilterBar({
 					style={{ width: '100%' }}
 				>
 					<Option value="All">All Status</Option>
-					<Option value="In Group">In Group</Option>
-					<Option value="No Group">No Group</Option>
+					<Option value="InGroup">In Group</Option>
+					<Option value="NoGroup">No Group</Option>
 				</Select>
 			</Col>
 		</Row>
