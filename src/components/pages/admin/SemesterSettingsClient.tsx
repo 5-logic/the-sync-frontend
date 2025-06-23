@@ -1,7 +1,6 @@
 'use client';
 
-import { lazy } from 'react';
-import { Suspense } from 'react';
+import { Suspense, lazy } from 'react';
 
 import { TableLoadingSkeleton } from '@/components/common/loading';
 
