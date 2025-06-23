@@ -1,5 +1,6 @@
 import GroupOverviewTable from '../AssignSupervisor/GroupOverviewTable';
 import { baseColumns } from '../AssignSupervisor/SupervisorColumns';
+import { EyeOutlined } from '@ant-design/icons';
 import { Button } from 'antd';
 
 import type { ExtendedGroup } from '@/data/group';
@@ -16,9 +17,11 @@ export default function GroupAssignTable({
 		{
 			title: 'Actions',
 			render: (_: unknown, record: ExtendedGroup) => (
-				<Button type="link" onClick={() => onView?.(record)}>
-					👁 View
-				</Button>
+				<Button
+					type="link"
+					icon={<EyeOutlined />}
+					onClick={() => onView?.(record)}
+				></Button>
 			),
 		},
 	];

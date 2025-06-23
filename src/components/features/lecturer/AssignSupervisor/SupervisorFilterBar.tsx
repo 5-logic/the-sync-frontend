@@ -1,5 +1,8 @@
-import { SearchOutlined } from '@ant-design/icons';
-import { Col, Input, Row, Select } from 'antd';
+'use client';
+
+import { Col, Row, Select } from 'antd';
+
+import GroupSearchBar from '@/components/features/lecturer/AssignSupervisor/GroupSearchBar';
 
 const { Option } = Select;
 
@@ -27,19 +30,15 @@ export default function SupervisorFilterBar({
 			style={{ marginBottom: 10 }}
 		>
 			<Col flex="auto">
-				<Input
-					allowClear
-					prefix={<SearchOutlined />}
-					placeholder="Search groups or thesis"
-					value={search}
-					onChange={(e) => onSearchChange(e.target.value)}
-				/>
+				<div style={{ height: 35 }}>
+					<GroupSearchBar value={search} onChange={onSearchChange} />
+				</div>
 			</Col>
 			<Col style={{ width: 160 }}>
 				<Select
 					value={status}
 					onChange={onStatusChange}
-					style={{ width: '100%' }}
+					style={{ width: '100%', height: 35 }}
 				>
 					<Option value="All">All Status</Option>
 					<Option value="Finalized">Finalized</Option>

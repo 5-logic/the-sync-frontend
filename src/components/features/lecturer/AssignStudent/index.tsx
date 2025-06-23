@@ -1,19 +1,20 @@
 'use client';
 
 import { EyeOutlined } from '@ant-design/icons';
-import { Button, Card, Space } from 'antd';
+import { Button, Card, Space, Tooltip } from 'antd';
 import { useMemo, useState } from 'react';
 
 import StudentFilterBar from '@/components/features/lecturer/AssignStudent/StudentFilterBar';
 import StudentTable from '@/components/features/lecturer/AssignStudent/StudentTable';
 import GroupOverviewTable from '@/components/features/lecturer/AssignSupervisor/GroupOverviewTable';
+import GroupSearchBar from '@/components/features/lecturer/AssignSupervisor/GroupSearchBar';
 import Header from '@/components/features/lecturer/AssignSupervisor/Header';
 import { baseColumns as supervisorBaseColumns } from '@/components/features/lecturer/AssignSupervisor/SupervisorColumns';
-import { extendedGroups } from '@/data/group';
+import { ExtendedGroup, extendedGroups } from '@/data/group';
 import { mockStudents } from '@/data/student';
 
 export default function AssignStudentPage() {
-	const [groupSearch] = useState('');
+	const [groupSearch, setGroupSearch] = useState('');
 
 	const filteredData = extendedGroups.filter((item) => {
 		const searchText = groupSearch.toLowerCase();
@@ -53,18 +54,23 @@ export default function AssignStudentPage() {
 	}, [studentSearch, studentMajor, studentStatus]);
 
 	const groupColumns = useMemo(() => {
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		function onView(_record: ExtendedGroup): void {
+			throw new Error('Function not implemented.');
+		}
+
 		return [
 			...supervisorBaseColumns.filter((col) => col.title !== 'Status'),
 			{
 				title: 'Action',
 				render: (_: unknown, record) => (
-					<Button
-						type="link"
-						icon={<EyeOutlined />}
-						onClick={() => console.log('View group:', record)}
-					>
-						View
-					</Button>
+					<Tooltip title="View detail">
+						<Button
+							type="link"
+							icon={<EyeOutlined />}
+							onClick={() => onView?.(record)}
+						/>
+					</Tooltip>
 				),
 			},
 		];
@@ -80,6 +86,10 @@ export default function AssignStudentPage() {
 
 			{/*Thesis Groups  */}
 			<Card title="Thesis Groups">
+				<div style={{ marginBottom: 16 }}>
+					<GroupSearchBar value={groupSearch} onChange={setGroupSearch} />
+				</div>
+
 				<GroupOverviewTable data={filteredData} columns={groupColumns} />
 			</Card>
 
