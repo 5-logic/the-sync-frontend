@@ -9,7 +9,6 @@ import { ExtendedGroup } from '@/data/group';
 interface Props {
 	readonly data: ExtendedGroup[];
 	readonly columns: ColumnsType<ExtendedGroup>;
-	readonly showPagination?: boolean;
 	readonly rowKey?: keyof ExtendedGroup;
 }
 
