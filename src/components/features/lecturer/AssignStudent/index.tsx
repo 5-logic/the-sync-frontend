@@ -63,12 +63,12 @@ export default function AssignStudentPage() {
 			...supervisorBaseColumns.filter((col) => col.title !== 'Status'),
 			{
 				title: 'Action',
-				render: (_: unknown, record) => (
+				render: (_: unknown, record: ExtendedGroup) => (
 					<Tooltip title="View detail">
 						<Button
 							type="link"
 							icon={<EyeOutlined />}
-							onClick={() => onView?.(record)}
+							onClick={() => onView && onView(record)}
 						/>
 					</Tooltip>
 				),

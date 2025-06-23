@@ -7,10 +7,10 @@ import { majorMap } from '@/data/major';
 import { Student } from '@/schemas/student';
 
 interface Props {
-	data: Student[];
+	data: ReadonlyArray<Student>;
 }
 
-export default function StudentTable({ data }: Props) {
+export default function StudentTable(props: Readonly<Props>) {
 	const columns: ColumnsType<Student> = [
 		{
 			title: 'Name',
@@ -41,7 +41,7 @@ export default function StudentTable({ data }: Props) {
 		<Table
 			rowKey="id"
 			columns={columns}
-			dataSource={data}
+			dataSource={props.data}
 			pagination={{
 				showTotal: (total, range) =>
 					`${range[0]}-${range[1]} of ${total} items`,

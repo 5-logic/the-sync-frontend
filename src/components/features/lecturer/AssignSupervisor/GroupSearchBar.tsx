@@ -13,7 +13,7 @@ export default function GroupSearchBar({
 	value,
 	onChange,
 	placeholder = 'Search groups or thesis',
-}: Props) {
+}: Readonly<Props>) {
 	return (
 		<Input
 			allowClear
