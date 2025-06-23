@@ -58,12 +58,232 @@ type ExcelImportFormProps<
 		required?: boolean;
 	}[];
 	onImport: (data: T[], semesterId?: string, majorId?: string) => void;
-	templateFileName?: string; // Template file name in public/files folder
-	requireSemester?: boolean; // Whether semester selection is required
-	requireMajor?: boolean; // Whether major selection is required
+	templateFileName?: string;
+	requireSemester?: boolean;
+	requireMajor?: boolean;
 }>;
 
-export default function ExcelImportForm<T extends { id: string }>({
+// Helper function to validate field value
+function validateFieldValue<T>(
+	field: { key: keyof T; title: string; required?: boolean },
+	value: unknown,
+	rowNumber: number,
+): string[] {
+	const errors: string[] = [];
+	const stringValue = value ? String(value).trim() : '';
+
+	// Required field validation
+	if (field.required && (!value || stringValue === '')) {
+		errors.push(`Row ${rowNumber}: Missing ${field.title}`);
+		return errors;
+	}
+
+	// Skip validation for empty optional fields
+	if (!field.required && (!value || stringValue === '')) {
+		return errors;
+	}
+
+	// Field-specific validation
+	switch (field.key) {
+		case 'fullName':
+			if (stringValue.length < 2) {
+				errors.push(
+					`Row ${rowNumber}: Full name must be at least 2 characters`,
+				);
+			}
+			if (stringValue.length > 100) {
+				errors.push(
+					`Row ${rowNumber}: Full name must be less than 100 characters`,
+				);
+			}
+			break;
+
+		case 'email':
+			const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+			if (!emailRegex.test(stringValue)) {
+				errors.push(`Row ${rowNumber}: Invalid email format`);
+			}
+			break;
+
+		case 'phoneNumber':
+			const phoneRegex =
+				/^(?:\+84|0084|84|0)(?:3[2-9]|5[2689]|7[06-9]|8[1-5]|9[0-4|6-9])\d{7}$/;
+			if (!phoneRegex.test(stringValue)) {
+				errors.push(`Row ${rowNumber}: Invalid Vietnamese phone number format`);
+			}
+			break;
+
+		case 'studentId':
+			const studentIdRegex = /^[A-Za-z]{2}\d{6}$/;
+			if (!studentIdRegex.test(stringValue)) {
+				errors.push(
+					`Row ${rowNumber}: Student ID must be 2 letters followed by 6 digits (e.g., QE123456)`,
+				);
+			}
+			break;
+
+		case 'gender':
+			if (!['Male', 'Female'].includes(stringValue)) {
+				errors.push(
+					`Row ${rowNumber}: Gender must be either 'Male' or 'Female'`,
+				);
+			}
+			break;
+	}
+
+	return errors;
+}
+
+// Helper function to check for duplicates
+function checkDuplicates<
+	T extends { id: string; email?: string; studentId?: string },
+>(item: T, validatedData: T[], rowNumber: number): string[] {
+	const errors: string[] = [];
+
+	// Check for duplicate student IDs
+	if ('studentId' in item && item['studentId']) {
+		const duplicateIndex = validatedData.findIndex(
+			(existingItem) =>
+				'studentId' in existingItem &&
+				existingItem['studentId'] === item['studentId'],
+		);
+		if (duplicateIndex !== -1) {
+			errors.push(
+				`Row ${rowNumber}: Duplicate Student ID '${item['studentId']}' found in row ${duplicateIndex + 2}`,
+			);
+		}
+	}
+
+	// Check for duplicate emails
+	if ('email' in item && item['email']) {
+		const duplicateIndex = validatedData.findIndex(
+			(existingItem) =>
+				'email' in existingItem &&
+				typeof existingItem['email'] === 'string' &&
+				String(existingItem['email']).toLowerCase() ===
+					String(item['email']).toLowerCase(),
+		);
+		if (duplicateIndex !== -1) {
+			errors.push(
+				`Row ${rowNumber}: Duplicate email '${item['email']}' found in row ${duplicateIndex + 2}`,
+			);
+		}
+	}
+
+	return errors;
+}
+
+// Helper function to parse Excel data
+function parseExcelData<T extends { id: string }>(
+	jsonData: string[][],
+	fields: { title: string; key: keyof T }[],
+): T[] {
+	const headers = jsonData[0];
+	const dataRows = jsonData.slice(1);
+
+	// Map headers to field keys
+	const fieldMapping: Record<string, keyof T> = {};
+	fields.forEach((field) => {
+		const headerIndex = headers.findIndex(
+			(header) =>
+				header?.toString().toLowerCase().trim() ===
+				field.title.toLowerCase().trim(),
+		);
+		if (headerIndex !== -1) {
+			fieldMapping[headerIndex] = field.key;
+		}
+	});
+
+	if (Object.keys(fieldMapping).length === 0) {
+		throw new Error(
+			'No matching columns found. Please ensure your Excel headers match the template.',
+		);
+	}
+
+	// Convert rows to objects
+	return dataRows
+		.filter((row) =>
+			row.some((cell) => cell !== undefined && cell !== null && cell !== ''),
+		)
+		.map((row, index) => {
+			const item = { id: `imported-${Date.now()}-${index}` } as Partial<T>;
+
+			Object.entries(fieldMapping).forEach(([colIndex, fieldKey]) => {
+				const cellValue = row[parseInt(colIndex)];
+				if (cellValue !== undefined && cellValue !== null && cellValue !== '') {
+					const stringValue = String(cellValue).trim();
+					item[fieldKey] = (
+						fieldKey === 'studentId' ? stringValue.toUpperCase() : stringValue
+					) as T[keyof T];
+				}
+			});
+
+			return item as T;
+		})
+		.filter((item) =>
+			fields.some(
+				(field) => item[field.key] && String(item[field.key]).trim() !== '',
+			),
+		);
+}
+
+// Helper function to validate all data
+function validateAllData<
+	T extends { id: string; email?: string; studentId?: string },
+>(
+	parsedData: T[],
+	fields: {
+		key: keyof T;
+		title: string;
+		required?: boolean;
+		type: string;
+		options?: { value: string }[];
+	}[],
+): { validatedData: T[]; validationErrors: string[] } {
+	const validationErrors: string[] = [];
+	const validatedData: T[] = [];
+
+	parsedData.forEach((item, index) => {
+		const rowErrors: string[] = [];
+		const rowNumber = index + 2;
+
+		// Validate each field
+		fields.forEach((field) => {
+			const fieldErrors = validateFieldValue(field, item[field.key], rowNumber);
+			rowErrors.push(...fieldErrors);
+
+			// Validate select fields
+			if (field.type === 'select' && field.options) {
+				const value = item[field.key];
+				const stringValue = value ? String(value).trim() : '';
+				if (stringValue && field.required) {
+					const validOptions = field.options.map((opt) => opt.value);
+					if (!validOptions.includes(stringValue)) {
+						rowErrors.push(
+							`Row ${rowNumber}: Invalid ${field.title}. Valid options: ${validOptions.join(', ')}`,
+						);
+					}
+				}
+			}
+		});
+
+		// Check for duplicates
+		const duplicateErrors = checkDuplicates(item, validatedData, rowNumber);
+		rowErrors.push(...duplicateErrors);
+
+		validationErrors.push(...rowErrors);
+
+		if (rowErrors.length === 0) {
+			validatedData.push(item);
+		}
+	});
+
+	return { validatedData, validationErrors };
+}
+
+export default function ExcelImportForm<
+	T extends { id: string; email?: string; studentId?: string },
+>({
 	note,
 	fields,
 	onImport,
@@ -78,7 +298,7 @@ export default function ExcelImportForm<T extends { id: string }>({
 	const [selectedMajor, setSelectedMajor] = useState<string>('');
 	const [downloading, setDownloading] = useState(false);
 
-	// Use Semester Store
+	// Store hooks
 	const {
 		semesters,
 		loading: semesterLoading,
@@ -86,7 +306,6 @@ export default function ExcelImportForm<T extends { id: string }>({
 		clearError: clearSemesterError,
 	} = useSemesterStore();
 
-	// Use Major Store
 	const {
 		majors,
 		loading: majorLoading,
@@ -94,47 +313,30 @@ export default function ExcelImportForm<T extends { id: string }>({
 		clearError: clearMajorError,
 	} = useMajorStore();
 
-	// Use Student Store for bulk creation
 	const { createManyStudents, creatingMany, fetchStudents } = useStudentStore();
 
-	// Fetch semesters and majors on component mount
+	// Effects
 	useEffect(() => {
-		if (requireSemester) {
-			fetchSemesters();
-		}
-		if (requireMajor) {
-			fetchMajors();
-		}
+		if (requireSemester) fetchSemesters();
+		if (requireMajor) fetchMajors();
 	}, [fetchSemesters, fetchMajors, requireSemester, requireMajor]);
 
-	// Clear errors when component mounts
 	useEffect(() => {
-		if (requireSemester) {
-			clearSemesterError();
-		}
-		if (requireMajor) {
-			clearMajorError();
-		}
+		if (requireSemester) clearSemesterError();
+		if (requireMajor) clearMajorError();
 		return () => {
-			if (requireSemester) {
-				clearSemesterError();
-			}
-			if (requireMajor) {
-				clearMajorError();
-			}
+			if (requireSemester) clearSemesterError();
+			if (requireMajor) clearMajorError();
 		};
 	}, [clearSemesterError, clearMajorError, requireSemester, requireMajor]);
 
-	// Filter semesters for user creation (only Preparing and Picking status)
+	// Computed values
 	const availableSemesters = semesters.filter(
 		(semester) =>
 			semester.status === 'Preparing' || semester.status === 'Picking',
 	);
-
-	// Check if there are any available semesters
 	const hasAvailableSemesters = availableSemesters.length > 0;
 
-	// Handle template download from public/files folder
 	const handleDownloadTemplate = async () => {
 		if (!templateFileName) {
 			showNotification.error('Error', 'Template file is not available');
@@ -143,17 +345,13 @@ export default function ExcelImportForm<T extends { id: string }>({
 
 		setDownloading(true);
 		try {
-			// Create download URL from public/files folder
 			const downloadUrl = `/files/${templateFileName}`;
-
-			// Create a temporary link to download the file
 			const link = document.createElement('a');
 			link.href = downloadUrl;
-			link.download = templateFileName; // Use the actual filename
+			link.download = templateFileName;
 			link.target = '_blank';
 			link.rel = 'noopener noreferrer';
 
-			// Append to body, click, and remove
 			document.body.appendChild(link);
 			link.click();
 			document.body.removeChild(link);
@@ -166,7 +364,6 @@ export default function ExcelImportForm<T extends { id: string }>({
 				'Failed to download template. Please try again.',
 			);
 		} finally {
-			// Reset downloading state after a short delay
 			setTimeout(() => setDownloading(false), 1000);
 		}
 	};
@@ -182,7 +379,6 @@ export default function ExcelImportForm<T extends { id: string }>({
 			return false;
 		}
 
-		// Read Excel file
 		const reader = new FileReader();
 		reader.onload = (e) => {
 			try {
@@ -192,12 +388,9 @@ export default function ExcelImportForm<T extends { id: string }>({
 					return;
 				}
 
-				// Parse Excel file
 				const workbook = XLSX.read(data, { type: 'binary' });
-				const sheetName = workbook.SheetNames[0]; // Get first sheet
+				const sheetName = workbook.SheetNames[0];
 				const worksheet = workbook.Sheets[sheetName];
-
-				// Convert to JSON
 				const jsonData = XLSX.utils.sheet_to_json(worksheet, {
 					header: 1,
 				}) as string[][];
@@ -210,201 +403,17 @@ export default function ExcelImportForm<T extends { id: string }>({
 					return;
 				}
 
-				// Get header row and data rows
-				const headers = jsonData[0];
-				const dataRows = jsonData.slice(1);
-
-				// Map headers to field keys (case-insensitive matching)
-				const fieldMapping: Record<string, keyof T> = {};
-				fields.forEach((field) => {
-					const headerIndex = headers.findIndex(
-						(header) =>
-							header?.toString().toLowerCase().trim() ===
-							field.title.toLowerCase().trim(),
-					);
-					if (headerIndex !== -1) {
-						fieldMapping[headerIndex] = field.key;
-					}
-				});
-
-				// Check if any fields were mapped
-				if (Object.keys(fieldMapping).length === 0) {
-					showNotification.error(
-						'Error',
-						'No matching columns found. Please ensure your Excel headers match the template.',
-					);
-					return;
-				}
-
-				// Convert rows to objects
-				const parsedData: T[] = dataRows
-					.filter((row) =>
-						row.some(
-							(cell) => cell !== undefined && cell !== null && cell !== '',
-						),
-					) // Filter out empty rows
-					.map((row, index) => {
-						const item = {
-							id: `imported-${Date.now()}-${index}` as string,
-						} as Partial<T>;
-
-						// Map each cell to corresponding field
-						Object.entries(fieldMapping).forEach(([colIndex, fieldKey]) => {
-							const cellValue = row[parseInt(colIndex)];
-							if (
-								cellValue !== undefined &&
-								cellValue !== null &&
-								cellValue !== ''
-							) {
-								item[fieldKey] = String(cellValue).trim() as T[keyof T];
-							}
-						});
-
-						return item as T;
-					})
-					.filter((item) => {
-						// Ensure at least one field has data
-						return fields.some(
-							(field) =>
-								item[field.key] && String(item[field.key]).trim() !== '',
-						);
-					});
-
+				const parsedData = parseExcelData(jsonData, fields);
 				if (parsedData.length === 0) {
 					showNotification.error('Error', 'No valid data found in Excel file');
 					return;
 				}
 
-				// Enhanced validation for each row
-				const validationErrors: string[] = [];
-				const validatedData: T[] = [];
+				const { validatedData, validationErrors } = validateAllData(
+					parsedData,
+					fields,
+				);
 
-				parsedData.forEach((item, index) => {
-					const rowErrors: string[] = [];
-					const rowNumber = index + 2; // Excel row number (starting from 2)
-
-					// Validate each field based on UserForm validation rules
-					fields.forEach((field) => {
-						const value = item[field.key];
-						const stringValue = value ? String(value).trim() : '';
-
-						// Required field validation
-						if (field.required && (!value || stringValue === '')) {
-							rowErrors.push(`Row ${rowNumber}: Missing ${field.title}`);
-							return;
-						}
-
-						// Skip validation for empty optional fields
-						if (!field.required && (!value || stringValue === '')) {
-							return;
-						}
-
-						// Field-specific validation based on field key
-						switch (field.key) {
-							case 'fullName':
-								if (stringValue.length < 2) {
-									rowErrors.push(
-										`Row ${rowNumber}: Full name must be at least 2 characters`,
-									);
-								}
-								if (stringValue.length > 100) {
-									rowErrors.push(
-										`Row ${rowNumber}: Full name must be less than 100 characters`,
-									);
-								}
-								break;
-
-							case 'email':
-								const emailRegex =
-									/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-								if (!emailRegex.test(stringValue)) {
-									rowErrors.push(`Row ${rowNumber}: Invalid email format`);
-								}
-								break;
-
-							case 'phoneNumber':
-								const phoneRegex =
-									/^(?:\+84|0084|84|0)(?:3[2-9]|5[2689]|7[06-9]|8[1-5]|9[0-4|6-9])\d{7}$/;
-								if (!phoneRegex.test(stringValue)) {
-									rowErrors.push(
-										`Row ${rowNumber}: Invalid Vietnamese phone number format`,
-									);
-								}
-								break;
-
-							case 'studentId':
-								const studentIdRegex = /^[A-Za-z]{2}\d{6}$/;
-								if (!studentIdRegex.test(stringValue)) {
-									rowErrors.push(
-										`Row ${rowNumber}: Student ID must be 2 letters followed by 6 digits (e.g., QE123456)`,
-									);
-								}
-								// Convert to uppercase for consistency
-								item[field.key] = stringValue.toUpperCase() as T[keyof T];
-								break;
-
-							case 'gender':
-								if (!['Male', 'Female'].includes(stringValue)) {
-									rowErrors.push(
-										`Row ${rowNumber}: Gender must be either 'Male' or 'Female'`,
-									);
-								}
-								break;
-
-							// Add validation for select fields
-							default:
-								if (field.type === 'select' && field.options) {
-									const validOptions = field.options.map((opt) => opt.value);
-									if (!validOptions.includes(stringValue)) {
-										rowErrors.push(
-											`Row ${rowNumber}: Invalid ${field.title}. Valid options: ${validOptions.join(', ')}`,
-										);
-									}
-								}
-								break;
-						}
-					});
-
-					// Check for duplicate student IDs within the imported data
-					if ('studentId' in item && item['studentId']) {
-						const duplicateIndex = validatedData.findIndex(
-							(existingItem) =>
-								'studentId' in existingItem &&
-								existingItem['studentId'] === item['studentId'],
-						);
-						if (duplicateIndex !== -1) {
-							rowErrors.push(
-								`Row ${rowNumber}: Duplicate Student ID '${item['studentId']}' found in row ${duplicateIndex + 2}`,
-							);
-						}
-					}
-
-					// Check for duplicate emails within the imported data
-					if ('email' in item && item['email']) {
-						const duplicateIndex = validatedData.findIndex(
-							(existingItem) =>
-								'email' in existingItem &&
-								typeof existingItem['email'] === 'string' &&
-								String(existingItem['email']).toLowerCase() ===
-									String(item['email']).toLowerCase(),
-						);
-						if (duplicateIndex !== -1) {
-							rowErrors.push(
-								`Row ${rowNumber}: Duplicate email '${item['email']}' found in row ${duplicateIndex + 2}`,
-							);
-						}
-					}
-
-					// Add row errors to overall validation errors
-					validationErrors.push(...rowErrors);
-
-					// Only add to validated data if no errors for this row
-					if (rowErrors.length === 0) {
-						validatedData.push(item);
-					}
-				});
-
-				// Show validation errors if any
 				if (validationErrors.length > 0) {
 					const errorMessage =
 						validationErrors.slice(0, 10).join('\n') +
@@ -417,26 +426,21 @@ export default function ExcelImportForm<T extends { id: string }>({
 						errorMessage,
 					);
 
-					// If there are validation errors, don't proceed
-					if (validatedData.length === 0) {
-						return;
-					}
+					if (validatedData.length === 0) return;
 				}
 
 				setData(validatedData);
 				setFileList([file]);
 
-				if (validationErrors.length > 0) {
-					showNotification.warning(
-						'Partial Import',
-						`${validatedData.length} out of ${parsedData.length} rows imported successfully. ${validationErrors.length} rows had validation errors.`,
-					);
-				} else {
-					showNotification.success(
-						'Success',
-						`${validatedData.length} rows imported successfully with no validation errors.`,
-					);
-				}
+				const successMessage =
+					validationErrors.length > 0
+						? `${validatedData.length} out of ${parsedData.length} rows imported successfully. ${validationErrors.length} rows had validation errors.`
+						: `${validatedData.length} rows imported successfully with no validation errors.`;
+
+				showNotification[validationErrors.length > 0 ? 'warning' : 'success'](
+					validationErrors.length > 0 ? 'Partial Import' : 'Success',
+					successMessage,
+				);
 			} catch (error) {
 				console.error('Error parsing Excel file:', error);
 				showNotification.error(
@@ -446,10 +450,8 @@ export default function ExcelImportForm<T extends { id: string }>({
 			}
 		};
 
-		reader.onerror = () => {
+		reader.onerror = () =>
 			showNotification.error('Error', 'Failed to read file');
-		};
-
 		reader.readAsBinaryString(file);
 		return false;
 	};
@@ -464,22 +466,21 @@ export default function ExcelImportForm<T extends { id: string }>({
 		setData((prev) => prev.filter((item) => item.id !== id));
 	};
 
-	const handleSemesterChange = (value: string) => {
-		setSelectedSemester(value);
-		// Clear data when semester changes
+	const clearDataOnChange = () => {
 		if (data.length > 0) {
 			setData([]);
 			setFileList([]);
 		}
 	};
 
+	const handleSemesterChange = (value: string) => {
+		setSelectedSemester(value);
+		clearDataOnChange();
+	};
+
 	const handleMajorChange = (value: string) => {
 		setSelectedMajor(value);
-		// Clear data when major changes
-		if (data.length > 0) {
-			setData([]);
-			setFileList([]);
-		}
+		clearDataOnChange();
 	};
 
 	const handleImportAll = async () => {
@@ -493,15 +494,9 @@ export default function ExcelImportForm<T extends { id: string }>({
 			return;
 		}
 
-		// Prepare student data with required semesterId and majorId
 		const studentsToCreate: StudentCreate[] = data.map((item) => {
-			// Create the base student data from the imported item
-
 			const studentData: Partial<StudentCreate> = { ...item, id: undefined };
 
-			// Remove the temporary id field used for the table
-
-			// Add required semesterId and majorId
 			if (requireSemester && selectedSemester) {
 				studentData.semesterId = selectedSemester;
 			}
@@ -514,21 +509,16 @@ export default function ExcelImportForm<T extends { id: string }>({
 		});
 
 		try {
-			// Use the store's createManyStudents function
 			const success = await createManyStudents(studentsToCreate);
 
 			if (success) {
-				// Refresh the students list
 				await fetchStudents();
-
-				// Clear form data
 				setData([]);
 				setFileList([]);
 				setSelectedSemester('');
 				setSelectedMajor('');
 				form.resetFields();
 
-				// Call the original onImport callback if needed for additional handling
 				onImport(
 					data,
 					requireSemester ? selectedSemester : undefined,
@@ -544,14 +534,12 @@ export default function ExcelImportForm<T extends { id: string }>({
 		}
 	};
 
-	// Calculate column span based on required fields
 	const getColumnSpan = () => {
 		const requiredFields = [requireSemester, requireMajor].filter(
 			Boolean,
 		).length;
-		if (requiredFields === 0) return 24; // No dropdowns
-		if (requiredFields === 1) return 24; // One dropdown full width
-		if (requiredFields === 2) return 12; // Two dropdowns, each half width
+		if (requiredFields === 0) return 24;
+		if (requiredFields === 1) return 24;
 		return 12;
 	};
 
@@ -617,7 +605,6 @@ export default function ExcelImportForm<T extends { id: string }>({
 
 	return (
 		<Space direction="vertical" size="middle" style={{ width: '100%' }}>
-			{/* Show warning when no available semesters (only if requireSemester) */}
 			{requireSemester && !semesterLoading && !hasAvailableSemesters && (
 				<Alert
 					type="warning"
@@ -639,7 +626,6 @@ export default function ExcelImportForm<T extends { id: string }>({
 				/>
 			)}
 
-			{/* Show info about allowed statuses (only if requireSemester) */}
 			{requireSemester && hasAvailableSemesters && (
 				<Alert
 					type="info"
@@ -662,11 +648,9 @@ export default function ExcelImportForm<T extends { id: string }>({
 				/>
 			)}
 
-			{/* Only show form if either semester or major is required */}
 			{(requireSemester || requireMajor) && (
 				<Form form={form} requiredMark={false} layout="vertical">
 					<Row gutter={16}>
-						{/* Semester dropdown - only show if requireSemester is true */}
 						{requireSemester && (
 							<Col xs={24} sm={getColumnSpan()}>
 								<Form.Item
@@ -709,7 +693,6 @@ export default function ExcelImportForm<T extends { id: string }>({
 							</Col>
 						)}
 
-						{/* Major dropdown - only show if requireMajor is true */}
 						{requireMajor && (
 							<Col xs={24} sm={getColumnSpan()}>
 								<Form.Item
@@ -803,7 +786,6 @@ export default function ExcelImportForm<T extends { id: string }>({
 						return Upload.LIST_IGNORE;
 					}
 
-					// Process the Excel file
 					return handleUpload(file);
 				}}
 				fileList={fileList}
