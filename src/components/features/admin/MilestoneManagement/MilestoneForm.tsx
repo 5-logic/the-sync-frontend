@@ -224,6 +224,9 @@ export default function MilestoneForm({
 								placeholder="Select semester"
 								loading={loadingSemesters}
 								allowClear
+								notFoundContent={
+									loadingSemesters ? 'Loading...' : 'No semester available'
+								}
 								onChange={(value) => {
 									// Explicitly set the form field value
 									form.setFieldValue('semesterId', value);
