@@ -48,11 +48,13 @@ export default function CreateMilestoneForm({
 
 	return (
 		<>
+			{' '}
 			<MilestoneForm
 				form={form}
 				semesters={semesters}
 				loadingSemesters={loadingSemesters}
 				existingMilestones={existingMilestones}
+				showSemesterField={true}
 			/>
 			<Row justify="end" style={{ marginTop: 16 }}>
 				<Button
