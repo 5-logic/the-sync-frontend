@@ -7,44 +7,31 @@ export type ExtendedGroup = Group & {
 	status: 'Finalized' | 'Incomplete' | 'Unassigned';
 };
 
+// ======= Helpers =======
+const now = new Date();
+
+const createGroup = (
+	id: string,
+	code: string,
+	name: string,
+	semesterId: string,
+	thesisId: string,
+): Group => ({
+	id,
+	code,
+	name,
+	semesterId,
+	thesisId,
+	createdAt: now,
+	updatedAt: now,
+});
+
 // ===== Gốc: Dữ liệu group =====
 const mockGroups: Group[] = [
-	{
-		id: 'g1',
-		code: 'G1',
-		name: 'Group A',
-		semesterId: '20251',
-		thesisId: 't1',
-		createdAt: new Date(),
-		updatedAt: new Date(),
-	},
-	{
-		id: 'g2',
-		code: 'G2',
-		name: 'Group B',
-		semesterId: '20242',
-		thesisId: 't2',
-		createdAt: new Date(),
-		updatedAt: new Date(),
-	},
-	{
-		id: 'g3',
-		code: 'G3',
-		name: 'Group C',
-		semesterId: '20252',
-		thesisId: 't3',
-		createdAt: new Date(),
-		updatedAt: new Date(),
-	},
-	{
-		id: 'g4',
-		code: 'G4',
-		name: 'Group D',
-		semesterId: '20252',
-		thesisId: 't4',
-		createdAt: new Date(),
-		updatedAt: new Date(),
-	},
+	createGroup('g1', 'G1', 'Group A', '20251', 't1'),
+	createGroup('g2', 'G2', 'Group B', '20242', 't2'),
+	createGroup('g3', 'G3', 'Group C', '20252', 't3'),
+	createGroup('g4', 'G4', 'Group D', '20252', 't4'),
 ];
 
 // ===== Metadata bổ sung =====
@@ -76,7 +63,7 @@ const metaData: Record<string, GroupMeta> = {
 	},
 };
 
-// ===== Hàm merge gọn gàng (tránh duplication) =====
+// ===== Merge group + metadata =====
 export const extendedGroups: ExtendedGroup[] = mockGroups.map((group) => ({
 	...group,
 	...(metaData[group.id] ?? {
