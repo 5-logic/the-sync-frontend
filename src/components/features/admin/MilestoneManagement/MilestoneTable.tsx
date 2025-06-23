@@ -6,6 +6,7 @@ import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 import { useState } from 'react';
 
+import { TablePagination } from '@/components/common/TablePagination';
 import EditMilestoneDialog from '@/components/features/admin/MilestoneManagement/EditMilestoneDialog';
 import { formatDate } from '@/lib/utils/dateFormat';
 import { Milestone } from '@/schemas/milestone';
@@ -134,13 +135,7 @@ export default function MilestoneTable({
 				dataSource={data}
 				loading={loading}
 				rowKey="id"
-				pagination={{
-					showTotal: (total, range) =>
-						`${range[0]}-${range[1]} of ${total} items`,
-					showSizeChanger: true,
-					pageSizeOptions: ['5', '10', '20', '50'],
-					defaultPageSize: 10,
-				}}
+				pagination={TablePagination}
 				scroll={{ x: 'max-content' }}
 				locale={{
 					emptyText: loading ? 'Loading...' : 'No milestones found',

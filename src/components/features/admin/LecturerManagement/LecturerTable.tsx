@@ -1,5 +1,6 @@
 import { Switch, Table, Tag } from 'antd';
 
+import { TablePagination } from '@/components/common/TablePagination';
 import { Lecturer } from '@/schemas/lecturer';
 
 type Props = Readonly<{
@@ -49,12 +50,7 @@ export default function LecturerTable({ data, onTogglePermission }: Props) {
 			dataSource={data}
 			rowKey="id"
 			scroll={{ x: 'max-content' }}
-			pagination={{
-				showTotal: (total, range) =>
-					`${range[0]}-${range[1]} of ${total} items`,
-				showSizeChanger: true,
-				pageSizeOptions: ['5', '10', '20', '50'],
-			}}
+			pagination={TablePagination}
 		/>
 	);
 }
