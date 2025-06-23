@@ -36,7 +36,6 @@ const STATUS_TAG: Record<SemesterStatus, JSX.Element> = {
 
 type UserFormProps = {
 	formType: 'student' | 'lecturer';
-	onSubmit?: (values: Record<string, unknown>) => void;
 };
 
 const UserForm = ({ formType }: UserFormProps) => {
