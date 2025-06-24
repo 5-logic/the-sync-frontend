@@ -12,6 +12,7 @@ import {
 	Space,
 	Steps,
 	Table,
+	Timeline,
 	Typography,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
@@ -142,9 +143,9 @@ export default function GroupProgressPage() {
 						</Steps>
 					</Card>
 
-					<Row gutter={16}>
+					<Row gutter={16} align="stretch">
 						<Col xs={24} md={16}>
-							<Card title={`Milestone 3 - Review 2`}>
+							<Card title={`Milestone 3 - Review 2`} style={{ height: '100%' }}>
 								<p>
 									Submission file: {selectedGroup.submissionFile}{' '}
 									<Button icon={<DownloadOutlined />} type="link">
@@ -168,17 +169,49 @@ export default function GroupProgressPage() {
 						</Col>
 
 						<Col xs={24} md={8}>
-							<Card title="Progress Overview">
-								<p>
+							<Card
+								title="Progress Overview"
+								style={{
+									height: '100%',
+									display: 'flex',
+									flexDirection: 'column',
+									justifyContent: 'space-between',
+								}}
+							>
+								<div>
 									<Text type="warning">{selectedGroup.milestoneAlert}</Text>
-								</p>
-								<Progress percent={selectedGroup.progress} />
-								<ul>
-									{selectedGroup.milestones.map((m, index) => (
-										<li key={index}>{m}</li>
-									))}
-								</ul>
-								<Button type="primary">View Thesis Details</Button>
+									<div
+										style={{
+											display: 'flex',
+											justifyContent: 'space-between',
+											marginTop: 8,
+										}}
+									>
+										<Text strong>Overall Progress</Text>
+										<Text type="secondary">{selectedGroup.progress}%</Text>
+									</div>
+									<Progress
+										percent={selectedGroup.progress}
+										showInfo={false}
+										style={{ marginBottom: 16 }}
+									/>
+
+									<Timeline>
+										{selectedGroup.milestones.map((m, index) => {
+											let color = 'gray';
+											if (m.includes('Completed')) color = 'green';
+											else if (m.includes('In Progress')) color = 'blue';
+											return (
+												<Timeline.Item key={index} color={color}>
+													{m}
+												</Timeline.Item>
+											);
+										})}
+									</Timeline>
+								</div>
+								<Button type="primary" block style={{ marginTop: 16 }}>
+									View Thesis Details
+								</Button>
 							</Card>
 						</Col>
 					</Row>

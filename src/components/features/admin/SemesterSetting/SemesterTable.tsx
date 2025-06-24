@@ -23,8 +23,8 @@ import {
 	useState,
 } from 'react';
 
-import { SEMESTER_STATUS_TAGS } from '@/lib/constants/semester';
 import { TablePagination } from '@/components/common/TablePagination';
+import { SEMESTER_STATUS_TAGS } from '@/lib/constants/semester';
 import semesterService from '@/lib/services/semesters.service';
 import { showNotification } from '@/lib/utils/notification';
 import { SemesterStatus } from '@/schemas/_enums';
