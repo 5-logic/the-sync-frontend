@@ -378,7 +378,45 @@ export function createSearchFilter<T>(
 	};
 }
 
-// Common store utilities
+// Generic toggle status action
+export function createToggleStatusAction<T extends { id: string }, TToggle>(
+	service: {
+		toggleStatus: (id: string, data: TToggle) => Promise<ApiResponse<T>>;
+	},
+	entityName: string,
+) {
+	return (
+			set: StoreApi<Record<string, unknown>>['setState'],
+			get: StoreApi<Record<string, unknown>>['getState'],
+		) =>
+		async (id: string, data: TToggle): Promise<boolean> => {
+			const loadingField = 'togglingStatus';
+			set({ [loadingField]: true, lastError: null });
+			try {
+				const response = await service.toggleStatus(id, data);
+				const result = handleApiResponse(
+					response,
+					`${entityName.charAt(0).toUpperCase() + entityName.slice(1)} status updated successfully`,
+				);
+				if (result.success && result.data) {
+					handleUpdateSuccess(result.data, id, entityName, set, get);
+					return true;
+				}
+
+				if (result.error) {
+					handleResultError(result.error, set);
+					return false;
+				}
+			} catch (error) {
+				handleActionError(error, entityName, 'toggle status', set);
+				return false;
+			} finally {
+				set({ [loadingField]: false });
+			}
+			return false;
+		};
+}
+
 export const commonStoreUtilities = {
 	clearError: () => ({ lastError: null }),
 	createSetSearchText:
@@ -419,6 +457,7 @@ export const commonStoreUtilities = {
 				creating: false,
 				updating: false,
 				deleting: false,
+				togglingStatus: false,
 				lastError: null,
 				searchText: '',
 			};
