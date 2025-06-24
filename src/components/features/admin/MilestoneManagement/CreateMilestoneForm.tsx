@@ -22,9 +22,7 @@ export default function CreateMilestoneForm({
 	existingMilestones,
 	onSubmit,
 }: Props) {
-	const [form] = Form.useForm();
-
-	// Handle form submission
+	const [form] = Form.useForm(); // Handle form submission
 	const handleSubmit = async () => {
 		try {
 			const values = await form.validateFields();
@@ -48,11 +46,13 @@ export default function CreateMilestoneForm({
 
 	return (
 		<>
+			{' '}
 			<MilestoneForm
 				form={form}
 				semesters={semesters}
 				loadingSemesters={loadingSemesters}
 				existingMilestones={existingMilestones}
+				showSemesterField={true}
 			/>
 			<Row justify="end" style={{ marginTop: 16 }}>
 				<Button

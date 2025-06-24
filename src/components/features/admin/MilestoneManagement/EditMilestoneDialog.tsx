@@ -33,12 +33,17 @@ export default function EditMilestoneDialog({
 			form.resetFields();
 		}
 	}, [open, form]);
-
 	const handleSubmit = async () => {
 		if (!milestone) return;
 
 		// Check if milestone has already started
 		if (dayjs(milestone.startDate).isBefore(dayjs(), 'day')) {
+			return;
+		}
+
+		// Check if semester status allows editing
+		const semester = semesters.find((s) => s.id === milestone.semesterId);
+		if (semester && semester.status !== 'Ongoing') {
 			return;
 		}
 
@@ -48,12 +53,11 @@ export default function EditMilestoneDialog({
 			// Convert date range to individual dates
 			const duration = values.duration ?? [];
 			const [startDate, endDate] = duration;
-
 			const milestoneData: MilestoneUpdate = {
 				name: values.milestoneName,
 				startDate: startDate?.toDate(),
 				endDate: endDate?.toDate(),
-				semesterId: values.semesterId,
+				// Don't update semesterId since it's not editable
 			};
 
 			const success = await updateMilestone(milestone.id, milestoneData);
@@ -69,11 +73,17 @@ export default function EditMilestoneDialog({
 		form.resetFields();
 		onClose();
 	};
-
-	// Check if milestone has started
+	// Check if milestone has started or semester is not ongoing
 	const milestoneHasStarted = milestone
 		? dayjs(milestone.startDate).isBefore(dayjs(), 'day')
 		: false;
+
+	const semester = milestone
+		? semesters.find((s) => s.id === milestone.semesterId)
+		: null;
+	const semesterNotOngoing = semester ? semester.status !== 'Ongoing' : false;
+
+	const isEditDisabled = milestoneHasStarted ?? semesterNotOngoing;
 
 	return (
 		<Modal
@@ -87,10 +97,11 @@ export default function EditMilestoneDialog({
 			width={600}
 			destroyOnHidden
 			okButtonProps={{
-				disabled: milestoneHasStarted,
+				disabled: isEditDisabled,
 			}}
+			centered
 		>
-			{milestoneHasStarted && (
+			{(milestoneHasStarted || semesterNotOngoing) && (
 				<div
 					style={{
 						padding: '12px',
@@ -101,15 +112,19 @@ export default function EditMilestoneDialog({
 						color: '#d46b08',
 					}}
 				>
-					⚠️ This milestone has already started and cannot be edited.
+					⚠️{' '}
+					{milestoneHasStarted
+						? 'This milestone has already started and cannot be edited.'
+						: 'This milestone cannot be edited because the semester is not in Ongoing status.'}
 				</div>
-			)}
+			)}{' '}
 			<MilestoneForm
 				form={form}
 				semesters={semesters}
 				existingMilestones={existingMilestones}
 				milestone={milestone}
-				disabled={milestoneHasStarted}
+				disabled={isEditDisabled}
+				showSemesterField={false}
 			/>
 		</Modal>
 	);
