@@ -434,6 +434,296 @@ function createTableColumns<
 	];
 }
 
+// Component for semester availability alerts
+function SemesterAlerts({
+	requireSemester,
+	semesterLoading,
+	hasAvailableSemesters,
+}: Readonly<{
+	requireSemester: boolean;
+	semesterLoading: boolean;
+	hasAvailableSemesters: boolean;
+}>) {
+	if (!requireSemester) return null;
+
+	if (!semesterLoading && !hasAvailableSemesters) {
+		return (
+			<Alert
+				type="warning"
+				showIcon
+				message="No Available Semesters"
+				description={
+					<div>
+						<p>
+							Student accounts can only be created for semesters with{' '}
+							<strong>Preparing</strong> or <strong>Picking</strong> status.
+						</p>
+						<p>
+							Currently, there are no semesters in these statuses available for
+							student creation.
+						</p>
+					</div>
+				}
+				style={{ marginBottom: 16 }}
+			/>
+		);
+	}
+
+	if (hasAvailableSemesters) {
+		return (
+			<Alert
+				type="info"
+				showIcon
+				message="Student Creation Policy"
+				description={
+					<div>
+						Student accounts can only be created for semesters with{' '}
+						<Tag color="orange" style={{ margin: '0 4px' }}>
+							Preparing
+						</Tag>
+						or
+						<Tag color="purple" style={{ margin: '0 4px' }}>
+							Picking
+						</Tag>
+						status.
+					</div>
+				}
+				style={{ marginBottom: 0 }}
+			/>
+		);
+	}
+
+	return null;
+}
+
+// Component for form fields selection
+function SelectionForm({
+	form,
+	requireSemester,
+	requireMajor,
+	getColumnSpan,
+	availableSemesters,
+	hasAvailableSemesters,
+	semesterLoading,
+	handleSemesterChange,
+	selectedSemester,
+	majors,
+	majorLoading,
+	handleMajorChange,
+	selectedMajor,
+}: Readonly<{
+	form: ReturnType<typeof Form.useForm>[0];
+	requireSemester: boolean;
+	requireMajor: boolean;
+	getColumnSpan: () => number;
+	availableSemesters: Array<{
+		id: string;
+		name: string;
+		status: SemesterStatus;
+	}>;
+	hasAvailableSemesters: boolean;
+	semesterLoading: boolean;
+	handleSemesterChange: (value: string) => void;
+	selectedSemester: string;
+	majors: Array<{ id: string; name: string }>;
+	majorLoading: boolean;
+	handleMajorChange: (value: string) => void;
+	selectedMajor: string;
+}>) {
+	if (!requireSemester && !requireMajor) return null;
+
+	return (
+		<Form form={form} requiredMark={false} layout="vertical">
+			<Row gutter={16}>
+				{requireSemester && (
+					<Col xs={24} sm={getColumnSpan()}>
+						<Form.Item
+							name="semester"
+							rules={[{ required: true, message: 'Please select a semester' }]}
+							label={FormLabel({
+								text: 'Semester',
+								isRequired: true,
+								isBold: true,
+							})}
+						>
+							<Select
+								placeholder={
+									hasAvailableSemesters
+										? 'Select semester (Preparing or Picking status only)'
+										: 'No available semesters for user creation'
+								}
+								loading={semesterLoading}
+								onChange={handleSemesterChange}
+								value={selectedSemester ?? undefined}
+								disabled={!hasAvailableSemesters}
+								notFoundContent={
+									!semesterLoading && !hasAvailableSemesters
+										? 'No semesters with Preparing or Picking status found'
+										: undefined
+								}
+							>
+								{availableSemesters.map((semester) => (
+									<Select.Option key={semester.id} value={semester.id}>
+										<Space>
+											<span>{semester.name}</span>
+											{STATUS_TAG[semester.status]}
+										</Space>
+									</Select.Option>
+								))}
+							</Select>
+						</Form.Item>
+					</Col>
+				)}
+
+				{requireMajor && (
+					<Col xs={24} sm={getColumnSpan()}>
+						<Form.Item
+							name="major"
+							rules={[{ required: true, message: 'Please select a major' }]}
+							label={FormLabel({
+								text: 'Major',
+								isRequired: true,
+								isBold: true,
+							})}
+						>
+							<Select
+								placeholder="Select major"
+								loading={majorLoading}
+								onChange={handleMajorChange}
+								value={selectedMajor ?? undefined}
+								disabled={!majors.length}
+								notFoundContent={
+									!majorLoading && !majors.length
+										? 'No majors found'
+										: undefined
+								}
+							>
+								{majors.map((major) => (
+									<Select.Option key={major.id} value={major.id}>
+										{major.name}
+									</Select.Option>
+								))}
+							</Select>
+						</Form.Item>
+					</Col>
+				)}
+			</Row>
+		</Form>
+	);
+}
+
+// Helper function to get upload text
+function getUploadText(
+	requireSemester: boolean,
+	hasAvailableSemesters: boolean,
+	selectedSemester: string,
+	requireMajor: boolean,
+	selectedMajor: string,
+): string {
+	if (requireSemester && !hasAvailableSemesters) {
+		return 'No available semesters for user creation';
+	}
+	if (requireSemester && !selectedSemester) {
+		return 'Please select a semester first';
+	}
+	if (requireMajor && !selectedMajor) {
+		return 'Please select a major first';
+	}
+	return 'Drag and drop Excel file here, or click to browse';
+}
+
+// Component for imported data table
+function ImportedDataTable<
+	T extends { id: string; email?: string; studentId?: string },
+>({
+	data,
+	columns,
+	setData,
+	setFileList,
+	handleImportAll,
+	creatingMany,
+	requireSemester,
+	selectedSemester,
+	requireMajor,
+	selectedMajor,
+}: Readonly<{
+	data: T[];
+	columns: ColumnsType<T>;
+	setData: (data: T[]) => void;
+	setFileList: (files: RcFile[]) => void;
+	handleImportAll: () => void;
+	creatingMany: boolean;
+	requireSemester: boolean;
+	selectedSemester: string;
+	requireMajor: boolean;
+	selectedMajor: string;
+}>) {
+	if (data.length === 0) return null;
+
+	return (
+		<Space direction="vertical" style={{ width: '100%' }} size="middle">
+			<Alert
+				type="success"
+				showIcon
+				message={
+					<Space direction="vertical" size={4}>
+						<Space>
+							<Typography.Text strong>
+								{data.length} users data imported successfully
+							</Typography.Text>
+						</Space>
+					</Space>
+				}
+				style={{ borderColor: '#bbf7d0', color: '#15803d' }}
+			/>
+
+			<Table
+				dataSource={data}
+				columns={columns}
+				pagination={{
+					showSizeChanger: true,
+					showQuickJumper: true,
+					showTotal: (total, range) =>
+						`${range[0]}-${range[1]} of ${total} items`,
+				}}
+				bordered
+				rowKey="id"
+				scroll={{ x: '850' }}
+			/>
+
+			<Row justify="end" gutter={8}>
+				<Col>
+					<Button
+						onClick={() => {
+							setData([]);
+							setFileList([]);
+						}}
+					>
+						Cancel
+					</Button>
+				</Col>
+				<Col>
+					<Button
+						type="primary"
+						onClick={handleImportAll}
+						loading={creatingMany}
+						disabled={
+							(requireSemester && !selectedSemester) ||
+							data.length === 0 ||
+							(requireMajor && !selectedMajor) ||
+							creatingMany
+						}
+					>
+						{creatingMany
+							? `Creating Students...`
+							: `Import All Users (${data.length})`}
+					</Button>
+				</Col>
+			</Row>
+		</Space>
+	);
+}
+
 export default function ExcelImportForm<
 	T extends { id: string; email?: string; studentId?: string },
 >({
@@ -520,7 +810,8 @@ export default function ExcelImportForm<
 			setTimeout(() => setDownloading(false), 1000);
 		}
 	};
-	const handleUpload = (file: RcFile) => {
+	const handleUpload = (file: RcFile): boolean => {
+		// Validate prerequisites first
 		if (
 			!validateUploadPrerequisites(
 				requireSemester,
@@ -532,6 +823,7 @@ export default function ExcelImportForm<
 			return false;
 		}
 
+		// Start file processing
 		const reader = new FileReader();
 		reader.onload = (e) => {
 			const data = e.target?.result;
@@ -563,6 +855,8 @@ export default function ExcelImportForm<
 		reader.onerror = () =>
 			showNotification.error('Error', 'Failed to read file');
 		reader.readAsArrayBuffer(file);
+
+		// Return false to prevent default upload behavior (we handle it manually)
 		return false;
 	};
 
@@ -645,185 +939,7 @@ export default function ExcelImportForm<
 		return 12;
 	};
 	const columns = createTableColumns(fields, handleFieldChange, handleDelete);
-	// Component for semester availability alerts
-	function SemesterAlerts({
-		requireSemester,
-		semesterLoading,
-		hasAvailableSemesters,
-	}: {
-		requireSemester: boolean;
-		semesterLoading: boolean;
-		hasAvailableSemesters: boolean;
-	}) {
-		if (!requireSemester) return null;
 
-		if (!semesterLoading && !hasAvailableSemesters) {
-			return (
-				<Alert
-					type="warning"
-					showIcon
-					message="No Available Semesters"
-					description={
-						<div>
-							<p>
-								Student accounts can only be created for semesters with{' '}
-								<strong>Preparing</strong> or <strong>Picking</strong> status.
-							</p>
-							<p>
-								Currently, there are no semesters in these statuses available
-								for student creation.
-							</p>
-						</div>
-					}
-					style={{ marginBottom: 16 }}
-				/>
-			);
-		}
-
-		if (hasAvailableSemesters) {
-			return (
-				<Alert
-					type="info"
-					showIcon
-					message="Student Creation Policy"
-					description={
-						<div>
-							Student accounts can only be created for semesters with{' '}
-							<Tag color="orange" style={{ margin: '0 4px' }}>
-								Preparing
-							</Tag>
-							or
-							<Tag color="purple" style={{ margin: '0 4px' }}>
-								Picking
-							</Tag>
-							status.
-						</div>
-					}
-					style={{ marginBottom: 0 }}
-				/>
-			);
-		}
-
-		return null;
-	}
-
-	// Component for form fields selection
-	function SelectionForm({
-		form,
-		requireSemester,
-		requireMajor,
-		getColumnSpan,
-		availableSemesters,
-		hasAvailableSemesters,
-		semesterLoading,
-		handleSemesterChange,
-		selectedSemester,
-		majors,
-		majorLoading,
-		handleMajorChange,
-		selectedMajor,
-	}: {
-		form: ReturnType<typeof Form.useForm>[0];
-		requireSemester: boolean;
-		requireMajor: boolean;
-		getColumnSpan: () => number;
-		availableSemesters: Array<{
-			id: string;
-			name: string;
-			status: SemesterStatus;
-		}>;
-		hasAvailableSemesters: boolean;
-		semesterLoading: boolean;
-		handleSemesterChange: (value: string) => void;
-		selectedSemester: string;
-		majors: Array<{ id: string; name: string }>;
-		majorLoading: boolean;
-		handleMajorChange: (value: string) => void;
-		selectedMajor: string;
-	}) {
-		if (!requireSemester && !requireMajor) return null;
-
-		return (
-			<Form form={form} requiredMark={false} layout="vertical">
-				<Row gutter={16}>
-					{requireSemester && (
-						<Col xs={24} sm={getColumnSpan()}>
-							<Form.Item
-								name="semester"
-								rules={[
-									{ required: true, message: 'Please select a semester' },
-								]}
-								label={FormLabel({
-									text: 'Semester',
-									isRequired: true,
-									isBold: true,
-								})}
-							>
-								<Select
-									placeholder={
-										hasAvailableSemesters
-											? 'Select semester (Preparing or Picking status only)'
-											: 'No available semesters for user creation'
-									}
-									loading={semesterLoading}
-									onChange={handleSemesterChange}
-									value={selectedSemester ?? undefined}
-									disabled={!hasAvailableSemesters}
-									notFoundContent={
-										!semesterLoading && !hasAvailableSemesters
-											? 'No semesters with Preparing or Picking status found'
-											: undefined
-									}
-								>
-									{availableSemesters.map((semester) => (
-										<Select.Option key={semester.id} value={semester.id}>
-											<Space>
-												<span>{semester.name}</span>
-												{STATUS_TAG[semester.status]}
-											</Space>
-										</Select.Option>
-									))}
-								</Select>
-							</Form.Item>
-						</Col>
-					)}
-
-					{requireMajor && (
-						<Col xs={24} sm={getColumnSpan()}>
-							<Form.Item
-								name="major"
-								rules={[{ required: true, message: 'Please select a major' }]}
-								label={FormLabel({
-									text: 'Major',
-									isRequired: true,
-									isBold: true,
-								})}
-							>
-								<Select
-									placeholder="Select major"
-									loading={majorLoading}
-									onChange={handleMajorChange}
-									value={selectedMajor ?? undefined}
-									disabled={!majors.length}
-									notFoundContent={
-										!majorLoading && !majors.length
-											? 'No majors found'
-											: undefined
-									}
-								>
-									{majors.map((major) => (
-										<Select.Option key={major.id} value={major.id}>
-											{major.name}
-										</Select.Option>
-									))}
-								</Select>
-							</Form.Item>
-						</Col>
-					)}
-				</Row>
-			</Form>
-		);
-	}
 	// Helper function to validate file type
 	const isExcelFile = (file: RcFile): boolean => {
 		const validMimeTypes = [
@@ -836,117 +952,7 @@ export default function ExcelImportForm<
 			validExtensions.some((ext) => file.name.endsWith(ext))
 		);
 	};
-	// Helper function to get upload text
-	function getUploadText(
-		requireSemester: boolean,
-		hasAvailableSemesters: boolean,
-		selectedSemester: string,
-		requireMajor: boolean,
-		selectedMajor: string,
-	): string {
-		if (requireSemester && !hasAvailableSemesters) {
-			return 'No available semesters for user creation';
-		}
-		if (requireSemester && !selectedSemester) {
-			return 'Please select a semester first';
-		}
-		if (requireMajor && !selectedMajor) {
-			return 'Please select a major first';
-		}
-		return 'Drag and drop Excel file here, or click to browse';
-	}
 
-	// Component for imported data table
-	function ImportedDataTable<
-		T extends { id: string; email?: string; studentId?: string },
-	>({
-		data,
-		columns,
-		setData,
-		setFileList,
-		handleImportAll,
-		creatingMany,
-		requireSemester,
-		selectedSemester,
-		requireMajor,
-		selectedMajor,
-	}: {
-		data: T[];
-		columns: ColumnsType<T>;
-		setData: (data: T[]) => void;
-		setFileList: (files: RcFile[]) => void;
-		handleImportAll: () => void;
-		creatingMany: boolean;
-		requireSemester: boolean;
-		selectedSemester: string;
-		requireMajor: boolean;
-		selectedMajor: string;
-	}) {
-		if (data.length === 0) return null;
-
-		return (
-			<Space direction="vertical" style={{ width: '100%' }} size="middle">
-				<Alert
-					type="success"
-					showIcon
-					message={
-						<Space direction="vertical" size={4}>
-							<Space>
-								<Typography.Text strong>
-									{data.length} users data imported successfully
-								</Typography.Text>
-							</Space>
-						</Space>
-					}
-					style={{ borderColor: '#bbf7d0', color: '#15803d' }}
-				/>
-
-				<Table
-					dataSource={data}
-					columns={columns}
-					pagination={{
-						showSizeChanger: true,
-						showQuickJumper: true,
-						showTotal: (total, range) =>
-							`${range[0]}-${range[1]} of ${total} items`,
-					}}
-					bordered
-					rowKey="id"
-					scroll={{ x: '850' }}
-				/>
-
-				<Row justify="end" gutter={8}>
-					<Col>
-						<Button
-							onClick={() => {
-								setData([]);
-								setFileList([]);
-							}}
-						>
-							Cancel
-						</Button>
-					</Col>
-					<Col>
-						<Button
-							type="primary"
-							onClick={handleImportAll}
-							loading={creatingMany}
-							disabled={
-								(requireSemester && !selectedSemester) ||
-								data.length === 0 ||
-								(requireMajor && !selectedMajor) ||
-								creatingMany
-							}
-						>
-							{creatingMany
-								? `Creating Students...`
-								: `Import All Users (${data.length})`}
-						</Button>
-					</Col>
-				</Row>
-			</Space>
-		);
-	}
 	// Helper function to validate file size
 	const isValidFileSize = (file: RcFile, maxSizeMB = 100): boolean => {
 		return file.size / 1024 / 1024 < maxSizeMB;
