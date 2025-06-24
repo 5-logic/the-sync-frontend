@@ -1,6 +1,5 @@
 import { createMetadata } from '@/app/metadata';
-
-// import ThesisManagementClient from '@/components/pages/lecturer/ThesisManagementClient';
+import GroupProgressPage from '@/components/features/lecturer/GroupProgess';
 
 export const metadata = createMetadata({
 	title: 'Lecturer Group Progress',
@@ -9,5 +8,5 @@ export const metadata = createMetadata({
 });
 
 export default function LecturerGroupProgressPage() {
-	// return <ThesisManagementClient />;
+	return <GroupProgressPage />;
 }
