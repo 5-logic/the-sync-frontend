@@ -811,7 +811,7 @@ export default function ExcelImportForm<
 		}
 	};
 	const handleUpload = (file: RcFile): boolean => {
-		// Validate prerequisites first
+		// Validate prerequisites first - return false if validation fails
 		if (
 			!validateUploadPrerequisites(
 				requireSemester,
@@ -820,10 +820,12 @@ export default function ExcelImportForm<
 				selectedMajor,
 			)
 		) {
+			// Prerequisites not met - reject the file upload
 			return false;
 		}
 
-		// Start file processing
+		// Start file processing - return false to prevent default upload behavior
+		// (we handle the upload manually via FileReader)
 		const reader = new FileReader();
 		reader.onload = (e) => {
 			const data = e.target?.result;
@@ -856,7 +858,8 @@ export default function ExcelImportForm<
 			showNotification.error('Error', 'Failed to read file');
 		reader.readAsArrayBuffer(file);
 
-		// Return false to prevent default upload behavior (we handle it manually)
+		// Return false to prevent Ant Design's default upload behavior
+		// This is intentional - we handle the file processing manually
 		return false;
 	};
 
