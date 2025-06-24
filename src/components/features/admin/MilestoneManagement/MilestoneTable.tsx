@@ -11,6 +11,7 @@ import dayjs from 'dayjs';
 import { useState } from 'react';
 
 import { FormLabel } from '@/components/common/FormLabel';
+import { TablePagination } from '@/components/common/TablePagination';
 import EditMilestoneDialog from '@/components/features/admin/MilestoneManagement/EditMilestoneDialog';
 import { SEMESTER_STATUS_TAGS } from '@/lib/constants/semester';
 import { formatDate } from '@/lib/utils/dateFormat';
@@ -226,13 +227,7 @@ export default function MilestoneTable({
 				dataSource={sortedData}
 				loading={loading}
 				rowKey="id"
-				pagination={{
-					showTotal: (total, range) =>
-						`${range[0]}-${range[1]} of ${total} items`,
-					showSizeChanger: true,
-					pageSizeOptions: ['10', '20', '50', '100'],
-					defaultPageSize: 10,
-				}}
+				pagination={TablePagination}
 				scroll={{ x: 'max-content' }}
 				locale={{
 					emptyText: loading ? 'Loading...' : 'No milestones found',
