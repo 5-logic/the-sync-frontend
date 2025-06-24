@@ -52,11 +52,11 @@ export default function StudentManagement() {
 				</Paragraph>
 			</div>
 			<StudentFilterBar
-				semesterFilter={selectedSemesterId || 'All'}
+				semesterFilter={selectedSemesterId ?? 'All'}
 				setSemesterFilter={setSelectedSemesterId}
 				statusFilter={selectedStatus}
 				setStatusFilter={setSelectedStatus}
-				majorFilter={selectedMajorId || 'All'}
+				majorFilter={selectedMajorId ?? 'All'}
 				setMajorFilter={setSelectedMajorId}
 				searchText={searchText}
 				setSearchText={setSearchText}
