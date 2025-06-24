@@ -59,7 +59,7 @@ const CollapsibleLayout: React.FC<CollapsibleLayoutProps> = ({
 						onMenuClick={handleMobileMenuClick}
 					>
 						{sidebar}
-					</SidebarSection>{' '}
+					</SidebarSection>
 					{/* Main Layout */}
 					<Layout
 						style={{
@@ -72,7 +72,7 @@ const CollapsibleLayout: React.FC<CollapsibleLayoutProps> = ({
 							collapsed={sidebarCollapsed}
 							onToggle={toggleSidebar}
 							colorBgContainer={colorBgContainer}
-						/>{' '}
+						/>
 						{/* Content */}
 						<Content
 							style={{

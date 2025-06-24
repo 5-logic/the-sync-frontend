@@ -584,8 +584,8 @@ const SemesterTable = forwardRef<
 						color: '#d48806',
 					}}
 				>
-					<strong>Notice:</strong> Semester{' '}
-					<strong>{activeSemester.name}</strong> is currently in{' '}
+					<strong>Notice:</strong> Semester
+					<strong>{activeSemester.name}</strong> is currently in
 					<strong>{activeSemester.status}</strong> status. You cannot change
 					status for this semester.
 				</div>
@@ -631,7 +631,7 @@ const SemesterTable = forwardRef<
 					<>
 						<Text>
 							Once you change the status to <Text strong>End</Text>, this
-							semester will be marked as completed and{' '}
+							semester will be marked as completed and
 							<Text strong>cannot be edited anymore</Text>. This action is
 							irreversible.
 						</Text>

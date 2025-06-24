@@ -463,7 +463,7 @@ function SemesterAlerts({
 					<div>
 						<p>
 							{userType === 'lecturer' ? 'Lecturer' : 'Student'} accounts can
-							only be created for semesters with <strong>Preparing</strong> or{' '}
+							only be created for semesters with <strong>Preparing</strong> or
 							<strong>Picking</strong> status.
 						</p>
 						<p>
@@ -486,7 +486,7 @@ function SemesterAlerts({
 				description={
 					<div>
 						{userType === 'lecturer' ? 'Lecturer' : 'Student'} accounts can only
-						be created for semesters with{' '}
+						be created for semesters with
 						<Tag color="orange" style={{ margin: '0 4px' }}>
 							Preparing
 						</Tag>

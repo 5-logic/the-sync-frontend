@@ -219,7 +219,7 @@ const UserForm = ({ formType }: UserFormProps) => {
 					description={
 						<div>
 							<p>
-								Students can only be created for semesters with{' '}
+								Students can only be created for semesters with
 								<strong>Preparing</strong> or <strong>Picking</strong> status.
 							</p>
 							<p>
@@ -240,7 +240,7 @@ const UserForm = ({ formType }: UserFormProps) => {
 					message="Student Creation Policy"
 					description={
 						<div>
-							Student accounts can only be created for semesters with{' '}
+							Student accounts can only be created for semesters with
 							<Tag color="orange" style={{ margin: '0 4px' }}>
 								Preparing
 							</Tag>
@@ -351,7 +351,7 @@ const UserForm = ({ formType }: UserFormProps) => {
 							<Input placeholder="Enter full name" disabled={creating} />
 						</Form.Item>
 					</Col>
-				</Row>{' '}
+				</Row>
 				{/* Email - Full width */}
 				<Row>
 					<Col span={24}>
@@ -393,7 +393,7 @@ const UserForm = ({ formType }: UserFormProps) => {
 							<Input placeholder="Enter phone number" disabled={creating} />
 						</Form.Item>
 					</Col>
-				</Row>{' '}
+				</Row>
 				{/* Student ID and Gender - Two columns */}
 				<Row gutter={16}>
 					{isStudent && (

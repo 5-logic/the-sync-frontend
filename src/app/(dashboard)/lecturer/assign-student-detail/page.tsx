@@ -27,7 +27,7 @@ export default function LecturerAssignStudentDetailPage() {
 						<Text className="cursor-pointer hover:text-blue-600">
 							← Back to Student List
 						</Text>
-					</Link>{' '}
+					</Link>
 					<Link href="/lecturer">
 						<Text className="cursor-pointer hover:text-blue-600">
 							← Dashboard
@@ -48,7 +48,7 @@ export default function LecturerAssignStudentDetailPage() {
 				<div className="mt-4 p-4 bg-blue-50 rounded-lg">
 					<Text>
 						<strong>Moderator Privileges:</strong> This page is only accessible
-						to lecturers with moderator privileges. Current user:{' '}
+						to lecturers with moderator privileges. Current user:
 						<strong>{session?.user?.name}</strong> ({session?.user?.role})
 					</Text>
 				</div>

@@ -46,7 +46,7 @@ export const HeaderSection: React.FC<HeaderSectionProps> = ({
 						color: '#434343',
 					}}
 				></div>
-			</div>{' '}
+			</div>
 			{/* User Actions */}
 			<div
 				style={{
