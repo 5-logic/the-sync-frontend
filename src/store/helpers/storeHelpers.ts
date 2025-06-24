@@ -75,10 +75,7 @@ export function createBatchCreateAction<T extends { id: string }, TCreate>(
 			get: StoreApi<Record<string, unknown>>['getState'],
 		) =>
 		async (data: TCreate[]): Promise<boolean> => {
-			const loadingField =
-				entityName === 'student'
-					? 'creatingMany'
-					: `creating${entityName.charAt(0).toUpperCase() + entityName.slice(1)}s`;
+			const loadingField = 'creatingMany';
 			set({ [loadingField]: true, lastError: null });
 			try {
 				const response = await service.createMany(data);
