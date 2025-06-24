@@ -4,20 +4,20 @@ import { TablePagination } from '@/components/common/TablePagination';
 import { Lecturer } from '@/schemas/lecturer';
 
 type Props = Readonly<{
-	data: (Lecturer & { instructionGroups: string })[];
+	data: Lecturer[];
 	onTogglePermission: (id: string) => void;
+	loading?: boolean;
 }>;
 
-export default function LecturerTable({ data, onTogglePermission }: Props) {
+export default function LecturerTable({
+	data,
+	onTogglePermission,
+	loading = false,
+}: Props) {
 	const columns = [
 		{ title: 'Name', dataIndex: 'fullName', key: 'fullName' },
 		{ title: 'Email', dataIndex: 'email', key: 'email' },
 		{ title: 'Phone Number', dataIndex: 'phoneNumber', key: 'phoneNumber' },
-		{
-			title: 'Instruction Groups',
-			dataIndex: 'instructionGroups',
-			key: 'instructionGroups',
-		},
 		{
 			title: 'Status',
 			dataIndex: 'isActive',
@@ -32,18 +32,15 @@ export default function LecturerTable({ data, onTogglePermission }: Props) {
 			title: 'Moderator',
 			dataIndex: 'isModerator',
 			key: 'isModerator',
-			render: (
-				_: boolean,
-				record: Lecturer & { instructionGroups: string },
-			) => (
+			render: (_: boolean, record: Lecturer) => (
 				<Switch
 					checked={record.isModerator}
 					onChange={() => onTogglePermission(record.id)}
+					loading={loading}
 				/>
 			),
 		},
 	];
-
 	return (
 		<Table
 			columns={columns}
@@ -51,6 +48,7 @@ export default function LecturerTable({ data, onTogglePermission }: Props) {
 			rowKey="id"
 			scroll={{ x: 'max-content' }}
 			pagination={TablePagination}
+			loading={loading}
 		/>
 	);
 }
