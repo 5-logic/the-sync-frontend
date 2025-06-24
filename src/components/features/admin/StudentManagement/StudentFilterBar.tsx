@@ -76,7 +76,7 @@ export default function StudentFilterBar({
 							<Option value="All">All Semesters</Option>
 							{semesters.map((semester) => (
 								<Option key={semester.id} value={semester.id}>
-									{semester.code}
+									{semester.name}
 								</Option>
 							))}
 						</Select>
@@ -99,7 +99,7 @@ export default function StudentFilterBar({
 						<Select
 							value={majorFilter}
 							onChange={setMajorFilter}
-							style={{ width: 150 }}
+							style={{ width: 200 }}
 							size="middle"
 							loading={majorsLoading} // Use loading from major store
 							placeholder="Select major"
@@ -107,7 +107,7 @@ export default function StudentFilterBar({
 							<Option value="All">All Majors</Option>
 							{majors.map((major) => (
 								<Option key={major.id} value={major.id}>
-									{major.code}
+									{major.name}
 								</Option>
 							))}
 						</Select>
