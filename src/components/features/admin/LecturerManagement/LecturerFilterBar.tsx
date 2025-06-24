@@ -22,23 +22,42 @@ export default function LecturerFilterBar({
 	onRefresh,
 	loading = false,
 }: Props) {
-	const { selectedStatus, searchText, setSelectedStatus, setSearchText } =
-		useLecturerStore();
+	const {
+		selectedStatus,
+		selectedModerator,
+		searchText,
+		setSelectedStatus,
+		setSelectedModerator,
+		setSearchText,
+	} = useLecturerStore();
 	return (
 		<Row gutter={[8, 16]} align="middle" justify="space-between">
-			<Col xs={24} md={18}>
-				<Row gutter={[8, 8]} wrap>
+			<Col xs={24} lg={20}>
+				<Row gutter={[8, 8]} wrap align="middle">
 					<Col>
 						<Select
 							value={selectedStatus}
 							onChange={setSelectedStatus}
-							style={{ width: 120 }}
+							style={{ width: 150 }}
 							placeholder="Select Status"
 							size="middle"
 						>
 							<Option value="All">All Status</Option>
 							<Option value="Active">Active</Option>
 							<Option value="Inactive">Inactive</Option>
+						</Select>
+					</Col>
+					<Col>
+						<Select
+							value={selectedModerator}
+							onChange={setSelectedModerator}
+							style={{ width: 120 }}
+							placeholder="Select Role"
+							size="middle"
+						>
+							<Option value="All">All Roles</Option>
+							<Option value="Moderator">Moderator</Option>
+							<Option value="Lecturer">Lecturer</Option>
 						</Select>
 					</Col>
 					<Col flex="auto">
@@ -63,15 +82,17 @@ export default function LecturerFilterBar({
 					</Col>
 				</Row>
 			</Col>
-			<Col xs={24} md={6} style={{ textAlign: 'right' }}>
-				<Button
-					icon={<PlusOutlined />}
-					type="primary"
-					onClick={onCreateLecturer}
-					size="middle"
-				>
-					Create New Lecturer
-				</Button>
+			<Col xs={24} lg={4}>
+				<div style={{ textAlign: 'right' }}>
+					<Button
+						icon={<PlusOutlined />}
+						type="primary"
+						onClick={onCreateLecturer}
+						size="middle"
+					>
+						Create New Lecturer
+					</Button>
+				</div>
 			</Col>
 		</Row>
 	);
