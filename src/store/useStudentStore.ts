@@ -2,13 +2,19 @@ import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 
 import studentService from '@/lib/services/students.service';
-import { Student, StudentCreate, StudentUpdate } from '@/schemas/student';
+import {
+	Student,
+	StudentCreate,
+	StudentToggleStatus,
+	StudentUpdate,
+} from '@/schemas/student';
 import {
 	commonStoreUtilities,
 	createBatchCreateAction,
 	createCreateAction,
 	createFetchAction,
 	createSearchFilter,
+	createToggleStatusAction,
 	createUpdateAction,
 } from '@/store/helpers/storeHelpers';
 
@@ -22,6 +28,7 @@ interface StudentState {
 	creating: boolean;
 	updating: boolean;
 	creatingMany: boolean;
+	togglingStatus: boolean;
 
 	// Error states
 	lastError: {
@@ -41,6 +48,10 @@ interface StudentState {
 	createStudent: (data: StudentCreate) => Promise<boolean>;
 	createManyStudents: (data: StudentCreate[]) => Promise<boolean>;
 	updateStudent: (id: string, data: StudentUpdate) => Promise<boolean>;
+	toggleStudentStatus: (
+		id: string,
+		data: StudentToggleStatus,
+	) => Promise<boolean>;
 
 	// Error management
 	clearError: () => void;
@@ -77,17 +88,22 @@ export const useStudentStore = create<StudentState>()(
 			creating: false,
 			updating: false,
 			creatingMany: false,
+			togglingStatus: false,
 			lastError: null,
 			selectedSemesterId: null,
 			selectedMajorId: null,
 			selectedStatus: 'All',
-			searchText: '', // Actions using helpers where applicable
+			searchText: '',
+
+			// Actions using helpers
 			fetchStudents: createFetchAction(studentService, 'student')(set, get),
 			createStudent: createCreateAction(studentService, 'student')(set, get),
 			updateStudent: createUpdateAction(studentService, 'student')(set, get),
-
-			// Custom action for creating many students
 			createManyStudents: createBatchCreateAction(studentService, 'student')(
+				set,
+				get,
+			),
+			toggleStudentStatus: createToggleStatusAction(studentService, 'student')(
 				set,
 				get,
 			),
