@@ -1,21 +1,24 @@
 'use client';
 
-import { Table, Tag } from 'antd';
+import { Modal, Table, Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useEffect, useMemo } from 'react';
 
 import { TablePagination } from '@/components/common/TablePagination';
 import { Student } from '@/schemas/student';
 import { useMajorStore } from '@/store/useMajorStore';
+import { useStudentStore } from '@/store/useStudentStore';
 
 type Props = Readonly<{
 	data: Student[];
 	loading: boolean;
+	onReload?: () => void;
 }>;
 
-export default function StudentTable({ data, loading }: Props) {
-	// Use Major Store
+export default function StudentTable({ data, loading, onReload }: Props) {
+	// Use stores
 	const { majors, loading: majorsLoading, fetchMajors } = useMajorStore();
+	const { toggleStudentStatus } = useStudentStore();
 
 	// Fetch data using stores
 	useEffect(() => {
@@ -35,6 +38,37 @@ export default function StudentTable({ data, loading }: Props) {
 			{} as Record<string, { code: string; name: string }>,
 		);
 	}, [majors]);
+	// Handle status toggle
+	const handleStatusToggle = async (
+		studentId: string,
+		currentStatus: boolean,
+		studentName: string,
+	) => {
+		const newStatus = !currentStatus;
+		const statusText = newStatus ? 'Active' : 'Inactive';
+		Modal.confirm({
+			title: 'Update Student Status',
+			content: `Are you sure you want to change ${studentName}'s status to ${statusText}?`,
+			okText: 'Yes, Update',
+			cancelText: 'Cancel',
+			centered: true,
+			onOk: async () => {
+				try {
+					const success = await toggleStudentStatus(studentId, {
+						isActive: newStatus,
+					});
+
+					if (success) {
+						if (onReload) {
+							onReload();
+						}
+					}
+				} catch (error) {
+					console.error('Error toggling student status:', error);
+				}
+			},
+		});
+	};
 
 	const columns: ColumnsType<Student> = [
 		{
@@ -47,19 +81,19 @@ export default function StudentTable({ data, loading }: Props) {
 			title: 'Name',
 			dataIndex: 'fullName',
 			key: 'fullName',
-			width: '30%',
+			width: '25%',
 		},
 		{
 			title: 'Email',
 			dataIndex: 'email',
 			key: 'email',
-			width: '30%',
+			width: '25%',
 		},
 		{
 			title: 'Gender',
 			dataIndex: 'gender',
 			key: 'gender',
-			width: '10%',
+			width: '8%',
 			render: (gender: string) =>
 				gender?.charAt(0).toUpperCase() + gender?.slice(1),
 		},
@@ -81,9 +115,15 @@ export default function StudentTable({ data, loading }: Props) {
 			title: 'Status',
 			dataIndex: 'isActive',
 			key: 'isActive',
-			width: '10%',
-			render: (isActive: boolean) => (
-				<Tag color={isActive ? 'green' : 'red'}>
+			width: '15%',
+			render: (isActive: boolean, record: Student) => (
+				<Tag
+					color={isActive ? 'green' : 'red'}
+					style={{ cursor: 'pointer' }}
+					onClick={() =>
+						handleStatusToggle(record.id, isActive, record.fullName)
+					}
+				>
 					{isActive ? 'Active' : 'Inactive'}
 				</Tag>
 			),
