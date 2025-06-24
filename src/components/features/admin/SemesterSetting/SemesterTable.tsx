@@ -11,9 +11,7 @@ import {
 	Select,
 	Space,
 	Table,
-	Tag,
 	Tooltip,
-	notification,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import {
@@ -25,7 +23,10 @@ import {
 	useState,
 } from 'react';
 
+import { SEMESTER_STATUS_TAGS } from '@/lib/constants/semester';
+import { TablePagination } from '@/components/common/TablePagination';
 import semesterService from '@/lib/services/semesters.service';
+import { showNotification } from '@/lib/utils/notification';
 import { SemesterStatus } from '@/schemas/_enums';
 import { Semester } from '@/schemas/semester';
 
@@ -42,14 +43,6 @@ const STATUS_ORDER: SemesterStatus[] = [
 	'Ongoing',
 	'End',
 ];
-
-const STATUS_TAG: Record<SemesterStatus, JSX.Element> = {
-	NotYet: <Tag color="blue">Not Yet</Tag>,
-	Preparing: <Tag color="orange">Preparing</Tag>,
-	Picking: <Tag color="purple">Picking</Tag>,
-	Ongoing: <Tag color="green">Ongoing</Tag>,
-	End: <Tag color="gray">End</Tag>,
-};
 
 const STATUS_LABELS: Record<SemesterStatus, string> = {
 	NotYet: 'Not Yet',
@@ -84,19 +77,11 @@ const SemesterTable = forwardRef<
 			if (response.success && response.data) {
 				setSemesters(response.data);
 			} else {
-				notification.error({
-					message: 'Error',
-					description: 'Failed to fetch semesters',
-					placement: 'bottomRight',
-				});
+				showNotification.error('Error', 'Failed to fetch semesters');
 			}
 		} catch (error) {
 			console.error('Error fetching semesters:', error);
-			notification.error({
-				message: 'Error',
-				description: 'Error fetching semesters',
-				placement: 'bottomRight',
-			});
+			showNotification.error('Error', 'Error fetching semesters');
 		} finally {
 			setLoading(false);
 		}
@@ -177,31 +162,19 @@ const SemesterTable = forwardRef<
 					payload,
 				);
 				if (response.success) {
-					notification.success({
-						message: 'Success',
-						description: 'Semester updated successfully',
-						placement: 'bottomRight',
-					});
+					showNotification.success('Success', 'Semester updated successfully');
 					setIsEditModalOpen(false);
 					setEditingRecord(null);
 					setSelectedStatus(undefined);
 					form.resetFields();
 					await fetchSemesters();
 				} else {
-					notification.error({
-						message: 'Error',
-						description: 'Failed to update semester',
-						placement: 'bottomRight',
-					});
+					showNotification.error('Error', 'Failed to update semester');
 				}
 			}
 		} catch (error) {
 			console.error('Error updating semester:', error);
-			notification.error({
-				message: 'Error',
-				description: 'Error updating semester',
-				placement: 'bottomRight',
-			});
+			showNotification.error('Error', 'Error updating semester');
 		} finally {
 			setUpdateLoading(false);
 		}
@@ -242,26 +215,17 @@ const SemesterTable = forwardRef<
 					try {
 						const response = await semesterService.delete(record.id);
 						if (response.success) {
-							notification.success({
-								message: 'Success',
-								description: 'Semester deleted successfully',
-								placement: 'bottomRight',
-							});
+							showNotification.success(
+								'Success',
+								'Semester deleted successfully',
+							);
 							await fetchSemesters();
 						} else {
-							notification.error({
-								message: 'Error',
-								description: 'Failed to delete semester',
-								placement: 'bottomRight',
-							});
+							showNotification.error('Error', 'Failed to delete semester');
 						}
 					} catch (error) {
 						console.error('Error deleting semester:', error);
-						notification.error({
-							message: 'Error',
-							description: 'Error deleting semester',
-							placement: 'bottomRight',
-						});
+						showNotification.error('Error', 'Error deleting semester');
 					}
 				},
 			});
@@ -311,7 +275,8 @@ const SemesterTable = forwardRef<
 				dataIndex: 'status',
 				key: 'status',
 				width: 120,
-				render: (status: SemesterStatus) => STATUS_TAG[status] ?? status,
+				render: (status: SemesterStatus) =>
+					SEMESTER_STATUS_TAGS[status] ?? status,
 			},
 			{
 				title: 'Actions',
@@ -356,13 +321,7 @@ const SemesterTable = forwardRef<
 				dataSource={filteredData}
 				loading={loading}
 				rowKey="id"
-				pagination={{
-					showTotal: (total, range) =>
-						`${range[0]}-${range[1]} of ${total} items`,
-					showSizeChanger: true,
-					pageSizeOptions: ['5', '10', '20', '50'],
-					showQuickJumper: true,
-				}}
+				pagination={TablePagination}
 				scroll={{ x: 'max-content' }}
 				size="middle"
 			/>
