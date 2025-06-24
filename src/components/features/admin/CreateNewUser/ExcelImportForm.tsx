@@ -810,18 +810,18 @@ export default function ExcelImportForm<
 			setTimeout(() => setDownloading(false), 1000);
 		}
 	};
-	const handleUpload = (file: RcFile): boolean => {
+	const handleUpload = (file: RcFile): boolean | typeof Upload.LIST_IGNORE => {
 		// Validate prerequisites first - return false if validation fails
-		if (
-			!validateUploadPrerequisites(
-				requireSemester,
-				selectedSemester,
-				requireMajor,
-				selectedMajor,
-			)
-		) {
+		const prerequisitesValid = validateUploadPrerequisites(
+			requireSemester,
+			selectedSemester,
+			requireMajor,
+			selectedMajor,
+		);
+
+		if (!prerequisitesValid) {
 			// Prerequisites not met - reject the file upload
-			return false;
+			return Upload.LIST_IGNORE;
 		}
 
 		// Start file processing - return false to prevent default upload behavior
@@ -859,7 +859,7 @@ export default function ExcelImportForm<
 		reader.readAsArrayBuffer(file);
 
 		// Return false to prevent Ant Design's default upload behavior
-		// This is intentional - we handle the file processing manually
+		// This allows us to handle the file processing manually
 		return false;
 	};
 
