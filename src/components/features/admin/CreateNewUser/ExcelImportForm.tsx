@@ -29,8 +29,14 @@ import * as XLSX from 'xlsx';
 import { FormLabel } from '@/components/common/FormLabel';
 import { showNotification } from '@/lib/utils/notification';
 import { SemesterStatus } from '@/schemas/_enums';
+import { LecturerCreate } from '@/schemas/lecturer';
 import { StudentCreate } from '@/schemas/student';
-import { useMajorStore, useSemesterStore, useStudentStore } from '@/store';
+import {
+	useLecturerStore,
+	useMajorStore,
+	useSemesterStore,
+	useStudentStore,
+} from '@/store';
 
 const { Dragger } = Upload;
 
@@ -59,6 +65,7 @@ type ExcelImportFormProps<
 	templateFileName?: string;
 	requireSemester?: boolean;
 	requireMajor?: boolean;
+	userType?: 'student' | 'lecturer'; // Add user type prop
 }>;
 
 // Field-specific validators
@@ -437,10 +444,12 @@ function SemesterAlerts({
 	requireSemester,
 	semesterLoading,
 	hasAvailableSemesters,
+	userType = 'student',
 }: Readonly<{
 	requireSemester: boolean;
 	semesterLoading: boolean;
 	hasAvailableSemesters: boolean;
+	userType?: 'student' | 'lecturer';
 }>) {
 	if (!requireSemester) return null;
 
@@ -453,12 +462,13 @@ function SemesterAlerts({
 				description={
 					<div>
 						<p>
-							Student accounts can only be created for semesters with{' '}
-							<strong>Preparing</strong> or <strong>Picking</strong> status.
+							{userType === 'lecturer' ? 'Lecturer' : 'Student'} accounts can
+							only be created for semesters with <strong>Preparing</strong> or{' '}
+							<strong>Picking</strong> status.
 						</p>
 						<p>
 							Currently, there are no semesters in these statuses available for
-							student creation.
+							{userType === 'lecturer' ? ' lecturer' : ' student'} creation.
 						</p>
 					</div>
 				}
@@ -472,10 +482,11 @@ function SemesterAlerts({
 			<Alert
 				type="info"
 				showIcon
-				message="Student Creation Policy"
+				message={`${userType === 'lecturer' ? 'Lecturer' : 'Student'} Creation Policy`}
 				description={
 					<div>
-						Student accounts can only be created for semesters with{' '}
+						{userType === 'lecturer' ? 'Lecturer' : 'Student'} accounts can only
+						be created for semesters with{' '}
 						<Tag color="orange" style={{ margin: '0 4px' }}>
 							Preparing
 						</Tag>
@@ -617,9 +628,10 @@ function getUploadText(
 	selectedSemester: string,
 	requireMajor: boolean,
 	selectedMajor: string,
+	userType: 'student' | 'lecturer' = 'student',
 ): string {
 	if (requireSemester && !hasAvailableSemesters) {
-		return 'No available semesters for user creation';
+		return `No available semesters for ${userType} creation`;
 	}
 	if (requireSemester && !selectedSemester) {
 		return 'Please select a semester first';
@@ -644,6 +656,7 @@ function ImportedDataTable<
 	selectedSemester,
 	requireMajor,
 	selectedMajor,
+	userType = 'student',
 }: Readonly<{
 	data: T[];
 	columns: ColumnsType<T>;
@@ -655,6 +668,7 @@ function ImportedDataTable<
 	selectedSemester: string;
 	requireMajor: boolean;
 	selectedMajor: string;
+	userType?: 'student' | 'lecturer';
 }>) {
 	if (data.length === 0) return null;
 
@@ -664,17 +678,13 @@ function ImportedDataTable<
 				type="success"
 				showIcon
 				message={
-					<Space direction="vertical" size={4}>
-						<Space>
-							<Typography.Text strong>
-								{data.length} users data imported successfully
-							</Typography.Text>
-						</Space>
-					</Space>
+					<Typography.Text strong>
+						{data.length} {userType === 'lecturer' ? 'lecturers' : 'students'}
+						data imported successfully
+					</Typography.Text>
 				}
 				style={{ borderColor: '#bbf7d0', color: '#15803d' }}
 			/>
-
 			<Table
 				dataSource={data}
 				columns={columns}
@@ -688,7 +698,6 @@ function ImportedDataTable<
 				rowKey="id"
 				scroll={{ x: '850' }}
 			/>
-
 			<Row justify="end" gutter={8}>
 				<Col>
 					<Button
@@ -713,8 +722,8 @@ function ImportedDataTable<
 						}
 					>
 						{creatingMany
-							? `Creating Students...`
-							: `Import All Users (${data.length})`}
+							? `Creating ${userType === 'lecturer' ? 'Lecturers' : 'Students'}...`
+							: `Import All ${userType === 'lecturer' ? 'Lecturers' : 'Students'} (${data.length})`}
 					</Button>
 				</Col>
 			</Row>
@@ -731,6 +740,7 @@ export default function ExcelImportForm<
 	templateFileName,
 	requireSemester = false,
 	requireMajor = false,
+	userType = 'student', // Default to student
 }: ExcelImportFormProps<T>) {
 	const [form] = Form.useForm();
 	const [fileList, setFileList] = useState<RcFile[]>([]);
@@ -738,7 +748,6 @@ export default function ExcelImportForm<
 	const [selectedSemester, setSelectedSemester] = useState<string>('');
 	const [selectedMajor, setSelectedMajor] = useState<string>('');
 	const [downloading, setDownloading] = useState(false);
-
 	// Store hooks
 	const {
 		semesters,
@@ -754,7 +763,21 @@ export default function ExcelImportForm<
 		clearError: clearMajorError,
 	} = useMajorStore();
 
-	const { createManyStudents, creatingMany, fetchStudents } = useStudentStore();
+	const {
+		createManyStudents,
+		creatingMany: creatingManyStudents,
+		fetchStudents,
+	} = useStudentStore();
+
+	const {
+		createManyLecturers,
+		creatingMany: creatingManyLecturers,
+		fetchLecturers,
+	} = useLecturerStore();
+
+	// Determine which loading state to use based on user type
+	const creatingMany =
+		userType === 'lecturer' ? creatingManyLecturers : creatingManyStudents;
 
 	// Effects
 	useEffect(() => {
@@ -898,36 +921,70 @@ export default function ExcelImportForm<
 		) {
 			return;
 		}
+		if (userType === 'lecturer') {
+			// Handle lecturer creation
+			const lecturersToCreate: LecturerCreate[] = data.map((item) => ({
+				...item,
+				id: undefined,
+				password: '', // Will be set by backend
+				isActive: true,
+				isModerator: false,
+			}));
 
-		const studentsToCreate: StudentCreate[] = data.map((item) => ({
-			...item,
-			id: undefined,
-			...(requireSemester &&
-				selectedSemester && { semesterId: selectedSemester }),
-			...(requireMajor && selectedMajor && { majorId: selectedMajor }),
-		}));
-
-		try {
-			const success = await createManyStudents(studentsToCreate);
-			if (success) {
-				await fetchStudents();
-				setData([]);
-				setFileList([]);
-				setSelectedSemester('');
-				setSelectedMajor('');
-				form.resetFields();
-				onImport(
-					data,
-					requireSemester ? selectedSemester : undefined,
-					requireMajor ? selectedMajor : undefined,
+			try {
+				const success = await createManyLecturers(lecturersToCreate);
+				if (success) {
+					await fetchLecturers();
+					setData([]);
+					setFileList([]);
+					setSelectedSemester('');
+					setSelectedMajor('');
+					form.resetFields();
+					onImport(
+						data,
+						requireSemester ? selectedSemester : undefined,
+						requireMajor ? selectedMajor : undefined,
+					);
+				}
+			} catch (error) {
+				console.error('Error creating lecturers:', error);
+				showNotification.error(
+					'Error',
+					'Failed to create lecturers. Please try again.',
 				);
 			}
-		} catch (error) {
-			console.error('Error creating students:', error);
-			showNotification.error(
-				'Error',
-				'Failed to create students. Please try again.',
-			);
+		} else {
+			// Handle student creation (existing logic)
+			const studentsToCreate: StudentCreate[] = data.map((item) => ({
+				...item,
+				id: undefined,
+				...(requireSemester &&
+					selectedSemester && { semesterId: selectedSemester }),
+				...(requireMajor && selectedMajor && { majorId: selectedMajor }),
+			}));
+
+			try {
+				const success = await createManyStudents(studentsToCreate);
+				if (success) {
+					await fetchStudents();
+					setData([]);
+					setFileList([]);
+					setSelectedSemester('');
+					setSelectedMajor('');
+					form.resetFields();
+					onImport(
+						data,
+						requireSemester ? selectedSemester : undefined,
+						requireMajor ? selectedMajor : undefined,
+					);
+				}
+			} catch (error) {
+				console.error('Error creating students:', error);
+				showNotification.error(
+					'Error',
+					'Failed to create students. Please try again.',
+				);
+			}
 		}
 	};
 
@@ -965,8 +1022,8 @@ export default function ExcelImportForm<
 				requireSemester={requireSemester}
 				semesterLoading={semesterLoading}
 				hasAvailableSemesters={hasAvailableSemesters}
+				userType={userType}
 			/>
-
 			<SelectionForm
 				form={form}
 				requireSemester={requireSemester}
@@ -982,7 +1039,6 @@ export default function ExcelImportForm<
 				handleMajorChange={handleMajorChange}
 				selectedMajor={selectedMajor}
 			/>
-
 			<Card
 				style={{
 					border: '1px solid #f0f0f0',
@@ -1014,7 +1070,6 @@ export default function ExcelImportForm<
 					</Col>
 				</Row>
 			</Card>
-
 			<Dragger
 				name="file"
 				beforeUpload={(file) => {
@@ -1059,13 +1114,13 @@ export default function ExcelImportForm<
 						selectedSemester,
 						requireMajor,
 						selectedMajor,
+						userType,
 					)}
 				</p>
 				<p className="ant-upload-hint">
 					Supports .xlsx and .xls files up to 100MB
 				</p>
 			</Dragger>
-
 			<ImportedDataTable
 				data={data}
 				columns={columns}
@@ -1077,6 +1132,7 @@ export default function ExcelImportForm<
 				selectedSemester={selectedSemester}
 				requireMajor={requireMajor}
 				selectedMajor={selectedMajor}
+				userType={userType}
 			/>
 		</Space>
 	);
