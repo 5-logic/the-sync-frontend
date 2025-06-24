@@ -118,14 +118,9 @@ function validateFieldValue<T>(
 	const errors: string[] = [];
 	const stringValue = value ? String(value).trim() : '';
 
-	// Required field validation
-	if (field.required && (!value || stringValue === '')) {
-		return [`Row ${rowNumber}: Missing ${field.title}`];
-	}
-
-	// Skip validation for empty optional fields
-	if (!field.required && (!value || stringValue === '')) {
-		return errors;
+	// All fields are now required - no field can be empty
+	if (!value || stringValue === '') {
+		return [`Row ${rowNumber}: ${field.title} cannot be empty`];
 	}
 
 	// Apply field-specific validation if validator exists
@@ -251,17 +246,16 @@ function validateAllData<
 	parsedData.forEach((item, index) => {
 		const rowErrors: string[] = [];
 		const rowNumber = index + 2;
-
 		// Validate each field
 		fields.forEach((field) => {
 			const fieldErrors = validateFieldValue(field, item[field.key], rowNumber);
 			rowErrors.push(...fieldErrors);
 
-			// Validate select fields
+			// Validate select fields - all fields must have values
 			if (field.type === 'select' && field.options) {
 				const value = item[field.key];
 				const stringValue = value ? String(value).trim() : '';
-				if (stringValue && field.required) {
+				if (stringValue) {
 					const validOptions = field.options.map((opt) => opt.value);
 					if (!validOptions.includes(stringValue)) {
 						rowErrors.push(
@@ -418,7 +412,6 @@ export default function ExcelImportForm<
 					parsedData,
 					fields,
 				);
-
 				if (validationErrors.length > 0) {
 					const errorMessage =
 						validationErrors.slice(0, 10).join('\n') +
@@ -431,21 +424,18 @@ export default function ExcelImportForm<
 						errorMessage,
 					);
 
-					if (validatedData.length === 0) return;
+					// Stop import process if there are validation errors - don't allow partial imports
+					setData([]);
+					setFileList([]);
+					return;
 				}
-
 				setData(validatedData);
 				setFileList([file]);
 
-				const successMessage =
-					validationErrors.length > 0
-						? `${validatedData.length} out of ${parsedData.length} rows imported successfully. ${validationErrors.length} rows had validation errors.`
-						: `${validatedData.length} rows imported successfully with no validation errors.`;
+				// Only success message since we now reject files with any validation errors
+				const successMessage = `${validatedData.length} rows imported successfully with no validation errors.`;
 
-				showNotification[validationErrors.length > 0 ? 'warning' : 'success'](
-					validationErrors.length > 0 ? 'Partial Import' : 'Success',
-					successMessage,
-				);
+				showNotification.success('Success', successMessage);
 			} catch (error) {
 				console.error('Error parsing Excel file:', error);
 				showNotification.error(
@@ -564,8 +554,8 @@ export default function ExcelImportForm<
 							handleFieldChange(record.id, field.key, e.target.value)
 						}
 						status={
-							field.required &&
-							(!record[field.key] || String(record[field.key]).trim() === '')
+							// All fields are required now
+							!record[field.key] || String(record[field.key]).trim() === ''
 								? 'error'
 								: undefined
 						}
@@ -576,8 +566,8 @@ export default function ExcelImportForm<
 						onChange={(val) => handleFieldChange(record.id, field.key, val)}
 						style={{ width: 120 }}
 						status={
-							field.required &&
-							(!record[field.key] || String(record[field.key]).trim() === '')
+							// All fields are required now
+							!record[field.key] || String(record[field.key]).trim() === ''
 								? 'error'
 								: undefined
 						}
