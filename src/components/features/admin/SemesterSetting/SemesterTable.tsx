@@ -116,15 +116,13 @@ const SemesterTable = forwardRef<
 		if (!semesters.length) return [];
 
 		const searchLower = searchText.toLowerCase();
-		return semesters
-			.filter((item) => {
-				const matchStatus =
-					statusFilter === 'All' || item.status === statusFilter;
-				const matchSearch =
-					!searchText || item.name.toLowerCase().includes(searchLower);
-				return matchStatus && matchSearch;
-			})
-			.reverse();
+		return semesters.filter((item) => {
+			const matchStatus =
+				statusFilter === 'All' || item.status === statusFilter;
+			const matchSearch =
+				!searchText || item.name.toLowerCase().includes(searchLower);
+			return matchStatus && matchSearch;
+		});
 	}, [semesters, statusFilter, searchText]);
 
 	const handleEdit = useCallback(
