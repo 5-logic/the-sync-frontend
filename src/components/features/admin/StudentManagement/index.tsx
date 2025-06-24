@@ -99,7 +99,11 @@ export default function StudentManagement() {
 				loading={loading}
 			/>
 
-			<StudentTable data={filteredData.reverse()} loading={loading} />
+			<StudentTable
+				data={filteredData}
+				loading={loading}
+				onReload={fetchStudents}
+			/>
 		</Space>
 	);
 }

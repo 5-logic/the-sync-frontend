@@ -2,9 +2,12 @@ import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 
 import majorService from '@/lib/services/majors.service';
-import { handleApiError, handleApiResponse } from '@/lib/utils/handleApi';
-import { showNotification } from '@/lib/utils/notification';
 import { Major } from '@/schemas/major';
+import {
+	commonStoreUtilities,
+	createFetchAction,
+	createSearchFilter,
+} from '@/store/helpers/storeHelpers';
 
 interface MajorState {
 	// Data
@@ -37,7 +40,16 @@ interface MajorState {
 	// Utilities
 	reset: () => void;
 	getMajorById: (id: string) => Major | undefined;
+
+	// Index signature for Zustand compatibility
+	[key: string]: unknown;
 }
+
+// Filter function for majors
+const majorSearchFilter = createSearchFilter<Major>((major) => [
+	major.name,
+	major.code,
+]);
 
 export const useMajorStore = create<MajorState>()(
 	devtools(
@@ -49,87 +61,25 @@ export const useMajorStore = create<MajorState>()(
 			lastError: null,
 			searchText: '',
 
-			// Actions
-			fetchMajors: async () => {
-				set({ loading: true, lastError: null });
-				try {
-					const response = await majorService.findAll();
-					const result = handleApiResponse(response);
-
-					if (result.success && result.data) {
-						set({
-							majors: result.data,
-							filteredMajors: result.data,
-						});
-						get().filterMajors();
-					} else if (result.error) {
-						const error = {
-							message: result.error.message,
-							statusCode: result.error.statusCode,
-							timestamp: new Date(),
-						};
-						set({ lastError: error });
-
-						showNotification.error(`Error`, result.error.message);
-					}
-				} catch (error) {
-					const apiError = handleApiError(error, 'Failed to fetch majors');
-					const errorState = {
-						message: apiError.message,
-						statusCode: apiError.statusCode,
-						timestamp: new Date(),
-					};
-					set({ lastError: errorState });
-
-					showNotification.error(`Error`, apiError.message);
-				} finally {
-					set({ loading: false });
-				}
-			},
+			// Actions using helpers
+			fetchMajors: createFetchAction(majorService, 'major')(set, get),
 
 			// Error management
-			clearError: () => {
-				set({ lastError: null });
-			},
-
-			// Filters
-			setSearchText: (text: string) => {
-				set({ searchText: text });
-				get().filterMajors();
-			},
+			clearError: () => set(commonStoreUtilities.clearError()), // Filters
+			setSearchText: commonStoreUtilities.createSetSearchText('filterMajors')(
+				set,
+				get,
+			),
 
 			filterMajors: () => {
 				const { majors, searchText } = get();
-
-				let filtered = majors;
-
-				// Filter by search text (name or code)
-				if (searchText) {
-					const lowercaseSearch = searchText.toLowerCase();
-					filtered = filtered.filter((major) =>
-						[major.name, major.code].some((field) =>
-							field?.toLowerCase().includes(lowercaseSearch),
-						),
-					);
-				}
-
+				const filtered = majorSearchFilter(majors, searchText);
 				set({ filteredMajors: filtered });
 			},
 
 			// Utilities
-			reset: () => {
-				set({
-					majors: [],
-					filteredMajors: [],
-					loading: false,
-					lastError: null,
-					searchText: '',
-				});
-			},
-
-			getMajorById: (id: string) => {
-				return get().majors.find((major) => major.id === id);
-			},
+			reset: () => set(commonStoreUtilities.createReset('major')()),
+			getMajorById: commonStoreUtilities.createGetById<Major>('major')(get),
 		}),
 		{
 			name: 'major-store',

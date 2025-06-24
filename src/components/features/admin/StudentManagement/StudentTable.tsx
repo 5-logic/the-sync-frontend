@@ -1,34 +1,29 @@
 'use client';
 
-import { Table, Tag } from 'antd';
+import { Modal, Table, Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useEffect, useMemo } from 'react';
 
+import { TablePagination } from '@/components/common/TablePagination';
 import { Student } from '@/schemas/student';
 import { useMajorStore } from '@/store/useMajorStore';
-import { useSemesterStore } from '@/store/useSemesterStore';
+import { useStudentStore } from '@/store/useStudentStore';
 
 type Props = Readonly<{
 	data: Student[];
 	loading: boolean;
+	onReload?: () => void;
 }>;
 
-export default function StudentTable({ data, loading }: Props) {
-	// Use Major Store
+export default function StudentTable({ data, loading, onReload }: Props) {
+	// Use stores
 	const { majors, loading: majorsLoading, fetchMajors } = useMajorStore();
-
-	// Use Semester Store - Replace local semester state
-	const {
-		semesters,
-		loading: semestersLoading,
-		fetchSemesters,
-	} = useSemesterStore();
+	const { toggleStudentStatus } = useStudentStore();
 
 	// Fetch data using stores
 	useEffect(() => {
 		fetchMajors();
-		fetchSemesters();
-	}, [fetchMajors, fetchSemesters]);
+	}, [fetchMajors]);
 
 	// Create maps for efficient lookups
 	const majorMap = useMemo(() => {
@@ -43,19 +38,37 @@ export default function StudentTable({ data, loading }: Props) {
 			{} as Record<string, { code: string; name: string }>,
 		);
 	}, [majors]);
+	// Handle status toggle
+	const handleStatusToggle = async (
+		studentId: string,
+		currentStatus: boolean,
+		studentName: string,
+	) => {
+		const newStatus = !currentStatus;
+		const statusText = newStatus ? 'Active' : 'Inactive';
+		Modal.confirm({
+			title: 'Update Student Status',
+			content: `Are you sure you want to change ${studentName}'s status to ${statusText}?`,
+			okText: 'Yes, Update',
+			cancelText: 'Cancel',
+			centered: true,
+			onOk: async () => {
+				try {
+					const success = await toggleStudentStatus(studentId, {
+						isActive: newStatus,
+					});
 
-	const semesterMap = useMemo(() => {
-		return semesters.reduce(
-			(acc, semester) => {
-				acc[semester.id] = {
-					code: semester.code,
-					name: semester.name,
-				};
-				return acc;
+					if (success) {
+						if (onReload) {
+							onReload();
+						}
+					}
+				} catch (error) {
+					console.error('Error toggling student status:', error);
+				}
 			},
-			{} as Record<string, { code: string; name: string }>,
-		);
-	}, [semesters]);
+		});
+	};
 
 	const columns: ColumnsType<Student> = [
 		{
@@ -80,7 +93,7 @@ export default function StudentTable({ data, loading }: Props) {
 			title: 'Gender',
 			dataIndex: 'gender',
 			key: 'gender',
-			width: '10%',
+			width: '8%',
 			render: (gender: string) =>
 				gender?.charAt(0).toUpperCase() + gender?.slice(1),
 		},
@@ -88,7 +101,7 @@ export default function StudentTable({ data, loading }: Props) {
 			title: 'Major',
 			dataIndex: 'majorId',
 			key: 'majorId',
-			width: '12%',
+			width: '15%',
 			render: (majorId: string) => {
 				if (majorsLoading) {
 					return 'Loading...';
@@ -99,30 +112,18 @@ export default function StudentTable({ data, loading }: Props) {
 			},
 		},
 		{
-			title: 'Semester',
-			dataIndex: 'semesterId',
-			key: 'semesterId',
-			width: '12%',
-			render: (semesterId: string) => {
-				if (semestersLoading) {
-					return 'Loading...';
-				}
-
-				if (!semesterId) {
-					return '';
-				}
-
-				const semester = semesterMap[semesterId];
-				return semester ? semester.code : 'Unknown';
-			},
-		},
-		{
 			title: 'Status',
 			dataIndex: 'isActive',
 			key: 'isActive',
-			width: '10%',
-			render: (isActive: boolean) => (
-				<Tag color={isActive ? 'green' : 'red'}>
+			width: '15%',
+			render: (isActive: boolean, record: Student) => (
+				<Tag
+					color={isActive ? 'green' : 'red'}
+					style={{ cursor: 'pointer' }}
+					onClick={() =>
+						handleStatusToggle(record.id, isActive, record.fullName)
+					}
+				>
 					{isActive ? 'Active' : 'Inactive'}
 				</Tag>
 			),
@@ -134,13 +135,7 @@ export default function StudentTable({ data, loading }: Props) {
 			columns={columns}
 			dataSource={data}
 			rowKey="id"
-			pagination={{
-				showTotal: (total, range) =>
-					`${range[0]}-${range[1]} of ${total} items`,
-				showSizeChanger: true,
-				pageSizeOptions: ['5', '10', '20', '50'],
-				defaultPageSize: 10,
-			}}
+			pagination={TablePagination}
 			scroll={{ x: 'max-content' }}
 			loading={loading}
 			size="middle"

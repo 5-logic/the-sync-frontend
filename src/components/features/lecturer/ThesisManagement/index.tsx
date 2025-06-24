@@ -6,7 +6,7 @@ import { useState } from 'react';
 import ThesisFilterBar from '@/components/features/lecturer/ThesisManagement/ThesisFilterBar';
 import ThesisTable from '@/components/features/lecturer/ThesisManagement/ThesisTable';
 import mockGroups from '@/data/group';
-import mockTheses from '@/data/thesis';
+import { mockTheses } from '@/data/thesis';
 
 function getSemesterLabel(id: string) {
 	const year = id.slice(0, 4);

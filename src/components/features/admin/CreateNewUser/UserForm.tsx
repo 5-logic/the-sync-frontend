@@ -36,7 +36,6 @@ const STATUS_TAG: Record<SemesterStatus, JSX.Element> = {
 
 type UserFormProps = {
 	formType: 'student' | 'lecturer';
-	onSubmit?: (values: Record<string, unknown>) => void;
 };
 
 const UserForm = ({ formType }: UserFormProps) => {
@@ -229,7 +228,7 @@ const UserForm = ({ formType }: UserFormProps) => {
 											: 'No available semesters for student creation'
 									}
 									loading={semestersLoading} // Use loading from semester store
-									disabled={creating || !hasAvailableSemesters}
+									disabled={creating ?? !hasAvailableSemesters}
 									notFoundContent={
 										!semestersLoading && !hasAvailableSemesters
 											? 'No semesters with Preparing or Picking status found'

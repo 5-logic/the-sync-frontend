@@ -39,6 +39,10 @@ export const StudentUpdateSchema = StudentSchema.pick({
 	})
 	.partial();
 
+export const StudentToggleStatusSchema = StudentSchema.pick({
+	isActive: true,
+});
+
 export const StudentSkillCreateSchema = StudentSkillSchema;
 export const StudentSkillUpdateSchema = StudentSkillSchema.pick({
 	studentId: true,
@@ -51,6 +55,7 @@ export const StudentSkillUpdateSchema = StudentSkillSchema.pick({
 export type Student = z.infer<typeof StudentSchema>;
 export type StudentCreate = z.infer<typeof StudentCreateSchema>;
 export type StudentUpdate = z.infer<typeof StudentUpdateSchema>;
+export type StudentToggleStatus = z.infer<typeof StudentToggleStatusSchema>;
 export type StudentSkill = z.infer<typeof StudentSkillSchema>;
 export type StudentSkillCreate = z.infer<typeof StudentSkillCreateSchema>;
 export type StudentSkillUpdate = z.infer<typeof StudentSkillUpdateSchema>;
