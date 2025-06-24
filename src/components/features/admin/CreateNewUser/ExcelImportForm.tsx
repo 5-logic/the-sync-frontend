@@ -280,6 +280,160 @@ function validateAllData<
 	return { validatedData, validationErrors };
 }
 
+// Helper function to process Excel file data
+function processExcelFile<
+	T extends { id: string; email?: string; studentId?: string },
+>(
+	data: ArrayBuffer,
+	fields: {
+		title: string;
+		key: keyof T;
+		type: 'text' | 'select';
+		options?: { label: string; value: string }[];
+		required?: boolean;
+	}[],
+): { validatedData: T[]; validationErrors: string[] } | null {
+	try {
+		const workbook = XLSX.read(data, { type: 'binary' });
+		const sheetName = workbook.SheetNames[0];
+		const worksheet = workbook.Sheets[sheetName];
+		const jsonData = XLSX.utils.sheet_to_json(worksheet, {
+			header: 1,
+		}) as string[][];
+
+		if (jsonData.length < 2) {
+			showNotification.error(
+				'Error',
+				'Excel file must have at least 2 rows (header and data)',
+			);
+			return null;
+		}
+
+		const parsedData = parseExcelData(jsonData, fields);
+		if (parsedData.length === 0) {
+			showNotification.error('Error', 'No valid data found in Excel file');
+			return null;
+		}
+
+		return validateAllData(parsedData, fields);
+	} catch (error) {
+		console.error('Error parsing Excel file:', error);
+		showNotification.error(
+			'Error',
+			'Failed to parse Excel file. Please check the file format and try again.',
+		);
+		return null;
+	}
+}
+
+// Helper function to validate upload prerequisites
+function validateUploadPrerequisites(
+	requireSemester: boolean,
+	selectedSemester: string,
+	requireMajor: boolean,
+	selectedMajor: string,
+): boolean {
+	if (requireSemester && !selectedSemester) {
+		showNotification.error('Error', 'Please select a semester first');
+		return false;
+	}
+
+	if (requireMajor && !selectedMajor) {
+		showNotification.error('Error', 'Please select a major first');
+		return false;
+	}
+
+	return true;
+}
+
+// Helper function to handle validation errors
+function handleValidationErrors(validationErrors: string[]): void {
+	const errorMessage =
+		validationErrors.slice(0, 10).join('\n') +
+		(validationErrors.length > 10
+			? `\n... and ${validationErrors.length - 10} more errors`
+			: '');
+
+	showNotification.error(
+		`Validation Failed (${validationErrors.length} errors)`,
+		errorMessage,
+	);
+}
+
+// Helper function to create table columns
+function createTableColumns<
+	T extends { id: string; email?: string; studentId?: string },
+>(
+	fields: {
+		title: string;
+		width?: string;
+		key: keyof T;
+		type: 'text' | 'select';
+		options?: { label: string; value: string }[];
+		required?: boolean;
+	}[],
+	handleFieldChange: (id: string, key: keyof T, value: unknown) => void,
+	handleDelete: (id: string) => void,
+): ColumnsType<T> {
+	return [
+		...fields.map((field) => ({
+			title: (
+				<span>
+					{field.title}
+					{field.required && <span style={{ color: 'red' }}> *</span>}
+				</span>
+			),
+			dataIndex: field.key as string,
+			width: field.width ?? 200,
+			render: (_: unknown, record: T) =>
+				field.type === 'text' ? (
+					<Input
+						value={record[field.key] as string}
+						onChange={(e) =>
+							handleFieldChange(record.id, field.key, e.target.value)
+						}
+						status={
+							!record[field.key] || String(record[field.key]).trim() === ''
+								? 'error'
+								: undefined
+						}
+					/>
+				) : (
+					<Select
+						value={record[field.key] as string}
+						onChange={(val) => handleFieldChange(record.id, field.key, val)}
+						style={{ width: 120 }}
+						status={
+							!record[field.key] || String(record[field.key]).trim() === ''
+								? 'error'
+								: undefined
+						}
+					>
+						{field.options?.map((opt) => (
+							<Select.Option key={opt.value} value={opt.value}>
+								{opt.label}
+							</Select.Option>
+						))}
+					</Select>
+				),
+		})),
+		{
+			title: 'Action',
+			width: '10%',
+			render: (_: unknown, record: T) => (
+				<Tooltip title="Delete">
+					<Button
+						icon={<DeleteOutlined />}
+						danger
+						type="text"
+						onClick={() => handleDelete(record.id)}
+					/>
+				</Tooltip>
+			),
+		},
+	];
+}
+
 export default function ExcelImportForm<
 	T extends { id: string; email?: string; studentId?: string },
 >({
@@ -366,83 +520,44 @@ export default function ExcelImportForm<
 			setTimeout(() => setDownloading(false), 1000);
 		}
 	};
-
 	const handleUpload = (file: RcFile) => {
-		if (requireSemester && !selectedSemester) {
-			showNotification.error('Error', 'Please select a semester first');
-			return false;
-		}
-
-		if (requireMajor && !selectedMajor) {
-			showNotification.error('Error', 'Please select a major first');
+		if (
+			!validateUploadPrerequisites(
+				requireSemester,
+				selectedSemester,
+				requireMajor,
+				selectedMajor,
+			)
+		) {
 			return false;
 		}
 
 		const reader = new FileReader();
 		reader.onload = (e) => {
-			try {
-				const data = e.target?.result;
-				if (!data) {
-					showNotification.error('Error', 'Failed to read file');
-					return;
-				}
-
-				const workbook = XLSX.read(data, { type: 'binary' });
-				const sheetName = workbook.SheetNames[0];
-				const worksheet = workbook.Sheets[sheetName];
-				const jsonData = XLSX.utils.sheet_to_json(worksheet, {
-					header: 1,
-				}) as string[][];
-
-				if (jsonData.length < 2) {
-					showNotification.error(
-						'Error',
-						'Excel file must have at least 2 rows (header and data)',
-					);
-					return;
-				}
-
-				const parsedData = parseExcelData(jsonData, fields);
-				if (parsedData.length === 0) {
-					showNotification.error('Error', 'No valid data found in Excel file');
-					return;
-				}
-
-				const { validatedData, validationErrors } = validateAllData(
-					parsedData,
-					fields,
-				);
-				if (validationErrors.length > 0) {
-					const errorMessage =
-						validationErrors.slice(0, 10).join('\n') +
-						(validationErrors.length > 10
-							? `\n... and ${validationErrors.length - 10} more errors`
-							: '');
-
-					showNotification.error(
-						`Validation Failed (${validationErrors.length} errors)`,
-						errorMessage,
-					);
-
-					// Stop import process if there are validation errors - don't allow partial imports
-					setData([]);
-					setFileList([]);
-					return;
-				}
-				setData(validatedData);
-				setFileList([file]);
-
-				// Only success message since we now reject files with any validation errors
-				const successMessage = `${validatedData.length} rows imported successfully with no validation errors.`;
-
-				showNotification.success('Success', successMessage);
-			} catch (error) {
-				console.error('Error parsing Excel file:', error);
-				showNotification.error(
-					'Error',
-					'Failed to parse Excel file. Please check the file format and try again.',
-				);
+			const data = e.target?.result;
+			if (!data) {
+				showNotification.error('Error', 'Failed to read file');
+				return;
 			}
+
+			const result = processExcelFile(data as ArrayBuffer, fields);
+			if (!result) return;
+
+			const { validatedData, validationErrors } = result;
+
+			if (validationErrors.length > 0) {
+				handleValidationErrors(validationErrors);
+				setData([]);
+				setFileList([]);
+				return;
+			}
+
+			setData(validatedData);
+			setFileList([file]);
+			showNotification.success(
+				'Success',
+				`${validatedData.length} rows imported successfully with no validation errors.`,
+			);
 		};
 
 		reader.onerror = () =>
@@ -477,33 +592,28 @@ export default function ExcelImportForm<
 		setSelectedMajor(value);
 		clearDataOnChange();
 	};
-
 	const handleImportAll = async () => {
-		if (requireSemester && !selectedSemester) {
-			showNotification.error('Error', 'Please select a semester');
+		if (
+			!validateUploadPrerequisites(
+				requireSemester,
+				selectedSemester,
+				requireMajor,
+				selectedMajor,
+			)
+		) {
 			return;
 		}
 
-		if (requireMajor && !selectedMajor) {
-			showNotification.error('Error', 'Please select a major');
-			return;
-		}
-
-		const studentsToCreate: StudentCreate[] = data.map((item) => {
-			const studentData: StudentCreate = {
-				...item,
-				id: undefined,
-				...(requireSemester &&
-					selectedSemester && { semesterId: selectedSemester }),
-				...(requireMajor && selectedMajor && { majorId: selectedMajor }),
-			};
-
-			return studentData;
-		});
+		const studentsToCreate: StudentCreate[] = data.map((item) => ({
+			...item,
+			id: undefined,
+			...(requireSemester &&
+				selectedSemester && { semesterId: selectedSemester }),
+			...(requireMajor && selectedMajor && { majorId: selectedMajor }),
+		}));
 
 		try {
 			const success = await createManyStudents(studentsToCreate);
-
 			if (success) {
 				await fetchStudents();
 				setData([]);
@@ -511,7 +621,6 @@ export default function ExcelImportForm<
 				setSelectedSemester('');
 				setSelectedMajor('');
 				form.resetFields();
-
 				onImport(
 					data,
 					requireSemester ? selectedSemester : undefined,
@@ -535,90 +644,21 @@ export default function ExcelImportForm<
 		if (requiredFields === 1) return 24;
 		return 12;
 	};
+	const columns = createTableColumns(fields, handleFieldChange, handleDelete);
+	// Component for semester availability alerts
+	function SemesterAlerts({
+		requireSemester,
+		semesterLoading,
+		hasAvailableSemesters,
+	}: {
+		requireSemester: boolean;
+		semesterLoading: boolean;
+		hasAvailableSemesters: boolean;
+	}) {
+		if (!requireSemester) return null;
 
-	const columns: ColumnsType<T> = [
-		...fields.map((field) => ({
-			title: (
-				<span>
-					{field.title}
-					{field.required && <span style={{ color: 'red' }}> *</span>}
-				</span>
-			),
-			dataIndex: field.key as string,
-			width: field.width ?? 200,
-			render: (_: unknown, record: T) =>
-				field.type === 'text' ? (
-					<Input
-						value={record[field.key] as string}
-						onChange={(e) =>
-							handleFieldChange(record.id, field.key, e.target.value)
-						}
-						status={
-							// All fields are required now
-							!record[field.key] || String(record[field.key]).trim() === ''
-								? 'error'
-								: undefined
-						}
-					/>
-				) : (
-					<Select
-						value={record[field.key] as string}
-						onChange={(val) => handleFieldChange(record.id, field.key, val)}
-						style={{ width: 120 }}
-						status={
-							// All fields are required now
-							!record[field.key] || String(record[field.key]).trim() === ''
-								? 'error'
-								: undefined
-						}
-					>
-						{field.options?.map((opt) => (
-							<Select.Option key={opt.value} value={opt.value}>
-								{opt.label}
-							</Select.Option>
-						))}
-					</Select>
-				),
-		})),
-		{
-			title: 'Action',
-			width: '10%',
-			render: (_: unknown, record: T) => (
-				<Tooltip title="Delete">
-					<Button
-						icon={<DeleteOutlined />}
-						danger
-						type="text"
-						onClick={() => handleDelete(record.id)}
-					/>
-				</Tooltip>
-			),
-		},
-	];
-
-	// Helper function to validate file type
-	const isExcelFile = (file: RcFile): boolean => {
-		const validMimeTypes = [
-			'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-			'application/vnd.ms-excel',
-		];
-
-		const validExtensions = ['.xlsx', '.xls'];
-
-		return (
-			validMimeTypes.includes(file.type) ||
-			validExtensions.some((ext) => file.name.endsWith(ext))
-		);
-	};
-
-	// Helper function to validate file size
-	const isValidFileSize = (file: RcFile, maxSizeMB = 100): boolean => {
-		return file.size / 1024 / 1024 < maxSizeMB;
-	};
-
-	return (
-		<Space direction="vertical" size="middle" style={{ width: '100%' }}>
-			{requireSemester && !semesterLoading && !hasAvailableSemesters && (
+		if (!semesterLoading && !hasAvailableSemesters) {
+			return (
 				<Alert
 					type="warning"
 					showIcon
@@ -637,9 +677,11 @@ export default function ExcelImportForm<
 					}
 					style={{ marginBottom: 16 }}
 				/>
-			)}
+			);
+		}
 
-			{requireSemester && hasAvailableSemesters && (
+		if (hasAvailableSemesters) {
+			return (
 				<Alert
 					type="info"
 					showIcon
@@ -659,88 +701,280 @@ export default function ExcelImportForm<
 					}
 					style={{ marginBottom: 0 }}
 				/>
-			)}
+			);
+		}
 
-			{(requireSemester || requireMajor) && (
-				<Form form={form} requiredMark={false} layout="vertical">
-					<Row gutter={16}>
-						{requireSemester && (
-							<Col xs={24} sm={getColumnSpan()}>
-								<Form.Item
-									name="semester"
-									rules={[
-										{ required: true, message: 'Please select a semester' },
-									]}
-									label={FormLabel({
-										text: 'Semester',
-										isRequired: true,
-										isBold: true,
-									})}
-								>
-									<Select
-										placeholder={
-											hasAvailableSemesters
-												? 'Select semester (Preparing or Picking status only)'
-												: 'No available semesters for user creation'
-										}
-										loading={semesterLoading}
-										onChange={handleSemesterChange}
-										value={selectedSemester ?? undefined}
-										disabled={!hasAvailableSemesters}
-										notFoundContent={
-											!semesterLoading && !hasAvailableSemesters
-												? 'No semesters with Preparing or Picking status found'
-												: undefined
-										}
-									>
-										{availableSemesters.map((semester) => (
-											<Select.Option key={semester.id} value={semester.id}>
-												<Space>
-													<span>{semester.name}</span>
-													{STATUS_TAG[semester.status]}
-												</Space>
-											</Select.Option>
-										))}
-									</Select>
-								</Form.Item>
-							</Col>
-						)}
+		return null;
+	}
 
-						{requireMajor && (
-							<Col xs={24} sm={getColumnSpan()}>
-								<Form.Item
-									name="major"
-									rules={[{ required: true, message: 'Please select a major' }]}
-									label={FormLabel({
-										text: 'Major',
-										isRequired: true,
-										isBold: true,
-									})}
+	// Component for form fields selection
+	function SelectionForm({
+		form,
+		requireSemester,
+		requireMajor,
+		getColumnSpan,
+		availableSemesters,
+		hasAvailableSemesters,
+		semesterLoading,
+		handleSemesterChange,
+		selectedSemester,
+		majors,
+		majorLoading,
+		handleMajorChange,
+		selectedMajor,
+	}: {
+		form: ReturnType<typeof Form.useForm>[0];
+		requireSemester: boolean;
+		requireMajor: boolean;
+		getColumnSpan: () => number;
+		availableSemesters: Array<{
+			id: string;
+			name: string;
+			status: SemesterStatus;
+		}>;
+		hasAvailableSemesters: boolean;
+		semesterLoading: boolean;
+		handleSemesterChange: (value: string) => void;
+		selectedSemester: string;
+		majors: Array<{ id: string; name: string }>;
+		majorLoading: boolean;
+		handleMajorChange: (value: string) => void;
+		selectedMajor: string;
+	}) {
+		if (!requireSemester && !requireMajor) return null;
+
+		return (
+			<Form form={form} requiredMark={false} layout="vertical">
+				<Row gutter={16}>
+					{requireSemester && (
+						<Col xs={24} sm={getColumnSpan()}>
+							<Form.Item
+								name="semester"
+								rules={[
+									{ required: true, message: 'Please select a semester' },
+								]}
+								label={FormLabel({
+									text: 'Semester',
+									isRequired: true,
+									isBold: true,
+								})}
+							>
+								<Select
+									placeholder={
+										hasAvailableSemesters
+											? 'Select semester (Preparing or Picking status only)'
+											: 'No available semesters for user creation'
+									}
+									loading={semesterLoading}
+									onChange={handleSemesterChange}
+									value={selectedSemester ?? undefined}
+									disabled={!hasAvailableSemesters}
+									notFoundContent={
+										!semesterLoading && !hasAvailableSemesters
+											? 'No semesters with Preparing or Picking status found'
+											: undefined
+									}
 								>
-									<Select
-										placeholder="Select major"
-										loading={majorLoading}
-										onChange={handleMajorChange}
-										value={selectedMajor ?? undefined}
-										disabled={!majors.length}
-										notFoundContent={
-											!majorLoading && !majors.length
-												? 'No majors found'
-												: undefined
-										}
-									>
-										{majors.map((major) => (
-											<Select.Option key={major.id} value={major.id}>
-												{major.name}
-											</Select.Option>
-										))}
-									</Select>
-								</Form.Item>
-							</Col>
-						)}
-					</Row>
-				</Form>
-			)}
+									{availableSemesters.map((semester) => (
+										<Select.Option key={semester.id} value={semester.id}>
+											<Space>
+												<span>{semester.name}</span>
+												{STATUS_TAG[semester.status]}
+											</Space>
+										</Select.Option>
+									))}
+								</Select>
+							</Form.Item>
+						</Col>
+					)}
+
+					{requireMajor && (
+						<Col xs={24} sm={getColumnSpan()}>
+							<Form.Item
+								name="major"
+								rules={[{ required: true, message: 'Please select a major' }]}
+								label={FormLabel({
+									text: 'Major',
+									isRequired: true,
+									isBold: true,
+								})}
+							>
+								<Select
+									placeholder="Select major"
+									loading={majorLoading}
+									onChange={handleMajorChange}
+									value={selectedMajor ?? undefined}
+									disabled={!majors.length}
+									notFoundContent={
+										!majorLoading && !majors.length
+											? 'No majors found'
+											: undefined
+									}
+								>
+									{majors.map((major) => (
+										<Select.Option key={major.id} value={major.id}>
+											{major.name}
+										</Select.Option>
+									))}
+								</Select>
+							</Form.Item>
+						</Col>
+					)}
+				</Row>
+			</Form>
+		);
+	}
+	// Helper function to validate file type
+	const isExcelFile = (file: RcFile): boolean => {
+		const validMimeTypes = [
+			'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+			'application/vnd.ms-excel',
+		];
+		const validExtensions = ['.xlsx', '.xls'];
+		return (
+			validMimeTypes.includes(file.type) ||
+			validExtensions.some((ext) => file.name.endsWith(ext))
+		);
+	};
+	// Helper function to get upload text
+	function getUploadText(
+		requireSemester: boolean,
+		hasAvailableSemesters: boolean,
+		selectedSemester: string,
+		requireMajor: boolean,
+		selectedMajor: string,
+	): string {
+		if (requireSemester && !hasAvailableSemesters) {
+			return 'No available semesters for user creation';
+		}
+		if (requireSemester && !selectedSemester) {
+			return 'Please select a semester first';
+		}
+		if (requireMajor && !selectedMajor) {
+			return 'Please select a major first';
+		}
+		return 'Drag and drop Excel file here, or click to browse';
+	}
+
+	// Component for imported data table
+	function ImportedDataTable<
+		T extends { id: string; email?: string; studentId?: string },
+	>({
+		data,
+		columns,
+		setData,
+		setFileList,
+		handleImportAll,
+		creatingMany,
+		requireSemester,
+		selectedSemester,
+		requireMajor,
+		selectedMajor,
+	}: {
+		data: T[];
+		columns: ColumnsType<T>;
+		setData: (data: T[]) => void;
+		setFileList: (files: RcFile[]) => void;
+		handleImportAll: () => void;
+		creatingMany: boolean;
+		requireSemester: boolean;
+		selectedSemester: string;
+		requireMajor: boolean;
+		selectedMajor: string;
+	}) {
+		if (data.length === 0) return null;
+
+		return (
+			<Space direction="vertical" style={{ width: '100%' }} size="middle">
+				<Alert
+					type="success"
+					showIcon
+					message={
+						<Space direction="vertical" size={4}>
+							<Space>
+								<Typography.Text strong>
+									{data.length} users data imported successfully
+								</Typography.Text>
+							</Space>
+						</Space>
+					}
+					style={{ borderColor: '#bbf7d0', color: '#15803d' }}
+				/>
+
+				<Table
+					dataSource={data}
+					columns={columns}
+					pagination={{
+						showSizeChanger: true,
+						showQuickJumper: true,
+						showTotal: (total, range) =>
+							`${range[0]}-${range[1]} of ${total} items`,
+					}}
+					bordered
+					rowKey="id"
+					scroll={{ x: '850' }}
+				/>
+
+				<Row justify="end" gutter={8}>
+					<Col>
+						<Button
+							onClick={() => {
+								setData([]);
+								setFileList([]);
+							}}
+						>
+							Cancel
+						</Button>
+					</Col>
+					<Col>
+						<Button
+							type="primary"
+							onClick={handleImportAll}
+							loading={creatingMany}
+							disabled={
+								(requireSemester && !selectedSemester) ||
+								data.length === 0 ||
+								(requireMajor && !selectedMajor) ||
+								creatingMany
+							}
+						>
+							{creatingMany
+								? `Creating Students...`
+								: `Import All Users (${data.length})`}
+						</Button>
+					</Col>
+				</Row>
+			</Space>
+		);
+	}
+	// Helper function to validate file size
+	const isValidFileSize = (file: RcFile, maxSizeMB = 100): boolean => {
+		return file.size / 1024 / 1024 < maxSizeMB;
+	};
+
+	return (
+		<Space direction="vertical" size="middle" style={{ width: '100%' }}>
+			<SemesterAlerts
+				requireSemester={requireSemester}
+				semesterLoading={semesterLoading}
+				hasAvailableSemesters={hasAvailableSemesters}
+			/>
+
+			<SelectionForm
+				form={form}
+				requireSemester={requireSemester}
+				requireMajor={requireMajor}
+				getColumnSpan={getColumnSpan}
+				availableSemesters={availableSemesters}
+				hasAvailableSemesters={hasAvailableSemesters}
+				semesterLoading={semesterLoading}
+				handleSemesterChange={handleSemesterChange}
+				selectedSemester={selectedSemester}
+				majors={majors}
+				majorLoading={majorLoading}
+				handleMajorChange={handleMajorChange}
+				selectedMajor={selectedMajor}
+			/>
 
 			<Card
 				style={{
@@ -812,81 +1046,31 @@ export default function ExcelImportForm<
 					<CloudUploadOutlined />
 				</p>
 				<p className="ant-upload-text">
-					{requireSemester && !hasAvailableSemesters
-						? 'No available semesters for user creation'
-						: requireSemester && !selectedSemester
-							? 'Please select a semester first'
-							: requireMajor && !selectedMajor
-								? 'Please select a major first'
-								: 'Drag and drop Excel file here, or click to browse'}
+					{getUploadText(
+						requireSemester,
+						hasAvailableSemesters,
+						selectedSemester,
+						requireMajor,
+						selectedMajor,
+					)}
 				</p>
 				<p className="ant-upload-hint">
 					Supports .xlsx and .xls files up to 100MB
 				</p>
 			</Dragger>
 
-			{data.length > 0 && (
-				<Space direction="vertical" style={{ width: '100%' }} size="middle">
-					<Alert
-						type="success"
-						showIcon
-						message={
-							<Space direction="vertical" size={4}>
-								<Space>
-									<Typography.Text strong>
-										{data.length} users data imported successfully
-									</Typography.Text>
-								</Space>
-							</Space>
-						}
-						style={{ borderColor: '#bbf7d0', color: '#15803d' }}
-					/>
-
-					<Table
-						dataSource={data}
-						columns={columns}
-						pagination={{
-							showSizeChanger: true,
-							showQuickJumper: true,
-							showTotal: (total, range) =>
-								`${range[0]}-${range[1]} of ${total} items`,
-						}}
-						bordered
-						rowKey="id"
-						scroll={{ x: '850' }}
-					/>
-
-					<Row justify="end" gutter={8}>
-						<Col>
-							<Button
-								onClick={() => {
-									setData([]);
-									setFileList([]);
-								}}
-							>
-								Cancel
-							</Button>
-						</Col>
-						<Col>
-							<Button
-								type="primary"
-								onClick={handleImportAll}
-								loading={creatingMany}
-								disabled={
-									(requireSemester && !selectedSemester) ||
-									data.length === 0 ||
-									(requireMajor && !selectedMajor) ||
-									creatingMany
-								}
-							>
-								{creatingMany
-									? `Creating Students...`
-									: `Import All Users (${data.length})`}
-							</Button>
-						</Col>
-					</Row>
-				</Space>
-			)}
+			<ImportedDataTable
+				data={data}
+				columns={columns}
+				setData={setData}
+				setFileList={setFileList}
+				handleImportAll={handleImportAll}
+				creatingMany={creatingMany}
+				requireSemester={requireSemester}
+				selectedSemester={selectedSemester}
+				requireMajor={requireMajor}
+				selectedMajor={selectedMajor}
+			/>
 		</Space>
 	);
 }
