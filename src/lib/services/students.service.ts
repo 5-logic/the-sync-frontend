@@ -55,7 +55,7 @@ class StudentService {
 		id: string,
 		toggleStatusDto: StudentToggleStatus,
 	): Promise<ApiResponse<Student>> {
-		const response = await httpClient.patch<ApiResponse<Student>>(
+		const response = await httpClient.post<ApiResponse<Student>>(
 			`${this.baseUrl}/${id}/toggle-status`,
 			toggleStatusDto,
 		);
