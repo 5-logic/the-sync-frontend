@@ -9,10 +9,13 @@ import { Button, Col, Input, Row, Select } from 'antd';
 import { useEffect } from 'react';
 
 import { useMajorStore } from '@/store/useMajorStore';
+import { useSemesterStore } from '@/store/useSemesterStore';
 
 const { Option } = Select;
 
 type Props = Readonly<{
+	semesterFilter: string;
+	setSemesterFilter: (value: string) => void;
 	statusFilter: string;
 	setStatusFilter: (value: string) => void;
 	majorFilter: string;
@@ -25,6 +28,8 @@ type Props = Readonly<{
 }>;
 
 export default function StudentFilterBar({
+	semesterFilter,
+	setSemesterFilter,
 	statusFilter,
 	setStatusFilter,
 	majorFilter,
@@ -35,13 +40,21 @@ export default function StudentFilterBar({
 	onRefresh,
 	loading = false,
 }: Props) {
+	// Use Semester Store - Replace local semester state
+	const {
+		semesters,
+		loading: semestersLoading,
+		fetchSemesters,
+	} = useSemesterStore();
+
 	// Use Major Store
 	const { majors, loading: majorsLoading, fetchMajors } = useMajorStore();
 
 	// Fetch data on component mount
 	useEffect(() => {
+		fetchSemesters();
 		fetchMajors();
-	}, [fetchMajors]);
+	}, [fetchSemesters, fetchMajors]);
 
 	return (
 		<Row
@@ -52,6 +65,24 @@ export default function StudentFilterBar({
 		>
 			<Col xs={24} md={20}>
 				<Row gutter={[8, 8]} wrap>
+					<Col>
+						<Select
+							value={semesterFilter}
+							onChange={setSemesterFilter}
+							style={{ width: 150 }}
+							size="middle"
+							loading={semestersLoading} // Use loading from semester store
+							placeholder="Select semester"
+						>
+							<Option value="All">All Semesters</Option>
+							{semesters.map((semester) => (
+								<Option key={semester.id} value={semester.id}>
+									{semester.code}
+								</Option>
+							))}
+						</Select>
+					</Col>
+
 					<Col>
 						<Select
 							value={statusFilter}
@@ -71,7 +102,7 @@ export default function StudentFilterBar({
 							onChange={setMajorFilter}
 							style={{ width: 150 }}
 							size="middle"
-							loading={majorsLoading}
+							loading={majorsLoading} // Use loading from major store
 							placeholder="Select major"
 						>
 							<Option value="All">All Majors</Option>

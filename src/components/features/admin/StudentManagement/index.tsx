@@ -11,6 +11,7 @@ import { showNotification } from '@/lib/utils/notification';
 import { Student } from '@/schemas/student';
 
 export default function StudentManagement() {
+	const [semesterFilter, setSemesterFilter] = useState('All');
 	const [statusFilter, setStatusFilter] = useState('All');
 	const [majorFilter, setMajorFilter] = useState('All');
 	const [searchText, setSearchText] = useState('');
@@ -41,6 +42,10 @@ export default function StudentManagement() {
 	}, []);
 
 	const filteredData = data.filter((student) => {
+		// Đợi api enrollment để handle semester filter
+		const matchesSemester =
+			semesterFilter === 'All' || student.semesterId === semesterFilter;
+
 		const matchesStatus =
 			statusFilter === 'All' ||
 			student.isActive === (statusFilter === 'Active');
@@ -56,7 +61,7 @@ export default function StudentManagement() {
 			(field ?? '').toLowerCase().includes(searchText.toLowerCase()),
 		);
 
-		return matchesStatus && matchesMajor && matchesSearch;
+		return matchesSemester && matchesStatus && matchesMajor && matchesSearch;
 	});
 
 	const handleCreateStudent = () => {
@@ -81,6 +86,8 @@ export default function StudentManagement() {
 			</div>
 
 			<StudentFilterBar
+				semesterFilter={semesterFilter}
+				setSemesterFilter={setSemesterFilter}
 				statusFilter={statusFilter}
 				setStatusFilter={setStatusFilter}
 				majorFilter={majorFilter}
