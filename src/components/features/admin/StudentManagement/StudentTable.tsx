@@ -6,7 +6,6 @@ import { useEffect, useMemo } from 'react';
 
 import { Student } from '@/schemas/student';
 import { useMajorStore } from '@/store/useMajorStore';
-import { useSemesterStore } from '@/store/useSemesterStore';
 
 type Props = Readonly<{
 	data: Student[];
@@ -17,18 +16,10 @@ export default function StudentTable({ data, loading }: Props) {
 	// Use Major Store
 	const { majors, loading: majorsLoading, fetchMajors } = useMajorStore();
 
-	// Use Semester Store - Replace local semester state
-	const {
-		semesters,
-		loading: semestersLoading,
-		fetchSemesters,
-	} = useSemesterStore();
-
 	// Fetch data using stores
 	useEffect(() => {
 		fetchMajors();
-		fetchSemesters();
-	}, [fetchMajors, fetchSemesters]);
+	}, [fetchMajors]);
 
 	// Create maps for efficient lookups
 	const majorMap = useMemo(() => {
@@ -44,19 +35,6 @@ export default function StudentTable({ data, loading }: Props) {
 		);
 	}, [majors]);
 
-	const semesterMap = useMemo(() => {
-		return semesters.reduce(
-			(acc, semester) => {
-				acc[semester.id] = {
-					code: semester.code,
-					name: semester.name,
-				};
-				return acc;
-			},
-			{} as Record<string, { code: string; name: string }>,
-		);
-	}, [semesters]);
-
 	const columns: ColumnsType<Student> = [
 		{
 			title: 'Student ID',
@@ -68,13 +46,13 @@ export default function StudentTable({ data, loading }: Props) {
 			title: 'Name',
 			dataIndex: 'fullName',
 			key: 'fullName',
-			width: '25%',
+			width: '30%',
 		},
 		{
 			title: 'Email',
 			dataIndex: 'email',
 			key: 'email',
-			width: '25%',
+			width: '30%',
 		},
 		{
 			title: 'Gender',
@@ -88,7 +66,7 @@ export default function StudentTable({ data, loading }: Props) {
 			title: 'Major',
 			dataIndex: 'majorId',
 			key: 'majorId',
-			width: '12%',
+			width: '15%',
 			render: (majorId: string) => {
 				if (majorsLoading) {
 					return 'Loading...';
@@ -96,24 +74,6 @@ export default function StudentTable({ data, loading }: Props) {
 
 				const major = majorMap[majorId];
 				return major ? major.code : 'Unknown';
-			},
-		},
-		{
-			title: 'Semester',
-			dataIndex: 'semesterId',
-			key: 'semesterId',
-			width: '12%',
-			render: (semesterId: string) => {
-				if (semestersLoading) {
-					return 'Loading...';
-				}
-
-				if (!semesterId) {
-					return '';
-				}
-
-				const semester = semesterMap[semesterId];
-				return semester ? semester.code : 'Unknown';
 			},
 		},
 		{
