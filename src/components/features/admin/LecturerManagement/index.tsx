@@ -21,11 +21,17 @@ export default function LecturerManagement() {
 	useEffect(() => {
 		fetchLecturers();
 	}, [fetchLecturers]);
-
 	const handleTogglePermission = async (id: string) => {
 		const lecturer = useLecturerStore.getState().getLecturerById(id);
 		if (lecturer) {
 			await toggleLecturerStatus(id, { isModerator: !lecturer.isModerator });
+		}
+	};
+
+	const handleToggleStatus = async (id: string) => {
+		const lecturer = useLecturerStore.getState().getLecturerById(id);
+		if (lecturer) {
+			await toggleLecturerStatus(id, { isActive: !lecturer.isActive });
 		}
 	};
 	const handleCreateLecturer = () => {
@@ -43,7 +49,7 @@ export default function LecturerManagement() {
 				<Title level={2} style={{ marginBottom: '4px' }}>
 					Lecturer Management
 				</Title>
-				<Paragraph type="secondary">
+				<Paragraph type="secondary" style={{ marginBottom: 0 }}>
 					Create and manage lecturers, registration windows, and
 					capstone-specific rules
 				</Paragraph>
@@ -56,6 +62,7 @@ export default function LecturerManagement() {
 			<LecturerTable
 				data={filteredLecturers}
 				onTogglePermission={handleTogglePermission}
+				onToggleStatus={handleToggleStatus}
 				loading={loading || togglingStatus}
 			/>
 		</Space>
