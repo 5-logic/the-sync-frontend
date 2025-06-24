@@ -43,11 +43,11 @@ export default function LecturerManagement() {
 				<Title level={2} style={{ marginBottom: '4px' }}>
 					Lecturer Management
 				</Title>
-				<Paragraph type="secondary" style={{ marginBottom: 0 }}>
+				<Paragraph type="secondary">
 					Create and manage lecturers, registration windows, and
 					capstone-specific rules
 				</Paragraph>
-			</div>{' '}
+			</div>
 			<LecturerFilterBar
 				onCreateLecturer={handleCreateLecturer}
 				onRefresh={handleRefresh}

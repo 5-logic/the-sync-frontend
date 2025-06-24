@@ -25,13 +25,7 @@ export default function LecturerFilterBar({
 	const { selectedStatus, searchText, setSelectedStatus, setSearchText } =
 		useLecturerStore();
 	return (
-		<Row
-			gutter={[8, 16]}
-			align="middle"
-			justify="space-between"
-			style={{ marginBottom: 16 }}
-		>
-			{' '}
+		<Row gutter={[8, 16]} align="middle" justify="space-between">
 			<Col xs={24} md={18}>
 				<Row gutter={[8, 8]} wrap>
 					<Col>

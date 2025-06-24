@@ -42,7 +42,6 @@ export default function StudentManagement() {
 
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
-			{' '}
 			<div>
 				<Title level={2} style={{ marginBottom: '4px' }}>
 					Student Management

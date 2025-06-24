@@ -56,12 +56,7 @@ export default function StudentFilterBar({
 	}, [fetchSemesters, fetchMajors]);
 
 	return (
-		<Row
-			gutter={[8, 16]}
-			align="middle"
-			justify="space-between"
-			style={{ marginBottom: 16 }}
-		>
+		<Row gutter={[8, 16]} align="middle" justify="space-between">
 			<Col xs={24} md={20}>
 				<Row gutter={[8, 8]} wrap>
 					<Col>
