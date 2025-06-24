@@ -4,6 +4,7 @@ import { Table, Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useEffect, useMemo } from 'react';
 
+import { TablePagination } from '@/components/common/TablePagination';
 import { Student } from '@/schemas/student';
 import { useMajorStore } from '@/store/useMajorStore';
 
@@ -94,13 +95,7 @@ export default function StudentTable({ data, loading }: Props) {
 			columns={columns}
 			dataSource={data}
 			rowKey="id"
-			pagination={{
-				showTotal: (total, range) =>
-					`${range[0]}-${range[1]} of ${total} items`,
-				showSizeChanger: true,
-				pageSizeOptions: ['5', '10', '20', '50'],
-				defaultPageSize: 10,
-			}}
+			pagination={TablePagination}
 			scroll={{ x: 'max-content' }}
 			loading={loading}
 			size="middle"
