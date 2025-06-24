@@ -36,9 +36,9 @@ interface LecturerState {
 		statusCode: number;
 		timestamp: Date;
 	} | null;
-
 	// UI states
 	selectedStatus: string;
+	selectedModerator: string;
 	searchText: string;
 
 	// Actions
@@ -53,9 +53,9 @@ interface LecturerState {
 
 	// Error management
 	clearError: () => void;
-
 	// Filters
 	setSelectedStatus: (status: string) => void;
+	setSelectedModerator: (moderator: string) => void;
 	setSearchText: (text: string) => void;
 	filterLecturers: () => void;
 
@@ -87,6 +87,7 @@ export const useLecturerStore = create<LecturerState>()(
 			togglingStatus: false,
 			lastError: null,
 			selectedStatus: 'All',
+			selectedModerator: 'All',
 			searchText: '',
 
 			// Actions using helpers
@@ -103,19 +104,21 @@ export const useLecturerStore = create<LecturerState>()(
 			)(set, get),
 
 			// Error management
-			clearError: () => set(commonStoreUtilities.clearError()),
-
-			// Filters
+			clearError: () => set(commonStoreUtilities.clearError()), // Filters
 			setSelectedStatus: commonStoreUtilities.createFieldSetter(
 				'selectedStatus',
+				'filterLecturers',
+			)(set, get),
+			setSelectedModerator: commonStoreUtilities.createFieldSetter(
+				'selectedModerator',
 				'filterLecturers',
 			)(set, get),
 			setSearchText: commonStoreUtilities.createSetSearchText(
 				'filterLecturers',
 			)(set, get),
-
 			filterLecturers: () => {
-				const { lecturers, selectedStatus, searchText } = get();
+				const { lecturers, selectedStatus, selectedModerator, searchText } =
+					get();
 
 				let filtered = lecturers;
 
@@ -125,17 +128,23 @@ export const useLecturerStore = create<LecturerState>()(
 					);
 				}
 
+				if (selectedModerator !== 'All') {
+					filtered = filtered.filter(
+						(lecturer) =>
+							lecturer.isModerator === (selectedModerator === 'Moderator'),
+					);
+				}
+
 				// Apply text search
 				filtered = lecturerSearchFilter(filtered, searchText);
 
 				set({ filteredLecturers: filtered });
-			},
-
-			// Utilities
+			}, // Utilities
 			reset: () =>
 				set(
 					commonStoreUtilities.createReset('lecturer', {
 						selectedStatus: 'All',
+						selectedModerator: 'All',
 					})(),
 				),
 			getLecturerById:
