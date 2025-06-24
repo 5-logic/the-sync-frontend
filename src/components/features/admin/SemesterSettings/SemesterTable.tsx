@@ -29,7 +29,7 @@ import {
 import { FormLabel } from '@/components/common/FormLabel';
 import { SemesterStatus } from '@/schemas/_enums';
 import { Semester, SemesterUpdate } from '@/schemas/semester';
-import { useSemesterStore } from '@/store/useSemesterStore';
+import { useSemesterStore } from '@/store';
 
 const { Option } = Select;
 const { Text } = Typography;

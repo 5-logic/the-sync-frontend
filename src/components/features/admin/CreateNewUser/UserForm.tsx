@@ -19,9 +19,7 @@ import { FormLabel } from '@/components/common/FormLabel';
 import { showNotification } from '@/lib/utils/notification';
 import { SemesterStatus } from '@/schemas/_enums';
 import { StudentCreate } from '@/schemas/student';
-import { useMajorStore } from '@/store/useMajorStore';
-import { useSemesterStore } from '@/store/useSemesterStore';
-import { useStudentStore } from '@/store/useStudentStore';
+import { useMajorStore, useSemesterStore, useStudentStore } from '@/store';
 
 const { Option } = Select;
 

@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-import { useAppStore } from '@/store/useAppStore';
+import { useAppStore } from '@/store';
 
 /**
  * Custom hook để xử lý responsive layout logic

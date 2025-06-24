@@ -6,8 +6,7 @@ import { useEffect, useMemo } from 'react';
 
 import { TablePagination } from '@/components/common/TablePagination';
 import { Student } from '@/schemas/student';
-import { useMajorStore } from '@/store/useMajorStore';
-import { useStudentStore } from '@/store/useStudentStore';
+import { useMajorStore, useStudentStore } from '@/store';
 
 type Props = Readonly<{
 	data: Student[];

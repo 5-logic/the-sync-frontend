@@ -17,7 +17,7 @@ import { SEMESTER_STATUS_TAGS } from '@/lib/constants/semester';
 import { formatDate } from '@/lib/utils/dateFormat';
 import { Milestone } from '@/schemas/milestone';
 import { Semester } from '@/schemas/semester';
-import { useMilestoneStore } from '@/store/useMilestoneStore';
+import { useMilestoneStore } from '@/store';
 
 type Props = Readonly<{
 	data: Milestone[];

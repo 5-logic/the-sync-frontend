@@ -8,8 +8,7 @@ import {
 import { Button, Col, Input, Row, Select } from 'antd';
 import { useEffect } from 'react';
 
-import { useMajorStore } from '@/store/useMajorStore';
-import { useSemesterStore } from '@/store/useSemesterStore';
+import { useMajorStore, useSemesterStore } from '@/store';
 
 const { Option } = Select;
 
