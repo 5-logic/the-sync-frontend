@@ -323,12 +323,14 @@ const SemesterTable = forwardRef<
 
 			// Validate status transition rules
 			if (!validateStatusTransition(editingRecord, values)) return;
-
 			// Prepare payload
 			const payload: SemesterUpdate = {
 				name: values.name,
 				code: values.code,
-				maxGroup: values.maxGroup ? parseInt(values.maxGroup, 10) : undefined,
+				// Only include maxGroup if status allows it (not End)
+				...(values.status !== 'End' && values.maxGroup
+					? { maxGroup: parseInt(values.maxGroup, 10) }
+					: {}),
 				status: values.status,
 				ongoingPhase:
 					values.status === 'Ongoing' ? values.ongoingPhase : undefined,

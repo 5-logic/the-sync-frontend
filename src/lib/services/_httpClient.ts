@@ -13,7 +13,7 @@ const httpClient = axios.create({
 	headers: {
 		'Content-Type': 'application/json',
 	},
-	timeout: 3600000, // 10m timeout for backend API
+	timeout: 3600000, // 1h timeout for backend API
 });
 
 // Apply improved interceptors from the dedicated interceptors module
