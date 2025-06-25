@@ -1,0 +1,1105 @@
+'use client';
+
+import {
+	CloudUploadOutlined,
+	DeleteOutlined,
+	DownloadOutlined,
+} from '@ant-design/icons';
+import {
+	Alert,
+	Button,
+	Card,
+	Col,
+	Form,
+	Input,
+	Row,
+	Select,
+	Space,
+	Table,
+	Tag,
+	Tooltip,
+	Typography,
+	Upload,
+} from 'antd';
+import type { ColumnsType } from 'antd/es/table';
+import type { RcFile } from 'antd/es/upload';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import * as XLSX from 'xlsx';
+
+import { FormLabel } from '@/components/common/FormLabel';
+import { SEMESTER_STATUS_TAGS } from '@/lib/constants/semester';
+import { showNotification } from '@/lib/utils/notification';
+import { SemesterStatus } from '@/schemas/_enums';
+import { ImportStudent, ImportStudentItem } from '@/schemas/student';
+import { useMajorStore, useSemesterStore, useStudentStore } from '@/store';
+
+const { Dragger } = Upload;
+
+type ExcelImportFormProps<
+	T extends { id: string; email?: string; studentId?: string },
+> = Readonly<{
+	note: string;
+	fields: {
+		title: string;
+		width?: string;
+		key: keyof T;
+		type: 'text' | 'select';
+		options?: { label: string; value: string }[];
+		required?: boolean;
+	}[];
+	onImport: (data: T[], semesterId?: string, majorId?: string) => void;
+	templateFileName?: string;
+	requireSemester?: boolean;
+	requireMajor?: boolean;
+}>;
+
+// Field-specific validators
+const fieldValidators = {
+	fullName: (value: string, rowNumber: number): string[] => {
+		const errors: string[] = [];
+		if (value.length < 2) {
+			errors.push(`Row ${rowNumber}: Full name must be at least 2 characters`);
+		}
+		if (value.length > 100) {
+			errors.push(
+				`Row ${rowNumber}: Full name must be less than 100 characters`,
+			);
+		}
+		return errors;
+	},
+
+	email: (value: string, rowNumber: number): string[] => {
+		const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+		return emailRegex.test(value)
+			? []
+			: [`Row ${rowNumber}: Invalid email format`];
+	},
+
+	phoneNumber: (value: string, rowNumber: number): string[] => {
+		const phoneRegex =
+			/^(?:\+84|0084|84|0)(?:3[2-9]|5[2689]|7[06-9]|8[1-5]|9[0-4|6-9])\d{7}$/;
+		return phoneRegex.test(value)
+			? []
+			: [`Row ${rowNumber}: Invalid Vietnamese phone number format`];
+	},
+
+	studentId: (value: string, rowNumber: number): string[] => {
+		const studentIdRegex = /^[A-Za-z]{2}\d{6}$/;
+		return studentIdRegex.test(value)
+			? []
+			: [
+					`Row ${rowNumber}: Student ID must be 2 letters followed by 6 digits (e.g., QE123456)`,
+				];
+	},
+
+	gender: (value: string, rowNumber: number): string[] => {
+		return ['Male', 'Female'].includes(value)
+			? []
+			: [`Row ${rowNumber}: Gender must be either 'Male' or 'Female'`];
+	},
+} as const;
+
+// Helper function to validate field value
+function validateFieldValue<T>(
+	field: { key: keyof T; title: string; required?: boolean },
+	value: unknown,
+	rowNumber: number,
+): string[] {
+	const errors: string[] = [];
+	const stringValue = value ? String(value).trim() : '';
+
+	// All fields are now required - no field can be empty
+	if (!value || stringValue === '') {
+		return [`Row ${rowNumber}: ${field.title} cannot be empty`];
+	}
+
+	// Apply field-specific validation if validator exists
+	const fieldKey = field.key as string;
+	const validator = fieldValidators[fieldKey as keyof typeof fieldValidators];
+
+	if (validator) {
+		errors.push(...validator(stringValue, rowNumber));
+	}
+
+	return errors;
+}
+
+// Helper function to check for duplicates
+function checkDuplicates<
+	T extends { id: string; email?: string; studentId?: string },
+>(item: T, validatedData: T[], rowNumber: number): string[] {
+	const errors: string[] = [];
+
+	// Check for duplicate student IDs
+	if ('studentId' in item && item['studentId']) {
+		const duplicateIndex = validatedData.findIndex(
+			(existingItem) =>
+				'studentId' in existingItem &&
+				existingItem['studentId'] === item['studentId'],
+		);
+		if (duplicateIndex !== -1) {
+			errors.push(
+				`Row ${rowNumber}: Duplicate Student ID '${item['studentId']}' found in row ${duplicateIndex + 2}`,
+			);
+		}
+	}
+
+	// Check for duplicate emails
+	if ('email' in item && item['email']) {
+		const duplicateIndex = validatedData.findIndex(
+			(existingItem) =>
+				'email' in existingItem &&
+				typeof existingItem['email'] === 'string' &&
+				String(existingItem['email']).toLowerCase() ===
+					String(item['email']).toLowerCase(),
+		);
+		if (duplicateIndex !== -1) {
+			errors.push(
+				`Row ${rowNumber}: Duplicate email '${item['email']}' found in row ${duplicateIndex + 2}`,
+			);
+		}
+	}
+
+	return errors;
+}
+
+// Helper function to parse Excel data
+function parseExcelData<T extends { id: string }>(
+	jsonData: string[][],
+	fields: { title: string; key: keyof T }[],
+): T[] {
+	const headers = jsonData[0];
+	const dataRows = jsonData.slice(1);
+
+	// Map headers to field keys
+	const fieldMapping: Record<string, keyof T> = {};
+	fields.forEach((field) => {
+		const headerIndex = headers.findIndex(
+			(header) =>
+				header?.toString().toLowerCase().trim() ===
+				field.title.toLowerCase().trim(),
+		);
+		if (headerIndex !== -1) {
+			fieldMapping[headerIndex] = field.key;
+		}
+	});
+
+	if (Object.keys(fieldMapping).length === 0) {
+		throw new Error(
+			'No matching columns found. Please ensure your Excel headers match the template.',
+		);
+	}
+
+	// Convert rows to objects
+	return dataRows
+		.filter((row) =>
+			row.some((cell) => cell !== undefined && cell !== null && cell !== ''),
+		)
+		.map((row, index) => {
+			const item = { id: `imported-${Date.now()}-${index}` } as Partial<T>;
+
+			Object.entries(fieldMapping).forEach(([colIndex, fieldKey]) => {
+				const cellValue = row[parseInt(colIndex)];
+				if (cellValue !== undefined && cellValue !== null && cellValue !== '') {
+					const stringValue = String(cellValue).trim();
+					item[fieldKey] = (
+						fieldKey === 'studentId' ? stringValue.toUpperCase() : stringValue
+					) as T[keyof T];
+				}
+			});
+
+			return item as T;
+		})
+		.filter((item) =>
+			fields.some(
+				(field) => item[field.key] && String(item[field.key]).trim() !== '',
+			),
+		);
+}
+
+// Helper function to validate all data
+function validateAllData<
+	T extends { id: string; email?: string; studentId?: string },
+>(
+	parsedData: T[],
+	fields: {
+		key: keyof T;
+		title: string;
+		required?: boolean;
+		type: string;
+		options?: { value: string }[];
+	}[],
+): { validatedData: T[]; validationErrors: string[] } {
+	const validationErrors: string[] = [];
+	const validatedData: T[] = [];
+
+	parsedData.forEach((item, index) => {
+		const rowErrors: string[] = [];
+		const rowNumber = index + 2;
+		// Validate each field
+		fields.forEach((field) => {
+			const fieldErrors = validateFieldValue(field, item[field.key], rowNumber);
+			rowErrors.push(...fieldErrors);
+
+			// Validate select fields - all fields must have values
+			if (field.type === 'select' && field.options) {
+				const value = item[field.key];
+				const stringValue = value ? String(value).trim() : '';
+				if (stringValue) {
+					const validOptions = field.options.map((opt) => opt.value);
+					if (!validOptions.includes(stringValue)) {
+						rowErrors.push(
+							`Row ${rowNumber}: Invalid ${field.title}. Valid options: ${validOptions.join(', ')}`,
+						);
+					}
+				}
+			}
+		});
+
+		// Check for duplicates
+		const duplicateErrors = checkDuplicates(item, validatedData, rowNumber);
+		rowErrors.push(...duplicateErrors);
+
+		validationErrors.push(...rowErrors);
+
+		if (rowErrors.length === 0) {
+			validatedData.push(item);
+		}
+	});
+
+	return { validatedData, validationErrors };
+}
+
+// Helper function to process Excel file data
+function processExcelFile<
+	T extends { id: string; email?: string; studentId?: string },
+>(
+	data: ArrayBuffer,
+	fields: {
+		title: string;
+		key: keyof T;
+		type: 'text' | 'select';
+		options?: { label: string; value: string }[];
+		required?: boolean;
+	}[],
+): { validatedData: T[]; validationErrors: string[] } | null {
+	try {
+		const workbook = XLSX.read(data, { type: 'binary' });
+		const sheetName = workbook.SheetNames[0];
+		const worksheet = workbook.Sheets[sheetName];
+		const jsonData = XLSX.utils.sheet_to_json(worksheet, {
+			header: 1,
+		}) as string[][];
+
+		if (jsonData.length < 2) {
+			showNotification.error(
+				'Error',
+				'Excel file must have at least 2 rows (header and data)',
+			);
+			return null;
+		}
+
+		const parsedData = parseExcelData(jsonData, fields);
+		if (parsedData.length === 0) {
+			showNotification.error('Error', 'No valid data found in Excel file');
+			return null;
+		}
+
+		return validateAllData(parsedData, fields);
+	} catch (error) {
+		console.error('Error parsing Excel file:', error);
+		showNotification.error(
+			'Error',
+			'Failed to parse Excel file. Please check the file format and try again.',
+		);
+		return null;
+	}
+}
+
+// Helper function to validate upload prerequisites
+function validateUploadPrerequisites(
+	requireSemester: boolean,
+	selectedSemester: string,
+	requireMajor: boolean,
+	selectedMajor: string,
+): boolean {
+	if (requireSemester && !selectedSemester) {
+		showNotification.error('Error', 'Please select a semester first');
+		return false;
+	}
+
+	if (requireMajor && !selectedMajor) {
+		showNotification.error('Error', 'Please select a major first');
+		return false;
+	}
+
+	return true;
+}
+
+// Helper function to handle validation errors
+function handleValidationErrors(validationErrors: string[]): void {
+	const errorMessage =
+		validationErrors.slice(0, 10).join('\n') +
+		(validationErrors.length > 10
+			? `\n... and ${validationErrors.length - 10} more errors`
+			: '');
+
+	showNotification.error(
+		`Validation Failed (${validationErrors.length} errors)`,
+		errorMessage,
+	);
+}
+
+// Helper function to create table columns
+function createTableColumns<
+	T extends { id: string; email?: string; studentId?: string },
+>(
+	fields: {
+		title: string;
+		width?: string;
+		key: keyof T;
+		type: 'text' | 'select';
+		options?: { label: string; value: string }[];
+		required?: boolean;
+	}[],
+	handleFieldChange: (id: string, key: keyof T, value: unknown) => void,
+	handleDelete: (id: string) => void,
+): ColumnsType<T> {
+	return [
+		...fields.map((field) => ({
+			title: (
+				<span>
+					{field.title}
+					{field.required && <span style={{ color: 'red' }}> *</span>}
+				</span>
+			),
+			dataIndex: field.key as string,
+			width: field.width ?? 200,
+			render: (_: unknown, record: T) =>
+				field.type === 'text' ? (
+					<Input
+						value={record[field.key] as string}
+						onChange={(e) =>
+							handleFieldChange(record.id, field.key, e.target.value)
+						}
+						status={
+							!record[field.key] || String(record[field.key]).trim() === ''
+								? 'error'
+								: undefined
+						}
+					/>
+				) : (
+					<Select
+						value={record[field.key] as string}
+						onChange={(val) => handleFieldChange(record.id, field.key, val)}
+						style={{ width: 120 }}
+						status={
+							!record[field.key] || String(record[field.key]).trim() === ''
+								? 'error'
+								: undefined
+						}
+					>
+						{field.options?.map((opt) => (
+							<Select.Option key={opt.value} value={opt.value}>
+								{opt.label}
+							</Select.Option>
+						))}
+					</Select>
+				),
+		})),
+		{
+			title: 'Action',
+			width: '10%',
+			render: (_: unknown, record: T) => (
+				<Tooltip title="Delete">
+					<Button
+						icon={<DeleteOutlined />}
+						danger
+						type="text"
+						onClick={() => handleDelete(record.id)}
+					/>
+				</Tooltip>
+			),
+		},
+	];
+}
+
+// Component for semester availability alerts
+function SemesterAlerts({
+	requireSemester,
+	semesterLoading,
+	hasAvailableSemesters,
+}: Readonly<{
+	requireSemester: boolean;
+	semesterLoading: boolean;
+	hasAvailableSemesters: boolean;
+}>) {
+	if (!requireSemester) return null;
+
+	if (!semesterLoading && !hasAvailableSemesters) {
+		return (
+			<Alert
+				type="warning"
+				showIcon
+				message="No Available Semesters"
+				description={
+					<div>
+						<p>
+							Student accounts can only be created for semesters with{' '}
+							<strong>Preparing</strong> or <strong>Picking</strong> status.
+						</p>
+						<p>
+							Currently, there are no semesters in these statuses available for
+							student creation.
+						</p>
+					</div>
+				}
+				style={{ marginBottom: 16 }}
+			/>
+		);
+	}
+
+	if (hasAvailableSemesters) {
+		return (
+			<Alert
+				type="info"
+				showIcon
+				message="Student Creation Policy"
+				description={
+					<div>
+						Student accounts can only be created for semesters with{' '}
+						<Tag color="orange" style={{ margin: '0 4px' }}>
+							Preparing
+						</Tag>
+						or
+						<Tag color="purple" style={{ margin: '0 4px' }}>
+							Picking
+						</Tag>
+						status.
+					</div>
+				}
+				style={{ marginBottom: 0 }}
+			/>
+		);
+	}
+
+	return null;
+}
+
+// Component for form fields selection
+function SelectionForm({
+	form,
+	requireSemester,
+	requireMajor,
+	getColumnSpan,
+	availableSemesters,
+	hasAvailableSemesters,
+	semesterLoading,
+	handleSemesterChange,
+	selectedSemester,
+	majors,
+	majorLoading,
+	handleMajorChange,
+	selectedMajor,
+}: Readonly<{
+	form: ReturnType<typeof Form.useForm>[0];
+	requireSemester: boolean;
+	requireMajor: boolean;
+	getColumnSpan: () => number;
+	availableSemesters: Array<{
+		id: string;
+		name: string;
+		status: SemesterStatus;
+	}>;
+	hasAvailableSemesters: boolean;
+	semesterLoading: boolean;
+	handleSemesterChange: (value: string) => void;
+	selectedSemester: string;
+	majors: Array<{ id: string; name: string }>;
+	majorLoading: boolean;
+	handleMajorChange: (value: string) => void;
+	selectedMajor: string;
+}>) {
+	if (!requireSemester && !requireMajor) return null;
+
+	return (
+		<Form form={form} requiredMark={false} layout="vertical">
+			<Row gutter={16}>
+				{requireSemester && (
+					<Col xs={24} sm={getColumnSpan()}>
+						<Form.Item
+							name="semester"
+							rules={[{ required: true, message: 'Please select a semester' }]}
+							label={FormLabel({
+								text: 'Semester',
+								isRequired: true,
+								isBold: true,
+							})}
+						>
+							<Select
+								placeholder={
+									hasAvailableSemesters
+										? 'Select semester (Preparing or Picking status only)'
+										: 'No available semesters for user creation'
+								}
+								loading={semesterLoading}
+								onChange={handleSemesterChange}
+								value={selectedSemester ?? undefined}
+								disabled={!hasAvailableSemesters}
+								notFoundContent={
+									!semesterLoading && !hasAvailableSemesters
+										? 'No semesters with Preparing or Picking status found'
+										: undefined
+								}
+							>
+								{availableSemesters.map((semester) => (
+									<Select.Option key={semester.id} value={semester.id}>
+										<Space>
+											<span>{semester.name}</span>
+											{SEMESTER_STATUS_TAGS[semester.status]}
+										</Space>
+									</Select.Option>
+								))}
+							</Select>
+						</Form.Item>
+					</Col>
+				)}
+
+				{requireMajor && (
+					<Col xs={24} sm={getColumnSpan()}>
+						<Form.Item
+							name="major"
+							rules={[{ required: true, message: 'Please select a major' }]}
+							label={FormLabel({
+								text: 'Major',
+								isRequired: true,
+								isBold: true,
+							})}
+						>
+							<Select
+								placeholder="Select major"
+								loading={majorLoading}
+								onChange={handleMajorChange}
+								value={selectedMajor ?? undefined}
+								disabled={!majors.length}
+								notFoundContent={
+									!majorLoading && !majors.length
+										? 'No majors found'
+										: undefined
+								}
+							>
+								{majors.map((major) => (
+									<Select.Option key={major.id} value={major.id}>
+										{major.name}
+									</Select.Option>
+								))}
+							</Select>
+						</Form.Item>
+					</Col>
+				)}
+			</Row>
+		</Form>
+	);
+}
+
+// Helper function to get upload text
+function getUploadText(
+	requireSemester: boolean,
+	hasAvailableSemesters: boolean,
+	selectedSemester: string,
+	requireMajor: boolean,
+	selectedMajor: string,
+): string {
+	if (requireSemester && !hasAvailableSemesters) {
+		return 'No available semesters for user creation';
+	}
+	if (requireSemester && !selectedSemester) {
+		return 'Please select a semester first';
+	}
+	if (requireMajor && !selectedMajor) {
+		return 'Please select a major first';
+	}
+	return 'Drag and drop Excel file here, or click to browse';
+}
+
+// Component for imported data table
+function ImportedDataTable<
+	T extends { id: string; email?: string; studentId?: string },
+>({
+	data,
+	columns,
+	setData,
+	setFileList,
+	handleImportAll,
+	creatingMany,
+	requireSemester,
+	selectedSemester,
+	requireMajor,
+	selectedMajor,
+}: Readonly<{
+	data: T[];
+	columns: ColumnsType<T>;
+	setData: (data: T[]) => void;
+	setFileList: (files: RcFile[]) => void;
+	handleImportAll: () => void;
+	creatingMany: boolean;
+	requireSemester: boolean;
+	selectedSemester: string;
+	requireMajor: boolean;
+	selectedMajor: string;
+}>) {
+	if (data.length === 0) return null;
+
+	return (
+		<Space direction="vertical" style={{ width: '100%' }} size="middle">
+			<Alert
+				type="success"
+				showIcon
+				message={
+					<Space direction="vertical" size={4}>
+						<Space>
+							<Typography.Text strong>
+								{data.length} users data imported successfully
+							</Typography.Text>
+						</Space>
+					</Space>
+				}
+				style={{ borderColor: '#bbf7d0', color: '#15803d' }}
+			/>
+
+			<Table
+				dataSource={data}
+				columns={columns}
+				pagination={{
+					showSizeChanger: true,
+					showQuickJumper: true,
+					showTotal: (total, range) =>
+						`${range[0]}-${range[1]} of ${total} items`,
+				}}
+				bordered
+				rowKey="id"
+				scroll={{ x: '850' }}
+			/>
+
+			<Row justify="end" gutter={8}>
+				<Col>
+					<Button
+						onClick={() => {
+							setData([]);
+							setFileList([]);
+						}}
+					>
+						Cancel
+					</Button>
+				</Col>
+				<Col>
+					<Button
+						type="primary"
+						onClick={handleImportAll}
+						loading={creatingMany}
+						disabled={
+							(requireSemester && !selectedSemester) ||
+							data.length === 0 ||
+							(requireMajor && !selectedMajor) ||
+							creatingMany
+						}
+					>
+						{creatingMany
+							? `Creating Students...`
+							: `Import All Users (${data.length})`}
+					</Button>
+				</Col>
+			</Row>
+		</Space>
+	);
+}
+
+export default function ExcelImportForm<
+	T extends { id: string; email?: string; studentId?: string },
+>({
+	note,
+	fields,
+	onImport,
+	templateFileName,
+	requireSemester = false,
+	requireMajor = false,
+}: ExcelImportFormProps<T>) {
+	const router = useRouter();
+	const [form] = Form.useForm();
+	const [fileList, setFileList] = useState<RcFile[]>([]);
+	const [data, setData] = useState<T[]>([]);
+	const [selectedSemester, setSelectedSemester] = useState<string>('');
+	const [selectedMajor, setSelectedMajor] = useState<string>('');
+	const [downloading, setDownloading] = useState(false);
+
+	// Store hooks
+	const {
+		semesters,
+		loading: semesterLoading,
+		fetchSemesters,
+		clearError: clearSemesterError,
+	} = useSemesterStore();
+
+	const {
+		majors,
+		loading: majorLoading,
+		fetchMajors,
+		clearError: clearMajorError,
+	} = useMajorStore();
+
+	const {
+		createManyStudents,
+		creatingMany,
+		fetchStudents,
+		fetchStudentsBySemester,
+		selectedSemesterId,
+	} = useStudentStore();
+
+	// Effects
+	useEffect(() => {
+		if (requireSemester) fetchSemesters();
+		if (requireMajor) fetchMajors();
+	}, [fetchSemesters, fetchMajors, requireSemester, requireMajor]);
+
+	useEffect(() => {
+		if (requireSemester) clearSemesterError();
+		if (requireMajor) clearMajorError();
+		return () => {
+			if (requireSemester) clearSemesterError();
+			if (requireMajor) clearMajorError();
+		};
+	}, [clearSemesterError, clearMajorError, requireSemester, requireMajor]);
+
+	// Computed values
+	const availableSemesters = semesters.filter(
+		(semester) =>
+			semester.status === 'Preparing' || semester.status === 'Picking',
+	);
+	const hasAvailableSemesters = availableSemesters.length > 0;
+
+	const handleDownloadTemplate = async () => {
+		if (!templateFileName) {
+			showNotification.error('Error', 'Template file is not available');
+			return;
+		}
+
+		setDownloading(true);
+		try {
+			const downloadUrl = `/files/${templateFileName}`;
+			const link = document.createElement('a');
+			link.href = downloadUrl;
+			link.download = templateFileName;
+			link.target = '_blank';
+			link.rel = 'noopener noreferrer';
+
+			document.body.appendChild(link);
+			link.click();
+			document.body.removeChild(link);
+
+			showNotification.success('Success', 'Template download started');
+		} catch (error) {
+			console.error('Download failed:', error);
+			showNotification.error(
+				'Error',
+				'Failed to download template. Please try again.',
+			);
+		} finally {
+			setTimeout(() => setDownloading(false), 1000);
+		}
+	};
+	const handleUpload = (file: RcFile): boolean | typeof Upload.LIST_IGNORE => {
+		// Validate prerequisites first - return false if validation fails
+		const prerequisitesValid = validateUploadPrerequisites(
+			requireSemester,
+			selectedSemester,
+			requireMajor,
+			selectedMajor,
+		);
+
+		if (!prerequisitesValid) {
+			// Prerequisites not met - reject the file upload
+			return Upload.LIST_IGNORE;
+		}
+
+		// Start file processing - return false to prevent default upload behavior
+		// (we handle the upload manually via FileReader)
+		const reader = new FileReader();
+		reader.onload = (e) => {
+			const data = e.target?.result;
+			if (!data) {
+				showNotification.error('Error', 'Failed to read file');
+				return;
+			}
+
+			const result = processExcelFile(data as ArrayBuffer, fields);
+			if (!result) return;
+
+			const { validatedData, validationErrors } = result;
+
+			if (validationErrors.length > 0) {
+				handleValidationErrors(validationErrors);
+				setData([]);
+				setFileList([]);
+				return;
+			}
+
+			setData(validatedData);
+			setFileList([file]);
+			showNotification.success(
+				'Success',
+				`${validatedData.length} rows imported successfully with no validation errors.`,
+			);
+		};
+
+		reader.onerror = () =>
+			showNotification.error('Error', 'Failed to read file');
+		reader.readAsArrayBuffer(file);
+
+		// Return false to prevent Ant Design's default upload behavior
+		// This allows us to handle the file processing manually
+		return false;
+	};
+
+	const handleFieldChange = (id: string, key: keyof T, value: unknown) => {
+		setData((prev) =>
+			prev.map((item) => (item.id === id ? { ...item, [key]: value } : item)),
+		);
+	};
+
+	const handleDelete = (id: string) => {
+		setData((prev) => prev.filter((item) => item.id !== id));
+	};
+
+	const clearDataOnChange = () => {
+		if (data.length > 0) {
+			setData([]);
+			setFileList([]);
+		}
+	};
+
+	const handleSemesterChange = (value: string) => {
+		setSelectedSemester(value);
+		clearDataOnChange();
+	};
+
+	const handleMajorChange = (value: string) => {
+		setSelectedMajor(value);
+		clearDataOnChange();
+	};
+	const handleImportAll = async () => {
+		if (
+			!validateUploadPrerequisites(
+				requireSemester,
+				selectedSemester,
+				requireMajor,
+				selectedMajor,
+			)
+		) {
+			return;
+		}
+
+		// Prepare the import DTO with the new structure
+		const importStudentDto: ImportStudent = {
+			semesterId: selectedSemester!,
+			majorId: selectedMajor!,
+			students: (data as unknown as (ImportStudentItem & { id: string })[]).map(
+				(item) => ({
+					studentId: item.studentId,
+					email: item.email,
+					fullName: item.fullName,
+					password: item.password,
+					gender: item.gender,
+					phoneNumber: item.phoneNumber,
+				}),
+			),
+		};
+
+		try {
+			const success = await createManyStudents(importStudentDto);
+			if (success) {
+				// Refresh students for the current semester
+				if (selectedSemesterId) {
+					await fetchStudentsBySemester(selectedSemesterId);
+				} else {
+					await fetchStudents();
+				}
+				setData([]);
+				setFileList([]);
+				setSelectedSemester('');
+				setSelectedMajor('');
+				form.resetFields();
+				onImport(
+					data,
+					requireSemester ? selectedSemester : undefined,
+					requireMajor ? selectedMajor : undefined,
+				);
+
+				// Show success notification and redirect
+				showNotification.success(
+					'Import Successful',
+					`${data.length} students have been imported successfully.`,
+				);
+
+				// Redirect to students management page
+				router.push('/admin/students-management');
+			}
+		} catch (error) {
+			console.error('Error creating students:', error);
+			showNotification.error(
+				'Error',
+				'Failed to create students. Please try again.',
+			);
+		}
+	};
+
+	const getColumnSpan = () => {
+		const requiredFields = [requireSemester, requireMajor].filter(
+			Boolean,
+		).length;
+		if (requiredFields === 0) return 24;
+		if (requiredFields === 1) return 24;
+		return 12;
+	};
+	const columns = createTableColumns(fields, handleFieldChange, handleDelete);
+
+	// Helper function to validate file type
+	const isExcelFile = (file: RcFile): boolean => {
+		const validMimeTypes = [
+			'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+			'application/vnd.ms-excel',
+		];
+		const validExtensions = ['.xlsx', '.xls'];
+		return (
+			validMimeTypes.includes(file.type) ||
+			validExtensions.some((ext) => file.name.endsWith(ext))
+		);
+	};
+
+	// Helper function to validate file size
+	const isValidFileSize = (file: RcFile, maxSizeMB = 100): boolean => {
+		return file.size / 1024 / 1024 < maxSizeMB;
+	};
+
+	return (
+		<Space direction="vertical" size="middle" style={{ width: '100%' }}>
+			<SemesterAlerts
+				requireSemester={requireSemester}
+				semesterLoading={semesterLoading}
+				hasAvailableSemesters={hasAvailableSemesters}
+			/>
+
+			<SelectionForm
+				form={form}
+				requireSemester={requireSemester}
+				requireMajor={requireMajor}
+				getColumnSpan={getColumnSpan}
+				availableSemesters={availableSemesters}
+				hasAvailableSemesters={hasAvailableSemesters}
+				semesterLoading={semesterLoading}
+				handleSemesterChange={handleSemesterChange}
+				selectedSemester={selectedSemester}
+				majors={majors}
+				majorLoading={majorLoading}
+				handleMajorChange={handleMajorChange}
+				selectedMajor={selectedMajor}
+			/>
+
+			<Card
+				style={{
+					border: '1px solid #f0f0f0',
+					borderRadius: 8,
+					background: '#fafafa',
+				}}
+			>
+				<Row align="middle" justify="space-between" gutter={[16, 16]} wrap>
+					<Col xs={24} sm={24} md={16}>
+						<Typography.Text type="secondary" style={{ display: 'block' }}>
+							{note}
+						</Typography.Text>
+					</Col>
+					<Col xs={24} sm={24} md={8} style={{ textAlign: 'right' }}>
+						<Button
+							icon={<DownloadOutlined />}
+							type="default"
+							onClick={handleDownloadTemplate}
+							disabled={!templateFileName || downloading}
+							loading={downloading}
+							title={
+								!templateFileName
+									? 'Template file not available'
+									: 'Download Excel template'
+							}
+						>
+							{downloading ? 'Downloading...' : 'Download Template'}
+						</Button>
+					</Col>
+				</Row>
+			</Card>
+
+			<Dragger
+				name="file"
+				beforeUpload={(file) => {
+					const isExcel = isExcelFile(file);
+					const isLt100MB = isValidFileSize(file);
+
+					if (!isExcel) {
+						showNotification.warning(
+							'Warning',
+							'You can only upload Excel (.xlsx, .xls) files!',
+						);
+						return Upload.LIST_IGNORE;
+					}
+
+					if (!isLt100MB) {
+						showNotification.error('Error', 'File must be smaller than 100MB!');
+						return Upload.LIST_IGNORE;
+					}
+
+					return handleUpload(file);
+				}}
+				fileList={fileList}
+				onRemove={() => {
+					setFileList([]);
+					setData([]);
+				}}
+				maxCount={1}
+				accept=".xlsx,.xls"
+				disabled={
+					(requireSemester && !selectedSemester) ||
+					(requireSemester && !hasAvailableSemesters) ||
+					(requireMajor && !selectedMajor)
+				}
+			>
+				<p className="ant-upload-drag-icon">
+					<CloudUploadOutlined />
+				</p>
+				<p className="ant-upload-text">
+					{getUploadText(
+						requireSemester,
+						hasAvailableSemesters,
+						selectedSemester,
+						requireMajor,
+						selectedMajor,
+					)}
+				</p>
+				<p className="ant-upload-hint">
+					Supports .xlsx and .xls files up to 100MB
+				</p>
+			</Dragger>
+
+			<ImportedDataTable
+				data={data}
+				columns={columns}
+				setData={setData}
+				setFileList={setFileList}
+				handleImportAll={handleImportAll}
+				creatingMany={creatingMany}
+				requireSemester={requireSemester}
+				selectedSemester={selectedSemester}
+				requireMajor={requireMajor}
+				selectedMajor={selectedMajor}
+			/>
+		</Space>
+	);
+}

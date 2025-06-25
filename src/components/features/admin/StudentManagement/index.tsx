@@ -1,39 +1,50 @@
 'use client';
 
-import { Space, Typography } from 'antd';
-import { useState } from 'react';
+import { Alert, Space, Typography } from 'antd';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 import StudentFilterBar from '@/components/features/admin/StudentManagement/StudentFilterBar';
 import StudentTable from '@/components/features/admin/StudentManagement/StudentTable';
-import { mockStudents } from '@/data/student';
-import { Student } from '@/schemas/student';
+import { useStudentStore } from '@/store';
 
 export default function StudentManagement() {
-	const [statusFilter, setStatusFilter] = useState('All');
-	const [majorFilter, setMajorFilter] = useState('All');
-	const [searchText, setSearchText] = useState('');
-	const [data] = useState<Student[]>(mockStudents);
+	const router = useRouter();
 
-	const filteredData = data.filter((student) => {
-		const matchesStatus =
-			statusFilter === 'All' ||
-			student.isActive === (statusFilter === 'Active');
+	// Get state and actions from store
+	const {
+		filteredStudents,
+		loading,
+		selectedSemesterId,
+		selectedMajorId,
+		selectedStatus,
+		searchText,
+		fetchStudentsBySemester,
+		setSelectedSemesterId,
+		setSelectedMajorId,
+		setSelectedStatus,
+		setSearchText,
+	} = useStudentStore();
 
-		const matchesMajor =
-			majorFilter === 'All' || student.majorId === majorFilter;
+	useEffect(() => {
+		// Only fetch students if a semester is selected
+		if (selectedSemesterId) {
+			fetchStudentsBySemester(selectedSemesterId);
+		}
+	}, [selectedSemesterId, fetchStudentsBySemester]);
 
-		const matchesSearch = [
-			student.fullName,
-			student.email,
-			student.studentId,
-		].some((field) =>
-			(field ?? '').toLowerCase().includes(searchText.toLowerCase()),
-		);
+	const handleCreateStudent = () => {
+		router.push('/admin/create-new-student');
+	};
 
-		return matchesStatus && matchesMajor && matchesSearch;
-	});
+	const handleRefresh = () => {
+		if (selectedSemesterId) {
+			fetchStudentsBySemester(selectedSemesterId);
+		}
+	};
 
 	const { Title, Paragraph } = Typography;
+
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
 			<div>
@@ -41,24 +52,38 @@ export default function StudentManagement() {
 					Student Management
 				</Title>
 				<Paragraph type="secondary" style={{ marginBottom: 0 }}>
-					Create and manage students, registration windows, and
-					capstone-specific rules
+					Create and manage students, registration windows
 				</Paragraph>
 			</div>
-
 			<StudentFilterBar
-				statusFilter={statusFilter}
-				setStatusFilter={setStatusFilter}
-				majorFilter={majorFilter}
-				setMajorFilter={setMajorFilter}
+				semesterFilter={selectedSemesterId}
+				setSemesterFilter={setSelectedSemesterId}
+				statusFilter={selectedStatus}
+				setStatusFilter={setSelectedStatus}
+				majorFilter={selectedMajorId ?? 'All'}
+				setMajorFilter={setSelectedMajorId}
 				searchText={searchText}
 				setSearchText={setSearchText}
-				onCreateStudent={function (): void {
-					throw new Error('Function not implemented.');
-				}}
+				onCreateStudent={handleCreateStudent}
+				onRefresh={handleRefresh}
+				loading={loading}
 			/>
-
-			<StudentTable data={filteredData} />
+			{selectedSemesterId ? (
+				<StudentTable
+					data={filteredStudents}
+					loading={loading}
+					onReload={() =>
+						selectedSemesterId && fetchStudentsBySemester(selectedSemesterId)
+					}
+				/>
+			) : (
+				<Alert
+					message="Please select a semester"
+					description="Select a semester from the filter above to view students."
+					type="info"
+					showIcon
+				/>
+			)}
 		</Space>
 	);
 }
