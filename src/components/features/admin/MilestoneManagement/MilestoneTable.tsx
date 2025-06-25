@@ -17,7 +17,7 @@ import { SEMESTER_STATUS_TAGS } from '@/lib/constants/semester';
 import { formatDate } from '@/lib/utils/dateFormat';
 import { Milestone } from '@/schemas/milestone';
 import { Semester } from '@/schemas/semester';
-import { useMilestoneStore } from '@/store/useMilestoneStore';
+import { useMilestoneStore } from '@/store';
 
 type Props = Readonly<{
 	data: Milestone[];
@@ -67,7 +67,7 @@ export default function MilestoneTable({
 						<div>
 							<Text strong>Duration: </Text>
 							<Text>
-								{formatDate(milestone.startDate)} -{' '}
+								{formatDate(milestone.startDate)} -
 								{formatDate(milestone.endDate)}
 							</Text>
 						</div>
@@ -198,7 +198,7 @@ export default function MilestoneTable({
 								disabled={isDisabled}
 								onClick={() => handleEdit(record)}
 							/>
-						</Tooltip>{' '}
+						</Tooltip>
 						<Tooltip title={deleteTooltipTitle}>
 							<Button
 								icon={<DeleteOutlined />}

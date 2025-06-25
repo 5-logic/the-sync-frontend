@@ -26,7 +26,7 @@ export default function LoginHeader() {
 				style={{
 					fontSize: '30px',
 					fontWeight: 800,
-					color: '#111827',
+					color: '#1447e6',
 					marginTop: '16px',
 					marginBottom: 0,
 				}}

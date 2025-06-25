@@ -19,7 +19,7 @@ import semesterService from '@/lib/services/semesters.service';
 import { showNotification } from '@/lib/utils/notification';
 import { MilestoneCreate } from '@/schemas/milestone';
 import { Semester } from '@/schemas/semester';
-import { useMilestoneStore } from '@/store/useMilestoneStore';
+import { useMilestoneStore } from '@/store';
 
 const { Title, Paragraph } = Typography;
 
