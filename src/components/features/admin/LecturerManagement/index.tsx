@@ -65,6 +65,7 @@ export default function LecturerManagement() {
 				data={filteredLecturers}
 				onTogglePermission={handleTogglePermission}
 				onToggleStatus={handleToggleStatus}
+				// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
 				loading={Boolean(loading || togglingStatus || togglingModerator)}
 			/>
 		</Space>
