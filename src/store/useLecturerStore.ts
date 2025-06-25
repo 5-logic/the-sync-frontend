@@ -278,12 +278,12 @@ export const useLecturerStore = create<LecturerState>()(
 
 			// Check if a specific lecturer is currently being toggled (status)
 			isLecturerStatusLoading: (id: string) => {
-				return get()._lecturerStatusLoadingStates.get(id) || false;
+				return get()._lecturerStatusLoadingStates.get(id) ?? false;
 			},
 
 			// Check if a specific lecturer is currently being toggled (moderator)
 			isLecturerModeratorLoading: (id: string) => {
-				return get()._lecturerModeratorLoadingStates.get(id) || false;
+				return get()._lecturerModeratorLoadingStates.get(id) ?? false;
 			},
 		}),
 		{
