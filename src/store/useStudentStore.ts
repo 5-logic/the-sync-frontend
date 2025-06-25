@@ -29,7 +29,8 @@ interface StudentState {
 	loading: boolean;
 	creating: boolean;
 	updating: boolean;
-	creatingMany: boolean;
+	creatingMany: boolean; // Legacy field for backward compatibility
+	creatingManyStudents: boolean; // New field for consistency
 	togglingStatus: boolean;
 
 	// Error states
