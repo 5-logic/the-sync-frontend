@@ -725,7 +725,14 @@ function ImportedDataTable<
 }
 
 export default function ExcelImportForm<
-	T extends { id: string; email?: string; studentId?: string },
+	T extends {
+		id: string;
+		email?: string;
+		studentId?: string;
+		fullName?: string;
+		phoneNumber?: string;
+		gender?: string;
+	},
 >({
 	note,
 	fields,
@@ -866,9 +873,10 @@ export default function ExcelImportForm<
 			setData(validatedData);
 			setFileList([file]);
 			// Success notification will be shown after successful database creation
+
 			showNotification.success(
-				'Success',
-				`${validatedData.length} rows imported successfully with no validation errors.`,
+				'File Processed',
+				`${validatedData.length} ${userType === 'lecturer' ? 'lecturers' : 'students'} ready for import.`,
 			);
 		};
 
@@ -922,11 +930,12 @@ export default function ExcelImportForm<
 		if (userType === 'lecturer') {
 			// Handle lecturer creation
 			const lecturersToCreate: LecturerCreate[] = data.map((item) => ({
-				...item,
-				id: undefined,
-				password: '', // Will be set by backend
-				isActive: true,
-				isModerator: false,
+				email: String(item.email ?? ''),
+				fullName: String(item.fullName ?? ''),
+				phoneNumber: String(item.phoneNumber ?? ''),
+				gender: (item.gender === 'Male' || item.gender === 'Female'
+					? item.gender
+					: 'Male') as 'Male' | 'Female',
 			}));
 
 			try {
@@ -949,6 +958,10 @@ export default function ExcelImportForm<
 						'Import Successful',
 						`${data.length} lecturers have been imported successfully.`,
 					);
+
+					// Redirect to lecturer management page (or appropriate page)
+					// Note: Update this path when lecturer management page is available
+					// router.push('/admin/lecturers-management');
 				}
 			} catch (error) {
 				console.error('Error creating lecturers:', error);
@@ -993,6 +1006,13 @@ export default function ExcelImportForm<
 						requireSemester ? selectedSemester : undefined,
 						requireMajor ? selectedMajor : undefined,
 					);
+
+					// Show success notification
+					showNotification.success(
+						'Import Successful',
+						`${data.length} students have been imported successfully.`,
+					);
+
 					// Redirect to students management page
 					router.push('/admin/students-management');
 				}
