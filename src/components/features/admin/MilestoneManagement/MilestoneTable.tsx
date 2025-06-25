@@ -67,7 +67,7 @@ export default function MilestoneTable({
 						<div>
 							<Text strong>Duration: </Text>
 							<Text>
-								{formatDate(milestone.startDate)} -{' '}
+								{formatDate(milestone.startDate)} -
 								{formatDate(milestone.endDate)}
 							</Text>
 						</div>
@@ -198,7 +198,7 @@ export default function MilestoneTable({
 								disabled={isDisabled}
 								onClick={() => handleEdit(record)}
 							/>
-						</Tooltip>{' '}
+						</Tooltip>
 						<Tooltip title={deleteTooltipTitle}>
 							<Button
 								icon={<DeleteOutlined />}

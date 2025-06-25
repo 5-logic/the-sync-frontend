@@ -46,7 +46,6 @@ export default function CreateMilestoneForm({
 
 	return (
 		<>
-			{' '}
 			<MilestoneForm
 				form={form}
 				semesters={semesters}

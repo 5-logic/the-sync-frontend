@@ -75,16 +75,22 @@ export function createBatchCreateAction<T extends { id: string }, TCreate>(
 			get: StoreApi<Record<string, unknown>>['getState'],
 		) =>
 		async (data: TCreate): Promise<boolean> => {
-			const loadingField =
-				entityName === 'student'
-					? 'creatingMany'
-					: `creating${entityName.charAt(0).toUpperCase() + entityName.slice(1)}s`;
-			set({ [loadingField]: true, lastError: null });
+			// Support both legacy naming (creatingMany) and new naming (creatingManyEntitys) for backward compatibility
+			const legacyLoadingField = 'creatingMany';
+			const newLoadingField = `creatingMany${entityName.charAt(0).toUpperCase() + entityName.slice(1)}s`;
+
+			set({
+				[legacyLoadingField]: true,
+				[newLoadingField]: true,
+				lastError: null,
+			});
+
 			try {
 				const response = await service.createMany(data);
 				const result = handleApiResponse(
 					response,
-					`Students created successfully`,
+					`Import Successfully`,
+					`List ${entityName}s have been imported successfully.`,
 				);
 				if (result.success && result.data) {
 					// Add all new items to the array
@@ -116,7 +122,10 @@ export function createBatchCreateAction<T extends { id: string }, TCreate>(
 				handleActionError(error, `${entityName}s`, 'create', set);
 				return false;
 			} finally {
-				set({ [loadingField]: false });
+				set({
+					[legacyLoadingField]: false,
+					[newLoadingField]: false,
+				});
 			}
 			return false;
 		};
@@ -510,10 +519,10 @@ export const commonStoreUtilities = {
 				searchText: '',
 			};
 
-			// Add creatingMany for student stores
-			if (entityName === 'student') {
-				baseReset.creatingMany = false;
-			}
+			// Add both legacy and new creatingMany fields for backward compatibility
+			baseReset.creatingMany = false; // Legacy field used by existing stores
+			const creatingManyField = `creatingMany${entityName.charAt(0).toUpperCase() + entityName.slice(1)}s`;
+			baseReset[creatingManyField] = false; // New field for consistency
 
 			return {
 				...baseReset,

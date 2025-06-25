@@ -112,12 +112,12 @@ export default function EditMilestoneDialog({
 						color: '#d46b08',
 					}}
 				>
-					⚠️{' '}
+					⚠️
 					{milestoneHasStarted
 						? 'This milestone has already started and cannot be edited.'
 						: 'This milestone cannot be edited because the semester is not in Ongoing status.'}
 				</div>
-			)}{' '}
+			)}
 			<MilestoneForm
 				form={form}
 				semesters={semesters}

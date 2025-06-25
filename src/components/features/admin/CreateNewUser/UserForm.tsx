@@ -18,8 +18,14 @@ import { useEffect } from 'react';
 import { FormLabel } from '@/components/common/FormLabel';
 import { SEMESTER_STATUS_TAGS } from '@/lib/constants/semester';
 import { showNotification } from '@/lib/utils/notification';
+import { LecturerCreate } from '@/schemas/lecturer';
 import { StudentCreate } from '@/schemas/student';
-import { useMajorStore, useSemesterStore, useStudentStore } from '@/store';
+import {
+	useLecturerStore,
+	useMajorStore,
+	useSemesterStore,
+	useStudentStore,
+} from '@/store';
 
 const { Option } = Select;
 
@@ -33,9 +39,22 @@ const UserForm = ({ formType }: UserFormProps) => {
 	const [form] = Form.useForm();
 	const router = useRouter();
 	const isStudent = formType === 'student';
-
 	// Use Student Store
-	const { createStudent, creating, clearError } = useStudentStore();
+	const {
+		createStudent,
+		creating: creatingStudent,
+		clearError,
+	} = useStudentStore();
+
+	// Use Lecturer Store
+	const {
+		createLecturer,
+		creating: creatingLecturer,
+		clearError: clearLecturerError,
+	} = useLecturerStore();
+
+	// Combined loading state
+	const creating = isStudent ? creatingStudent : creatingLecturer;
 
 	// Use Major Store
 	const {
@@ -61,30 +80,41 @@ const UserForm = ({ formType }: UserFormProps) => {
 
 	// Check if there are any available semesters
 	const hasAvailableSemesters = availableSemesters.length > 0;
-
 	// Clear errors when component mounts or unmounts
 	useEffect(() => {
 		clearError();
 		clearMajorError();
-		clearSemesterError(); // Add semester error clearing
+		clearSemesterError();
+		if (!isStudent) {
+			clearLecturerError();
+		}
 		return () => {
 			clearError();
 			clearMajorError();
-			clearSemesterError(); // Add semester error clearing
+			clearSemesterError();
+			if (!isStudent) {
+				clearLecturerError();
+			}
 		};
-	}, [clearError, clearMajorError, clearSemesterError]);
+	}, [
+		clearError,
+		clearMajorError,
+		clearSemesterError,
+		clearLecturerError,
+		isStudent,
+	]);
 
 	// Fetch data using stores
 	useEffect(() => {
 		fetchMajors();
 		fetchSemesters(); // Use semester store
 	}, [fetchMajors, fetchSemesters]);
-
-	const handleSubmit = async (values: StudentCreate) => {
+	const handleSubmit = async (values: StudentCreate | LecturerCreate) => {
 		if (isStudent) {
 			// Additional validation for semester status
+			const studentValues = values as StudentCreate;
 			const selectedSemester = semesters.find(
-				(s) => s.id === values.semesterId,
+				(s) => s.id === studentValues.semesterId,
 			);
 			if (
 				selectedSemester &&
@@ -96,12 +126,9 @@ const UserForm = ({ formType }: UserFormProps) => {
 				);
 				return;
 			}
-			await handleCreateStudent(values);
+			await handleCreateStudent(studentValues);
 		} else {
-			showNotification.success(
-				'Success',
-				'Lecturer creation not implemented yet',
-			);
+			await handleCreateLecturer(values as LecturerCreate);
 		}
 	};
 
@@ -132,13 +159,42 @@ const UserForm = ({ formType }: UserFormProps) => {
 		}
 		// Error notification is handled in store
 	};
+	const handleCreateLecturer = async (values: LecturerCreate) => {
+		// Clear any previous errors
+		clearLecturerError();
+		clearMajorError();
+		clearSemesterError();
+		const lecturerData: LecturerCreate = {
+			fullName: values.fullName.trim(),
+			email: values.email.trim().toLowerCase(),
+			gender: values.gender,
+			phoneNumber: values.phoneNumber.trim(),
+		};
+
+		// Use store method to create lecturer
+		const success = await createLecturer(lecturerData);
+
+		if (success) {
+			// Success notification is handled in store
+			form.resetFields();
+			// Navigate back to lecturer management
+			router.push('/admin/lecturer-management');
+		}
+		// Error notification is handled in store
+	};
 
 	const handleCancel = () => {
 		clearError();
 		clearMajorError();
-		clearSemesterError(); // Clear semester errors on cancel
+		clearSemesterError();
+		if (!isStudent) {
+			clearLecturerError();
+		}
 		form.resetFields();
-		router.push('/admin/students-management');
+		const targetPath = isStudent
+			? '/admin/students-management'
+			: '/admin/lecturer-management';
+		router.push(targetPath);
 	};
 
 	return (
@@ -152,7 +208,7 @@ const UserForm = ({ formType }: UserFormProps) => {
 					description={
 						<div>
 							<p>
-								Students can only be created for semesters with{' '}
+								Students can only be created for semesters with
 								<strong>Preparing</strong> or <strong>Picking</strong> status.
 							</p>
 							<p>
@@ -173,7 +229,7 @@ const UserForm = ({ formType }: UserFormProps) => {
 					message="Student Creation Policy"
 					description={
 						<div>
-							Student accounts can only be created for semesters with{' '}
+							Student accounts can only be created for semesters with
 							<Tag color="orange" style={{ margin: '0 4px' }}>
 								Preparing
 							</Tag>
@@ -262,7 +318,6 @@ const UserForm = ({ formType }: UserFormProps) => {
 						</Col>
 					</Row>
 				)}
-
 				{/* Full Name - Full width */}
 				<Row>
 					<Col span={24}>
@@ -286,7 +341,6 @@ const UserForm = ({ formType }: UserFormProps) => {
 						</Form.Item>
 					</Col>
 				</Row>
-
 				{/* Email - Full width */}
 				<Row>
 					<Col span={24}>
@@ -306,7 +360,6 @@ const UserForm = ({ formType }: UserFormProps) => {
 						</Form.Item>
 					</Col>
 				</Row>
-
 				{/* Phone Number - Full width */}
 				<Row>
 					<Col span={24}>
@@ -330,7 +383,6 @@ const UserForm = ({ formType }: UserFormProps) => {
 						</Form.Item>
 					</Col>
 				</Row>
-
 				{/* Student ID and Gender - Two columns */}
 				<Row gutter={16}>
 					{isStudent && (
@@ -355,7 +407,7 @@ const UserForm = ({ formType }: UserFormProps) => {
 							</Form.Item>
 						</Col>
 					)}
-					<Col xs={24} sm={12}>
+					<Col xs={24} sm={isStudent ? 12 : 24}>
 						<Form.Item
 							name="gender"
 							label={FormLabel({
@@ -372,7 +424,6 @@ const UserForm = ({ formType }: UserFormProps) => {
 						</Form.Item>
 					</Col>
 				</Row>
-
 				{/* Submit buttons */}
 				<Form.Item>
 					<Space style={{ width: '100%', justifyContent: 'flex-end' }}>

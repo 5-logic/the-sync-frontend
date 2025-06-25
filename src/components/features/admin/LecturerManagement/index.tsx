@@ -1,43 +1,45 @@
 'use client';
 
 import { Space, Typography } from 'antd';
-import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 import LecturerFilterBar from '@/components/features/admin/LecturerManagement/LecturerFilterBar';
 import LecturerTable from '@/components/features/admin/LecturerManagement/LecturerTable';
-import { mockLecturers } from '@/data/lecturers';
-import { Lecturer } from '@/schemas/lecturer';
+import { useLecturerStore } from '@/store/useLecturerStore';
 
 export default function LecturerManagement() {
-	const [statusFilter, setStatusFilter] = useState<
-		'all' | 'active' | 'inactive'
-	>('all');
-	const [searchText, setSearchText] = useState<string>('');
-	const [data, setData] =
-		useState<(Lecturer & { instructionGroups: string })[]>(mockLecturers);
-	const filteredData = data.filter((lecturer) => {
-		const matchesStatus =
-			statusFilter === 'all' ||
-			(statusFilter === 'active' && lecturer.isActive) ||
-			(statusFilter === 'inactive' && !lecturer.isActive);
+	const {
+		filteredLecturers,
+		loading,
+		togglingStatus,
+		fetchLecturers,
+		toggleLecturerStatus,
+	} = useLecturerStore();
+	const router = useRouter();
 
-		const matchesSearch = [lecturer.fullName, lecturer.email].some((field) =>
-			(field ?? '').toLowerCase().includes(searchText.toLowerCase()),
-		);
-
-		return matchesStatus && matchesSearch;
-	});
-
-	const handleTogglePermission = (id: string) => {
-		setData((prev) =>
-			prev.map((item) =>
-				item.id === id ? { ...item, isModerator: !item.isModerator } : item,
-			),
-		);
+	useEffect(() => {
+		fetchLecturers();
+	}, [fetchLecturers]);
+	const handleTogglePermission = async (id: string) => {
+		const lecturer = useLecturerStore.getState().getLecturerById(id);
+		if (lecturer) {
+			await toggleLecturerStatus(id, { isModerator: !lecturer.isModerator });
+		}
 	};
 
+	const handleToggleStatus = async (id: string) => {
+		const lecturer = useLecturerStore.getState().getLecturerById(id);
+		if (lecturer) {
+			await toggleLecturerStatus(id, { isActive: !lecturer.isActive });
+		}
+	};
 	const handleCreateLecturer = () => {
-		console.log('Create new lecturer clicked');
+		router.push('/admin/create-new-lecturer');
+	};
+
+	const handleRefresh = () => {
+		fetchLecturers();
 	};
 
 	const { Title, Paragraph } = Typography;
@@ -52,18 +54,16 @@ export default function LecturerManagement() {
 					capstone-specific rules
 				</Paragraph>
 			</div>
-
 			<LecturerFilterBar
-				statusFilter={statusFilter}
-				setStatusFilter={setStatusFilter}
-				searchText={searchText}
-				setSearchText={setSearchText}
 				onCreateLecturer={handleCreateLecturer}
+				onRefresh={handleRefresh}
+				loading={loading}
 			/>
-
 			<LecturerTable
-				data={filteredData}
+				data={filteredLecturers}
 				onTogglePermission={handleTogglePermission}
+				onToggleStatus={handleToggleStatus}
+				loading={loading ?? togglingStatus}
 			/>
 		</Space>
 	);
