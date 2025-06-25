@@ -23,15 +23,15 @@ export default function GroupProgressPage() {
 	const groupList = useMemo(() => {
 		const uniqueGroups: Record<string, FullMockGroup> = {};
 		allMockGroups.forEach((group) => {
-			uniqueGroups[group.id] ??= group; // ✅ Dùng nullish assignment
+			uniqueGroups[group.id] ??= group;
 		});
 
 		return Object.values(uniqueGroups).filter((group) => {
 			const name = group.name ?? '';
 			const title = group.title ?? '';
-			const keyword = (searchText ?? '').toLowerCase(); // ✅ fallback keyword
+			const keyword = (searchText ?? '').toLowerCase();
 			return (
-				name.toLowerCase().includes(keyword) ||
+				name.toLowerCase().includes(keyword) || //no sonar
 				title.toLowerCase().includes(keyword)
 			);
 		});
