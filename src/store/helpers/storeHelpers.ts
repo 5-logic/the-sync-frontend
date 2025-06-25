@@ -67,14 +67,14 @@ function handleResultError(
 
 // Generic batch create action
 export function createBatchCreateAction<T extends { id: string }, TCreate>(
-	service: { createMany: (data: TCreate[]) => Promise<ApiResponse<T[]>> },
+	service: { createMany: (data: TCreate) => Promise<ApiResponse<T[]>> },
 	entityName: string,
 ) {
 	return (
 			set: StoreApi<Record<string, unknown>>['setState'],
 			get: StoreApi<Record<string, unknown>>['getState'],
 		) =>
-		async (data: TCreate[]): Promise<boolean> => {
+		async (data: TCreate): Promise<boolean> => {
 			const loadingField =
 				entityName === 'student'
 					? 'creatingMany'
@@ -84,7 +84,7 @@ export function createBatchCreateAction<T extends { id: string }, TCreate>(
 				const response = await service.createMany(data);
 				const result = handleApiResponse(
 					response,
-					`${data.length} ${entityName}s created successfully`,
+					`Students created successfully`,
 				);
 				if (result.success && result.data) {
 					// Add all new items to the array
@@ -414,6 +414,54 @@ export function createToggleStatusAction<T extends { id: string }, TToggle>(
 				set({ [loadingField]: false });
 			}
 			return false;
+		};
+}
+
+// Generic fetch by semester action for students
+export function createFetchBySemesterAction<T extends { id: string }>(
+	service: {
+		findAllBySemester: (semesterId: string) => Promise<ApiResponse<T[]>>;
+	},
+	entityName: string,
+) {
+	return (
+			set: StoreApi<Record<string, unknown>>['setState'],
+			get: StoreApi<Record<string, unknown>>['getState'],
+		) =>
+		async (semesterId: string) => {
+			set({ loading: true, lastError: null });
+			try {
+				const response = await service.findAllBySemester(semesterId);
+				const result = handleApiResponse(response);
+				if (result.success && result.data) {
+					handleFetchSuccess(result.data, entityName, set, get);
+					return;
+				}
+
+				if (result.error) {
+					// Handle specific error cases where we want to show empty data instead of error
+					// Only show empty data for semesters in NotYet or End status
+					if (
+						result.error.statusCode === 409 &&
+						result.error.message &&
+						(result.error.message.includes('NotYet') ||
+							result.error.message.includes('End') ||
+							result.error.message.includes(
+								'semesters allow student enrollment',
+							))
+					) {
+						// Semester is in NotYet or End status, show empty data instead of error
+						handleFetchSuccess([], entityName, set, get);
+						return;
+					}
+					// For other errors (like network issues, etc.), show the actual error
+					handleResultError(result.error, set);
+				}
+			} catch (error) {
+				handleActionError(error, `${entityName}s`, 'fetch by semester', set);
+			} finally {
+				set({ loading: false });
+			}
 		};
 }
 
