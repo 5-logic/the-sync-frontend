@@ -665,6 +665,11 @@ function ImportedDataTable<
 }>) {
 	if (data.length === 0) return null;
 
+	const userTypeText = userType === 'lecturer' ? 'Lecturers' : 'Students';
+	const buttonText = creatingMany
+		? `Creating ${userTypeText}...`
+		: `Import All ${userTypeText} (${data.length})`;
+
 	return (
 		<Space direction="vertical" style={{ width: '100%' }} size="middle">
 			<Alert
@@ -714,9 +719,7 @@ function ImportedDataTable<
 							creatingMany
 						}
 					>
-						{creatingMany
-							? `Creating ${userType === 'lecturer' ? 'Lecturers' : 'Students'}...`
-							: `Import All ${userType === 'lecturer' ? 'Lecturers' : 'Students'} (${data.length})`}
+						{buttonText}
 					</Button>
 				</Col>
 			</Row>
