@@ -33,8 +33,7 @@ export default function GroupProgressPage() {
 
 			const nameMatch = name.toLowerCase().includes(keyword);
 			const titleMatch = title.toLowerCase().includes(keyword);
-
-			return Boolean(nameMatch || titleMatch);
+			return Boolean(nameMatch ? true : titleMatch);
 		});
 	}, [searchText]);
 
