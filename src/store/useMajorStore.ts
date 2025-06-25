@@ -4,8 +4,12 @@ import { devtools } from 'zustand/middleware';
 import majorService from '@/lib/services/majors.service';
 import { Major } from '@/schemas/major';
 import {
+	cacheInvalidation,
+	cacheUtils,
+	createCachedFetchAction,
+} from '@/store/helpers/cacheHelpers';
+import {
 	commonStoreUtilities,
-	createFetchAction,
 	createSearchFilter,
 } from '@/store/helpers/storeHelpers';
 
@@ -27,8 +31,15 @@ interface MajorState {
 	// UI states
 	searchText: string;
 
+	// Cache utilities
+	cache: {
+		clear: () => void;
+		stats: () => Record<string, unknown> | null;
+		invalidate: () => void;
+	};
+
 	// Actions
-	fetchMajors: () => Promise<void>;
+	fetchMajors: (force?: boolean) => Promise<void>;
 
 	// Error management
 	clearError: () => void;
@@ -61,11 +72,23 @@ export const useMajorStore = create<MajorState>()(
 			lastError: null,
 			searchText: '',
 
-			// Actions using helpers
-			fetchMajors: createFetchAction(majorService, 'major')(set, get),
+			// Cache utilities
+			cache: {
+				clear: () => cacheInvalidation.invalidateEntity('major'),
+				stats: () => cacheUtils.getStats('major'),
+				invalidate: () => cacheInvalidation.invalidateEntity('major'),
+			},
+
+			// Actions using cached fetch
+			fetchMajors: createCachedFetchAction(majorService, 'major', {
+				ttl: 10 * 60 * 1000, // 10 minutes for majors (rarely change)
+				enableLocalStorage: true,
+			})(set, get),
 
 			// Error management
-			clearError: () => set(commonStoreUtilities.clearError()), // Filters
+			clearError: () => set(commonStoreUtilities.clearError()),
+
+			// Filters
 			setSearchText: commonStoreUtilities.createSetSearchText('filterMajors')(
 				set,
 				get,
