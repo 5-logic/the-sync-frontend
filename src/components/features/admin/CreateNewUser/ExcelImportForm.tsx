@@ -23,13 +23,14 @@ import {
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import type { RcFile } from 'antd/es/upload';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import * as XLSX from 'xlsx';
 
 import { FormLabel } from '@/components/common/FormLabel';
 import { showNotification } from '@/lib/utils/notification';
 import { SemesterStatus } from '@/schemas/_enums';
-import { StudentCreate } from '@/schemas/student';
+import { ImportStudent, ImportStudentItem } from '@/schemas/student';
 import { useMajorStore, useSemesterStore, useStudentStore } from '@/store';
 
 const { Dragger } = Upload;
@@ -732,6 +733,7 @@ export default function ExcelImportForm<
 	requireSemester = false,
 	requireMajor = false,
 }: ExcelImportFormProps<T>) {
+	const router = useRouter();
 	const [form] = Form.useForm();
 	const [fileList, setFileList] = useState<RcFile[]>([]);
 	const [data, setData] = useState<T[]>([]);
@@ -754,7 +756,13 @@ export default function ExcelImportForm<
 		clearError: clearMajorError,
 	} = useMajorStore();
 
-	const { createManyStudents, creatingMany, fetchStudents } = useStudentStore();
+	const {
+		createManyStudents,
+		creatingMany,
+		fetchStudents,
+		fetchStudentsBySemester,
+		selectedSemesterId,
+	} = useStudentStore();
 
 	// Effects
 	useEffect(() => {
@@ -899,18 +907,31 @@ export default function ExcelImportForm<
 			return;
 		}
 
-		const studentsToCreate: StudentCreate[] = data.map((item) => ({
-			...item,
-			id: undefined,
-			...(requireSemester &&
-				selectedSemester && { semesterId: selectedSemester }),
-			...(requireMajor && selectedMajor && { majorId: selectedMajor }),
-		}));
+		// Prepare the import DTO with the new structure
+		const importStudentDto: ImportStudent = {
+			semesterId: selectedSemester!,
+			majorId: selectedMajor!,
+			students: (data as unknown as (ImportStudentItem & { id: string })[]).map(
+				(item) => ({
+					studentId: item.studentId,
+					email: item.email,
+					fullName: item.fullName,
+					password: item.password,
+					gender: item.gender,
+					phoneNumber: item.phoneNumber,
+				}),
+			),
+		};
 
 		try {
-			const success = await createManyStudents(studentsToCreate);
+			const success = await createManyStudents(importStudentDto);
 			if (success) {
-				await fetchStudents();
+				// Refresh students for the current semester
+				if (selectedSemesterId) {
+					await fetchStudentsBySemester(selectedSemesterId);
+				} else {
+					await fetchStudents();
+				}
 				setData([]);
 				setFileList([]);
 				setSelectedSemester('');
@@ -921,6 +942,15 @@ export default function ExcelImportForm<
 					requireSemester ? selectedSemester : undefined,
 					requireMajor ? selectedMajor : undefined,
 				);
+
+				// Show success notification and redirect
+				showNotification.success(
+					'Import Successful',
+					`${data.length} students have been imported successfully.`,
+				);
+
+				// Redirect to students management page
+				router.push('/admin/students-management');
 			}
 		} catch (error) {
 			console.error('Error creating students:', error);
