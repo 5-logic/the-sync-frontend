@@ -16,21 +16,14 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
 import { FormLabel } from '@/components/common/FormLabel';
+import { SEMESTER_STATUS_TAGS } from '@/lib/constants/semester';
 import { showNotification } from '@/lib/utils/notification';
-import { SemesterStatus } from '@/schemas/_enums';
 import { StudentCreate } from '@/schemas/student';
 import { useMajorStore, useSemesterStore, useStudentStore } from '@/store';
 
 const { Option } = Select;
 
 // Import status tags for consistency
-const STATUS_TAG: Record<SemesterStatus, JSX.Element> = {
-	NotYet: <Tag color="blue">Not Yet</Tag>,
-	Preparing: <Tag color="orange">Preparing</Tag>,
-	Picking: <Tag color="purple">Picking</Tag>,
-	Ongoing: <Tag color="green">Ongoing</Tag>,
-	End: <Tag color="gray">End</Tag>,
-};
 
 type UserFormProps = {
 	formType: 'student' | 'lecturer';
@@ -237,7 +230,7 @@ const UserForm = ({ formType }: UserFormProps) => {
 										<Option key={semester.id} value={semester.id}>
 											<Space>
 												<span>{semester.name}</span>
-												{STATUS_TAG[semester.status]}
+												{SEMESTER_STATUS_TAGS[semester.status]}
 											</Space>
 										</Option>
 									))}

@@ -28,21 +28,13 @@ import { useEffect, useState } from 'react';
 import * as XLSX from 'xlsx';
 
 import { FormLabel } from '@/components/common/FormLabel';
+import { SEMESTER_STATUS_TAGS } from '@/lib/constants/semester';
 import { showNotification } from '@/lib/utils/notification';
 import { SemesterStatus } from '@/schemas/_enums';
 import { ImportStudent, ImportStudentItem } from '@/schemas/student';
 import { useMajorStore, useSemesterStore, useStudentStore } from '@/store';
 
 const { Dragger } = Upload;
-
-// Import status tags from SemesterTable or create shared constants
-const STATUS_TAG: Record<SemesterStatus, JSX.Element> = {
-	NotYet: <Tag color="blue">Not Yet</Tag>,
-	Preparing: <Tag color="orange">Preparing</Tag>,
-	Picking: <Tag color="purple">Picking</Tag>,
-	Ongoing: <Tag color="green">Ongoing</Tag>,
-	End: <Tag color="gray">End</Tag>,
-};
 
 type ExcelImportFormProps<
 	T extends { id: string; email?: string; studentId?: string },
@@ -565,7 +557,7 @@ function SelectionForm({
 									<Select.Option key={semester.id} value={semester.id}>
 										<Space>
 											<span>{semester.name}</span>
-											{STATUS_TAG[semester.status]}
+											{SEMESTER_STATUS_TAGS[semester.status]}
 										</Space>
 									</Select.Option>
 								))}

@@ -12,7 +12,6 @@ import {
 	Select,
 	Space,
 	Table,
-	Tag,
 	Tooltip,
 	Typography,
 } from 'antd';
@@ -27,6 +26,10 @@ import {
 } from 'react';
 
 import { FormLabel } from '@/components/common/FormLabel';
+import {
+	SEMESTER_STATUS_TAGS,
+	SEMESTER_STATUS_TEXT,
+} from '@/lib/constants/semester';
 import { SemesterStatus } from '@/schemas/_enums';
 import { Semester, SemesterUpdate } from '@/schemas/semester';
 import { useSemesterStore } from '@/store';
@@ -45,22 +48,6 @@ const STATUS_ORDER: SemesterStatus[] = [
 	'Ongoing',
 	'End',
 ];
-
-const STATUS_TAG: Record<SemesterStatus, JSX.Element> = {
-	NotYet: <Tag color="blue">Not Yet</Tag>,
-	Preparing: <Tag color="orange">Preparing</Tag>,
-	Picking: <Tag color="purple">Picking</Tag>,
-	Ongoing: <Tag color="green">Ongoing</Tag>,
-	End: <Tag color="gray">End</Tag>,
-};
-
-const STATUS_LABELS: Record<SemesterStatus, string> = {
-	NotYet: 'Not Yet',
-	Preparing: 'Preparing',
-	Picking: 'Picking',
-	Ongoing: 'Ongoing',
-	End: 'End',
-};
 
 const SemesterTable = forwardRef<
 	SemesterTableRef,
@@ -473,7 +460,8 @@ const SemesterTable = forwardRef<
 				dataIndex: 'status',
 				key: 'status',
 				width: 120,
-				render: (status: SemesterStatus) => STATUS_TAG[status] ?? status,
+				render: (status: SemesterStatus) =>
+					SEMESTER_STATUS_TAGS[status] ?? status,
 			},
 			{
 				title: 'Actions',
@@ -788,7 +776,7 @@ const SemesterTable = forwardRef<
 									value={status}
 									{...getStatusOptionProps(status)} // Add option props for disabled state
 								>
-									{STATUS_LABELS[status]}
+									{SEMESTER_STATUS_TEXT[status]}
 								</Option>
 							))}
 						</Select>

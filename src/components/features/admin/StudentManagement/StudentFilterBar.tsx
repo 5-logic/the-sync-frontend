@@ -5,22 +5,15 @@ import {
 	ReloadOutlined,
 	SearchOutlined,
 } from '@ant-design/icons';
-import { Button, Col, Input, Row, Select, Tag } from 'antd';
+import { Button, Col, Input, Row, Select } from 'antd';
 import { useEffect } from 'react';
 
-import { SemesterStatus } from '@/schemas/_enums';
+import { SEMESTER_STATUS_TAGS } from '@/lib/constants/semester';
 import { useMajorStore, useSemesterStore } from '@/store';
 
 const { Option } = Select;
 
 // Status tag styling to match SemesterTable
-const STATUS_TAG: Record<SemesterStatus, JSX.Element> = {
-	NotYet: <Tag color="blue">Not Yet</Tag>,
-	Preparing: <Tag color="orange">Preparing</Tag>,
-	Picking: <Tag color="purple">Picking</Tag>,
-	Ongoing: <Tag color="green">Ongoing</Tag>,
-	End: <Tag color="gray">End</Tag>,
-};
 
 type Props = Readonly<{
 	semesterFilter: string | null;
@@ -109,7 +102,7 @@ export default function StudentFilterBar({
 										}}
 									>
 										<span>{semester.name}</span>
-										{STATUS_TAG[semester.status]}
+										{SEMESTER_STATUS_TAGS[semester.status]}
 									</span>
 								</Option>
 							))}
