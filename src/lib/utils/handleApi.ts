@@ -15,7 +15,7 @@ export const handleApiResponse = <T>(
 ): { success: boolean; data?: T; error?: ApiErrorDetails } => {
 	if (response.success) {
 		if (successMessage) {
-			showNotification.success(title || 'Success', successMessage);
+			showNotification.success(title ?? 'Success', successMessage);
 		}
 		return { success: true, data: response.data };
 	} else {
