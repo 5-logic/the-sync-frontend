@@ -276,7 +276,7 @@ export const useStudentStore = create<StudentState>()(
 
 			// Check if a specific student is currently being toggled
 			isStudentLoading: (id: string) => {
-				return get()._studentLoadingStates.get(id) || false;
+				return get()._studentLoadingStates.get(id) ?? false;
 			},
 		}),
 		{
