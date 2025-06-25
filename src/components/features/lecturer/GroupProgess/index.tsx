@@ -1,128 +1,63 @@
 'use client';
 
-import { DownloadOutlined, EyeOutlined, SendOutlined } from '@ant-design/icons';
-import {
-	Button,
-	Card,
-	Col,
-	Input,
-	Pagination,
-	Progress,
-	Row,
-	Space,
-	Steps,
-	Table,
-	Timeline,
-	Typography,
-} from 'antd';
-import type { ColumnsType } from 'antd/es/table';
-import { useState } from 'react';
+import { Card, Col, Row, Space, Steps, Typography } from 'antd';
+import { useMemo, useState } from 'react';
 
-const { Title, Text } = Typography;
+import GroupSearchTable from '@/components/features/lecturer/GroupProgess/GroupSearchTable';
+import MilestoneDetailCard from '@/components/features/lecturer/GroupProgess/MilestoneDetailCard';
+import ProgressOverviewCard from '@/components/features/lecturer/GroupProgess/ProgressOverviewCard';
+import { FullMockGroup, allMockGroups, mockReviewGroups } from '@/data/group';
+
+const { Title, Text, Paragraph } = Typography;
 const { Step } = Steps;
 
-const groupData = [
-	{
-		key: '1',
-		name: 'Group A',
-		code: 'T-AI023',
-		title: 'AI for Traffic Data Analysis and Prediction System',
-		members: 4,
-		supervisor: 'Dr. John Nguyen',
-		coSupervisor: 'Ms. Le Ha',
-		submissionFile: 'research_draft.pdf',
-		submissionDate: 'Oct 24, 2023',
-		uploadedBy: 'Minh Tran',
-		progress: 40,
-		milestones: [
-			'Review 1 - Completed on Dec 15, 2023',
-			'Review 2 - Completed on Feb 1, 2024',
-			'Review 3 - In Progress - Mar 15, 2024',
-			'Final Report - Upcoming - Nov 15, 2024',
-		],
-		milestoneAlert: 'Milestone 2 submission due in 5 days',
-	},
-	{
-		key: '2',
-		name: 'Group B',
-		code: 'T-BI107',
-		title: 'Blockchain Integration for Supply Chain Management',
-		members: 3,
-		supervisor: 'Dr. Alice Tran',
-		coSupervisor: 'Mr. Henry Vu',
-		submissionFile: 'blockchain_report.pdf',
-		submissionDate: 'Nov 10, 2023',
-		uploadedBy: 'Linh Nguyen',
-		progress: 30,
-		milestones: [
-			'Review 1 - Completed on Dec 20, 2023',
-			'Review 2 - In Progress - Feb 15, 2024',
-			'Review 3 - Upcoming - Apr 10, 2024',
-			'Final Report - Upcoming - Dec 1, 2024',
-		],
-		milestoneAlert: 'Milestone 2 submission due in 3 days',
-	},
-];
-
 export default function GroupProgressPage() {
-	const [searchText, setSearchText] = useState('');
-	const [currentStep] = useState(2);
-	const [selectedGroup, setSelectedGroup] = useState(groupData[0]);
+	const [selectedGroup, setSelectedGroup] = useState<FullMockGroup | undefined>(
+		undefined,
+	);
+	const [selectedPhase, setSelectedPhase] = useState<string>('Review 1');
+	const [searchText, setSearchText] = useState<string>('');
 
-	const columns: ColumnsType<(typeof groupData)[0]> = [
-		{
-			title: 'Group Name',
-			dataIndex: 'name',
-		},
-		{
-			title: 'Thesis Code',
-			dataIndex: 'code',
-		},
-		{
-			title: 'Thesis Title',
-			dataIndex: 'title',
-		},
-		{
-			title: 'Members',
-			dataIndex: 'members',
-		},
-		{
-			title: 'Actions',
-			render: (_: unknown, record: (typeof groupData)[0]) => (
-				<Button
-					type="link"
-					icon={<EyeOutlined />}
-					onClick={() => setSelectedGroup(record)}
-				/>
-			),
-		},
-	];
+	const availablePhases = Object.keys(mockReviewGroups);
+
+	const groupList = useMemo(() => {
+		const uniqueGroups: Record<string, FullMockGroup> = {};
+		allMockGroups.forEach((group) => {
+			if (!uniqueGroups[group.id]) {
+				uniqueGroups[group.id] = group;
+			}
+		});
+		return Object.values(uniqueGroups).filter(
+			(group) =>
+				group.name.toLowerCase().includes(searchText.toLowerCase()) ||
+				group.title.toLowerCase().includes(searchText.toLowerCase()),
+		);
+	}, [searchText]);
+
+	function handleSelect(group: FullMockGroup) {
+		setSelectedGroup(group);
+		setSelectedPhase(availablePhases[0]);
+	}
 
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
-			<Title level={2}>Group Progress</Title>
-			<Input.Search
-				placeholder="Search groups or topics"
-				allowClear
-				value={searchText}
-				onChange={(e) => setSearchText(e.target.value)}
-				style={{ width: 300 }}
-			/>
+			<div>
+				<Title level={2} style={{ marginBottom: '4px' }}>
+					Group Progress
+				</Title>
+				<Paragraph type="secondary" style={{ marginBottom: 0 }}>
+					The instructor monitors the groups progress, closely following
+					important milestones to evaluate the groups performance.
+				</Paragraph>
+			</div>
 
-			<Table
-				columns={columns}
-				dataSource={groupData.filter(
-					(g) =>
-						g.name.toLowerCase().includes(searchText.toLowerCase()) ||
-						g.title.toLowerCase().includes(searchText.toLowerCase()),
-				)}
-				pagination={false}
-				rowKey="key"
-				rowClassName={(record) =>
-					record.key === selectedGroup.key ? 'ant-table-row-selected' : ''
-				}
+			<GroupSearchTable
+				data={groupList}
+				searchText={searchText}
+				onSearchChange={setSearchText}
+				selectedGroup={selectedGroup}
+				onGroupSelect={handleSelect}
 			/>
-			<Pagination current={1} total={50} pageSize={10} />
 
 			{selectedGroup && (
 				<>
@@ -134,85 +69,37 @@ export default function GroupProgressPage() {
 							{selectedGroup.coSupervisor}
 						</Text>
 
-						<Steps current={currentStep} style={{ marginTop: 16 }}>
-							<Step title="Submit Thesis" />
-							<Step title="Review 1" />
-							<Step title="Review 2" />
-							<Step title="Review 3" />
-							<Step title="Final Report" />
+						<Steps
+							current={availablePhases.indexOf(selectedPhase)}
+							style={{ marginTop: 16 }}
+						>
+							{availablePhases.map((phase) => (
+								<Step
+									key={phase}
+									title={phase}
+									onClick={() => {
+										const match = mockReviewGroups[phase].find(
+											(g) => g.id === selectedGroup.id,
+										);
+										if (match) {
+											setSelectedGroup(match);
+											setSelectedPhase(phase);
+										}
+									}}
+								/>
+							))}
 						</Steps>
 					</Card>
 
 					<Row gutter={16} align="stretch">
 						<Col xs={24} md={16}>
-							<Card title={`Milestone 3 - Review 2`} style={{ height: '100%' }}>
-								<p>
-									Submission file: {selectedGroup.submissionFile}{' '}
-									<Button icon={<DownloadOutlined />} type="link">
-										Download
-									</Button>
-								</p>
-								<p>Submission Date: {selectedGroup.submissionDate}</p>
-								<p>Uploaded by: {selectedGroup.uploadedBy}</p>
-								<Input.TextArea
-									rows={4}
-									placeholder="Enter feedback or notes"
-								/>
-								<Button
-									icon={<SendOutlined />}
-									type="primary"
-									style={{ marginTop: 12 }}
-								>
-									Send Feedback
-								</Button>
-							</Card>
+							<MilestoneDetailCard
+								group={selectedGroup}
+								phase={selectedPhase}
+							/>
 						</Col>
-
 						<Col xs={24} md={8}>
-							<Card
-								title="Progress Overview"
-								style={{
-									height: '100%',
-									display: 'flex',
-									flexDirection: 'column',
-									justifyContent: 'space-between',
-								}}
-							>
-								<div>
-									<Text type="warning">{selectedGroup.milestoneAlert}</Text>
-									<div
-										style={{
-											display: 'flex',
-											justifyContent: 'space-between',
-											marginTop: 8,
-										}}
-									>
-										<Text strong>Overall Progress</Text>
-										<Text type="secondary">{selectedGroup.progress}%</Text>
-									</div>
-									<Progress
-										percent={selectedGroup.progress}
-										showInfo={false}
-										style={{ marginBottom: 16 }}
-									/>
-
-									<Timeline>
-										{selectedGroup.milestones.map((m, index) => {
-											let color = 'gray';
-											if (m.includes('Completed')) color = 'green';
-											else if (m.includes('In Progress')) color = 'blue';
-											return (
-												<Timeline.Item key={index} color={color}>
-													{m}
-												</Timeline.Item>
-											);
-										})}
-									</Timeline>
-								</div>
-								<Button type="primary" block style={{ marginTop: 16 }}>
-									View Thesis Details
-								</Button>
-							</Card>
+							<ProgressOverviewCard group={selectedGroup} />
 						</Col>
 					</Row>
 				</>
