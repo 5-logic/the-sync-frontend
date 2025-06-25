@@ -103,7 +103,7 @@ export const mockReviewGroups: Record<string, FullMockGroup[]> = {
 			coSupervisor: meta.supervisors[1] ?? '',
 			submissionFile: 'review1_report.pdf',
 			submissionDate: '2023-12-10',
-			uploadedBy: 'Admin',
+			uploadedBy: 'hihi',
 			progress: 40 + idx * 10,
 			milestones: [
 				'Review 1 - Completed on Dec 15, 2023',
@@ -126,7 +126,7 @@ export const mockReviewGroups: Record<string, FullMockGroup[]> = {
 			coSupervisor: meta.supervisors[1] ?? '',
 			submissionFile: 'review2_draft.pdf',
 			submissionDate: '2024-02-15',
-			uploadedBy: 'System',
+			uploadedBy: 'hihu',
 			progress: 60,
 			milestones: [
 				'Review 1 - Completed on Jan 15, 2024',
