@@ -65,7 +65,7 @@ export default function LecturerManagement() {
 				data={filteredLecturers}
 				onTogglePermission={handleTogglePermission}
 				onToggleStatus={handleToggleStatus}
-				loading={loading || togglingStatus || togglingModerator}
+				loading={Boolean(loading || togglingStatus || togglingModerator)}
 			/>
 		</Space>
 	);
