@@ -21,7 +21,7 @@ export default function GroupSearchTable({
 	data,
 	selectedGroup,
 	onGroupSelect,
-}: Props) {
+}: Readonly<Props>) {
 	const columns: ColumnsType<FullMockGroup> = [
 		{
 			title: 'Group Name',

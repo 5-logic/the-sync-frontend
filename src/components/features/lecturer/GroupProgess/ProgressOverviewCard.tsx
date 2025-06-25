@@ -10,7 +10,7 @@ interface Props {
 	group: FullMockGroup;
 }
 
-export default function ProgressOverviewCard({ group }: Props) {
+export default function ProgressOverviewCard({ group }: Readonly<Props>) {
 	return (
 		<Card
 			title="Progress Overview"
@@ -45,7 +45,7 @@ export default function ProgressOverviewCard({ group }: Props) {
 						if (m.includes('Completed')) color = 'green';
 						else if (m.includes('In Progress')) color = 'blue';
 						return (
-							<Timeline.Item key={index} color={color}>
+							<Timeline.Item key={`${group.id}-${m}-${index}`} color={color}>
 								{m}
 							</Timeline.Item>
 						);

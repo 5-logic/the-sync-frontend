@@ -12,7 +12,7 @@ interface Props {
 
 const { Text } = Typography;
 
-export default function MilestoneDetailCard({ group, phase }: Props) {
+export default function MilestoneDetailCard({ group, phase }: Readonly<Props>) {
 	return (
 		<Card
 			title={`Milestone - ${phase}`}
