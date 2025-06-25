@@ -27,11 +27,14 @@ export default function GroupProgressPage() {
 				uniqueGroups[group.id] = group;
 			}
 		});
-		return Object.values(uniqueGroups).filter(
-			(group) =>
-				(group.name ?? '').toLowerCase().includes(searchText.toLowerCase()) ||
-				(group.title ?? '').toLowerCase().includes(searchText.toLowerCase()),
-		);
+		return Object.values(uniqueGroups).filter((group) => {
+			const name = group.name ?? '';
+			const title = group.title ?? '';
+			return (
+				name.toLowerCase().includes(searchText.toLowerCase()) ||
+				title.toLowerCase().includes(searchText.toLowerCase())
+			);
+		});
 	}, [searchText]);
 
 	function handleSelect(group: FullMockGroup) {
