@@ -1,24 +1,17 @@
 'use client';
 
-import { Layout } from 'antd';
+import { Suspense, lazy } from 'react';
 
-import SemesterSettings from '@/components/features/admin/SemesterSetting/SemesterSettings';
+import { TableLoadingSkeleton } from '@/components/common/loading';
 
-const { Content } = Layout;
+const SemesterSettings = lazy(
+	() => import('@/components/features/admin/SemesterSettings'),
+);
 
 export default function SemesterSettingsClient() {
 	return (
-		<Layout style={{ minHeight: '100vh', backgroundColor: '#ffffff' }}>
-			<Content
-				style={{
-					maxWidth: '1152px',
-					margin: '0 auto',
-					padding: '24px 16px',
-					width: '100%',
-				}}
-			>
-				<SemesterSettings />
-			</Content>
-		</Layout>
+		<Suspense fallback={<TableLoadingSkeleton />}>
+			<SemesterSettings />
+		</Suspense>
 	);
 }
