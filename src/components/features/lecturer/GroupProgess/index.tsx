@@ -29,8 +29,8 @@ export default function GroupProgressPage() {
 		});
 		return Object.values(uniqueGroups).filter(
 			(group) =>
-				group.name.toLowerCase().includes(searchText.toLowerCase()) ||
-				group.title.toLowerCase().includes(searchText.toLowerCase()),
+				(group.name ?? '').toLowerCase().includes(searchText.toLowerCase()) ||
+				(group.title ?? '').toLowerCase().includes(searchText.toLowerCase()),
 		);
 	}, [searchText]);
 
