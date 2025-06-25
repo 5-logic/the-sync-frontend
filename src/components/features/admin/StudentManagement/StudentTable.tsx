@@ -11,13 +11,12 @@ import { useMajorStore, useStudentStore } from '@/store';
 type Props = Readonly<{
 	data: Student[];
 	loading: boolean;
-	onReload?: () => void;
 }>;
 
-export default function StudentTable({ data, loading, onReload }: Props) {
+export default function StudentTable({ data, loading }: Props) {
 	// Use stores
 	const { majors, loading: majorsLoading, fetchMajors } = useMajorStore();
-	const { toggleStudentStatus } = useStudentStore();
+	const { toggleStudentStatus, isStudentLoading } = useStudentStore();
 
 	// Fetch data using stores
 	useEffect(() => {
@@ -36,31 +35,46 @@ export default function StudentTable({ data, loading, onReload }: Props) {
 			},
 			{} as Record<string, { code: string; name: string }>,
 		);
-	}, [majors]); // Handle status toggle
+	}, [majors]);
+
+	// Handle status toggle
 	const handleStatusToggle = (record: Student) => {
 		const newStatus = !record.isActive;
 		const statusText = newStatus ? 'Active' : 'Inactive';
 
 		Modal.confirm({
 			title: 'Update Student Status',
-			content: `Are you sure you want to change ${record.fullName}'s status to ${statusText}?`,
+			content: (
+				<div>
+					Are you sure you want to change <strong>{record.fullName}</strong>
+					&apos;s status to{' '}
+					<strong style={{ color: newStatus ? '#52c41a' : '#ff4d4f' }}>
+						{statusText}
+					</strong>
+					?
+				</div>
+			),
 			okText: 'Yes, Update',
 			cancelText: 'Cancel',
+			type: 'warning',
 			centered: true,
-			onOk: async () => {
-				try {
-					const success = await toggleStudentStatus(record.id, {
+			maskClosable: true,
+			onOk: () => {
+				// Fire & forget pattern - return resolved Promise immediately
+				// This allows Modal to close without waiting for the toggle operation
+				setTimeout(() => {
+					toggleStudentStatus(record.id, {
 						isActive: newStatus,
+					}).catch((error) => {
+						console.error('Error toggling student status:', error);
 					});
+				}, 0); // Defer to next event loop tick
 
-					if (success) {
-						if (onReload) {
-							onReload();
-						}
-					}
-				} catch (error) {
-					console.error('Error toggling student status:', error);
-				}
+				// Return resolved Promise for instant close
+				return Promise.resolve();
+			},
+			onCancel: () => {
+				// Modal cancelled - no action needed
 			},
 		});
 	};
@@ -114,7 +128,7 @@ export default function StudentTable({ data, loading, onReload }: Props) {
 				<Switch
 					checked={record.isActive}
 					onChange={() => handleStatusToggle(record)}
-					loading={loading}
+					loading={isStudentLoading(record.id)}
 					checkedChildren="Active"
 					unCheckedChildren="Inactive"
 				/>
@@ -123,22 +137,24 @@ export default function StudentTable({ data, loading, onReload }: Props) {
 	];
 
 	return (
-		<Table
-			columns={columns}
-			dataSource={data}
-			rowKey="id"
-			pagination={TablePagination}
-			scroll={{ x: 'max-content' }}
-			loading={loading}
-			size="middle"
-			locale={{
-				emptyText: (
-					<Empty
-						description="No students found for this semester. This might be because the semester hasn't started enrollment yet or has ended."
-						image={Empty.PRESENTED_IMAGE_SIMPLE}
-					/>
-				),
-			}}
-		/>
+		<>
+			<Table
+				columns={columns}
+				dataSource={data}
+				rowKey="id"
+				pagination={TablePagination}
+				scroll={{ x: 'max-content' }}
+				loading={loading}
+				size="middle"
+				locale={{
+					emptyText: (
+						<Empty
+							description="No students found for this semester. This might be because the semester hasn't started enrollment yet or has ended."
+							image={Empty.PRESENTED_IMAGE_SIMPLE}
+						/>
+					),
+				}}
+			/>
+		</>
 	);
 }
