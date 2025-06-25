@@ -9,6 +9,120 @@ For more information about this project, see the [README](./README.md).
 
 ---
 
+## [0.2.0] - 2025-06-25
+
+### Added
+
+#### Student Management Enhancements
+
+- Complete student management system with CRUD operations ([#84](https://github.com/5-logic/the-sync-frontend/pull/84), [#96](https://github.com/5-logic/the-sync-frontend/pull/96))
+- Excel import functionality for bulk student creation ([#97](https://github.com/5-logic/the-sync-frontend/pull/97), [#98](https://github.com/5-logic/the-sync-frontend/pull/98))
+- Student status toggle with confirmation modals
+- Semester-based student filtering and management
+- Student status toggle API endpoint
+
+#### Lecturer Management System
+
+- Complete lecturer management interface with CRUD operations ([#84](https://github.com/5-logic/the-sync-frontend/pull/84))
+- Moderator role toggle functionality for lecturers
+- Lecturer status management with confirmation dialogs
+- Excel import support for bulk lecturer creation
+- Enhanced lecturer filtering and search capabilities
+
+#### Data Management & API Improvements
+
+- **New API Endpoints:**
+  - `POST /students/import` - Bulk student creation from Excel import
+  - `POST /students/{id}/toggle-status` - Toggle student active status
+  - `POST /lecturers/{id}/toggle-status` - Toggle lecturer active status
+  - `POST /lecturers/{id}/toggle-moderator` - Toggle lecturer moderator role
+  - `DELETE /milestones/{id}` - Delete milestone functionality
+- Enhanced HTTP client timeout from 10s to 10 minutes for large operations
+- Improved error handling and API response utilities
+
+#### Store & State Management
+
+- Complete Zustand stores for all major entities (students, lecturers, majors, semesters, milestones)
+- Centralized caching utilities with TTL support ([#85](https://github.com/5-logic/the-sync-frontend/pull/85))
+- Generic toggle operations for status management
+- Background refresh handling for real-time data updates
+- Enhanced store actions with batch operations
+
+#### UI/UX Improvements
+
+- Centralized TablePagination component for consistent pagination ([#91](https://github.com/5-logic/the-sync-frontend/pull/91), [#92](https://github.com/5-logic/the-sync-frontend/pull/92))
+- Enhanced milestone management interface ([#83](https://github.com/5-logic/the-sync-frontend/pull/83), [#87](https://github.com/5-logic/the-sync-frontend/pull/87), [#89](https://github.com/5-logic/the-sync-frontend/pull/89))
+- Milestone deletion with confirmation dialogs
+- Improved timeline review components with project milestones ([#70](https://github.com/5-logic/the-sync-frontend/pull/70), [#80](https://github.com/5-logic/the-sync-frontend/pull/80), [#81](https://github.com/5-logic/the-sync-frontend/pull/81))
+- Enhanced thesis management and detail views ([#68](https://github.com/5-logic/the-sync-frontend/pull/68), [#69](https://github.com/5-logic/the-sync-frontend/pull/69), [#71](https://github.com/5-logic/the-sync-frontend/pull/71), [#74](https://github.com/5-logic/the-sync-frontend/pull/74), [#75](https://github.com/5-logic/the-sync-frontend/pull/75))
+- Semester status tags and improved semester management
+- Excel template files for student and lecturer imports
+
+### Changed
+
+#### API Schema Updates
+
+- **Student Schema:** Added `ImportStudentSchema` and `ImportStudentItemSchema` for batch operations
+- **Student API:** Updated `StudentCreateSchema` to include required `semesterId` field
+- **Lecturer Schema:** Enhanced with `LecturerToggleStatus` schema for status management
+- **Toggle Operations:** Standardized toggle APIs to use POST requests instead of PATCH
+
+#### Data Flow Improvements
+
+- Migrated from local state to global Zustand stores across all management components
+- Enhanced form validation with field-specific error handling
+- Improved data fetching patterns with caching and background refresh
+- Streamlined semester-based filtering across student and lecturer management
+
+#### Performance Optimizations
+
+- Lazy loading implementation for management components
+- Optimized re-renders with proper state management
+- Enhanced table performance with virtualization support
+- Background data refresh without blocking UI
+
+### Fixed
+
+- Code quality improvements and SonarCloud issue resolution ([#101](https://github.com/5-logic/the-sync-frontend/pull/101))
+- Enhanced error handling in Excel import validation
+- Fixed form validation edge cases in milestone management
+- Improved disabled state logic for milestone edit/delete operations
+- Corrected semester selection and filtering logic
+- Fixed whitespace and formatting issues across components
+- Enhanced notification messaging consistency
+
+### API Breaking Changes
+
+- **Student Creation:** Now requires `semesterId` parameter in create operations
+- **Toggle Operations:** Status toggle endpoints changed from PATCH to POST
+- **Bulk Operations:** New import endpoints require specific schema format:
+  ```typescript
+  // Student Import
+  POST /students/import
+  {
+    semesterId: string,
+    majorId: string,
+    students: Array<{
+      studentId: string,
+      email: string,
+      fullName: string,
+      password: string,
+      gender: string,
+      phoneNumber: string
+    }>
+  }
+  ```
+
+### Technical Details
+
+- **New Services:** `LecturerService`, `StudentService` with full CRUD operations
+- **Enhanced Stores:** Complete state management with caching and optimistic updates
+- **Validation:** Enhanced Zod schemas with import-specific validation
+- **File Handling:** Excel template generation and processing utilities
+- **Error Handling:** Centralized API error handling with user-friendly messages
+
+---
+
 ## [0.1.0] - 2025-06-18
 
 This is the first release of TheSync Frontend - a modern web application built with Next.js, Ant Design, and Tailwind CSS.
