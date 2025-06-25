@@ -28,7 +28,7 @@ export default function GroupSearchTable({
 			dataIndex: 'name',
 		},
 		{
-			title: 'Thesis Code',
+			title: 'Group Code',
 			dataIndex: 'code',
 		},
 		{
