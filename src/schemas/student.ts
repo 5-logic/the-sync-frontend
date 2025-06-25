@@ -1,14 +1,11 @@
 import { z } from 'zod';
 
-import { SkillLevelSchema } from '@/schemas/_enums';
+import { GenderSchema, SkillLevelSchema } from '@/schemas/_enums';
 import { UserSchema } from '@/schemas/user';
 
 export const StudentSchema = UserSchema.extend({
 	studentId: z.string().min(1).max(6),
 	majorId: z.string().uuid(),
-	createdAt: z.date(),
-	updatedAt: z.date(),
-	semesterId: z.string().uuid().optional(),
 });
 
 export const StudentSkillSchema = z.object({
@@ -31,13 +28,28 @@ export const StudentCreateSchema = StudentSchema.extend({
 		majorId: z.string().uuid(),
 	});
 
+// Schema for individual student in import operation
+export const ImportStudentItemSchema = z.object({
+	studentId: z.string().min(1).max(6),
+	email: z.string().email(),
+	fullName: z.string().min(1),
+	password: z.string().min(12),
+	gender: GenderSchema,
+	phoneNumber: z.string().min(1),
+});
+
+// Schema for batch import operation
+export const ImportStudentSchema = z.object({
+	semesterId: z.string().uuid(),
+	majorId: z.string().uuid(),
+	students: z.array(ImportStudentItemSchema).min(1),
+});
+
 export const StudentUpdateSchema = StudentSchema.pick({
-	studentId: true,
-})
-	.extend({
-		majorId: z.string().uuid().optional(),
-	})
-	.partial();
+	fullName: true,
+	gender: true,
+	phoneNumber: true,
+}).partial();
 
 export const StudentToggleStatusSchema = StudentSchema.pick({
 	isActive: true,
@@ -56,6 +68,8 @@ export type Student = z.infer<typeof StudentSchema>;
 export type StudentCreate = z.infer<typeof StudentCreateSchema>;
 export type StudentUpdate = z.infer<typeof StudentUpdateSchema>;
 export type StudentToggleStatus = z.infer<typeof StudentToggleStatusSchema>;
+export type ImportStudentItem = z.infer<typeof ImportStudentItemSchema>;
+export type ImportStudent = z.infer<typeof ImportStudentSchema>;
 export type StudentSkill = z.infer<typeof StudentSkillSchema>;
 export type StudentSkillCreate = z.infer<typeof StudentSkillCreateSchema>;
 export type StudentSkillUpdate = z.infer<typeof StudentSkillUpdateSchema>;
