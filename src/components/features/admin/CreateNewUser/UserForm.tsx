@@ -208,7 +208,7 @@ const UserForm = ({ formType }: UserFormProps) => {
 					description={
 						<div>
 							<p>
-								Students can only be created for semesters with
+								Students can only be created for semesters with{' '}
 								<strong>Preparing</strong> or <strong>Picking</strong> status.
 							</p>
 							<p>
