@@ -22,12 +22,12 @@ export default function MilestoneDetailCard({ group, phase }: Props) {
 				flexDirection: 'column',
 				justifyContent: 'space-between',
 				height: '100%',
-				paddingTop: 12,
-				paddingBottom: 0,
+				paddingTop: 4,
+				paddingBottom: 12,
 			}}
 		>
-			<div style={{ paddingBottom: 8 }}>
-				<Row justify="space-between" align="middle">
+			<div style={{ paddingBottom: 4 }}>
+				<Row justify="space-between" align="middle" style={{ marginBottom: 4 }}>
 					<Col>
 						<Text>Submission file: {group.submissionFile}</Text>
 					</Col>
@@ -38,7 +38,7 @@ export default function MilestoneDetailCard({ group, phase }: Props) {
 					</Col>
 				</Row>
 
-				<Row justify="space-between" style={{ marginTop: 4 }}>
+				<Row justify="space-between">
 					<Col>
 						<Text>Submission Date: {group.submissionDate}</Text>
 					</Col>
