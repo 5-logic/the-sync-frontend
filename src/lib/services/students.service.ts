@@ -1,6 +1,7 @@
 import httpClient from '@/lib/services/_httpClient';
 import { ApiResponse } from '@/schemas/_common';
 import {
+	ImportStudent,
 	Student,
 	StudentCreate,
 	StudentToggleStatus,
@@ -42,11 +43,18 @@ class StudentService {
 	}
 
 	async createMany(
-		createStudentDtos: StudentCreate[],
+		importStudentDto: ImportStudent,
 	): Promise<ApiResponse<Student[]>> {
 		const response = await httpClient.post<ApiResponse<Student[]>>(
 			`${this.baseUrl}/import`,
-			createStudentDtos,
+			importStudentDto,
+		);
+		return response.data;
+	}
+
+	async findAllBySemester(semesterId: string): Promise<ApiResponse<Student[]>> {
+		const response = await httpClient.get<ApiResponse<Student[]>>(
+			`${this.baseUrl}/semester/${semesterId}`,
 		);
 		return response.data;
 	}
