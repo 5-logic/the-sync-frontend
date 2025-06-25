@@ -3,6 +3,7 @@ import { devtools } from 'zustand/middleware';
 
 import studentService from '@/lib/services/students.service';
 import {
+	ImportStudent,
 	Student,
 	StudentCreate,
 	StudentToggleStatus,
@@ -13,6 +14,7 @@ import {
 	createBatchCreateAction,
 	createCreateAction,
 	createFetchAction,
+	createFetchBySemesterAction,
 	createSearchFilter,
 	createToggleStatusAction,
 	createUpdateAction,
@@ -45,8 +47,9 @@ interface StudentState {
 
 	// Actions
 	fetchStudents: () => Promise<void>;
+	fetchStudentsBySemester: (semesterId: string) => Promise<void>;
 	createStudent: (data: StudentCreate) => Promise<boolean>;
-	createManyStudents: (data: StudentCreate[]) => Promise<boolean>;
+	createManyStudents: (data: ImportStudent) => Promise<boolean>;
 	updateStudent: (id: string, data: StudentUpdate) => Promise<boolean>;
 	toggleStudentStatus: (
 		id: string,
@@ -65,6 +68,7 @@ interface StudentState {
 
 	// Utilities
 	reset: () => void;
+	clearStudents: () => void;
 	getStudentById: (id: string) => Student | undefined;
 
 	// Index signature for Zustand compatibility
@@ -97,6 +101,10 @@ export const useStudentStore = create<StudentState>()(
 
 			// Actions using helpers
 			fetchStudents: createFetchAction(studentService, 'student')(set, get),
+			fetchStudentsBySemester: createFetchBySemesterAction(
+				studentService,
+				'student',
+			)(set, get),
 			createStudent: createCreateAction(studentService, 'student')(set, get),
 			updateStudent: createUpdateAction(studentService, 'student')(set, get),
 			createManyStudents: createBatchCreateAction(studentService, 'student')(
@@ -112,10 +120,20 @@ export const useStudentStore = create<StudentState>()(
 			clearError: () => set(commonStoreUtilities.clearError()),
 
 			// Filters
-			setSelectedSemesterId: commonStoreUtilities.createFieldSetter(
-				'selectedSemesterId',
-				'filterStudents',
-			)(set, get),
+			setSelectedSemesterId: (semesterId: string | null) => {
+				// Clear students when changing semester to avoid stale data
+				set({
+					students: [],
+					filteredStudents: [],
+					selectedSemesterId: semesterId,
+				});
+				// Apply filters with empty data
+				const currentState = get();
+				const filterFunction = currentState.filterStudents;
+				if (typeof filterFunction === 'function') {
+					filterFunction();
+				}
+			},
 			setSelectedMajorId: commonStoreUtilities.createFieldSetter(
 				'selectedMajorId',
 				'filterStudents',
@@ -130,21 +148,12 @@ export const useStudentStore = create<StudentState>()(
 			),
 
 			filterStudents: () => {
-				const {
-					students,
-					selectedSemesterId,
-					selectedMajorId,
-					selectedStatus,
-					searchText,
-				} = get();
+				const { students, selectedMajorId, selectedStatus, searchText } = get();
 
 				let filtered = students;
 
-				if (selectedSemesterId && selectedSemesterId !== 'All') {
-					filtered = filtered.filter(
-						(student) => student.semesterId === selectedSemesterId,
-					);
-				}
+				// Note: Semester filtering is now handled by fetching students by semester
+				// using the fetchStudentsBySemester method instead of client-side filtering
 
 				if (selectedMajorId && selectedMajorId !== 'All') {
 					filtered = filtered.filter(
@@ -173,6 +182,7 @@ export const useStudentStore = create<StudentState>()(
 						selectedStatus: 'All',
 					})(),
 				),
+			clearStudents: () => set({ students: [], filteredStudents: [] }),
 			getStudentById:
 				commonStoreUtilities.createGetById<Student>('student')(get),
 		}),

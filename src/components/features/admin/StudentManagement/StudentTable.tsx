@@ -1,6 +1,6 @@
 'use client';
 
-import { Modal, Table, Tag } from 'antd';
+import { Empty, Modal, Switch, Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useEffect, useMemo } from 'react';
 
@@ -36,24 +36,20 @@ export default function StudentTable({ data, loading, onReload }: Props) {
 			},
 			{} as Record<string, { code: string; name: string }>,
 		);
-	}, [majors]);
-	// Handle status toggle
-	const handleStatusToggle = async (
-		studentId: string,
-		currentStatus: boolean,
-		studentName: string,
-	) => {
-		const newStatus = !currentStatus;
+	}, [majors]); // Handle status toggle
+	const handleStatusToggle = (record: Student) => {
+		const newStatus = !record.isActive;
 		const statusText = newStatus ? 'Active' : 'Inactive';
+
 		Modal.confirm({
 			title: 'Update Student Status',
-			content: `Are you sure you want to change ${studentName}'s status to ${statusText}?`,
+			content: `Are you sure you want to change ${record.fullName}'s status to ${statusText}?`,
 			okText: 'Yes, Update',
 			cancelText: 'Cancel',
 			centered: true,
 			onOk: async () => {
 				try {
-					const success = await toggleStudentStatus(studentId, {
+					const success = await toggleStudentStatus(record.id, {
 						isActive: newStatus,
 					});
 
@@ -68,19 +64,18 @@ export default function StudentTable({ data, loading, onReload }: Props) {
 			},
 		});
 	};
-
 	const columns: ColumnsType<Student> = [
 		{
 			title: 'Student ID',
 			dataIndex: 'studentId',
 			key: 'studentId',
-			width: '12%',
+			width: '15%',
 		},
 		{
 			title: 'Name',
 			dataIndex: 'fullName',
 			key: 'fullName',
-			width: '25%',
+			width: '22%',
 		},
 		{
 			title: 'Email',
@@ -92,7 +87,7 @@ export default function StudentTable({ data, loading, onReload }: Props) {
 			title: 'Gender',
 			dataIndex: 'gender',
 			key: 'gender',
-			width: '8%',
+			width: '10%',
 			render: (gender: string) =>
 				gender?.charAt(0).toUpperCase() + gender?.slice(1),
 		},
@@ -100,31 +95,29 @@ export default function StudentTable({ data, loading, onReload }: Props) {
 			title: 'Major',
 			dataIndex: 'majorId',
 			key: 'majorId',
-			width: '15%',
+			width: '18%',
 			render: (majorId: string) => {
 				if (majorsLoading) {
 					return 'Loading...';
 				}
 
 				const major = majorMap[majorId];
-				return major ? major.code : 'Unknown';
+				return major ? major.name : 'Unknown';
 			},
 		},
 		{
 			title: 'Status',
 			dataIndex: 'isActive',
 			key: 'isActive',
-			width: '15%',
-			render: (isActive: boolean, record: Student) => (
-				<Tag
-					color={isActive ? 'green' : 'red'}
-					style={{ cursor: 'pointer' }}
-					onClick={() =>
-						handleStatusToggle(record.id, isActive, record.fullName)
-					}
-				>
-					{isActive ? 'Active' : 'Inactive'}
-				</Tag>
+			width: '10%',
+			render: (_: boolean, record: Student) => (
+				<Switch
+					checked={record.isActive}
+					onChange={() => handleStatusToggle(record)}
+					loading={loading}
+					checkedChildren="Active"
+					unCheckedChildren="Inactive"
+				/>
 			),
 		},
 	];
@@ -138,6 +131,14 @@ export default function StudentTable({ data, loading, onReload }: Props) {
 			scroll={{ x: 'max-content' }}
 			loading={loading}
 			size="middle"
+			locale={{
+				emptyText: (
+					<Empty
+						description="No students found for this semester. This might be because the semester hasn't started enrollment yet or has ended."
+						image={Empty.PRESENTED_IMAGE_SIMPLE}
+					/>
+				),
+			}}
 		/>
 	);
 }

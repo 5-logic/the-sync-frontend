@@ -23,14 +23,16 @@ import {
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import type { RcFile } from 'antd/es/upload';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import * as XLSX from 'xlsx';
 
 import { FormLabel } from '@/components/common/FormLabel';
+import { SEMESTER_STATUS_TAGS } from '@/lib/constants/semester';
 import { showNotification } from '@/lib/utils/notification';
 import { SemesterStatus } from '@/schemas/_enums';
 import { LecturerCreate } from '@/schemas/lecturer';
-import { StudentCreate } from '@/schemas/student';
+import { ImportStudent, ImportStudentItem } from '@/schemas/student';
 import {
 	useLecturerStore,
 	useMajorStore,
@@ -39,15 +41,6 @@ import {
 } from '@/store';
 
 const { Dragger } = Upload;
-
-// Import status tags from SemesterTable or create shared constants
-const STATUS_TAG: Record<SemesterStatus, JSX.Element> = {
-	NotYet: <Tag color="blue">Not Yet</Tag>,
-	Preparing: <Tag color="orange">Preparing</Tag>,
-	Picking: <Tag color="purple">Picking</Tag>,
-	Ongoing: <Tag color="green">Ongoing</Tag>,
-	End: <Tag color="gray">End</Tag>,
-};
 
 type ExcelImportFormProps<
 	T extends { id: string; email?: string; studentId?: string },
@@ -575,7 +568,7 @@ function SelectionForm({
 									<Select.Option key={semester.id} value={semester.id}>
 										<Space>
 											<span>{semester.name}</span>
-											{STATUS_TAG[semester.status]}
+											{SEMESTER_STATUS_TAGS[semester.status]}
 										</Space>
 									</Select.Option>
 								))}
@@ -742,6 +735,7 @@ export default function ExcelImportForm<
 	requireMajor = false,
 	userType = 'student', // Default to student
 }: ExcelImportFormProps<T>) {
+	const router = useRouter();
 	const [form] = Form.useForm();
 	const [fileList, setFileList] = useState<RcFile[]>([]);
 	const [data, setData] = useState<T[]>([]);
@@ -767,6 +761,8 @@ export default function ExcelImportForm<
 		createManyStudents,
 		creatingMany: creatingManyStudents,
 		fetchStudents,
+		fetchStudentsBySemester,
+		selectedSemesterId,
 	} = useStudentStore();
 
 	const {
@@ -921,6 +917,7 @@ export default function ExcelImportForm<
 		) {
 			return;
 		}
+
 		if (userType === 'lecturer') {
 			// Handle lecturer creation
 			const lecturersToCreate: LecturerCreate[] = data.map((item) => ({
@@ -954,19 +951,31 @@ export default function ExcelImportForm<
 				);
 			}
 		} else {
-			// Handle student creation (existing logic)
-			const studentsToCreate: StudentCreate[] = data.map((item) => ({
-				...item,
-				id: undefined,
-				...(requireSemester &&
-					selectedSemester && { semesterId: selectedSemester }),
-				...(requireMajor && selectedMajor && { majorId: selectedMajor }),
-			}));
+			// Handle student creation with new DTO structure
+			const importStudentDto: ImportStudent = {
+				semesterId: selectedSemester!,
+				majorId: selectedMajor!,
+				students: (
+					data as unknown as (ImportStudentItem & { id: string })[]
+				).map((item) => ({
+					studentId: item.studentId,
+					email: item.email,
+					fullName: item.fullName,
+					password: item.password,
+					gender: item.gender,
+					phoneNumber: item.phoneNumber,
+				})),
+			};
 
 			try {
-				const success = await createManyStudents(studentsToCreate);
+				const success = await createManyStudents(importStudentDto);
 				if (success) {
-					await fetchStudents();
+					// Refresh students for the current semester
+					if (selectedSemesterId) {
+						await fetchStudentsBySemester(selectedSemesterId);
+					} else {
+						await fetchStudents();
+					}
 					setData([]);
 					setFileList([]);
 					setSelectedSemester('');
@@ -977,6 +986,15 @@ export default function ExcelImportForm<
 						requireSemester ? selectedSemester : undefined,
 						requireMajor ? selectedMajor : undefined,
 					);
+
+					// Show success notification and redirect
+					showNotification.success(
+						'Import Successful',
+						`${data.length} students have been imported successfully.`,
+					);
+
+					// Redirect to students management page
+					router.push('/admin/students-management');
 				}
 			} catch (error) {
 				console.error('Error creating students:', error);
