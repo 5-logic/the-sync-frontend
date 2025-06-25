@@ -28,14 +28,36 @@ interface LecturerModeratorState extends LecturerToggleState {
 	_toggleModeratorOperations: Map<string, ToggleOperationData>;
 }
 
-interface SetStateFunction {
-	(state: {
-		lecturers?: Lecturer[];
-		_backgroundRefreshRunning?: boolean;
-		_lastBackgroundRefresh?: number;
-		loading?: boolean;
-	}): void;
-}
+// Use function type instead of interface for setState (SonarCloud S6598)
+type SetStateFunction = (state: {
+	lecturers?: Lecturer[];
+	_backgroundRefreshRunning?: boolean;
+	_lastBackgroundRefresh?: number;
+	loading?: boolean;
+}) => void;
+
+// Group parameters into an object to avoid too many parameters (SonarCloud S107)
+type StatusToggleParams = {
+	id: string;
+	data: { isActive: boolean };
+	operationData: ToggleOperationData;
+	controller: AbortController;
+	targetLecturer: Lecturer | null;
+	getState: () => LecturerStatusState;
+	setState: SetStateFunction;
+	applyFilters: () => void;
+};
+
+type ModeratorToggleParams = {
+	id: string;
+	data: { isModerator: boolean };
+	operationData: ToggleOperationData;
+	controller: AbortController;
+	targetLecturer: Lecturer | null;
+	getState: () => LecturerModeratorState;
+	setState: SetStateFunction;
+	applyFilters: () => void;
+};
 
 // Extracted helper functions to reduce nesting
 const handleStatusToggleSuccess = (
@@ -92,15 +114,18 @@ const handleModeratorToggleSuccess = (
 };
 
 const performStatusToggleRequest = async (
-	id: string,
-	data: { isActive: boolean },
-	operationData: ToggleOperationData,
-	controller: AbortController,
-	targetLecturer: Lecturer | null,
-	getState: () => LecturerStatusState,
-	setState: SetStateFunction,
-	applyFilters: () => void,
+	params: StatusToggleParams,
 ): Promise<boolean> => {
+	const {
+		id,
+		data,
+		operationData,
+		controller,
+		targetLecturer,
+		getState,
+		setState,
+		applyFilters,
+	} = params;
 	if (controller.signal.aborted) {
 		return true;
 	}
@@ -135,15 +160,18 @@ const performStatusToggleRequest = async (
 };
 
 const performModeratorToggleRequest = async (
-	id: string,
-	data: { isModerator: boolean },
-	operationData: ToggleOperationData,
-	controller: AbortController,
-	targetLecturer: Lecturer | null,
-	getState: () => LecturerModeratorState,
-	setState: SetStateFunction,
-	applyFilters: () => void,
+	params: ModeratorToggleParams,
 ): Promise<boolean> => {
+	const {
+		id,
+		data,
+		operationData,
+		controller,
+		targetLecturer,
+		getState,
+		setState,
+		applyFilters,
+	} = params;
 	if (controller.signal.aborted) {
 		return true;
 	}
@@ -250,12 +278,12 @@ export const createLecturerStatusToggleFunction = (
 				state.lecturers,
 				(lecturers) => setState({ lecturers }),
 				applyFilters,
-			) || null;
+			) ?? null;
 
 		return new Promise<boolean>((resolve) => {
 			setTimeout(async () => {
 				try {
-					const result = await performStatusToggleRequest(
+					const result = await performStatusToggleRequest({
 						id,
 						data,
 						operationData,
@@ -264,7 +292,7 @@ export const createLecturerStatusToggleFunction = (
 						getState,
 						setState,
 						applyFilters,
-					);
+					});
 					resolve(result);
 				} catch {
 					const errorResult = handleToggleError(
@@ -315,12 +343,12 @@ export const createLecturerModeratorToggleFunction = (
 				state.lecturers,
 				(lecturers) => setState({ lecturers }),
 				applyFilters,
-			) || null;
+			) ?? null;
 
 		return new Promise<boolean>((resolve) => {
 			setTimeout(async () => {
 				try {
-					const result = await performModeratorToggleRequest(
+					const result = await performModeratorToggleRequest({
 						id,
 						data,
 						operationData,
@@ -329,7 +357,7 @@ export const createLecturerModeratorToggleFunction = (
 						getState,
 						setState,
 						applyFilters,
-					);
+					});
 					resolve(result);
 				} catch {
 					const errorResult = handleToggleError(

@@ -20,14 +20,25 @@ interface StudentToggleState {
 	_lastBackgroundRefresh: number;
 }
 
-interface SetStateFunction {
-	(state: {
-		students?: Student[];
-		_backgroundRefreshRunning?: boolean;
-		_lastBackgroundRefresh?: number;
-		loading?: boolean;
-	}): void;
-}
+// Use function type instead of interface for setState (SonarCloud S6598)
+type SetStateFunction = (state: {
+	students?: Student[];
+	_backgroundRefreshRunning?: boolean;
+	_lastBackgroundRefresh?: number;
+	loading?: boolean;
+}) => void;
+
+// Group parameters into an object to avoid too many parameters (SonarCloud S107)
+type StudentToggleParams = {
+	id: string;
+	data: { isActive: boolean };
+	operationData: ToggleOperationData;
+	controller: AbortController;
+	targetStudent: Student | null;
+	getState: () => StudentToggleState;
+	setState: SetStateFunction;
+	applyFilters: () => void;
+};
 
 // Extracted helper functions to reduce nesting
 const handleStudentToggleSuccess = (
@@ -58,15 +69,18 @@ const handleStudentToggleSuccess = (
 };
 
 const performStudentToggleRequest = async (
-	id: string,
-	data: { isActive: boolean },
-	operationData: ToggleOperationData,
-	controller: AbortController,
-	targetStudent: Student | null,
-	getState: () => StudentToggleState,
-	setState: SetStateFunction,
-	applyFilters: () => void,
+	params: StudentToggleParams,
 ): Promise<boolean> => {
+	const {
+		id,
+		data,
+		operationData,
+		controller,
+		targetStudent,
+		getState,
+		setState,
+		applyFilters,
+	} = params;
 	if (controller.signal.aborted) {
 		return true;
 	}
@@ -161,13 +175,13 @@ export const createStudentToggleFunction = (
 				state.students,
 				(students) => setState({ students }),
 				applyFilters,
-			) || null;
+			) ?? null;
 
 		// Debounced API call
 		return new Promise<boolean>((resolve) => {
 			setTimeout(async () => {
 				try {
-					const result = await performStudentToggleRequest(
+					const result = await performStudentToggleRequest({
 						id,
 						data,
 						operationData,
@@ -176,7 +190,7 @@ export const createStudentToggleFunction = (
 						getState,
 						setState,
 						applyFilters,
-					);
+					});
 					resolve(result);
 				} catch {
 					const errorResult = handleStudentToggleError(
