@@ -76,7 +76,7 @@ function showStatusToggleModal(
 				&apos;s status to{' '}
 				<strong style={{ color: newStatus ? '#52c41a' : '#ff4d4f' }}>
 					{statusText}
-				</strong>
+				</strong>{' '}
 				?
 			</div>
 		),

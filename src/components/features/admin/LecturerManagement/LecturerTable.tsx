@@ -33,7 +33,7 @@ export default function LecturerTable({
 					&apos;s status to{' '}
 					<strong style={{ color: newStatus ? '#52c41a' : '#ff4d4f' }}>
 						{statusText}
-					</strong>
+					</strong>{' '}
 					?
 				</div>
 			),
@@ -68,7 +68,7 @@ export default function LecturerTable({
 					&apos;s role to{' '}
 					<strong style={{ color: newRole ? '#1890ff' : '#52c41a' }}>
 						{roleText}
-					</strong>
+					</strong>{' '}
 					?
 				</div>
 			),
