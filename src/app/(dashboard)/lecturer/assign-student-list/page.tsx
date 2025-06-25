@@ -21,7 +21,7 @@ export default function LecturerAssignStudentListPage() {
 					<Text type="secondary">
 						View and manage student assignments to supervisors
 					</Text>
-				</div>{' '}
+				</div>
 				<div className="flex gap-3">
 					<Link href="/lecturer">
 						<Text className="cursor-pointer hover:text-blue-600">

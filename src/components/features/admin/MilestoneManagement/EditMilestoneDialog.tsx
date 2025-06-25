@@ -7,7 +7,7 @@ import { useEffect } from 'react';
 import MilestoneForm from '@/components/features/admin/MilestoneManagement/MilestoneForm';
 import { Milestone, MilestoneUpdate } from '@/schemas/milestone';
 import { Semester } from '@/schemas/semester';
-import { useMilestoneStore } from '@/store/useMilestoneStore';
+import { useMilestoneStore } from '@/store';
 
 type Props = Readonly<{
 	open: boolean;
@@ -112,12 +112,12 @@ export default function EditMilestoneDialog({
 						color: '#d46b08',
 					}}
 				>
-					⚠️{' '}
+					⚠️
 					{milestoneHasStarted
 						? 'This milestone has already started and cannot be edited.'
 						: 'This milestone cannot be edited because the semester is not in Ongoing status.'}
 				</div>
-			)}{' '}
+			)}
 			<MilestoneForm
 				form={form}
 				semesters={semesters}

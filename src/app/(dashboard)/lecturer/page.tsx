@@ -18,7 +18,7 @@ export default function LecturerDashboard() {
 					{isModerator && (
 						<Badge count="Moderator" color="gold" className="ml-3" />
 					)}
-				</Title>{' '}
+				</Title>
 				<Text type="secondary">Welcome back, {session?.user?.name}!</Text>
 			</div>
 			{/* User Info Card */}
@@ -32,7 +32,7 @@ export default function LecturerDashboard() {
 						<strong>Email:</strong> {session?.user?.email}
 					</p>
 					<p>
-						<strong>Role:</strong>{' '}
+						<strong>Role:</strong>
 						<Tag color="green">{session?.user?.role}</Tag>
 					</p>
 					{isModerator && (
@@ -44,7 +44,7 @@ export default function LecturerDashboard() {
 						<strong>Lecturer ID:</strong> {session?.user?.id}
 					</p>
 				</div>
-			</Card>{' '}
+			</Card>
 			{/* Quick Actions */}
 			<Card>
 				<Title level={4}>🚀 Quick Actions</Title>

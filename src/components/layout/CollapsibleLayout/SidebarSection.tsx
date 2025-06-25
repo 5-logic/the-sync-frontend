@@ -61,7 +61,7 @@ export const SidebarSection: React.FC<SidebarSectionProps> = ({
 					// Display full logo component when expanded
 					<Logo />
 				)}
-			</div>{' '}
+			</div>
 			{/* Divider */}
 			<div style={{ padding: '0 16px' }}>
 				<Divider style={{ margin: '0 0 8px 0' }} />

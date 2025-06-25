@@ -1,17 +1,11 @@
-'use client';
+import { createMetadata } from '@/app/metadata';
+import CreateNewLecturerClient from '@/components/pages/admin/CreateNewLecturerClient';
 
-import { Layout } from 'antd';
-
-import CreateNewLecturer from '@/components/features/admin/CreateNewUser/CreateNewLecturer';
-
-const { Content } = Layout;
-
+export const metadata = createMetadata({
+	title: 'Admin Create New Lecturer',
+	description:
+		'Admin Create New Lecturer for TheSync - Group Formation and Capstone Thesis Development',
+});
 export default function CreateNewLecturerPage() {
-	return (
-		<Layout style={{ minHeight: '100vh', background: 'transparent' }}>
-			<Content style={{ padding: '24px' }}>
-				<CreateNewLecturer />
-			</Content>
-		</Layout>
-	);
+	return <CreateNewLecturerClient />;
 }

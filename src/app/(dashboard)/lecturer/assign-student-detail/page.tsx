@@ -27,7 +27,7 @@ export default function LecturerAssignStudentDetailPage() {
 						<Text className="cursor-pointer hover:text-blue-600">
 							← Back to Student List
 						</Text>
-					</Link>{' '}
+					</Link>
 					<Link href="/lecturer">
 						<Text className="cursor-pointer hover:text-blue-600">
 							← Dashboard

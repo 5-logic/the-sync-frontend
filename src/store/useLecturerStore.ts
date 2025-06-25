@@ -1,0 +1,293 @@
+import { create } from 'zustand';
+import { devtools } from 'zustand/middleware';
+
+import lecturerService from '@/lib/services/lecturers.service';
+import { Lecturer, LecturerCreate, LecturerUpdate } from '@/schemas/lecturer';
+import {
+	cacheInvalidation,
+	cacheUtils,
+	createCachedFetchAction,
+} from '@/store/helpers/cacheHelpers';
+import {
+	createLecturerModeratorToggleFunction,
+	createLecturerStatusToggleFunction,
+} from '@/store/helpers/lecturerToggleHelpers';
+import {
+	commonStoreUtilities,
+	createBatchCreateAction,
+	createCreateAction,
+	createSearchFilter,
+	createUpdateAction,
+} from '@/store/helpers/storeHelpers';
+import { type ToggleOperationData } from '@/store/helpers/toggleHelpers';
+
+interface LecturerState {
+	// Data
+	lecturers: Lecturer[];
+	filteredLecturers: Lecturer[];
+
+	// Loading states
+	loading: boolean;
+	creating: boolean;
+	updating: boolean;
+	creatingMany: boolean; // Legacy field for backward compatibility
+	creatingManyLecturers: boolean; // New field for consistency
+	togglingStatus: boolean;
+	togglingModerator: boolean;
+
+	// Error states
+	lastError: {
+		message: string;
+		statusCode: number;
+		timestamp: Date;
+	} | null;
+
+	// UI states
+	selectedStatus: string;
+	selectedModerator: string;
+	searchText: string;
+
+	// Background refresh protection (similar to student store)
+	_backgroundRefreshRunning: boolean;
+	_lastBackgroundRefresh: number;
+
+	// Anti-spam protection for toggle operations - separate for status and moderator
+	_toggleStatusOperations: Map<string, ToggleOperationData>;
+	_toggleModeratorOperations: Map<string, ToggleOperationData>;
+
+	// Individual loading states for each lecturer - separate for status and moderator
+	_lecturerStatusLoadingStates: Map<string, boolean>;
+	_lecturerModeratorLoadingStates: Map<string, boolean>;
+
+	// Cache utilities
+	cache: {
+		clear: () => void;
+		stats: () => Record<string, unknown> | null;
+		invalidate: () => void;
+	};
+
+	// Actions
+	fetchLecturers: (force?: boolean) => Promise<void>;
+	createLecturer: (data: LecturerCreate) => Promise<boolean>;
+	createManyLecturers: (data: {
+		lecturers: LecturerCreate[];
+	}) => Promise<boolean>;
+	updateLecturer: (id: string, data: LecturerUpdate) => Promise<boolean>;
+
+	// Separate toggle methods for better type safety and state management
+	toggleLecturerStatus: (
+		id: string,
+		data: { isActive: boolean },
+	) => Promise<boolean>;
+	toggleLecturerModerator: (
+		id: string,
+		data: { isModerator: boolean },
+	) => Promise<boolean>;
+
+	// Error management
+	clearError: () => void;
+
+	// Filters
+	setSelectedStatus: (status: string) => void;
+	setSelectedModerator: (moderator: string) => void;
+	setSearchText: (text: string) => void;
+	filterLecturers: () => void;
+
+	// Utilities
+	reset: () => void;
+	clearLecturers: () => void;
+	getLecturerById: (id: string) => Lecturer | undefined;
+	isLecturerStatusLoading: (id: string) => boolean;
+	isLecturerModeratorLoading: (id: string) => boolean;
+
+	// Index signature for Zustand compatibility
+	[key: string]: unknown;
+}
+
+// Filter function for lecturers
+const lecturerSearchFilter = createSearchFilter<Lecturer>((lecturer) => [
+	lecturer.fullName,
+	lecturer.email,
+]);
+
+export const useLecturerStore = create<LecturerState>()(
+	devtools(
+		(set, get) => ({
+			// Initial state
+			lecturers: [],
+			filteredLecturers: [],
+			loading: false,
+			creating: false,
+			updating: false,
+			creatingMany: false,
+			creatingManyLecturers: false,
+			togglingStatus: false,
+			togglingModerator: false,
+			lastError: null,
+			selectedStatus: 'All',
+			selectedModerator: 'All',
+			searchText: '',
+
+			// Background refresh protection
+			_backgroundRefreshRunning: false,
+			_lastBackgroundRefresh: 0,
+
+			// Internal spam protection state - separate for status and moderator
+			_toggleStatusOperations: new Map(),
+			_toggleModeratorOperations: new Map(),
+			_lecturerStatusLoadingStates: new Map(),
+			_lecturerModeratorLoadingStates: new Map(),
+
+			// Cache utilities
+			cache: {
+				clear: () => cacheInvalidation.invalidateEntity('lecturer'),
+				stats: () => cacheUtils.getStats('lecturer'),
+				invalidate: () => cacheInvalidation.invalidateEntity('lecturer'),
+			},
+
+			// Actions using cached fetch
+			fetchLecturers: createCachedFetchAction(lecturerService, 'lecturer', {
+				ttl: 5 * 60 * 1000, // 5 minutes for lecturers (less frequent updates than students)
+				maxSize: 2000, // Support up to 2000 lecturers in cache
+				enableLocalStorage: false, // Lecturers data is sensitive, don't store in localStorage
+			})(set, get),
+
+			// Enhanced CRUD actions with smart cache management
+			createLecturer: async (data: LecturerCreate) => {
+				const result = await createCreateAction(lecturerService, 'lecturer')(
+					set,
+					get,
+				)(data);
+				if (result) {
+					// Only invalidate cache for create operations (new data added)
+					cacheInvalidation.invalidateEntity('lecturer');
+				}
+				return result;
+			},
+
+			updateLecturer: async (id: string, data: LecturerUpdate) => {
+				const result = await createUpdateAction(lecturerService, 'lecturer')(
+					set,
+					get,
+				)(id, data);
+				if (result) {
+					// For updates, just refresh the data without clearing cache
+					// This keeps the cache warm while getting fresh data
+					setTimeout(() => {
+						get().fetchLecturers(true); // Force refresh after a short delay
+					}, 100);
+				}
+				return result;
+			},
+
+			createManyLecturers: async (data: { lecturers: LecturerCreate[] }) => {
+				const result = await createBatchCreateAction(
+					lecturerService,
+					'lecturer',
+				)(
+					set,
+					get,
+				)(data.lecturers);
+				if (result) {
+					// Batch operations need full cache invalidation
+					cacheInvalidation.invalidateEntity('lecturer');
+				}
+				return result;
+			},
+
+			// Optimized toggle functions using shared helpers
+			toggleLecturerStatus: createLecturerStatusToggleFunction(get, set, () =>
+				get().filterLecturers(),
+			),
+
+			toggleLecturerModerator: createLecturerModeratorToggleFunction(
+				get,
+				set,
+				() => get().filterLecturers(),
+			),
+
+			// Error management
+			clearError: () => set(commonStoreUtilities.clearError()),
+
+			// Filters
+			setSelectedStatus: commonStoreUtilities.createFieldSetter(
+				'selectedStatus',
+				'filterLecturers',
+			)(set, get),
+			setSelectedModerator: commonStoreUtilities.createFieldSetter(
+				'selectedModerator',
+				'filterLecturers',
+			)(set, get),
+			setSearchText: commonStoreUtilities.createSetSearchText(
+				'filterLecturers',
+			)(set, get),
+
+			filterLecturers: () => {
+				const { lecturers, selectedStatus, selectedModerator, searchText } =
+					get();
+
+				let filtered = lecturers;
+
+				if (selectedStatus !== 'All') {
+					filtered = filtered.filter(
+						(lecturer) => lecturer.isActive === (selectedStatus === 'Active'),
+					);
+				}
+
+				if (selectedModerator !== 'All') {
+					filtered = filtered.filter(
+						(lecturer) =>
+							lecturer.isModerator === (selectedModerator === 'Moderator'),
+					);
+				}
+
+				// Apply text search
+				filtered = lecturerSearchFilter(filtered, searchText);
+
+				set({ filteredLecturers: filtered });
+			},
+
+			// Utilities
+			reset: () => {
+				// Cancel all pending toggle operations
+				const statusOperations = get()._toggleStatusOperations;
+				const moderatorOperations = get()._toggleModeratorOperations;
+
+				statusOperations.forEach((op) => op.controller.abort());
+				statusOperations.clear();
+
+				moderatorOperations.forEach((op) => op.controller.abort());
+				moderatorOperations.clear();
+
+				set(
+					commonStoreUtilities.createReset('lecturer', {
+						selectedStatus: 'All',
+						selectedModerator: 'All',
+						_toggleStatusOperations: new Map(),
+						_toggleModeratorOperations: new Map(),
+						_lecturerStatusLoadingStates: new Map(),
+						_lecturerModeratorLoadingStates: new Map(),
+						_backgroundRefreshRunning: false,
+						_lastBackgroundRefresh: 0,
+					})(),
+				);
+			},
+			clearLecturers: () => set({ lecturers: [], filteredLecturers: [] }),
+			getLecturerById:
+				commonStoreUtilities.createGetById<Lecturer>('lecturer')(get),
+
+			// Check if a specific lecturer is currently being toggled (status)
+			isLecturerStatusLoading: (id: string) => {
+				return get()._lecturerStatusLoadingStates.get(id) ?? false;
+			},
+
+			// Check if a specific lecturer is currently being toggled (moderator)
+			isLecturerModeratorLoading: (id: string) => {
+				return get()._lecturerModeratorLoadingStates.get(id) ?? false;
+			},
+		}),
+		{
+			name: 'lecturer-store',
+		},
+	),
+);
