@@ -1,6 +1,6 @@
 'use client';
 
-import { Space, Typography } from 'antd';
+import { Alert, Space, Typography } from 'antd';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
@@ -19,7 +19,7 @@ export default function StudentManagement() {
 		selectedMajorId,
 		selectedStatus,
 		searchText,
-		fetchStudents,
+		fetchStudentsBySemester,
 		setSelectedSemesterId,
 		setSelectedMajorId,
 		setSelectedStatus,
@@ -27,22 +27,26 @@ export default function StudentManagement() {
 	} = useStudentStore();
 
 	useEffect(() => {
-		fetchStudents();
-	}, [fetchStudents]);
+		// Only fetch students if a semester is selected
+		if (selectedSemesterId) {
+			fetchStudentsBySemester(selectedSemesterId);
+		}
+	}, [selectedSemesterId, fetchStudentsBySemester]);
 
 	const handleCreateStudent = () => {
 		router.push('/admin/create-new-student');
 	};
 
 	const handleRefresh = () => {
-		fetchStudents();
+		if (selectedSemesterId) {
+			fetchStudentsBySemester(selectedSemesterId);
+		}
 	};
 
 	const { Title, Paragraph } = Typography;
 
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
-			{' '}
 			<div>
 				<Title level={2} style={{ marginBottom: '4px' }}>
 					Student Management
@@ -52,7 +56,7 @@ export default function StudentManagement() {
 				</Paragraph>
 			</div>
 			<StudentFilterBar
-				semesterFilter={selectedSemesterId ?? 'All'}
+				semesterFilter={selectedSemesterId}
 				setSemesterFilter={setSelectedSemesterId}
 				statusFilter={selectedStatus}
 				setStatusFilter={setSelectedStatus}
@@ -64,11 +68,22 @@ export default function StudentManagement() {
 				onRefresh={handleRefresh}
 				loading={loading}
 			/>
-			<StudentTable
-				data={filteredStudents}
-				loading={loading}
-				onReload={fetchStudents}
-			/>
+			{selectedSemesterId ? (
+				<StudentTable
+					data={filteredStudents}
+					loading={loading}
+					onReload={() =>
+						selectedSemesterId && fetchStudentsBySemester(selectedSemesterId)
+					}
+				/>
+			) : (
+				<Alert
+					message="Please select a semester"
+					description="Select a semester from the filter above to view students."
+					type="info"
+					showIcon
+				/>
+			)}
 		</Space>
 	);
 }
