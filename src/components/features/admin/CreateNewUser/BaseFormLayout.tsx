@@ -1,8 +1,12 @@
 'use client';
 
+import { Card, Col, Layout, Row, Typography } from 'antd';
 import { ReactNode, useState } from 'react';
 
 import TabNavigation from '@/components/features/admin/CreateNewUser/TabNavigation';
+
+const { Title, Paragraph } = Typography;
+const { Content } = Layout;
 
 type Props = {
 	pageTitle: string;
@@ -20,32 +24,32 @@ const BaseFormLayout = ({
 	const [activeTab, setActiveTab] = useState('manual');
 
 	return (
-		<div className="flex justify-center items-start min-h-screen px-4 py-6">
-			<div className="w-full max-w-3xl space-y-6">
-				{/* Header */}
-				<div className="-ml-8 text-left px-2 sm:px-0">
-					<h1 className="text-3xl font-bold">{pageTitle}</h1>
-					<p className="text-gray-500 mb-6">{description}</p>
+		<Layout style={{ minHeight: '100vh', background: '#fff' }}>
+			<Content>
+				<Row>
+					<Col span={24}>
+						<div style={{ width: '100%', maxWidth: '768px' }}>
+							<Title level={2} style={{ marginBottom: 0 }}>
+								{pageTitle}
+							</Title>
+							<Paragraph type="secondary" style={{ marginBottom: 16 }}>
+								{description}
+							</Paragraph>
+						</div>
 
-					{/* Tab navigation */}
-					<TabNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
-				</div>
-				{/* Content based on tab */}
-				{activeTab === 'manual' ? (
-					<div className="bg-white border border-gray-200 rounded-xl shadow p-4 sm:p-6 md:p-10">
-						{ManualForm}
-					</div>
-				) : (
-					<div className="bg-white border border-gray-200 rounded-xl shadow p-4 sm:p-6 md:p-10">
-						{ExcelPlaceholder ?? (
-							<p className="text-gray-600">
-								Excel import functionality coming soon...
-							</p>
-						)}
-					</div>
-				)}
-			</div>
-		</div>
+						<TabNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
+					</Col>
+				</Row>
+
+				<Row style={{ marginTop: 24 }}>
+					<Col span={24}>
+						<Card>
+							{activeTab === 'manual' ? ManualForm : ExcelPlaceholder}
+						</Card>
+					</Col>
+				</Row>
+			</Content>
+		</Layout>
 	);
 };
 

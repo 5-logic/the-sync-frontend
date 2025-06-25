@@ -1,9 +1,12 @@
-import CreateNewStudent from '@/components/features/admin/CreateNewUser/CreateNewStudent';
+import { createMetadata } from '@/app/metadata';
+import CreateNewStudentClient from '@/components/pages/admin/CreateNewStudentClient';
+
+export const metadata = createMetadata({
+	title: 'Admin Create New Student',
+	description:
+		'Admin Create New Student for TheSync - Group Formation and Capstone Thesis Development',
+});
 
 export default function AdminCreateNewStudentPage() {
-	return (
-		<div className="w-full px-4 sm:px-6 md:px-8 max-w-3xl mx-auto">
-			<CreateNewStudent />
-		</div>
-	);
+	return <CreateNewStudentClient />;
 }
