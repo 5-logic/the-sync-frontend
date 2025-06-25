@@ -10,15 +10,20 @@ import {
 	StudentUpdate,
 } from '@/schemas/student';
 import {
+	cacheInvalidation,
+	cacheUtils,
+	createCachedFetchAction,
+} from '@/store/helpers/cacheHelpers';
+import {
 	commonStoreUtilities,
 	createBatchCreateAction,
 	createCreateAction,
-	createFetchAction,
 	createFetchBySemesterAction,
 	createSearchFilter,
-	createToggleStatusAction,
 	createUpdateAction,
 } from '@/store/helpers/storeHelpers';
+import { createStudentToggleFunction } from '@/store/helpers/studentToggleHelpers';
+import { type ToggleOperationData } from '@/store/helpers/toggleHelpers';
 
 interface StudentState {
 	// Data
@@ -40,14 +45,31 @@ interface StudentState {
 		timestamp: Date;
 	} | null;
 
+	// Internal state for spam protection
+	_toggleOperations: Map<string, ToggleOperationData>;
+
+	// Individual loading states for each student
+	_studentLoadingStates: Map<string, boolean>;
+
+	// Background refresh management
+	_backgroundRefreshRunning: boolean;
+	_lastBackgroundRefresh: number;
+
 	// UI states
 	selectedSemesterId: string | null;
 	selectedMajorId: string | null;
 	selectedStatus: string;
 	searchText: string;
 
+	// Cache utilities
+	cache: {
+		clear: () => void;
+		stats: () => Record<string, unknown> | null;
+		invalidate: () => void;
+	};
+
 	// Actions
-	fetchStudents: () => Promise<void>;
+	fetchStudents: (force?: boolean) => Promise<void>;
 	fetchStudentsBySemester: (semesterId: string) => Promise<void>;
 	createStudent: (data: StudentCreate) => Promise<boolean>;
 	createManyStudents: (data: ImportStudent) => Promise<boolean>;
@@ -71,6 +93,7 @@ interface StudentState {
 	reset: () => void;
 	clearStudents: () => void;
 	getStudentById: (id: string) => Student | undefined;
+	isStudentLoading: (id: string) => boolean;
 
 	// Index signature for Zustand compatibility
 	[key: string]: unknown;
@@ -93,6 +116,7 @@ export const useStudentStore = create<StudentState>()(
 			creating: false,
 			updating: false,
 			creatingMany: false,
+			creatingManyStudents: false,
 			togglingStatus: false,
 			lastError: null,
 			selectedSemesterId: null,
@@ -100,21 +124,74 @@ export const useStudentStore = create<StudentState>()(
 			selectedStatus: 'All',
 			searchText: '',
 
-			// Actions using helpers
-			fetchStudents: createFetchAction(studentService, 'student')(set, get),
+			// Internal spam protection state
+			_toggleOperations: new Map(),
+			_studentLoadingStates: new Map(),
+			_backgroundRefreshRunning: false,
+			_lastBackgroundRefresh: 0,
+
+			// Cache utilities
+			cache: {
+				clear: () => cacheInvalidation.invalidateEntity('student'),
+				stats: () => cacheUtils.getStats('student'),
+				invalidate: () => cacheInvalidation.invalidateEntity('student'),
+			},
+
+			// Actions using cached fetch
+			fetchStudents: createCachedFetchAction(studentService, 'student', {
+				ttl: 2 * 60 * 1000, // 2 minutes for students (more frequent updates)
+				maxSize: 5000, // Support up to 5000 students in cache (accommodate growth)
+				enableLocalStorage: false, // Students data is sensitive, don't store in localStorage
+			})(set, get),
+
 			fetchStudentsBySemester: createFetchBySemesterAction(
 				studentService,
 				'student',
 			)(set, get),
-			createStudent: createCreateAction(studentService, 'student')(set, get),
-			updateStudent: createUpdateAction(studentService, 'student')(set, get),
-			createManyStudents: createBatchCreateAction(studentService, 'student')(
-				set,
-				get,
-			),
-			toggleStudentStatus: createToggleStatusAction(studentService, 'student')(
-				set,
-				get,
+
+			// Enhanced CRUD actions with smart cache management
+			createStudent: async (data: StudentCreate) => {
+				const result = await createCreateAction(studentService, 'student')(
+					set,
+					get,
+				)(data);
+				if (result) {
+					// Only invalidate cache for create operations (new data added)
+					cacheInvalidation.invalidateEntity('student');
+				}
+				return result;
+			},
+
+			updateStudent: async (id: string, data: StudentUpdate) => {
+				const result = await createUpdateAction(studentService, 'student')(
+					set,
+					get,
+				)(id, data);
+				if (result) {
+					// For updates, just refresh the data without clearing cache
+					// This keeps the cache warm while getting fresh data
+					setTimeout(() => {
+						get().fetchStudents(true); // Force refresh after a short delay
+					}, 100);
+				}
+				return result;
+			},
+
+			createManyStudents: async (data: ImportStudent) => {
+				const result = await createBatchCreateAction(studentService, 'student')(
+					set,
+					get,
+				)(data);
+				if (result) {
+					// Batch operations need full cache invalidation
+					cacheInvalidation.invalidateEntity('student');
+				}
+				return result;
+			},
+
+			// Optimized toggle function using shared helpers
+			toggleStudentStatus: createStudentToggleFunction(get, set, () =>
+				get().filterStudents(),
 			),
 
 			// Error management
@@ -175,17 +252,32 @@ export const useStudentStore = create<StudentState>()(
 			},
 
 			// Utilities
-			reset: () =>
+			reset: () => {
+				// Cancel all pending toggle operations
+				const operations = get()._toggleOperations;
+				operations.forEach((op) => op.controller.abort());
+				operations.clear();
+
 				set(
 					commonStoreUtilities.createReset('student', {
 						selectedSemesterId: null,
 						selectedMajorId: null,
 						selectedStatus: 'All',
+						_toggleOperations: new Map(),
+						_studentLoadingStates: new Map(),
+						_backgroundRefreshRunning: false,
+						_lastBackgroundRefresh: 0,
 					})(),
-				),
+				);
+			},
 			clearStudents: () => set({ students: [], filteredStudents: [] }),
 			getStudentById:
 				commonStoreUtilities.createGetById<Student>('student')(get),
+
+			// Check if a specific student is currently being toggled
+			isStudentLoading: (id: string) => {
+				return get()._studentLoadingStates.get(id) || false;
+			},
 		}),
 		{
 			name: 'student-store',
