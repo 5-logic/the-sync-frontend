@@ -918,6 +918,92 @@ export default function ExcelImportForm<
 		setSelectedMajor(value);
 		clearDataOnChange();
 	};
+
+	// Helper function to reset form state after successful import
+	const resetFormState = () => {
+		setData([]);
+		setFileList([]);
+		setSelectedSemester('');
+		setSelectedMajor('');
+		form.resetFields();
+	};
+
+	// Helper function to handle lecturer import
+	const handleLecturerImport = async (): Promise<boolean> => {
+		const lecturersToCreate: LecturerCreate[] = data.map((item) => ({
+			email: String(item.email ?? ''),
+			fullName: String(item.fullName ?? ''),
+			phoneNumber: String(item.phoneNumber ?? ''),
+			gender: (item.gender === 'Male' || item.gender === 'Female'
+				? item.gender
+				: 'Male') as 'Male' | 'Female',
+		}));
+
+		try {
+			const success = await createManyLecturers(lecturersToCreate);
+			if (success) {
+				await fetchLecturers();
+				showNotification.success(
+					'Import Successful',
+					`${data.length} lecturers have been imported successfully.`,
+				);
+				return true;
+			}
+			return false;
+		} catch (error) {
+			console.error('Error creating lecturers:', error);
+			showNotification.error(
+				'Error',
+				'Failed to create lecturers. Please try again.',
+			);
+			return false;
+		}
+	};
+
+	// Helper function to handle student import
+	const handleStudentImport = async (): Promise<boolean> => {
+		const importStudentDto: ImportStudent = {
+			semesterId: selectedSemester!,
+			majorId: selectedMajor!,
+			students: (data as unknown as (ImportStudentItem & { id: string })[]).map(
+				(item) => ({
+					studentId: item.studentId,
+					email: item.email,
+					fullName: item.fullName,
+					password: item.password,
+					gender: item.gender,
+					phoneNumber: item.phoneNumber,
+				}),
+			),
+		};
+
+		try {
+			const success = await createManyStudents(importStudentDto);
+			if (success) {
+				// Refresh students for the current semester
+				if (selectedSemesterId) {
+					await fetchStudentsBySemester(selectedSemesterId);
+				} else {
+					await fetchStudents();
+				}
+				showNotification.success(
+					'Import Successful',
+					`${data.length} students have been imported successfully.`,
+				);
+				router.push('/admin/students-management');
+				return true;
+			}
+			return false;
+		} catch (error) {
+			console.error('Error creating students:', error);
+			showNotification.error(
+				'Error',
+				'Failed to create students. Please try again.',
+			);
+			return false;
+		}
+	};
+
 	const handleImportAll = async () => {
 		if (
 			!validateUploadPrerequisites(
@@ -930,102 +1016,18 @@ export default function ExcelImportForm<
 			return;
 		}
 
-		if (userType === 'lecturer') {
-			// Handle lecturer creation
-			const lecturersToCreate: LecturerCreate[] = data.map((item) => ({
-				email: String(item.email ?? ''),
-				fullName: String(item.fullName ?? ''),
-				phoneNumber: String(item.phoneNumber ?? ''),
-				gender: (item.gender === 'Male' || item.gender === 'Female'
-					? item.gender
-					: 'Male') as 'Male' | 'Female',
-			}));
+		const success =
+			userType === 'lecturer'
+				? await handleLecturerImport()
+				: await handleStudentImport();
 
-			try {
-				const success = await createManyLecturers(lecturersToCreate);
-				if (success) {
-					await fetchLecturers();
-					setData([]);
-					setFileList([]);
-					setSelectedSemester('');
-					setSelectedMajor('');
-					form.resetFields();
-					onImport(
-						data,
-						requireSemester ? selectedSemester : undefined,
-						requireMajor ? selectedMajor : undefined,
-					);
-
-					// Show success notification
-					showNotification.success(
-						'Import Successful',
-						`${data.length} lecturers have been imported successfully.`,
-					);
-
-					// Redirect to lecturer management page (or appropriate page)
-					// Note: Update this path when lecturer management page is available
-					// router.push('/admin/lecturers-management');
-				}
-			} catch (error) {
-				console.error('Error creating lecturers:', error);
-				showNotification.error(
-					'Error',
-					'Failed to create lecturers. Please try again.',
-				);
-			}
-		} else {
-			// Handle student creation with new DTO structure
-			const importStudentDto: ImportStudent = {
-				semesterId: selectedSemester!,
-				majorId: selectedMajor!,
-				students: (
-					data as unknown as (ImportStudentItem & { id: string })[]
-				).map((item) => ({
-					studentId: item.studentId,
-					email: item.email,
-					fullName: item.fullName,
-					password: item.password,
-					gender: item.gender,
-					phoneNumber: item.phoneNumber,
-				})),
-			};
-
-			try {
-				const success = await createManyStudents(importStudentDto);
-				if (success) {
-					// Refresh students for the current semester
-					if (selectedSemesterId) {
-						await fetchStudentsBySemester(selectedSemesterId);
-					} else {
-						await fetchStudents();
-					}
-					setData([]);
-					setFileList([]);
-					setSelectedSemester('');
-					setSelectedMajor('');
-					form.resetFields();
-					onImport(
-						data,
-						requireSemester ? selectedSemester : undefined,
-						requireMajor ? selectedMajor : undefined,
-					);
-
-					// Show success notification
-					showNotification.success(
-						'Import Successful',
-						`${data.length} students have been imported successfully.`,
-					);
-
-					// Redirect to students management page
-					router.push('/admin/students-management');
-				}
-			} catch (error) {
-				console.error('Error creating students:', error);
-				showNotification.error(
-					'Error',
-					'Failed to create students. Please try again.',
-				);
-			}
+		if (success) {
+			resetFormState();
+			onImport(
+				data,
+				requireSemester ? selectedSemester : undefined,
+				requireMajor ? selectedMajor : undefined,
+			);
 		}
 	};
 
