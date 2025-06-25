@@ -43,70 +43,83 @@ export default function GroupProgressPage() {
 	}
 
 	return (
-		<Space direction="vertical" size="large" style={{ width: '100%' }}>
-			<div>
-				<Title level={2} style={{ marginBottom: '4px' }}>
-					Group Progress
-				</Title>
-				<Paragraph type="secondary" style={{ marginBottom: 0 }}>
-					The instructor monitors the groups progress, closely following
-					important milestones to evaluate the groups performance.
-				</Paragraph>
-			</div>
+		<div
+			style={{
+				padding: '0 8px 16px 0',
+				height: '100%',
+				display: 'flex',
+				flexDirection: 'column',
+			}}
+		>
+			<Space
+				direction="vertical"
+				size="large"
+				style={{ width: '100%', flex: 1 }}
+			>
+				<div>
+					<Title level={2} style={{ marginBottom: '4px' }}>
+						Group Progress
+					</Title>
+					<Paragraph type="secondary" style={{ marginBottom: 0 }}>
+						The instructor monitors the groups progress, closely following
+						important milestones to evaluate the groups performance.
+					</Paragraph>
+				</div>
 
-			<GroupSearchTable
-				data={groupList}
-				searchText={searchText}
-				onSearchChange={setSearchText}
-				selectedGroup={selectedGroup}
-				onGroupSelect={handleSelect}
-			/>
+				<GroupSearchTable
+					data={groupList}
+					searchText={searchText}
+					onSearchChange={setSearchText}
+					selectedGroup={selectedGroup}
+					onGroupSelect={handleSelect}
+				/>
 
-			{selectedGroup && (
-				<>
-					<Card
-						title={`Group Name: ${selectedGroup.name} | ${selectedGroup.title}`}
-					>
-						<Text type="secondary">
-							Supervised by: {selectedGroup.supervisor} | Co-Supervisor:{' '}
-							{selectedGroup.coSupervisor}
-						</Text>
-
-						<Steps
-							current={availablePhases.indexOf(selectedPhase)}
-							style={{ marginTop: 16 }}
+				{selectedGroup && (
+					<>
+						<Card
+							title={`Group Name: ${selectedGroup.name} | ${selectedGroup.title}`}
 						>
-							{availablePhases.map((phase) => (
-								<Step
-									key={phase}
-									title={phase}
-									onClick={() => {
-										const match = mockReviewGroups[phase].find(
-											(g) => g.id === selectedGroup.id,
-										);
-										if (match) {
-											setSelectedGroup(match);
-											setSelectedPhase(phase);
-										}
-									}}
-								/>
-							))}
-						</Steps>
-					</Card>
+							<Text type="secondary">
+								Supervised by: {selectedGroup.supervisor} | Co-Supervisor:{' '}
+								{selectedGroup.coSupervisor}
+							</Text>
 
-					<Row gutter={16} align="stretch">
-						<Col xs={24} md={16}>
-							<MilestoneDetailCard
-								group={selectedGroup}
-								phase={selectedPhase}
-							/>
-						</Col>
-						<Col xs={24} md={8}>
-							<ProgressOverviewCard group={selectedGroup} />
-						</Col>
-					</Row>
-				</>
-			)}
-		</Space>
+							<Steps
+								current={availablePhases.indexOf(selectedPhase)}
+								style={{ marginTop: 16 }}
+							>
+								{availablePhases.map((phase) => (
+									<Step
+										key={phase}
+										title={phase}
+										onClick={() => {
+											const match = mockReviewGroups[phase].find(
+												(g) => g.id === selectedGroup.id,
+											);
+											if (match) {
+												setSelectedGroup(match);
+												setSelectedPhase(phase);
+											}
+										}}
+									/>
+								))}
+							</Steps>
+						</Card>
+
+						<Row gutter={16} style={{ flex: 1 }}>
+							<Col xs={24} md={16}>
+								<MilestoneDetailCard
+									group={selectedGroup}
+									phase={selectedPhase}
+								/>
+							</Col>
+							<Col xs={24} md={8}>
+								<ProgressOverviewCard group={selectedGroup} />
+							</Col>
+						</Row>
+					</>
+				)}
+			</Space>
+		</div>
 	);
 }

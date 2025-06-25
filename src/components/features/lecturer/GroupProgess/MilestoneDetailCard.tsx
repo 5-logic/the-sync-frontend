@@ -16,7 +16,9 @@ export default function MilestoneDetailCard({ group, phase }: Readonly<Props>) {
 	return (
 		<Card
 			title={`Milestone - ${phase}`}
-			style={{ height: '100%' }}
+			style={{
+				height: '100%',
+			}}
 			bodyStyle={{
 				display: 'flex',
 				flexDirection: 'column',
