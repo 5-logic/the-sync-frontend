@@ -7,7 +7,7 @@ import { useEffect } from 'react';
 import MilestoneForm from '@/components/features/admin/MilestoneManagement/MilestoneForm';
 import { Milestone, MilestoneUpdate } from '@/schemas/milestone';
 import { Semester } from '@/schemas/semester';
-import { useMilestoneStore } from '@/store/useMilestoneStore';
+import { useMilestoneStore } from '@/store';
 
 type Props = Readonly<{
 	open: boolean;
