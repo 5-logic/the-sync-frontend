@@ -1,6 +1,6 @@
 'use client';
 
-import { Modal, Switch, Table } from 'antd';
+import { Empty, Modal, Switch, Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useEffect, useMemo } from 'react';
 
@@ -131,6 +131,14 @@ export default function StudentTable({ data, loading, onReload }: Props) {
 			scroll={{ x: 'max-content' }}
 			loading={loading}
 			size="middle"
+			locale={{
+				emptyText: (
+					<Empty
+						description="No students found for this semester. This might be because the semester hasn't started enrollment yet or has ended."
+						image={Empty.PRESENTED_IMAGE_SIMPLE}
+					/>
+				),
+			}}
 		/>
 	);
 }
