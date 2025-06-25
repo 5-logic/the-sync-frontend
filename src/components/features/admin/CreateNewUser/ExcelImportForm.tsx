@@ -456,7 +456,7 @@ function SemesterAlerts({
 					<div>
 						<p>
 							{userType === 'lecturer' ? 'Lecturer' : 'Student'} accounts can
-							only be created for semesters with <strong>Preparing</strong> or
+							only be created for semesters with <strong>Preparing</strong> or{' '}
 							<strong>Picking</strong> status.
 						</p>
 						<p>
