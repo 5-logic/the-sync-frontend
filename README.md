@@ -13,6 +13,7 @@
   - [Tech Stack](#tech-stack)
   - [Commit Conventions](#commit-conventions)
 - [Code Quality](#-code-quality)
+- [Changelog](#-changelog)
 
 ## 🚀 Getting Started
 
@@ -130,3 +131,7 @@ We maintain code quality with:
 - **ESLint**: For code linting
 - **Prettier**: For code formatting
 - **TypeScript**: For type safety
+
+## 📋 Changelog
+
+For a detailed history of changes, new features, and bug fixes, see our [CHANGELOG.md](./CHANGELOG.md).
