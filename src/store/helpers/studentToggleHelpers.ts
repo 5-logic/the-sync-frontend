@@ -11,23 +11,133 @@ import {
 	setupToggleOperation,
 } from '@/store/helpers/toggleHelpers';
 
-/**
- * Creates a reusable toggle function for student status
- */
-export const createStudentToggleFunction = (
-	getState: () => {
-		students: Student[];
-		_studentLoadingStates: Map<string, boolean>;
-		_toggleOperations: Map<string, ToggleOperationData>;
-		_backgroundRefreshRunning: boolean;
-		_lastBackgroundRefresh: number;
-	},
-	setState: (state: {
+// Helper types for cleaner code
+interface StudentToggleState {
+	students: Student[];
+	_studentLoadingStates: Map<string, boolean>;
+	_toggleOperations: Map<string, ToggleOperationData>;
+	_backgroundRefreshRunning: boolean;
+	_lastBackgroundRefresh: number;
+}
+
+interface SetStateFunction {
+	(state: {
 		students?: Student[];
 		_backgroundRefreshRunning?: boolean;
 		_lastBackgroundRefresh?: number;
 		loading?: boolean;
-	}) => void,
+	}): void;
+}
+
+// Extracted helper functions to reduce nesting
+const handleStudentToggleSuccess = (
+	data: { isActive: boolean },
+	currentState: StudentToggleState,
+	setState: SetStateFunction,
+	controller: AbortController,
+) => {
+	const statusText = data.isActive ? 'activated' : 'deactivated';
+	showNotification.success(
+		'Status Updated',
+		`Student status ${statusText} successfully`,
+	);
+
+	setTimeout(
+		createBackgroundRefreshHandler(
+			controller,
+			() => studentService.findAll(),
+			(students) => setState({ students }),
+			() => ({
+				_backgroundRefreshRunning: currentState._backgroundRefreshRunning,
+				_lastBackgroundRefresh: currentState._lastBackgroundRefresh,
+			}),
+			setState,
+		),
+		DEFAULT_TOGGLE_CONFIG.backgroundRefreshDelay,
+	);
+};
+
+const performStudentToggleRequest = async (
+	id: string,
+	data: { isActive: boolean },
+	operationData: ToggleOperationData,
+	controller: AbortController,
+	targetStudent: Student | null,
+	getState: () => StudentToggleState,
+	setState: SetStateFunction,
+	applyFilters: () => void,
+): Promise<boolean> => {
+	if (controller.signal.aborted) {
+		return true;
+	}
+
+	const currentState = getState();
+	const latestOp = currentState._toggleOperations.get(id);
+	if (latestOp !== operationData) {
+		return true;
+	}
+
+	const response = await studentService.toggleStatus(id, data);
+
+	cleanupToggleOperation(
+		id,
+		currentState._toggleOperations,
+		currentState._studentLoadingStates,
+	);
+
+	if (!response.success && targetStudent) {
+		revertOptimisticUpdate(
+			id,
+			targetStudent,
+			currentState.students,
+			(students) => setState({ students }),
+			applyFilters,
+		);
+		return false;
+	}
+
+	handleStudentToggleSuccess(data, currentState, setState, controller);
+	return true;
+};
+
+const handleStudentToggleError = (
+	id: string,
+	controller: AbortController,
+	targetStudent: Student | null,
+	getState: () => StudentToggleState,
+	setState: SetStateFunction,
+	applyFilters: () => void,
+): boolean => {
+	const currentState = getState();
+	cleanupToggleOperation(
+		id,
+		currentState._toggleOperations,
+		currentState._studentLoadingStates,
+	);
+
+	if (controller.signal.aborted) {
+		return true;
+	}
+
+	if (targetStudent) {
+		revertOptimisticUpdate(
+			id,
+			targetStudent,
+			currentState.students,
+			(students) => setState({ students }),
+			applyFilters,
+		);
+	}
+
+	return false;
+};
+
+/**
+ * Creates a reusable toggle function for student status
+ */
+export const createStudentToggleFunction = (
+	getState: () => StudentToggleState,
+	setState: SetStateFunction,
 	applyFilters: () => void,
 ) => {
 	return async (id: string, data: { isActive: boolean }): Promise<boolean> => {
@@ -44,106 +154,40 @@ export const createStudentToggleFunction = (
 		}
 
 		// Optimistic update FIRST
-		const targetStudent = performOptimisticUpdate(
-			id,
-			{ isActive: data.isActive },
-			state.students,
-			(students) => setState({ students }),
-			applyFilters,
-		);
+		const targetStudent =
+			performOptimisticUpdate(
+				id,
+				{ isActive: data.isActive },
+				state.students,
+				(students) => setState({ students }),
+				applyFilters,
+			) || null;
 
 		// Debounced API call
 		return new Promise<boolean>((resolve) => {
 			setTimeout(async () => {
 				try {
-					// Check if operation was cancelled
-					if (controller.signal.aborted) {
-						resolve(true);
-						return;
-					}
-
-					// Verify we still have the latest operation
-					const currentState = getState();
-					const latestOp = currentState._toggleOperations.get(id);
-					if (latestOp !== operationData) {
-						resolve(true);
-						return;
-					}
-
-					// Make API call
-					const response = await studentService.toggleStatus(id, data);
-
-					// Clean up operation tracking
-					cleanupToggleOperation(
+					const result = await performStudentToggleRequest(
 						id,
-						currentState._toggleOperations,
-						currentState._studentLoadingStates,
+						data,
+						operationData,
+						controller,
+						targetStudent,
+						getState,
+						setState,
+						applyFilters,
 					);
-
-					if (!response.success && targetStudent) {
-						// If API fails, revert the optimistic update
-						revertOptimisticUpdate(
-							id,
-							targetStudent,
-							currentState.students,
-							(students) => setState({ students }),
-							applyFilters,
-						);
-						resolve(false);
-						return;
-					}
-
-					// Show success notification
-					const statusText = data.isActive ? 'activated' : 'deactivated';
-					showNotification.success(
-						'Status Updated',
-						`Student status ${statusText} successfully`,
-					);
-
-					// Background refresh
-					setTimeout(
-						createBackgroundRefreshHandler(
-							controller,
-							() => studentService.findAll(),
-							(students) => setState({ students }),
-							() => ({
-								_backgroundRefreshRunning:
-									currentState._backgroundRefreshRunning,
-								_lastBackgroundRefresh: currentState._lastBackgroundRefresh,
-							}),
-							setState,
-						),
-						DEFAULT_TOGGLE_CONFIG.backgroundRefreshDelay,
-					);
-
-					resolve(true);
+					resolve(result);
 				} catch {
-					// Clean up on error
-					const currentState = getState();
-					cleanupToggleOperation(
+					const errorResult = handleStudentToggleError(
 						id,
-						currentState._toggleOperations,
-						currentState._studentLoadingStates,
+						controller,
+						targetStudent,
+						getState,
+						setState,
+						applyFilters,
 					);
-
-					// If request was aborted, don't treat as error
-					if (controller.signal.aborted) {
-						resolve(true);
-						return;
-					}
-
-					// API error: revert optimistic update
-					if (targetStudent) {
-						revertOptimisticUpdate(
-							id,
-							targetStudent,
-							currentState.students,
-							(students) => setState({ students }),
-							applyFilters,
-						);
-					}
-
-					resolve(false);
+					resolve(errorResult);
 				}
 			}, DEFAULT_TOGGLE_CONFIG.debounceDelay);
 		});
