@@ -46,8 +46,9 @@ export const STUDENT_FIELDS = [
 ];
 
 // Common import handlers
-export const createImportHandler = (userType: 'student' | 'lecturer') => {
+export const createImportHandler = () => {
 	return (data: unknown[]) => {
-		console.log(`Imported ${userType}s:`, data);
+		// Handle import silently - UI will show feedback
+		return data;
 	};
 };
