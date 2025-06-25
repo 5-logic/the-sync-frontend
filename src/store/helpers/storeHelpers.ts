@@ -223,6 +223,7 @@ export function createCreateAction<T extends { id: string }, TCreate>(
 				const response = await service.create(data);
 				const result = handleApiResponse(
 					response,
+					'Success',
 					`${entityName.charAt(0).toUpperCase() + entityName.slice(1)} created successfully`,
 				);
 				if (result.success && result.data) {
@@ -288,6 +289,7 @@ export function createUpdateAction<T extends { id: string }, TUpdate>(
 				const response = await service.update(id, data);
 				const result = handleApiResponse(
 					response,
+					'Success',
 					`${entityName.charAt(0).toUpperCase() + entityName.slice(1)} updated successfully`,
 				);
 				if (result.success && result.data) {
@@ -350,6 +352,7 @@ export function createDeleteAction<T extends { id: string }>(
 				const response = await service.delete(id);
 				const result = handleApiResponse(
 					response,
+					'Success',
 					`${entityName.charAt(0).toUpperCase() + entityName.slice(1)} deleted successfully`,
 				);
 				if (result.success) {

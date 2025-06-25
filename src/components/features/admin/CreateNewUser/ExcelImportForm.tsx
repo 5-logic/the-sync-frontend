@@ -940,7 +940,9 @@ export default function ExcelImportForm<
 		}));
 
 		try {
-			const success = await createManyLecturers(lecturersToCreate);
+			const success = await createManyLecturers({
+				lecturers: lecturersToCreate,
+			});
 			if (success) {
 				await fetchLecturers();
 				showNotification.success(

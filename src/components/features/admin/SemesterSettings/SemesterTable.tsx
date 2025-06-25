@@ -1,6 +1,10 @@
 'use client';
 
-import { EditOutlined } from '@ant-design/icons';
+import {
+	DeleteOutlined,
+	EditOutlined,
+	ExclamationCircleOutlined,
+} from '@ant-design/icons';
 import {
 	Alert,
 	Button,
@@ -64,6 +68,7 @@ const SemesterTable = forwardRef<
 		deleting,
 		fetchSemesters,
 		updateSemester,
+		deleteSemester,
 		clearError,
 	} = useSemesterStore();
 
@@ -235,6 +240,65 @@ const SemesterTable = forwardRef<
 		},
 		[form, canEditSemester],
 	);
+	const handleDelete = useCallback(
+		async (record: Semester) => {
+			// Only allow delete for NotYet status
+			if (record.status !== 'NotYet') {
+				Modal.warning({
+					title: 'Cannot Delete',
+					content: 'Only semesters with "Not Yet" status can be deleted.',
+					centered: true,
+				});
+				return;
+			}
+
+			Modal.confirm({
+				title: (
+					<Space>
+						<Typography.Title level={4} style={{ margin: 0 }}>
+							Delete Semester
+						</Typography.Title>
+					</Space>
+				),
+				content: (
+					<Space direction="vertical" size="middle" style={{ width: '100%' }}>
+						<Typography.Text>
+							Are you sure you want to delete this semester?
+						</Typography.Text>
+
+						<Space direction="vertical" size="small" style={{ width: '100%' }}>
+							<div>
+								<Typography.Text strong>Semester: </Typography.Text>
+								<Typography.Text>{record.name}</Typography.Text>
+							</div>
+							<div>
+								<Typography.Text strong>Code: </Typography.Text>
+								<Typography.Text>{record.code}</Typography.Text>
+							</div>
+						</Space>
+
+						<Alert
+							message="This action cannot be undone."
+							type="warning"
+							icon={<ExclamationCircleOutlined />}
+							showIcon
+							style={{ marginTop: 8 }}
+						/>
+					</Space>
+				),
+				okText: 'Delete',
+				okType: 'danger',
+				cancelText: 'Cancel',
+				centered: true,
+				width: 480,
+				onOk: async () => {
+					return await deleteSemester(record.id);
+				},
+			});
+		},
+		[deleteSemester],
+	);
+
 	// Helper function to validate edit permissions
 	const validateEditPermissions = useCallback((record: Semester): boolean => {
 		if (record.status === 'End') {
@@ -496,12 +560,32 @@ const SemesterTable = forwardRef<
 									}}
 								/>
 							</Tooltip>
+							<Tooltip
+								title={
+									record.status === 'NotYet'
+										? 'Delete'
+										: 'Cannot delete - Status must be "Not Yet"'
+								}
+							>
+								<Button
+									icon={<DeleteOutlined />}
+									size="small"
+									type="text"
+									danger
+									disabled={
+										record.status !== 'NotYet' ||
+										Boolean(updating) ||
+										Boolean(deleting)
+									}
+									onClick={() => handleDelete(record)}
+								/>
+							</Tooltip>
 						</Space>
 					);
 				},
 			},
 		],
-		[handleEdit, updating, deleting, canEditSemester],
+		[handleEdit, handleDelete, updating, deleting, canEditSemester],
 	);
 
 	// Update available statuses calculation to include current phase

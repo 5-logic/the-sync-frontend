@@ -69,13 +69,7 @@ export default function StudentManagement() {
 				loading={loading}
 			/>
 			{selectedSemesterId ? (
-				<StudentTable
-					data={filteredStudents}
-					loading={loading}
-					onReload={() =>
-						selectedSemesterId && fetchStudentsBySemester(selectedSemesterId)
-					}
-				/>
+				<StudentTable data={filteredStudents} loading={loading} />
 			) : (
 				<Alert
 					message="Please select a semester"
