@@ -16,7 +16,7 @@ import { memo, useCallback, useEffect } from 'react';
 
 import { FormLabel } from '@/components/common/FormLabel';
 import { SemesterCreate } from '@/schemas/semester';
-import { useSemesterStore } from '@/store/useSemesterStore';
+import { useSemesterStore } from '@/store';
 
 const { Title } = Typography;
 

@@ -1,75 +1,46 @@
 'use client';
 
-import { Space, Typography } from 'antd';
+import { Alert, Space, Typography } from 'antd';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
 import StudentFilterBar from '@/components/features/admin/StudentManagement/StudentFilterBar';
 import StudentTable from '@/components/features/admin/StudentManagement/StudentTable';
-import studentService from '@/lib/services/students.service';
-import { showNotification } from '@/lib/utils/notification';
-import { Student } from '@/schemas/student';
+import { useStudentStore } from '@/store';
 
 export default function StudentManagement() {
-	const [semesterFilter, setSemesterFilter] = useState('All');
-	const [statusFilter, setStatusFilter] = useState('All');
-	const [majorFilter, setMajorFilter] = useState('All');
-	const [searchText, setSearchText] = useState('');
-	const [data, setData] = useState<Student[]>([]);
-	const [loading, setLoading] = useState(false);
 	const router = useRouter();
 
-	const fetchStudents = async () => {
-		try {
-			setLoading(true);
-			const response = await studentService.findAll();
-
-			if (response.success) {
-				setData(response.data);
-			} else {
-				showNotification.error(response.error || 'Failed to fetch students');
-			}
-		} catch (error) {
-			console.error('Error fetching students:', error);
-			showNotification.error('Failed to fetch students');
-		} finally {
-			setLoading(false);
-		}
-	};
+	// Get state and actions from store
+	const {
+		filteredStudents,
+		loading,
+		selectedSemesterId,
+		selectedMajorId,
+		selectedStatus,
+		searchText,
+		fetchStudentsBySemester,
+		setSelectedSemesterId,
+		setSelectedMajorId,
+		setSelectedStatus,
+		setSearchText,
+	} = useStudentStore();
 
 	useEffect(() => {
-		fetchStudents();
-	}, []);
-
-	const filteredData = data.filter((student) => {
-		// Đợi api enrollment để handle semester filter
-		const matchesSemester =
-			semesterFilter === 'All' || student.semesterId === semesterFilter;
-
-		const matchesStatus =
-			statusFilter === 'All' ||
-			student.isActive === (statusFilter === 'Active');
-
-		const matchesMajor =
-			majorFilter === 'All' || student.majorId === majorFilter;
-
-		const matchesSearch = [
-			student.fullName,
-			student.email,
-			student.studentId,
-		].some((field) =>
-			(field ?? '').toLowerCase().includes(searchText.toLowerCase()),
-		);
-
-		return matchesSemester && matchesStatus && matchesMajor && matchesSearch;
-	});
+		// Only fetch students if a semester is selected
+		if (selectedSemesterId) {
+			fetchStudentsBySemester(selectedSemesterId);
+		}
+	}, [selectedSemesterId, fetchStudentsBySemester]);
 
 	const handleCreateStudent = () => {
 		router.push('/admin/create-new-student');
 	};
 
 	const handleRefresh = () => {
-		fetchStudents();
+		if (selectedSemesterId) {
+			fetchStudentsBySemester(selectedSemesterId);
+		}
 	};
 
 	const { Title, Paragraph } = Typography;
@@ -84,22 +55,35 @@ export default function StudentManagement() {
 					Create and manage students, registration windows
 				</Paragraph>
 			</div>
-
 			<StudentFilterBar
-				semesterFilter={semesterFilter}
-				setSemesterFilter={setSemesterFilter}
-				statusFilter={statusFilter}
-				setStatusFilter={setStatusFilter}
-				majorFilter={majorFilter}
-				setMajorFilter={setMajorFilter}
+				semesterFilter={selectedSemesterId}
+				setSemesterFilter={setSelectedSemesterId}
+				statusFilter={selectedStatus}
+				setStatusFilter={setSelectedStatus}
+				majorFilter={selectedMajorId ?? 'All'}
+				setMajorFilter={setSelectedMajorId}
 				searchText={searchText}
 				setSearchText={setSearchText}
 				onCreateStudent={handleCreateStudent}
 				onRefresh={handleRefresh}
 				loading={loading}
 			/>
-
-			<StudentTable data={filteredData.reverse()} loading={loading} />
+			{selectedSemesterId ? (
+				<StudentTable
+					data={filteredStudents}
+					loading={loading}
+					onReload={() =>
+						selectedSemesterId && fetchStudentsBySemester(selectedSemesterId)
+					}
+				/>
+			) : (
+				<Alert
+					message="Please select a semester"
+					description="Select a semester from the filter above to view students."
+					type="info"
+					showIcon
+				/>
+			)}
 		</Space>
 	);
 }

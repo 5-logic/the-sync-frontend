@@ -60,7 +60,7 @@ export default function AdminLoginForm({
 						block
 					>
 						Sign In
-					</Button>{' '}
+					</Button>
 				</Form.Item>
 			</Form>
 		</LoginFormLayout>

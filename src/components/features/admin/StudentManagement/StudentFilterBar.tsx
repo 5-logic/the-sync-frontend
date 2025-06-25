@@ -8,14 +8,16 @@ import {
 import { Button, Col, Input, Row, Select } from 'antd';
 import { useEffect } from 'react';
 
-import { useMajorStore } from '@/store/useMajorStore';
-import { useSemesterStore } from '@/store/useSemesterStore';
+import { SEMESTER_STATUS_TAGS } from '@/lib/constants/semester';
+import { useMajorStore, useSemesterStore } from '@/store';
 
 const { Option } = Select;
 
+// Status tag styling to match SemesterTable
+
 type Props = Readonly<{
-	semesterFilter: string;
-	setSemesterFilter: (value: string) => void;
+	semesterFilter: string | null;
+	setSemesterFilter: (value: string | null) => void;
 	statusFilter: string;
 	setStatusFilter: (value: string) => void;
 	majorFilter: string;
@@ -56,28 +58,47 @@ export default function StudentFilterBar({
 		fetchMajors();
 	}, [fetchSemesters, fetchMajors]);
 
+	// Auto-select first appropriate semester if none selected and semesters are loaded
+	useEffect(() => {
+		if (!semesterFilter && semesters.length > 0 && !semestersLoading) {
+			// Prefer semesters that are not in NotYet or End status
+			const activeSemesters = semesters.filter(
+				(semester) => semester.status !== 'NotYet' && semester.status !== 'End',
+			);
+
+			// Use active semester if available, otherwise use first semester
+			const semesterToSelect =
+				activeSemesters.length > 0 ? activeSemesters[0] : semesters[0];
+
+			setSemesterFilter(semesterToSelect.id);
+		}
+	}, [semesterFilter, semesters, semestersLoading, setSemesterFilter]);
+
 	return (
-		<Row
-			gutter={[8, 16]}
-			align="middle"
-			justify="space-between"
-			style={{ marginBottom: 16 }}
-		>
+		<Row gutter={[8, 16]} align="middle" justify="space-between">
 			<Col xs={24} md={20}>
 				<Row gutter={[8, 8]} wrap>
 					<Col>
 						<Select
 							value={semesterFilter}
 							onChange={setSemesterFilter}
-							style={{ width: 150 }}
+							style={{ width: 200 }}
 							size="middle"
-							loading={semestersLoading} // Use loading from semester store
+							loading={semestersLoading}
 							placeholder="Select semester"
 						>
-							<Option value="All">All Semesters</Option>
 							{semesters.map((semester) => (
 								<Option key={semester.id} value={semester.id}>
-									{semester.code}
+									<span
+										style={{
+											display: 'flex',
+											alignItems: 'center',
+											gap: '8px',
+										}}
+									>
+										<span>{semester.name}</span>
+										{SEMESTER_STATUS_TAGS[semester.status]}
+									</span>
 								</Option>
 							))}
 						</Select>
@@ -100,7 +121,7 @@ export default function StudentFilterBar({
 						<Select
 							value={majorFilter}
 							onChange={setMajorFilter}
-							style={{ width: 150 }}
+							style={{ width: 200 }}
 							size="middle"
 							loading={majorsLoading} // Use loading from major store
 							placeholder="Select major"
@@ -108,7 +129,7 @@ export default function StudentFilterBar({
 							<Option value="All">All Majors</Option>
 							{majors.map((major) => (
 								<Option key={major.id} value={major.id}>
-									{major.code}
+									{major.name}
 								</Option>
 							))}
 						</Select>

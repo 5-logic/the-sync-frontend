@@ -34,7 +34,7 @@ export default function StudentDashboard() {
 					<p>
 						<strong>Student ID:</strong> {session?.user?.id}
 					</p>
-				</div>{' '}
+				</div>
 			</Card>
 
 			{/* Quick Actions */}

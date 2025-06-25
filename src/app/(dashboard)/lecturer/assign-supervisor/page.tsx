@@ -21,7 +21,7 @@ export default function LecturerAssignSupervisorPage() {
 					<Text type="secondary">
 						Manage supervisor assignments for thesis groups
 					</Text>
-				</div>{' '}
+				</div>
 				<Link href="/lecturer">
 					<Text className="cursor-pointer hover:text-blue-600">
 						← Back to Dashboard
@@ -41,7 +41,7 @@ export default function LecturerAssignSupervisorPage() {
 				<div className="mt-4 p-4 bg-blue-50 rounded-lg">
 					<Text>
 						<strong>Moderator Privileges:</strong> This page is only accessible
-						to lecturers with moderator privileges. Current user:{' '}
+						to lecturers with moderator privileges. Current user:
 						<strong>{session?.user?.name}</strong> ({session?.user?.role})
 					</Text>
 				</div>

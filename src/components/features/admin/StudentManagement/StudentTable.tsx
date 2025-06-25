@@ -1,34 +1,28 @@
 'use client';
 
-import { Table, Tag } from 'antd';
+import { Empty, Modal, Switch, Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useEffect, useMemo } from 'react';
 
+import { TablePagination } from '@/components/common/TablePagination';
 import { Student } from '@/schemas/student';
-import { useMajorStore } from '@/store/useMajorStore';
-import { useSemesterStore } from '@/store/useSemesterStore';
+import { useMajorStore, useStudentStore } from '@/store';
 
 type Props = Readonly<{
 	data: Student[];
 	loading: boolean;
+	onReload?: () => void;
 }>;
 
-export default function StudentTable({ data, loading }: Props) {
-	// Use Major Store
+export default function StudentTable({ data, loading, onReload }: Props) {
+	// Use stores
 	const { majors, loading: majorsLoading, fetchMajors } = useMajorStore();
-
-	// Use Semester Store - Replace local semester state
-	const {
-		semesters,
-		loading: semestersLoading,
-		fetchSemesters,
-	} = useSemesterStore();
+	const { toggleStudentStatus } = useStudentStore();
 
 	// Fetch data using stores
 	useEffect(() => {
 		fetchMajors();
-		fetchSemesters();
-	}, [fetchMajors, fetchSemesters]);
+	}, [fetchMajors]);
 
 	// Create maps for efficient lookups
 	const majorMap = useMemo(() => {
@@ -42,33 +36,46 @@ export default function StudentTable({ data, loading }: Props) {
 			},
 			{} as Record<string, { code: string; name: string }>,
 		);
-	}, [majors]);
+	}, [majors]); // Handle status toggle
+	const handleStatusToggle = (record: Student) => {
+		const newStatus = !record.isActive;
+		const statusText = newStatus ? 'Active' : 'Inactive';
 
-	const semesterMap = useMemo(() => {
-		return semesters.reduce(
-			(acc, semester) => {
-				acc[semester.id] = {
-					code: semester.code,
-					name: semester.name,
-				};
-				return acc;
+		Modal.confirm({
+			title: 'Update Student Status',
+			content: `Are you sure you want to change ${record.fullName}'s status to ${statusText}?`,
+			okText: 'Yes, Update',
+			cancelText: 'Cancel',
+			centered: true,
+			onOk: async () => {
+				try {
+					const success = await toggleStudentStatus(record.id, {
+						isActive: newStatus,
+					});
+
+					if (success) {
+						if (onReload) {
+							onReload();
+						}
+					}
+				} catch (error) {
+					console.error('Error toggling student status:', error);
+				}
 			},
-			{} as Record<string, { code: string; name: string }>,
-		);
-	}, [semesters]);
-
+		});
+	};
 	const columns: ColumnsType<Student> = [
 		{
 			title: 'Student ID',
 			dataIndex: 'studentId',
 			key: 'studentId',
-			width: '12%',
+			width: '15%',
 		},
 		{
 			title: 'Name',
 			dataIndex: 'fullName',
 			key: 'fullName',
-			width: '25%',
+			width: '22%',
 		},
 		{
 			title: 'Email',
@@ -88,32 +95,14 @@ export default function StudentTable({ data, loading }: Props) {
 			title: 'Major',
 			dataIndex: 'majorId',
 			key: 'majorId',
-			width: '12%',
+			width: '18%',
 			render: (majorId: string) => {
 				if (majorsLoading) {
 					return 'Loading...';
 				}
 
 				const major = majorMap[majorId];
-				return major ? major.code : 'Unknown';
-			},
-		},
-		{
-			title: 'Semester',
-			dataIndex: 'semesterId',
-			key: 'semesterId',
-			width: '12%',
-			render: (semesterId: string) => {
-				if (semestersLoading) {
-					return 'Loading...';
-				}
-
-				if (!semesterId) {
-					return '';
-				}
-
-				const semester = semesterMap[semesterId];
-				return semester ? semester.code : 'Unknown';
+				return major ? major.name : 'Unknown';
 			},
 		},
 		{
@@ -121,10 +110,14 @@ export default function StudentTable({ data, loading }: Props) {
 			dataIndex: 'isActive',
 			key: 'isActive',
 			width: '10%',
-			render: (isActive: boolean) => (
-				<Tag color={isActive ? 'green' : 'red'}>
-					{isActive ? 'Active' : 'Inactive'}
-				</Tag>
+			render: (_: boolean, record: Student) => (
+				<Switch
+					checked={record.isActive}
+					onChange={() => handleStatusToggle(record)}
+					loading={loading}
+					checkedChildren="Active"
+					unCheckedChildren="Inactive"
+				/>
 			),
 		},
 	];
@@ -134,16 +127,18 @@ export default function StudentTable({ data, loading }: Props) {
 			columns={columns}
 			dataSource={data}
 			rowKey="id"
-			pagination={{
-				showTotal: (total, range) =>
-					`${range[0]}-${range[1]} of ${total} items`,
-				showSizeChanger: true,
-				pageSizeOptions: ['5', '10', '20', '50'],
-				defaultPageSize: 10,
-			}}
+			pagination={TablePagination}
 			scroll={{ x: 'max-content' }}
 			loading={loading}
 			size="middle"
+			locale={{
+				emptyText: (
+					<Empty
+						description="No students found for this semester. This might be because the semester hasn't started enrollment yet or has ended."
+						image={Empty.PRESENTED_IMAGE_SIMPLE}
+					/>
+				),
+			}}
 		/>
 	);
 }

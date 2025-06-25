@@ -12,7 +12,6 @@ import {
 	Select,
 	Space,
 	Table,
-	Tag,
 	Tooltip,
 	Typography,
 } from 'antd';
@@ -27,9 +26,13 @@ import {
 } from 'react';
 
 import { FormLabel } from '@/components/common/FormLabel';
+import {
+	SEMESTER_STATUS_TAGS,
+	SEMESTER_STATUS_TEXT,
+} from '@/lib/constants/semester';
 import { SemesterStatus } from '@/schemas/_enums';
 import { Semester, SemesterUpdate } from '@/schemas/semester';
-import { useSemesterStore } from '@/store/useSemesterStore';
+import { useSemesterStore } from '@/store';
 
 const { Option } = Select;
 const { Text } = Typography;
@@ -45,22 +48,6 @@ const STATUS_ORDER: SemesterStatus[] = [
 	'Ongoing',
 	'End',
 ];
-
-const STATUS_TAG: Record<SemesterStatus, JSX.Element> = {
-	NotYet: <Tag color="blue">Not Yet</Tag>,
-	Preparing: <Tag color="orange">Preparing</Tag>,
-	Picking: <Tag color="purple">Picking</Tag>,
-	Ongoing: <Tag color="green">Ongoing</Tag>,
-	End: <Tag color="gray">End</Tag>,
-};
-
-const STATUS_LABELS: Record<SemesterStatus, string> = {
-	NotYet: 'Not Yet',
-	Preparing: 'Preparing',
-	Picking: 'Picking',
-	Ongoing: 'Ongoing',
-	End: 'End',
-};
 
 const SemesterTable = forwardRef<
 	SemesterTableRef,
@@ -117,7 +104,7 @@ const SemesterTable = forwardRef<
 					semester.status !== 'NotYet' &&
 					semester.status !== 'End',
 			);
-			return activeSemester || null;
+			return activeSemester ?? null;
 		},
 		[semesters],
 	);
@@ -241,100 +228,130 @@ const SemesterTable = forwardRef<
 				code: record.code,
 				maxGroup: record.maxGroup,
 				status: record.status,
-				ongoingPhase: record.ongoingPhase || undefined,
+				ongoingPhase: record.ongoingPhase ?? undefined,
 			});
 			setIsFormChanged(false);
 			setIsEditModalOpen(true);
 		},
 		[form, canEditSemester],
 	);
+	// Helper function to validate edit permissions
+	const validateEditPermissions = useCallback((record: Semester): boolean => {
+		if (record.status === 'End') {
+			Modal.error({
+				title: 'Edit Not Allowed',
+				content: 'Cannot edit semester with End status',
+				centered: true,
+			});
+			return false;
+		}
+		return true;
+	}, []);
+	// Helper function to validate status transition rules
+	const validateStatusTransition = useCallback(
+		(
+			record: Semester,
+			values: {
+				status: SemesterStatus;
+				maxGroup?: number;
+				ongoingPhase?: string;
+			},
+		): boolean => {
+			// Rule 1: Ongoing -> End requires ScopeLocked phase
+			if (record.status === 'Ongoing' && values.status === 'End') {
+				const currentPhase =
+					form.getFieldValue('ongoingPhase') ?? record.ongoingPhase;
+				if (currentPhase !== 'ScopeLocked') {
+					form.setFields([
+						{
+							name: 'status',
+							errors: [
+								'Cannot change status to End. Phase must be ScopeLocked first.',
+							],
+						},
+					]);
+					return false;
+				}
+			}
+
+			// Rule 2: Max Group required when status is Picking
+			if (values.status === 'Picking' && !values.maxGroup) {
+				form.setFields([
+					{
+						name: 'maxGroup',
+						errors: [
+							'Maximum number of groups is required when status is Picking.',
+						],
+					},
+				]);
+				return false;
+			}
+
+			// Rule 3: Only one semester can have active status at a time
+			const statusCheck = isStatusChangeAllowed(record, values.status);
+			if (!statusCheck.allowed) {
+				form.setFields([
+					{
+						name: 'status',
+						errors: [statusCheck.reason ?? 'Status change not allowed'],
+					},
+				]);
+				return false;
+			}
+
+			return true;
+		},
+		[form, isStatusChangeAllowed],
+	);
+
+	// Helper function to handle successful update
+	const handleUpdateSuccess = useCallback(() => {
+		setIsEditModalOpen(false);
+		setEditingRecord(null);
+		setSelectedStatus(undefined);
+		form.resetFields();
+		setIsFormChanged(false);
+	}, [form]);
 
 	const handleEditSubmit = useCallback(async () => {
 		try {
 			const values = await form.validateFields();
-			if (editingRecord) {
-				// Additional check: Prevent editing End status semesters
-				if (editingRecord.status === 'End') {
-					Modal.error({
-						title: 'Edit Not Allowed',
-						content: 'Cannot edit semester with End status',
-						centered: true,
-					});
-					return;
-				}
+			if (!editingRecord) return;
 
-				// Rule 1: Ongoing -> End requires ScopeLocked phase
-				if (editingRecord.status === 'Ongoing' && values.status === 'End') {
-					// Lấy phase hiện tại từ form hoặc từ record
-					const currentPhase =
-						form.getFieldValue('ongoingPhase') || editingRecord.ongoingPhase;
+			// Validate edit permissions
+			if (!validateEditPermissions(editingRecord)) return;
 
-					if (currentPhase !== 'ScopeLocked') {
-						form.setFields([
-							{
-								name: 'status',
-								errors: [
-									'Cannot change status to End. Phase must be ScopeLocked first.',
-								],
-							},
-						]);
-						return;
-					}
-				}
+			// Validate status transition rules
+			if (!validateStatusTransition(editingRecord, values)) return;
+			// Prepare payload
+			const payload: SemesterUpdate = {
+				name: values.name,
+				code: values.code,
+				// Only include maxGroup if status allows it (not End)
+				...(values.status !== 'End' && values.maxGroup
+					? { maxGroup: parseInt(values.maxGroup, 10) }
+					: {}),
+				status: values.status,
+				ongoingPhase:
+					values.status === 'Ongoing' ? values.ongoingPhase : undefined,
+			};
 
-				// Rule 2: Max Group required when status is Picking
-				if (values.status === 'Picking' && !values.maxGroup) {
-					form.setFields([
-						{
-							name: 'maxGroup',
-							errors: [
-								'Maximum number of groups is required when status is Picking.',
-							],
-						},
-					]);
-					return;
-				}
-
-				// Rule 3: Only one semester can have active status at a time
-				const statusCheck = isStatusChangeAllowed(editingRecord, values.status);
-				if (!statusCheck.allowed) {
-					form.setFields([
-						{
-							name: 'status',
-							errors: [statusCheck.reason || 'Status change not allowed'],
-						},
-					]);
-					return;
-				}
-
-				// Khi status chuyển sang End, không cần gửi ongoingPhase
-				const payload: SemesterUpdate = {
-					name: values.name,
-					code: values.code,
-					maxGroup: values.maxGroup ? parseInt(values.maxGroup, 10) : undefined,
-					status: values.status,
-					// Chỉ gửi ongoingPhase khi status là Ongoing
-					ongoingPhase:
-						values.status === 'Ongoing' ? values.ongoingPhase : undefined,
-				};
-
-				// Use store method to update semester
-				const success = await updateSemester(editingRecord.id, payload);
-
-				if (success) {
-					// Success notification is handled in store
-					setIsEditModalOpen(false);
-					setEditingRecord(null);
-					setSelectedStatus(undefined);
-					form.resetFields();
-					setIsFormChanged(false);
-				}
-				// Error notification is handled in store
+			// Update semester
+			const success = await updateSemester(editingRecord.id, payload);
+			if (success) {
+				handleUpdateSuccess();
 			}
 		} catch (error) {
 			console.error('Form validation error:', error);
 		}
-	}, [form, editingRecord, updateSemester, isStatusChangeAllowed]);
+	}, [
+		form,
+		editingRecord,
+		updateSemester,
+		validateEditPermissions,
+		validateStatusTransition,
+		handleUpdateSuccess,
+	]);
 
 	const handleCancel = useCallback(() => {
 		clearError();
@@ -445,7 +462,8 @@ const SemesterTable = forwardRef<
 				dataIndex: 'status',
 				key: 'status',
 				width: 120,
-				render: (status: SemesterStatus) => STATUS_TAG[status] ?? status,
+				render: (status: SemesterStatus) =>
+					SEMESTER_STATUS_TAGS[status] ?? status,
 			},
 			{
 				title: 'Actions',
@@ -459,7 +477,7 @@ const SemesterTable = forwardRef<
 								title={
 									editCheck.canEdit
 										? 'Edit'
-										: editCheck.reason || 'Cannot edit this semester'
+										: (editCheck.reason ?? 'Cannot edit this semester')
 								}
 							>
 								<Button
@@ -468,7 +486,9 @@ const SemesterTable = forwardRef<
 									type="text"
 									onClick={() => handleEdit(record)}
 									disabled={
-										!editCheck.canEdit || updating || deleting // Disable for End status
+										Boolean(!editCheck.canEdit) ||
+										Boolean(updating) ||
+										Boolean(deleting)
 									}
 									style={{
 										opacity: editCheck.canEdit ? 1 : 0.5,
@@ -492,9 +512,8 @@ const SemesterTable = forwardRef<
 		const formPhase = form.getFieldValue('ongoingPhase');
 		const currentPhase =
 			formPhase !== undefined ? formPhase : editingRecord.ongoingPhase;
-
 		return getAvailableStatuses(editingRecord.status, currentPhase);
-	}, [editingRecord, getAvailableStatuses, form, selectedStatus]);
+	}, [editingRecord, getAvailableStatuses, form]);
 
 	// Check if status option should be disabled with helpful message
 	const getStatusOptionProps = useCallback(
@@ -524,7 +543,7 @@ const SemesterTable = forwardRef<
 				if (!statusCheck.allowed) {
 					return {
 						disabled: true,
-						title: statusCheck.reason || 'Status change not allowed',
+						title: statusCheck.reason ?? 'Status change not allowed',
 					};
 				}
 			}
@@ -602,7 +621,7 @@ const SemesterTable = forwardRef<
 					<>
 						<Text>
 							Once you change the status to <Text strong>End</Text>, this
-							semester will be marked as completed and{' '}
+							semester will be marked as completed and
 							<Text strong>cannot be edited anymore</Text>. This action is
 							irreversible.
 						</Text>
@@ -759,7 +778,7 @@ const SemesterTable = forwardRef<
 									value={status}
 									{...getStatusOptionProps(status)} // Add option props for disabled state
 								>
-									{STATUS_LABELS[status]}
+									{SEMESTER_STATUS_TEXT[status]}
 								</Option>
 							))}
 						</Select>
