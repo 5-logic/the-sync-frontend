@@ -23,16 +23,16 @@ export default function GroupProgressPage() {
 	const groupList = useMemo(() => {
 		const uniqueGroups: Record<string, FullMockGroup> = {};
 		allMockGroups.forEach((group) => {
-			if (!uniqueGroups[group.id]) {
-				uniqueGroups[group.id] = group;
-			}
+			uniqueGroups[group.id] ??= group; // ✅ Dùng nullish assignment
 		});
+
 		return Object.values(uniqueGroups).filter((group) => {
 			const name = group.name ?? '';
 			const title = group.title ?? '';
+			const keyword = (searchText ?? '').toLowerCase(); // ✅ fallback keyword
 			return (
-				name.toLowerCase().includes(searchText.toLowerCase()) ||
-				title.toLowerCase().includes(searchText.toLowerCase())
+				name.toLowerCase().includes(keyword) ||
+				title.toLowerCase().includes(keyword)
 			);
 		});
 	}, [searchText]);
