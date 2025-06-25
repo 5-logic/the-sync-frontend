@@ -13,8 +13,10 @@ export default function LecturerManagement() {
 		filteredLecturers,
 		loading,
 		togglingStatus,
+		togglingModerator,
 		fetchLecturers,
 		toggleLecturerStatus,
+		toggleLecturerModerator,
 	} = useLecturerStore();
 	const router = useRouter();
 
@@ -24,7 +26,7 @@ export default function LecturerManagement() {
 	const handleTogglePermission = async (id: string) => {
 		const lecturer = useLecturerStore.getState().getLecturerById(id);
 		if (lecturer) {
-			await toggleLecturerStatus(id, { isModerator: !lecturer.isModerator });
+			await toggleLecturerModerator(id, { isModerator: !lecturer.isModerator });
 		}
 	};
 
@@ -63,7 +65,7 @@ export default function LecturerManagement() {
 				data={filteredLecturers}
 				onTogglePermission={handleTogglePermission}
 				onToggleStatus={handleToggleStatus}
-				loading={loading ?? togglingStatus}
+				loading={loading || togglingStatus || togglingModerator}
 			/>
 		</Space>
 	);
