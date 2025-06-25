@@ -10,11 +10,12 @@ interface ApiErrorDetails {
 
 export const handleApiResponse = <T>(
 	response: ApiResponse<T>,
+	title?: string,
 	successMessage?: string,
 ): { success: boolean; data?: T; error?: ApiErrorDetails } => {
 	if (response.success) {
 		if (successMessage) {
-			showNotification.success('Success', successMessage);
+			showNotification.success(title || 'Success', successMessage);
 		}
 		return { success: true, data: response.data };
 	} else {

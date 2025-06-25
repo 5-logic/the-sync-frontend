@@ -84,7 +84,8 @@ export function createBatchCreateAction<T extends { id: string }, TCreate>(
 				const response = await service.createMany(data);
 				const result = handleApiResponse(
 					response,
-					`Students created successfully`,
+					`Import Successfully`,
+					` List students have been imported successfully.`,
 				);
 				if (result.success && result.data) {
 					// Add all new items to the array

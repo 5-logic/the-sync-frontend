@@ -865,6 +865,7 @@ export default function ExcelImportForm<
 
 			setData(validatedData);
 			setFileList([file]);
+			// Success notification will be shown after successful database creation
 			showNotification.success(
 				'Success',
 				`${validatedData.length} rows imported successfully with no validation errors.`,
@@ -942,6 +943,12 @@ export default function ExcelImportForm<
 						requireSemester ? selectedSemester : undefined,
 						requireMajor ? selectedMajor : undefined,
 					);
+
+					// Show success notification
+					showNotification.success(
+						'Import Successful',
+						`${data.length} lecturers have been imported successfully.`,
+					);
 				}
 			} catch (error) {
 				console.error('Error creating lecturers:', error);
@@ -986,13 +993,6 @@ export default function ExcelImportForm<
 						requireSemester ? selectedSemester : undefined,
 						requireMajor ? selectedMajor : undefined,
 					);
-
-					// Show success notification and redirect
-					showNotification.success(
-						'Import Successful',
-						`${data.length} students have been imported successfully.`,
-					);
-
 					// Redirect to students management page
 					router.push('/admin/students-management');
 				}
