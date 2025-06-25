@@ -27,13 +27,14 @@ export default function GroupProgressPage() {
 		});
 
 		return Object.values(uniqueGroups).filter((group) => {
+			const keyword = (searchText ?? '').toLowerCase();
 			const name = group.name ?? '';
 			const title = group.title ?? '';
-			const keyword = (searchText ?? '').toLowerCase();
-			return (
-				name.toLowerCase().includes(keyword) || //no sonar
-				title.toLowerCase().includes(keyword)
-			);
+
+			const nameMatch = name.toLowerCase().includes(keyword);
+			const titleMatch = title.toLowerCase().includes(keyword);
+
+			return Boolean(nameMatch || titleMatch);
 		});
 	}, [searchText]);
 
