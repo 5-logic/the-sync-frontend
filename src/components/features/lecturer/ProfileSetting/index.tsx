@@ -1,3 +1,5 @@
+'use client';
+
 import { Card, Col, Row, Typography } from 'antd';
 
 import ChangePasswordForm from '@/components/features/lecturer/ProfileSetting/ChangePasswordForm';
@@ -12,7 +14,7 @@ export default function ProfileSettingsPage() {
 				<Title level={2} style={{ marginBottom: '4px' }}>
 					Profile Settings
 				</Title>
-				<Paragraph type="secondary" style={{ marginBottom: 0 }}>
+				<Paragraph type="secondary" style={{ marginBottom: 24 }}>
 					Manage personal information and change the password for the
 					administrator account.
 				</Paragraph>
