@@ -1,5 +1,5 @@
 import { DownOutlined } from '@ant-design/icons';
-import { Card, Col, Dropdown, Menu, Row, Typography } from 'antd';
+import { Button, Card, Col, Dropdown, Menu, Row, Typography } from 'antd';
 
 import { ExtendedThesis } from '@/data/thesis';
 
@@ -37,9 +37,9 @@ const PreviousVersionsCard = ({ thesis, versions }: Props) => {
 			}
 			extra={
 				<Dropdown overlay={menu}>
-					<a onClick={(e) => e.preventDefault()}>
+					<Button type="link">
 						Version {latest.version} <DownOutlined />
-					</a>
+					</Button>
 				</Dropdown>
 			}
 		>
