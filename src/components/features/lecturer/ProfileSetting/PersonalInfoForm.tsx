@@ -1,6 +1,8 @@
 import { UserOutlined } from '@ant-design/icons';
 import { Avatar, Button, Form, Input, Space } from 'antd';
 
+import FormLabel from '@/components/common/FormLabel/FormLabel';
+
 export default function PersonalInfoForm() {
 	const [form] = Form.useForm();
 
@@ -8,6 +10,7 @@ export default function PersonalInfoForm() {
 		<Form
 			layout="vertical"
 			form={form}
+			requiredMark="optional"
 			initialValues={{
 				fullName: 'Dr. John',
 				phoneNumber: '+84 123 456 789',
@@ -18,19 +21,23 @@ export default function PersonalInfoForm() {
 				<Avatar size={80} icon={<UserOutlined />} />
 			</div>
 
-			<Form.Item label="Full Name" name="fullName" rules={[{ required: true }]}>
-				<Input />
-			</Form.Item>
-
 			<Form.Item
-				label="Phone Number"
-				name="phoneNumber"
-				rules={[{ required: true }]}
+				name="fullName"
+				label={<FormLabel text="Full Name" isRequired isBold />}
+				rules={[{ required: true, message: 'Please enter Full Name' }]}
 			>
 				<Input />
 			</Form.Item>
 
-			<Form.Item label="Email" name="email">
+			<Form.Item
+				name="phoneNumber"
+				label={<FormLabel text="Phone Number" isRequired isBold />}
+				rules={[{ required: true, message: 'Please enter Phone Number' }]}
+			>
+				<Input />
+			</Form.Item>
+
+			<Form.Item name="email" label={<FormLabel text="Email" isBold />}>
 				<Input disabled />
 			</Form.Item>
 
