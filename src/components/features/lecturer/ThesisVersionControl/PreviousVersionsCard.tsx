@@ -1,20 +1,9 @@
-import {
-	DownOutlined,
-	DownloadOutlined,
-	FileTextOutlined,
-} from '@ant-design/icons';
-import {
-	Button,
-	Card,
-	Col,
-	Dropdown,
-	Menu,
-	Row,
-	Space,
-	Typography,
-} from 'antd';
+import { DownOutlined } from '@ant-design/icons';
+import { Card, Col, Dropdown, Menu, Row, Typography } from 'antd';
 
 import { ExtendedThesis } from '@/data/thesis';
+
+import ThesisFileVersionCard from './ThesisFileVersionCard';
 
 const { Text, Title } = Typography;
 
@@ -70,38 +59,7 @@ const PreviousVersionsCard = ({ thesis, versions }: Props) => {
 				</Col>
 
 				<Col span={24}>
-					<Card
-						type="inner"
-						bordered={false}
-						style={{ backgroundColor: '#fafafa' }}
-						bodyStyle={{ padding: '12px 8px' }}
-					>
-						<Row align="middle" justify="space-between" wrap={false}>
-							<Col>
-								<Space align="start">
-									<FileTextOutlined
-										style={{ fontSize: 25, color: '#1890ff', marginTop: 5 }}
-									/>
-									<div>
-										<div>{latest.fileName}</div>
-										<Text type="secondary">
-											{latest.fileSize} • Uploaded on {latest.uploadedAt}
-										</Text>
-									</div>
-								</Space>
-							</Col>
-
-							<Col>
-								<Button
-									type="primary"
-									icon={<DownloadOutlined />}
-									style={{ backgroundColor: '#1890ff', borderColor: '#1890ff' }}
-								>
-									Download
-								</Button>
-							</Col>
-						</Row>
-					</Card>
+					<ThesisFileVersionCard file={latest} />
 				</Col>
 			</Row>
 		</Card>
