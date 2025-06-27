@@ -1,10 +1,12 @@
+import { createMetadata } from '@/app/metadata';
+import ProfileSettingsPage from '@/components/features/lecturer/ProfileSetting';
+
+export const metadata = createMetadata({
+	title: 'Lecturer Profile Settings',
+	description:
+		'Lecturer Profile Settings for TheSync - Group Formation and Capstone Thesis Development',
+});
+
 export default function LecturerProfileSettingsPage() {
-	return (
-		<div className="p-6">
-			<h1 className="text-2xl font-bold mb-4">Profile Settings</h1>
-			<p className="text-gray-600">
-				Manage your profile settings and preferences
-			</p>
-		</div>
-	);
+	return <ProfileSettingsPage />;
 }
