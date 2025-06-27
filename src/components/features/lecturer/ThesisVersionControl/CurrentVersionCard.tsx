@@ -26,12 +26,17 @@ const CurrentVersionCard = ({ thesis, versionData }: Props) => (
 	>
 		<Row gutter={[0, 16]}>
 			<Col span={24}>
-				<Text strong>Thesis Title</Text>
+				<Text strong type="secondary">
+					Thesis Title
+				</Text>
+
 				<div>{thesis.englishName}</div>
 			</Col>
 
 			<Col span={24}>
-				<Text strong>Thesis Description</Text>
+				<Text strong type="secondary">
+					Thesis Description
+				</Text>
 				<div>{thesis.description}</div>
 			</Col>
 
