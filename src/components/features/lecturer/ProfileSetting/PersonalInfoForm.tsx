@@ -4,7 +4,7 @@ import FormLabel from '@/components/common/FormLabel/FormLabel';
 import { Lecturer } from '@/schemas/lecturer';
 
 interface Props {
-	lecturer: Lecturer;
+	readonly lecturer: Lecturer;
 }
 
 export default function PersonalInfoForm({ lecturer }: Props) {
