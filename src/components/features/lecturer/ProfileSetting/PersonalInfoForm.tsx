@@ -1,9 +1,13 @@
-import { UserOutlined } from '@ant-design/icons';
 import { Avatar, Button, Form, Input, Space } from 'antd';
 
 import FormLabel from '@/components/common/FormLabel/FormLabel';
+import { Lecturer } from '@/schemas/lecturer';
 
-export default function PersonalInfoForm() {
+interface Props {
+	lecturer: Lecturer;
+}
+
+export default function PersonalInfoForm({ lecturer }: Props) {
 	const [form] = Form.useForm();
 
 	return (
@@ -12,14 +16,18 @@ export default function PersonalInfoForm() {
 			form={form}
 			requiredMark="optional"
 			initialValues={{
-				fullName: 'Dr. John',
-				phoneNumber: '+84 123 456 789',
-				email: 'john.smith@fpt.edu.vn',
+				fullName: lecturer.fullName,
+				phoneNumber: lecturer.phoneNumber,
+				email: lecturer.email,
 			}}
 		>
-			<div className="flex justify-center mb-4">
-				<Avatar size={80} icon={<UserOutlined />} />
-			</div>
+			<Space
+				direction="vertical"
+				align="center"
+				style={{ width: '100%', marginBottom: 16 }}
+			>
+				<Avatar size={80} src="/images/user_avatar.png" />
+			</Space>
 
 			<Form.Item
 				name="fullName"
@@ -41,12 +49,18 @@ export default function PersonalInfoForm() {
 				<Input disabled />
 			</Form.Item>
 
-			<Space>
+			<div
+				style={{
+					display: 'flex',
+					gap: 8,
+					justifyContent: 'flex-end',
+				}}
+			>
 				<Button>Cancel</Button>
 				<Button type="primary" htmlType="submit">
 					Save Changes
 				</Button>
-			</Space>
+			</div>
 		</Form>
 	);
 }

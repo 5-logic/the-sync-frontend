@@ -4,6 +4,7 @@ import { Card, Col, Row, Typography } from 'antd';
 
 import ChangePasswordForm from '@/components/features/lecturer/ProfileSetting/ChangePasswordForm';
 import PersonalInfoForm from '@/components/features/lecturer/ProfileSetting/PersonalInfoForm';
+import { mockLecturers } from '@/data/lecturers';
 
 const { Title, Paragraph } = Typography;
 
@@ -19,14 +20,16 @@ export default function ProfileSettingsPage() {
 					administrator account.
 				</Paragraph>
 			</div>
-			<Row gutter={24}>
-				<Col xs={24} md={14}>
-					<Card title="Personal Information">
-						<PersonalInfoForm />
+
+			<Row gutter={24} align="stretch">
+				<Col xs={24} md={14} style={{ display: 'flex' }}>
+					<Card title="Personal Information" style={{ flex: 1, width: '100%' }}>
+						<PersonalInfoForm lecturer={mockLecturers[0]} />
 					</Card>
 				</Col>
-				<Col xs={24} md={10}>
-					<Card title="Change Password">
+
+				<Col xs={24} md={10} style={{ display: 'flex' }}>
+					<Card title="Change Password" style={{ flex: 1, width: '100%' }}>
 						<ChangePasswordForm />
 					</Card>
 				</Col>
