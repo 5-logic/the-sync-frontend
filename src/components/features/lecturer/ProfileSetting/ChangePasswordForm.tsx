@@ -1,32 +1,34 @@
 import { Button, Form, Input, Space, Typography } from 'antd';
 
+import FormLabel from '@/components/common/FormLabel/FormLabel';
+
 export default function ChangePasswordForm() {
 	const [form] = Form.useForm();
 
 	return (
-		<Form layout="vertical" form={form}>
+		<Form layout="vertical" requiredMark="optional" form={form}>
 			<Form.Item
-				label="Current Password"
 				name="currentPassword"
-				rules={[{ required: true }]}
+				label={<FormLabel text="Current Password" isRequired isBold />}
+				rules={[{ required: true, message: 'Please enter Current Password' }]}
 			>
 				<Input.Password />
 			</Form.Item>
 
 			<Form.Item
-				label="New Password"
 				name="newPassword"
-				rules={[{ required: true }]}
+				label={<FormLabel text="New Password" isRequired isBold />}
+				rules={[{ required: true, message: 'Please enter New Password' }]}
 			>
 				<Input.Password />
 			</Form.Item>
 
 			<Form.Item
-				label="Confirm New Password"
 				name="confirmPassword"
+				label={<FormLabel text="Confirm New Password" isRequired isBold />}
 				dependencies={['newPassword']}
 				rules={[
-					{ required: true },
+					{ required: true, message: 'Please enter Confirm New Password' },
 					({ getFieldValue }) => ({
 						validator(_, value) {
 							if (!value || getFieldValue('newPassword') === value) {
