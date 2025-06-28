@@ -22,6 +22,7 @@ declare module 'next-auth' {
 		} & DefaultSession['user'];
 		accessToken?: string;
 		refreshToken?: string;
+		rememberMe?: boolean;
 	}
 	interface User {
 		id: string;
@@ -30,6 +31,7 @@ declare module 'next-auth' {
 		isModerator?: boolean;
 		accessToken?: string;
 		refreshToken?: string;
+		rememberMe?: boolean;
 		// Common user fields
 		fullName?: string;
 		email?: string;
@@ -54,6 +56,7 @@ declare module 'next-auth/jwt' {
 		accessToken?: string;
 		refreshToken?: string;
 		accessTokenExpires?: number;
+		rememberMe?: boolean;
 		// Common user fields (UserSchema)
 		fullName?: string;
 		email?: string;
