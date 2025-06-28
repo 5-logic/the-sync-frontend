@@ -39,11 +39,6 @@ export class AuthService {
 	 * Logout: Clear tokens and NextAuth session with remember me support
 	 */ static async logout(options?: { redirect?: boolean }): Promise<void> {
 		try {
-			// Check if this was a remember me session for logging
-			const storageInfo = TokenManager.getStorageInfo();
-			if (storageInfo.rememberMe) {
-			}
-
 			// Clear tokens from TokenManager (handles both localStorage and sessionStorage)
 			TokenManager.clearTokens();
 
