@@ -118,9 +118,14 @@ export function useAuthGuard({
 	// Handle authenticated state with token sync
 	const handleAuthenticated = useCallback(() => {
 		if (session?.user) {
-			// Sync tokens from session
+			// Sync tokens from session to storage
 			if (session.accessToken && session.refreshToken) {
 				TokenManager.setTokens(session.accessToken, session.refreshToken);
+				TokenManager.setTokens(
+					session.accessToken,
+					session.refreshToken,
+					!!session.rememberMe,
+				);
 			}
 
 			handleUserAuthorization(session.user);
