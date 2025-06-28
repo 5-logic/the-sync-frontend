@@ -14,8 +14,7 @@ interface ExtendedAxiosRequestConfig extends InternalAxiosRequestConfig {
 	_retry?: boolean;
 }
 /**
- * 🔧 HTTP Interceptors
- * Request and response interceptors for handling authentication and token refresh
+ * Request and response interceptors with TokenManager and remember me support
  */
 export class HttpInterceptors {
 	/**
@@ -27,7 +26,7 @@ export class HttpInterceptors {
 		return typeof config === 'object' && config !== null;
 	}
 	/**
-	 * 👉 Request Interceptor: Add access token to requests
+	 * Add access token with smart fallback
 	 */
 	static createRequestInterceptor() {
 		return async (config: InternalAxiosRequestConfig) => {
@@ -45,23 +44,22 @@ export class HttpInterceptors {
 				return config;
 			}
 
-			// For all other endpoints, try to get a valid access token
+			// For all other endpoints, try to get a valid access token using TokenManager
 			try {
 				const accessToken = await TokenManager.getValidAccessToken();
 				if (accessToken) {
 					config.headers = config.headers ?? {};
 					config.headers.Authorization = `Bearer ${accessToken}`;
 				}
-			} catch (error) {
-				console.warn('🔐 Failed to get valid token for:', config.url, error);
-				// Continue without token - let the server handle the 401
+			} catch {
+				// Continue without token - API will handle 401
 			}
 
 			return config;
 		};
 	}
 	/**
-	 * 🚨 Request Error Handler
+	 * Request Error Handler
 	 */
 	static createRequestErrorHandler() {
 		return (error: AxiosError) => {
@@ -74,14 +72,14 @@ export class HttpInterceptors {
 	}
 
 	/**
-	 * ✅ Response Success Handler
+	 * Response Success Handler
 	 */
 	static createResponseSuccessHandler() {
 		return (response: AxiosResponse) => response;
 	}
 
 	/**
-	 * 👉 Response Error Handler: Handle token refresh on 401
+	 * Smart token refresh with remember me support
 	 */ static createResponseErrorHandler(httpClient: AxiosInstance) {
 		return async (error: AxiosError) => {
 			// Handle case where config might be undefined
@@ -121,15 +119,17 @@ export class HttpInterceptors {
 			) {
 				originalRequest._retry = true;
 
+				// Use TokenManager for token refresh
 				const newAccessToken = await TokenManager.refreshAccessToken();
 
 				if (newAccessToken) {
-					// Retry original request with new token
+					// SUCCESS: Retry original request with new token
 					originalRequest.headers = originalRequest.headers ?? {};
 					originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+
 					return httpClient(originalRequest);
 				} else {
-					// Refresh failed, redirect to login
+					// REFRESH FAILED: Clear tokens and redirect to login
 					TokenManager.clearTokens();
 
 					// Only redirect if we're in the browser
@@ -138,7 +138,14 @@ export class HttpInterceptors {
 					}
 				}
 			}
-			console.error('API Error:', error.response?.data ?? error.message);
+
+			// Log API errors for monitoring
+			console.error('API Error:', {
+				status: error.response?.status,
+				url: originalRequest.url,
+				message: error.response?.data ?? error.message,
+			});
+
 			// Ensure error is an Error instance
 			const errorToReject =
 				error instanceof Error ? error : new Error(String(error));

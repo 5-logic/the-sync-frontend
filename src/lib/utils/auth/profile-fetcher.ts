@@ -17,7 +17,7 @@ export interface ProfileData {
 }
 
 /**
- * 🔍 Fetch user profile data based on role
+ * Fetch user profile data based on role
  */
 export async function fetchUserProfile(user: {
 	id: string;
@@ -29,7 +29,7 @@ export async function fetchUserProfile(user: {
 		const endpoint = getProfileEndpoint(user.role, user.id);
 
 		if (!endpoint) {
-			console.warn('⚠️ Unknown user role:', user.role);
+			console.warn('Unknown user role:', user.role);
 			return null;
 		}
 
@@ -47,11 +47,11 @@ export async function fetchUserProfile(user: {
 			const profileData = response.data.data;
 			return profileData;
 		} else {
-			console.warn('⚠️ Failed to fetch profile:', response.status);
+			console.warn('Failed to fetch profile:', response.status);
 			return null;
 		}
 	} catch (error) {
-		console.error('❌ Error fetching user profile:', error);
+		console.error('Error fetching user profile:', error);
 		return null;
 	}
 }
@@ -139,7 +139,7 @@ export function mapProfileToToken(
 }
 
 /**
- * 🔄 Get fallback display name based on role
+ * Get fallback display name based on role
  */
 export function getFallbackName(
 	role: string,
