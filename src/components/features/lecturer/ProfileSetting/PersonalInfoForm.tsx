@@ -1,3 +1,4 @@
+import { UserOutlined } from '@ant-design/icons';
 import { Avatar, Button, Form, Input, Space } from 'antd';
 
 import FormLabel from '@/components/common/FormLabel/FormLabel';
@@ -14,7 +15,7 @@ export default function PersonalInfoForm({ lecturer }: Props) {
 		<Form
 			layout="vertical"
 			form={form}
-			requiredMark="optional"
+			requiredMark={false} // Không hiện dấu * ở tất cả các field
 			initialValues={{
 				fullName: lecturer.fullName,
 				phoneNumber: lecturer.phoneNumber,
@@ -26,12 +27,12 @@ export default function PersonalInfoForm({ lecturer }: Props) {
 				align="center"
 				style={{ width: '100%', marginBottom: 16 }}
 			>
-				<Avatar size={80} src="/images/user_avatar.png" />
+				<Avatar size={80} icon={<UserOutlined />} />
 			</Space>
 
 			<Form.Item
 				name="fullName"
-				label={<FormLabel text="Full Name" isRequired isBold />}
+				label={<FormLabel text="Full Name" isBold />}
 				rules={[{ required: true, message: 'Please enter Full Name' }]}
 			>
 				<Input />
@@ -39,7 +40,7 @@ export default function PersonalInfoForm({ lecturer }: Props) {
 
 			<Form.Item
 				name="phoneNumber"
-				label={<FormLabel text="Phone Number" isRequired isBold />}
+				label={<FormLabel text="Phone Number" isBold />}
 				rules={[{ required: true, message: 'Please enter Phone Number' }]}
 			>
 				<Input />
