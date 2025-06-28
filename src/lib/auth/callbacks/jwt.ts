@@ -20,55 +20,74 @@ export async function jwtCallback({
 	user?: User;
 	account?: Record<string, unknown> | null;
 }): Promise<JWT> {
-	// Add user data to token on first sign in
+	// Handle new user sign in
 	if (user) {
-		token.role = user.role;
-		token.id = user.id;
-
-		// Add isModerator for lecturers
-		if (user.isModerator !== undefined) {
-			token.isModerator = user.isModerator;
-		}
-
-		// Add username for admin
-		if (user.username) {
-			token.username = user.username;
-		}
-
-		// Store remember me preference
-		token.rememberMe = user.rememberMe ?? false;
-
-		// Store tokens from user object
-		if (user.accessToken) {
-			token.accessToken = user.accessToken;
-		}
-		if (user.refreshToken) {
-			token.refreshToken = user.refreshToken;
-		}
-
-		// Dynamic token expiration based on backend settings and remember me
-		if (account) {
-			const now = Date.now();
-			if (user.rememberMe) {
-				// Remember me: 7 days (aligns with 1-week refresh token)
-				token.accessTokenExpires = now + 7 * 24 * 60 * 60 * 1000;
-			} else {
-				// Session only: 2 hours (shorter for security)
-				token.accessTokenExpires = now + 2 * 60 * 60 * 1000;
-			}
-		}
-
-		// Fetch user profile data based on role and ID
+		assignUserDataToToken(token, user);
+		setTokenExpiration(token, user, account);
 		await enrichTokenWithProfile(token, user);
 	}
 
-	// Check token expiration and cleanup if needed
+	// Check token expiration
+	checkTokenExpiration(token);
+
+	return token;
+}
+
+/**
+ * Assign user data to token on first sign in
+ */
+function assignUserDataToToken(token: JWT, user: User): void {
+	token.role = user.role;
+	token.id = user.id;
+	token.rememberMe = user.rememberMe ?? false;
+
+	// Add isModerator for lecturers
+	if (user.isModerator !== undefined) {
+		token.isModerator = user.isModerator;
+	}
+
+	// Add username for admin
+	if (user.username) {
+		token.username = user.username;
+	}
+
+	// Store tokens from user object
+	if (user.accessToken) {
+		token.accessToken = user.accessToken;
+	}
+	if (user.refreshToken) {
+		token.refreshToken = user.refreshToken;
+	}
+}
+
+/**
+ * Set token expiration based on remember me preference
+ */
+function setTokenExpiration(
+	token: JWT,
+	user: User,
+	account: Record<string, unknown> | null | undefined,
+): void {
+	if (!account) return;
+
+	const now = Date.now();
+	if (user.rememberMe) {
+		// Remember me: 7 days (aligns with 1-week refresh token)
+		token.accessTokenExpires = now + 7 * 24 * 60 * 60 * 1000;
+	} else {
+		// Session only: 2 hours (shorter for security)
+		token.accessTokenExpires = now + 2 * 60 * 60 * 1000;
+	}
+}
+
+/**
+ * Check if token has expired
+ */
+function checkTokenExpiration(token: JWT): void {
 	if (token.accessTokenExpires && Date.now() > token.accessTokenExpires) {
 		console.warn('JWT token expired, will require re-authentication');
 		// Don't clear token here, let the session callback handle it
 	}
-
-	return token;
 }
 
 /**
