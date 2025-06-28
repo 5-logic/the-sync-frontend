@@ -2,8 +2,8 @@ import { Session } from 'next-auth';
 import { JWT } from 'next-auth/jwt';
 
 /**
- * 🔐 Session Callback Handler
- * Manages session data sent to client
+ * Session Callback Handler
+ * Manages session data sent to client with remember me support
  */
 export async function sessionCallback({
 	session,
@@ -12,6 +12,17 @@ export async function sessionCallback({
 	session: Session;
 	token: JWT;
 }): Promise<Session> {
+	// Token expiration before creating session
+	if (token.accessTokenExpires && Date.now() > token.accessTokenExpires) {
+		console.warn('Session expired, will require re-authentication');
+		// Return minimal session to trigger re-authentication
+		return {
+			...session,
+			user: undefined,
+			expires: new Date(Date.now() - 1000).toISOString(), // Expired timestamp
+		} as unknown as Session;
+	}
+
 	// Send properties to the client
 	if (session.user && token.id && token.role) {
 		session.user.id = token.id;
@@ -51,6 +62,22 @@ export async function sessionCallback({
 	}
 	if (token.refreshToken) {
 		session.refreshToken = token.refreshToken;
+	}
+
+	// Remember me preference to session
+	session.rememberMe = token.rememberMe ?? false;
+
+	// Dynamic session expiration based on backend token lifetimes and remember me
+	if (token.rememberMe) {
+		// Remember me: 7 days (aligns with 1-week refresh token)
+		const sevenDaysFromNow = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+		session.expires = sevenDaysFromNow.toISOString();
+	} else {
+		// Session only: 2 hours (shorter for security)
+		// IMPORTANT: For true session-only behavior (clear on tab close),
+		// we set a short expiry that requires active session
+		const twoHoursFromNow = new Date(Date.now() + 2 * 60 * 60 * 1000);
+		session.expires = twoHoursFromNow.toISOString();
 	}
 
 	return session;
