@@ -8,8 +8,8 @@ import {
 } from '@/lib/utils/auth/profile-fetcher';
 
 /**
- * 🔐 JWT Callback Handler
- * Manages JWT token creation and updates
+ * JWT Callback Handler
+ * Manages JWT token creation and updates with remember me support
  */
 export async function jwtCallback({
 	token,
@@ -35,6 +35,9 @@ export async function jwtCallback({
 			token.username = user.username;
 		}
 
+		// Store remember me preference
+		token.rememberMe = user.rememberMe ?? false;
+
 		// Store tokens from user object
 		if (user.accessToken) {
 			token.accessToken = user.accessToken;
@@ -43,21 +46,33 @@ export async function jwtCallback({
 			token.refreshToken = user.refreshToken;
 		}
 
+		// Dynamic token expiration based on backend settings and remember me
+		if (account) {
+			const now = Date.now();
+			if (user.rememberMe) {
+				// Remember me: 7 days (aligns with 1-week refresh token)
+				token.accessTokenExpires = now + 7 * 24 * 60 * 60 * 1000;
+			} else {
+				// Session only: 2 hours (shorter for security)
+				token.accessTokenExpires = now + 2 * 60 * 60 * 1000;
+			}
+		}
+
 		// Fetch user profile data based on role and ID
 		await enrichTokenWithProfile(token, user);
+	}
 
-		// Handle token refresh if needed
-		if (account) {
-			// Store token expiration time (1 hour from now)
-			token.accessTokenExpires = Date.now() + 60 * 60 * 1000;
-		}
+	// Check token expiration and cleanup if needed
+	if (token.accessTokenExpires && Date.now() > token.accessTokenExpires) {
+		console.warn('JWT token expired, will require re-authentication');
+		// Don't clear token here, let the session callback handle it
 	}
 
 	return token;
 }
 
 /**
- * 🔍 Enrich token with user profile data
+ * Enrich token with user profile data
  */
 async function enrichTokenWithProfile(token: JWT, user: User): Promise<void> {
 	try {
@@ -83,7 +98,7 @@ async function enrichTokenWithProfile(token: JWT, user: User): Promise<void> {
 			token.fullName = fallbackName;
 		}
 	} catch (error) {
-		console.error('❌ Error enriching token with profile:', error);
+		console.error('Error enriching token with profile:', error);
 
 		// Fallback based on user role
 		const fallbackName = getFallbackName(user.role, {
