@@ -22,11 +22,12 @@ const ThesisVersionControl = () => {
 					history
 				</Paragraph>
 			</div>
-			<Row gutter={24}>
-				<Col span={12}>
+
+			<Row gutter={[16, 16]}>
+				<Col xs={24} md={12}>
 					<CurrentVersionCard thesis={thesis} versionData={currentVersion} />
 				</Col>
-				<Col span={12}>
+				<Col xs={24} md={12}>
 					<PreviousVersionsCard thesis={thesis} versions={previousVersions} />
 				</Col>
 			</Row>

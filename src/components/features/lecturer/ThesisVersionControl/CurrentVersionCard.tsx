@@ -26,21 +26,21 @@ const CurrentVersionCard = ({ thesis, versionData }: Props) => (
 		extra={<Text type="secondary">v{versionData.version}</Text>}
 	>
 		<Row gutter={[0, 16]}>
-			<Col span={24}>
+			<Col xs={24}>
 				<Text strong type="secondary">
 					Thesis Title
 				</Text>
-				<div>{thesis.englishName}</div>
+				<div style={{ wordBreak: 'break-word' }}>{thesis.englishName}</div>
 			</Col>
 
-			<Col span={24}>
+			<Col xs={24}>
 				<Text strong type="secondary">
 					Thesis Description
 				</Text>
-				<div>{thesis.description}</div>
+				<div style={{ wordBreak: 'break-word' }}>{thesis.description}</div>
 			</Col>
 
-			<Col span={24}>
+			<Col xs={24}>
 				<ThesisFileVersionCard file={versionData} />
 			</Col>
 		</Row>
