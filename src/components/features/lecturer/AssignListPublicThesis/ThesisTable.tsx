@@ -13,7 +13,6 @@ interface Props {
 	onSelectionChange?: (selectedIds: string[]) => void;
 }
 
-
 export default function ThesisTable({ theses }: Props) {
 	const [data, setData] = useState<ExtendedThesis[]>([]);
 	const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);

@@ -1,12 +1,11 @@
 'use client';
 
-import { Card, Col, Row, Space, Typography, Button, message } from 'antd';
+import { Button, Card, Col, Row, Space, Typography, message } from 'antd';
 import { useMemo, useState } from 'react';
 
+import ThesisFilterBar from '@/components/features/lecturer/AssignListPublicThesis/ThesisFilterBar';
+import ThesisTable from '@/components/features/lecturer/AssignListPublicThesis/ThesisTable';
 import { mockTheses } from '@/data/thesis';
-
-import ThesisFilterBar from './ThesisFilterBar';
-import ThesisTable from './ThesisTable';
 
 const { Title, Paragraph } = Typography;
 
@@ -42,13 +41,11 @@ export default function AssignListPublicThesisPage() {
 		if (selectedIds.length === 0) return;
 
 		const updated = theses.map((thesis) =>
-			selectedIds.includes(thesis.id)
-				? { ...thesis, isPublish: true }
-				: thesis,
+			selectedIds.includes(thesis.id) ? { ...thesis, isPublish: true } : thesis,
 		);
 		setTheses(updated);
 		message.success(`Published ${selectedIds.length} thesis(es)`);
-		setSelectedIds([]); // Clear selection
+		setSelectedIds([]);
 	};
 
 	return (
@@ -57,14 +54,14 @@ export default function AssignListPublicThesisPage() {
 			size="large"
 			style={{ padding: 24, width: '100%' }}
 		>
-			{/* Title + Button Row */}
 			<Row justify="space-between" align="middle">
 				<Col>
 					<Title level={2} style={{ marginBottom: 4 }}>
 						Assign List Public Thesis
 					</Title>
 					<Paragraph type="secondary" style={{ marginBottom: 0 }}>
-						Manage the list of published thesis topics available for student selection.
+						Manage the list of published thesis topics available for student
+						selection.
 					</Paragraph>
 				</Col>
 				<Col>
@@ -78,7 +75,6 @@ export default function AssignListPublicThesisPage() {
 				</Col>
 			</Row>
 
-			{/* Filters + Table */}
 			<Row gutter={[16, 16]}>
 				<Col span={24}>
 					<Card>
