@@ -312,7 +312,7 @@ export const useLecturerStore = create<LecturerState>()(
 						set({ deleting: false });
 						return true;
 					} else {
-						throw new Error(response.error || 'Failed to delete lecturer');
+						throw new Error(response.error ?? 'Failed to delete lecturer');
 					}
 				} catch (error: unknown) {
 					const errorMessage =
@@ -324,7 +324,7 @@ export const useLecturerStore = create<LecturerState>()(
 						typeof error === 'object' &&
 						'response' in error &&
 						error.response
-							? (error.response as { status?: number }).status || 500
+							? ((error.response as { status?: number }).status ?? 500)
 							: 500;
 
 					set({
