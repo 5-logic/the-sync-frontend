@@ -18,6 +18,7 @@ import {
 	commonStoreUtilities,
 	createBatchCreateAction,
 	createCreateAction,
+	createDeleteAction,
 	createFetchBySemesterAction,
 	createSearchFilter,
 	createUpdateAction,
@@ -34,6 +35,7 @@ interface StudentState {
 	loading: boolean;
 	creating: boolean;
 	updating: boolean;
+	deleting: boolean;
 	creatingMany: boolean; // Legacy field for backward compatibility
 	creatingManyStudents: boolean; // New field for consistency
 	togglingStatus: boolean;
@@ -74,6 +76,7 @@ interface StudentState {
 	createStudent: (data: StudentCreate) => Promise<boolean>;
 	createManyStudents: (data: ImportStudent) => Promise<boolean>;
 	updateStudent: (id: string, data: StudentUpdate) => Promise<boolean>;
+	deleteStudent: (id: string) => Promise<boolean>;
 	toggleStudentStatus: (
 		id: string,
 		data: StudentToggleStatus,
@@ -115,6 +118,7 @@ export const useStudentStore = create<StudentState>()(
 			loading: false,
 			creating: false,
 			updating: false,
+			deleting: false,
 			creatingMany: false,
 			creatingManyStudents: false,
 			togglingStatus: false,
@@ -172,6 +176,24 @@ export const useStudentStore = create<StudentState>()(
 					// This keeps the cache warm while getting fresh data
 					setTimeout(() => {
 						get().fetchStudents(true); // Force refresh after a short delay
+					}, 100);
+				}
+				return result;
+			},
+
+			deleteStudent: async (id: string) => {
+				const result = await createDeleteAction(studentService, 'student')(
+					set,
+					get,
+				)(id);
+				if (result) {
+					// For deletes, invalidate cache and refresh data
+					cacheInvalidation.invalidateEntity('student');
+					setTimeout(() => {
+						const { selectedSemesterId } = get();
+						if (selectedSemesterId) {
+							get().fetchStudentsBySemester(selectedSemesterId);
+						}
 					}, 100);
 				}
 				return result;
