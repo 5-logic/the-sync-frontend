@@ -3,11 +3,10 @@
 import { Card, Col, Row, Space, Typography } from 'antd';
 import { useMemo, useState } from 'react';
 
+import ThesisFilterBar from '@/components/features/lecturer/AssignListPublicThesis/ThesisFilterBar';
+import ThesisTable from '@/components/features/lecturer/AssignListPublicThesis/ThesisTable';
 import mockGroups from '@/data/group';
 import { mockTheses } from '@/data/thesis';
-
-import ThesisFilterBar from './ThesisFilterBar';
-import ThesisTable from './ThesisTable';
 
 interface Filters {
 	englishName?: string;
@@ -39,7 +38,7 @@ export default function AssignListPublicThesisPage() {
 	const domainOptions = useMemo(() => {
 		const domains = mockTheses
 			.map((t) => t.domain)
-			.filter((d): d is string => typeof d === 'string' && !!d); // thêm !!d để bỏ undefined, null, ''
+			.filter((d): d is string => typeof d === 'string' && !!d);
 		return Array.from(new Set(domains));
 	}, []);
 
