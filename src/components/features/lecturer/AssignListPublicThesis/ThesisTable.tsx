@@ -1,7 +1,9 @@
 'use client';
 
-import { Button, Space, Table, Tag } from 'antd';
+import { EyeOutlined } from '@ant-design/icons';
+import { Button, Switch, Table, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
+import { useState } from 'react';
 
 import { ExtendedThesis } from '@/data/thesis';
 
@@ -10,18 +12,19 @@ interface Props {
 }
 
 export default function ThesisTable({ theses }: Props) {
+	const [data, setData] = useState<ExtendedThesis[]>(theses);
+
+	const handleTogglePublish = (id: string, newValue: boolean) => {
+		const updated = data.map((item) =>
+			item.id === id ? { ...item, isPublish: newValue } : item,
+		);
+		setData(updated);
+		console.log(
+			`Thesis ${id} is now ${newValue ? 'Published' : 'Unpublished'}`,
+		);
+	};
+
 	const columns: ColumnsType<ExtendedThesis> = [
-		{
-			title: 'Vietnamese Name',
-			dataIndex: 'vietnameseName',
-			key: 'vietnameseName',
-			ellipsis: false,
-			render: (text) => (
-				<div style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>
-					{text}
-				</div>
-			),
-		},
 		{
 			title: 'English Name',
 			dataIndex: 'englishName',
@@ -32,12 +35,6 @@ export default function ThesisTable({ theses }: Props) {
 					{text}
 				</div>
 			),
-		},
-		{
-			title: 'Abbreviation',
-			dataIndex: 'abbreviation',
-			key: 'abbreviation',
-			responsive: ['md'],
 		},
 		{
 			title: 'Group Name',
@@ -53,18 +50,15 @@ export default function ThesisTable({ theses }: Props) {
 			responsive: ['md'],
 		},
 		{
-			title: 'Key Version',
-			dataIndex: 'version',
-			key: 'version',
-			responsive: ['lg'],
-		},
-		{
 			title: 'Status',
 			key: 'status',
 			render: (_, record) => (
-				<Tag color={record.isPublish ? 'green' : 'red'}>
-					{record.isPublish ? 'Publish' : 'Unpublish'}
-				</Tag>
+				<Switch
+					checked={record.isPublish}
+					checkedChildren="Published"
+					unCheckedChildren="Unpublished"
+					onChange={(checked) => handleTogglePublish(record.id, checked)}
+				/>
 			),
 			responsive: ['sm'],
 		},
@@ -72,10 +66,15 @@ export default function ThesisTable({ theses }: Props) {
 			title: 'Actions',
 			key: 'actions',
 			render: (_, record) => (
-				<Space>
-					<Button type="primary">View Details</Button>
-					<Button>{record.isPublish ? 'Unpublish' : 'Publish'}</Button>
-				</Space>
+				<Tooltip title="View Detail">
+					<Button
+						type="text"
+						icon={<EyeOutlined />}
+						onClick={() =>
+							console.log(`Viewing details for ${record.englishName}`)
+						}
+					/>
+				</Tooltip>
 			),
 		},
 	];
@@ -84,9 +83,8 @@ export default function ThesisTable({ theses }: Props) {
 		<Table
 			rowKey="id"
 			columns={columns}
-			dataSource={theses}
+			dataSource={data}
 			pagination={{ pageSize: 10, showSizeChanger: true }}
-			// scroll x sẽ tự hiện khi kích thước màn hình quá nhỏ
 			scroll={{ x: '100%' }}
 		/>
 	);
