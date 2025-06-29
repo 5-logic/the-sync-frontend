@@ -83,86 +83,125 @@ export class HttpInterceptors {
 	}
 
 	/**
+	 * Check if request config is valid
+	 */
+	private static validateRequestConfig(
+		error: AxiosError,
+	): ExtendedAxiosRequestConfig | null {
+		if (!error.config) {
+			console.error(
+				'API Error (no config):',
+				error.response?.data ?? error.message,
+			);
+			return null;
+		}
+
+		if (!HttpInterceptors.isRetryableRequest(error.config)) {
+			console.error('Invalid request config for retry');
+			return null;
+		}
+
+		return error.config;
+	}
+
+	/**
+	 * Check if the request is an authentication endpoint
+	 */
+	private static isAuthEndpoint(url?: string): boolean {
+		if (!url) return false;
+
+		const authEndpoints = [
+			'/auth/admin/login',
+			'/auth/user/login',
+			'/auth/admin/refresh',
+			'/auth/user/refresh',
+		];
+
+		return authEndpoints.some((endpoint) => url.includes(endpoint));
+	}
+
+	/**
+	 * Handle token refresh and retry request
+	 */
+	private static async handleTokenRefresh(
+		originalRequest: ExtendedAxiosRequestConfig,
+		httpClient: AxiosInstance,
+	): Promise<AxiosResponse> {
+		console.log('🔄 Token expired, attempting refresh...');
+
+		const newAccessToken = await TokenManager.refreshAccessToken();
+
+		if (newAccessToken) {
+			console.log('✅ Token refresh successful');
+			originalRequest.headers = originalRequest.headers ?? {};
+			originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+			return httpClient(originalRequest);
+		}
+
+		console.warn('❌ Token refresh failed, redirecting to login');
+		TokenManager.clearTokens();
+
+		if (typeof window !== 'undefined') {
+			window.location.href = '/login';
+		}
+
+		throw new Error('Token refresh failed');
+	}
+
+	/**
+	 * Log API errors for monitoring
+	 */
+	private static logApiError(
+		error: AxiosError,
+		originalRequest: ExtendedAxiosRequestConfig,
+	): void {
+		if (error.response?.status !== 401) {
+			console.error('API Error:', {
+				status: error.response?.status,
+				url: originalRequest.url,
+				message: error.response?.data ?? error.message,
+			});
+		}
+	}
+
+	/**
+	 * Create standard error object
+	 */
+	private static createErrorObject(error: AxiosError): Error {
+		return error instanceof Error ? error : new Error(String(error));
+	}
+
+	/**
 	 * Smart token refresh with remember me support and controlled refresh frequency
 	 */
 	static createResponseErrorHandler(httpClient: AxiosInstance) {
 		return async (error: AxiosError) => {
-			// Handle case where config might be undefined
-			if (!error.config) {
-				console.error(
-					'API Error (no config):',
-					error.response?.data ?? error.message,
-				);
-				const errorToReject =
-					error instanceof Error ? error : new Error(String(error));
-				return Promise.reject(errorToReject);
-			}
-			const originalRequest = error.config;
+			const originalRequest = HttpInterceptors.validateRequestConfig(error);
 
-			// Ensure we can add retry flag to the request
-			if (!HttpInterceptors.isRetryableRequest(originalRequest)) {
-				console.error('Invalid request config for retry');
-				const errorToReject =
-					error instanceof Error ? error : new Error(String(error));
-				return Promise.reject(errorToReject);
+			if (!originalRequest) {
+				return Promise.reject(HttpInterceptors.createErrorObject(error));
 			}
 
-			// Skip token refresh for auth endpoints (login/refresh)
-			const authEndpoints = [
-				'/auth/admin/login',
-				'/auth/user/login',
-				'/auth/admin/refresh',
-				'/auth/user/refresh',
-			];
-			const isAuthEndpoint = authEndpoints.some((endpoint) =>
-				originalRequest.url?.includes(endpoint),
-			);
-
-			// Handle 401 Unauthorized (token expired) - but NOT for auth endpoints
-			if (
+			const shouldRetryWithRefresh =
 				error.response?.status === 401 &&
 				!originalRequest._retry &&
-				!isAuthEndpoint
-			) {
+				!HttpInterceptors.isAuthEndpoint(originalRequest.url);
+
+			if (shouldRetryWithRefresh) {
 				originalRequest._retry = true;
 
-				console.log('🔄 Token expired, attempting refresh...');
-
-				// Use TokenManager for token refresh
-				const newAccessToken = await TokenManager.refreshAccessToken();
-
-				if (newAccessToken) {
-					console.log('✅ Token refresh successful');
-					// SUCCESS: Retry original request with new token
-					originalRequest.headers = originalRequest.headers ?? {};
-					originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-
-					return httpClient(originalRequest);
-				} else {
-					console.warn('❌ Token refresh failed, redirecting to login');
-					// REFRESH FAILED: Clear tokens and redirect to login
-					TokenManager.clearTokens();
-
-					// Only redirect if we're in the browser
-					if (typeof window !== 'undefined') {
-						window.location.href = '/login';
-					}
+				try {
+					return await HttpInterceptors.handleTokenRefresh(
+						originalRequest,
+						httpClient,
+					);
+				} catch {
+					// Token refresh failed, fall through to rejection
 				}
 			}
 
-			// Log API errors for monitoring (suppress common errors)
-			if (error.response?.status !== 401) {
-				console.error('API Error:', {
-					status: error.response?.status,
-					url: originalRequest.url,
-					message: error.response?.data ?? error.message,
-				});
-			}
-
-			// Ensure error is an Error instance
-			const errorToReject =
-				error instanceof Error ? error : new Error(String(error));
-			return Promise.reject(errorToReject);
+			HttpInterceptors.logApiError(error, originalRequest);
+			return Promise.reject(HttpInterceptors.createErrorObject(error));
 		};
 	}
 }
