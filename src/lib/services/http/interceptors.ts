@@ -26,7 +26,8 @@ export class HttpInterceptors {
 		return typeof config === 'object' && config !== null;
 	}
 	/**
-	 * Add access token with smart fallback
+	 * Add access token with simple check (no automatic refresh)
+	 * Only refresh when we get 401 error to reduce unnecessary backend calls
 	 */
 	static createRequestInterceptor() {
 		return async (config: InternalAxiosRequestConfig) => {
@@ -39,15 +40,18 @@ export class HttpInterceptors {
 			];
 			const isAuthEndpoint = authEndpoints.some((endpoint) =>
 				config.url?.includes(endpoint),
-			); // For auth endpoints, don't add any Authorization header
+			);
+
+			// For auth endpoints, don't add any Authorization header
 			if (isAuthEndpoint) {
 				return config;
 			}
 
-			// For all other endpoints, try to get a valid access token using TokenManager
+			// For all other endpoints, just get current access token without refreshing
+			// Let 401 handler deal with refresh to avoid unnecessary backend calls
 			try {
-				const accessToken = await TokenManager.getValidAccessToken();
-				if (accessToken) {
+				const accessToken = TokenManager.getAccessToken(); // ← CHANGED: No auto-refresh
+				if (accessToken && TokenManager.isTokenValid(accessToken)) {
 					config.headers = config.headers ?? {};
 					config.headers.Authorization = `Bearer ${accessToken}`;
 				}
@@ -79,8 +83,9 @@ export class HttpInterceptors {
 	}
 
 	/**
-	 * Smart token refresh with remember me support
-	 */ static createResponseErrorHandler(httpClient: AxiosInstance) {
+	 * Smart token refresh with remember me support and controlled refresh frequency
+	 */
+	static createResponseErrorHandler(httpClient: AxiosInstance) {
 		return async (error: AxiosError) => {
 			// Handle case where config might be undefined
 			if (!error.config) {
@@ -111,7 +116,9 @@ export class HttpInterceptors {
 			];
 			const isAuthEndpoint = authEndpoints.some((endpoint) =>
 				originalRequest.url?.includes(endpoint),
-			); // Handle 401 Unauthorized (token expired) - but NOT for auth endpoints
+			);
+
+			// Handle 401 Unauthorized (token expired) - but NOT for auth endpoints
 			if (
 				error.response?.status === 401 &&
 				!originalRequest._retry &&
@@ -119,16 +126,20 @@ export class HttpInterceptors {
 			) {
 				originalRequest._retry = true;
 
+				console.log('🔄 Token expired, attempting refresh...');
+
 				// Use TokenManager for token refresh
 				const newAccessToken = await TokenManager.refreshAccessToken();
 
 				if (newAccessToken) {
+					console.log('✅ Token refresh successful');
 					// SUCCESS: Retry original request with new token
 					originalRequest.headers = originalRequest.headers ?? {};
 					originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
 
 					return httpClient(originalRequest);
 				} else {
+					console.warn('❌ Token refresh failed, redirecting to login');
 					// REFRESH FAILED: Clear tokens and redirect to login
 					TokenManager.clearTokens();
 
@@ -139,12 +150,14 @@ export class HttpInterceptors {
 				}
 			}
 
-			// Log API errors for monitoring
-			console.error('API Error:', {
-				status: error.response?.status,
-				url: originalRequest.url,
-				message: error.response?.data ?? error.message,
-			});
+			// Log API errors for monitoring (suppress common errors)
+			if (error.response?.status !== 401) {
+				console.error('API Error:', {
+					status: error.response?.status,
+					url: originalRequest.url,
+					message: error.response?.data ?? error.message,
+				});
+			}
 
 			// Ensure error is an Error instance
 			const errorToReject =
