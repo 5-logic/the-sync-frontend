@@ -9,11 +9,20 @@ import { Student } from '@/schemas/student';
 
 interface Props {
 	data: ReadonlyArray<Student>;
+	onSelectionChange?: (selectedRowKeys: string[]) => void;
+	selectedRowKeys?: string[];
+	showOnlyUngrouped?: boolean;
 }
 
-export default function StudentTable({ data }: Readonly<Props>) {
-	// Chỉ lấy những sinh viên chưa vào nhóm (isActive = false)
-	const filteredData = data.filter((student) => !student.isActive);
+export default function StudentTable({
+	data,
+	onSelectionChange,
+	selectedRowKeys,
+	showOnlyUngrouped = true,
+}: Readonly<Props>) {
+	const filteredData = showOnlyUngrouped
+		? data.filter((student) => !student.isActive)
+		: data;
 
 	const columns: ColumnsType<Student> = [
 		{
@@ -46,6 +55,15 @@ export default function StudentTable({ data }: Readonly<Props>) {
 			rowKey="id"
 			columns={columns}
 			dataSource={filteredData}
+			rowSelection={
+				onSelectionChange
+					? {
+							selectedRowKeys,
+							onChange: (selectedKeys) =>
+								onSelectionChange(selectedKeys as string[]),
+						}
+					: undefined
+			}
 			pagination={TablePagination}
 			scroll={{ x: 'max-content' }}
 		/>
