@@ -44,9 +44,9 @@ export function isValidVietnameseMobile(phone: string): boolean {
 	const mobilePatterns = [
 		/^03[2-9]\d{7}$/, // Viettel, MobiFone, VinaPhone (032-039)
 		/^05[6-9]\d{7}$/, // Vietnamobile, Gmobile (056-059)
-		/^07[0-9]\d{7}$/, // Viettel (070-079)
+		/^07\d{8}$/, // Viettel (070-079)
 		/^08[1-9]\d{7}$/, // Viettel, MobiFone, VinaPhone (081-089)
-		/^09[0-9]\d{7}$/, // Viettel, MobiFone, VinaPhone (090-099)
+		/^09\d{8}$/, // Viettel, MobiFone, VinaPhone (090-099)
 	];
 
 	return mobilePatterns.some((pattern) => pattern.test(normalized));
@@ -65,7 +65,7 @@ export function isValidVietnameseLandline(phone: string): boolean {
 	}
 
 	// Valid landline pattern: 02x-xxxx-xxxx
-	const landlinePattern = /^02[0-9]\d{7}$/;
+	const landlinePattern = /^02\d{8}$/;
 
 	return landlinePattern.test(normalized);
 }
