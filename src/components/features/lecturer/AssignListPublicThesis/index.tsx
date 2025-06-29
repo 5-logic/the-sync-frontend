@@ -29,7 +29,9 @@ export default function AssignListPublicThesisPage() {
 				const nameMatch =
 					keyword === ''
 						? true
-						: englishName.includes(keyword) || vietnameseName.includes(keyword);
+						: [englishName, vietnameseName].some((name) =>
+								name.includes(keyword),
+							);
 
 				const publishMatch =
 					filters.isPublish === undefined
