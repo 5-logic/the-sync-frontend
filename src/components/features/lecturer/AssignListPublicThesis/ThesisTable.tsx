@@ -52,13 +52,11 @@ export default function ThesisTable({ theses }: Props) {
 			key: 'groupName',
 			render: (_, record) =>
 				getGroupName(record.group?.id ?? record.groupId ?? undefined),
-			responsive: ['lg'],
 		},
 		{
 			title: 'Domain',
 			dataIndex: 'domain',
 			key: 'domain',
-			responsive: ['md'],
 		},
 		{
 			title: 'Status',
@@ -71,7 +69,6 @@ export default function ThesisTable({ theses }: Props) {
 					onChange={(checked) => handleTogglePublish(record.id, checked)}
 				/>
 			),
-			responsive: ['sm'],
 		},
 		{
 			title: 'Actions',
