@@ -1,6 +1,6 @@
 'use client';
 
-import { Card, Col, Row, Space, Typography } from 'antd';
+import { Card, Col, Row, Space, Typography, Button, message } from 'antd';
 import { useMemo, useState } from 'react';
 
 import { mockTheses } from '@/data/thesis';
@@ -16,8 +16,11 @@ export default function AssignListPublicThesisPage() {
 		isPublish: undefined as boolean | undefined,
 	});
 
+	const [selectedIds, setSelectedIds] = useState<string[]>([]);
+	const [theses, setTheses] = useState(mockTheses);
+
 	const filteredTheses = useMemo(() => {
-		return mockTheses
+		return theses
 			.filter((t) => t.status === 'Approved')
 			.filter((thesis) => {
 				const keyword = filters.englishName?.toLowerCase();
@@ -33,7 +36,20 @@ export default function AssignListPublicThesisPage() {
 
 				return nameMatch && publishMatch;
 			});
-	}, [filters]);
+	}, [filters, theses]);
+
+	const handlePublishSelected = () => {
+		if (selectedIds.length === 0) return;
+
+		const updated = theses.map((thesis) =>
+			selectedIds.includes(thesis.id)
+				? { ...thesis, isPublish: true }
+				: thesis,
+		);
+		setTheses(updated);
+		message.success(`Published ${selectedIds.length} thesis(es)`);
+		setSelectedIds([]); // Clear selection
+	};
 
 	return (
 		<Space
@@ -41,16 +57,28 @@ export default function AssignListPublicThesisPage() {
 			size="large"
 			style={{ padding: 24, width: '100%' }}
 		>
-			<Space direction="vertical" size={4} style={{ width: '100%' }}>
-				<Title level={2} style={{ margin: 0 }}>
-					Assign List Public Thesis
-				</Title>
-				<Paragraph type="secondary" style={{ marginBottom: 0 }}>
-					Manage the list of published thesis topics available for student
-					selection.
-				</Paragraph>
-			</Space>
+			{/* Title + Button Row */}
+			<Row justify="space-between" align="middle">
+				<Col>
+					<Title level={2} style={{ marginBottom: 4 }}>
+						Assign List Public Thesis
+					</Title>
+					<Paragraph type="secondary" style={{ marginBottom: 0 }}>
+						Manage the list of published thesis topics available for student selection.
+					</Paragraph>
+				</Col>
+				<Col>
+					<Button
+						type="primary"
+						onClick={handlePublishSelected}
+						disabled={selectedIds.length === 0}
+					>
+						Publish Selected
+					</Button>
+				</Col>
+			</Row>
 
+			{/* Filters + Table */}
 			<Row gutter={[16, 16]}>
 				<Col span={24}>
 					<Card>
@@ -61,7 +89,10 @@ export default function AssignListPublicThesisPage() {
 							}
 						/>
 
-						<ThesisTable theses={filteredTheses} />
+						<ThesisTable
+							theses={filteredTheses}
+							onSelectionChange={setSelectedIds}
+						/>
 					</Card>
 				</Col>
 			</Row>

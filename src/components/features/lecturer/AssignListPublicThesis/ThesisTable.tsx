@@ -10,7 +10,9 @@ import { ExtendedThesis } from '@/data/thesis';
 
 interface Props {
 	theses: ExtendedThesis[];
+	onSelectionChange?: (selectedIds: string[]) => void;
 }
+
 
 export default function ThesisTable({ theses }: Props) {
 	const [data, setData] = useState<ExtendedThesis[]>([]);
