@@ -11,7 +11,7 @@ import { SidebarSection } from '@/components/layout/CollapsibleLayout/SidebarSec
 import Footer from '@/components/layout/Footer';
 import { HeaderSection } from '@/components/layout/Header';
 import { useResponsiveLayout } from '@/hooks/ui';
-import { useAppStore } from '@/store/useAppStore';
+import { useAppStore } from '@/store';
 
 const { Content } = Layout;
 
@@ -59,7 +59,7 @@ const CollapsibleLayout: React.FC<CollapsibleLayoutProps> = ({
 						onMenuClick={handleMobileMenuClick}
 					>
 						{sidebar}
-					</SidebarSection>{' '}
+					</SidebarSection>
 					{/* Main Layout */}
 					<Layout
 						style={{
@@ -72,7 +72,7 @@ const CollapsibleLayout: React.FC<CollapsibleLayoutProps> = ({
 							collapsed={sidebarCollapsed}
 							onToggle={toggleSidebar}
 							colorBgContainer={colorBgContainer}
-						/>{' '}
+						/>
 						{/* Content */}
 						<Content
 							style={{
