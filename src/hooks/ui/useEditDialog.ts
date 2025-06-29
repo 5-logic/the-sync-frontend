@@ -1,47 +1,60 @@
 import { Form } from 'antd';
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 
-interface UseEditDialogProps<T> {
-	open: boolean;
-	entity: T | null;
+interface UseEditDialogProps {
 	onClose: () => void;
 }
 
 export function useEditDialog<T, F = Record<string, unknown>>({
-	open,
-	entity,
 	onClose,
-}: UseEditDialogProps<T>) {
+}: UseEditDialogProps) {
 	const [form] = Form.useForm();
 
-	// Reset form when dialog opens/closes
-	useEffect(() => {
-		if (open && entity) {
+	// Separate method to initialize form with entity data
+	const initializeForm = useCallback(
+		(entity: T) => {
 			form.setFieldsValue(entity);
-		} else if (!open) {
-			form.resetFields();
-		}
-	}, [open, entity, form]);
+		},
+		[form],
+	);
 
-	const handleCancel = () => {
+	// Separate method to reset form
+	const resetForm = useCallback(() => {
 		form.resetFields();
-		onClose();
-	};
+	}, [form]);
 
-	const handleSubmit = async (onSubmit: (values: F) => Promise<boolean>) => {
-		try {
-			const values = await form.validateFields();
-			const success = await onSubmit(values);
-			if (success) {
-				onClose();
+	// Clean up form when component unmounts
+	useEffect(() => {
+		return () => {
+			form.resetFields();
+		};
+	}, [form]);
+
+	const handleCancel = useCallback(() => {
+		resetForm();
+		onClose();
+	}, [resetForm, onClose]);
+
+	const handleSubmit = useCallback(
+		async (onSubmit: (values: F) => Promise<boolean>) => {
+			try {
+				const values = await form.validateFields();
+				const success = await onSubmit(values);
+				if (success) {
+					resetForm();
+					onClose();
+				}
+			} catch (error) {
+				console.error('Form validation failed:', error);
 			}
-		} catch (error) {
-			console.error('Form validation failed:', error);
-		}
-	};
+		},
+		[form, resetForm, onClose],
+	);
 
 	return {
 		form,
+		initializeForm,
+		resetForm,
 		handleCancel,
 		handleSubmit,
 	};
