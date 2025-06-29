@@ -7,21 +7,32 @@ const { Title, Text } = Typography;
 export default function WelcomeHeader() {
 	return (
 		<>
-			<Title level={2} style={{ marginBottom: 8 }}>
+			<Title
+				level={2}
+				className="mb-2"
+				style={{ textAlign: 'center', fontWeight: 700 }}
+			>
 				Welcome to TheSync{' '}
 				<span
-					role="img"
 					aria-label="wave"
 					style={{
-						fontSize: 24,
-						verticalAlign: 'middle',
+						fontSize: 36,
+						lineHeight: 1,
 						display: 'inline-block',
+						verticalAlign: 'middle',
+						marginLeft: 4,
 					}}
 				>
 					👋
 				</span>
 			</Title>
-			<Text type="secondary" style={{ fontSize: 16 }}>
+			<Text
+				type="secondary"
+				className="block text-center mb-8"
+				style={{
+					fontSize: 20,
+				}}
+			>
 				Before registering for a thesis, please form or join a project group.
 			</Text>
 		</>
