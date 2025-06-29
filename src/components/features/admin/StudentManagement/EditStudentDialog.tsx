@@ -1,10 +1,11 @@
 'use client';
 
-import { Form, Input, Modal, Radio, Select, Space } from 'antd';
+import { Form, Input, Modal, Select, Space } from 'antd';
 import { useEffect } from 'react';
 
+import { PersonFormFields } from '@/components/common/FormFields';
 import { FormLabel } from '@/components/common/FormLabel';
-import { isValidVietnamesePhone } from '@/lib/utils/validations';
+import { useEditDialog } from '@/hooks/ui';
 import { Student, StudentUpdate } from '@/schemas/student';
 import { useMajorStore, useStudentStore } from '@/store';
 
@@ -15,9 +16,13 @@ type Props = Readonly<{
 }>;
 
 export default function EditStudentDialog({ open, student, onClose }: Props) {
-	const [form] = Form.useForm();
 	const { updating, updateStudent } = useStudentStore();
 	const { majors, loading: majorsLoading, fetchMajors } = useMajorStore();
+	const { form, handleCancel, handleSubmit } = useEditDialog({
+		open,
+		entity: student,
+		onClose,
+	});
 
 	// Fetch majors when dialog opens
 	useEffect(() => {
@@ -26,56 +31,26 @@ export default function EditStudentDialog({ open, student, onClose }: Props) {
 		}
 	}, [open, fetchMajors]);
 
-	// Reset form when dialog opens/closes
-	useEffect(() => {
-		if (open && student) {
-			form.setFieldsValue({
-				studentId: student.studentId,
-				email: student.email,
-				fullName: student.fullName,
-				gender: student.gender,
-				phoneNumber: student.phoneNumber,
-				majorId: student.majorId,
-			});
-		} else if (!open) {
-			form.resetFields();
-		}
-	}, [open, student, form]);
+	const onSubmit = async (values: StudentUpdate): Promise<boolean> => {
+		if (!student) return false;
 
-	const handleSubmit = async () => {
-		if (!student) return;
+		const studentData: StudentUpdate = {
+			studentId: values.studentId?.trim().toUpperCase(),
+			email: values.email?.trim().toLowerCase(),
+			fullName: values.fullName?.trim(),
+			gender: values.gender,
+			phoneNumber: values.phoneNumber?.trim(),
+			majorId: values.majorId,
+		};
 
-		try {
-			const values = await form.validateFields();
-
-			const studentData: StudentUpdate = {
-				studentId: values.studentId?.trim().toUpperCase(),
-				email: values.email?.trim().toLowerCase(),
-				fullName: values.fullName?.trim(),
-				gender: values.gender,
-				phoneNumber: values.phoneNumber?.trim(),
-				majorId: values.majorId,
-			};
-
-			const success = await updateStudent(student.id, studentData);
-			if (success) {
-				onClose();
-			}
-		} catch (error) {
-			console.error('Form validation failed:', error);
-		}
-	};
-
-	const handleCancel = () => {
-		form.resetFields();
-		onClose();
+		return await updateStudent(student.id, studentData);
 	};
 
 	return (
 		<Modal
 			title="Edit Student"
 			open={open}
-			onOk={handleSubmit}
+			onOk={() => handleSubmit(onSubmit)}
 			onCancel={handleCancel}
 			confirmLoading={updating}
 			okText="Update"
@@ -104,64 +79,18 @@ export default function EditStudentDialog({ open, student, onClose }: Props) {
 						<Input placeholder="Enter student ID" />
 					</Form.Item>
 
-					{/* Email */}
-					<Form.Item
-						name="email"
-						label={<FormLabel text="Email" isRequired isBold />}
-						rules={[
-							{ required: true, message: 'Please enter email' },
-							{ type: 'email', message: 'Please enter a valid email' },
-						]}
-					>
-						<Input placeholder="Enter email" />
-					</Form.Item>
-
-					{/* Full Name */}
-					<Form.Item
-						name="fullName"
-						label={<FormLabel text="Full Name" isRequired isBold />}
-						rules={[
+					{/* Common Person Fields */}
+					<PersonFormFields
+						fullNameRules={[
 							{ required: true, message: 'Please enter full name' },
 							{ min: 1, message: 'Full name cannot be empty' },
 							{ max: 100, message: 'Full name is too long' },
 						]}
-					>
-						<Input placeholder="Enter full name" />
-					</Form.Item>
-
-					{/* Gender */}
-					<Form.Item
-						name="gender"
-						label={<FormLabel text="Gender" isRequired isBold />}
-						rules={[{ required: true, message: 'Please select gender' }]}
-					>
-						<Radio.Group>
-							<Radio value="Male">Male</Radio>
-							<Radio value="Female">Female</Radio>
-						</Radio.Group>
-					</Form.Item>
-
-					{/* Phone Number */}
-					<Form.Item
-						name="phoneNumber"
-						label={<FormLabel text="Phone Number" isRequired isBold />}
-						rules={[
-							{ required: true, message: 'Please enter phone number' },
-							{
-								validator: (_, value) => {
-									if (!value) return Promise.resolve();
-									if (isValidVietnamesePhone(value)) {
-										return Promise.resolve();
-									}
-									return Promise.reject(
-										new Error('Please enter a valid Vietnamese phone number'),
-									);
-								},
-							},
+						emailRules={[
+							{ required: true, message: 'Please enter email' },
+							{ type: 'email', message: 'Please enter a valid email' },
 						]}
-					>
-						<Input placeholder="Enter Vietnamese phone number (e.g., 0901234567)" />
-					</Form.Item>
+					/>
 
 					{/* Major */}
 					<Form.Item
