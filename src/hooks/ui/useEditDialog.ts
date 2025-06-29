@@ -7,7 +7,7 @@ interface UseEditDialogProps<T> {
 	onClose: () => void;
 }
 
-export function useEditDialog<T>({
+export function useEditDialog<T, F = Record<string, unknown>>({
 	open,
 	entity,
 	onClose,
@@ -28,7 +28,7 @@ export function useEditDialog<T>({
 		onClose();
 	};
 
-	const handleSubmit = async (onSubmit: (values: any) => Promise<boolean>) => {
+	const handleSubmit = async (onSubmit: (values: F) => Promise<boolean>) => {
 		try {
 			const values = await form.validateFields();
 			const success = await onSubmit(values);
