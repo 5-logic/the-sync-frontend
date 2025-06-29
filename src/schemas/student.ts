@@ -46,9 +46,12 @@ export const ImportStudentSchema = z.object({
 });
 
 export const StudentUpdateSchema = StudentSchema.pick({
+	studentId: true,
+	email: true,
 	fullName: true,
 	gender: true,
 	phoneNumber: true,
+	majorId: true,
 }).partial();
 
 export const StudentToggleStatusSchema = StudentSchema.pick({
