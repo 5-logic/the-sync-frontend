@@ -9,7 +9,15 @@ export default function WelcomeHeader() {
 		<>
 			<Title level={2} style={{ marginBottom: 8 }}>
 				Welcome to TheSync{' '}
-				<span role="img" aria-label="wave">
+				<span
+					role="img"
+					aria-label="wave"
+					style={{
+						fontSize: 24,
+						verticalAlign: 'middle',
+						display: 'inline-block',
+					}}
+				>
 					👋
 				</span>
 			</Title>

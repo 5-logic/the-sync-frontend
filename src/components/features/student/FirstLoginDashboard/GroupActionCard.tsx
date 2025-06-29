@@ -1,16 +1,17 @@
 'use client';
 
 import { Button, Card, Typography } from 'antd';
+import type { ReactNode } from 'react';
 
 const { Title, Text } = Typography;
 
 interface Props {
-	icon: React.ReactNode;
-	title: string;
-	description: string;
-	buttonText: string;
-	onClick?: () => void;
-	type?: 'primary' | 'default';
+	readonly icon: ReactNode;
+	readonly title: string;
+	readonly description: string;
+	readonly buttonText: string;
+	readonly onClick?: () => void;
+	readonly type?: 'primary' | 'default';
 }
 
 export default function GroupActionCard({
