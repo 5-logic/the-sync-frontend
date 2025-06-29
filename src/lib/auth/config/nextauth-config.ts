@@ -47,19 +47,43 @@ export const authOptions: NextAuthOptions = {
 			},
 		},
 	},
-	// Debug disabled
-	debug: false,
-	// Custom logger for better monitoring
+	// Debug disabled in production, enabled in development for error tracking
+	debug: process.env.NODE_ENV === 'development',
+	// Enhanced logger for better error monitoring
 	logger: {
 		error(code, metadata) {
-			console.error('NextAuth Error:', code, metadata);
+			// Only log critical errors, suppress network retry errors
+			if (code !== 'CLIENT_FETCH_ERROR') {
+				console.error('NextAuth Error:', code, metadata);
+			}
 		},
 		warn(code) {
-			console.warn('NextAuth Warning:', code);
+			// Log all warnings in development, suppress in production
+			if (process.env.NODE_ENV === 'development') {
+				console.warn('NextAuth Warning:', code);
+			}
 		},
-		// debug disabled
+		debug(code, metadata) {
+			// Only in development
+			if (process.env.NODE_ENV === 'development') {
+				console.debug('NextAuth Debug:', code, metadata);
+			}
+		},
 	},
-	// Custom events disabled
+	// Events for better error handling
+	events: {
+		async signOut() {
+			// Clear any additional tokens on signout
+			if (typeof window !== 'undefined') {
+				sessionStorage.clear();
+				localStorage.removeItem('access_token');
+				localStorage.removeItem('refresh_token');
+			}
+		},
+		async session() {
+			// Session created/updated
+		},
+	},
 };
 
 const handler = NextAuth(authOptions);
