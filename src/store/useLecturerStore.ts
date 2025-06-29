@@ -30,6 +30,7 @@ interface LecturerState {
 	loading: boolean;
 	creating: boolean;
 	updating: boolean;
+	deleting: boolean;
 	creatingMany: boolean; // Legacy field for backward compatibility
 	creatingManyLecturers: boolean; // New field for consistency
 	togglingStatus: boolean;
@@ -73,6 +74,7 @@ interface LecturerState {
 		lecturers: LecturerCreate[];
 	}) => Promise<boolean>;
 	updateLecturer: (id: string, data: LecturerUpdate) => Promise<boolean>;
+	deleteLecturer: (id: string) => Promise<boolean>;
 
 	// Separate toggle methods for better type safety and state management
 	toggleLecturerStatus: (
@@ -119,6 +121,7 @@ export const useLecturerStore = create<LecturerState>()(
 			loading: false,
 			creating: false,
 			updating: false,
+			deleting: false,
 			creatingMany: false,
 			creatingManyLecturers: false,
 			togglingStatus: false,
@@ -284,6 +287,48 @@ export const useLecturerStore = create<LecturerState>()(
 			// Check if a specific lecturer is currently being toggled (moderator)
 			isLecturerModeratorLoading: (id: string) => {
 				return get()._lecturerModeratorLoadingStates.get(id) ?? false;
+			},
+
+			deleteLecturer: async (id: string) => {
+				set({ deleting: true, lastError: null });
+
+				try {
+					const response = await lecturerService.delete(id);
+
+					if (response.success) {
+						// Remove lecturer from local state
+						const { lecturers } = get();
+						const updatedLecturers = lecturers.filter(
+							(lecturer) => lecturer.id !== id,
+						);
+						set({ lecturers: updatedLecturers });
+
+						// Refresh filtered data
+						get().filterLecturers();
+
+						// Invalidate cache
+						cacheInvalidation.invalidateEntity('lecturer');
+
+						set({ deleting: false });
+						return true;
+					} else {
+						throw new Error(response.message || 'Failed to delete lecturer');
+					}
+				} catch (error: any) {
+					const errorMessage =
+						error.response?.data?.message ||
+						error.message ||
+						'Failed to delete lecturer';
+					set({
+						deleting: false,
+						lastError: {
+							message: errorMessage,
+							statusCode: error.response?.status || 500,
+							timestamp: new Date(),
+						},
+					});
+					return false;
+				}
 			},
 		}),
 		{
