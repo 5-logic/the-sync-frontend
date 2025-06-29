@@ -178,7 +178,8 @@ export function useRouteProtection(
 		}
 
 		TokenManager.clearTokens();
-		router.push('/api/auth/signin');
+		// Redirect to actual login page instead of NextAuth signin API
+		router.push('/login');
 		setAuthState({
 			isAuthorized: false,
 			isLoading: false,
