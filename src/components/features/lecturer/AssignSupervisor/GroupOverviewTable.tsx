@@ -7,12 +7,11 @@ import { TablePagination } from '@/components/common/TablePagination';
 import { ExtendedGroup } from '@/data/group';
 
 interface Props {
-	data: ExtendedGroup[];
-	columns: ColumnsType<ExtendedGroup>;
-	rowKey?: keyof ExtendedGroup;
-	onChange?: TableProps<ExtendedGroup>['onChange'];
+	readonly data: ExtendedGroup[];
+	readonly columns: ColumnsType<ExtendedGroup>;
+	readonly rowKey?: keyof ExtendedGroup;
+	readonly onChange?: TableProps<ExtendedGroup>['onChange'];
 }
-
 export default function GroupOverviewTable({
 	data,
 	columns,
@@ -24,7 +23,7 @@ export default function GroupOverviewTable({
 			rowKey={rowKey as string}
 			columns={columns}
 			dataSource={data}
-			pagination={TablePagination} // ✅ dùng cấu hình chung của hệ thống
+			pagination={TablePagination}
 			scroll={{ x: 'max-content' }}
 			onChange={onChange}
 		/>
