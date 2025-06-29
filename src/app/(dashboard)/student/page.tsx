@@ -21,22 +21,43 @@ export default function StudentDashboard() {
 				</Text>
 			</div>
 
-			{/* User Info Card */}
-			<Card className="mb-6">
-				<Title level={4}>📋 Your Information</Title>
-				<div className="space-y-2">
-					<p>
-						<strong>Name:</strong> {session?.user?.fullName}
-					</p>
-					<p>
-						<strong>Email:</strong> {session?.user?.email}
-					</p>
-					<p>
-						<strong>Role:</strong> <Tag color="blue">{session?.user?.role}</Tag>
-					</p>
-					<p>
-						<strong>Student ID:</strong> {session?.user?.id}
-					</p>
+			{/* Student Profile Overview */}
+			<Card
+				className="mb-6"
+				style={{
+					background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
+				}}
+			>
+				<Title level={4}>👤 Student Profile</Title>
+				<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+					<div>
+						<Text type="secondary">Full Name</Text>
+						<br />
+						<Text strong style={{ fontSize: '16px' }}>
+							{session?.user?.fullName}
+						</Text>
+					</div>
+					<div>
+						<Text type="secondary">Student ID</Text>
+						<br />
+						<Text strong style={{ fontSize: '16px' }}>
+							{session?.user?.id}
+						</Text>
+					</div>
+					<div>
+						<Text type="secondary">Email Address</Text>
+						<br />
+						<Text strong style={{ fontSize: '16px' }}>
+							{session?.user?.email}
+						</Text>
+					</div>
+					<div>
+						<Text type="secondary">Academic Status</Text>
+						<br />
+						<Tag color="blue" style={{ fontSize: '14px', padding: '4px 12px' }}>
+							{session?.user?.role}
+						</Tag>
+					</div>
 				</div>
 			</Card>
 
