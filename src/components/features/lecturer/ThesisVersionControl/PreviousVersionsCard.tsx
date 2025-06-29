@@ -1,9 +1,8 @@
 import { DownOutlined } from '@ant-design/icons';
 import { Button, Card, Col, Dropdown, Menu, Row, Typography } from 'antd';
 
+import ThesisFileVersionCard from '@/components/features/lecturer/ThesisVersionControl/ThesisFileVersionCard';
 import { ExtendedThesis } from '@/data/thesis';
-
-import ThesisFileVersionCard from './ThesisFileVersionCard';
 
 const { Text, Title } = Typography;
 

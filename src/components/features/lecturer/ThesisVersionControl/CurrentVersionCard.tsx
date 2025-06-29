@@ -1,8 +1,7 @@
 import { Card, Col, Row, Typography } from 'antd';
 
+import ThesisFileVersionCard from '@/components/features/lecturer/ThesisVersionControl/ThesisFileVersionCard';
 import { ExtendedThesis } from '@/data/thesis';
-
-import ThesisFileVersionCard from './ThesisFileVersionCard';
 
 const { Text, Title } = Typography;
 

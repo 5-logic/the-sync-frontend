@@ -22,7 +22,6 @@ const ThesisFileVersionCard = ({ file }: Props) => {
 			bodyStyle={{ padding: '12px 8px' }}
 		>
 			<Row align="middle" justify="space-between" wrap={false}>
-				{/* Bên trái: icon + thông tin file */}
 				<Col style={{ flex: 1, minWidth: 0 }}>
 					<Space align="start">
 						<FileTextOutlined
@@ -37,7 +36,6 @@ const ThesisFileVersionCard = ({ file }: Props) => {
 					</Space>
 				</Col>
 
-				{/* Bên phải: nút tải xuống */}
 				<Col>
 					<Button
 						type="primary"
