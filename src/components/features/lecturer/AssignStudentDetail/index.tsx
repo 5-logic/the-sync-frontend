@@ -5,11 +5,10 @@ import { Button, Card, Col, Input, Row, Space, Typography } from 'antd';
 import { useState } from 'react';
 
 import StudentTable from '@/components/features/lecturer/AssignStudent/StudentTable';
+import GroupInfoCard from '@/components/features/lecturer/AssignStudentDetail/GroupInfoCard';
 import TeamMembers from '@/components/features/lecturer/ViewThesisDetail/TeamMembers';
 import { mockStudents } from '@/data/student';
 import { mockTheses } from '@/data/thesis';
-
-import GroupInfoCard from './GroupInfoCard';
 
 const { Title, Paragraph } = Typography;
 const { TextArea } = Input;
