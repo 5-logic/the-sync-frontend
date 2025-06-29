@@ -1,7 +1,7 @@
 'use client';
 
 import { EyeOutlined } from '@ant-design/icons';
-import { Button, Card, Space, Tooltip } from 'antd';
+import { Button, Card, Space, TableProps, Tooltip } from 'antd';
 import { useMemo, useState } from 'react';
 
 import StudentFilterBar from '@/components/features/lecturer/AssignStudent/StudentFilterBar';
@@ -15,14 +15,22 @@ import { mockStudents } from '@/data/student';
 
 export default function AssignStudentPage() {
 	const [groupSearch, setGroupSearch] = useState('');
-
-	const filteredData = extendedGroups.filter((item) => {
-		const searchText = groupSearch.toLowerCase();
-		const matchesSearch = [item.name, item.thesisTitle].some((field) =>
-			field.toLowerCase().includes(searchText),
-		);
-		return matchesSearch;
+	const [sortedInfo, setSortedInfo] = useState<{
+		columnKey: string;
+		order: 'ascend' | 'descend' | null;
+	}>({
+		columnKey: 'members',
+		order: 'ascend',
 	});
+
+	const filteredData = useMemo(() => {
+		const searchText = groupSearch.toLowerCase();
+		return extendedGroups.filter((item) =>
+			[item.name, item.thesisTitle].some((field) =>
+				field.toLowerCase().includes(searchText),
+			),
+		);
+	}, [groupSearch]);
 
 	const [studentSearch, setStudentSearch] = useState('');
 	const [studentMajor, setStudentMajor] = useState('All');
@@ -43,44 +51,58 @@ export default function AssignStudentPage() {
 			const emailMatch = student.email
 				.toLowerCase()
 				.includes(studentSearch.toLowerCase());
-
-			const matchSearch = fullNameMatch || emailMatch; // NOSONAR
+			const matchSearch = fullNameMatch || emailMatch;
 			const matchMajor =
 				studentMajor === 'All' || student.majorId === studentMajor;
-
 			const matchStatus =
 				studentStatus === 'All' ||
 				(studentStatus === 'InGroup' && student.isActive) ||
 				(studentStatus === 'NoGroup' && !student.isActive);
-
 			return matchSearch && matchMajor && matchStatus;
 		});
 	}, [studentSearch, studentMajor, studentStatus]);
 
-	const groupColumns = useMemo(() => {
-		// eslint-disable-next-line @typescript-eslint/no-unused-vars
-		function onView(_record: ExtendedGroup): void {
-			throw new Error('Function not implemented.');
+	const handleTableChange: TableProps<ExtendedGroup>['onChange'] = (
+		_,
+		__,
+		sorter,
+	) => {
+		if (!Array.isArray(sorter)) {
+			setSortedInfo({
+				columnKey: sorter.columnKey as string,
+				order: sorter.order ?? null,
+			});
 		}
+	};
 
+	const groupColumns = useMemo(() => {
 		return [
-			...supervisorBaseColumns.filter((col) => col.title !== 'Status'),
+			...supervisorBaseColumns.map((col) => {
+				if (!('dataIndex' in col)) return col;
+				if (col.dataIndex === 'members') {
+					return {
+						...col,
+						sortOrder:
+							sortedInfo.columnKey === 'members' ? sortedInfo.order : null,
+					};
+				}
+				return col;
+			}),
 			{
 				title: 'Action',
+				key: 'action',
 				render: (_: unknown, record: ExtendedGroup) => (
 					<Tooltip title="View detail">
 						<Button
 							type="link"
 							icon={<EyeOutlined />}
-							onClick={() => {
-								console.log('View group:', record);
-							}}
+							onClick={() => console.log('View group:', record)}
 						/>
 					</Tooltip>
 				),
 			},
 		];
-	}, []);
+	}, [sortedInfo]);
 
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
@@ -90,13 +112,15 @@ export default function AssignStudentPage() {
 				badgeText="Moderator Only"
 			/>
 
-			{/*Thesis Groups  */}
 			<Card title="Thesis Groups">
 				<div style={{ marginBottom: 16 }}>
 					<GroupSearchBar value={groupSearch} onChange={setGroupSearch} />
 				</div>
-
-				<GroupOverviewTable data={filteredData} columns={groupColumns} />
+				<GroupOverviewTable
+					data={filteredData}
+					columns={groupColumns}
+					onChange={handleTableChange}
+				/>
 			</Card>
 
 			<Card title="Student List">

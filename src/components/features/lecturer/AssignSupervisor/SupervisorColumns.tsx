@@ -21,19 +21,39 @@ export const renderSupervisors = (supervisors: string[]) =>
 	);
 
 export const baseColumns: ColumnsType<ExtendedGroup> = [
-	{ title: 'Group Name', dataIndex: 'name' },
-	{ title: 'Thesis Title', dataIndex: 'thesisTitle' },
-	{ title: 'Members', dataIndex: 'members' },
+	{
+		title: 'Group Name',
+		dataIndex: 'name',
+		key: 'name',
+	},
+	{
+		title: 'Thesis Title',
+		dataIndex: 'thesisTitle',
+		key: 'thesisTitle',
+	},
+	{
+		title: 'Members',
+		dataIndex: 'members',
+		key: 'members',
+		align: 'center',
+		sorter: (a, b) => a.members - b.members,
+		defaultSortOrder: 'ascend', // Thêm dòng này để sắp xếp tăng dần ngay từ đầu
+		render: (members: number) => (
+			<span style={{ color: 'inherit' }}>{members}</span> // Đảm bảo giữ nguyên màu sắc
+		),
+	},
 	{
 		title: 'Supervisor',
 		dataIndex: 'supervisors',
+		key: 'supervisors',
 		render: renderSupervisors,
 	},
 	{
 		title: 'Status',
 		dataIndex: 'status',
+		key: 'status',
 		render: (status: string) => (
-			<Tag color={statusColorMap[status]}>{status}</Tag>
+			<Tag color={statusColorMap[status] ?? 'default'}>{status}</Tag>
 		),
 	},
 ];

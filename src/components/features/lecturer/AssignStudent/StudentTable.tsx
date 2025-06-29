@@ -11,8 +11,10 @@ interface Props {
 	data: ReadonlyArray<Student>;
 }
 
-// ✅ Mark props as readonly
 export default function StudentTable({ data }: Readonly<Props>) {
+	// Chỉ lấy những sinh viên chưa vào nhóm (isActive = false)
+	const filteredData = data.filter((student) => !student.isActive);
+
 	const columns: ColumnsType<Student> = [
 		{
 			title: 'Name',
@@ -43,7 +45,7 @@ export default function StudentTable({ data }: Readonly<Props>) {
 		<Table
 			rowKey="id"
 			columns={columns}
-			dataSource={data}
+			dataSource={filteredData}
 			pagination={TablePagination}
 			scroll={{ x: 'max-content' }}
 		/>
