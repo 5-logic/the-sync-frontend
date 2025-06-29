@@ -38,6 +38,22 @@ function checkPermissions({
 	return true;
 }
 
+/**
+ * Optimized session hook that reduces duplicate useSession calls
+ * Use this instead of useSession() directly when you only need session data
+ */
+export function useOptimizedSession() {
+	const { data: session, status } = useSession();
+
+	return {
+		session,
+		status,
+		isLoading: status === 'loading',
+		isAuthenticated: status === 'authenticated',
+		user: session?.user ?? null,
+	};
+}
+
 export function useAuthGuard({
 	allowedRoles = [],
 	requireModerator = false,
@@ -174,3 +190,6 @@ export const useLecturerAuth = () =>
 export const useAdminAuth = () => useAuthGuard({ allowedRoles: ['admin'] });
 export const useModeratorAuth = () =>
 	useAuthGuard({ allowedRoles: ['lecturer'], requireModerator: true });
+
+// Export optimized session for components that only need session data
+export { useOptimizedSession as useSessionData };
