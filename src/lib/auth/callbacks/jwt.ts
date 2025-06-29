@@ -86,7 +86,7 @@ function setTokenExpiration(
 function checkTokenExpiration(token: JWT): void {
 	if (token.accessTokenExpires && Date.now() > token.accessTokenExpires) {
 		console.warn('JWT token expired, will require re-authentication');
-		// Don't clear token here, let the session callback handle it
+		// Token expiration will be handled by session callback
 	}
 }
 

@@ -12,15 +12,11 @@ export async function sessionCallback({
 	session: Session;
 	token: JWT;
 }): Promise<Session> {
-	// Token expiration before creating session
+	// Check token expiration but don't return expired session to avoid infinite loop
 	if (token.accessTokenExpires && Date.now() > token.accessTokenExpires) {
 		console.warn('Session expired, will require re-authentication');
-		// Return minimal session to trigger re-authentication
-		return {
-			...session,
-			user: undefined,
-			expires: new Date(Date.now() - 1000).toISOString(), // Expired timestamp
-		} as unknown as Session;
+		// Instead of returning expired session, throw error to properly handle logout
+		throw new Error('Session expired');
 	}
 
 	// Send properties to the client
