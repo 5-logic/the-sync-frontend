@@ -6,17 +6,17 @@ import {
 	UserOutlined,
 } from '@ant-design/icons';
 import { Avatar, Dropdown, MenuProps, Modal } from 'antd';
-import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
+import { useSessionData } from '@/hooks/auth/useAuth';
 import { useResponsiveLayout } from '@/hooks/ui';
 import { AuthService } from '@/lib/services/auth';
 
 const UserProfile: React.FC = () => {
-	const { data: session } = useSession();
+	const { session } = useSessionData();
 	const router = useRouter();
 	const { isMobile } = useResponsiveLayout();
 
