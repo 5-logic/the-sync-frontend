@@ -14,6 +14,11 @@ export class TokenManager {
 	private static readonly STORAGE_VERSION_KEY = 'tokenStorageVersion';
 	private static readonly CURRENT_VERSION = '1.0';
 
+	// Throttling mechanism to prevent multiple simultaneous refresh calls
+	private static refreshPromise: Promise<string | null> | null = null;
+	private static lastRefreshTime: number = 0;
+	private static readonly REFRESH_THROTTLE_MS = 5000; // 5 seconds minimum between refresh attempts
+
 	/**
 	 * Set tokens with conditional storage strategy
 	 */
@@ -189,9 +194,39 @@ export class TokenManager {
 	}
 
 	/**
-	 * Refresh access token with smart storage
+	 * Refresh access token with smart storage and throttling
 	 */
 	static async refreshAccessToken(): Promise<string | null> {
+		// Return existing promise if refresh is already in progress
+		if (this.refreshPromise) {
+			console.log('🔄 Refresh already in progress, waiting...');
+			return this.refreshPromise;
+		}
+
+		// Check throttling - prevent too frequent refresh attempts
+		const now = Date.now();
+		if (now - this.lastRefreshTime < this.REFRESH_THROTTLE_MS) {
+			console.log('🚫 Refresh throttled, too soon since last attempt');
+			return null;
+		}
+
+		// Create and store the refresh promise
+		this.refreshPromise = this._performTokenRefresh();
+		this.lastRefreshTime = now;
+
+		try {
+			const result = await this.refreshPromise;
+			return result;
+		} finally {
+			// Clear the promise when done (success or failure)
+			this.refreshPromise = null;
+		}
+	}
+
+	/**
+	 * Internal method to perform the actual token refresh
+	 */
+	private static async _performTokenRefresh(): Promise<string | null> {
 		try {
 			const refreshToken = this.getRefreshToken();
 			if (!refreshToken) {
@@ -209,6 +244,8 @@ export class TokenManager {
 			const rememberMe = this.getRememberMePreference();
 
 			try {
+				console.log('🔄 Calling backend refresh endpoint...');
+
 				// Call appropriate refresh endpoint
 				const tokenData = isAdmin
 					? await AuthService.adminRefresh({ refreshToken })
@@ -217,6 +254,7 @@ export class TokenManager {
 				// Update only access token, keep existing refresh token and remember preference
 				this.setTokens(tokenData.accessToken, refreshToken, rememberMe);
 
+				console.log('✅ Token refreshed successfully');
 				return tokenData.accessToken;
 			} catch (apiError) {
 				// Handle API errors gracefully
@@ -231,7 +269,7 @@ export class TokenManager {
 				throw apiError;
 			}
 		} catch (error) {
-			console.error('Token refresh failed:', error);
+			console.error('❌ Token refresh failed:', error);
 			// Don't clear tokens immediately - let user re-login naturally
 			return null;
 		}
@@ -249,9 +287,20 @@ export class TokenManager {
 
 			// Clear sessionStorage
 			this.clearSessionStorage();
+
+			// Clear throttling state
+			this.clearRefreshState();
 		} catch (error) {
 			console.error('Failed to clear tokens:', error);
 		}
+	}
+
+	/**
+	 * Clear refresh throttling state
+	 */
+	static clearRefreshState(): void {
+		this.refreshPromise = null;
+		this.lastRefreshTime = 0;
 	}
 
 	/**
@@ -346,6 +395,11 @@ export class TokenManager {
 		rememberMe: boolean;
 		storageType: 'localStorage' | 'sessionStorage' | 'none';
 		tokenValid: boolean;
+		refreshState: {
+			inProgress: boolean;
+			lastRefresh: string | null;
+			throttled: boolean;
+		};
 	} {
 		const accessToken = this.getAccessToken();
 		const rememberMe = this.getRememberMePreference();
@@ -358,11 +412,22 @@ export class TokenManager {
 			storageType = 'sessionStorage';
 		}
 
+		const now = Date.now();
+		const timeSinceLastRefresh = now - this.lastRefreshTime;
+
 		return {
 			hasTokens: !!accessToken,
 			rememberMe,
 			storageType,
 			tokenValid: accessToken ? this.isTokenValid(accessToken) : false,
+			refreshState: {
+				inProgress: !!this.refreshPromise,
+				lastRefresh:
+					this.lastRefreshTime > 0
+						? new Date(this.lastRefreshTime).toISOString()
+						: null,
+				throttled: timeSinceLastRefresh < this.REFRESH_THROTTLE_MS,
+			},
 		};
 	}
 }
