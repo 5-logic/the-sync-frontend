@@ -37,6 +37,7 @@ export default function AssignSupervisors() {
 			render: (_: unknown, record: ExtendedGroup) => (
 				<Button
 					type="primary"
+					className="w-[80px]"
 					onClick={() => {
 						setSelectedGroup(record);
 						setModalOpen(true);
