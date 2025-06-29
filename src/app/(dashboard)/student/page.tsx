@@ -17,7 +17,7 @@ export default function StudentDashboard() {
 					🎓 Student Dashboard
 				</Title>
 				<Text type="secondary">
-					Welcome back, {session?.user?.fullName || 'Student'}!
+					Welcome back, {session?.user?.fullName ?? 'Student'}!
 				</Text>
 			</div>
 

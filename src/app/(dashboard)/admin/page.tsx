@@ -18,7 +18,7 @@ export default function AdminDashboard() {
 					👨‍💻 Admin Dashboard
 				</Title>
 				<Paragraph>
-					Welcome back, <strong>{session?.user?.fullName || 'Admin'}</strong>!
+					Welcome back, <strong>{session?.user?.fullName ?? 'Admin'}</strong>!
 				</Paragraph>
 				<Paragraph>
 					This is your admin dashboard where you can manage users, settings, and

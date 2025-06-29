@@ -21,7 +21,7 @@ export default function LecturerDashboard() {
 					)}
 				</Title>
 				<Text type="secondary">
-					Welcome back, {session?.user?.fullName || 'Lecturer'}!
+					Welcome back, {session?.user?.fullName ?? 'Lecturer'}!
 				</Text>
 			</div>
 			{/* User Info Card */}
