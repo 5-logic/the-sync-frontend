@@ -3,96 +3,37 @@
 import { Card, Col, Row, Space, Typography } from 'antd';
 import { useMemo, useState } from 'react';
 
-import ThesisFilterBar from '@/components/features/lecturer/AssignListPublicThesis/ThesisFilterBar';
-import ThesisTable from '@/components/features/lecturer/AssignListPublicThesis/ThesisTable';
-import mockGroups from '@/data/group';
 import { mockTheses } from '@/data/thesis';
 
-interface Filters {
-	englishName?: string;
-	domain?: string;
-	group?: string;
-	semester?: string;
-}
+import ThesisFilterBar from './ThesisFilterBar';
+import ThesisTable from './ThesisTable';
+
+const { Title, Paragraph } = Typography;
 
 export default function AssignListPublicThesisPage() {
-	const { Title, Paragraph } = Typography;
-
-	const [filters, setFilters] = useState<Filters>({
-		englishName: undefined,
-		domain: undefined,
-		group: undefined,
-		semester: undefined,
+	const [filters, setFilters] = useState({
+		englishName: undefined as string | undefined,
+		isPublish: undefined as boolean | undefined,
 	});
 
-	// Tạo groupMap: { groupId: groupName }
-	const groupMap = useMemo(() => {
-		const map: Record<string, string> = {};
-		mockGroups.forEach((g) => {
-			map[g.id] = g.name;
-		});
-		return map;
-	}, []);
-
-	// Lấy danh sách domain duy nhất
-	const domainOptions = useMemo(() => {
-		const domains = mockTheses
-			.map((t) => t.domain)
-			.filter((d): d is string => typeof d === 'string' && !!d);
-		return Array.from(new Set(domains));
-	}, []);
-
-	// Lấy danh sách nhóm để select
-	const groupOptions = useMemo(() => {
-		return mockGroups.map((g) => ({
-			id: g.id,
-			name: g.name,
-		}));
-	}, []);
-
-	// Enrich thesis: thêm group { id, name } từ groupId
-	const enrichedTheses = useMemo(() => {
-		return mockTheses.map((thesis) => {
-			const groupId = thesis.group?.id || thesis.groupId;
-			const groupName = groupId ? groupMap[groupId] : undefined;
-
-			return {
-				...thesis,
-				group:
-					groupId && groupName
-						? {
-								id: groupId,
-								name: groupName,
-								members: thesis.group?.members || [],
-							}
-						: undefined,
-			};
-		});
-	}, [groupMap]);
-
 	const filteredTheses = useMemo(() => {
-		return enrichedTheses.filter((thesis) => {
-			const englishNameMatch =
-				!filters.englishName ||
-				thesis.englishName
-					?.toLowerCase()
-					.includes(filters.englishName.toLowerCase());
+		return mockTheses
+			.filter((t) => t.status === 'Approved')
+			.filter((thesis) => {
+				const keyword = filters.englishName?.toLowerCase();
 
-			const domainMatch = !filters.domain || thesis.domain === filters.domain;
-			const groupMatch = !filters.group || thesis.group?.id === filters.group;
-			const semesterMatch =
-				!filters.semester || thesis.semester === filters.semester;
+				const nameMatch =
+					!keyword ||
+					thesis.englishName?.toLowerCase().includes(keyword) ||
+					thesis.vietnameseName?.toLowerCase().includes(keyword);
 
-			return englishNameMatch && domainMatch && groupMatch && semesterMatch;
-		});
-	}, [filters, enrichedTheses]);
+				const publishMatch =
+					filters.isPublish === undefined ||
+					thesis.isPublish === filters.isPublish;
 
-	const handleFilterChange = (newFilters: Partial<Filters>) => {
-		setFilters((prev) => ({
-			...prev,
-			...newFilters,
-		}));
-	};
+				return nameMatch && publishMatch;
+			});
+	}, [filters]);
 
 	return (
 		<Space
@@ -114,11 +55,12 @@ export default function AssignListPublicThesisPage() {
 				<Col span={24}>
 					<Card>
 						<ThesisFilterBar
-							domains={domainOptions}
-							groups={groupOptions}
 							currentFilters={filters}
-							onFilterChange={handleFilterChange}
+							onFilterChange={(newFilters) =>
+								setFilters((prev) => ({ ...prev, ...newFilters }))
+							}
 						/>
+
 						<ThesisTable theses={filteredTheses} />
 					</Card>
 				</Col>

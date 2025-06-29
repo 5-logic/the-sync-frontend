@@ -1,12 +1,11 @@
 'use client';
 
 import { EyeOutlined } from '@ant-design/icons';
-import { Button, Switch, Table, Tooltip } from 'antd';
+import { Button, Checkbox, Switch, Table, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useEffect, useState } from 'react';
 
 import { TablePagination } from '@/components/common/TablePagination';
-import mockGroups from '@/data/group';
 import { ExtendedThesis } from '@/data/thesis';
 
 interface Props {
@@ -15,16 +14,11 @@ interface Props {
 
 export default function ThesisTable({ theses }: Props) {
 	const [data, setData] = useState<ExtendedThesis[]>([]);
+	const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 
 	useEffect(() => {
 		setData(theses);
 	}, [theses]);
-
-	const getGroupName = (groupId?: string): string => {
-		if (!groupId) return 'N/A';
-		const group = mockGroups.find((g) => g.id === groupId);
-		return group?.name || 'N/A';
-	};
 
 	const handleTogglePublish = (id: string, newValue: boolean) => {
 		const updated = data.map((item) =>
@@ -38,34 +32,47 @@ export default function ThesisTable({ theses }: Props) {
 
 	const columns: ColumnsType<ExtendedThesis> = [
 		{
+			title: 'Select',
+			dataIndex: 'select',
+			key: 'select',
+			render: (_, record) => (
+				<Checkbox
+					checked={selectedRowKeys.includes(record.id)}
+					onChange={(e) => {
+						const checked = e.target.checked;
+						setSelectedRowKeys((prev) =>
+							checked
+								? [...prev, record.id]
+								: prev.filter((id) => id !== record.id),
+						);
+					}}
+				/>
+			),
+			width: 70,
+		},
+		{
 			title: 'English Name',
 			dataIndex: 'englishName',
 			key: 'englishName',
-			render: (text) => (
-				<div style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>
-					{text}
-				</div>
-			),
 		},
 		{
-			title: 'Group Name',
-			key: 'groupName',
-			render: (_, record) =>
-				getGroupName(record.group?.id ?? record.groupId ?? undefined),
+			title: 'Vietnamese Name',
+			dataIndex: 'vietnameseName',
+			key: 'vietnameseName',
 		},
 		{
-			title: 'Domain',
-			dataIndex: 'domain',
-			key: 'domain',
+			title: 'Abbreviation',
+			dataIndex: 'abbreviation',
+			key: 'abbreviation',
 		},
 		{
-			title: 'Status',
-			key: 'status',
+			title: 'Public Access',
+			key: 'publicAccess',
 			render: (_, record) => (
 				<Switch
-					checked={record.status === 'Approved'}
-					checkedChildren="Published"
-					unCheckedChildren="Unpublished"
+					checked={record.isPublish}
+					checkedChildren="Publish"
+					unCheckedChildren="Unpublish"
 					onChange={(checked) => handleTogglePublish(record.id, checked)}
 				/>
 			),

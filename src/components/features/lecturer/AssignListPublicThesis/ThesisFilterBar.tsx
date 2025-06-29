@@ -1,32 +1,28 @@
 'use client';
 
+import { SearchOutlined } from '@ant-design/icons';
 import { Col, Input, Row, Select } from 'antd';
 
 interface Filters {
 	englishName?: string;
-	domain?: string;
-	group?: string;
-	semester?: string;
+	isPublish?: boolean;
 }
 
 interface Props {
-	domains: string[];
-	groups: { id: string; name: string }[];
-	onFilterChange: (filters: Filters) => void;
 	currentFilters: Filters;
+	onFilterChange: (filters: Filters) => void;
 }
 
 export default function ThesisFilterBar({
-	domains,
-	groups,
-	onFilterChange,
 	currentFilters,
+	onFilterChange,
 }: Props) {
 	return (
 		<Row gutter={[16, 16]} className="mb-4">
-			<Col xs={24} md={6}>
+			<Col xs={24} md={12}>
 				<Input
 					placeholder="Search thesis by name..."
+					prefix={<SearchOutlined />}
 					allowClear
 					value={currentFilters.englishName ?? ''}
 					onChange={(e) =>
@@ -37,48 +33,20 @@ export default function ThesisFilterBar({
 				/>
 			</Col>
 
-			<Col xs={24} md={6}>
+			<Col xs={24} md={12}>
 				<Select
-					placeholder="Select Domain"
+					placeholder="Filter by Public Access"
 					allowClear
 					style={{ width: '100%' }}
-					value={currentFilters.domain}
-					onChange={(value) => onFilterChange({ domain: value ?? undefined })}
+					value={currentFilters.isPublish}
+					onChange={(value) =>
+						onFilterChange({
+							isPublish: value ?? undefined,
+						})
+					}
 				>
-					{domains.map((domain) => (
-						<Select.Option key={domain} value={domain}>
-							{domain}
-						</Select.Option>
-					))}
-				</Select>
-			</Col>
-
-			<Col xs={24} md={6}>
-				<Select
-					placeholder="Select Group"
-					allowClear
-					style={{ width: '100%' }}
-					value={currentFilters.group}
-					onChange={(value) => onFilterChange({ group: value ?? undefined })}
-				>
-					{groups.map((group) => (
-						<Select.Option key={group.id} value={group.id}>
-							{group.name}
-						</Select.Option>
-					))}
-				</Select>
-			</Col>
-
-			<Col xs={24} md={6}>
-				<Select
-					placeholder="Select Semester"
-					allowClear
-					style={{ width: '100%' }}
-					value={currentFilters.semester}
-					onChange={(value) => onFilterChange({ semester: value ?? undefined })}
-				>
-					<Select.Option value="Spring">Spring</Select.Option>
-					<Select.Option value="Fall">Fall</Select.Option>
+					<Select.Option value={true}>Published</Select.Option>
+					<Select.Option value={false}>Unpublished</Select.Option>
 				</Select>
 			</Col>
 		</Row>
