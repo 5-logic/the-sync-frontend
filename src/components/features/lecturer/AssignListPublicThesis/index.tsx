@@ -22,12 +22,12 @@ export default function AssignListPublicThesisPage() {
 		return theses
 			.filter((t) => t.status === 'Approved')
 			.filter((thesis) => {
-				const keyword = filters.englishName?.toLowerCase();
+				const keyword = filters.englishName?.toLowerCase() ?? '';
 
 				const nameMatch =
 					!keyword ||
-					thesis.englishName?.toLowerCase().includes(keyword) ||
-					thesis.vietnameseName?.toLowerCase().includes(keyword);
+					(thesis.englishName?.toLowerCase() ?? '').includes(keyword) ||
+					(thesis.vietnameseName?.toLowerCase() ?? '').includes(keyword);
 
 				const publishMatch =
 					filters.isPublish === undefined ||

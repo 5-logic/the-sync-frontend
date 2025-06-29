@@ -4,19 +4,19 @@ import { SearchOutlined } from '@ant-design/icons';
 import { Col, Input, Row, Select } from 'antd';
 
 interface Filters {
-	englishName?: string;
-	isPublish?: boolean;
+	readonly englishName?: string;
+	readonly isPublish?: boolean;
 }
 
 interface Props {
-	currentFilters: Filters;
-	onFilterChange: (filters: Filters) => void;
+	readonly currentFilters: Filters;
+	readonly onFilterChange: (filters: Filters) => void;
 }
 
 export default function ThesisFilterBar({
 	currentFilters,
 	onFilterChange,
-}: Props) {
+}: Readonly<Props>) {
 	return (
 		<Row gutter={[16, 16]} className="mb-4">
 			<Col xs={24} md={12}>
@@ -27,7 +27,9 @@ export default function ThesisFilterBar({
 					value={currentFilters.englishName ?? ''}
 					onChange={(e) =>
 						onFilterChange({
-							englishName: e.target.value.trim() || undefined,
+							englishName: e.target.value.trim()
+								? e.target.value.trim()
+								: undefined,
 						})
 					}
 				/>

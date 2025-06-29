@@ -9,11 +9,11 @@ import { TablePagination } from '@/components/common/TablePagination';
 import { ExtendedThesis } from '@/data/thesis';
 
 interface Props {
-	theses: ExtendedThesis[];
-	onSelectionChange?: (selectedIds: string[]) => void;
+	readonly theses: ExtendedThesis[];
+	readonly onSelectionChange?: (selectedIds: string[]) => void;
 }
 
-export default function ThesisTable({ theses }: Props) {
+export default function ThesisTable({ theses, onSelectionChange }: Props) {
 	const [data, setData] = useState<ExtendedThesis[]>([]);
 	const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 
@@ -31,24 +31,48 @@ export default function ThesisTable({ theses }: Props) {
 		);
 	};
 
+	const handleCheckboxChange = (id: string, checked: boolean) => {
+		setSelectedRowKeys((prev) => {
+			const newSelected = checked
+				? [...prev, id]
+				: prev.filter((key) => key !== id);
+			onSelectionChange?.(newSelected.map(String)); // Gọi prop callback
+			return newSelected;
+		});
+	};
+
+	const renderCheckbox = (record: ExtendedThesis) => (
+		<Checkbox
+			checked={selectedRowKeys.includes(record.id)}
+			onChange={(e) => handleCheckboxChange(record.id, e.target.checked)}
+		/>
+	);
+
+	const renderSwitch = (record: ExtendedThesis) => (
+		<Switch
+			checked={record.isPublish}
+			checkedChildren="Publish"
+			unCheckedChildren="Unpublish"
+			onChange={(checked) => handleTogglePublish(record.id, checked)}
+		/>
+	);
+
+	const renderViewButton = (record: ExtendedThesis) => (
+		<Tooltip title="View Detail">
+			<Button
+				type="text"
+				icon={<EyeOutlined />}
+				onClick={() => console.log(`Viewing details for ${record.englishName}`)}
+			/>
+		</Tooltip>
+	);
+
 	const columns: ColumnsType<ExtendedThesis> = [
 		{
 			title: 'Select',
 			dataIndex: 'select',
 			key: 'select',
-			render: (_, record) => (
-				<Checkbox
-					checked={selectedRowKeys.includes(record.id)}
-					onChange={(e) => {
-						const checked = e.target.checked;
-						setSelectedRowKeys((prev) =>
-							checked
-								? [...prev, record.id]
-								: prev.filter((id) => id !== record.id),
-						);
-					}}
-				/>
-			),
+			render: (_, record) => renderCheckbox(record),
 			width: 70,
 		},
 		{
@@ -69,29 +93,12 @@ export default function ThesisTable({ theses }: Props) {
 		{
 			title: 'Public Access',
 			key: 'publicAccess',
-			render: (_, record) => (
-				<Switch
-					checked={record.isPublish}
-					checkedChildren="Publish"
-					unCheckedChildren="Unpublish"
-					onChange={(checked) => handleTogglePublish(record.id, checked)}
-				/>
-			),
+			render: (_, record) => renderSwitch(record),
 		},
 		{
 			title: 'Actions',
 			key: 'actions',
-			render: (_, record) => (
-				<Tooltip title="View Detail">
-					<Button
-						type="text"
-						icon={<EyeOutlined />}
-						onClick={() =>
-							console.log(`Viewing details for ${record.englishName}`)
-						}
-					/>
-				</Tooltip>
-			),
+			render: (_, record) => renderViewButton(record),
 		},
 	];
 
