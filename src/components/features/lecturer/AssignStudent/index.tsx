@@ -51,7 +51,7 @@ export default function AssignStudentPage() {
 			const emailMatch = student.email
 				.toLowerCase()
 				.includes(studentSearch.toLowerCase());
-			const matchSearch = fullNameMatch || emailMatch;
+			const matchSearch = fullNameMatch || emailMatch; //NOSONAR
 			const matchMajor =
 				studentMajor === 'All' || student.majorId === studentMajor;
 			const matchStatus =
