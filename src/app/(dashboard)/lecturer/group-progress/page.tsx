@@ -1,8 +1,12 @@
+import { createMetadata } from '@/app/metadata';
+import GroupProgressPage from '@/components/features/lecturer/GroupProgess';
+
+export const metadata = createMetadata({
+	title: 'Lecturer Group Progress',
+	description:
+		'Lecturer Group Progress for TheSync - Group Formation and Capstone Thesis Development',
+});
+
 export default function LecturerGroupProgressPage() {
-	return (
-		<div className="p-6">
-			<h1 className="text-2xl font-bold mb-4">Group Progress</h1>
-			<p className="text-gray-600">Monitor progress of supervised groups</p>
-		</div>
-	);
+	return <GroupProgressPage />;
 }
