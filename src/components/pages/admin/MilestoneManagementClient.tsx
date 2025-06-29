@@ -1,24 +1,18 @@
 'use client';
 
-import { Layout } from 'antd';
+import { Suspense, lazy } from 'react';
 
-import MilestoneManagement from '@/components/features/admin/MilestoneManagement';
+import { TableLoadingSkeleton } from '@/components/common/loading';
 
-const { Content } = Layout;
+// Lazy load the component
+const MilestoneManagement = lazy(
+	() => import('@/components/features/admin/MilestoneManagement'),
+);
 
 export default function MilestoneManagementClient() {
 	return (
-		<Layout style={{ minHeight: '100vh', backgroundColor: '#ffffff' }}>
-			<Content
-				style={{
-					maxWidth: '1152px',
-					margin: '0 auto',
-					padding: '24px 16px',
-					width: '100%',
-				}}
-			>
-				<MilestoneManagement />
-			</Content>
-		</Layout>
+		<Suspense fallback={<TableLoadingSkeleton />}>
+			<MilestoneManagement />
+		</Suspense>
 	);
 }

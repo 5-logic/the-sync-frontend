@@ -1,6 +1,5 @@
 import '@/app/globals.css';
 import { createMetadata } from '@/app/metadata';
-import ChatbotWidget from '@/components/ChatbotWidget';
 import Providers from '@/components/Providers';
 
 export const metadata = createMetadata({
@@ -16,10 +15,7 @@ export default function RootLayout({
 	return (
 		<html lang="en">
 			<body suppressHydrationWarning>
-				<Providers>
-					{children}
-					<ChatbotWidget />
-				</Providers>
+				<Providers>{children}</Providers>
 			</body>
 		</html>
 	);
