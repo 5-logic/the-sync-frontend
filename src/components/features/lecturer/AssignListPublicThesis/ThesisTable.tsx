@@ -3,8 +3,10 @@
 import { EyeOutlined } from '@ant-design/icons';
 import { Button, Switch, Table, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
+import { TablePagination } from '@/components/common/TablePagination';
+import mockGroups from '@/data/group';
 import { ExtendedThesis } from '@/data/thesis';
 
 interface Props {
@@ -12,7 +14,17 @@ interface Props {
 }
 
 export default function ThesisTable({ theses }: Props) {
-	const [data, setData] = useState<ExtendedThesis[]>(theses);
+	const [data, setData] = useState<ExtendedThesis[]>([]);
+
+	useEffect(() => {
+		setData(theses);
+	}, [theses]);
+
+	const getGroupName = (groupId?: string): string => {
+		if (!groupId) return 'N/A';
+		const group = mockGroups.find((g) => g.id === groupId);
+		return group?.name || 'N/A';
+	};
 
 	const handleTogglePublish = (id: string, newValue: boolean) => {
 		const updated = data.map((item) =>
@@ -29,7 +41,6 @@ export default function ThesisTable({ theses }: Props) {
 			title: 'English Name',
 			dataIndex: 'englishName',
 			key: 'englishName',
-			ellipsis: false,
 			render: (text) => (
 				<div style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>
 					{text}
@@ -38,9 +49,9 @@ export default function ThesisTable({ theses }: Props) {
 		},
 		{
 			title: 'Group Name',
-			dataIndex: ['group', 'id'],
 			key: 'groupName',
-			render: (_, record) => record.group?.id || 'N/A',
+			render: (_, record) =>
+				getGroupName(record.group?.id ?? record.groupId ?? undefined),
 			responsive: ['lg'],
 		},
 		{
@@ -54,7 +65,7 @@ export default function ThesisTable({ theses }: Props) {
 			key: 'status',
 			render: (_, record) => (
 				<Switch
-					checked={record.isPublish}
+					checked={record.status === 'Approved'}
 					checkedChildren="Published"
 					unCheckedChildren="Unpublished"
 					onChange={(checked) => handleTogglePublish(record.id, checked)}
@@ -84,7 +95,7 @@ export default function ThesisTable({ theses }: Props) {
 			rowKey="id"
 			columns={columns}
 			dataSource={data}
-			pagination={{ pageSize: 10, showSizeChanger: true }}
+			pagination={TablePagination}
 			scroll={{ x: '100%' }}
 		/>
 	);
