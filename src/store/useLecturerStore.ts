@@ -312,18 +312,26 @@ export const useLecturerStore = create<LecturerState>()(
 						set({ deleting: false });
 						return true;
 					} else {
-						throw new Error(response.message || 'Failed to delete lecturer');
+						throw new Error(response.error || 'Failed to delete lecturer');
 					}
-				} catch (error: any) {
+				} catch (error: unknown) {
 					const errorMessage =
-						error.response?.data?.message ||
-						error.message ||
-						'Failed to delete lecturer';
+						error instanceof Error
+							? error.message
+							: 'Failed to delete lecturer';
+					const statusCode =
+						error &&
+						typeof error === 'object' &&
+						'response' in error &&
+						error.response
+							? (error.response as { status?: number }).status || 500
+							: 500;
+
 					set({
 						deleting: false,
 						lastError: {
 							message: errorMessage,
-							statusCode: error.response?.status || 500,
+							statusCode,
 							timestamp: new Date(),
 						},
 					});
