@@ -9,18 +9,23 @@ import { useEditDialog } from '@/hooks/ui';
 import { Student, StudentUpdate } from '@/schemas/student';
 import { useMajorStore, useStudentStore } from '@/store';
 
-type Props = Readonly<{
+type EditStudentDialogProps = Readonly<{
 	open: boolean;
 	student: Student | null;
 	onClose: () => void;
 }>;
 
-export default function EditStudentDialog({ open, student, onClose }: Props) {
+export default function EditStudentDialog({
+	open,
+	student,
+	onClose,
+}: EditStudentDialogProps) {
 	const { updating, updateStudent } = useStudentStore();
 	const { majors, loading: majorsLoading, fetchMajors } = useMajorStore();
-	const { form, handleCancel, handleSubmit } = useEditDialog({
-		open,
-		entity: student,
+	const { form, initializeForm, handleCancel, handleSubmit } = useEditDialog<
+		Student,
+		StudentUpdate
+	>({
 		onClose,
 	});
 
@@ -30,6 +35,13 @@ export default function EditStudentDialog({ open, student, onClose }: Props) {
 			fetchMajors();
 		}
 	}, [open, fetchMajors]);
+
+	// Initialize form when student data is available
+	useEffect(() => {
+		if (student) {
+			initializeForm(student);
+		}
+	}, [student, initializeForm]);
 
 	const onSubmit = async (values: StudentUpdate): Promise<boolean> => {
 		if (!student) return false;
