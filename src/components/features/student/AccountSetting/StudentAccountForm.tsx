@@ -199,9 +199,13 @@ const StudentAccountForm: React.FC = () => {
 												style={{ width: '100%' }}
 												placeholder="Select skill"
 												treeData={skillTreeData}
-												treeDefaultExpandAll
+												treeDefaultExpandAll={false}
 												allowClear
-												filterTreeNode
+												filterTreeNode={(input, treeNode) =>
+													(treeNode.title as string)
+														.toLowerCase()
+														.includes(input.toLowerCase())
+												}
 												dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
 											/>
 										</Form.Item>
