@@ -2,12 +2,14 @@
 
 import { BookOutlined, MessageOutlined, UserOutlined } from '@ant-design/icons';
 import { Card, Col, Row, Statistic, Tag, Typography } from 'antd';
-import { useSession } from 'next-auth/react';
 
-const { Title, Text } = Typography;
+import { useSessionData } from '@/hooks/auth/useAuth';
+
+const { Title, Text, Paragraph } = Typography;
 
 export default function AdminDashboard() {
-	const { data: session } = useSession();
+	const { session } = useSessionData();
+
 	return (
 		<div className="max-w-7xl mx-auto">
 			{/* Welcome Section */}
@@ -15,7 +17,13 @@ export default function AdminDashboard() {
 				<Title level={2} className="mb-2">
 					👨‍💻 Admin Dashboard
 				</Title>
-				<Text type="secondary">System Administration Panel</Text>
+				<Paragraph>
+					Welcome back, <strong>{session?.user?.fullName || 'Admin'}</strong>!
+				</Paragraph>
+				<Paragraph>
+					This is your admin dashboard where you can manage users, settings, and
+					system configuration.
+				</Paragraph>
 			</div>
 
 			{/* Admin Info Card */}

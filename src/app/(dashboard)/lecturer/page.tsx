@@ -1,13 +1,14 @@
 'use client';
 
 import { Badge, Card, Tag, Typography } from 'antd';
-import { useSession } from 'next-auth/react';
 import Link from 'next/link';
+
+import { useSessionData } from '@/hooks/auth/useAuth';
 
 const { Title, Text } = Typography;
 
 export default function LecturerDashboard() {
-	const { data: session } = useSession();
+	const { session } = useSessionData();
 	const isModerator = session?.user?.isModerator;
 	return (
 		<div className="max-w-6xl mx-auto">
@@ -19,14 +20,16 @@ export default function LecturerDashboard() {
 						<Badge count="Moderator" color="gold" className="ml-3" />
 					)}
 				</Title>
-				<Text type="secondary">Welcome back, {session?.user?.name}!</Text>
+				<Text type="secondary">
+					Welcome back, {session?.user?.fullName || 'Lecturer'}!
+				</Text>
 			</div>
 			{/* User Info Card */}
 			<Card className="mb-6">
 				<Title level={4}>📋 Your Information</Title>
 				<div className="space-y-2">
 					<p>
-						<strong>Name:</strong> {session?.user?.name}
+						<strong>Name:</strong> {session?.user?.fullName}
 					</p>
 					<p>
 						<strong>Email:</strong> {session?.user?.email}

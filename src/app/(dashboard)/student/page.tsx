@@ -1,12 +1,13 @@
 'use client';
 
 import { Card, Tag, Typography } from 'antd';
-import { useSession } from 'next-auth/react';
+
+import { useSessionData } from '@/hooks/auth/useAuth';
 
 const { Title, Text } = Typography;
 
 export default function StudentDashboard() {
-	const { data: session } = useSession();
+	const { session } = useSessionData();
 
 	return (
 		<div className="max-w-6xl mx-auto">
@@ -15,7 +16,9 @@ export default function StudentDashboard() {
 				<Title level={2} className="mb-2">
 					🎓 Student Dashboard
 				</Title>
-				<Text type="secondary">Welcome back, {session?.user?.name}!</Text>
+				<Text type="secondary">
+					Welcome back, {session?.user?.fullName || 'Student'}!
+				</Text>
 			</div>
 
 			{/* User Info Card */}
@@ -23,7 +26,7 @@ export default function StudentDashboard() {
 				<Title level={4}>📋 Your Information</Title>
 				<div className="space-y-2">
 					<p>
-						<strong>Name:</strong> {session?.user?.name}
+						<strong>Name:</strong> {session?.user?.fullName}
 					</p>
 					<p>
 						<strong>Email:</strong> {session?.user?.email}
