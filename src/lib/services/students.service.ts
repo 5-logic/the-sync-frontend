@@ -69,6 +69,13 @@ class StudentService {
 		);
 		return response.data;
 	}
+
+	async delete(id: string): Promise<ApiResponse<void>> {
+		const response = await httpClient.delete<ApiResponse<void>>(
+			`${this.baseUrl}/${id}`,
+		);
+		return response.data;
+	}
 }
 
 export const studentService = new StudentService();
