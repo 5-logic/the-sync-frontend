@@ -7,14 +7,14 @@ import { FormLabel } from '@/components/common/FormLabel';
 import { isValidVietnamesePhone } from '@/lib/utils/validations';
 
 interface PersonFormFieldsProps {
-	showFullName?: boolean;
-	showEmail?: boolean;
-	showPhoneNumber?: boolean;
-	showGender?: boolean;
-	fullNameRules?: Rule[];
-	emailRules?: Rule[];
-	phoneNumberRules?: Rule[];
-	genderRules?: Rule[];
+	readonly showFullName?: boolean;
+	readonly showEmail?: boolean;
+	readonly showPhoneNumber?: boolean;
+	readonly showGender?: boolean;
+	readonly fullNameRules?: Rule[];
+	readonly emailRules?: Rule[];
+	readonly phoneNumberRules?: Rule[];
+	readonly genderRules?: Rule[];
 }
 
 export default function PersonFormFields({
