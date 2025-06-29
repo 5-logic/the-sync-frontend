@@ -23,15 +23,18 @@ export default function AssignListPublicThesisPage() {
 			.filter((t) => t.status === 'Approved')
 			.filter((thesis) => {
 				const keyword = filters.englishName?.toLowerCase() ?? '';
+				const englishName = thesis.englishName?.toLowerCase() ?? '';
+				const vietnameseName = thesis.vietnameseName?.toLowerCase() ?? '';
 
 				const nameMatch =
-					!keyword ||
-					(thesis.englishName?.toLowerCase() ?? '').includes(keyword) ||
-					(thesis.vietnameseName?.toLowerCase() ?? '').includes(keyword);
+					keyword === ''
+						? true
+						: englishName.includes(keyword) || vietnameseName.includes(keyword);
 
 				const publishMatch =
-					filters.isPublish === undefined ||
-					thesis.isPublish === filters.isPublish;
+					filters.isPublish === undefined
+						? true
+						: thesis.isPublish === filters.isPublish;
 
 				return nameMatch && publishMatch;
 			});
