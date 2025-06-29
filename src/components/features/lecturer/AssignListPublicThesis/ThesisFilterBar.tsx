@@ -1,7 +1,6 @@
 'use client';
 
 import { Col, Input, Row, Select } from 'antd';
-import { useEffect, useState } from 'react';
 
 interface Props {
 	domains: string[];
@@ -12,30 +11,28 @@ interface Props {
 		group?: string;
 		semester?: string;
 	}) => void;
+	currentFilters: {
+		keyword?: string;
+		domain?: string;
+		group?: string;
+		semester?: string;
+	};
 }
 
 export default function ThesisFilterBar({
 	domains,
 	groupIds,
 	onFilterChange,
+	currentFilters,
 }: Props) {
-	const [keyword, setKeyword] = useState('');
-	const [domain, setDomain] = useState<string | undefined>();
-	const [group, setGroup] = useState<string | undefined>();
-	const [semester, setSemester] = useState<string | undefined>();
-
-	useEffect(() => {
-		onFilterChange({ keyword, domain, group, semester });
-	}, [keyword, domain, group, semester, onFilterChange]);
-
 	return (
 		<Row gutter={[16, 16]} className="mb-4">
 			<Col xs={24} md={6}>
 				<Input
 					placeholder="Search thesis by name..."
 					allowClear
-					value={keyword}
-					onChange={(e) => setKeyword(e.target.value)}
+					value={currentFilters.keyword}
+					onChange={(e) => onFilterChange({ keyword: e.target.value })}
 				/>
 			</Col>
 			<Col xs={24} md={6}>
@@ -43,8 +40,8 @@ export default function ThesisFilterBar({
 					placeholder="Select Domain"
 					allowClear
 					style={{ width: '100%' }}
-					value={domain}
-					onChange={(val) => setDomain(val)}
+					value={currentFilters.domain || undefined}
+					onChange={(value) => onFilterChange({ domain: value })}
 				>
 					{domains.map((d) => (
 						<Select.Option key={d} value={d}>
@@ -58,8 +55,8 @@ export default function ThesisFilterBar({
 					placeholder="Select Group"
 					allowClear
 					style={{ width: '100%' }}
-					value={group}
-					onChange={(val) => setGroup(val)}
+					value={currentFilters.group || undefined}
+					onChange={(value) => onFilterChange({ group: value })}
 				>
 					{groupIds.map((g) => (
 						<Select.Option key={g} value={g}>
@@ -73,8 +70,8 @@ export default function ThesisFilterBar({
 					placeholder="Select Semester"
 					allowClear
 					style={{ width: '100%' }}
-					value={semester}
-					onChange={(val) => setSemester(val)}
+					value={currentFilters.semester || undefined}
+					onChange={(value) => onFilterChange({ semester: value })}
 				>
 					<Select.Option value="Spring">Spring</Select.Option>
 					<Select.Option value="Fall">Fall</Select.Option>

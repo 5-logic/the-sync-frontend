@@ -27,7 +27,7 @@ export default function AssignListPublicThesisPage() {
 	const groupOptions = useMemo(() => {
 		const groups = mockTheses
 			.map((t) => t.group?.id)
-			.filter((id): id is string => !!id);
+			.filter((g): g is string => typeof g === 'string');
 		return Array.from(new Set(groups));
 	}, []);
 
@@ -44,8 +44,10 @@ export default function AssignListPublicThesisPage() {
 
 			const domainMatch = !filters.domain || thesis.domain === filters.domain;
 			const groupMatch = !filters.group || thesis.group?.id === filters.group;
+			// const semesterMatch = !filters.semester || thesis.semester === filters.semester;
+			const semesterMatch = true; // Remove or adjust this line if 'semester' is not a property of thesis
 
-			return keywordMatch && domainMatch && groupMatch;
+			return keywordMatch && domainMatch && groupMatch && semesterMatch;
 		});
 	}, [filters]);
 
@@ -67,10 +69,12 @@ export default function AssignListPublicThesisPage() {
 						<ThesisFilterBar
 							domains={domainOptions}
 							groupIds={groupOptions}
+							currentFilters={filters}
 							onFilterChange={(newFilters) =>
 								setFilters((prev) => ({ ...prev, ...newFilters }))
 							}
 						/>
+
 						<ThesisTable theses={filteredTheses} />
 					</Card>
 				</Col>
