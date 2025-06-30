@@ -18,7 +18,6 @@ interface Props {
 export default function ThesisFilterBar({
 	currentFilters,
 	onFilterChange,
-	domainOptions,
 }: Readonly<Props>) {
 	const handleNameChange = (value: string) => {
 		onFilterChange({
@@ -34,16 +33,9 @@ export default function ThesisFilterBar({
 		});
 	};
 
-	const handleDomainChange = (value: string | undefined) => {
-		onFilterChange({
-			...currentFilters,
-			domain: value,
-		});
-	};
-
 	return (
 		<Row gutter={[16, 16]} className="mb-4">
-			<Col xs={24} md={12}>
+			<Col xs={24} md={16}>
 				<Input
 					placeholder="Search thesis by name..."
 					prefix={<SearchOutlined />}
@@ -54,7 +46,7 @@ export default function ThesisFilterBar({
 				/>
 			</Col>
 
-			<Col xs={24} md={6}>
+			<Col xs={24} md={8}>
 				<Select
 					placeholder="Filter by Public Access"
 					allowClear
@@ -71,20 +63,6 @@ export default function ThesisFilterBar({
 					<Select.Option value={true}>Published</Select.Option>
 					<Select.Option value={false}>Unpublished</Select.Option>
 				</Select>
-			</Col>
-
-			<Col xs={24} md={6}>
-				<Select
-					placeholder="Filter by Domain"
-					allowClear
-					style={{ width: '100%' }}
-					value={currentFilters.domain}
-					onChange={(value) => handleDomainChange(value)}
-					options={domainOptions.map((domain) => ({
-						label: domain,
-						value: domain,
-					}))}
-				/>
 			</Col>
 		</Row>
 	);

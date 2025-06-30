@@ -17,9 +17,6 @@ interface Props {
 export default function ThesisTable({ theses, onSelectionChange }: Props) {
 	const [data, setData] = useState<ExtendedThesis[]>([]);
 	const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
-	// const groupMap = useMemo(() => {
-	// 	return new Map(groups.map((g) => [g.id, g.name]));
-	// }, []);
 
 	useEffect(() => {
 		setData(theses);
@@ -71,10 +68,9 @@ export default function ThesisTable({ theses, onSelectionChange }: Props) {
 			key: 'vietnameseName',
 		},
 		{
-			title: 'Domain',
-			dataIndex: 'domain',
-			key: 'domain',
-			onFilter: (value, record) => record.domain === value,
+			title: 'Lecturer',
+			dataIndex: 'lecturerId',
+			key: 'lecturerId',
 		},
 		{
 			title: 'Public Access',
