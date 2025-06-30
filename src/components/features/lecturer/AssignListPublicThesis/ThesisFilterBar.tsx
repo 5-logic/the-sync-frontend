@@ -33,6 +33,13 @@ export default function ThesisFilterBar({
 		});
 	};
 
+	const isPublishValue =
+		currentFilters.isPublish === true
+			? true
+			: currentFilters.isPublish === false
+				? false
+				: undefined;
+
 	return (
 		<Row gutter={[16, 16]} className="mb-4">
 			<Col xs={24} md={16}>
@@ -51,13 +58,7 @@ export default function ThesisFilterBar({
 					placeholder="Filter by Public Access"
 					allowClear
 					style={{ width: '100%' }}
-					value={
-						currentFilters.isPublish === true
-							? true
-							: currentFilters.isPublish === false
-								? false
-								: undefined
-					}
+					value={isPublishValue}
 					onChange={(value) => handlePublishChange(value)}
 				>
 					<Select.Option value={true}>Published</Select.Option>
