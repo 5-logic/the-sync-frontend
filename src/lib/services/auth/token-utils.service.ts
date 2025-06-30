@@ -1,3 +1,5 @@
+import { decodeMockToken, isDevelopmentMode } from '@/lib/auth/mock-accounts';
+
 /**
  * Token Utilities Service
  * JWT token parsing and validation utilities
@@ -17,6 +19,12 @@ export class TokenUtilsService {
 		isModerator?: boolean;
 	} | null {
 		try {
+			// Handle mock tokens in development mode
+			if (isDevelopmentMode() && token.startsWith('mock.')) {
+				const mockPayload = decodeMockToken(token);
+				return mockPayload;
+			}
+
 			// Simple JWT decode (without verification for client-side)
 			const base64Url = token.split('.')[1];
 			const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
