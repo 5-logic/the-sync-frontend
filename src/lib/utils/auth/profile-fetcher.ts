@@ -10,7 +10,6 @@ export interface ProfileData {
 	avatar?: string;
 	username?: string;
 	studentCode?: string;
-	studentCode?: string;
 	majorId?: string;
 	major?: string;
 	isModerator?: boolean;
