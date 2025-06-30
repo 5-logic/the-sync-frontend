@@ -1,10 +1,10 @@
 /**
- * 🔧 Token Utilities Service
+ * Token Utilities Service
  * JWT token parsing and validation utilities
  */
 export class TokenUtilsService {
 	/**
-	 * 🔍 Get User Info from Token (decode JWT)
+	 * Get User Info from Token (decode JWT)
 	 */
 	static getUserFromToken(token: string): {
 		sub?: string;

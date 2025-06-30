@@ -4,14 +4,15 @@ import httpClient from '@/lib/services/_httpClient';
 import { AuthService } from '@/lib/services/auth';
 
 /**
- * 🔐 NextAuth Credentials Provider
- * Handles admin and user authentication
+ * NextAuth Credentials Provider
+ * Handles admin and user authentication with remember me support
  */
 export const credentialsProvider = CredentialsProvider({
 	name: 'Credentials',
 	credentials: {
 		username: { label: 'Username or Email', type: 'text' },
 		password: { label: 'Password', type: 'password' },
+		remember: { label: 'Remember Me', type: 'checkbox' },
 	},
 	async authorize(credentials) {
 		if (!credentials?.username || !credentials?.password) {
@@ -19,6 +20,10 @@ export const credentialsProvider = CredentialsProvider({
 		}
 
 		try {
+			// Parse remember me preference
+			const rememberMe =
+				credentials.remember === 'true' || credentials.remember === 'on';
+
 			// Determine if it's admin login (username) or user login (email)
 			const isEmail = credentials.username.includes('@');
 			let tokenData;
@@ -34,14 +39,16 @@ export const credentialsProvider = CredentialsProvider({
 					username: credentials.username,
 					password: credentials.password,
 				});
-			} // Decode user info from access token
+			}
+
+			// Decode user info from access token
 			const userInfo = AuthService.getUserFromToken(tokenData.accessToken);
 
 			if (!userInfo?.sub || !userInfo?.role) {
 				return null;
 			}
 
-			// Return user object for NextAuth with tokens
+			// Return user object for NextAuth with tokens and remember preference
 			const user = {
 				id: userInfo.sub,
 				role: userInfo.role,
@@ -70,10 +77,14 @@ export const credentialsProvider = CredentialsProvider({
 				// Include tokens in user object to pass to JWT callback
 				accessToken: tokenData.accessToken,
 				refreshToken: tokenData.refreshToken,
+				rememberMe,
 			};
 
-			// ⚠️ Additional validation: Check if user account is active
+			// Additional validation: Check if user account is active
 			await validateUserAccount(user);
+
+			// Note: sessionStorage flag will be set on client-side after login
+
 			return user;
 		} catch (error) {
 			// Extract meaningful error message to pass to the client
@@ -88,7 +99,7 @@ export const credentialsProvider = CredentialsProvider({
 });
 
 /**
- * 🔍 Validate user account status
+ * Validate user account status
  */
 async function validateUserAccount(user: {
 	id: string;
@@ -128,14 +139,15 @@ async function validateUserAccount(user: {
 				profileResponse.data?.success &&
 				profileResponse.data?.data
 			) {
-				const profileData = profileResponse.data.data; // Check if user account is active
+				const profileData = profileResponse.data.data;
+				// Check if user account is active
 				if (profileData.isActive === false) {
 					throw new Error('Account is inactive');
 				}
 			}
 		}
 	} catch (profileError) {
-		console.warn('⚠️ Could not check user active status:', profileError);
+		console.warn('Could not check user active status:', profileError);
 		// Continue with login if profile check fails (don't block login)
 	}
 }

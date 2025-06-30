@@ -45,6 +45,13 @@ class LecturerService {
 		return response.data;
 	}
 
+	async delete(id: string): Promise<ApiResponse<boolean>> {
+		const response = await httpClient.delete<ApiResponse<boolean>>(
+			`${this.baseUrl}/${id}`,
+		);
+		return response.data;
+	}
+
 	async createMany(
 		createLecturerDtos: LecturerCreate[],
 	): Promise<ApiResponse<Lecturer[]>> {

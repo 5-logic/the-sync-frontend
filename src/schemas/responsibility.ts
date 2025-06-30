@@ -6,7 +6,7 @@ export const ResponsibilitySchema = z.object({
 });
 
 export const StudentExpectedResponsibilitySchema = z.object({
-	studentId: z.string(),
+	studentCode: z.string(),
 	responsibilityId: z.string().uuid(),
 });
 
