@@ -1,4 +1,4 @@
-// 🔄 Loading Components
+// Loading Components
 // Export all loading-related components
 
 // Main loading component

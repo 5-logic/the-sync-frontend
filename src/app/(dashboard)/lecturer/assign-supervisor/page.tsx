@@ -21,7 +21,7 @@ export default function LecturerAssignSupervisorPage() {
 					<Text type="secondary">
 						Manage supervisor assignments for thesis groups
 					</Text>
-				</div>{' '}
+				</div>
 				<Link href="/lecturer">
 					<Text className="cursor-pointer hover:text-blue-600">
 						← Back to Dashboard

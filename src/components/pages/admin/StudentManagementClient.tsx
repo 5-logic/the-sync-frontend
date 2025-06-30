@@ -1,24 +1,17 @@
 'use client';
 
-import { Layout } from 'antd';
+import { Suspense, lazy } from 'react';
 
-import StudentManagement from '@/components/features/admin/StudentManagement';
+import { TableLoadingSkeleton } from '@/components/common/loading';
 
-const { Content } = Layout;
+const StudentManagement = lazy(
+	() => import('@/components/features/admin/StudentManagement'),
+);
 
 export default function StudentManagementClient() {
 	return (
-		<Layout style={{ minHeight: '100vh', backgroundColor: '#ffffff' }}>
-			<Content
-				style={{
-					maxWidth: '1152px',
-					margin: '0 auto',
-					padding: '24px 16px',
-					width: '100%',
-				}}
-			>
-				<StudentManagement />
-			</Content>
-		</Layout>
+		<Suspense fallback={<TableLoadingSkeleton />}>
+			<StudentManagement />
+		</Suspense>
 	);
 }

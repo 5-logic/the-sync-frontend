@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const StudentGroupParticipationSchema = z.object({
-	studentId: z.string(),
+	studentCode: z.string(),
 	groupId: z.string().uuid(),
 	semesterId: z.string().uuid(),
 	isLeader: z.boolean().default(false),

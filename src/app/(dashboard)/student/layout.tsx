@@ -1,5 +1,6 @@
+import ChatbotWidget from '@/components/ChatbotWidget';
 import CollapsibleLayout from '@/components/layout/CollapsibleLayout';
-import StudentSidebar from '@/components/layout/Sidebar/StudentSidebar';
+import StudentSidebar from '@/components/layout/Sidebar/student/StudentSidebar';
 
 export default function StudentLayout({
 	children,
@@ -9,6 +10,7 @@ export default function StudentLayout({
 	return (
 		<CollapsibleLayout sidebar={<StudentSidebar />}>
 			{children}
+			<ChatbotWidget />
 		</CollapsibleLayout>
 	);
 }

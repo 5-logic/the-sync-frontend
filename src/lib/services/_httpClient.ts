@@ -4,7 +4,7 @@ import { API_BASE_URL } from '@/lib/constants';
 import { HttpInterceptors } from '@/lib/services/http/interceptors';
 
 /**
- * 🌐 Main HTTP Client for the application
+ * Main HTTP Client for the application
  * Uses modular interceptors from ./http/interceptors.ts
  * This is the single source of truth for HTTP client configuration
  */
@@ -13,7 +13,7 @@ const httpClient = axios.create({
 	headers: {
 		'Content-Type': 'application/json',
 	},
-	timeout: 10000, // 10s timeout for backend API
+	timeout: 3600000, // 1h timeout for backend API
 });
 
 // Apply improved interceptors from the dedicated interceptors module

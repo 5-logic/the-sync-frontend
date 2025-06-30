@@ -90,22 +90,21 @@ export function useRouteProtection(
 			return result;
 		},
 		[],
-	); // Fast token check
+	); // Smart token check with remember me support
 	const [hasValidTokens, setHasValidTokens] = useState(false);
 
 	useEffect(() => {
 		const checkTokens = () => {
-			// Use fast token validation first
+			// Use TokenManager fast token validation first
 			const fastToken = TokenManager.getFastAccessToken();
 			if (fastToken) {
 				setHasValidTokens(true);
 				return;
 			}
 
-			// Quick check for token existence
-			const accessToken = TokenManager.getAccessToken();
-			const refreshToken = TokenManager.getRefreshToken();
-			setHasValidTokens(!!(accessToken && refreshToken));
+			// Quick check for token existence with storage info
+			const storageInfo = TokenManager.getStorageInfo();
+			setHasValidTokens(storageInfo.hasTokens && storageInfo.tokenValid);
 		};
 
 		checkTokens();
@@ -170,10 +169,17 @@ export function useRouteProtection(
 		return false;
 	}, [cacheKey, status, session]);
 
-	// Handle unauthenticated state
+	// Handle unauthenticated state with smart cleanup
 	const handleUnauthenticated = useCallback(() => {
+		// Check if this was a remember me session
+		const storageInfo = TokenManager.getStorageInfo();
+		if (storageInfo.rememberMe) {
+			console.log('Remember Me session expired, clearing persistent storage');
+		}
+
 		TokenManager.clearTokens();
-		router.push('/api/auth/signin');
+		// Redirect to actual login page instead of NextAuth signin API
+		router.push('/login');
 		setAuthState({
 			isAuthorized: false,
 			isLoading: false,
@@ -181,12 +187,17 @@ export function useRouteProtection(
 		});
 	}, [router]);
 
-	// Handle authenticated state with permission check
+	// ENHANCED: Handle authenticated state with smart token sync
 	const handleAuthenticated = useCallback(() => {
 		if (status === 'authenticated' && session?.user) {
-			// Sync tokens from session
+			// Sync tokens from session to TokenManager
 			if (session.accessToken && session.refreshToken) {
-				TokenManager.setTokens(session.accessToken, session.refreshToken);
+				const rememberMe = session.rememberMe ?? false;
+				TokenManager.setTokens(
+					session.accessToken,
+					session.refreshToken,
+					rememberMe,
+				);
 			}
 
 			// Use cached route finding
