@@ -10,6 +10,8 @@ import TeamMembers from '@/components/features/lecturer/ViewThesisDetail/TeamMem
 import { mockStudents } from '@/data/student';
 import { mockTheses } from '@/data/thesis';
 
+import AssignConfirmModal from './AssignConfirmModal';
+
 const { Title, Paragraph } = Typography;
 const { TextArea } = Input;
 
@@ -20,6 +22,7 @@ export default function AssignStudentsDetailPage() {
 		major: 'All',
 	});
 	const [note, setNote] = useState('');
+	const [isModalOpen, setIsModalOpen] = useState(false);
 
 	const thesis = mockTheses.find((t) => t.id === 't1');
 	if (!thesis) return <div>Thesis not found</div>;
@@ -28,16 +31,21 @@ export default function AssignStudentsDetailPage() {
 		const keywordMatch =
 			student.fullName.toLowerCase().includes(filters.keyword.toLowerCase()) ||
 			student.email.toLowerCase().includes(filters.keyword.toLowerCase());
-
 		const majorMatch =
 			filters.major === 'All' || student.majorId === filters.major;
-
 		return keywordMatch && majorMatch;
 	});
 
-	const handleAssign = () => {
+	const selectedStudents = mockStudents.filter((s) =>
+		selectedStudentIds.includes(s.id),
+	);
+
+	const groupName = thesis.group?.id ?? 'Unnamed Group';
+
+	const handleConfirmAssign = () => {
 		console.log('Assign:', selectedStudentIds, 'Note:', note);
-		// call API to assign students to thesis.group.id
+		// call API here
+		setIsModalOpen(false);
 	};
 
 	return (
@@ -56,15 +64,12 @@ export default function AssignStudentsDetailPage() {
 				</Paragraph>
 			</div>
 
-			{/* Group Info */}
 			<GroupInfoCard thesis={thesis} />
 
-			{/* Team Members */}
 			<Card>
 				<TeamMembers thesis={thesis} />
 			</Card>
 
-			{/* Assign Student(s) to Group */}
 			<Card title="Assign Student(s) to Group">
 				<StudentFilterBar
 					search={filters.keyword}
@@ -84,7 +89,6 @@ export default function AssignStudentsDetailPage() {
 					onSelectionChange={setSelectedStudentIds}
 				/>
 
-				{/* Note & Actions */}
 				<Row gutter={[16, 16]} className="mt-4">
 					<Col span={24}>
 						<TextArea
@@ -100,7 +104,7 @@ export default function AssignStudentsDetailPage() {
 							<Button
 								type="primary"
 								disabled={selectedStudentIds.length === 0}
-								onClick={handleAssign}
+								onClick={() => setIsModalOpen(true)}
 							>
 								Assign To Group
 							</Button>
@@ -108,6 +112,14 @@ export default function AssignStudentsDetailPage() {
 					</Col>
 				</Row>
 			</Card>
+
+			<AssignConfirmModal
+				open={isModalOpen}
+				onCancel={() => setIsModalOpen(false)}
+				onConfirm={handleConfirmAssign}
+				students={selectedStudents}
+				groupName={groupName}
+			/>
 		</Space>
 	);
 }
