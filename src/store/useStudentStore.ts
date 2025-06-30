@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 
 import studentService from '@/lib/services/students.service';
+import { handleApiResponse } from '@/lib/utils/handleApi';
 import {
 	ImportStudent,
 	Student,
@@ -18,10 +19,12 @@ import {
 	commonStoreUtilities,
 	createBatchCreateAction,
 	createCreateAction,
-	createDeleteAction,
+	createErrorState,
 	createFetchBySemesterAction,
 	createSearchFilter,
 	createUpdateAction,
+	handleActionError,
+	handleResultError,
 } from '@/store/helpers/storeHelpers';
 import { createStudentToggleFunction } from '@/store/helpers/studentToggleHelpers';
 import { type ToggleOperationData } from '@/store/helpers/toggleHelpers';
@@ -106,7 +109,7 @@ interface StudentState {
 const studentSearchFilter = createSearchFilter<Student>((student) => [
 	student.fullName,
 	student.email,
-	student.studentId,
+	student.studentCode,
 ]);
 
 export const useStudentStore = create<StudentState>()(
@@ -172,31 +175,67 @@ export const useStudentStore = create<StudentState>()(
 					get,
 				)(id, data);
 				if (result) {
-					// For updates, just refresh the data without clearing cache
-					// This keeps the cache warm while getting fresh data
-					setTimeout(() => {
-						get().fetchStudents(true); // Force refresh after a short delay
-					}, 100);
+					// createUpdateAction already handles optimistic update with fresh data from server
+					// Only invalidate cache for future fetches, no need to refetch immediately
+					cacheInvalidation.invalidateEntity('student');
 				}
 				return result;
 			},
 
 			deleteStudent: async (id: string) => {
-				const result = await createDeleteAction(studentService, 'student')(
-					set,
-					get,
-				)(id);
-				if (result) {
-					// For deletes, invalidate cache and refresh data
-					cacheInvalidation.invalidateEntity('student');
-					setTimeout(() => {
-						const { selectedSemesterId } = get();
-						if (selectedSemesterId) {
-							get().fetchStudentsBySemester(selectedSemesterId);
-						}
-					}, 100);
+				const { selectedSemesterId } = get();
+
+				if (!selectedSemesterId) {
+					const error = createErrorState({
+						message: 'No semester selected. Please select a semester first.',
+						statusCode: 400,
+					});
+					set({ lastError: error });
+					return false;
 				}
-				return result;
+
+				set({ deleting: true, lastError: null });
+				try {
+					const response = await studentService.deleteBySemester(
+						id,
+						selectedSemesterId,
+					);
+					const result = handleApiResponse(
+						response,
+						'Success',
+						'Student deleted successfully',
+					);
+
+					if (result.success) {
+						// Optimistic update: Remove from students array immediately
+						set((state: Record<string, unknown>) => ({
+							...state,
+							students: (state.students as Student[]).filter(
+								(student: Student) => student.id !== id,
+							),
+						}));
+
+						// Update filtered students immediately
+						get().filterStudents();
+
+						// Only invalidate cache for future fetches, no need to refetch immediately
+						// since we already have optimistic update and server confirmed deletion
+						cacheInvalidation.invalidateEntity('student');
+
+						return true;
+					}
+
+					if (result.error) {
+						handleResultError(result.error, set);
+						return false;
+					}
+				} catch (error) {
+					handleActionError(error, 'student', 'delete', set);
+					return false;
+				} finally {
+					set({ deleting: false });
+				}
+				return false;
 			},
 
 			createManyStudents: async (data: ImportStudent) => {
