@@ -7,6 +7,18 @@ export type ExtendedGroup = Group & {
 	status: 'Finalized' | 'Incomplete' | 'Unassigned';
 };
 
+export type GroupWithPhase = ExtendedGroup & {
+	phase: string;
+};
+
+export type FullMockGroup = Group & {
+	title: string;
+	supervisors: string[];
+	members: string[];
+	status: 'Finalized' | 'Incomplete' | 'Unassigned';
+	phase?: string;
+};
+
 // ======= Helpers =======
 const now = new Date();
 
