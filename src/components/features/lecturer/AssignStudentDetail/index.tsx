@@ -1,9 +1,9 @@
 'use client';
 
-import StudentFilterBar from '../AssignStudent/StudentFilterBar';
 import { Button, Card, Col, Input, Row, Space, Typography } from 'antd';
 import { useState } from 'react';
 
+import StudentFilterBar from '@/components/features/lecturer/AssignStudent/StudentFilterBar';
 import StudentTable from '@/components/features/lecturer/AssignStudent/StudentTable';
 import GroupInfoCard from '@/components/features/lecturer/AssignStudentDetail/GroupInfoCard';
 import TeamMembers from '@/components/features/lecturer/ViewThesisDetail/TeamMembers';

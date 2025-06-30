@@ -61,6 +61,7 @@ export default function StudentTable({
 							selectedRowKeys,
 							onChange: (selectedKeys) =>
 								onSelectionChange(selectedKeys as string[]),
+							columnTitle: 'Select',
 						}
 					: undefined
 			}
