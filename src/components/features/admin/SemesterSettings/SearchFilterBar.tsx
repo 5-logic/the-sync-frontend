@@ -38,7 +38,7 @@ const SearchFilterBar = ({
 			<Col flex="auto">
 				<Input
 					prefix={<SearchOutlined style={{ color: '#d9d9d9' }} />}
-					placeholder="Search Semester"
+					placeholder="Search Semester by Name or Code"
 					value={searchText}
 					onChange={(e) => setSearchText(e.target.value)}
 				/>

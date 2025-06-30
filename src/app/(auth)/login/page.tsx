@@ -15,23 +15,26 @@ import LoginTabs from '@/components/auth/LoginTabs';
 const { Content } = Layout;
 
 /**
- * 🔐 Login Page
- * Refactored to use modular components
+ * Login Page
+ * Enhanced with remember me functionality
  */
 export default function SignInPage() {
 	const [loading, setLoading] = useState(false);
 	const router = useRouter();
 
 	/**
-	 * 🎯 Main login handler
+	 * Main login handler with remember me support
 	 */
 	const handleLogin = async (values: LoginValues, isAdmin = false) => {
 		setLoading(true);
 		try {
 			const username = values.email ?? values.username;
+			const remember = values.remember ?? false;
+
 			const result = await signIn('credentials', {
 				username,
 				password: values.password,
+				remember: remember.toString(), // Remember me preference
 				redirect: false,
 			});
 
@@ -54,12 +57,12 @@ export default function SignInPage() {
 	};
 
 	/**
-	 * 👤 User login handler
+	 * User login handler
 	 */
 	const handleUserLogin = (values: LoginValues) => handleLogin(values, false);
 
 	/**
-	 * 🔐 Admin login handler
+	 * Admin login handler
 	 */
 	const handleAdminLogin = (values: LoginValues) => handleLogin(values, true);
 

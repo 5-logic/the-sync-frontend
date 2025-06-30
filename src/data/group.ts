@@ -83,4 +83,14 @@ export const mockReviewGroups: Record<string, ExtendedGroup[]> = {
 	'Final Review': [extendedGroups[3]],
 };
 
+// Gom tất cả nhóm thành 1 danh sách kèm phase
+export const allMockGroups: GroupWithPhase[] = Object.entries(
+	mockReviewGroups,
+).flatMap(([phase, groups]) =>
+	groups.map((group) => ({
+		...group,
+		phase,
+	})),
+);
+
 export default mockGroups;

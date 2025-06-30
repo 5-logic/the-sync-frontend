@@ -120,3 +120,20 @@ export const mockTheses: ExtendedThesis[] = [
 		],
 	},
 ];
+
+// Version control for thesis t1
+export const currentVersion = {
+	version: '3.0',
+	fileName: 'thesis_proposal_v3.0.pdf',
+	fileSize: '2.5 MB',
+	uploadedAt: 'Jan 10, 2024',
+};
+
+export const previousVersions = [
+	{
+		version: '2.0',
+		fileName: 'thesis_proposal_v2.0.pdf',
+		fileSize: '2.5 MB',
+		uploadedAt: 'Jan 10, 2024',
+	},
+];

@@ -10,7 +10,7 @@ import {
 } from '@/schemas/auth';
 
 /**
- * 🔐 Base Authentication Service
+ * Base Authentication Service
  * Shared functionality for both admin and user authentication
  */
 export abstract class BaseAuthService {

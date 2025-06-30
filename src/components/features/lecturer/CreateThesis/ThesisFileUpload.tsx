@@ -115,7 +115,7 @@ export default function SupportingDocumentField({
 								<div style={{ fontWeight: 500 }}>{uploadedFile.name}</div>
 								<div style={{ color: '#666', fontSize: 13 }}>
 									{(uploadedFile.size / 1024 / 1024).toFixed(1)} MB • Uploaded
-									on{' '}
+									on
 									{new Date().toLocaleDateString('en-US', {
 										month: 'short',
 										day: 'numeric',
