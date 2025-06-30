@@ -40,7 +40,7 @@ export default function AssignStudentPage() {
 			const emailMatch = student.email
 				.toLowerCase()
 				.includes(studentSearch.toLowerCase());
-			const matchSearch = fullNameMatch || emailMatch;
+			const matchSearch = fullNameMatch || emailMatch; //NOSONAR
 			const matchMajor =
 				studentMajor === 'All' || student.majorId === studentMajor;
 			return matchSearch && matchMajor;
@@ -49,11 +49,7 @@ export default function AssignStudentPage() {
 
 	const groupColumns = useMemo(() => {
 		return [
-			...supervisorBaseColumns.map((col) => {
-				if (!('dataIndex' in col)) return col;
-				if (col.dataIndex === 'members') return col;
-				return col;
-			}),
+			...supervisorBaseColumns,
 			{
 				title: 'Action',
 				key: 'action',
