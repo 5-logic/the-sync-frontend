@@ -4,10 +4,9 @@ import { EyeOutlined } from '@ant-design/icons';
 import { Button, Switch, Table, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { TableRowSelection } from 'antd/es/table/interface';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { TablePagination } from '@/components/common/TablePagination';
-import groups from '@/data/group';
 import { ExtendedThesis } from '@/data/thesis';
 
 interface Props {
@@ -18,9 +17,9 @@ interface Props {
 export default function ThesisTable({ theses, onSelectionChange }: Props) {
 	const [data, setData] = useState<ExtendedThesis[]>([]);
 	const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
-	const groupMap = useMemo(() => {
-		return new Map(groups.map((g) => [g.id, g.name]));
-	}, []);
+	// const groupMap = useMemo(() => {
+	// 	return new Map(groups.map((g) => [g.id, g.name]));
+	// }, []);
 
 	useEffect(() => {
 		setData(theses);
@@ -67,10 +66,9 @@ export default function ThesisTable({ theses, onSelectionChange }: Props) {
 			key: 'englishName',
 		},
 		{
-			title: 'Group Name',
-			dataIndex: 'groupId',
-			key: 'groupName',
-			render: (groupId: string) => groupMap.get(groupId) ?? '-',
+			title: 'VietNamese Name',
+			dataIndex: 'vietnameseName',
+			key: 'vietnameseName',
 		},
 		{
 			title: 'Domain',
