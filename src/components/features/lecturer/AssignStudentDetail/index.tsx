@@ -66,16 +66,12 @@ export default function AssignStudentsDetailPage() {
 			<GroupInfoCard thesis={thesis} />
 
 			{/* Team Members */}
-			<Card
-				title="Team Members"
-				extra={<span>{thesis.group?.members.length ?? 0}/5</span>}
-			>
+			<Card>
 				<TeamMembers thesis={thesis} />
 			</Card>
 
 			{/* Assign Student(s) to Group */}
 			<Card title="Assign Student(s) to Group">
-				{/* Filters */}
 				<StudentFilterBar
 					search={filters.keyword}
 					onSearchChange={(val) =>
