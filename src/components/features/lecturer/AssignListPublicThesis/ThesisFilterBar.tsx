@@ -34,11 +34,9 @@ export default function ThesisFilterBar({
 	};
 
 	const isPublishValue =
-		currentFilters.isPublish === true
-			? true
-			: currentFilters.isPublish === false
-				? false
-				: undefined;
+		typeof currentFilters.isPublish === 'boolean'
+			? currentFilters.isPublish
+			: undefined;
 
 	return (
 		<Row gutter={[16, 16]} className="mb-4">
