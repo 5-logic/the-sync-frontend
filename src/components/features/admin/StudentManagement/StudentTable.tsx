@@ -164,7 +164,7 @@ export default function StudentTable({ data, loading }: Props) {
 					<Space direction="vertical" size="small" style={{ width: '100%' }}>
 						<div>
 							<Text strong>Student ID: </Text>
-							<Text>{student.studentId}</Text>
+							<Text>{student.studentCode}</Text>
 						</div>
 						<div>
 							<Text strong>Name: </Text>
@@ -199,8 +199,8 @@ export default function StudentTable({ data, loading }: Props) {
 	const columns: ColumnsType<Student> = [
 		{
 			title: 'Student ID',
-			dataIndex: 'studentId',
-			key: 'studentId',
+			dataIndex: 'studentCode',
+			key: 'studentCode',
 			width: '10%',
 		},
 		{

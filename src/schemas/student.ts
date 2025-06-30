@@ -4,12 +4,12 @@ import { GenderSchema, SkillLevelSchema } from '@/schemas/_enums';
 import { UserSchema } from '@/schemas/user';
 
 export const StudentSchema = UserSchema.extend({
-	studentId: z.string().min(1).max(6),
+	studentCode: z.string().min(1).max(6),
 	majorId: z.string().uuid(),
 });
 
 export const StudentSkillSchema = z.object({
-	studentId: z.string(),
+	studentCode: z.string(),
 	skillId: z.string().uuid(),
 	level: SkillLevelSchema,
 });
@@ -30,7 +30,7 @@ export const StudentCreateSchema = StudentSchema.extend({
 
 // Schema for individual student in import operation
 export const ImportStudentItemSchema = z.object({
-	studentId: z.string().min(1).max(6),
+	studentCode: z.string().min(1).max(6),
 	email: z.string().email(),
 	fullName: z.string().min(1),
 	password: z.string().min(12),
@@ -46,7 +46,7 @@ export const ImportStudentSchema = z.object({
 });
 
 export const StudentUpdateSchema = StudentSchema.pick({
-	studentId: true,
+	studentCode: true,
 	email: true,
 	fullName: true,
 	gender: true,
@@ -60,7 +60,7 @@ export const StudentToggleStatusSchema = StudentSchema.pick({
 
 export const StudentSkillCreateSchema = StudentSkillSchema;
 export const StudentSkillUpdateSchema = StudentSkillSchema.pick({
-	studentId: true,
+	studentCode: true,
 	skillId: true,
 }).extend({
 	level: SkillLevelSchema.optional(),

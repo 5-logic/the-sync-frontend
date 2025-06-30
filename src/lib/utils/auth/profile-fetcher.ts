@@ -9,7 +9,7 @@ export interface ProfileData {
 	isActive?: boolean;
 	avatar?: string;
 	username?: string;
-	studentId?: string;
+	studentCode?: string;
 	studentCode?: string;
 	majorId?: string;
 	major?: string;
@@ -103,7 +103,7 @@ export function mapProfileToToken(
 			mappedData.gender = profile.gender;
 			mappedData.isActive = profile.isActive;
 			mappedData.avatar = profile.avatar;
-			mappedData.studentId = profile.studentId ?? profile.studentCode;
+			mappedData.studentCode = profile.studentCode ?? profile.studentCode;
 			mappedData.majorId = profile.majorId;
 			mappedData.major = profile.major;
 			break;

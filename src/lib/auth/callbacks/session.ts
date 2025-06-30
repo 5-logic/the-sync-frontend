@@ -46,7 +46,7 @@ export async function sessionCallback({
 		session.user.avatar = token.avatar;
 
 		// Add role-specific fields
-		session.user.studentId = token.studentId;
+		session.user.studentCode = token.studentCode;
 		session.user.majorId = token.majorId;
 		session.user.major = token.major;
 		session.user.department = token.department;

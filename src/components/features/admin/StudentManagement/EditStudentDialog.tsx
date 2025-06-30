@@ -47,7 +47,7 @@ export default function EditStudentDialog({
 		if (!student) return false;
 
 		const studentData: StudentUpdate = {
-			studentId: values.studentId?.trim().toUpperCase(),
+			studentCode: values.studentCode?.trim().toUpperCase(),
 			email: values.email?.trim().toLowerCase(),
 			fullName: values.fullName?.trim(),
 			gender: values.gender,
@@ -80,7 +80,7 @@ export default function EditStudentDialog({
 				<Space direction="vertical" size="small" style={{ width: '100%' }}>
 					{/* Student ID */}
 					<Form.Item
-						name="studentId"
+						name="studentCode"
 						label={<FormLabel text="Student ID" isRequired isBold />}
 						rules={[
 							{ required: true, message: 'Please enter student ID' },

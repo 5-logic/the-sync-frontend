@@ -15,7 +15,7 @@ declare module 'next-auth' {
 			isActive?: boolean;
 			avatar?: string;
 			// Student-specific fields
-			studentId?: string;
+			studentCode?: string;
 			majorId?: string;
 			major?: string;
 			department?: string;
@@ -40,7 +40,7 @@ declare module 'next-auth' {
 		isActive?: boolean;
 		avatar?: string;
 		// Student-specific fields
-		studentId?: string;
+		studentCode?: string;
 		majorId?: string;
 		major?: string;
 		department?: string;
@@ -65,7 +65,7 @@ declare module 'next-auth/jwt' {
 		isActive?: boolean;
 		avatar?: string;
 		// Student-specific fields
-		studentId?: string;
+		studentCode?: string;
 		majorId?: string;
 		major?: string;
 		department?: string;
