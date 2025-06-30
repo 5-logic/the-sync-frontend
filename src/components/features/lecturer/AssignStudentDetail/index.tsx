@@ -29,7 +29,7 @@ export default function AssignStudentsDetailPage() {
 
 	const filteredStudents = mockStudents.filter((student) => {
 		const keywordMatch =
-			student.fullName.toLowerCase().includes(filters.keyword.toLowerCase()) ||
+			student.fullName.toLowerCase().includes(filters.keyword.toLowerCase()) || //NOSONAR
 			student.email.toLowerCase().includes(filters.keyword.toLowerCase());
 		const majorMatch =
 			filters.major === 'All' || student.majorId === filters.major;
