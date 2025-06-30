@@ -52,7 +52,7 @@ export interface ExtendedSession extends Session {
 		fullName?: string;
 		isModerator?: boolean;
 		// Add role-specific fields
-		studentId?: string;
+		studentCode?: string;
 		lecturerId?: string;
 		majorId?: string;
 		majorName?: string;
@@ -75,7 +75,7 @@ export interface ExtendedJWT extends Omit<JWT, 'id'> {
 	accessToken?: string;
 	refreshToken?: string;
 	// Role-specific fields
-	studentId?: string;
+	studentCode?: string;
 	lecturerId?: string;
 	majorId?: string;
 	majorName?: string;
@@ -94,7 +94,7 @@ export interface UserProfile {
 	isModerator?: boolean;
 	isActive?: boolean;
 	// Role-specific fields
-	studentId?: string;
+	studentCode?: string;
 	lecturerId?: string;
 	majorId?: string;
 	majorName?: string;
@@ -144,7 +144,7 @@ export interface SessionUser {
 	fullName?: string;
 	isModerator?: boolean;
 	// Role-specific fields
-	studentId?: string;
+	studentCode?: string;
 	lecturerId?: string;
 	majorId?: string;
 	majorName?: string;

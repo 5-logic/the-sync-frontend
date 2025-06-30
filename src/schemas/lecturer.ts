@@ -16,8 +16,11 @@ export const LecturerCreateSchema = LecturerSchema.pick({
 });
 
 export const LecturerUpdateSchema = LecturerSchema.pick({
-	isModerator: true,
-});
+	fullName: true,
+	email: true,
+	phoneNumber: true,
+	gender: true,
+}).partial();
 
 export const LecturerToggleStatusSchema = z.object({
 	isActive: z.boolean().optional(),

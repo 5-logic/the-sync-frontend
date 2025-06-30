@@ -1,7 +1,7 @@
 import { AxiosError } from 'axios';
 
 /**
- * 🚨 Auth Error Handler
+ * Auth Error Handler
  * Centralized error handling for authentication services
  */
 export class AuthErrorHandler {
@@ -9,7 +9,7 @@ export class AuthErrorHandler {
 	 * Handle login-specific errors with user-friendly messages
 	 */
 	static handleLoginError(error: unknown): never {
-		console.error('❌ Login failed:', error);
+		console.error('Login failed:', error);
 
 		// Check for connection timeout
 		if (this.isConnectionTimeout(error)) {
@@ -208,7 +208,7 @@ export class AuthErrorHandler {
 	 * Handle refresh token-specific errors
 	 */
 	static handleRefreshError(error: unknown): never {
-		console.error('❌ Refresh failed:', error);
+		console.error('Refresh failed:', error);
 
 		// Connection timeout
 		if (

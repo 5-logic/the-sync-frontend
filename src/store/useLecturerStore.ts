@@ -30,6 +30,7 @@ interface LecturerState {
 	loading: boolean;
 	creating: boolean;
 	updating: boolean;
+	deleting: boolean;
 	creatingMany: boolean; // Legacy field for backward compatibility
 	creatingManyLecturers: boolean; // New field for consistency
 	togglingStatus: boolean;
@@ -73,6 +74,7 @@ interface LecturerState {
 		lecturers: LecturerCreate[];
 	}) => Promise<boolean>;
 	updateLecturer: (id: string, data: LecturerUpdate) => Promise<boolean>;
+	deleteLecturer: (id: string) => Promise<boolean>;
 
 	// Separate toggle methods for better type safety and state management
 	toggleLecturerStatus: (
@@ -119,6 +121,7 @@ export const useLecturerStore = create<LecturerState>()(
 			loading: false,
 			creating: false,
 			updating: false,
+			deleting: false,
 			creatingMany: false,
 			creatingManyLecturers: false,
 			togglingStatus: false,
@@ -171,11 +174,9 @@ export const useLecturerStore = create<LecturerState>()(
 					get,
 				)(id, data);
 				if (result) {
-					// For updates, just refresh the data without clearing cache
-					// This keeps the cache warm while getting fresh data
-					setTimeout(() => {
-						get().fetchLecturers(true); // Force refresh after a short delay
-					}, 100);
+					// createUpdateAction already handles optimistic update with fresh data from server
+					// Only invalidate cache for future fetches, no need to refetch immediately
+					cacheInvalidation.invalidateEntity('lecturer');
 				}
 				return result;
 			},
@@ -284,6 +285,56 @@ export const useLecturerStore = create<LecturerState>()(
 			// Check if a specific lecturer is currently being toggled (moderator)
 			isLecturerModeratorLoading: (id: string) => {
 				return get()._lecturerModeratorLoadingStates.get(id) ?? false;
+			},
+
+			deleteLecturer: async (id: string) => {
+				set({ deleting: true, lastError: null });
+
+				try {
+					const response = await lecturerService.delete(id);
+
+					if (response.success) {
+						// Remove lecturer from local state
+						const { lecturers } = get();
+						const updatedLecturers = lecturers.filter(
+							(lecturer) => lecturer.id !== id,
+						);
+						set({ lecturers: updatedLecturers });
+
+						// Refresh filtered data
+						get().filterLecturers();
+
+						// Invalidate cache
+						cacheInvalidation.invalidateEntity('lecturer');
+
+						set({ deleting: false });
+						return true;
+					} else {
+						throw new Error(response.error ?? 'Failed to delete lecturer');
+					}
+				} catch (error: unknown) {
+					const errorMessage =
+						error instanceof Error
+							? error.message
+							: 'Failed to delete lecturer';
+					const statusCode =
+						error &&
+						typeof error === 'object' &&
+						'response' in error &&
+						error.response
+							? ((error.response as { status?: number }).status ?? 500)
+							: 500;
+
+					set({
+						deleting: false,
+						lastError: {
+							message: errorMessage,
+							statusCode,
+							timestamp: new Date(),
+						},
+					});
+					return false;
+				}
 			},
 		}),
 		{

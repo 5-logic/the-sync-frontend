@@ -6,7 +6,7 @@ export const RequestSchema = z.object({
 	id: z.string().uuid(),
 	type: RequestTypeSchema,
 	status: RequestStatusSchema,
-	studentId: z.string(),
+	studentCode: z.string(),
 	groupId: z.string().uuid(),
 	createdAt: z.date(),
 	updatedAt: z.date(),

@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { AdminLoginSchema, UserLoginSchema } from '@/schemas/auth';
 
 /**
- * 🔐 Login Form Validation Utilities
+ * Login Form Validation Utilities
  * Shared validation logic for login forms
  */
 

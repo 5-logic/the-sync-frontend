@@ -40,7 +40,7 @@ export const handleCreateError = (result: {
 };
 
 // Helper function to handle API errors in actions
-function handleActionError(
+export function handleActionError(
 	error: unknown,
 	entityName: string,
 	operation: string,
@@ -56,7 +56,7 @@ function handleActionError(
 }
 
 // Helper function to handle API result errors
-function handleResultError(
+export function handleResultError(
 	error: { message: string; statusCode: number },
 	set: StoreApi<Record<string, unknown>>['setState'],
 ): void {

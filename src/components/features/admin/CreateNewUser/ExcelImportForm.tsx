@@ -43,7 +43,7 @@ import {
 const { Dragger } = Upload;
 
 type ExcelImportFormProps<
-	T extends { id: string; email?: string; studentId?: string },
+	T extends { id: string; email?: string; studentCode?: string },
 > = Readonly<{
 	note: string;
 	fields: {
@@ -91,9 +91,9 @@ const fieldValidators = {
 			: [`Row ${rowNumber}: Invalid Vietnamese phone number format`];
 	},
 
-	studentId: (value: string, rowNumber: number): string[] => {
-		const studentIdRegex = /^[A-Za-z]{2}\d{6}$/;
-		return studentIdRegex.test(value)
+	studentCode: (value: string, rowNumber: number): string[] => {
+		const studentCodeRegex = /^[A-Za-z]{2}\d{6}$/;
+		return studentCodeRegex.test(value)
 			? []
 			: [
 					`Row ${rowNumber}: Student ID must be 2 letters followed by 6 digits (e.g., QE123456)`,
@@ -134,20 +134,20 @@ function validateFieldValue<T>(
 
 // Helper function to check for duplicates
 function checkDuplicates<
-	T extends { id: string; email?: string; studentId?: string },
+	T extends { id: string; email?: string; studentCode?: string },
 >(item: T, validatedData: T[], rowNumber: number): string[] {
 	const errors: string[] = [];
 
 	// Check for duplicate student IDs
-	if ('studentId' in item && item['studentId']) {
+	if ('studentCode' in item && item['studentCode']) {
 		const duplicateIndex = validatedData.findIndex(
 			(existingItem) =>
-				'studentId' in existingItem &&
-				existingItem['studentId'] === item['studentId'],
+				'studentCode' in existingItem &&
+				existingItem['studentCode'] === item['studentCode'],
 		);
 		if (duplicateIndex !== -1) {
 			errors.push(
-				`Row ${rowNumber}: Duplicate Student ID '${item['studentId']}' found in row ${duplicateIndex + 2}`,
+				`Row ${rowNumber}: Duplicate Student ID '${item['studentCode']}' found in row ${duplicateIndex + 2}`,
 			);
 		}
 	}
@@ -211,7 +211,7 @@ function parseExcelData<T extends { id: string }>(
 				if (cellValue !== undefined && cellValue !== null && cellValue !== '') {
 					const stringValue = String(cellValue).trim();
 					item[fieldKey] = (
-						fieldKey === 'studentId' ? stringValue.toUpperCase() : stringValue
+						fieldKey === 'studentCode' ? stringValue.toUpperCase() : stringValue
 					) as T[keyof T];
 				}
 			});
@@ -227,7 +227,7 @@ function parseExcelData<T extends { id: string }>(
 
 // Helper function to validate all data
 function validateAllData<
-	T extends { id: string; email?: string; studentId?: string },
+	T extends { id: string; email?: string; studentCode?: string },
 >(
 	parsedData: T[],
 	fields: {
@@ -280,7 +280,7 @@ function validateAllData<
 
 // Helper function to process Excel file data
 function processExcelFile<
-	T extends { id: string; email?: string; studentId?: string },
+	T extends { id: string; email?: string; studentCode?: string },
 >(
 	data: ArrayBuffer,
 	fields: {
@@ -360,7 +360,7 @@ function handleValidationErrors(validationErrors: string[]): void {
 
 // Helper function to create table columns
 function createTableColumns<
-	T extends { id: string; email?: string; studentId?: string },
+	T extends { id: string; email?: string; studentCode?: string },
 >(
 	fields: {
 		title: string;
@@ -637,7 +637,7 @@ function getUploadText(
 
 // Component for imported data table
 function ImportedDataTable<
-	T extends { id: string; email?: string; studentId?: string },
+	T extends { id: string; email?: string; studentCode?: string },
 >({
 	data,
 	columns,
@@ -731,7 +731,7 @@ export default function ExcelImportForm<
 	T extends {
 		id: string;
 		email?: string;
-		studentId?: string;
+		studentCode?: string;
 		fullName?: string;
 		phoneNumber?: string;
 		gender?: string;
@@ -969,7 +969,7 @@ export default function ExcelImportForm<
 			majorId: selectedMajor!,
 			students: (data as unknown as (ImportStudentItem & { id: string })[]).map(
 				(item) => ({
-					studentId: item.studentId,
+					studentCode: item.studentCode,
 					email: item.email,
 					fullName: item.fullName,
 					password: item.password,

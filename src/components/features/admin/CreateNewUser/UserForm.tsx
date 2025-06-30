@@ -141,7 +141,7 @@ const UserForm = ({ formType }: UserFormProps) => {
 		const studentData: StudentCreate = {
 			fullName: values.fullName.trim(),
 			email: values.email.trim().toLowerCase(),
-			studentId: values.studentId.trim().toUpperCase(),
+			studentCode: values.studentCode.trim().toUpperCase(),
 			gender: values.gender,
 			phoneNumber: values.phoneNumber.trim(),
 			majorId: values.majorId,
@@ -388,7 +388,7 @@ const UserForm = ({ formType }: UserFormProps) => {
 					{isStudent && (
 						<Col xs={24} sm={12}>
 							<Form.Item
-								name="studentId"
+								name="studentCode"
 								label={FormLabel({
 									text: 'Student ID',
 									isRequired: true,
