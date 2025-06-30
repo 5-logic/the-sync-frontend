@@ -1,5 +1,11 @@
 import CredentialsProvider from 'next-auth/providers/credentials';
 
+import {
+	decodeMockToken,
+	findMockAccount,
+	generateMockToken,
+	isDevelopmentMode,
+} from '@/lib/auth/mock-accounts';
 import httpClient from '@/lib/services/_httpClient';
 import { AuthService } from '@/lib/services/auth';
 
@@ -24,6 +30,46 @@ export const credentialsProvider = CredentialsProvider({
 			const rememberMe =
 				credentials.remember === 'true' || credentials.remember === 'on';
 
+			// Check if development mode with mock auth is enabled
+			if (isDevelopmentMode()) {
+				// Try to find mock account first
+				const mockAccount = findMockAccount(
+					credentials.username,
+					credentials.password,
+				);
+				if (mockAccount) {
+					console.log(
+						'🔧 Development mode: Using mock account for',
+						mockAccount.username || mockAccount.email,
+					);
+
+					// Generate mock tokens
+					const mockAccessToken = generateMockToken(mockAccount);
+					const mockRefreshToken = generateMockToken(mockAccount);
+
+					// Decode user info from mock token
+					const userInfo = decodeMockToken(mockAccessToken);
+
+					if (!userInfo?.sub || !userInfo?.role) {
+						return null;
+					}
+
+					// Return user object for NextAuth with mock tokens
+					return {
+						id: userInfo.sub,
+						role: userInfo.role,
+						name: userInfo.fullName,
+						email: mockAccount.email || '',
+						username: mockAccount.username || '',
+						isModerator: userInfo.isModerator || false,
+						accessToken: mockAccessToken,
+						refreshToken: mockRefreshToken,
+						rememberMe,
+					};
+				}
+			}
+
+			// Fallback to real API if not in development mode or mock account not found
 			// Determine if it's admin login (username) or user login (email)
 			const isEmail = credentials.username.includes('@');
 			let tokenData;
@@ -80,8 +126,10 @@ export const credentialsProvider = CredentialsProvider({
 				rememberMe,
 			};
 
-			// Additional validation: Check if user account is active
-			await validateUserAccount(user);
+			// Additional validation: Check if user account is active (skip for mock accounts)
+			if (!isDevelopmentMode() || !user.accessToken.startsWith('mock.')) {
+				await validateUserAccount(user);
+			}
 
 			// Note: sessionStorage flag will be set on client-side after login
 
