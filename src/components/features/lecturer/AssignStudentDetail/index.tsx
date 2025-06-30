@@ -18,27 +18,21 @@ export default function AssignStudentsDetailPage() {
 	const [filters, setFilters] = useState({
 		keyword: '',
 		major: 'All',
-		status: 'All',
 	});
 	const [note, setNote] = useState('');
 
-	// 👇 Giả sử đang thao tác với đề tài đầu tiên
 	const thesis = mockTheses.find((t) => t.id === 't1');
 	if (!thesis) return <div>Thesis not found</div>;
 
 	const filteredStudents = mockStudents.filter((student) => {
 		const keywordMatch =
-			student.fullName.toLowerCase().includes(filters.keyword.toLowerCase()) || //NOSONAR
+			student.fullName.toLowerCase().includes(filters.keyword.toLowerCase()) ||
 			student.email.toLowerCase().includes(filters.keyword.toLowerCase());
 
 		const majorMatch =
 			filters.major === 'All' || student.majorId === filters.major;
-		const statusMatch =
-			filters.status === 'All' ||
-			(filters.status === 'InGroup' && student.isActive) ||
-			(filters.status === 'NoGroup' && !student.isActive);
 
-		return keywordMatch && majorMatch && statusMatch;
+		return keywordMatch && majorMatch;
 	});
 
 	const handleAssign = () => {
@@ -81,14 +75,9 @@ export default function AssignStudentsDetailPage() {
 					onMajorChange={(val) =>
 						setFilters((prev) => ({ ...prev, major: val }))
 					}
-					status={filters.status}
-					onStatusChange={(val) =>
-						setFilters((prev) => ({ ...prev, status: val }))
-					}
 					majorOptions={['SE', 'AI']}
 				/>
 
-				{/* Student Table */}
 				<StudentTable
 					data={filteredStudents}
 					selectedRowKeys={selectedStudentIds}

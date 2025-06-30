@@ -10,8 +10,6 @@ type Props = Readonly<{
 	onSearchChange: (val: string) => void;
 	major: string;
 	onMajorChange: (val: string) => void;
-	status: string;
-	onStatusChange: (val: string) => void;
 	majorOptions: string[];
 }>;
 
@@ -20,8 +18,6 @@ export default function StudentFilterBar({
 	onSearchChange,
 	major,
 	onMajorChange,
-	status,
-	onStatusChange,
 	majorOptions,
 }: Props) {
 	return (
@@ -54,18 +50,6 @@ export default function StudentFilterBar({
 							{opt}
 						</Option>
 					))}
-				</Select>
-			</Col>
-
-			<Col style={{ width: 160 }}>
-				<Select
-					value={status}
-					onChange={onStatusChange}
-					style={{ width: '100%' }}
-				>
-					<Option value="All">All Status</Option>
-					<Option value="InGroup">In Group</Option>
-					<Option value="NoGroup">No Group</Option>
 				</Select>
 			</Col>
 		</Row>

@@ -1,6 +1,6 @@
 'use client';
 
-import { Badge, Table } from 'antd';
+import { Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 
 import { TablePagination } from '@/components/common/TablePagination';
@@ -34,19 +34,13 @@ export default function StudentTable({
 			dataIndex: 'email',
 		},
 		{
+			title: 'Phone Number',
+			dataIndex: 'phoneNumber',
+		},
+		{
 			title: 'Major',
 			dataIndex: 'majorId',
 			render: (majorId: string) => majorMap[majorId] ?? majorId,
-		},
-		{
-			title: 'Status',
-			dataIndex: 'isActive',
-			render: (isActive: boolean) => (
-				<Badge
-					status={isActive ? 'success' : 'default'}
-					text={isActive ? 'In Group' : 'No Group'}
-				/>
-			),
 		},
 	];
 
@@ -61,7 +55,6 @@ export default function StudentTable({
 							selectedRowKeys,
 							onChange: (selectedKeys) =>
 								onSelectionChange(selectedKeys as string[]),
-							columnTitle: 'Select',
 						}
 					: undefined
 			}
