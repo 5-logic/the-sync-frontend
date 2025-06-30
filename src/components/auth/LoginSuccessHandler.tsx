@@ -1,6 +1,7 @@
-import { notification } from 'antd';
 import { Session } from 'next-auth';
 import { useRouter } from 'next/navigation';
+
+import { showNotification } from '@/lib/utils/notification';
 
 /**
  * Utility function to wait for session to be updated
@@ -74,12 +75,7 @@ export class LoginSuccessHandler {
 				}
 			}
 
-			notification.success({
-				message: 'Login Successful',
-				description: `🎉 ${welcomeMessage}`,
-				duration: 3,
-				placement: 'bottomRight',
-			});
+			showNotification.success('Login Successful', `🎉 ${welcomeMessage}`, 3);
 
 			// Session is already verified from waitForSessionUpdate
 			router.push(redirectPath);
@@ -105,13 +101,7 @@ export class LoginSuccessHandler {
 		if (fallbackName) {
 			welcomeMessage = `Welcome back, ${fallbackName}!`;
 		}
-
-		notification.success({
-			message: 'Login Successful',
-			description: `🎉 ${welcomeMessage}`,
-			duration: 3,
-			placement: 'bottomRight',
-		});
+		showNotification.success('Login Successful', `🎉 ${welcomeMessage}`, 3);
 		router.push(redirectPath);
 	}
 }

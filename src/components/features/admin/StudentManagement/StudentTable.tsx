@@ -3,6 +3,7 @@
 import { Table, Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 
+import { TablePagination } from '@/components/common/TablePagination';
 import { Student } from '@/schemas/student';
 
 type Props = Readonly<{
@@ -50,12 +51,7 @@ export default function StudentTable({ data }: Props) {
 			columns={columns}
 			dataSource={data}
 			rowKey="id"
-			pagination={{
-				showTotal: (total, range) =>
-					`${range[0]}-${range[1]} of ${total} items`,
-				showSizeChanger: true,
-				pageSizeOptions: ['5', '10', '20', '50'],
-			}}
+			pagination={TablePagination}
 			scroll={{ x: 'max-content' }}
 		/>
 	);
