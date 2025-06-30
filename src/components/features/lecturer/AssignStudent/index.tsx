@@ -1,7 +1,7 @@
 'use client';
 
 import { EyeOutlined } from '@ant-design/icons';
-import { Button, Card, Space, TableProps, Tooltip } from 'antd';
+import { Button, Card, Space, Tooltip } from 'antd';
 import { useMemo, useState } from 'react';
 
 import StudentFilterBar from '@/components/features/lecturer/AssignStudent/StudentFilterBar';
@@ -15,15 +15,10 @@ import { mockStudents } from '@/data/student';
 
 export default function AssignStudentPage() {
 	const [groupSearch, setGroupSearch] = useState('');
-	const [sortedInfo, setSortedInfo] = useState<{
-		columnKey: string;
-		order: 'ascend' | 'descend' | null;
-	}>({
-		columnKey: 'members',
-		order: 'ascend',
-	});
+	const [studentSearch, setStudentSearch] = useState('');
+	const [studentMajor, setStudentMajor] = useState('All');
 
-	const filteredData = useMemo(() => {
+	const filteredGroups = useMemo(() => {
 		const searchText = groupSearch.toLowerCase();
 		return extendedGroups.filter((item) =>
 			[item.name, item.thesisTitle].some((field) =>
@@ -31,12 +26,6 @@ export default function AssignStudentPage() {
 			),
 		);
 	}, [groupSearch]);
-
-	const [studentSearch, setStudentSearch] = useState('');
-	const [studentMajor, setStudentMajor] = useState('All');
-	const [studentStatus, setStudentStatus] = useState<
-		'All' | 'InGroup' | 'NoGroup'
-	>('All');
 
 	const majorOptions = useMemo(() => {
 		const majors = mockStudents.map((s) => s.majorId);
@@ -54,40 +43,13 @@ export default function AssignStudentPage() {
 			const matchSearch = fullNameMatch || emailMatch; //NOSONAR
 			const matchMajor =
 				studentMajor === 'All' || student.majorId === studentMajor;
-			const matchStatus =
-				studentStatus === 'All' ||
-				(studentStatus === 'InGroup' && student.isActive) ||
-				(studentStatus === 'NoGroup' && !student.isActive);
-			return matchSearch && matchMajor && matchStatus;
+			return matchSearch && matchMajor;
 		});
-	}, [studentSearch, studentMajor, studentStatus]);
-
-	const handleTableChange: TableProps<ExtendedGroup>['onChange'] = (
-		_,
-		__,
-		sorter,
-	) => {
-		if (!Array.isArray(sorter)) {
-			setSortedInfo({
-				columnKey: sorter.columnKey as string,
-				order: sorter.order ?? null,
-			});
-		}
-	};
+	}, [studentSearch, studentMajor]);
 
 	const groupColumns = useMemo(() => {
 		return [
-			...supervisorBaseColumns.map((col) => {
-				if (!('dataIndex' in col)) return col;
-				if (col.dataIndex === 'members') {
-					return {
-						...col,
-						sortOrder:
-							sortedInfo.columnKey === 'members' ? sortedInfo.order : null,
-					};
-				}
-				return col;
-			}),
+			...supervisorBaseColumns,
 			{
 				title: 'Action',
 				key: 'action',
@@ -102,7 +64,7 @@ export default function AssignStudentPage() {
 				),
 			},
 		];
-	}, [sortedInfo]);
+	}, []);
 
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
@@ -116,26 +78,18 @@ export default function AssignStudentPage() {
 				<div style={{ marginBottom: 16 }}>
 					<GroupSearchBar value={groupSearch} onChange={setGroupSearch} />
 				</div>
-				<GroupOverviewTable
-					data={filteredData}
-					columns={groupColumns}
-					onChange={handleTableChange}
-				/>
+				<GroupOverviewTable data={filteredGroups} columns={groupColumns} />
 			</Card>
 
-			<Card title="Student List">
+			<Card title="Ungrouped Students">
 				<StudentFilterBar
 					search={studentSearch}
 					onSearchChange={setStudentSearch}
 					major={studentMajor}
 					onMajorChange={setStudentMajor}
-					status={studentStatus}
-					onStatusChange={(val: string) =>
-						setStudentStatus(val as 'All' | 'InGroup' | 'NoGroup')
-					}
 					majorOptions={majorOptions}
 				/>
-				<StudentTable data={filteredStudents} />
+				<StudentTable data={filteredStudents} showOnlyUngrouped />
 			</Card>
 		</Space>
 	);

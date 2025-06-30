@@ -40,19 +40,19 @@ const metaData: Record<string, GroupMeta> = {
 	g1: {
 		thesisTitle: 'AI-powered Healthcare System',
 		supervisors: ['Dr. Sarah Johnson', 'Dr. Davis'],
-		members: 5,
+		members: 4,
 		status: 'Finalized',
 	},
 	g2: {
 		thesisTitle: 'Blockchain Supply Chain',
 		supervisors: ['Dr. Michael Chen', 'Dr. Martinez'],
-		members: 5,
+		members: 4,
 		status: 'Finalized',
 	},
 	g3: {
 		thesisTitle: 'Smart City IoT Platform',
 		supervisors: ['Dr. Emily Wong'],
-		members: 4,
+		members: 5,
 		status: 'Incomplete',
 	},
 	g4: {

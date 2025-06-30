@@ -35,11 +35,8 @@ export const baseColumns: ColumnsType<ExtendedGroup> = [
 		title: 'Members',
 		dataIndex: 'members',
 		key: 'members',
-		align: 'center',
-		sorter: (a, b) => a.members - b.members,
-		defaultSortOrder: 'ascend', // Thêm dòng này để sắp xếp tăng dần ngay từ đầu
 		render: (members: number) => (
-			<span style={{ color: 'inherit' }}>{members}</span> // Đảm bảo giữ nguyên màu sắc
+			<span style={{ color: 'inherit' }}>{members}</span>
 		),
 	},
 	{
