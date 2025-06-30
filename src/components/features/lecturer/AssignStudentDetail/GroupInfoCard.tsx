@@ -7,7 +7,7 @@ import { ExtendedThesis } from '@/data/thesis';
 const { Title, Paragraph, Text } = Typography;
 
 interface Props {
-	thesis: ExtendedThesis;
+	readonly thesis: ExtendedThesis;
 }
 
 export default function GroupInfoCard({ thesis }: Props) {
@@ -38,11 +38,9 @@ export default function GroupInfoCard({ thesis }: Props) {
 			</Paragraph>
 
 			{supervisor && (
-				<>
-					<Paragraph>
-						<Text strong>Supervisor Name:</Text> {supervisor.name}
-					</Paragraph>
-				</>
+				<Paragraph>
+					<Text strong>Supervisor Name:</Text> {supervisor.name}
+				</Paragraph>
 			)}
 		</Card>
 	);
