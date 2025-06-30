@@ -174,11 +174,9 @@ export const useLecturerStore = create<LecturerState>()(
 					get,
 				)(id, data);
 				if (result) {
-					// For updates, just refresh the data without clearing cache
-					// This keeps the cache warm while getting fresh data
-					setTimeout(() => {
-						get().fetchLecturers(true); // Force refresh after a short delay
-					}, 100);
+					// createUpdateAction already handles optimistic update with fresh data from server
+					// Only invalidate cache for future fetches, no need to refetch immediately
+					cacheInvalidation.invalidateEntity('lecturer');
 				}
 				return result;
 			},
