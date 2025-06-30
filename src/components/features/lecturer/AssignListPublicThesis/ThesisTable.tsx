@@ -1,11 +1,13 @@
 'use client';
 
 import { EyeOutlined } from '@ant-design/icons';
-import { Button, Checkbox, Switch, Table, Tooltip } from 'antd';
+import { Button, Switch, Table, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { useEffect, useState } from 'react';
+import { TableRowSelection } from 'antd/es/table/interface';
+import { useEffect, useMemo, useState } from 'react';
 
 import { TablePagination } from '@/components/common/TablePagination';
+import groups from '@/data/group';
 import { ExtendedThesis } from '@/data/thesis';
 
 interface Props {
@@ -16,6 +18,9 @@ interface Props {
 export default function ThesisTable({ theses, onSelectionChange }: Props) {
 	const [data, setData] = useState<ExtendedThesis[]>([]);
 	const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+	const groupMap = useMemo(() => {
+		return new Map(groups.map((g) => [g.id, g.name]));
+	}, []);
 
 	useEffect(() => {
 		setData(theses);
@@ -31,22 +36,10 @@ export default function ThesisTable({ theses, onSelectionChange }: Props) {
 		);
 	};
 
-	const handleCheckboxChange = (id: string, checked: boolean) => {
-		setSelectedRowKeys((prev) => {
-			const newSelected = checked
-				? [...prev, id]
-				: prev.filter((key) => key !== id);
-			onSelectionChange?.(newSelected.map(String)); // Gọi prop callback
-			return newSelected;
-		});
+	const handleRowSelectionChange = (newSelectedKeys: React.Key[]) => {
+		setSelectedRowKeys(newSelectedKeys);
+		onSelectionChange?.(newSelectedKeys.map(String));
 	};
-
-	const renderCheckbox = (record: ExtendedThesis) => (
-		<Checkbox
-			checked={selectedRowKeys.includes(record.id)}
-			onChange={(e) => handleCheckboxChange(record.id, e.target.checked)}
-		/>
-	);
 
 	const renderSwitch = (record: ExtendedThesis) => (
 		<Switch
@@ -69,26 +62,21 @@ export default function ThesisTable({ theses, onSelectionChange }: Props) {
 
 	const columns: ColumnsType<ExtendedThesis> = [
 		{
-			title: 'Select',
-			dataIndex: 'select',
-			key: 'select',
-			render: (_, record) => renderCheckbox(record),
-			width: 70,
-		},
-		{
 			title: 'English Name',
 			dataIndex: 'englishName',
 			key: 'englishName',
 		},
 		{
-			title: 'Vietnamese Name',
-			dataIndex: 'vietnameseName',
-			key: 'vietnameseName',
+			title: 'Group Name',
+			dataIndex: 'groupId',
+			key: 'groupName',
+			render: (groupId: string) => groupMap.get(groupId) ?? '-',
 		},
 		{
-			title: 'Abbreviation',
-			dataIndex: 'abbreviation',
-			key: 'abbreviation',
+			title: 'Domain',
+			dataIndex: 'domain',
+			key: 'domain',
+			onFilter: (value, record) => record.domain === value,
 		},
 		{
 			title: 'Public Access',
@@ -102,11 +90,17 @@ export default function ThesisTable({ theses, onSelectionChange }: Props) {
 		},
 	];
 
+	const rowSelection: TableRowSelection<ExtendedThesis> = {
+		selectedRowKeys,
+		onChange: handleRowSelectionChange,
+	};
+
 	return (
 		<Table
 			rowKey="id"
 			columns={columns}
 			dataSource={data}
+			rowSelection={rowSelection}
 			pagination={TablePagination}
 			scroll={{ x: '100%' }}
 		/>

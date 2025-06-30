@@ -13,11 +13,21 @@ export default function AssignListPublicThesisPage() {
 	const [filters, setFilters] = useState({
 		englishName: undefined as string | undefined,
 		isPublish: undefined as boolean | undefined,
+		domain: undefined as string | undefined,
 	});
 
 	const [selectedIds, setSelectedIds] = useState<string[]>([]);
 	const [theses, setTheses] = useState(mockTheses);
 
+	// ✅ Extract unique domain list for dropdown
+	const domainOptions = useMemo(() => {
+		const domains = theses.map((t) => t.domain);
+		return Array.from(new Set(domains)).filter(
+			(d): d is string => typeof d === 'string',
+		);
+	}, [theses]);
+
+	// ✅ Filter logic
 	const filteredTheses = useMemo(() => {
 		return theses
 			.filter((t) => t.status === 'Approved')
@@ -25,7 +35,6 @@ export default function AssignListPublicThesisPage() {
 				const keyword = filters.englishName?.toLowerCase() ?? '';
 				const englishName = thesis.englishName?.toLowerCase() ?? '';
 				const vietnameseName = thesis.vietnameseName?.toLowerCase() ?? '';
-
 				const nameMatch =
 					keyword === ''
 						? true
@@ -38,7 +47,12 @@ export default function AssignListPublicThesisPage() {
 						? true
 						: thesis.isPublish === filters.isPublish;
 
-				return nameMatch && publishMatch;
+				const domainMatch =
+					filters.domain === undefined
+						? true
+						: thesis.domain === filters.domain;
+
+				return nameMatch && publishMatch && domainMatch;
 			});
 	}, [filters, theses]);
 
@@ -88,6 +102,7 @@ export default function AssignListPublicThesisPage() {
 							onFilterChange={(newFilters) =>
 								setFilters((prev) => ({ ...prev, ...newFilters }))
 							}
+							domainOptions={domainOptions}
 						/>
 
 						<ThesisTable
