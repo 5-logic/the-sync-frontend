@@ -80,8 +80,7 @@ export default function GroupProgressPage() {
 							title={`Group Name: ${selectedGroup.name} | ${selectedGroup.title}`}
 						>
 							<Text type="secondary">
-								Supervised by: {selectedGroup.supervisor} | Co-Supervisor:{' '}
-								{selectedGroup.coSupervisor}
+								Supervised by: {selectedGroup.supervisors.join(', ')}
 							</Text>
 
 							<Steps
