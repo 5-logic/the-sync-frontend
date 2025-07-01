@@ -20,7 +20,8 @@ export default function ReviewHeader({ currentStep, onStepChange }: Props) {
 	];
 
 	return (
-		<div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+		<div className="space-y-4">
+			{/* ✅ Title + Download button trên cùng một dòng */}
 			<div className="flex items-center justify-between">
 				<Title level={4} className="!mb-0">
 					Checklist Review
@@ -30,16 +31,14 @@ export default function ReviewHeader({ currentStep, onStepChange }: Props) {
 				</Button>
 			</div>
 
+			{/* ✅ Steps ở dòng riêng bên dưới */}
 			<Steps
 				current={currentStep}
 				size="small"
 				items={phases.map((title) => ({ title }))}
-				onChange={onStepChange} // ✅ Cho phép click
-				className="flex-1"
+				onChange={onStepChange}
+				className="w-full"
 			/>
-			{/* <Button type="default" icon={<DownloadOutlined />}>
-				Download Template
-			</Button> */}
 		</div>
 	);
 }
