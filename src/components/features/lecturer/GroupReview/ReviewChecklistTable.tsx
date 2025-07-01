@@ -1,106 +1,84 @@
 'use client';
 
 import { Input, Radio, Table, Tag } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
 import { useMemo, useState } from 'react';
 
-interface ChecklistItem {
-	question: string;
-	priority: 'High' | 'Medium' | 'Low';
-}
-
-interface ChecklistResponse {
-	response?: string;
-	notes?: string;
-}
+import { mockChecklistByPhase } from '@/data/checklist';
+import { ChecklistReviewAcceptance } from '@/schemas/_enums';
+import { ChecklistItem } from '@/schemas/checklist';
 
 interface Props {
 	phase: string;
 }
 
-const defaultChecklist: ChecklistItem[] = [
-	{ question: 'Has the code been peer reviewed?', priority: 'High' },
-	{ question: 'Are all tests passing?', priority: 'High' },
-	{ question: 'Is documentation updated?', priority: 'Medium' },
-	{ question: 'Are there any security concerns?', priority: 'High' },
-	{ question: 'Is the performance impact acceptable?', priority: 'Medium' },
-	{ question: 'Have accessibility requirements been met?', priority: 'Medium' },
-	{ question: 'Is the code properly commented?', priority: 'Low' },
-	{ question: 'Are there any breaking changes?', priority: 'High' },
-];
-
-const mockChecklistByPhase: Record<string, ChecklistItem[]> = {
-	'Submit Thesis': defaultChecklist,
-	'Review 1': defaultChecklist,
-	'Review 2': defaultChecklist,
-	'Review 3': defaultChecklist,
-	'Final Report': defaultChecklist,
-};
-
-const priorityColor = {
-	High: 'red',
-	Medium: 'gold',
-	Low: 'blue',
-};
+interface ChecklistResponse {
+	response?: ChecklistReviewAcceptance;
+	notes?: string;
+}
 
 export default function ReviewChecklistTable({ phase }: Props) {
-	const checklist = useMemo(() => mockChecklistByPhase[phase] || [], [phase]);
+	const checklist: ChecklistItem[] = useMemo(
+		() => mockChecklistByPhase[phase] || [],
+		[phase],
+	);
 
 	const [answers, setAnswers] = useState<Record<string, ChecklistResponse>>({});
 
-	const handleResponseChange = (question: string, value: string) => {
+	const handleResponseChange = (
+		id: string,
+		value: ChecklistReviewAcceptance,
+	) => {
 		setAnswers((prev) => ({
 			...prev,
-			[question]: { ...prev[question], response: value },
+			[id]: { ...prev[id], response: value },
 		}));
 	};
 
-	const handleNotesChange = (question: string, value: string) => {
+	const handleNotesChange = (id: string, value: string) => {
 		setAnswers((prev) => ({
 			...prev,
-			[question]: { ...prev[question], notes: value },
+			[id]: { ...prev[id], notes: value },
 		}));
 	};
 
-	const columns = [
+	const columns: ColumnsType<ChecklistItem> = [
 		{
 			title: 'Question',
-			dataIndex: 'question',
-			key: 'question',
+			dataIndex: 'name',
+			key: 'name',
 		},
 		{
 			title: 'Response',
 			key: 'response',
-			render: (_: unknown, record: ChecklistItem) => (
+			render: (_value, record) => (
 				<Radio.Group
-					value={answers[record.question]?.response}
-					onChange={(e) =>
-						handleResponseChange(record.question, e.target.value)
-					}
+					value={answers[record.id]?.response}
+					onChange={(e) => handleResponseChange(record.id, e.target.value)}
 				>
-					<Radio value="yes">Yes</Radio>
-					<Radio value="no">No</Radio>
-					<Radio value="na">N/A</Radio>
+					<Radio value="Yes">Yes</Radio>
+					<Radio value="No">No</Radio>
+					<Radio value="NotAvailable">N/A</Radio>
 				</Radio.Group>
 			),
 		},
 		{
 			title: 'Notes',
 			key: 'notes',
-			render: (_: unknown, record: ChecklistItem) => (
+			render: (_value, record) => (
 				<Input
 					placeholder="Add notes..."
-					value={answers[record.question]?.notes}
-					onChange={(e) => handleNotesChange(record.question, e.target.value)}
+					value={answers[record.id]?.notes}
+					onChange={(e) => handleNotesChange(record.id, e.target.value)}
 				/>
 			),
 		},
 		{
 			title: 'Priority',
-			dataIndex: 'priority',
 			key: 'priority',
-			render: (priority: string) => (
-				<Tag color={priorityColor[priority as keyof typeof priorityColor]}>
-					{priority}
+			render: (_value, record) => (
+				<Tag color={record.isRequired ? 'red' : 'blue'}>
+					{record.isRequired ? 'High' : 'Optional'}
 				</Tag>
 			),
 		},
@@ -108,7 +86,7 @@ export default function ReviewChecklistTable({ phase }: Props) {
 
 	return (
 		<Table
-			rowKey="question"
+			rowKey="id"
 			dataSource={checklist}
 			columns={columns}
 			pagination={false}
