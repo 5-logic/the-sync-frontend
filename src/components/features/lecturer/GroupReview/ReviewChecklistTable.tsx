@@ -17,6 +17,11 @@ interface ChecklistResponse {
 	notes?: string;
 }
 
+const priorityColorMap = {
+	High: 'red',
+	Optional: 'blue',
+};
+
 export default function ReviewChecklistTable({ phase }: Props) {
 	const checklist: ChecklistItem[] = useMemo(
 		() => mockChecklistByPhase[phase] || [],
@@ -76,11 +81,11 @@ export default function ReviewChecklistTable({ phase }: Props) {
 		{
 			title: 'Priority',
 			key: 'priority',
-			render: (_value, record) => (
-				<Tag color={record.isRequired ? 'red' : 'blue'}>
-					{record.isRequired ? 'High' : 'Optional'}
-				</Tag>
-			),
+			render: (_value, record) => {
+				const label = record.isRequired ? 'High' : 'Optional';
+				const color = priorityColorMap[label];
+				return <Tag color={color}>{label}</Tag>;
+			},
 		},
 	];
 

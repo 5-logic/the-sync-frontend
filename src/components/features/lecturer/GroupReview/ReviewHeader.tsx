@@ -10,25 +10,32 @@ interface Props {
 	onStepChange: (index: number) => void;
 }
 
-export default function ReviewHeader({ currentStep, onStepChange }: Props) {
-	const phases = [
-		'Submit Thesis',
-		'Review 1',
-		'Review 2',
-		'Review 3',
-		'Final Report',
-	];
+const phases = [
+	'Submit Thesis',
+	'Review 1',
+	'Review 2',
+	'Review 3',
+	'Final Report',
+];
 
+export default function ReviewHeader({ currentStep, onStepChange }: Props) {
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
 			<Row align="middle" justify="space-between">
 				<Col>
-					<Title level={4} style={{ marginBottom: 10 }}>
+					<Title level={4} style={{ marginBottom: 15 }}>
 						Checklist Review
 					</Title>
 				</Col>
 				<Col>
-					<Button type="default" icon={<DownloadOutlined />}>
+					<Button
+						type="default"
+						icon={<DownloadOutlined />}
+						htmlType="button"
+						onClick={() => {
+							console.log('Download template clicked');
+						}}
+					>
 						Download Template
 					</Button>
 				</Col>

@@ -11,12 +11,9 @@ import { FullMockGroup, allMockGroups } from '@/data/group';
 const { Title, Text, Paragraph } = Typography;
 
 export default function GroupReviewPage() {
-	const [selectedGroup, setSelectedGroup] = useState<FullMockGroup | undefined>(
-		undefined,
-	);
-	const [searchText, setSearchText] = useState<string>('');
+	const [selectedGroup, setSelectedGroup] = useState<FullMockGroup>();
+	const [searchText, setSearchText] = useState('');
 
-	// Define phase keys & display labels
 	const availablePhases = [
 		'Phase 1',
 		'Phase 2',
@@ -33,37 +30,30 @@ export default function GroupReviewPage() {
 		'Phase 5': 'Final Report',
 	};
 
-	const [selectedPhase, setSelectedPhase] = useState<string>(
-		availablePhases[0],
-	);
+	const [selectedPhase, setSelectedPhase] = useState(availablePhases[0]);
 
+	// Filter group list based on search text
 	const groupList = useMemo(() => {
 		const uniqueGroups: Record<string, FullMockGroup> = {};
 		allMockGroups.forEach((group) => {
 			uniqueGroups[group.id] ??= group;
 		});
 
-		return Object.values(uniqueGroups).filter((group) => {
-			const keyword = searchText.toLowerCase();
-			return (
+		const keyword = searchText.toLowerCase();
+		return Object.values(uniqueGroups).filter(
+			(group) =>
 				group.name.toLowerCase().includes(keyword) ||
-				group.title.toLowerCase().includes(keyword)
-			);
-		});
+				group.title.toLowerCase().includes(keyword),
+		);
 	}, [searchText]);
 
-	function handleSelect(group: FullMockGroup) {
+	const handleSelect = (group: FullMockGroup) => {
 		setSelectedGroup(group);
-	}
+	};
 
 	const handlePhaseChange = (index: number) => {
-		const phase = availablePhases[index];
-		setSelectedPhase(phase);
-
-		const match = allMockGroups.find((g) => g.id === selectedGroup?.id);
-		if (match) {
-			setSelectedGroup(match);
-		}
+		const newPhase = availablePhases[index];
+		setSelectedPhase(newPhase);
 	};
 
 	return (
