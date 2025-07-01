@@ -4,6 +4,7 @@ export type ExtendedThesis = Thesis & {
 	skills: string[];
 	highlight?: string;
 	version: string;
+	semester?: string; // Add this line
 	supervisor?: {
 		name: string;
 		phone: string;
@@ -41,6 +42,7 @@ export const mockTheses: ExtendedThesis[] = [
 		skills: ['Statistical Analysis', 'Programming', 'Data Modeling'],
 		highlight: 'High Similarity',
 		version: '1.0',
+		semester: 'Spring', // Added semester
 		supervisor: {
 			name: 'Dr. Sarah Chen',
 			phone: '0123456789',
@@ -87,6 +89,7 @@ export const mockTheses: ExtendedThesis[] = [
 		updatedAt: new Date(),
 		skills: ['Blockchain', 'Logistics'],
 		version: '1.0',
+		semester: 'Fall', // Added semester
 		supervisor: {
 			name: 'Dr. Alex Nguyen',
 			phone: '0987654321',
@@ -109,6 +112,7 @@ export const mockTheses: ExtendedThesis[] = [
 		updatedAt: new Date(),
 		skills: ['IoT', 'Smart City', 'Infrastructure'],
 		version: '1.0',
+		semester: 'Spring', // Added semester
 		supervisor: {
 			name: 'Dr. Emily Tran',
 			phone: '0111222333',
