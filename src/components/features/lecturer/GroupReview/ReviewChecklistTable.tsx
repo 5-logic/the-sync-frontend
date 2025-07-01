@@ -9,7 +9,7 @@ import { ChecklistReviewAcceptance } from '@/schemas/_enums';
 import { ChecklistItem } from '@/schemas/checklist';
 
 interface Props {
-	phase: string;
+	readonly phase: string;
 }
 
 interface ChecklistResponse {

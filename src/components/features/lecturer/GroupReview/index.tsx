@@ -42,7 +42,7 @@ export default function GroupReviewPage() {
 		const keyword = searchText.toLowerCase();
 		return Object.values(uniqueGroups).filter(
 			(group) =>
-				group.name.toLowerCase().includes(keyword) ||
+				group.name.toLowerCase().includes(keyword) || //NOSONAR
 				group.title.toLowerCase().includes(keyword),
 		);
 	}, [searchText]);

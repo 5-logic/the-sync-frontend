@@ -6,8 +6,8 @@ import { Button, Col, Row, Space, Steps, Typography } from 'antd';
 const { Title } = Typography;
 
 interface Props {
-	currentStep: number;
-	onStepChange: (index: number) => void;
+	readonly currentStep: number;
+	readonly onStepChange: (index: number) => void;
 }
 
 const phases = [
