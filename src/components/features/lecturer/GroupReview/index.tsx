@@ -1,6 +1,6 @@
 'use client';
 
-import { Card, Space, Typography } from 'antd';
+import { Card, Divider, Space, Typography } from 'antd';
 import { useMemo, useState } from 'react';
 
 import GroupSearchTable from '@/components/features/lecturer/GroupProgess/GroupSearchTable';
@@ -8,7 +8,7 @@ import ReviewChecklistTable from '@/components/features/lecturer/GroupReview/Rev
 import ReviewHeader from '@/components/features/lecturer/GroupReview/ReviewHeader';
 import { FullMockGroup, allMockGroups } from '@/data/group';
 
-const { Title, Text } = Typography;
+const { Title, Text, Paragraph } = Typography;
 
 export default function GroupReviewPage() {
 	const [selectedGroup, setSelectedGroup] = useState<FullMockGroup | undefined>(
@@ -68,8 +68,17 @@ export default function GroupReviewPage() {
 	}
 
 	return (
-		<div className="p-6 space-y-6">
-			<Title level={2}>Group Review</Title>
+		<Space direction="vertical" size="large" style={{ width: '100%' }}>
+			<div>
+				<Title level={2} style={{ marginBottom: '4px' }}>
+					Group Review
+				</Title>
+				<Paragraph type="secondary" style={{ marginBottom: 10 }}>
+					This section allows instructors to review each group progress through
+					different phases of their thesis development, using a structured
+					checklist for evaluation.
+				</Paragraph>
+			</div>
 
 			<GroupSearchTable
 				data={groupList}
@@ -80,14 +89,14 @@ export default function GroupReviewPage() {
 			/>
 
 			{selectedGroup && (
-				<>
-					<Card
-						title={`Group Name: ${selectedGroup.name} | ${selectedGroup.title}`}
-					>
-						<Text type="secondary">
-							Supervised by: {selectedGroup.supervisors.join(', ')}
-						</Text>
-					</Card>
+				<Card
+					title={`Group Name: ${selectedGroup.name} | ${selectedGroup.title}`}
+				>
+					<Text type="secondary">
+						Supervised by: {selectedGroup.supervisors.join(', ')}
+					</Text>
+
+					<Divider style={{ margin: '16px 0' }} />
 
 					<Space direction="vertical" size="large" style={{ width: '100%' }}>
 						<ReviewHeader
@@ -105,11 +114,10 @@ export default function GroupReviewPage() {
 							}}
 						/>
 
-						{/* ✅ Truyền đúng phase tương ứng checklist */}
 						<ReviewChecklistTable phase={phaseMap[selectedPhase]} />
 					</Space>
-				</>
+				</Card>
 			)}
-		</div>
+		</Space>
 	);
 }

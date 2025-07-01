@@ -1,7 +1,7 @@
 'use client';
 
 import { DownloadOutlined } from '@ant-design/icons';
-import { Button, Steps, Typography } from 'antd';
+import { Button, Col, Row, Space, Steps, Typography } from 'antd';
 
 const { Title } = Typography;
 
@@ -20,25 +20,26 @@ export default function ReviewHeader({ currentStep, onStepChange }: Props) {
 	];
 
 	return (
-		<div className="space-y-4">
-			{/* ✅ Title + Download button trên cùng một dòng */}
-			<div className="flex items-center justify-between">
-				<Title level={4} className="!mb-0">
-					Checklist Review
-				</Title>
-				<Button type="default" icon={<DownloadOutlined />}>
-					Download Template
-				</Button>
-			</div>
+		<Space direction="vertical" size="large" style={{ width: '100%' }}>
+			<Row align="middle" justify="space-between">
+				<Col>
+					<Title level={4} style={{ marginBottom: 10 }}>
+						Checklist Review
+					</Title>
+				</Col>
+				<Col>
+					<Button type="default" icon={<DownloadOutlined />}>
+						Download Template
+					</Button>
+				</Col>
+			</Row>
 
-			{/* ✅ Steps ở dòng riêng bên dưới */}
 			<Steps
 				current={currentStep}
 				size="small"
 				items={phases.map((title) => ({ title }))}
 				onChange={onStepChange}
-				className="w-full"
 			/>
-		</div>
+		</Space>
 	);
 }
