@@ -74,7 +74,7 @@ const StudentAccountForm: React.FC = () => {
 			initialValues={{
 				fullName: student.fullName,
 				email: student.email,
-				studentId: student.studentId,
+				studentId: student.studentCode,
 				major: student.majorId,
 				phoneNumber: student.phoneNumber,
 				gender: student.gender,
@@ -216,7 +216,10 @@ const StudentAccountForm: React.FC = () => {
 												<Form.Item
 													{...restField}
 													name={[name, 'level']}
-													rules={[{ required: true, message: 'Select level' }]}
+													label={<FormLabel text="Skill Level" isBold />}
+													rules={[
+														{ required: true, message: 'Select skill level' },
+													]}
 													style={{ marginBottom: 0, width: '100%' }}
 												>
 													<Slider
