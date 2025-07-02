@@ -13,7 +13,7 @@ interface Props {
 	onAssign: (group: FullMockGroup) => void;
 }
 
-// 👉 Tạm để trong file vì chỉ làm UI
+// ✅ Tạm đặt trong file vì chỉ làm UI
 function getReviewersForGroup(groupId: string): string[] {
 	const submission = mockSubmissions.find((s) => s.groupId === groupId);
 	if (!submission) return [];
@@ -22,6 +22,19 @@ function getReviewersForGroup(groupId: string): string[] {
 		.filter((r) => r.submissionId === submission.id)
 		.map((r) => mockLecturers.find((l) => l.id === r.lecturerId)?.fullName)
 		.filter(Boolean) as string[];
+}
+
+// ✅ Render supervisor tương tự file bạn gửi
+function renderSupervisors(supervisors: string[]) {
+	return supervisors.length > 0 ? (
+		<div>
+			{supervisors.map((sup) => (
+				<div key={sup}>{sup}</div>
+			))}
+		</div>
+	) : (
+		'-'
+	);
 }
 
 export default function GroupTable({ groups, onAssign }: Props) {
@@ -44,7 +57,7 @@ export default function GroupTable({ groups, onAssign }: Props) {
 		{
 			title: 'Supervisor(s)',
 			key: 'supervisors',
-			render: (_, record) => record.supervisors.join(', '),
+			render: (_, record) => renderSupervisors(record.supervisors),
 		},
 		{
 			title: 'Reviewers',
