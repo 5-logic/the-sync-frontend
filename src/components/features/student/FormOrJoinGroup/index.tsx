@@ -9,18 +9,15 @@ import FormOrJoinTabs from '@/components/features/student/FormOrJoinGroup/FormOr
 import GroupListSection from '@/components/features/student/FormOrJoinGroup/GroupListSection';
 import InviteRequestButton from '@/components/features/student/FormOrJoinGroup/InviteRequestButton';
 import JoinGroupForm from '@/components/features/student/FormOrJoinGroup/JoinGroupForm';
-import mockGroups from '@/data/group';
+import { extendedGroups } from '@/data/group';
+import { ExtendedGroup } from '@/data/group';
 import { mockTheses } from '@/data/thesis';
-import { Group } from '@/schemas/group';
 import { Thesis } from '@/schemas/thesis';
 
 const { Title, Paragraph } = Typography;
 
-// Constants
 const SUGGESTED_GROUPS_COUNT = 3;
-const MAX_RANDOM_MEMBERS = 5;
 
-// Types
 type GroupUI = {
 	id: string;
 	name: string;
@@ -29,21 +26,19 @@ type GroupUI = {
 	members: number;
 };
 
-// Helper functions
-const mapGroups = (groups: Group[], theses: Thesis[]): GroupUI[] =>
+const mapGroups = (groups: ExtendedGroup[], theses: Thesis[]): GroupUI[] =>
 	groups.map((group) => {
 		const thesis = theses.find((t) => t.id === group.thesisId);
 		return {
 			id: group.id,
-			name: thesis?.englishName || group.name,
+			name: thesis?.englishName || group.thesisTitle || group.name,
 			description: thesis?.description || '',
 			domain: thesis?.domain || 'Unknown',
-			members: Math.floor(Math.random() * MAX_RANDOM_MEMBERS) + 1,
+			members: group.members || 0,
 		};
 	});
 
-// Data preparation
-const allGroups: GroupUI[] = mapGroups(mockGroups, mockTheses);
+const allGroups: GroupUI[] = mapGroups(extendedGroups, mockTheses);
 const suggestedGroups: GroupUI[] = allGroups.slice(0, SUGGESTED_GROUPS_COUNT);
 
 export default function FormOrJoinGroup() {
@@ -52,7 +47,6 @@ export default function FormOrJoinGroup() {
 	const [search, setSearch] = useState<string>('');
 	const [category, setCategory] = useState<string | undefined>(undefined);
 
-	// Initialize tab from URL params
 	useEffect(() => {
 		const tab = searchParams.get('tab');
 		if (tab === 'create') {
@@ -60,7 +54,6 @@ export default function FormOrJoinGroup() {
 		}
 	}, [searchParams]);
 
-	// Memoized filtered groups for performance
 	const filteredGroups = useMemo(() => {
 		if (!search && !category) return allGroups;
 
@@ -75,7 +68,6 @@ export default function FormOrJoinGroup() {
 		});
 	}, [search, category]);
 
-	// Event handlers
 	const handleSearchChange = useCallback((newSearch: string) => {
 		setSearch(newSearch);
 	}, []);
@@ -128,6 +120,7 @@ export default function FormOrJoinGroup() {
 							<GroupListSection
 								title="Suggested Groups by AI"
 								groups={suggestedGroups}
+								enablePagination={false}
 							/>
 							<GroupListSection
 								title="All Available Groups"
@@ -137,6 +130,8 @@ export default function FormOrJoinGroup() {
 								onSearchChange={handleSearchChange}
 								category={category}
 								onCategoryChange={handleCategoryChange}
+								pageSize={6}
+								enablePagination={true}
 							/>
 						</>
 					)}
