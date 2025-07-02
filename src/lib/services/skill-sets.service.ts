@@ -2,7 +2,7 @@ import httpClient from '@/lib/services/_httpClient';
 import { type SkillSet, SkillSetApiResponseSchema } from '@/schemas/skill';
 
 export class SkillSetsService {
-	private static baseUrl = '/skill-sets';
+	private static readonly baseUrl = '/skill-sets';
 
 	/**
 	 * Fetch all skill sets with their skills
@@ -10,8 +10,6 @@ export class SkillSetsService {
 	static async getAll(): Promise<SkillSet[]> {
 		try {
 			const response = await httpClient.get(this.baseUrl);
-
-			// Debug: Log actual response
 
 			// Get the actual API response (axios wraps it in response.data)
 			const apiResponse = response.data;
