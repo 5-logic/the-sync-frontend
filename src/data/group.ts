@@ -50,6 +50,12 @@ const mockGroups: Group[] = [
 	createGroup('g2', 'G2', 'Group B', '20242', 't2'),
 	createGroup('g3', 'G3', 'Group C', '20252', 't3'),
 	createGroup('g4', 'G4', 'Group D', '20252', 't4'),
+	createGroup('g5', 'G5', 'Group E', '20252', 't5'),
+	createGroup('g6', 'G6', 'Group F', '20252', 't6'),
+	createGroup('g7', 'G7', 'Group G', '20252', 't7'),
+	createGroup('g8', 'G8', 'Group H', '20252', 't8'),
+	createGroup('g9', 'G9', 'Group I', '20252', 't9'),
+	createGroup('g10', 'G10', 'Group J', '20252', 't10'),
 ];
 
 // ===== Metadata bổ sung =====
@@ -78,6 +84,42 @@ const metaData: Record<string, GroupMeta> = {
 		supervisors: [],
 		members: 5,
 		status: 'Unassigned',
+	},
+	g5: {
+		thesisTitle: 'E-commerce Platform',
+		supervisors: ['Dr. Lisa Park'],
+		members: 4,
+		status: 'Finalized',
+	},
+	g6: {
+		thesisTitle: 'Machine Learning Analytics',
+		supervisors: ['Dr. Robert Kim'],
+		members: 3,
+		status: 'Incomplete',
+	},
+	g7: {
+		thesisTitle: 'Mobile App Development',
+		supervisors: ['Dr. Jennifer Lee'],
+		members: 4,
+		status: 'Finalized',
+	},
+	g8: {
+		thesisTitle: 'Cloud Computing Solution',
+		supervisors: ['Dr. Mark Wilson'],
+		members: 5,
+		status: 'Incomplete',
+	},
+	g9: {
+		thesisTitle: 'Data Science Project',
+		supervisors: ['Dr. Anna Smith'],
+		members: 3,
+		status: 'Finalized',
+	},
+	g10: {
+		thesisTitle: 'IoT Smart Home',
+		supervisors: ['Dr. Tom Brown'],
+		members: 4,
+		status: 'Incomplete',
 	},
 };
 
