@@ -81,7 +81,7 @@ export default function ViewThesisDetail() {
 						Error Loading Thesis
 					</Typography.Title>
 					<Typography.Text type="secondary">
-						{error || 'The requested thesis could not be found.'}
+						{error ?? 'The requested thesis could not be found.'}
 					</Typography.Text>
 				</div>
 			</ContentLoader>
