@@ -17,7 +17,7 @@ const transformThesisData = (
 ): ExtendedThesis => {
 	// Extract skills from thesisRequiredSkills relationship
 	const skills =
-		apiThesis.thesisRequiredSkills?.map((trs) => trs.skill?.name || '') || [];
+		apiThesis.thesisRequiredSkills?.map((trs) => trs.skill?.name ?? '') ?? [];
 
 	// Get the highest version from thesisVersions array
 	const highestVersion = apiThesis.thesisVersions?.length
