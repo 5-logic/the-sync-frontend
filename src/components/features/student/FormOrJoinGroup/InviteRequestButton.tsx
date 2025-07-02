@@ -4,7 +4,6 @@ import { Button, Grid } from 'antd';
 
 const { useBreakpoint } = Grid;
 
-// Constants for better maintainability
 const BUTTON_TEXT = 'Request Join / Invite';
 const BUTTON_STYLES = {
 	borderRadius: 6,
@@ -34,18 +33,11 @@ const CONTAINER_STYLES = {
 	},
 };
 
-/**
- * Button component for requesting to join a group or sending invitations
- * Adapts its layout based on screen size for responsive design
- *
- * @returns React button component with responsive styling
- */
 export default function InviteRequestButton() {
 	const screens = useBreakpoint();
 	const isResponsiveMobile = !screens.md;
 
 	const handleInviteRequest = () => {
-		// TODO: Implement actual invite/request functionality
 		console.log('Request Join / Invite clicked');
 	};
 

@@ -8,7 +8,6 @@ import { mockStudents } from '@/data/student';
 import { showNotification } from '@/lib/utils/notification';
 import type { Student } from '@/schemas/student';
 
-// Constants for better maintainability
 const TEAM_CONFIG = {
 	MAX_MEMBERS: 5,
 	MIN_MEMBERS: 4,
@@ -66,13 +65,6 @@ interface InviteTeamMembersProps {
 	readonly onMembersChange: (members: Member[]) => void;
 }
 
-/**
- * Component for inviting team members to a group
- * Allows searching for students and adding them to the team
- *
- * @param props - Component props containing members array and change handler
- * @returns React component for team member management
- */
 export default function InviteTeamMembers({
 	members,
 	onMembersChange,
@@ -80,7 +72,6 @@ export default function InviteTeamMembers({
 	const [searchText, setSearchText] = useState('');
 	const [searchResults, setSearchResults] = useState<Student[]>([]);
 
-	// Debounced search effect
 	useEffect(() => {
 		if (!searchText.trim()) {
 			setSearchResults([]);
@@ -89,12 +80,14 @@ export default function InviteTeamMembers({
 
 		const timeoutId = setTimeout(() => {
 			const searchLower = searchText.toLowerCase();
-			const filtered = mockStudents.filter(
-				(student) =>
-					student.email.toLowerCase().includes(searchLower) ||
-					student.studentCode.toLowerCase().includes(searchLower) ||
-					student.fullName.toLowerCase().includes(searchLower),
-			);
+			const filtered = mockStudents.filter((student) => {
+				const emailMatch = student.email.toLowerCase().includes(searchLower);
+				const codeMatch = student.studentCode
+					.toLowerCase()
+					.includes(searchLower);
+				const nameMatch = student.fullName.toLowerCase().includes(searchLower);
+				return emailMatch || codeMatch || nameMatch;
+			});
 
 			setSearchResults(filtered);
 		}, TEAM_CONFIG.SEARCH_DEBOUNCE_MS);
@@ -104,7 +97,7 @@ export default function InviteTeamMembers({
 
 	const handleAddMember = useCallback(
 		(student?: Student) => {
-			let targetStudent = student;
+			let targetStudent = student ?? null;
 
 			if (!targetStudent) {
 				if (!searchText.trim()) {
@@ -112,11 +105,12 @@ export default function InviteTeamMembers({
 				}
 
 				const searchLower = searchText.toLowerCase();
-				targetStudent = mockStudents.find(
-					(s) =>
-						s.email.toLowerCase() === searchLower ||
-						s.studentCode.toLowerCase() === searchLower,
-				);
+				targetStudent =
+					mockStudents.find((s) => {
+						const emailMatch = s.email.toLowerCase() === searchLower;
+						const codeMatch = s.studentCode.toLowerCase() === searchLower;
+						return emailMatch || codeMatch;
+					}) ?? null;
 			}
 
 			if (!targetStudent) {
@@ -270,8 +264,19 @@ export default function InviteTeamMembers({
 							return (
 								<div
 									key={student.id}
+									role="button"
+									tabIndex={isAlreadyAdded ? -1 : 0}
 									style={itemStyle}
 									onClick={() => !isAlreadyAdded && handleAddMember(student)}
+									onKeyDown={(e) => {
+										if (
+											(e.key === 'Enter' || e.key === ' ') &&
+											!isAlreadyAdded
+										) {
+											e.preventDefault();
+											handleAddMember(student);
+										}
+									}}
 									onMouseEnter={(e) => {
 										if (!isAlreadyAdded) {
 											e.currentTarget.style.backgroundColor = '#f5f5f5';
@@ -282,6 +287,8 @@ export default function InviteTeamMembers({
 											? '#f5f5f5'
 											: '#fff';
 									}}
+									aria-label={`${isAlreadyAdded ? 'Already added:' : 'Add'} ${student.fullName}`}
+									aria-disabled={isAlreadyAdded}
 								>
 									<div
 										style={{

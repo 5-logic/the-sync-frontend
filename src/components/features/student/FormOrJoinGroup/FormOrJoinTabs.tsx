@@ -3,7 +3,6 @@
 import { Tabs } from 'antd';
 import { useCallback, useMemo } from 'react';
 
-// Constants for better maintainability
 const TAB_CONFIG = {
 	JOIN: {
 		key: 'join',
@@ -29,11 +28,6 @@ interface FormOrJoinTabsProps {
 	readonly setTabKey: (key: string) => void;
 }
 
-/**
- * Tab component for switching between "Join Group" and "Form New Group" modes
- * @param props - Component props including active tab key and setter function
- * @returns React component with tab navigation
- */
 export default function FormOrJoinTabs({
 	tabKey,
 	setTabKey,

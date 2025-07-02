@@ -4,7 +4,6 @@ import { Button, Card, Grid, Space, Tag, Typography } from 'antd';
 const { Text } = Typography;
 const { useBreakpoint } = Grid;
 
-// Constants for better maintainability
 const DOMAIN_COLOR_MAP: Readonly<Record<string, string>> = {
 	AI: 'geekblue',
 	'Artificial Intelligence': 'geekblue',
@@ -49,11 +48,6 @@ interface GroupCardProps {
 	readonly fontSize: number;
 }
 
-/**
- * Card component displaying group information with responsive design
- * @param props - Group data and font size configuration
- * @returns React card component with group details and action buttons
- */
 export default function GroupCard({ group, fontSize }: GroupCardProps) {
 	const screens = useBreakpoint();
 	const padding = screens.xs

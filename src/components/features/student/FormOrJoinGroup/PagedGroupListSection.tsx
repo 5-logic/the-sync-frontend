@@ -13,9 +13,9 @@ type GroupUI = {
 };
 
 interface PagedGroupListSectionProps {
-	groups: GroupUI[];
-	fontSize: number;
-	pageSize?: number;
+	readonly groups: readonly GroupUI[];
+	readonly fontSize: number;
+	readonly pageSize?: number;
 }
 
 export default function PagedGroupListSection({

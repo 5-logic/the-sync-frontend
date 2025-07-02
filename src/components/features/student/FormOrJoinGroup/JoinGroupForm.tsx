@@ -5,7 +5,6 @@ import { FormLabel } from '@/components/common/FormLabel';
 import mockSkills from '@/data/skill';
 import mockSkillSets from '@/data/skillSet';
 
-// Constants for better maintainability
 const FORM_CONFIG = {
 	TREE_SELECT_MAX_HEIGHT: 400,
 	BUTTON_HEIGHT: 40,
@@ -29,10 +28,6 @@ const responsibilityOptions = [
 	{ value: 'Developer', label: 'Developer' },
 ];
 
-/**
- * Builds skill tree data structure for TreeSelect component
- * @returns Array of skill sets with their associated skills
- */
 const buildSkillTreeData = () =>
 	mockSkillSets.map((set) => ({
 		value: set.id,
@@ -46,7 +41,6 @@ const buildSkillTreeData = () =>
 			})),
 	}));
 
-// Pre-computed skill tree data to avoid recalculation
 const skillTreeData = buildSkillTreeData();
 
 interface FormValues {
@@ -54,15 +48,8 @@ interface FormValues {
 	readonly responsibility?: string[];
 }
 
-/**
- * Form component for joining a group based on skills and responsibilities
- * Allows students to specify their skills and get group suggestions
- *
- * @returns React form component for group joining
- */
 export default function JoinGroupForm() {
 	const handleFinish = useCallback((values: FormValues) => {
-		// TODO: Implement actual group suggestion logic
 		console.log('Suggest group values:', values);
 	}, []);
 

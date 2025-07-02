@@ -31,16 +31,16 @@ type GroupUI = {
 };
 
 interface GroupListSectionProps {
-	title: string;
-	groups: GroupUI[];
-	showFilter?: boolean;
-	search?: string;
-	onSearchChange?: (value: string) => void;
-	category?: string;
-	onCategoryChange?: (value: string) => void;
-	fontSize?: number;
-	pageSize?: number;
-	enablePagination?: boolean;
+	readonly title: string;
+	readonly groups: readonly GroupUI[];
+	readonly showFilter?: boolean;
+	readonly search?: string;
+	readonly onSearchChange?: (value: string) => void;
+	readonly category?: string;
+	readonly onCategoryChange?: (value: string) => void;
+	readonly fontSize?: number;
+	readonly pageSize?: number;
+	readonly enablePagination?: boolean;
 }
 
 export default function GroupListSection({

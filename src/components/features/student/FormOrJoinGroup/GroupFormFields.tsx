@@ -16,20 +16,6 @@ const VALIDATION_RULES = {
 	},
 } as const;
 
-const FORM_STYLES = {
-	requiredLabel: {
-		fontWeight: 600,
-	},
-	requiredMark: {
-		color: '#ff4d4f',
-		marginLeft: 4,
-	},
-	treeSelectDropdown: {
-		maxHeight: VALIDATION_RULES.TREE_SELECT.MAX_HEIGHT,
-		overflow: 'auto',
-	},
-} as const;
-
 // Pre-computed project areas to avoid recalculation
 const projectAreas = Array.from(new Set(mockTheses.map((t) => t.domain))).map(
 	(domain) => ({
@@ -38,10 +24,6 @@ const projectAreas = Array.from(new Set(mockTheses.map((t) => t.domain))).map(
 	}),
 );
 
-/**
- * Builds skill tree data structure for TreeSelect component
- * @returns Array of skill sets with their associated skills
- */
 const buildSkillTreeData = () =>
 	mockSkillSets.map((set) => ({
 		value: set.id,
@@ -55,7 +37,6 @@ const buildSkillTreeData = () =>
 			})),
 	}));
 
-// Pre-computed skill tree data to avoid recalculation
 const skillTreeData = buildSkillTreeData();
 
 const responsibilityOptions = [
@@ -63,12 +44,6 @@ const responsibilityOptions = [
 	{ value: 'Developer', label: 'Developer' },
 ];
 
-/**
- * Form fields component for group creation
- * Includes group name, project area, skills, and responsibility selection
- *
- * @returns React component with form fields for group creation
- */
 export default function GroupFormFields() {
 	const getGroupNameRules = () => [
 		{ required: true, message: 'Please enter group name' },
@@ -87,12 +62,7 @@ export default function GroupFormFields() {
 			<Col xs={24} md={12}>
 				<Form.Item
 					name="name"
-					label={
-						<span style={FORM_STYLES.requiredLabel}>
-							Group Name
-							<span style={FORM_STYLES.requiredMark}>*</span>
-						</span>
-					}
+					label={<FormLabel text="Group Name" isBold isRequired />}
 					rules={getGroupNameRules()}
 				>
 					<Input placeholder="Enter group name" />
@@ -124,7 +94,10 @@ export default function GroupFormFields() {
 						treeCheckable={false}
 						showCheckedStrategy={TreeSelect.SHOW_CHILD}
 						style={{ width: '100%' }}
-						dropdownStyle={FORM_STYLES.treeSelectDropdown}
+						dropdownStyle={{
+							maxHeight: VALIDATION_RULES.TREE_SELECT.MAX_HEIGHT,
+							overflow: 'auto',
+						}}
 					/>
 				</Form.Item>
 			</Col>

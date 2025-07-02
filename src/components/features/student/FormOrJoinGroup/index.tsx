@@ -9,14 +9,12 @@ import FormOrJoinTabs from '@/components/features/student/FormOrJoinGroup/FormOr
 import GroupListSection from '@/components/features/student/FormOrJoinGroup/GroupListSection';
 import InviteRequestButton from '@/components/features/student/FormOrJoinGroup/InviteRequestButton';
 import JoinGroupForm from '@/components/features/student/FormOrJoinGroup/JoinGroupForm';
-import { extendedGroups } from '@/data/group';
-import { ExtendedGroup } from '@/data/group';
+import { type ExtendedGroup, extendedGroups } from '@/data/group';
 import { mockTheses } from '@/data/thesis';
 import { Thesis } from '@/schemas/thesis';
 
 const { Title, Paragraph } = Typography;
 
-// Constants for better maintainability
 const SUGGESTED_GROUPS_COUNT = 3;
 const TAB_KEYS = {
 	JOIN: 'join',
@@ -39,12 +37,6 @@ interface GroupUI {
 	readonly members: number;
 }
 
-/**
- * Maps extended groups and theses to UI-friendly group objects
- * @param groups - Array of extended groups
- * @param theses - Array of thesis data
- * @returns Array of GroupUI objects
- */
 const mapGroups = (
 	groups: readonly ExtendedGroup[],
 	theses: readonly Thesis[],
@@ -53,33 +45,25 @@ const mapGroups = (
 		const thesis = theses.find((t) => t.id === group.thesisId);
 		return {
 			id: group.id,
-			name: thesis?.englishName || group.thesisTitle || group.name,
-			description: thesis?.description || '',
-			domain: thesis?.domain || 'Unknown',
-			members: group.members || 0,
+			name: thesis?.englishName ?? group.thesisTitle ?? group.name,
+			description: thesis?.description ?? '',
+			domain: thesis?.domain ?? 'Unknown',
+			members: group.members ?? 0,
 		};
 	});
 
-// Pre-computed data to avoid recalculation on every render
 const allGroups: readonly GroupUI[] = mapGroups(extendedGroups, mockTheses);
 const suggestedGroups: readonly GroupUI[] = allGroups.slice(
 	0,
 	SUGGESTED_GROUPS_COUNT,
 );
 
-/**
- * FormOrJoinGroup component allows students to either join existing groups or create new ones.
- * Features include group search, filtering, and AI-powered suggestions.
- *
- * @returns React component for group formation interface
- */
 export default function FormOrJoinGroup() {
 	const searchParams = useSearchParams();
 	const [tabKey, setTabKey] = useState<string>(TAB_KEYS.JOIN);
 	const [search, setSearch] = useState<string>('');
 	const [category, setCategory] = useState<string | undefined>(undefined);
 
-	// Initialize tab from URL parameters
 	useEffect(() => {
 		const tab = searchParams.get('tab');
 		if (tab === TAB_KEYS.CREATE) {
@@ -87,10 +71,9 @@ export default function FormOrJoinGroup() {
 		}
 	}, [searchParams]);
 
-	// Memoized filtered groups for performance
 	const filteredGroups = useMemo(() => {
 		if (!search && !category) {
-			return [...allGroups]; // Create mutable copy
+			return [...allGroups];
 		}
 
 		const searchLower = search.toLowerCase();
@@ -135,7 +118,6 @@ export default function FormOrJoinGroup() {
 				</Col>
 			</Row>
 
-			{/* Alert Section */}
 			<Alert
 				message="You are already part of a group. Visit Group Dashboard to view details."
 				type="info"
@@ -143,7 +125,6 @@ export default function FormOrJoinGroup() {
 				style={ALERT_STYLES}
 			/>
 
-			{/* Main Content */}
 			<Card style={CARD_STYLES}>
 				<Space direction="vertical" size="large" style={{ width: '100%' }}>
 					<FormOrJoinTabs tabKey={tabKey} setTabKey={setTabKey} />
