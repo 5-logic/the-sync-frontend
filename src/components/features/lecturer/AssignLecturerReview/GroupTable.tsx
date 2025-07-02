@@ -14,16 +14,23 @@ interface Props {
 	onAssign: (group: FullMockGroup) => void;
 }
 
-function getReviewersForGroup(groupId: string): string[] {
-	const submission = mockSubmissions.find((s) => s.groupId === groupId);
+// ✅ Hàm lấy tên reviewer từ groupId
+function getReviewersForGroup(groupId: string, phase: string): string[] {
+	const submission = mockSubmissions.find(
+		(s) => s.groupId === groupId && s.milestone === phase,
+	);
 	if (!submission) return [];
 
 	return mockReviews
 		.filter((r) => r.submissionId === submission.id)
-		.map((r) => mockLecturers.find((l) => l.id === r.lecturerId)?.fullName)
+		.map((r) => {
+			const lecturer = mockLecturers.find((l) => l.id === r.lecturerId);
+			return lecturer?.fullName;
+		})
 		.filter(Boolean) as string[];
 }
 
+// ✅ Hàm hiển thị danh sách Supervisor
 function renderSupervisors(supervisors: string[]) {
 	return supervisors.length > 0 ? (
 		<div>
@@ -33,6 +40,20 @@ function renderSupervisors(supervisors: string[]) {
 		</div>
 	) : (
 		'-'
+	);
+}
+
+// ✅ Hàm hiển thị danh sách Reviewer
+function renderReviewers(group: FullMockGroup) {
+	const reviewers = getReviewersForGroup(group.id, group.phase || '');
+	return reviewers.length > 0 ? (
+		<div>
+			{reviewers.map((name) => (
+				<div key={name}>{name}</div>
+			))}
+		</div>
+	) : (
+		<span style={{ color: '#aaa' }}>Not assigned</span>
 	);
 }
 
@@ -59,13 +80,11 @@ export default function GroupTable({ groups, onAssign }: Props) {
 			render: (_, record) => renderSupervisors(record.supervisors),
 		},
 		{
-			title: 'Reviewers',
+			title: 'Reviewer',
 			key: 'reviewers',
-			render: (_, record) => {
-				const reviewers = getReviewersForGroup(record.id);
-				return reviewers.length > 0 ? reviewers.join(', ') : 'Not assigned';
-			},
+			render: (_, record) => renderReviewers(record),
 		},
+
 		{
 			title: 'Action',
 			key: 'action',
