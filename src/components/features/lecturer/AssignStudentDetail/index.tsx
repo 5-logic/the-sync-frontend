@@ -5,12 +5,11 @@ import { useState } from 'react';
 
 import StudentFilterBar from '@/components/features/lecturer/AssignStudent/StudentFilterBar';
 import StudentTable from '@/components/features/lecturer/AssignStudent/StudentTable';
+import AssignConfirmModal from '@/components/features/lecturer/AssignStudentDetail/AssignConfirmModal';
 import GroupInfoCard from '@/components/features/lecturer/AssignStudentDetail/GroupInfoCard';
 import TeamMembers from '@/components/features/lecturer/ViewThesisDetail/TeamMembers';
 import { mockStudents } from '@/data/student';
 import { mockTheses } from '@/data/thesis';
-
-import AssignConfirmModal from './AssignConfirmModal';
 
 const { Title, Paragraph } = Typography;
 const { TextArea } = Input;

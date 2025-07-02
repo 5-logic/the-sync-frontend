@@ -27,9 +27,6 @@ export default function ThesisTable({ theses, onSelectionChange }: Props) {
 			item.id === id ? { ...item, isPublish: newValue } : item,
 		);
 		setData(updated);
-		console.log(
-			`Thesis ${id} is now ${newValue ? 'Published' : 'Unpublished'}`,
-		);
 	};
 
 	const handleRowSelectionChange = (newSelectedKeys: React.Key[]) => {
@@ -46,13 +43,9 @@ export default function ThesisTable({ theses, onSelectionChange }: Props) {
 		/>
 	);
 
-	const renderViewButton = (record: ExtendedThesis) => (
+	const renderViewButton = () => (
 		<Tooltip title="View Detail">
-			<Button
-				type="text"
-				icon={<EyeOutlined />}
-				onClick={() => console.log(`Viewing details for ${record.englishName}`)}
-			/>
+			<Button type="text" icon={<EyeOutlined />} onClick={() => {}} />
 		</Tooltip>
 	);
 
@@ -80,7 +73,7 @@ export default function ThesisTable({ theses, onSelectionChange }: Props) {
 		{
 			title: 'Actions',
 			key: 'actions',
-			render: (_, record) => renderViewButton(record),
+			render: () => renderViewButton(),
 		},
 	];
 

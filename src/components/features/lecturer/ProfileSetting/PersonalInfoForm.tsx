@@ -1,7 +1,7 @@
 import { UserOutlined } from '@ant-design/icons';
 import { Avatar, Button, Form, Input, Space } from 'antd';
 
-import FormLabel from '@/components/common/FormLabel/FormLabel';
+import { FormLabel } from '@/components/common/FormLabel';
 import { Lecturer } from '@/schemas/lecturer';
 
 interface Props {

@@ -23,6 +23,7 @@ export const LECTURER_PATH_MAPPING = {
 		'/lecturer/thesis-management',
 		'/lecturer/thesis-details',
 		'/lecturer/edit-thesis',
+		'/lecturer/create-thesis',
 	],
 	[LECTURER_MENU_KEYS.GROUP_PROGRESS]: [
 		'/lecturer/group-progress',

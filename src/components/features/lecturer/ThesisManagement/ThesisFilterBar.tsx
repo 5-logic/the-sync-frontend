@@ -1,23 +1,35 @@
 'use client';
 
-import { PlusOutlined, SearchOutlined } from '@ant-design/icons';
+import {
+	LoadingOutlined,
+	PlusOutlined,
+	ReloadOutlined,
+	SearchOutlined,
+} from '@ant-design/icons';
 import { Button, Col, Input, Row, Select } from 'antd';
+
+import { useNavigationLoader } from '@/hooks/ux/useNavigationLoader';
 
 interface Props {
 	search: string;
 	onSearchChange: (val: string) => void;
-	status: 'all' | 'approved' | 'pending' | 'rejected';
-	onStatusChange: (val: 'all' | 'approved' | 'pending' | 'rejected') => void;
-	semester?: string;
-	onSemesterChange: (val?: string) => void;
-	semesterOptions: string[];
+	status?: 'approved' | 'pending' | 'rejected' | 'new';
+	onStatusChange: (val?: 'approved' | 'pending' | 'rejected' | 'new') => void;
+	owned?: boolean;
+	onOwnedChange: (val?: boolean) => void;
+	onRefresh: () => void;
 }
 
 const statusOptions = [
-	{ value: 'all', label: 'All Status' },
+	{ value: 'new', label: 'New' },
 	{ value: 'approved', label: 'Approved' },
 	{ value: 'pending', label: 'Pending' },
 	{ value: 'rejected', label: 'Rejected' },
+];
+
+const ownedOptions = [
+	{ value: true, label: 'My Theses' },
+	{ value: false, label: 'All Theses' },
 ];
 
 export default function ThesisFilterBar({
@@ -25,13 +37,20 @@ export default function ThesisFilterBar({
 	onSearchChange,
 	status,
 	onStatusChange,
-	semester,
-	onSemesterChange,
-	semesterOptions,
+	owned,
+	onOwnedChange,
+	onRefresh,
 }: Readonly<Props>) {
-	function onCreateThesis(): void {
-		throw new Error('Function not implemented.');
-	}
+	const { isNavigating, targetPath, navigateWithLoading } =
+		useNavigationLoader();
+
+	const handleCreateThesis = () => {
+		navigateWithLoading('/lecturer/create-thesis');
+	};
+
+	// Check if this specific button is loading
+	const isCreateButtonLoading =
+		isNavigating && targetPath === '/lecturer/create-thesis';
 
 	return (
 		<Row
@@ -51,8 +70,21 @@ export default function ThesisFilterBar({
 				/>
 			</Col>
 
-			<Col style={{ width: 160 }}>
+			<Col style={{ width: 140 }}>
 				<Select
+					allowClear
+					placeholder="Filter"
+					value={owned}
+					options={ownedOptions}
+					onChange={onOwnedChange}
+					style={{ width: '100%' }}
+				/>
+			</Col>
+
+			<Col style={{ width: 140 }}>
+				<Select
+					allowClear
+					placeholder="All Status"
 					value={status}
 					options={statusOptions}
 					onChange={onStatusChange}
@@ -60,25 +92,25 @@ export default function ThesisFilterBar({
 				/>
 			</Col>
 
-			<Col style={{ width: 160 }}>
-				<Select
-					allowClear
-					placeholder="Semester"
-					value={semester}
-					onChange={onSemesterChange}
+			<Col style={{ width: 120 }}>
+				<Button
+					icon={<ReloadOutlined />}
+					onClick={onRefresh}
 					style={{ width: '100%' }}
-					options={semesterOptions.map((id) => ({
-						value: id,
-						label: getSemesterLabel(id),
-					}))}
-				/>
+				>
+					Refresh
+				</Button>
 			</Col>
 
 			<Col style={{ width: 160 }}>
 				<Button
-					icon={<PlusOutlined />}
+					icon={
+						isCreateButtonLoading ? <LoadingOutlined spin /> : <PlusOutlined />
+					}
 					type="primary"
-					onClick={onCreateThesis}
+					onClick={handleCreateThesis}
+					loading={isCreateButtonLoading}
+					disabled={isNavigating && !isCreateButtonLoading}
 					style={{ width: '100%' }}
 				>
 					Create Thesis
@@ -86,12 +118,4 @@ export default function ThesisFilterBar({
 			</Col>
 		</Row>
 	);
-}
-
-function getSemesterLabel(id: string) {
-	const year = id.slice(0, 4);
-	const term = id.slice(4);
-	const termName =
-		{ '1': 'Spring', '2': 'Summer', '3': 'Fall' }[term] ?? 'Unknown';
-	return `${termName} ${year}`;
 }
