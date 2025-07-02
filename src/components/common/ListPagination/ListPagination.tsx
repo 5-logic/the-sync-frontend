@@ -74,7 +74,7 @@ export default function ListPagination({
 	const startIndex = Math.min((current - 1) * pageSize + 1, total);
 	const endIndex = Math.min(current * pageSize, total);
 
-	const handleShowSizeChange = onShowSizeChange || onChange;
+	const handleShowSizeChange = onShowSizeChange ?? onChange;
 
 	const isMobile = !screens.sm;
 	const isTablet = screens.sm && !screens.lg;
@@ -101,7 +101,7 @@ export default function ListPagination({
 			? (totalItems: number, range: [number, number]) =>
 					`${range[0]}-${range[1]} of ${totalItems} ${itemName}`
 			: undefined,
-		showLessItems: isTablet || isMobile,
+		showLessItems: isTablet || isMobile, // Note: || is appropriate here for boolean logic
 		responsive: true,
 	} as const;
 
