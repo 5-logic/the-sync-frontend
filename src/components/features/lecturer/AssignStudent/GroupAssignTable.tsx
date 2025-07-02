@@ -1,8 +1,8 @@
-import GroupOverviewTable from '../AssignSupervisor/GroupOverviewTable';
-import { baseColumns } from '../AssignSupervisor/SupervisorColumns';
 import { EyeOutlined } from '@ant-design/icons';
 import { Button } from 'antd';
 
+import GroupOverviewTable from '@/components/features/lecturer/AssignSupervisor/GroupOverviewTable';
+import { baseColumns } from '@/components/features/lecturer/AssignSupervisor/SupervisorColumns';
 import type { ExtendedGroup } from '@/data/group';
 
 interface Props {
