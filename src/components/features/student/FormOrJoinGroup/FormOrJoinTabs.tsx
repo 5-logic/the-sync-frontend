@@ -3,11 +3,37 @@
 import { Tabs } from 'antd';
 import { useCallback, useMemo } from 'react';
 
-type FormOrJoinTabsProps = {
-	tabKey: string;
-	setTabKey: (key: string) => void;
-};
+// Constants for better maintainability
+const TAB_CONFIG = {
+	JOIN: {
+		key: 'join',
+		label: 'Join Group',
+	},
+	CREATE: {
+		key: 'create',
+		label: 'Form New Group',
+	},
+} as const;
 
+const TAB_STYLES = {
+	container: {
+		borderBottom: '1px solid #f0f0f0',
+	},
+	tabBar: {
+		marginBottom: 0,
+	},
+} as const;
+
+interface FormOrJoinTabsProps {
+	readonly tabKey: string;
+	readonly setTabKey: (key: string) => void;
+}
+
+/**
+ * Tab component for switching between "Join Group" and "Form New Group" modes
+ * @param props - Component props including active tab key and setter function
+ * @returns React component with tab navigation
+ */
 export default function FormOrJoinTabs({
 	tabKey,
 	setTabKey,
@@ -19,19 +45,7 @@ export default function FormOrJoinTabs({
 		[setTabKey],
 	);
 
-	const tabItems = useMemo(
-		() => [
-			{
-				key: 'join',
-				label: 'Join Group',
-			},
-			{
-				key: 'create',
-				label: 'Form New Group',
-			},
-		],
-		[],
-	);
+	const tabItems = useMemo(() => [TAB_CONFIG.JOIN, TAB_CONFIG.CREATE], []);
 
 	return (
 		<Tabs
@@ -39,12 +53,8 @@ export default function FormOrJoinTabs({
 			onChange={handleTabChange}
 			size="large"
 			items={tabItems}
-			style={{
-				borderBottom: '1px solid #f0f0f0',
-			}}
-			tabBarStyle={{
-				marginBottom: 0,
-			}}
+			style={TAB_STYLES.container}
+			tabBarStyle={TAB_STYLES.tabBar}
 		/>
 	);
 }

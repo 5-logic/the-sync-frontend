@@ -4,47 +4,68 @@ import { Button, Grid } from 'antd';
 
 const { useBreakpoint } = Grid;
 
+// Constants for better maintainability
+const BUTTON_TEXT = 'Request Join / Invite';
+const BUTTON_STYLES = {
+	borderRadius: 6,
+	height: 32,
+	fontSize: 14,
+	padding: '4px 15px',
+	whiteSpace: 'nowrap' as const,
+	border: '1px solid #d9d9d9',
+	backgroundColor: '#fff',
+	color: 'rgba(0, 0, 0, 0.88)',
+	fontWeight: 400,
+};
+
+const CONTAINER_STYLES = {
+	base: {
+		textAlign: 'right' as const,
+		display: 'flex',
+		justifyContent: 'flex-end',
+		alignItems: 'center',
+		height: '100%',
+	},
+	mobile: {
+		marginTop: 16,
+	},
+	desktop: {
+		marginTop: 0,
+	},
+};
+
+/**
+ * Button component for requesting to join a group or sending invitations
+ * Adapts its layout based on screen size for responsive design
+ *
+ * @returns React button component with responsive styling
+ */
 export default function InviteRequestButton() {
 	const screens = useBreakpoint();
-
 	const isResponsiveMobile = !screens.md;
 
 	const handleInviteRequest = () => {
+		// TODO: Implement actual invite/request functionality
 		console.log('Request Join / Invite clicked');
 	};
 
-	const getButtonText = () => {
-		return 'Request Join / Invite';
+	const containerStyle = {
+		...CONTAINER_STYLES.base,
+		...(isResponsiveMobile
+			? CONTAINER_STYLES.mobile
+			: CONTAINER_STYLES.desktop),
 	};
 
 	return (
-		<div
-			style={{
-				textAlign: 'right',
-				marginTop: isResponsiveMobile ? 16 : 0,
-				display: 'flex',
-				justifyContent: 'flex-end',
-				alignItems: 'center',
-				height: '100%',
-			}}
-		>
+		<div style={containerStyle}>
 			<Button
 				type="default"
 				onClick={handleInviteRequest}
-				style={{
-					borderRadius: 6,
-					height: 32,
-					fontSize: 14,
-					padding: '4px 15px',
-					whiteSpace: 'nowrap',
-					border: '1px solid #d9d9d9',
-					backgroundColor: '#fff',
-					color: 'rgba(0, 0, 0, 0.88)',
-					fontWeight: 400,
-				}}
-				title="Request Join / Invite"
+				style={BUTTON_STYLES}
+				title={BUTTON_TEXT}
+				aria-label={BUTTON_TEXT}
 			>
-				{getButtonText()}
+				{BUTTON_TEXT}
 			</Button>
 		</div>
 	);

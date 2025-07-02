@@ -5,28 +5,64 @@ import { FormLabel } from '@/components/common/FormLabel';
 import mockSkills from '@/data/skill';
 import mockSkillSets from '@/data/skillSet';
 
+// Constants for better maintainability
+const FORM_CONFIG = {
+	TREE_SELECT_MAX_HEIGHT: 400,
+	BUTTON_HEIGHT: 40,
+	BUTTON_MIN_WIDTH: 120,
+	BUTTON_FONT_SIZE: 14,
+} as const;
+
+const BUTTON_STYLES = {
+	marginTop: 16,
+	minWidth: FORM_CONFIG.BUTTON_MIN_WIDTH,
+	fontSize: FORM_CONFIG.BUTTON_FONT_SIZE,
+	height: FORM_CONFIG.BUTTON_HEIGHT,
+	padding: '0 16px',
+	whiteSpace: 'nowrap' as const,
+	overflow: 'hidden',
+	textOverflow: 'ellipsis',
+} as const;
+
 const responsibilityOptions = [
 	{ value: 'Researcher', label: 'Researcher' },
 	{ value: 'Developer', label: 'Developer' },
 ];
 
+/**
+ * Builds skill tree data structure for TreeSelect component
+ * @returns Array of skill sets with their associated skills
+ */
 const buildSkillTreeData = () =>
 	mockSkillSets.map((set) => ({
 		value: set.id,
 		title: set.name,
 		selectable: false,
 		children: mockSkills
-			.filter((sk) => sk.skillSetId === set.id)
-			.map((sk) => ({
-				value: sk.id,
-				title: sk.name,
+			.filter((skill) => skill.skillSetId === set.id)
+			.map((skill) => ({
+				value: skill.id,
+				title: skill.name,
 			})),
 	}));
 
+// Pre-computed skill tree data to avoid recalculation
 const skillTreeData = buildSkillTreeData();
 
+interface FormValues {
+	readonly skills: string[];
+	readonly responsibility?: string[];
+}
+
+/**
+ * Form component for joining a group based on skills and responsibilities
+ * Allows students to specify their skills and get group suggestions
+ *
+ * @returns React form component for group joining
+ */
 export default function JoinGroupForm() {
-	const handleFinish = useCallback((values: Record<string, unknown>) => {
+	const handleFinish = useCallback((values: FormValues) => {
+		// TODO: Implement actual group suggestion logic
 		console.log('Suggest group values:', values);
 	}, []);
 
@@ -56,7 +92,7 @@ export default function JoinGroupForm() {
 							showCheckedStrategy={TreeSelect.SHOW_CHILD}
 							style={{ width: '100%' }}
 							dropdownStyle={{
-								maxHeight: 400,
+								maxHeight: FORM_CONFIG.TREE_SELECT_MAX_HEIGHT,
 								overflow: 'auto',
 							}}
 						/>
@@ -79,20 +115,7 @@ export default function JoinGroupForm() {
 			</Row>
 			<Row>
 				<Col>
-					<Button
-						type="primary"
-						htmlType="submit"
-						style={{
-							marginTop: 16,
-							minWidth: 120,
-							fontSize: 14,
-							height: 40,
-							padding: '0 16px',
-							whiteSpace: 'nowrap',
-							overflow: 'hidden',
-							textOverflow: 'ellipsis',
-						}}
-					>
+					<Button type="primary" htmlType="submit" style={BUTTON_STYLES}>
 						Suggest Groups
 					</Button>
 				</Col>

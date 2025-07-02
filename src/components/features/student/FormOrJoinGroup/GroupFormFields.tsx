@@ -5,6 +5,32 @@ import mockSkills from '@/data/skill';
 import mockSkillSets from '@/data/skillSet';
 import { mockTheses } from '@/data/thesis';
 
+// Constants for better maintainability
+const VALIDATION_RULES = {
+	GROUP_NAME: {
+		MIN_LENGTH: 3,
+		MAX_LENGTH: 50,
+	},
+	TREE_SELECT: {
+		MAX_HEIGHT: 400,
+	},
+} as const;
+
+const FORM_STYLES = {
+	requiredLabel: {
+		fontWeight: 600,
+	},
+	requiredMark: {
+		color: '#ff4d4f',
+		marginLeft: 4,
+	},
+	treeSelectDropdown: {
+		maxHeight: VALIDATION_RULES.TREE_SELECT.MAX_HEIGHT,
+		overflow: 'auto',
+	},
+} as const;
+
+// Pre-computed project areas to avoid recalculation
 const projectAreas = Array.from(new Set(mockTheses.map((t) => t.domain))).map(
 	(domain) => ({
 		value: domain,
@@ -12,19 +38,24 @@ const projectAreas = Array.from(new Set(mockTheses.map((t) => t.domain))).map(
 	}),
 );
 
+/**
+ * Builds skill tree data structure for TreeSelect component
+ * @returns Array of skill sets with their associated skills
+ */
 const buildSkillTreeData = () =>
 	mockSkillSets.map((set) => ({
 		value: set.id,
 		title: set.name,
 		selectable: false,
 		children: mockSkills
-			.filter((sk) => sk.skillSetId === set.id)
-			.map((sk) => ({
-				value: sk.id,
-				title: sk.name,
+			.filter((skill) => skill.skillSetId === set.id)
+			.map((skill) => ({
+				value: skill.id,
+				title: skill.name,
 			})),
 	}));
 
+// Pre-computed skill tree data to avoid recalculation
 const skillTreeData = buildSkillTreeData();
 
 const responsibilityOptions = [
@@ -32,26 +63,37 @@ const responsibilityOptions = [
 	{ value: 'Developer', label: 'Developer' },
 ];
 
+/**
+ * Form fields component for group creation
+ * Includes group name, project area, skills, and responsibility selection
+ *
+ * @returns React component with form fields for group creation
+ */
 export default function GroupFormFields() {
+	const getGroupNameRules = () => [
+		{ required: true, message: 'Please enter group name' },
+		{
+			min: VALIDATION_RULES.GROUP_NAME.MIN_LENGTH,
+			message: `Group name must be at least ${VALIDATION_RULES.GROUP_NAME.MIN_LENGTH} characters`,
+		},
+		{
+			max: VALIDATION_RULES.GROUP_NAME.MAX_LENGTH,
+			message: `Group name must be less than ${VALIDATION_RULES.GROUP_NAME.MAX_LENGTH} characters`,
+		},
+	];
+
 	return (
 		<Row gutter={[16, 16]}>
 			<Col xs={24} md={12}>
 				<Form.Item
 					name="name"
 					label={
-						<span style={{ fontWeight: 600 }}>
+						<span style={FORM_STYLES.requiredLabel}>
 							Group Name
-							<span style={{ color: '#ff4d4f', marginLeft: 4 }}>*</span>
+							<span style={FORM_STYLES.requiredMark}>*</span>
 						</span>
 					}
-					rules={[
-						{ required: true, message: 'Please enter group name' },
-						{ min: 3, message: 'Group name must be at least 3 characters' },
-						{
-							max: 50,
-							message: 'Group name must be less than 50 characters',
-						},
-					]}
+					rules={getGroupNameRules()}
 				>
 					<Input placeholder="Enter group name" />
 				</Form.Item>
@@ -82,10 +124,7 @@ export default function GroupFormFields() {
 						treeCheckable={false}
 						showCheckedStrategy={TreeSelect.SHOW_CHILD}
 						style={{ width: '100%' }}
-						dropdownStyle={{
-							maxHeight: 400,
-							overflow: 'auto',
-						}}
+						dropdownStyle={FORM_STYLES.treeSelectDropdown}
 					/>
 				</Form.Item>
 			</Col>
