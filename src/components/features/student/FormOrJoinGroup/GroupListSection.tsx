@@ -70,15 +70,26 @@ interface GroupListSectionProps {
 	readonly enablePagination?: boolean;
 }
 
-// Helper function to get empty state message
+// Helper functions for empty state messages
+const getFilteredEmptyMessage = (
+	search?: string,
+	category?: string,
+): string => {
+	return search || category ? MESSAGES.NO_RESULTS : MESSAGES.NO_GROUPS;
+};
+
+const getDefaultEmptyMessage = (): string => {
+	return MESSAGES.NO_GROUPS;
+};
+
 const getEmptyStateMessage = (
 	showFilter: boolean,
 	search?: string,
 	category?: string,
 ): string => {
-	return showFilter && (search || category)
-		? MESSAGES.NO_RESULTS
-		: MESSAGES.NO_GROUPS;
+	return showFilter
+		? getFilteredEmptyMessage(search, category)
+		: getDefaultEmptyMessage();
 };
 
 // Helper function to render search and category filters
