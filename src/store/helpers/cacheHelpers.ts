@@ -1,5 +1,8 @@
 import type { StoreApi } from 'zustand';
 
+import { handleApiResponse } from '@/lib/utils/handleApi';
+import { ApiResponse } from '@/schemas/_common';
+
 // Cache configuration
 interface CacheConfig {
 	ttl?: number; // Time to live in milliseconds (default: 5 minutes)
@@ -177,7 +180,7 @@ export const cacheUtils = {
 
 // Enhanced fetch action with caching
 export function createCachedFetchAction<T extends { id: string }>(
-	service: { findAll: () => Promise<{ success: boolean; data?: T[] }> },
+	service: { findAll: () => Promise<ApiResponse<T[]>> },
 	entityName: string,
 	cacheConfig: CacheConfig = {},
 ) {
@@ -223,27 +226,51 @@ export function createCachedFetchAction<T extends { id: string }>(
 
 			try {
 				const response = await service.findAll();
+				console.log(`🔍 [${entityName}] Raw API Response:`, response);
 
-				if (response.success && response.data) {
+				const result = handleApiResponse(response);
+				console.log(`🔄 [${entityName}] Processed result:`, result);
+
+				if (result.success && result.data) {
+					console.log(
+						`✅ [${entityName}] Success! Data count:`,
+						result.data.length,
+					);
+					console.log(`📋 [${entityName}] Sample data:`, result.data[0]);
+
 					// Cache the data
-					cacheUtils.set(entityName, cacheKey, response.data);
+					cacheUtils.set(entityName, cacheKey, result.data);
 
-					// Update store
+					// Update store - handle special plural cases
+					const pluralEntityName =
+						entityName === 'thesis' ? 'theses' : `${entityName}s`;
+					const capitalizedEntityName =
+						entityName.charAt(0).toUpperCase() + entityName.slice(1);
+					const filteredPropertyName =
+						entityName === 'thesis'
+							? 'filteredTheses'
+							: `filtered${capitalizedEntityName}s`;
+					const filterFunctionName =
+						entityName === 'thesis'
+							? 'filterTheses'
+							: `filter${capitalizedEntityName}s`;
+
 					set({
-						[`${entityName}s`]: response.data,
-						[`filtered${entityName.charAt(0).toUpperCase() + entityName.slice(1)}s`]:
-							response.data,
+						[pluralEntityName]: result.data,
+						[filteredPropertyName]: result.data,
 					});
 
 					// Apply filters
 					const currentState = get();
-					const filterFunction =
-						currentState[
-							`filter${entityName.charAt(0).toUpperCase() + entityName.slice(1)}s`
-						];
+					const filterFunction = currentState[filterFunctionName];
 					if (typeof filterFunction === 'function') {
+						console.log(`🎯 [${entityName}] Calling filter function...`);
 						filterFunction();
+					} else {
+						console.log(`❌ [${entityName}] Filter function not found!`);
 					}
+				} else {
+					console.log(`❌ [${entityName}] API Response failed:`, result);
 				}
 			} catch (error) {
 				console.error(`Error fetching ${entityName}s:`, error);
@@ -288,6 +315,123 @@ export const cacheInvalidation = {
 		}, interval);
 	},
 };
+
+// Enhanced fetch by lecturer action with caching
+export function createCachedFetchByLecturerAction<T extends { id: string }>(
+	service: {
+		findByLecturerId: (lecturerId: string) => Promise<ApiResponse<T[]>>;
+	},
+	entityName: string,
+	cacheConfig: CacheConfig = {},
+) {
+	// Initialize cache
+	cacheUtils.initCache<T[]>(entityName, cacheConfig);
+
+	return (
+			set: StoreApi<Record<string, unknown>>['setState'],
+			get: StoreApi<Record<string, unknown>>['getState'],
+		) =>
+		async (lecturerId: string, force = false) => {
+			const cacheKey = `lecturer_${lecturerId}`;
+
+			// Try to get from cache first
+			if (!force) {
+				const cachedData = cacheUtils.get<T[]>(entityName, cacheKey);
+				if (cachedData) {
+					// Handle special plural cases
+					const pluralEntityName =
+						entityName === 'thesis' ? 'theses' : `${entityName}s`;
+					const capitalizedEntityName =
+						entityName.charAt(0).toUpperCase() + entityName.slice(1);
+					const filteredPropertyName =
+						entityName === 'thesis'
+							? 'filteredTheses'
+							: `filtered${capitalizedEntityName}s`;
+					const filterFunctionName =
+						entityName === 'thesis'
+							? 'filterTheses'
+							: `filter${capitalizedEntityName}s`;
+
+					set({
+						[pluralEntityName]: cachedData,
+						[filteredPropertyName]: cachedData,
+						currentLecturerId: lecturerId,
+					});
+
+					// Apply filters if they exist
+					const currentState = get();
+					const filterFunction = currentState[filterFunctionName];
+					if (typeof filterFunction === 'function') {
+						filterFunction();
+					}
+					return;
+				}
+			}
+
+			// Prevent duplicate calls
+			const { loading, _backgroundRefreshRunning } = get();
+			if (loading || _backgroundRefreshRunning) return;
+
+			set({
+				loading: true,
+				lastError: null,
+				currentLecturerId: lecturerId,
+				_backgroundRefreshRunning: true,
+			});
+
+			try {
+				const response = await service.findByLecturerId(lecturerId);
+				const result = handleApiResponse(response);
+
+				if (result.success && result.data) {
+					// Cache the data with lecturer-specific key
+					cacheUtils.set(entityName, cacheKey, result.data);
+
+					// Update store - handle special plural cases
+					const pluralEntityName =
+						entityName === 'thesis' ? 'theses' : `${entityName}s`;
+					const capitalizedEntityName =
+						entityName.charAt(0).toUpperCase() + entityName.slice(1);
+					const filteredPropertyName =
+						entityName === 'thesis'
+							? 'filteredTheses'
+							: `filtered${capitalizedEntityName}s`;
+					const filterFunctionName =
+						entityName === 'thesis'
+							? 'filterTheses'
+							: `filter${capitalizedEntityName}s`;
+
+					set({
+						[pluralEntityName]: result.data,
+						[filteredPropertyName]: result.data,
+					});
+
+					// Apply filters
+					const currentState = get();
+					const filterFunction = currentState[filterFunctionName];
+					if (typeof filterFunction === 'function') {
+						filterFunction();
+					}
+				} else {
+					throw new Error(result.error?.message || 'Failed to fetch data');
+				}
+			} catch (error) {
+				console.error(`Error fetching ${entityName}s by lecturer:`, error);
+				set({
+					lastError: {
+						message: `Failed to fetch ${entityName}s`,
+						statusCode: 500,
+						timestamp: new Date(),
+					},
+				});
+			} finally {
+				set({
+					loading: false,
+					_backgroundRefreshRunning: false,
+				});
+			}
+		};
+}
 
 // Cache middleware for Zustand
 export function createCacheMiddleware<T>(
