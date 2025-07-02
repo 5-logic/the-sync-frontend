@@ -2,6 +2,7 @@
 
 import { RobotOutlined, UsergroupAddOutlined } from '@ant-design/icons';
 import { Card, Col, Grid, Row, Space, Typography } from 'antd';
+import { useRouter } from 'next/navigation';
 
 import GroupActionCard from '@/components/features/student/FirstLoginDashboard/GroupActionCard';
 import WelcomeHeader from '@/components/features/student/FirstLoginDashboard/WelcomeHeader';
@@ -11,8 +12,11 @@ const { useBreakpoint } = Grid;
 
 export default function StudentFirstLoginDashboard() {
 	const screens = useBreakpoint();
+	const router = useRouter();
 
-	const handleFormOrJoinGroup = () => {};
+	const handleFormOrJoinGroup = () => {
+		router.push('/student/form-or-join-group');
+	};
 
 	const handleAIFindGroup = () => {};
 
