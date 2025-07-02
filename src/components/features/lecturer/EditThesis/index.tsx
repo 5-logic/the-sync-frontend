@@ -60,8 +60,7 @@ export default function EditThesis({ thesisId }: Props) {
 				} else if (result.error) {
 					setError(result.error.message || 'Failed to fetch thesis');
 				}
-			} catch (err) {
-				console.error('Error fetching thesis:', err);
+			} catch {
 				setError('Failed to fetch thesis data');
 			} finally {
 				setLoading(false);
