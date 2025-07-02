@@ -22,8 +22,13 @@ export const handleThesisError = (
 	config: ErrorConfig,
 	setLoading?: (loading: boolean) => void,
 ) => {
+	// Helper to get display title (handle empty strings)
+	const getDisplayTitle = (title: string | undefined): string => {
+		return (title ?? '') === '' ? 'Error' : title!;
+	};
+
 	// Show user-friendly notification
-	showNotification.error(config.title || 'Error', config.userMessage);
+	showNotification.error(getDisplayTitle(config.title), config.userMessage);
 
 	// Reset loading state if provided
 	if (setLoading) {
@@ -48,20 +53,28 @@ export const handleThesisSuccess = (
 
 	// Handle redirect if specified
 	if (config.redirectTo && router) {
+		const delay = config.redirectDelay ?? 1000;
 		setTimeout(() => {
 			router.push(config.redirectTo!);
-		}, config.redirectDelay || 1000);
+		}, delay);
 	}
 };
 
 /**
  * Factory function to create error configurations
  */
-const createErrorConfig = (action: string, title?: string): ErrorConfig => ({
-	logMessage: `Failed to ${action.toLowerCase()} thesis:`,
-	userMessage: `Failed to ${action.toLowerCase()} thesis. Please try again.`,
-	title: title || `${action} Failed`,
-});
+const createErrorConfig = (action: string, title?: string): ErrorConfig => {
+	// Helper to get display title (handle empty strings)
+	const getDisplayTitle = (t: string | undefined): string => {
+		return (t ?? '') === '' ? `${action} Failed` : t!;
+	};
+
+	return {
+		logMessage: `Failed to ${action.toLowerCase()} thesis:`,
+		userMessage: `Failed to ${action.toLowerCase()} thesis. Please try again.`,
+		title: getDisplayTitle(title),
+	};
+};
 
 /**
  * Factory function to create success configurations
