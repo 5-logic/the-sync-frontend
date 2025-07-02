@@ -1,34 +1,77 @@
 'use client';
 
 import { SearchOutlined } from '@ant-design/icons';
-import { Button, Col, Form, Input, Row, Select } from 'antd';
+import { Button, Col, Form, Input, Row, Select, TreeSelect } from 'antd';
 import { useEffect, useState } from 'react';
 
-import FormLabel from '@/components/common/FormLabel/FormLabel';
+import { FormLabel } from '@/components/common/FormLabel';
 import ThesisDuplicateList from '@/components/features/lecturer/CreateThesis/ThesisDuplicateList';
 import SupportingDocumentField from '@/components/features/lecturer/CreateThesis/ThesisFileUpload';
-
-const { TextArea } = Input;
-const { Option } = Select;
+import { getSortedDomains } from '@/lib/constants/domains';
+import { useSkillSetStore } from '@/store';
 
 type Props = Readonly<{
 	mode: 'create' | 'edit';
 	initialValues?: Record<string, unknown>;
+	initialFile?: {
+		name: string;
+		size: number;
+		url?: string;
+	} | null;
 	onSubmit: (values: Record<string, unknown>) => void;
+	loading?: boolean;
 }>;
 
 interface UploadedFile {
 	name: string;
 	size: number;
+	url?: string;
 }
 
-export default function ThesisForm({ mode, initialValues, onSubmit }: Props) {
+export default function ThesisForm({
+	mode,
+	initialValues,
+	initialFile,
+	onSubmit,
+	loading = false,
+}: Props) {
 	const [form] = Form.useForm();
 	const [showDuplicateList, setShowDuplicateList] = useState(false);
 	const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>(null);
+	const [hasFileChanged, setHasFileChanged] = useState(false);
+
+	// Get sorted domain options
+	const domainOptions = getSortedDomains();
+
+	// Skill sets store
+	const {
+		skillSets,
+		loading: skillSetsLoading,
+		fetchSkillSets,
+	} = useSkillSetStore();
+
+	// Build tree data for TreeSelect
+	const skillTreeData = skillSets.map((skillSet) => ({
+		value: skillSet.id,
+		title: skillSet.name,
+		selectable: false, // Skill set categories are not selectable
+		children: skillSet.skills.map((skill) => ({
+			value: skill.id,
+			title: skill.name,
+		})),
+	}));
+
+	// Fetch skill sets on component mount
+	useEffect(() => {
+		fetchSkillSets();
+	}, [fetchSkillSets]);
 
 	useEffect(() => {
-		if (
+		// Initialize uploaded file from initialFile prop (for edit mode)
+		if (initialFile) {
+			setUploadedFile(initialFile);
+			setHasFileChanged(false); // Reset flag for initial file
+		} else if (
 			mode === 'edit' &&
 			Array.isArray(initialValues?.supportingDocument) &&
 			initialValues.supportingDocument.length > 0
@@ -37,18 +80,46 @@ export default function ThesisForm({ mode, initialValues, onSubmit }: Props) {
 			setUploadedFile({
 				name: file.name,
 				size: file.size,
+				url: file.url,
 			});
+			setHasFileChanged(false); // Reset flag for initial file
 		}
-	}, [mode, initialValues]);
+	}, [mode, initialValues, initialFile]);
+
+	// Handle file change from upload component
+	const handleFileChange = (file: UploadedFile | null) => {
+		setUploadedFile(file);
+		setHasFileChanged(true); // Mark as changed when user uploads/deletes file
+	};
+
+	const handleFormSubmit = (values: Record<string, unknown>) => {
+		// Convert selected skills to string array
+		const selectedSkills = (values.skills as string[]) || [];
+
+		// Prepare the final form data to match backend DTO
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		const { supportingDocument, skills, ...restValues } = values;
+		const formData: Record<string, unknown> = {
+			...restValues,
+			skillIds: selectedSkills, // Pass skills as skillIds array for API
+		};
+
+		// Only include supportingDocument if file changed (for edit mode) or always for create mode
+		if (mode === 'create' || hasFileChanged) {
+			formData.supportingDocument = uploadedFile?.url || '';
+		}
+
+		onSubmit(formData);
+	};
 
 	return (
 		<Form
 			form={form}
 			layout="vertical"
-			requiredMark="optional"
+			requiredMark={false}
 			style={{ width: '100%' }}
 			initialValues={initialValues}
-			onFinish={onSubmit}
+			onFinish={handleFormSubmit}
 		>
 			<Form.Item
 				name="englishName"
@@ -84,9 +155,20 @@ export default function ThesisForm({ mode, initialValues, onSubmit }: Props) {
 				name="domain"
 				label={<FormLabel text="Field / Domain" isBold />}
 			>
-				<Select placeholder="Select field of study">
-					<Option value="Computer Science">Computer Science</Option>
-					<Option value="Software Engineering">Software Engineering</Option>
+				<Select
+					showSearch
+					placeholder="Select field of study"
+					filterOption={(input, option) =>
+						(option?.value as string)
+							?.toLowerCase()
+							.includes(input.toLowerCase())
+					}
+				>
+					{domainOptions.map((domain: string) => (
+						<Select.Option key={domain} value={domain}>
+							{domain}
+						</Select.Option>
+					))}
 				</Select>
 			</Form.Item>
 
@@ -95,50 +177,86 @@ export default function ThesisForm({ mode, initialValues, onSubmit }: Props) {
 				label={<FormLabel text="Thesis Description" isRequired isBold />}
 				rules={[{ required: true, message: 'Please describe your thesis' }]}
 			>
-				<TextArea maxLength={500} rows={4} placeholder="Describe your thesis" />
+				<Input.TextArea
+					placeholder="Describe your thesis..."
+					rows={4}
+					showCount
+					maxLength={1000}
+				/>
 			</Form.Item>
 
 			<Form.Item
 				name="skills"
 				label={<FormLabel text="Required Skills" isBold />}
 			>
-				<Select mode="tags" placeholder="Add skills">
-					<Option value="Python">Python</Option>
-					<Option value="Machine Learning">Machine Learning</Option>
-					<Option value="Database">Database</Option>
-				</Select>
+				<TreeSelect
+					showSearch
+					multiple
+					style={{ width: '100%' }}
+					placeholder="Select required skills"
+					treeData={skillTreeData}
+					treeDefaultExpandAll={false}
+					allowClear
+					loading={skillSetsLoading}
+					filterTreeNode={(input, treeNode) =>
+						(treeNode.title as string)
+							.toLowerCase()
+							.includes(input.toLowerCase())
+					}
+					dropdownStyle={{
+						maxHeight: 400,
+						overflow: 'auto',
+					}}
+					treeCheckable={true}
+					showCheckedStrategy={TreeSelect.SHOW_CHILD}
+				/>
 			</Form.Item>
 
 			<div style={{ marginBottom: 24 }}>
 				<SupportingDocumentField
 					mode={mode}
-					initialFile={uploadedFile ?? undefined}
+					initialFile={initialFile ?? undefined}
 					onFileChange={(file) => {
-						setUploadedFile(file);
+						handleFileChange(file);
+						// Set form field for validation purposes, but we'll use the URL in submit
 						form.setFieldValue('supportingDocument', file ? [file] : []);
 					}}
 				/>
 			</div>
 
-			<Row justify="space-between" align="middle" style={{ marginTop: 16 }}>
+			{showDuplicateList && (
+				<div style={{ marginBottom: 24 }}>
+					<ThesisDuplicateList />
+				</div>
+			)}
+
+			<Row justify="space-between" align="middle">
 				<Col>
 					<Button
 						icon={<SearchOutlined />}
-						type="primary"
-						onClick={() => setShowDuplicateList(true)}
+						onClick={() => setShowDuplicateList(!showDuplicateList)}
 					>
-						Duplicate Thesis Detection
+						{showDuplicateList ? 'Hide' : 'Check'} Similar Theses
 					</Button>
 				</Col>
-
 				<Col>
-					<Button type="primary" htmlType="submit">
-						{mode === 'create' ? 'Submit Registration' : 'Resubmit Thesis'}
+					<Button
+						type="primary"
+						htmlType="submit"
+						size="large"
+						loading={loading}
+						disabled={loading}
+					>
+						{loading
+							? mode === 'create'
+								? 'Creating...'
+								: 'Updating...'
+							: mode === 'create'
+								? 'Create Thesis'
+								: 'Update Thesis'}
 					</Button>
 				</Col>
 			</Row>
-
-			{showDuplicateList && <ThesisDuplicateList />}
 		</Form>
 	);
 }
