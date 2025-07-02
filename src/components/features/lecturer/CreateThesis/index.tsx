@@ -2,7 +2,6 @@
 
 import { Card, Col, Row, Typography } from 'antd';
 
-// import ThesisDuplicateList from './ThesisDuplicateList';
 import ThesisForm from '@//components/features/lecturer/CreateThesis/ThesisForm';
 import { useThesisForm } from '@/hooks/thesis';
 
@@ -24,13 +23,6 @@ export default function CreateThesis() {
 							loading={loading}
 						/>
 					</Col>
-
-					{/* TODO: Implement duplicate thesis checking later */}
-					{/* {showDuplicates && (
-						<Col span={12}>
-							<ThesisDuplicateList />
-						</Col>
-					)} */}
 				</Row>
 			</Card>
 		</div>
