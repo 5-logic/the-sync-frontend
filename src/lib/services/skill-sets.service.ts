@@ -12,8 +12,6 @@ export class SkillSetsService {
 			const response = await httpClient.get(this.baseUrl);
 
 			// Debug: Log actual response
-			console.log('API Response:', response);
-			console.log('Response data:', response.data);
 
 			// Get the actual API response (axios wraps it in response.data)
 			const apiResponse = response.data;
@@ -37,7 +35,6 @@ export class SkillSetsService {
 			// Return parsed data (Zod already transformed dates)
 			return skillSetsData;
 		} catch (error) {
-			console.error('Error fetching skill sets:', error);
 			if (error instanceof Error) {
 				throw error;
 			}
