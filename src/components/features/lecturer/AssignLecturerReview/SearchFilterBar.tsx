@@ -3,6 +3,8 @@
 import { SearchOutlined } from '@ant-design/icons';
 import { Col, Input, Row, Select } from 'antd';
 
+import { mockSemesters } from '@/data/semester';
+
 const { Option } = Select;
 
 interface Props {
@@ -39,8 +41,11 @@ export default function SearchFilterBar({
 					size="middle"
 				>
 					<Option value="">All Semesters</Option>
-					<Option value="20251">Spring 2025</Option>
-					<Option value="20252">Summer 2025</Option>
+					{mockSemesters.map((s) => (
+						<Option key={s.value} value={s.value}>
+							{s.label}
+						</Option>
+					))}
 				</Select>
 			</Col>
 

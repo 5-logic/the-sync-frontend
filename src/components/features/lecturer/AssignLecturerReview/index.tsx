@@ -7,7 +7,7 @@ import AssignReviewer from '@/components/features/lecturer/AssignLecturerReview/
 import GroupTable from '@/components/features/lecturer/AssignLecturerReview/GroupTable';
 import SearchFilterBar from '@/components/features/lecturer/AssignLecturerReview/SearchFilterBar';
 import Header from '@/components/features/lecturer/AssignSupervisor/Header';
-import { FullMockGroup, allMockGroups } from '@/data/group';
+import mockGroups, { FullMockGroup, createFullMockGroup } from '@/data/group';
 
 export default function AssignLecturerReview() {
 	const [selectedGroup, setSelectedGroup] = useState<FullMockGroup | null>(
@@ -15,16 +15,20 @@ export default function AssignLecturerReview() {
 	);
 	const [search, setSearch] = useState('');
 	const [semester, setSemester] = useState('');
-	const [milestone, setMilestone] = useState('');
-	const filteredGroups = allMockGroups.filter((group) => {
-		const matchesSearch =
-			group.name.toLowerCase().includes(search.toLowerCase()) ||
-			group.code.toLowerCase().includes(search.toLowerCase());
+	const [milestone, setMilestone] = useState('Review 1');
 
-		const matchesSemester = semester === '' || group.semesterId === semester;
-		const matchesMilestone = milestone === '' || group.phase === milestone;
+	// ✅ Tạo danh sách nhóm theo semester, gán phase = milestone hiện tại
+	const groupsInSemester: FullMockGroup[] = mockGroups
+		.filter((g) => semester === '' || g.semesterId === semester)
+		.map((g) => createFullMockGroup(g.id, milestone));
 
-		return matchesSearch && matchesSemester && matchesMilestone;
+	// ✅ Search theo group name/code
+	const filteredGroups = groupsInSemester.filter((group) => {
+		const term = search.toLowerCase();
+		return (
+			group.name.toLowerCase().includes(term) ||
+			group.code.toLowerCase().includes(term)
+		);
 	});
 
 	return (

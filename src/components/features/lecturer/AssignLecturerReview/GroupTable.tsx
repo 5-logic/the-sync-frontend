@@ -3,6 +3,7 @@
 import { Button, Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 
+import { TablePagination } from '@/components/common/TablePagination';
 import { FullMockGroup } from '@/data/group';
 import { mockLecturers } from '@/data/lecturers';
 import { mockReviews } from '@/data/review';
@@ -13,7 +14,6 @@ interface Props {
 	onAssign: (group: FullMockGroup) => void;
 }
 
-// ✅ Tạm đặt trong file vì chỉ làm UI
 function getReviewersForGroup(groupId: string): string[] {
 	const submission = mockSubmissions.find((s) => s.groupId === groupId);
 	if (!submission) return [];
@@ -24,7 +24,6 @@ function getReviewersForGroup(groupId: string): string[] {
 		.filter(Boolean) as string[];
 }
 
-// ✅ Render supervisor tương tự file bạn gửi
 function renderSupervisors(supervisors: string[]) {
 	return supervisors.length > 0 ? (
 		<div>
@@ -55,7 +54,7 @@ export default function GroupTable({ groups, onAssign }: Props) {
 			key: 'title',
 		},
 		{
-			title: 'Supervisor(s)',
+			title: 'Supervisor',
 			key: 'supervisors',
 			render: (_, record) => renderSupervisors(record.supervisors),
 		},
@@ -83,7 +82,7 @@ export default function GroupTable({ groups, onAssign }: Props) {
 			rowKey="id"
 			dataSource={groups}
 			columns={columns}
-			pagination={false}
+			pagination={TablePagination}
 			scroll={{ x: 'max-content' }}
 		/>
 	);
