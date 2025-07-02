@@ -2,33 +2,40 @@ import { z } from 'zod';
 
 import { ThesisStatusSchema } from '@/schemas/_enums';
 
+// Common field definitions to reduce duplication
+const uuidField = z.string().uuid();
+const optionalUuidField = z.string().uuid().nullable().optional();
+const stringMinOneField = z.string().min(1);
+const timestampFields = {
+	createdAt: z.date(),
+	updatedAt: z.date(),
+} as const;
+
 export const ThesisSchema = z.object({
-	id: z.string().uuid(),
-	englishName: z.string().min(1),
-	vietnameseName: z.string().min(1),
-	abbreviation: z.string().min(1),
-	description: z.string().min(1),
+	id: uuidField,
+	englishName: stringMinOneField,
+	vietnameseName: stringMinOneField,
+	abbreviation: stringMinOneField,
+	description: stringMinOneField,
 	domain: z.string().nullable().optional(),
 	status: ThesisStatusSchema,
 	isPublish: z.boolean().default(false),
-	groupId: z.string().uuid().nullable().optional(),
-	lecturerId: z.string().uuid(),
-	createdAt: z.date(),
-	updatedAt: z.date(),
+	groupId: optionalUuidField,
+	lecturerId: uuidField,
+	...timestampFields,
 });
 
 export const ThesisVersionSchema = z.object({
-	id: z.string().uuid(),
+	id: uuidField,
 	version: z.number().int().positive(),
-	supportingDocument: z.string().min(1),
-	thesisId: z.string().uuid(),
-	createdAt: z.date(),
-	updatedAt: z.date(),
+	supportingDocument: stringMinOneField,
+	thesisId: uuidField,
+	...timestampFields,
 });
 
 export const ThesisRequiredSkillSchema = z.object({
-	thesisId: z.string().uuid(),
-	skillId: z.string().uuid(),
+	thesisId: uuidField,
+	skillId: uuidField,
 });
 
 // Schema for creating thesis with skills (only skillId needed)
@@ -47,7 +54,7 @@ export const ThesisCreateSchema = z.object({
 });
 
 export const ThesisUpdateSchema = ThesisSchema.omit({
-	id: true,
+	...createOmitFields,
 	lecturerId: true,
 	createdAt: true,
 	updatedAt: true,
@@ -62,30 +69,27 @@ export const ThesisPublicSchema = ThesisSchema.omit({
 	lecturerId: true,
 });
 
-export const ThesisVersionCreateSchema = ThesisVersionSchema.omit({
-	id: true,
-	createdAt: true,
-	updatedAt: true,
-});
+export const ThesisVersionCreateSchema =
+	ThesisVersionSchema.omit(createOmitFields);
 
 export const ThesisVersionUpdateSchema = ThesisVersionSchema.omit({
-	id: true,
+	...createOmitFields,
 	thesisId: true,
-	createdAt: true,
-	updatedAt: true,
 }).partial();
 
 export const ThesisRequiredSkillCreateSchema = ThesisRequiredSkillSchema;
 
-// Export inferred types
+// Export inferred types - grouped for better organization
 export type Thesis = z.infer<typeof ThesisSchema>;
 export type ThesisWithRelations = z.infer<typeof ThesisWithRelationsSchema>;
 export type ThesisCreate = z.infer<typeof ThesisCreateSchema>;
 export type ThesisUpdate = z.infer<typeof ThesisUpdateSchema>;
 export type ThesisPublic = z.infer<typeof ThesisPublicSchema>;
+
 export type ThesisVersion = z.infer<typeof ThesisVersionSchema>;
 export type ThesisVersionCreate = z.infer<typeof ThesisVersionCreateSchema>;
 export type ThesisVersionUpdate = z.infer<typeof ThesisVersionUpdateSchema>;
+
 export type ThesisRequiredSkill = z.infer<typeof ThesisRequiredSkillSchema>;
 export type ThesisRequiredSkillCreate = z.infer<
 	typeof ThesisRequiredSkillCreateSchema
