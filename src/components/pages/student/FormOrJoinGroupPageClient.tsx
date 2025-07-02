@@ -8,10 +8,18 @@ const FormOrJoinGroup = lazy(
 	() => import('@/components/features/student/FormOrJoinGroup'),
 );
 
-export default function FormOrJoinGroupPageClient() {
+/**
+ * Client-side page component for form or join group functionality.
+ * Uses lazy loading to improve initial page load performance.
+ *
+ * @returns {JSX.Element} The FormOrJoinGroup component wrapped in Suspense
+ */
+export default function FormOrJoinGroupPageClient(): JSX.Element {
 	return (
-		<Suspense fallback={<TableLoadingSkeleton />}>
-			<FormOrJoinGroup />
-		</Suspense>
+		<main role="main" aria-label="Form or Join Group Page">
+			<Suspense fallback={<TableLoadingSkeleton />}>
+				<FormOrJoinGroup />
+			</Suspense>
+		</main>
 	);
 }
