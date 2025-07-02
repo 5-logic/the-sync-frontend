@@ -16,6 +16,22 @@ import {
 	handleCreateError,
 } from '@/store/helpers/storeHelpers';
 
+// Type alias for thesis status filter
+type ThesisStatusFilter =
+	| 'approved'
+	| 'pending'
+	| 'rejected'
+	| 'new'
+	| undefined;
+
+// Helper function to handle error messages with nullish coalescing
+const getErrorMessage = (
+	errorMessage: string | undefined,
+	fallback: string,
+): string => {
+	return errorMessage ?? fallback;
+};
+
 interface ThesisState {
 	// Data
 	theses: Thesis[];
@@ -44,7 +60,7 @@ interface ThesisState {
 
 	// UI states - filters
 	searchText: string;
-	selectedStatus: 'approved' | 'pending' | 'rejected' | 'new' | undefined;
+	selectedStatus: ThesisStatusFilter;
 	selectedDomain: string | undefined;
 	selectedOwned: boolean | undefined;
 
@@ -77,9 +93,7 @@ interface ThesisState {
 
 	// Filters
 	setSearchText: (text: string) => void;
-	setSelectedStatus: (
-		status: 'approved' | 'pending' | 'rejected' | 'new' | undefined,
-	) => void;
+	setSelectedStatus: (status: ThesisStatusFilter) => void;
 	setSelectedDomain: (domain: string | undefined) => void;
 	setSelectedOwned: (owned: boolean | undefined) => void;
 	filterTheses: () => void;
@@ -102,7 +116,7 @@ const thesisSearchFilter = createSearchFilter<Thesis>((thesis) => [
 	thesis.vietnameseName,
 	thesis.abbreviation,
 	thesis.description,
-	thesis.domain || '',
+	thesis.domain ?? '',
 ]);
 
 // Initialize cache for thesis
@@ -196,7 +210,9 @@ export const useThesisStore = create<ThesisState>()(
 						// Apply filters
 						get().filterTheses();
 					} else {
-						throw new Error(result.error?.message || 'Failed to fetch theses');
+						throw new Error(
+							getErrorMessage(result.error?.message, 'Failed to fetch theses'),
+						);
 					}
 				} catch {
 					set({
@@ -293,7 +309,9 @@ export const useThesisStore = create<ThesisState>()(
 
 						return true;
 					} else {
-						throw new Error(result.error?.message || 'Failed to update thesis');
+						throw new Error(
+							getErrorMessage(result.error?.message, 'Failed to update thesis'),
+						);
 					}
 				} catch (error) {
 					handleActionError(error, 'thesis', 'update', set);
@@ -326,7 +344,9 @@ export const useThesisStore = create<ThesisState>()(
 
 						return true;
 					} else {
-						throw new Error(result.error?.message || 'Failed to delete thesis');
+						throw new Error(
+							getErrorMessage(result.error?.message, 'Failed to delete thesis'),
+						);
 					}
 				} catch (error) {
 					handleActionError(error, 'thesis', 'delete', set);
@@ -362,7 +382,10 @@ export const useThesisStore = create<ThesisState>()(
 						return true;
 					} else {
 						throw new Error(
-							result.error?.message || 'Failed to toggle publish status',
+							getErrorMessage(
+								result.error?.message,
+								'Failed to toggle publish status',
+							),
 						);
 					}
 				} catch (error) {
@@ -400,7 +423,9 @@ export const useThesisStore = create<ThesisState>()(
 
 						return true;
 					} else {
-						throw new Error(result.error?.message || 'Failed to submit thesis');
+						throw new Error(
+							getErrorMessage(result.error?.message, 'Failed to submit thesis'),
+						);
 					}
 				} catch (error) {
 					handleActionError(error, 'thesis', 'submit', set);
@@ -438,8 +463,10 @@ export const useThesisStore = create<ThesisState>()(
 						return true;
 					} else {
 						throw new Error(
-							result.error?.message ||
+							getErrorMessage(
+								result.error?.message,
 								`Failed to ${status.toLowerCase()} thesis`,
+							),
 						);
 					}
 				} catch (error) {
@@ -458,9 +485,7 @@ export const useThesisStore = create<ThesisState>()(
 				get().filterTheses();
 			},
 
-			setSelectedStatus: (
-				status: 'approved' | 'pending' | 'rejected' | 'new' | undefined,
-			) => {
+			setSelectedStatus: (status: ThesisStatusFilter) => {
 				set({ selectedStatus: status });
 				get().filterTheses();
 			},
