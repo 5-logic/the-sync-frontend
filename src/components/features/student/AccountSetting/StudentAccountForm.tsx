@@ -58,11 +58,11 @@ const LEVEL_TOOLTIPS = [
 ];
 
 const LEVEL_COLORS = [
-	'#ff4d4f', // Red - Beginner
-	'#fa8c16', // Orange - Intermediate
+	'#1890ff', // Blue - Beginner
+	'#52c41a', // Green - Intermediate
 	'#fadb14', // Yellow - Proficient
-	'#52c41a', // Green - Advanced
-	'#1890ff', // Blue - Expert
+	'#fa8c16', // Orange - Advanced
+	'#ff4d4f', // Red - Expert
 ];
 
 const buildSkillTreeData = () =>
