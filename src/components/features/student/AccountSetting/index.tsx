@@ -3,8 +3,8 @@
 import { Card, Col, Row, Space, Typography } from 'antd';
 import React from 'react';
 
+import ChangePasswordForm from '@/components/features/lecturer/ProfileSetting/ChangePasswordForm';
 import StudentAccountForm from '@/components/features/student/AccountSetting/StudentAccountForm';
-import StudentChangePasswordForm from '@/components/features/student/AccountSetting/StudentChangePasswordForm';
 
 const { Title, Paragraph } = Typography;
 
@@ -40,7 +40,7 @@ export default function StudentAccountSettingContainer() {
 						}}
 						bodyStyle={{ padding: 24 }}
 					>
-						<StudentChangePasswordForm />
+						<ChangePasswordForm />
 					</Card>
 				</Col>
 			</Row>

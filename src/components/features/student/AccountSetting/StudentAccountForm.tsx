@@ -21,24 +21,48 @@ import mockSkills from '@/data/skill';
 import mockSkillSets from '@/data/skillSet';
 import { mockStudents } from '@/data/student';
 
+// TypeScript interfaces
+interface FormValues {
+	fullName: string;
+	email: string;
+	studentId: string;
+	major: string;
+	phoneNumber: string;
+	gender: string;
+	responsibility: string[];
+	skills?: Array<{
+		skillId: string;
+		level: number;
+	}>;
+}
+
 const { Title } = Typography;
 
-const majorOptions = [
+// Constants moved outside component to prevent re-creation on each render
+const MAJOR_OPTIONS = [
 	{ value: 'SE', label: 'Software Engineering' },
 	{ value: 'AI', label: 'Artificial Intelligence' },
 ];
 
-const responsibilityOptions = [
+const RESPONSIBILITY_OPTIONS = [
 	{ value: 'Researcher', label: 'Researcher' },
 	{ value: 'Developer', label: 'Developer' },
 ];
 
-const levelTooltips = [
+const LEVEL_TOOLTIPS = [
 	'Beginner',
 	'Intermediate',
 	'Proficient',
 	'Advanced',
 	'Expert',
+];
+
+const LEVEL_COLORS = [
+	'#1890ff', // Blue - Beginner
+	'#52c41a', // Green - Intermediate
+	'#fadb14', // Yellow - Proficient
+	'#fa8c16', // Orange - Advanced
+	'#ff4d4f', // Red - Expert
 ];
 
 const buildSkillTreeData = () =>
@@ -58,12 +82,45 @@ const skillTreeData = buildSkillTreeData();
 
 const StudentAccountForm: React.FC = () => {
 	const [form] = Form.useForm();
+	const [skillLevels, setSkillLevels] = React.useState<{
+		[key: number]: number;
+	}>({});
 
-	const student = mockStudents[0];
+	const memoizedSkillTreeData = React.useMemo(() => skillTreeData, []);
 
-	const handleFinish = (values: Record<string, unknown>) => {
+	const student = React.useMemo(() => mockStudents[0], []);
+
+	const initialValues = React.useMemo(
+		() => ({
+			fullName: student.fullName,
+			email: student.email,
+			studentId: student.studentCode,
+			major: student.majorId,
+			phoneNumber: student.phoneNumber,
+			gender: student.gender,
+			responsibility: ['Researcher'],
+		}),
+		[student],
+	);
+
+	const handleFinish = React.useCallback((values: FormValues) => {
 		console.log('Profile values:', values);
-	};
+	}, []);
+
+	const handleSkillLevelChange = React.useCallback(
+		(name: number, value: number) => {
+			setSkillLevels((prev) => ({
+				...prev,
+				[name]: value,
+			}));
+		},
+		[],
+	);
+
+	const tooltipFormatter = React.useCallback(
+		(value: number | undefined) => (value ? LEVEL_TOOLTIPS[value - 1] : ''),
+		[],
+	);
 
 	return (
 		<Form
@@ -71,15 +128,7 @@ const StudentAccountForm: React.FC = () => {
 			form={form}
 			layout="vertical"
 			onFinish={handleFinish}
-			initialValues={{
-				fullName: student.fullName,
-				email: student.email,
-				studentCode: student.studentCode,
-				major: student.majorId,
-				phoneNumber: student.phoneNumber,
-				gender: student.gender,
-				responsibility: ['Researcher'],
-			}}
+			initialValues={initialValues}
 		>
 			<Title level={5} style={{ marginBottom: 24 }}>
 				Personal Information
@@ -87,7 +136,7 @@ const StudentAccountForm: React.FC = () => {
 			<Row gutter={16}>
 				<Col xs={24} md={12}>
 					<Form.Item
-						name="studentCode"
+						name="studentId"
 						label={<FormLabel text="Student ID" isBold />}
 						rules={[
 							{ required: true, message: 'Please enter your student ID' },
@@ -128,7 +177,7 @@ const StudentAccountForm: React.FC = () => {
 						label={<FormLabel text="Major" isBold />}
 						rules={[{ required: true, message: 'Please select your major' }]}
 					>
-						<Select options={majorOptions} placeholder="Select major" />
+						<Select options={MAJOR_OPTIONS} placeholder="Select major" />
 					</Form.Item>
 				</Col>
 			</Row>
@@ -163,7 +212,7 @@ const StudentAccountForm: React.FC = () => {
 			>
 				<Select
 					mode="multiple"
-					options={responsibilityOptions}
+					options={RESPONSIBILITY_OPTIONS}
 					placeholder="Select responsibility"
 				/>
 			</Form.Item>
@@ -198,11 +247,11 @@ const StudentAccountForm: React.FC = () => {
 												showSearch
 												style={{ width: '100%' }}
 												placeholder="Select skill"
-												treeData={skillTreeData}
+												treeData={memoizedSkillTreeData}
 												treeDefaultExpandAll={false}
 												allowClear
 												filterTreeNode={(input, treeNode) =>
-													(treeNode.title as string)
+													String(treeNode.title)
 														.toLowerCase()
 														.includes(input.toLowerCase())
 												}
@@ -216,7 +265,10 @@ const StudentAccountForm: React.FC = () => {
 												<Form.Item
 													{...restField}
 													name={[name, 'level']}
-													rules={[{ required: true, message: 'Select level' }]}
+													label={<FormLabel text="Skill Level" isBold />}
+													rules={[
+														{ required: true, message: 'Select skill level' },
+													]}
 													style={{ marginBottom: 0, width: '100%' }}
 												>
 													<Slider
@@ -224,10 +276,23 @@ const StudentAccountForm: React.FC = () => {
 														max={5}
 														step={1}
 														tooltip={{
-															formatter: (value) =>
-																value
-																	? levelTooltips[(value as number) - 1]
-																	: '',
+															formatter: tooltipFormatter,
+														}}
+														onChange={(value) =>
+															handleSkillLevelChange(name, value)
+														}
+														trackStyle={{
+															backgroundColor: skillLevels[name]
+																? LEVEL_COLORS[skillLevels[name] - 1]
+																: LEVEL_COLORS[0],
+														}}
+														handleStyle={{
+															borderColor: skillLevels[name]
+																? LEVEL_COLORS[skillLevels[name] - 1]
+																: LEVEL_COLORS[0],
+															backgroundColor: skillLevels[name]
+																? LEVEL_COLORS[skillLevels[name] - 1]
+																: LEVEL_COLORS[0],
 														}}
 													/>
 												</Form.Item>
@@ -251,6 +316,7 @@ const StudentAccountForm: React.FC = () => {
 									onClick={() => add()}
 									icon={<PlusOutlined />}
 									block
+									aria-label="Add new skill"
 								>
 									Add Skill
 								</Button>
@@ -263,8 +329,14 @@ const StudentAccountForm: React.FC = () => {
 			<Form.Item>
 				<Row justify="end" style={{ marginTop: 24 }}>
 					<Space>
-						<Button htmlType="button">Cancel</Button>
-						<Button type="primary" htmlType="submit">
+						<Button htmlType="button" aria-label="Cancel form changes">
+							Cancel
+						</Button>
+						<Button
+							type="primary"
+							htmlType="submit"
+							aria-label="Save profile changes"
+						>
 							Save Changes
 						</Button>
 					</Space>

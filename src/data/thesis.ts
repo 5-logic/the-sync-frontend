@@ -4,7 +4,7 @@ export type ExtendedThesis = Thesis & {
 	skills: string[];
 	highlight?: string;
 	version: string;
-	semester?: string; // Add this line
+	semester?: string;
 	supervisor?: {
 		name: string;
 		phone: string;
