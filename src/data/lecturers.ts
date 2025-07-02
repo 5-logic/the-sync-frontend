@@ -1,89 +1,101 @@
 import { Lecturer } from '@/schemas/lecturer';
 
-const baseLecturer = {
+const baseLecturer: Omit<
+	Lecturer,
+	'id' | 'fullName' | 'email' | 'phoneNumber' | 'gender' | 'createdAt'
+> & {
+	instructionGroups: string;
+} = {
 	password: '',
 	instructionGroups: '03',
 	updatedAt: new Date('2024-06-01'),
-} as const;
+	isActive: true,
+	isModerator: false,
+};
+
+function createLecturer(
+	id: string,
+	fullName: string,
+	email: string,
+	phoneNumber: string,
+	gender: 'Male' | 'Female',
+	createdAt: Date,
+	override?: Partial<Lecturer & { instructionGroups: string }>,
+): Lecturer & { instructionGroups: string } {
+	return {
+		id,
+		fullName,
+		email,
+		phoneNumber,
+		gender,
+		createdAt,
+		...baseLecturer,
+		...override,
+	};
+}
 
 export const mockLecturers: (Lecturer & { instructionGroups: string })[] = [
-	{
-		id: 'l1',
-		fullName: 'Dr. Sarah Johnson',
-		email: 'sarah.johnson@university.edu',
-		phoneNumber: '0444444444',
-		gender: 'Female',
-		isActive: true,
-		isModerator: false,
-		createdAt: new Date('2024-01-01'),
-		...baseLecturer,
-	},
-	{
-		id: 'l2',
-		fullName: 'Dr. Davis',
-		email: 'davis@university.edu',
-		phoneNumber: '0555555555',
-		gender: 'Male',
-		isActive: true,
-		isModerator: true,
-		createdAt: new Date('2024-02-15'),
-		...baseLecturer,
-	},
-	{
-		id: 'l3',
-		fullName: 'Dr. Emily Wong',
-		email: 'emily.wong@university.edu',
-		phoneNumber: '0666666666',
-		gender: 'Female',
-		isActive: false,
-		isModerator: false,
-		createdAt: new Date('2023-11-20'),
-		updatedAt: new Date('2024-05-20'), // khác với base
-		password: '',
-		instructionGroups: '03',
-	},
-	{
-		id: 'l4',
-		fullName: 'Dr. Michael Chen',
-		email: 'michael.chen@university.edu',
-		phoneNumber: '0777777777',
-		gender: 'Male',
-		isActive: true,
-		isModerator: false,
-		createdAt: new Date('2024-03-01'),
-		...baseLecturer,
-	},
-	{
-		id: 'l5',
-		fullName: 'Dr. Martinez',
-		email: 'martinez@university.edu',
-		phoneNumber: '0888888888',
-		gender: 'Male',
-		isActive: true,
-		isModerator: false,
-		createdAt: new Date('2024-04-01'),
-		...baseLecturer,
-	},
-	{
-		id: 'l6',
-		fullName: 'Dr. John Smith',
-		email: 'john.smith@university.edu',
-		phoneNumber: '0999999999',
-		gender: 'Male',
-		isActive: true,
-		isModerator: false,
-		createdAt: new Date('2024-04-10'),
-		...baseLecturer,
-	},
-	{
-		id: 'l7',
-		fullName: 'Dr. Lan',
-		email: 'lan@university.edu',
-		phoneNumber: '0111111111',
-		gender: 'Female',
-		isActive: true,
-		isModerator: false,
-		createdAt: new Date('2024-04-15'),
-		...baseLecturer,
-	},
+	createLecturer(
+		'l1',
+		'Dr. Sarah Johnson',
+		'sarah.johnson@university.edu',
+		'0444444444',
+		'Female',
+		new Date('2024-01-01'),
+	),
+	createLecturer(
+		'l2',
+		'Dr. Davis',
+		'davis@university.edu',
+		'0555555555',
+		'Male',
+		new Date('2024-02-15'),
+		{
+			isModerator: true,
+		},
+	),
+	createLecturer(
+		'l3',
+		'Dr. Emily Wong',
+		'emily.wong@university.edu',
+		'0666666666',
+		'Female',
+		new Date('2023-11-20'),
+		{
+			isActive: false,
+			updatedAt: new Date('2024-05-20'),
+		},
+	),
+	createLecturer(
+		'l4',
+		'Dr. Michael Chen',
+		'michael.chen@university.edu',
+		'0777777777',
+		'Male',
+		new Date('2024-03-01'),
+	),
+	createLecturer(
+		'l5',
+		'Dr. Martinez',
+		'martinez@university.edu',
+		'0888888888',
+		'Male',
+		new Date('2024-04-01'),
+	),
+	createLecturer(
+		'l6',
+		'Dr. John Smith',
+		'john.smith@university.edu',
+		'0999999999',
+		'Male',
+		new Date('2024-04-10'),
+	),
+	createLecturer(
+		'l7',
+		'Dr. Lan',
+		'lan@university.edu',
+		'0111111111',
+		'Female',
+		new Date('2024-04-15'),
+	),
 ];
