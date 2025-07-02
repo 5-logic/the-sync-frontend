@@ -111,7 +111,11 @@ export default function TimelineReview() {
 			{selectedReview && mockReviewGroups[selectedReview] && (
 				<ReviewGroupTable
 					reviewTitle={selectedReview}
-					data={mockReviewGroups[selectedReview]}
+					data={mockReviewGroups[selectedReview].map((group) => ({
+						...group,
+						thesisTitle: group.title,
+						members: group.members.length,
+					}))}
 				/>
 			)}
 		</div>

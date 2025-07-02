@@ -17,7 +17,16 @@ export default function Providers({ children }: Readonly<ProvidersProps>) {
 	}, []);
 
 	return (
-		<SessionProvider>
+		<SessionProvider
+			// DISABLE automatic session refresh to prevent spam requests
+			refetchInterval={0} // 0 = disabled
+			// DISABLE refetch on window focus to prevent unnecessary calls
+			refetchOnWindowFocus={false}
+			// Add basePath to ensure correct API endpoint
+			basePath="/api/auth"
+			// DISABLE offline refetch
+			refetchWhenOffline={false}
+		>
 			<AntdRegistry>{children}</AntdRegistry>
 		</SessionProvider>
 	);

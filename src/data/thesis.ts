@@ -4,12 +4,12 @@ export type ExtendedThesis = Thesis & {
 	skills: string[];
 	highlight?: string;
 	version: string;
+	semester?: string;
 	supervisor?: {
 		name: string;
 		phone: string;
 		email: string;
 	};
-	rejectReasons: string[];
 	group?: {
 		id: string;
 		members: {
@@ -20,6 +20,12 @@ export type ExtendedThesis = Thesis & {
 			avatar?: string;
 		}[];
 	};
+	// Add thesisVersions to support download functionality
+	thesisVersions?: {
+		id: string;
+		version: number;
+		supportingDocument: string;
+	}[];
 };
 
 export const mockTheses: ExtendedThesis[] = [
@@ -41,12 +47,12 @@ export const mockTheses: ExtendedThesis[] = [
 		skills: ['Statistical Analysis', 'Programming', 'Data Modeling'],
 		highlight: 'High Similarity',
 		version: '1.0',
+		semester: 'Spring', // Added semester
 		supervisor: {
 			name: 'Dr. Sarah Chen',
 			phone: '0123456789',
 			email: 'sarah.chen@university.edu',
 		},
-		rejectReasons: [],
 		group: {
 			id: 'g1',
 			members: [
@@ -87,12 +93,12 @@ export const mockTheses: ExtendedThesis[] = [
 		updatedAt: new Date(),
 		skills: ['Blockchain', 'Logistics'],
 		version: '1.0',
+		semester: 'Fall', // Added semester
 		supervisor: {
 			name: 'Dr. Alex Nguyen',
 			phone: '0987654321',
 			email: 'alex.nguyen@university.edu',
 		},
-		rejectReasons: [],
 	},
 	{
 		id: 't3',
@@ -109,14 +115,28 @@ export const mockTheses: ExtendedThesis[] = [
 		updatedAt: new Date(),
 		skills: ['IoT', 'Smart City', 'Infrastructure'],
 		version: '1.0',
+		semester: 'Spring', // Added semester
 		supervisor: {
 			name: 'Dr. Emily Tran',
 			phone: '0111222333',
 			email: 'emily.tran@university.edu',
 		},
-		rejectReasons: [
-			"Topic is not aligned with the student's or group's major.",
-			'Incomplete or insufficient topic description.',
-		],
+	},
+];
+
+// Version control for thesis t1
+export const currentVersion = {
+	version: '3.0',
+	fileName: 'thesis_proposal_v3.0.pdf',
+	fileSize: '2.5 MB',
+	uploadedAt: 'Jan 10, 2024',
+};
+
+export const previousVersions = [
+	{
+		version: '2.0',
+		fileName: 'thesis_proposal_v2.0.pdf',
+		fileSize: '2.5 MB',
+		uploadedAt: 'Jan 10, 2024',
 	},
 ];

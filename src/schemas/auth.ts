@@ -1,12 +1,12 @@
 import { z } from 'zod';
 
-import { ApiResponseSchema } from './_common';
+import { ApiResponseSchema } from '@/schemas/_common';
 
-// 🔐 Password validation regex pattern
+// Password validation regex pattern
 const PASSWORD_REGEX =
 	/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
-// 🔐 Auth Login Requests
+// Auth Login Requests
 export const AdminLoginSchema = z.object({
 	username: z
 		.string()
@@ -43,23 +43,23 @@ export const UserLoginSchema = z.object({
 		),
 });
 
-// 🔐 Auth Tokens
+// Auth Tokens
 export const TokenDataSchema = z.object({
 	accessToken: z.string(),
 	refreshToken: z.string(),
 });
 
-// 🔄 Refresh Token Request - chỉ cần refreshToken
+// Refresh Token Request - chỉ cần refreshToken
 export const RefreshTokenSchema = z.object({
 	refreshToken: z.string().min(1, 'Refresh token is required'),
 });
 
-// 🔄 Refresh Token Response - chỉ có accessToken
+// Refresh Token Response - chỉ có accessToken
 export const RefreshTokenDataSchema = z.object({
 	accessToken: z.string(),
 });
 
-// 🔐 User Profile from JWT
+// User Profile from JWT
 export const AuthUserSchema = z.object({
 	id: z.string().uuid(),
 	role: z.enum(['student', 'lecturer', 'admin']),
@@ -69,11 +69,11 @@ export const AuthUserSchema = z.object({
 	isModerator: z.boolean().optional(),
 });
 
-// 🔐 Auth Response Schemas
+// Auth Response Schemas
 export const LoginResponseSchema = ApiResponseSchema(TokenDataSchema);
 export const RefreshResponseSchema = ApiResponseSchema(RefreshTokenDataSchema);
 
-// 🔐 Export inferred types
+// Export inferred types
 export type AdminLogin = z.infer<typeof AdminLoginSchema>;
 export type UserLogin = z.infer<typeof UserLoginSchema>;
 export type TokenData = z.infer<typeof TokenDataSchema>;

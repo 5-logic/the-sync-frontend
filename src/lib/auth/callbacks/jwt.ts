@@ -8,8 +8,8 @@ import {
 } from '@/lib/utils/auth/profile-fetcher';
 
 /**
- * 🔐 JWT Callback Handler
- * Manages JWT token creation and updates
+ * JWT Callback Handler
+ * Manages JWT token creation and updates with remember me support
  */
 export async function jwtCallback({
 	token,
@@ -20,44 +20,78 @@ export async function jwtCallback({
 	user?: User;
 	account?: Record<string, unknown> | null;
 }): Promise<JWT> {
-	// Add user data to token on first sign in
+	// Handle new user sign in
 	if (user) {
-		token.role = user.role;
-		token.id = user.id;
-
-		// Add isModerator for lecturers
-		if (user.isModerator !== undefined) {
-			token.isModerator = user.isModerator;
-		}
-
-		// Add username for admin
-		if (user.username) {
-			token.username = user.username;
-		}
-
-		// Store tokens from user object
-		if (user.accessToken) {
-			token.accessToken = user.accessToken;
-		}
-		if (user.refreshToken) {
-			token.refreshToken = user.refreshToken;
-		}
-
-		// Fetch user profile data based on role and ID
+		assignUserDataToToken(token, user);
+		setTokenExpiration(token, user, account);
 		await enrichTokenWithProfile(token, user);
-
-		// Handle token refresh if needed
-		if (account) {
-			// Store token expiration time (1 hour from now)
-			token.accessTokenExpires = Date.now() + 60 * 60 * 1000;
-		}
 	}
+
+	// Check token expiration
+	checkTokenExpiration(token);
 
 	return token;
 }
 
 /**
- * 🔍 Enrich token with user profile data
+ * Assign user data to token on first sign in
+ */
+function assignUserDataToToken(token: JWT, user: User): void {
+	token.role = user.role;
+	token.id = user.id;
+	token.rememberMe = user.rememberMe ?? false;
+
+	// Add isModerator for lecturers
+	if (user.isModerator !== undefined) {
+		token.isModerator = user.isModerator;
+	}
+
+	// Add username for admin
+	if (user.username) {
+		token.username = user.username;
+	}
+
+	// Store tokens from user object
+	if (user.accessToken) {
+		token.accessToken = user.accessToken;
+	}
+	if (user.refreshToken) {
+		token.refreshToken = user.refreshToken;
+	}
+}
+
+/**
+ * Set token expiration based on remember me preference
+ */
+function setTokenExpiration(
+	token: JWT,
+	user: User,
+	account: Record<string, unknown> | null | undefined,
+): void {
+	if (!account) return;
+
+	const now = Date.now();
+	if (user.rememberMe) {
+		// Remember me: 7 days (aligns with 1-week refresh token)
+		token.accessTokenExpires = now + 7 * 24 * 60 * 60 * 1000;
+	} else {
+		// Session only: 2 hours (shorter for security)
+		token.accessTokenExpires = now + 2 * 60 * 60 * 1000;
+	}
+}
+
+/**
+ * Check if token has expired
+ */
+function checkTokenExpiration(token: JWT): void {
+	if (token.accessTokenExpires && Date.now() > token.accessTokenExpires) {
+		console.warn('JWT token expired, will require re-authentication');
+		// Token expiration will be handled by session callback
+	}
+}
+
+/**
+ * Enrich token with user profile data
  */
 async function enrichTokenWithProfile(token: JWT, user: User): Promise<void> {
 	try {
@@ -83,7 +117,7 @@ async function enrichTokenWithProfile(token: JWT, user: User): Promise<void> {
 			token.fullName = fallbackName;
 		}
 	} catch (error) {
-		console.error('❌ Error enriching token with profile:', error);
+		console.error('Error enriching token with profile:', error);
 
 		// Fallback based on user role
 		const fallbackName = getFallbackName(user.role, {
