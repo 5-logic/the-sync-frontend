@@ -5,6 +5,18 @@ export class StorageService {
 	private static bucketName = 'thesync';
 
 	/**
+	 * Sanitize filename for storage compatibility
+	 */
+	private static sanitizeFileName(fileName: string): string {
+		// Remove or replace unsafe characters
+		return fileName
+			.replace(/[^a-zA-Z0-9._-]/g, '_') // Replace special chars with underscore
+			.replace(/_{2,}/g, '_') // Replace multiple underscores with single
+			.replace(/^_+|_+$/g, '') // Remove leading/trailing underscores
+			.substring(0, 100); // Limit length to 100 chars
+	}
+
+	/**
 	 * Upload file to Supabase Storage and return public URL
 	 */
 	static async uploadFile(
@@ -12,9 +24,24 @@ export class StorageService {
 		folder: string = 'support-doc',
 	): Promise<string> {
 		try {
-			// Generate unique filename
-			const fileExtension = file.name.split('.').pop();
-			const fileName = `${folder}/${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExtension}`;
+			// Generate unique filename while preserving original name
+			const originalName = file.name;
+			const lastDotIndex = originalName.lastIndexOf('.');
+
+			// Handle files without extension
+			const nameWithoutExt =
+				lastDotIndex > 0
+					? originalName.substring(0, lastDotIndex)
+					: originalName;
+			const fileExtension =
+				lastDotIndex > 0 ? originalName.substring(lastDotIndex) : '';
+
+			// Sanitize the filename
+			const sanitizedName = this.sanitizeFileName(nameWithoutExt);
+			const timestamp = Date.now();
+
+			// Format: sanitizedOriginalName_timestamp.extension
+			const fileName = `${folder}/${sanitizedName}_${timestamp}${fileExtension}`;
 
 			// Upload file to Supabase Storage
 			const { data, error } = await supabase.storage
@@ -25,7 +52,6 @@ export class StorageService {
 				});
 
 			if (error) {
-				console.error('Supabase upload error:', error);
 				throw new Error(`Upload failed: ${error.message}`);
 			}
 
@@ -36,7 +62,6 @@ export class StorageService {
 
 			return urlData.publicUrl;
 		} catch (error) {
-			console.error('File upload error:', error);
 			showNotification.error(
 				'Upload Failed',
 				error instanceof Error ? error.message : 'Failed to upload file',
@@ -60,11 +85,9 @@ export class StorageService {
 				.remove([path]);
 
 			if (error) {
-				console.error('Supabase delete error:', error);
 				throw new Error(`Delete failed: ${error.message}`);
 			}
 		} catch (error) {
-			console.error('File delete error:', error);
 			showNotification.error(
 				'Delete Failed',
 				error instanceof Error ? error.message : 'Failed to delete file',
@@ -93,7 +116,6 @@ export class StorageService {
 
 			return data.signedUrl;
 		} catch (error) {
-			console.error('Get download URL error:', error);
 			throw error;
 		}
 	}
