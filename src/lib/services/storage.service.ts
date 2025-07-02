@@ -9,11 +9,22 @@ export class StorageService {
 	 */
 	private static sanitizeFileName(fileName: string): string {
 		// Remove or replace unsafe characters
-		return fileName
+		let sanitized = fileName
 			.replace(/[^a-zA-Z0-9._-]/g, '_') // Replace special chars with underscore
-			.replace(/_{2,}/g, '_') // Replace multiple underscores with single
-			.replace(/^_+|_+$/g, '') // Remove leading/trailing underscores
-			.substring(0, 100); // Limit length to 100 chars
+			.replace(/_{2,}/g, '_'); // Replace multiple underscores with single
+
+		// Safely remove leading underscores
+		while (sanitized.startsWith('_')) {
+			sanitized = sanitized.substring(1);
+		}
+
+		// Safely remove trailing underscores
+		while (sanitized.endsWith('_')) {
+			sanitized = sanitized.substring(0, sanitized.length - 1);
+		}
+
+		// Limit length to 100 chars
+		return sanitized.substring(0, 100);
 	}
 
 	/**
