@@ -1,10 +1,20 @@
-import { DownloadOutlined } from '@ant-design/icons';
-import { Button, Card, Col, Row, Space, Tag, Typography } from 'antd';
-import Image from 'next/image';
+import { DownloadOutlined, UserOutlined } from '@ant-design/icons';
+import {
+	Avatar,
+	Button,
+	Card,
+	Col,
+	Divider,
+	Row,
+	Space,
+	Tag,
+	Typography,
+} from 'antd';
 
-import RejectReasonList from '@/components/features/lecturer/ViewThesisDetail/RejectReasonList';
 import TeamMembers from '@/components/features/lecturer/ViewThesisDetail/TeamMembers';
 import { ExtendedThesis } from '@/data/thesis';
+import { StorageService } from '@/lib/services/storage.service';
+import { showNotification } from '@/lib/utils/notification';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -26,6 +36,41 @@ function getStatusColor(status: string): string {
 }
 
 export default function ThesisInfoCard({ thesis }: Props) {
+	const handleDownloadSupportingDocument = async () => {
+		try {
+			// Get the latest version's supporting document (backend already sorts by version desc)
+			const latestVersion = thesis.thesisVersions?.[0];
+			const supportingDocumentUrl = latestVersion?.supportingDocument;
+
+			if (!supportingDocumentUrl) {
+				showNotification.error(
+					'Download Failed',
+					'No supporting document available for download',
+				);
+				return;
+			}
+
+			// Get download URL from storage service
+			const downloadUrl = await StorageService.getDownloadUrl(
+				supportingDocumentUrl,
+			);
+
+			// Open download in new tab
+			window.open(downloadUrl, '_blank');
+
+			showNotification.success(
+				'Download Started',
+				'Supporting document download has started',
+			);
+		} catch (error) {
+			console.error('Download failed:', error);
+			showNotification.error(
+				'Download Failed',
+				'Could not download supporting document',
+			);
+		}
+	};
+
 	return (
 		<Card>
 			<Title level={4}>{thesis.englishName}</Title>
@@ -51,48 +96,49 @@ export default function ThesisInfoCard({ thesis }: Props) {
 				<Paragraph>{thesis.description}</Paragraph>
 			</div>
 
-			<div style={{ marginBottom: 16 }}>
-				<Text strong>Required Skills</Text>
-				<div style={{ marginTop: 8 }}>
+			<div style={{ marginBottom: 24 }}>
+				<Title level={5} style={{ marginBottom: 8 }}>
+					Required Skills
+				</Title>
+				<Space wrap size={[8, 12]}>
 					{thesis.skills.map((skill) => (
 						<Tag key={skill}>{skill}</Tag>
 					))}
-				</div>
+				</Space>
 			</div>
 
-			<Button icon={<DownloadOutlined />} style={{ marginBottom: 24 }}>
+			<Button
+				icon={<DownloadOutlined />}
+				style={{ marginBottom: 24 }}
+				onClick={handleDownloadSupportingDocument}
+				disabled={!thesis.thesisVersions?.length}
+			>
 				Download Supporting Document
 			</Button>
 
+			<Divider size="small" />
+
 			<div style={{ marginBottom: 24 }}>
-				<Text strong>Supervisor Information</Text>
-				<div style={{ marginTop: 8 }}>
-					<Space>
-						<Image
-							src="/images/user_avatar.png"
-							alt="Supervisor Avatar"
-							width={48}
-							height={48}
-							style={{ borderRadius: '50%' }}
-						/>
-						<div>
-							<Text strong>{thesis.supervisor?.name}</Text>
-							<Paragraph style={{ marginBottom: 0 }}>
-								{thesis.supervisor?.phone}
-							</Paragraph>
-							<Paragraph style={{ marginBottom: 0 }} type="secondary">
-								{thesis.supervisor?.email}
-							</Paragraph>
-						</div>
-					</Space>
-				</div>
+				<Title level={5} style={{ marginBottom: 12 }}>
+					Supervisor Information
+				</Title>
+				<Space size={16}>
+					<Avatar size={48} icon={<UserOutlined />} />
+					<div>
+						<Text strong>
+							{thesis.supervisor?.name || 'Unknown Supervisor'}
+						</Text>
+						<Paragraph style={{ marginBottom: 0 }}>
+							{thesis.supervisor?.phone || 'No phone provided'}
+						</Paragraph>
+						<Paragraph style={{ marginBottom: 0 }} type="secondary">
+							{thesis.supervisor?.email || 'No email provided'}
+						</Paragraph>
+					</div>
+				</Space>
 			</div>
 
 			<TeamMembers thesis={thesis} />
-			<RejectReasonList
-				reasons={thesis.rejectReasons}
-				show={thesis.status === 'Rejected'}
-			/>
 		</Card>
 	);
 }
