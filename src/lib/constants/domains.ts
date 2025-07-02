@@ -41,7 +41,7 @@ export type ThesisDomain = (typeof THESIS_DOMAINS)[number];
  * Get sorted list of domains for dropdown/select components
  */
 export const getSortedDomains = (): string[] => {
-	return [...THESIS_DOMAINS].sort();
+	return [...THESIS_DOMAINS].sort((a, b) => a.localeCompare(b));
 };
 
 /**
