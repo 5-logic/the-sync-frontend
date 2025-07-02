@@ -102,7 +102,7 @@ export default function ThesisTable({ data, loading }: Readonly<Props>) {
 
 	// Type-safe color mapping for status
 	const getStatusColor = useCallback((status: string): string => {
-		return STATUS_COLORS[status as ThesisStatus] || 'default';
+		return STATUS_COLORS[status as ThesisStatus] ?? 'default';
 	}, []);
 
 	// Create dropdown menu items for each thesis with status rules
@@ -201,7 +201,7 @@ export default function ThesisTable({ data, loading }: Readonly<Props>) {
 				},
 				render: (lecturerId: string) => {
 					const lecturer = getLecturerById(lecturerId);
-					const displayName = lecturer?.fullName || 'Unknown';
+					const displayName = lecturer?.fullName ?? 'Unknown';
 
 					return (
 						<Tooltip title={displayName} placement="topLeft">
@@ -327,8 +327,10 @@ export default function ThesisTable({ data, loading }: Readonly<Props>) {
 									disabled={submitProps.disabled}
 									onClick={() => {
 										if (!submitProps.disabled) {
-											// Fix: Properly handle async function call
-											void handleRegisterSubmit(record);
+											// Handle async function call
+											handleRegisterSubmit(record).catch(() => {
+												// Error is already handled in handleRegisterSubmit
+											});
 										}
 									}}
 								/>
