@@ -90,7 +90,12 @@ export default function InviteTeamMembers({
 				const nameMatch = (student.fullName ?? '')
 					.toLowerCase()
 					.includes(searchLower);
-				return emailMatch || codeMatch || nameMatch;
+
+				// Use explicit boolean logic to avoid SonarQube warnings
+				if (emailMatch) return true;
+				if (codeMatch) return true;
+				if (nameMatch) return true;
+				return false;
 			});
 
 			setSearchResults(filtered);
@@ -114,7 +119,8 @@ export default function InviteTeamMembers({
 						const emailMatch = (s.email ?? '').toLowerCase() === searchLower;
 						const codeMatch =
 							(s.studentCode ?? '').toLowerCase() === searchLower;
-						return emailMatch || codeMatch;
+
+						return emailMatch ? true : codeMatch ? true : false;
 					}) ?? null;
 			}
 
