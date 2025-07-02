@@ -44,6 +44,17 @@ export const ConfirmationModal = {
 			}
 		};
 
+		// Determine note prefix based on type
+		const getNotePrefix = () => {
+			switch (noteType) {
+				case 'warning':
+				case 'danger':
+					return 'Warning: ';
+				default:
+					return 'Note: ';
+			}
+		};
+
 		Modal.confirm({
 			title,
 			content: (
@@ -56,11 +67,7 @@ export const ConfirmationModal = {
 					)}
 					{note && (
 						<Typography.Text strong style={getNoteStyle()}>
-							{noteType === 'warning'
-								? 'Warning: '
-								: noteType === 'danger'
-									? 'Warning: '
-									: 'Note: '}
+							{getNotePrefix()}
 							{note}
 						</Typography.Text>
 					)}
