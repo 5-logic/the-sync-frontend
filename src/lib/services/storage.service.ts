@@ -2,7 +2,7 @@ import { supabase } from '@/lib/supabase/client';
 import { showNotification } from '@/lib/utils/notification';
 
 export class StorageService {
-	private static bucketName = 'thesync';
+	private static readonly bucketName = 'thesync';
 
 	/**
 	 * Sanitize filename for storage compatibility
@@ -111,23 +111,19 @@ export class StorageService {
 	 * Get download URL for a file
 	 */
 	static async getDownloadUrl(filePath: string): Promise<string> {
-		try {
-			// Extract path from URL if needed (similar to deleteFile logic)
-			const path = filePath.includes(this.bucketName)
-				? filePath.split(`${this.bucketName}/`)[1]
-				: filePath;
+		// Extract path from URL if needed (similar to deleteFile logic)
+		const path = filePath.includes(this.bucketName)
+			? filePath.split(`${this.bucketName}/`)[1]
+			: filePath;
 
-			const { data, error } = await supabase.storage
-				.from(this.bucketName)
-				.createSignedUrl(path, 3600); // 1 hour expiry
+		const { data, error } = await supabase.storage
+			.from(this.bucketName)
+			.createSignedUrl(path, 3600); // 1 hour expiry
 
-			if (error) {
-				throw new Error(`Failed to get download URL: ${error.message}`);
-			}
-
-			return data.signedUrl;
-		} catch (error) {
-			throw error;
+		if (error) {
+			throw new Error(`Failed to get download URL: ${error.message}`);
 		}
+
+		return data.signedUrl;
 	}
 }
