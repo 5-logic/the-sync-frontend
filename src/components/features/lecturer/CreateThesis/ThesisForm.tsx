@@ -94,7 +94,7 @@ export default function ThesisForm({
 
 	const handleFormSubmit = (values: Record<string, unknown>) => {
 		// Convert selected skills to string array
-		const selectedSkills = (values.skills as string[]) || [];
+		const selectedSkills = (values.skills as string[]) ?? [];
 
 		// Prepare the final form data to match backend DTO
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -106,10 +106,18 @@ export default function ThesisForm({
 
 		// Only include supportingDocument if file changed (for edit mode) or always for create mode
 		if (mode === 'create' || hasFileChanged) {
-			formData.supportingDocument = uploadedFile?.url || '';
+			formData.supportingDocument = uploadedFile?.url ?? '';
 		}
 
 		onSubmit(formData);
+	};
+
+	// Helper function to get button text based on mode and loading state
+	const getButtonText = () => {
+		if (loading) {
+			return mode === 'create' ? 'Creating...' : 'Updating...';
+		}
+		return mode === 'create' ? 'Create Thesis' : 'Update Thesis';
 	};
 
 	return (
@@ -247,13 +255,7 @@ export default function ThesisForm({
 						loading={loading}
 						disabled={loading}
 					>
-						{loading
-							? mode === 'create'
-								? 'Creating...'
-								: 'Updating...'
-							: mode === 'create'
-								? 'Create Thesis'
-								: 'Update Thesis'}
+						{getButtonText()}
 					</Button>
 				</Col>
 			</Row>
