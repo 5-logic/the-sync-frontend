@@ -1,4 +1,4 @@
-import { Col, Row } from 'antd';
+import { Col, Empty, Row } from 'antd';
 import { useEffect, useState } from 'react';
 
 import ListPagination from '@/components/common/ListPagination/ListPagination';
@@ -45,32 +45,39 @@ export default function PagedGroupListSection({
 
 	return (
 		<>
-			<Row gutter={[16, 16]} align="stretch">
-				{pagedGroups.map((group) => (
-					<Col
-						xs={24}
-						sm={12}
-						md={8}
-						key={group.id}
-						style={{
-							display: 'flex',
-							marginBottom: 16,
-						}}
-					>
-						<div style={{ width: '100%' }}>
-							<GroupCard group={group} fontSize={fontSize} />
-						</div>
-					</Col>
-				))}
-			</Row>
-			{groups.length > 0 && (
-				<ListPagination
-					current={current}
-					pageSize={currentPageSize}
-					total={groups.length}
-					onChange={handlePageChange}
-					itemName="groups"
-				/>
+			{groups.length > 0 ? (
+				<>
+					<Row gutter={[16, 16]} align="stretch">
+						{pagedGroups.map((group) => (
+							<Col
+								xs={24}
+								sm={24}
+								md={24}
+								lg={12}
+								xl={8}
+								xxl={8}
+								key={group.id}
+								style={{
+									display: 'flex',
+									marginBottom: 16,
+								}}
+							>
+								<div style={{ width: '100%' }}>
+									<GroupCard group={group} fontSize={fontSize} />
+								</div>
+							</Col>
+						))}
+					</Row>
+					<ListPagination
+						current={current}
+						pageSize={currentPageSize}
+						total={groups.length}
+						onChange={handlePageChange}
+						itemName="groups"
+					/>
+				</>
+			) : (
+				<Empty description="No groups available" style={{ margin: '40px 0' }} />
 			)}
 		</>
 	);
