@@ -81,11 +81,15 @@ export default function InviteTeamMembers({
 		const timeoutId = setTimeout(() => {
 			const searchLower = searchText.toLowerCase();
 			const filtered = mockStudents.filter((student) => {
-				const emailMatch = student.email.toLowerCase().includes(searchLower);
-				const codeMatch = student.studentCode
+				const emailMatch = (student.email ?? '')
 					.toLowerCase()
 					.includes(searchLower);
-				const nameMatch = student.fullName.toLowerCase().includes(searchLower);
+				const codeMatch = (student.studentCode ?? '')
+					.toLowerCase()
+					.includes(searchLower);
+				const nameMatch = (student.fullName ?? '')
+					.toLowerCase()
+					.includes(searchLower);
 				return emailMatch || codeMatch || nameMatch;
 			});
 
@@ -107,8 +111,9 @@ export default function InviteTeamMembers({
 				const searchLower = searchText.toLowerCase();
 				targetStudent =
 					mockStudents.find((s) => {
-						const emailMatch = s.email.toLowerCase() === searchLower;
-						const codeMatch = s.studentCode.toLowerCase() === searchLower;
+						const emailMatch = (s.email ?? '').toLowerCase() === searchLower;
+						const codeMatch =
+							(s.studentCode ?? '').toLowerCase() === searchLower;
 						return emailMatch || codeMatch;
 					}) ?? null;
 			}
@@ -262,21 +267,18 @@ export default function InviteTeamMembers({
 							};
 
 							return (
-								<div
+								<button
 									key={student.id}
-									role="button"
-									tabIndex={isAlreadyAdded ? -1 : 0}
-									style={itemStyle}
-									onClick={() => !isAlreadyAdded && handleAddMember(student)}
-									onKeyDown={(e) => {
-										if (
-											(e.key === 'Enter' || e.key === ' ') &&
-											!isAlreadyAdded
-										) {
-											e.preventDefault();
-											handleAddMember(student);
-										}
+									type="button"
+									disabled={isAlreadyAdded}
+									style={{
+										...itemStyle,
+										border: 'none',
+										background: 'transparent',
+										width: '100%',
+										textAlign: 'left',
 									}}
+									onClick={() => !isAlreadyAdded && handleAddMember(student)}
 									onMouseEnter={(e) => {
 										if (!isAlreadyAdded) {
 											e.currentTarget.style.backgroundColor = '#f5f5f5';
@@ -288,7 +290,6 @@ export default function InviteTeamMembers({
 											: '#fff';
 									}}
 									aria-label={`${isAlreadyAdded ? 'Already added:' : 'Add'} ${student.fullName}`}
-									aria-disabled={isAlreadyAdded}
 								>
 									<div
 										style={{
@@ -308,7 +309,7 @@ export default function InviteTeamMembers({
 									<div style={{ fontSize: '12px', color: '#666' }}>
 										{student.email} • {student.studentCode}
 									</div>
-								</div>
+								</button>
 							);
 						})}
 					</div>
