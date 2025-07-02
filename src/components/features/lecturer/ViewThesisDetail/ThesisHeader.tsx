@@ -9,8 +9,8 @@ export default function ThesisHeader() {
 				Thesis Detail
 			</Title>
 			<Paragraph type="secondary" style={{ marginBottom: 0 }}>
-				View detail and manage Thesis, registration windows, and
-				capstone-specific rules
+				View comprehensive thesis information, supervisor details, and manage
+				approval status
 			</Paragraph>
 		</Space>
 	);
