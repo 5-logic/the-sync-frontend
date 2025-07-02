@@ -120,7 +120,7 @@ export default function InviteTeamMembers({
 						const codeMatch =
 							(s.studentCode ?? '').toLowerCase() === searchLower;
 
-						return emailMatch ? true : codeMatch ? true : false;
+						return emailMatch || codeMatch;
 					}) ?? null;
 			}
 
