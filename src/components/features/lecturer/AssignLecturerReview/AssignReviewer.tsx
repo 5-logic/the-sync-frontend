@@ -24,7 +24,7 @@ function getReviewersForGroup(groupId: string): string[] {
 		.filter(Boolean) as string[];
 }
 
-export default function AssignReviewerDrawer({ group, onClose }: Props) {
+export default function AssignReviewer({ group, onClose }: Props) {
 	const [selectedLecturers, setSelectedLecturers] = useState<string[]>([]);
 
 	const currentReviewers = useMemo(

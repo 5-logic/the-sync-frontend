@@ -2,13 +2,12 @@
 
 import { useState } from 'react';
 
+import AssignReviewer from '@/components/features/lecturer/AssignLecturerReview/AssignReviewer';
+import GroupTable from '@/components/features/lecturer/AssignLecturerReview/GroupTable';
+import SearchFilterBar from '@/components/features/lecturer/AssignLecturerReview/SearchFilterBar';
 import { FullMockGroup, allMockGroups } from '@/data/group';
 
-import AssignReviewerDrawer from './AssignReviewerDetail';
-import GroupTable from './GroupTable';
-import SearchFilterBar from './SearchFilterBar';
-
-export default function AssignReviewerPage() {
+export default function AssignLecturerReview() {
 	const [selectedGroup, setSelectedGroup] = useState<FullMockGroup | null>(
 		null,
 	);
@@ -29,7 +28,7 @@ export default function AssignReviewerPage() {
 				onAssign={(group) => setSelectedGroup(group)}
 			/>
 
-			<AssignReviewerDrawer
+			<AssignReviewer
 				group={selectedGroup}
 				onClose={() => setSelectedGroup(null)}
 			/>
