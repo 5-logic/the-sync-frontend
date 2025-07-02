@@ -38,6 +38,7 @@ export default function SearchFilterBar({
 					style={{ width: '100%' }}
 					size="middle"
 				>
+					<Option value="">All Semesters</Option>
 					<Option value="20251">Spring 2025</Option>
 					<Option value="20252">Summer 2025</Option>
 				</Select>
@@ -53,6 +54,7 @@ export default function SearchFilterBar({
 				>
 					<Option value="Review 1">Review 1</Option>
 					<Option value="Review 2">Review 2</Option>
+					<Option value="Review 3">Review 3</Option>
 					<Option value="Final Review">Final Review</Option>
 				</Select>
 			</Col>

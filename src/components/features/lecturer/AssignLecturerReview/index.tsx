@@ -13,10 +13,19 @@ export default function AssignLecturerReview() {
 	const [selectedGroup, setSelectedGroup] = useState<FullMockGroup | null>(
 		null,
 	);
-
 	const [search, setSearch] = useState('');
-	const [semester, setSemester] = useState('20251');
-	const [milestone, setMilestone] = useState('Review 1');
+	const [semester, setSemester] = useState('');
+	const [milestone, setMilestone] = useState('');
+	const filteredGroups = allMockGroups.filter((group) => {
+		const matchesSearch =
+			group.name.toLowerCase().includes(search.toLowerCase()) ||
+			group.code.toLowerCase().includes(search.toLowerCase());
+
+		const matchesSemester = semester === '' || group.semesterId === semester;
+		const matchesMilestone = milestone === '' || group.phase === milestone;
+
+		return matchesSearch && matchesSemester && matchesMilestone;
+	});
 
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
@@ -36,7 +45,7 @@ export default function AssignLecturerReview() {
 			/>
 
 			<GroupTable
-				groups={allMockGroups}
+				groups={filteredGroups}
 				onAssign={(group) => setSelectedGroup(group)}
 			/>
 
