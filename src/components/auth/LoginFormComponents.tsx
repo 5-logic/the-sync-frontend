@@ -15,7 +15,9 @@ export const RememberAndForgot = () => (
 		style={{ marginBottom: '1rem' }}
 	>
 		<Form.Item name="remember" valuePropName="checked" noStyle>
-			<Checkbox>Remember me</Checkbox>
+			<Checkbox>
+				<Text style={{ fontSize: '14px' }}>Remember me</Text>
+			</Checkbox>
 		</Form.Item>
 		<Link href="/forgot-password" style={{ fontSize: '14px' }}>
 			Forgot password?
@@ -67,4 +69,5 @@ export interface LoginValues {
 	email?: string;
 	username?: string;
 	password: string;
+	remember?: boolean;
 }

@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { EnrollmentStatusSchema } from '@/schemas/_enums';
 
 export const EnrollmentSchema = z.object({
-	studentId: z.string(),
+	studentCode: z.string(),
 	semesterId: z.string().uuid(),
 	status: EnrollmentStatusSchema,
 	createdAt: z.date(),

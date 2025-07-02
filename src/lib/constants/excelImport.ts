@@ -22,9 +22,9 @@ export const COMMON_FIELDS = {
 		type: 'select' as const,
 		options: COMMON_GENDER_OPTIONS,
 	},
-	studentId: {
+	studentCode: {
 		title: 'Student ID',
-		key: 'studentId' as const,
+		key: 'studentCode' as const,
 		type: 'text' as const,
 	},
 };
@@ -38,7 +38,7 @@ export const LECTURER_FIELDS = [
 ];
 
 export const STUDENT_FIELDS = [
-	{ ...COMMON_FIELDS.studentId, width: '12%' },
+	{ ...COMMON_FIELDS.studentCode, width: '12%' },
 	{ ...COMMON_FIELDS.fullName, width: '25%' },
 	{ ...COMMON_FIELDS.email, width: '28%' },
 	{ ...COMMON_FIELDS.phoneNumber, width: '15%' },

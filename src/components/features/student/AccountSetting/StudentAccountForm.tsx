@@ -74,7 +74,7 @@ const StudentAccountForm: React.FC = () => {
 			initialValues={{
 				fullName: student.fullName,
 				email: student.email,
-				studentId: student.studentId,
+				studentCode: student.studentCode,
 				major: student.majorId,
 				phoneNumber: student.phoneNumber,
 				gender: student.gender,
@@ -87,7 +87,7 @@ const StudentAccountForm: React.FC = () => {
 			<Row gutter={16}>
 				<Col xs={24} md={12}>
 					<Form.Item
-						name="studentId"
+						name="studentCode"
 						label={<FormLabel text="Student ID" isBold />}
 						rules={[
 							{ required: true, message: 'Please enter your student ID' },
