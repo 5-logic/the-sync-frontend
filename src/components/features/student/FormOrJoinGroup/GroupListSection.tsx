@@ -82,14 +82,16 @@ const getDefaultEmptyMessage = (): string => {
 	return MESSAGES.NO_GROUPS;
 };
 
-const getEmptyStateMessage = (
-	showFilter: boolean,
+// Separate methods for different empty state scenarios
+const getEmptyStateMessageForFilteredView = (
 	search?: string,
 	category?: string,
 ): string => {
-	return showFilter
-		? getFilteredEmptyMessage(search, category)
-		: getDefaultEmptyMessage();
+	return getFilteredEmptyMessage(search, category);
+};
+
+const getEmptyStateMessageForDefaultView = (): string => {
+	return getDefaultEmptyMessage();
 };
 
 // Helper function to render search and category filters
@@ -171,21 +173,27 @@ const renderGroupsWithoutPagination = (
 	</Row>
 );
 
-// Helper function to render empty state
-const renderEmptyState = (
-	showFilter: boolean,
+// Helper function to render empty state for filtered view
+const renderEmptyStateForFilteredView = (
 	search?: string,
 	category?: string,
 ) => (
 	<Empty
-		description={getEmptyStateMessage(showFilter, search, category)}
+		description={getEmptyStateMessageForFilteredView(search, category)}
 		style={{ margin: STYLE_CONSTANTS.EMPTY_STATE_MARGIN }}
 	/>
 );
 
-// Helper function to render content based on pagination and groups
-const renderContent = (
-	enablePagination: boolean,
+// Helper function to render empty state for default view
+const renderEmptyStateForDefaultView = () => (
+	<Empty
+		description={getEmptyStateMessageForDefaultView()}
+		style={{ margin: STYLE_CONSTANTS.EMPTY_STATE_MARGIN }}
+	/>
+);
+
+// Helper function to render content with pagination
+const renderContentWithPagination = (
 	groups: readonly GroupUI[],
 	fontSize: number,
 	pageSize: number,
@@ -194,23 +202,39 @@ const renderContent = (
 	category?: string,
 ) => {
 	const hasGroups = groups.length > 0;
-	const emptyState = renderEmptyState(showFilter, search, category);
 
-	if (enablePagination) {
-		return hasGroups ? (
+	if (hasGroups) {
+		return (
 			<PagedGroupListSection
 				groups={groups}
 				fontSize={fontSize}
 				pageSize={pageSize}
 			/>
-		) : (
-			emptyState
 		);
 	}
 
-	return hasGroups
-		? renderGroupsWithoutPagination(groups, fontSize)
-		: emptyState;
+	return showFilter
+		? renderEmptyStateForFilteredView(search, category)
+		: renderEmptyStateForDefaultView();
+};
+
+// Helper function to render content without pagination
+const renderContentWithoutPagination = (
+	groups: readonly GroupUI[],
+	fontSize: number,
+	showFilter: boolean,
+	search?: string,
+	category?: string,
+) => {
+	const hasGroups = groups.length > 0;
+
+	if (hasGroups) {
+		return renderGroupsWithoutPagination(groups, fontSize);
+	}
+
+	return showFilter
+		? renderEmptyStateForFilteredView(search, category)
+		: renderEmptyStateForDefaultView();
 };
 
 export default function GroupListSection({
@@ -267,15 +291,22 @@ export default function GroupListSection({
 					</Col>
 				)}
 			</Row>
-			{renderContent(
-				enablePagination,
-				groups,
-				fontSize,
-				pageSize,
-				showFilter,
-				search,
-				category,
-			)}
+			{enablePagination
+				? renderContentWithPagination(
+						groups,
+						fontSize,
+						pageSize,
+						showFilter,
+						search,
+						category,
+					)
+				: renderContentWithoutPagination(
+						groups,
+						fontSize,
+						showFilter,
+						search,
+						category,
+					)}
 		</Space>
 	);
 }

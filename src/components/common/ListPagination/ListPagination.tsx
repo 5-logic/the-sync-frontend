@@ -101,7 +101,7 @@ export default function ListPagination({
 			? (totalItems: number, range: [number, number]) =>
 					`${range[0]}-${range[1]} of ${totalItems} ${itemName}`
 			: undefined,
-		showLessItems: isTablet || isMobile, // Note: || is appropriate here for boolean logic
+		showLessItems: isTablet ?? isMobile,
 		responsive: true,
 	} as const;
 
