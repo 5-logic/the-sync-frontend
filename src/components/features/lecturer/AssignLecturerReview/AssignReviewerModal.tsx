@@ -22,7 +22,7 @@ export default function AssignReviewerModal({
 	initialValues = [],
 	group,
 	lecturerOptions,
-}: Props) {
+}: Readonly<Props>) {
 	const [form] = Form.useForm();
 
 	useEffect(() => {

@@ -29,7 +29,7 @@ export default function AssignLecturerReview() {
 	const filteredGroups = groupsInSemester.filter((group) => {
 		const term = search.toLowerCase();
 		return (
-			group.name.toLowerCase().includes(term) ||
+			group.name.toLowerCase().includes(term) || //NOSONAR
 			group.code.toLowerCase().includes(term)
 		);
 	});

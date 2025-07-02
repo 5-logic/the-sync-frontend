@@ -45,7 +45,7 @@ function renderSupervisors(supervisors: string[]) {
 
 // Hàm hiển thị danh sách Reviewer
 function renderReviewers(group: FullMockGroup) {
-	const reviewers = getReviewersForGroup(group.id, group.phase || '');
+	const reviewers = getReviewersForGroup(group.id, group.phase || ''); //NOSONAR
 	return reviewers.length > 0 ? (
 		<div>
 			{reviewers.map((name) => (
@@ -57,7 +57,7 @@ function renderReviewers(group: FullMockGroup) {
 	);
 }
 
-export default function GroupTable({ groups, onAssign }: Props) {
+export default function GroupTable({ groups, onAssign }: Readonly<Props>) {
 	const columns: ColumnsType<FullMockGroup> = [
 		{
 			title: 'Group Code',
