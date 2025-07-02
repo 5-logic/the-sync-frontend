@@ -22,11 +22,6 @@ export const handleThesisError = (
 	config: ErrorConfig,
 	setLoading?: (loading: boolean) => void,
 ) => {
-	// Log error for debugging (should be replaced with proper logging service in production)
-	if (process.env.NODE_ENV === 'development') {
-		console.error(config.logMessage, error);
-	}
-
 	// Show user-friendly notification
 	showNotification.error(config.title || 'Error', config.userMessage);
 
@@ -60,78 +55,103 @@ export const handleThesisSuccess = (
 };
 
 /**
+ * Factory function to create error configurations
+ */
+const createErrorConfig = (action: string, title?: string): ErrorConfig => ({
+	logMessage: `Failed to ${action.toLowerCase()} thesis:`,
+	userMessage: `Failed to ${action.toLowerCase()} thesis. Please try again.`,
+	title: title || `${action} Failed`,
+});
+
+/**
+ * Factory function to create success configurations
+ */
+const createSuccessConfig = (
+	title: string,
+	message: string,
+	redirectTo: string = '/lecturer/thesis-management',
+): SuccessConfig => ({
+	title,
+	message,
+	redirectTo,
+});
+
+/**
+ * Error configuration data
+ */
+interface ErrorConfigData {
+	key: string;
+	action: string;
+	title?: string;
+}
+
+const ERROR_CONFIG_DATA: ErrorConfigData[] = [
+	{ key: 'FETCH', action: 'fetch', title: 'Loading Error' },
+	{ key: 'SUBMIT', action: 'submit' },
+	{ key: 'DELETE', action: 'delete' },
+	{ key: 'UPDATE', action: 'update' },
+	{ key: 'APPROVE', action: 'approve' },
+	{ key: 'REJECT', action: 'reject' },
+	{ key: 'CREATE', action: 'create' },
+];
+
+/**
+ * Success configuration data
+ */
+interface SuccessConfigData {
+	key: string;
+	title: string;
+	message: string;
+}
+
+const SUCCESS_CONFIG_DATA: SuccessConfigData[] = [
+	{
+		key: 'SUBMIT',
+		title: 'Thesis Submitted',
+		message: 'Your thesis has been submitted successfully for review.',
+	},
+	{ key: 'DELETE', title: 'Success', message: 'Thesis deleted successfully!' },
+	{ key: 'UPDATE', title: 'Success', message: 'Thesis updated successfully!' },
+	{
+		key: 'APPROVE',
+		title: 'Thesis Approved',
+		message: 'The thesis has been approved successfully.',
+	},
+	{
+		key: 'REJECT',
+		title: 'Thesis Rejected',
+		message: 'The thesis has been rejected successfully.',
+	},
+	{ key: 'CREATE', title: 'Success', message: 'Thesis created successfully!' },
+];
+
+/**
  * Common error configurations for thesis operations
  */
-export const THESIS_ERROR_CONFIGS = {
-	FETCH: {
-		logMessage: 'Failed to fetch thesis data:',
-		userMessage: 'Failed to load data. Please try again.',
-		title: 'Loading Error',
+export const THESIS_ERROR_CONFIGS = ERROR_CONFIG_DATA.reduce(
+	(acc, { key, action, title }) => {
+		// Handle special case for FETCH with different user message
+		if (key === 'FETCH') {
+			acc[key] = {
+				logMessage: 'Failed to fetch thesis data:',
+				userMessage: 'Failed to load data. Please try again.',
+				title: 'Loading Error',
+			};
+		} else {
+			acc[key] = createErrorConfig(action, title);
+		}
+		return acc;
 	},
-	SUBMIT: {
-		logMessage: 'Failed to submit thesis:',
-		userMessage: 'Failed to submit thesis. Please try again.',
-		title: 'Submit Failed',
-	},
-	DELETE: {
-		logMessage: 'Failed to delete thesis:',
-		userMessage: 'Failed to delete thesis. Please try again.',
-		title: 'Delete Failed',
-	},
-	UPDATE: {
-		logMessage: 'Failed to update thesis:',
-		userMessage: 'Failed to update thesis. Please try again.',
-		title: 'Update Failed',
-	},
-	APPROVE: {
-		logMessage: 'Failed to approve thesis:',
-		userMessage: 'Failed to approve thesis. Please try again.',
-		title: 'Approve Failed',
-	},
-	REJECT: {
-		logMessage: 'Failed to reject thesis:',
-		userMessage: 'Failed to reject thesis. Please try again.',
-		title: 'Reject Failed',
-	},
-	CREATE: {
-		logMessage: 'Failed to create thesis:',
-		userMessage: 'Failed to create thesis. Please try again.',
-		title: 'Create Failed',
-	},
-} as const;
+	{} as Record<string, ErrorConfig>,
+);
 
 /**
  * Common success configurations for thesis operations
  */
-export const THESIS_SUCCESS_CONFIGS = {
-	SUBMIT: {
-		title: 'Thesis Submitted',
-		message: 'Your thesis has been submitted successfully for review.',
-		redirectTo: '/lecturer/thesis-management',
+export const THESIS_SUCCESS_CONFIGS = SUCCESS_CONFIG_DATA.reduce(
+	(acc, { key, title, message }) => {
+		acc[key] = createSuccessConfig(title, message);
+		return acc;
 	},
-	DELETE: {
-		title: 'Success',
-		message: 'Thesis deleted successfully!',
-		redirectTo: '/lecturer/thesis-management',
-	},
-	UPDATE: {
-		title: 'Success',
-		message: 'Thesis updated successfully!',
-		redirectTo: '/lecturer/thesis-management',
-	},
-	APPROVE: {
-		title: 'Thesis Approved',
-		message: 'The thesis has been approved successfully.',
-		redirectTo: '/lecturer/thesis-management',
-	},
-	REJECT: {
-		title: 'Thesis Rejected',
-		message: 'The thesis has been rejected successfully.',
-		redirectTo: '/lecturer/thesis-management',
-	},
-	CREATE: {
-		title: 'Success',
-		message: 'Thesis created successfully!',
-		redirectTo: '/lecturer/thesis-management',
-	},
-} as const;
+	{} as Record<string, SuccessConfig>,
+);
