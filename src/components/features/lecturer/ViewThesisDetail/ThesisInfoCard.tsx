@@ -36,6 +36,14 @@ function getStatusColor(status: string): string {
 }
 
 export default function ThesisInfoCard({ thesis }: Props) {
+	// Helper function to handle empty values consistently
+	const getDisplayValue = (
+		value: string | undefined,
+		fallback: string,
+	): string => {
+		return (value ?? '') === '' ? fallback : value!;
+	};
+
 	const handleDownloadSupportingDocument = async () => {
 		try {
 			// Get the latest version's supporting document (backend already sorts by version desc)
@@ -125,13 +133,13 @@ export default function ThesisInfoCard({ thesis }: Props) {
 					<Avatar size={48} icon={<UserOutlined />} />
 					<div>
 						<Text strong>
-							{thesis.supervisor?.name || 'Unknown Supervisor'}
+							{getDisplayValue(thesis.supervisor?.name, 'Unknown Supervisor')}
 						</Text>
 						<Paragraph style={{ marginBottom: 0 }}>
-							{thesis.supervisor?.phone || 'No phone provided'}
+							{getDisplayValue(thesis.supervisor?.phone, 'No phone provided')}
 						</Paragraph>
 						<Paragraph style={{ marginBottom: 0 }} type="secondary">
-							{thesis.supervisor?.email || 'No email provided'}
+							{getDisplayValue(thesis.supervisor?.email, 'No email provided')}
 						</Paragraph>
 					</div>
 				</Space>
