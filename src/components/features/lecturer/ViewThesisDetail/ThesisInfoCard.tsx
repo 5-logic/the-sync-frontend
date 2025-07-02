@@ -62,8 +62,7 @@ export default function ThesisInfoCard({ thesis }: Props) {
 				'Download Started',
 				'Supporting document download has started',
 			);
-		} catch (error) {
-			console.error('Download failed:', error);
+		} catch {
 			showNotification.error(
 				'Download Failed',
 				'Could not download supporting document',
