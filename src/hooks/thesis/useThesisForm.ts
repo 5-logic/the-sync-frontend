@@ -125,7 +125,6 @@ export const useThesisForm = ({
 				if (mode === 'create') {
 					handleThesisError(error, THESIS_ERROR_CONFIGS.CREATE, setLoading);
 				} else {
-					console.error('Error updating thesis:', error);
 					showNotification.error(
 						'Error',
 						'Failed to update thesis. Please try again.',
