@@ -13,7 +13,7 @@ import { useSkillSetStore } from '@/store';
 const { Title, Paragraph } = Typography;
 
 interface Props {
-	thesisId?: string;
+	readonly thesisId?: string;
 }
 
 export default function EditThesis({ thesisId }: Props) {
@@ -72,13 +72,14 @@ export default function EditThesis({ thesisId }: Props) {
 		fetchSkillSets();
 	}, [thesisId, fetchSkillSets]);
 
-	if (loading || skillSetsLoading || !isDataReady) {
-		const loadingMessage = loading
-			? 'Loading thesis data...'
-			: skillSetsLoading
-				? 'Loading skills data...'
-				: 'Preparing form...';
+	// Helper function to get loading message based on current state
+	const getLoadingMessage = () => {
+		if (loading) return 'Loading thesis data...';
+		if (skillSetsLoading) return 'Loading skills data...';
+		return 'Preparing form...';
+	};
 
+	if (loading || skillSetsLoading || !isDataReady) {
 		return (
 			<Flex
 				vertical
@@ -99,7 +100,7 @@ export default function EditThesis({ thesisId }: Props) {
 						fontWeight: 500,
 					}}
 				>
-					{loadingMessage}
+					{getLoadingMessage()}
 				</Typography.Text>
 			</Flex>
 		);
