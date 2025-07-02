@@ -56,8 +56,7 @@ export default function SupportingDocumentField({
 			onFileChange(uploadedFileInfo);
 
 			showNotification.success('Upload Success', 'File uploaded successfully!');
-		} catch (error) {
-			console.error('Upload failed:', error);
+		} catch {
 			// Error notification is already shown in StorageService
 		} finally {
 			setUploading(false);
@@ -72,8 +71,7 @@ export default function SupportingDocumentField({
 			setUploadedFile(null);
 			onFileChange(null);
 			showNotification.success('Delete Success', 'File deleted successfully!');
-		} catch (error) {
-			console.error('Delete failed:', error);
+		} catch {
 			// Error notification is already shown in StorageService
 		}
 	};
@@ -86,8 +84,7 @@ export default function SupportingDocumentField({
 				);
 				window.open(downloadUrl, '_blank');
 			}
-		} catch (error) {
-			console.error('Download failed:', error);
+		} catch {
 			showNotification.error('Download Failed', 'Could not download file');
 		}
 	};
@@ -96,26 +93,35 @@ export default function SupportingDocumentField({
 		try {
 			// Download template from constant URL
 			window.open(THESIS_TEMPLATE_URLS.THESIS_REGISTER_DOCUMENT, '_blank');
-		} catch (error) {
-			console.error('Template download failed:', error);
+		} catch {
 			showNotification.error('Download Failed', 'Could not download template');
 		}
 	};
 
-	const uploadProps = {
+	// Shared file validation function
+	const validateFile = (file: File): boolean => {
+		const isAllowed =
+			file.type.includes('word') ||
+			file.name.endsWith('.docx') ||
+			file.name.endsWith('.doc');
+
+		if (!isAllowed) {
+			showNotification.error('Error', 'Only DOC, DOCX files are allowed!');
+			return false;
+		}
+
+		if (file.size / 1024 / 1024 > 10) {
+			showNotification.error('Error', 'File must be smaller than 10MB!');
+			return false;
+		}
+
+		return true;
+	};
+
+	// Factory function to create upload props
+	const createUploadProps = (additionalProps = {}) => ({
 		beforeUpload: (file: File) => {
-			const isAllowed =
-				file.type.includes('word') ||
-				file.name.endsWith('.docx') ||
-				file.name.endsWith('.doc');
-
-			if (!isAllowed) {
-				showNotification.error('Error', 'Only DOC, DOCX files are allowed!');
-				return Upload.LIST_IGNORE;
-			}
-
-			if (file.size / 1024 / 1024 > 10) {
-				showNotification.error('Error', 'File must be smaller than 10MB!');
+			if (!validateFile(file)) {
 				return Upload.LIST_IGNORE;
 			}
 
@@ -125,34 +131,12 @@ export default function SupportingDocumentField({
 			return false; // Prevent antd's default upload behavior
 		},
 		maxCount: 1,
-	};
+		...additionalProps,
+	});
 
-	// Separate upload props for the "Upload New File" button (no form validation)
-	const newFileUploadProps = {
-		beforeUpload: (file: File) => {
-			const isAllowed =
-				file.type.includes('word') ||
-				file.name.endsWith('.docx') ||
-				file.name.endsWith('.doc');
-
-			if (!isAllowed) {
-				showNotification.error('Error', 'Only DOC, DOCX files are allowed!');
-				return Upload.LIST_IGNORE;
-			}
-
-			if (file.size / 1024 / 1024 > 10) {
-				showNotification.error('Error', 'File must be smaller than 10MB!');
-				return Upload.LIST_IGNORE;
-			}
-
-			// Handle the upload
-			handleFileUpload(file);
-
-			return false; // Prevent antd's default upload behavior
-		},
-		maxCount: 1,
-		showUploadList: false,
-	};
+	// Create upload props using factory
+	const uploadProps = createUploadProps();
+	const newFileUploadProps = createUploadProps({ showUploadList: false });
 
 	return (
 		<>
