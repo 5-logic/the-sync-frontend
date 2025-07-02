@@ -7,7 +7,6 @@ const { useBreakpoint } = Grid;
 export default function InviteRequestButton() {
 	const screens = useBreakpoint();
 
-	// Use breakpoint detection instead of isMobile prop for better performance
 	const isResponsiveMobile = !screens.md;
 
 	const handleInviteRequest = () => {
