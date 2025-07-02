@@ -262,6 +262,14 @@ export const cacheUtils = {
 	},
 };
 
+// Helper function to get error message with fallback
+const getErrorMessage = (
+	message: string | undefined,
+	fallback: string,
+): string => {
+	return (message ?? '') === '' ? fallback : message!;
+};
+
 // Enhanced fetch action with caching
 export function createCachedFetchAction<T extends { id: string }>(
 	service: { findAll: () => Promise<ApiResponse<T[]>> },
@@ -309,7 +317,9 @@ export function createCachedFetchAction<T extends { id: string }>(
 						get,
 					);
 				} else {
-					throw new Error(result.error?.message || 'Failed to fetch data');
+					throw new Error(
+						getErrorMessage(result.error?.message, 'Failed to fetch data'),
+					);
 				}
 			} catch {
 				set({ lastError: cacheHelpers.createError(entityName) });
@@ -403,7 +413,9 @@ export function createCachedFetchByLecturerAction<T extends { id: string }>(
 						get,
 					);
 				} else {
-					throw new Error(result.error?.message || 'Failed to fetch data');
+					throw new Error(
+						getErrorMessage(result.error?.message, 'Failed to fetch data'),
+					);
 				}
 			} catch {
 				set({ lastError: cacheHelpers.createError(entityName) });
