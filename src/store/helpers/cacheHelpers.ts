@@ -37,6 +37,90 @@ const DEFAULT_CACHE_CONFIG: Required<CacheConfig> = {
 	background: false,
 };
 
+/**
+ * Helper functions to reduce duplication
+ */
+const cacheHelpers = {
+	// Generate entity names for store properties
+	getEntityNames(entityName: string) {
+		const pluralEntityName =
+			entityName === 'thesis' ? 'theses' : `${entityName}s`;
+		const capitalizedEntityName =
+			entityName.charAt(0).toUpperCase() + entityName.slice(1);
+		const filteredPropertyName =
+			entityName === 'thesis'
+				? 'filteredTheses'
+				: `filtered${capitalizedEntityName}s`;
+		const filterFunctionName =
+			entityName === 'thesis'
+				? 'filterTheses'
+				: `filter${capitalizedEntityName}s`;
+
+		return {
+			pluralEntityName,
+			capitalizedEntityName,
+			filteredPropertyName,
+			filterFunctionName,
+		};
+	},
+
+	// Update store with data and apply filters
+	updateStoreAndApplyFilters<T>(
+		entityName: string,
+		data: T[],
+		set: StoreApi<Record<string, unknown>>['setState'],
+		get: StoreApi<Record<string, unknown>>['getState'],
+		additionalProps: Record<string, unknown> = {},
+	) {
+		const { pluralEntityName, filteredPropertyName, filterFunctionName } =
+			this.getEntityNames(entityName);
+
+		// Update store
+		set({
+			[pluralEntityName]: data,
+			[filteredPropertyName]: data,
+			...additionalProps,
+		});
+
+		// Apply filters
+		const currentState = get();
+		const filterFunction = currentState[filterFunctionName];
+		if (typeof filterFunction === 'function') {
+			filterFunction();
+		}
+	},
+
+	// Handle cache retrieval and store update
+	handleCacheHit<T>(
+		entityName: string,
+		cachedData: T[],
+		set: StoreApi<Record<string, unknown>>['setState'],
+		get: StoreApi<Record<string, unknown>>['getState'],
+		additionalProps: Record<string, unknown> = {},
+	) {
+		this.updateStoreAndApplyFilters(
+			entityName,
+			cachedData,
+			set,
+			get,
+			additionalProps,
+		);
+	},
+
+	// Create error object
+	createError(entityName: string): {
+		message: string;
+		statusCode: number;
+		timestamp: Date;
+	} {
+		return {
+			message: `Failed to fetch ${entityName}s`,
+			statusCode: 500,
+			timestamp: new Date(),
+		};
+	},
+};
+
 // Cache utilities
 export const cacheUtils = {
 	// Initialize cache for an entity
@@ -58,8 +142,8 @@ export const cacheUtils = {
 					const parsedEntries = JSON.parse(stored);
 					cache.entries = new Map(parsedEntries);
 				}
-			} catch (error) {
-				console.warn(`Failed to load cache for ${entityName}:`, error);
+			} catch {
+				// Failed to load cache from localStorage
 			}
 		}
 
@@ -118,8 +202,8 @@ export const cacheUtils = {
 					`cache_${entityName}`,
 					JSON.stringify(entriesToStore),
 				);
-			} catch (error) {
-				console.warn(`Failed to persist cache for ${entityName}:`, error);
+			} catch {
+				// Failed to persist cache to localStorage
 			}
 		}
 	},
@@ -198,21 +282,7 @@ export function createCachedFetchAction<T extends { id: string }>(
 			if (!force) {
 				const cachedData = cacheUtils.get<T[]>(entityName, cacheKey);
 				if (cachedData) {
-					set({
-						[`${entityName}s`]: cachedData,
-						[`filtered${entityName.charAt(0).toUpperCase() + entityName.slice(1)}s`]:
-							cachedData,
-					});
-
-					// Apply filters if they exist
-					const currentState = get();
-					const filterFunction =
-						currentState[
-							`filter${entityName.charAt(0).toUpperCase() + entityName.slice(1)}s`
-						];
-					if (typeof filterFunction === 'function') {
-						filterFunction();
-					}
+					cacheHelpers.handleCacheHit(entityName, cachedData, set, get);
 					return;
 				}
 			}
@@ -226,61 +296,23 @@ export function createCachedFetchAction<T extends { id: string }>(
 
 			try {
 				const response = await service.findAll();
-				console.log(`🔍 [${entityName}] Raw API Response:`, response);
-
 				const result = handleApiResponse(response);
-				console.log(`🔄 [${entityName}] Processed result:`, result);
 
 				if (result.success && result.data) {
-					console.log(
-						`✅ [${entityName}] Success! Data count:`,
-						result.data.length,
-					);
-					console.log(`📋 [${entityName}] Sample data:`, result.data[0]);
-
 					// Cache the data
 					cacheUtils.set(entityName, cacheKey, result.data);
-
-					// Update store - handle special plural cases
-					const pluralEntityName =
-						entityName === 'thesis' ? 'theses' : `${entityName}s`;
-					const capitalizedEntityName =
-						entityName.charAt(0).toUpperCase() + entityName.slice(1);
-					const filteredPropertyName =
-						entityName === 'thesis'
-							? 'filteredTheses'
-							: `filtered${capitalizedEntityName}s`;
-					const filterFunctionName =
-						entityName === 'thesis'
-							? 'filterTheses'
-							: `filter${capitalizedEntityName}s`;
-
-					set({
-						[pluralEntityName]: result.data,
-						[filteredPropertyName]: result.data,
-					});
-
-					// Apply filters
-					const currentState = get();
-					const filterFunction = currentState[filterFunctionName];
-					if (typeof filterFunction === 'function') {
-						console.log(`🎯 [${entityName}] Calling filter function...`);
-						filterFunction();
-					} else {
-						console.log(`❌ [${entityName}] Filter function not found!`);
-					}
+					// Update store and apply filters
+					cacheHelpers.updateStoreAndApplyFilters(
+						entityName,
+						result.data,
+						set,
+						get,
+					);
 				} else {
-					console.log(`❌ [${entityName}] API Response failed:`, result);
+					throw new Error(result.error?.message || 'Failed to fetch data');
 				}
-			} catch (error) {
-				console.error(`Error fetching ${entityName}s:`, error);
-				set({
-					lastError: {
-						message: `Failed to fetch ${entityName}s`,
-						statusCode: 500,
-						timestamp: new Date(),
-					},
-				});
+			} catch {
+				set({ lastError: cacheHelpers.createError(entityName) });
 			} finally {
 				set({ loading: false });
 			}
@@ -309,8 +341,8 @@ export const cacheInvalidation = {
 		return setInterval(async () => {
 			try {
 				await fetchFunction();
-			} catch (error) {
-				console.warn(`Background refresh failed for ${entityName}:`, error);
+			} catch {
+				// Background refresh failed
 			}
 		}, interval);
 	},
@@ -338,32 +370,9 @@ export function createCachedFetchByLecturerAction<T extends { id: string }>(
 			if (!force) {
 				const cachedData = cacheUtils.get<T[]>(entityName, cacheKey);
 				if (cachedData) {
-					// Handle special plural cases
-					const pluralEntityName =
-						entityName === 'thesis' ? 'theses' : `${entityName}s`;
-					const capitalizedEntityName =
-						entityName.charAt(0).toUpperCase() + entityName.slice(1);
-					const filteredPropertyName =
-						entityName === 'thesis'
-							? 'filteredTheses'
-							: `filtered${capitalizedEntityName}s`;
-					const filterFunctionName =
-						entityName === 'thesis'
-							? 'filterTheses'
-							: `filter${capitalizedEntityName}s`;
-
-					set({
-						[pluralEntityName]: cachedData,
-						[filteredPropertyName]: cachedData,
+					cacheHelpers.handleCacheHit(entityName, cachedData, set, get, {
 						currentLecturerId: lecturerId,
 					});
-
-					// Apply filters if they exist
-					const currentState = get();
-					const filterFunction = currentState[filterFunctionName];
-					if (typeof filterFunction === 'function') {
-						filterFunction();
-					}
 					return;
 				}
 			}
@@ -386,44 +395,18 @@ export function createCachedFetchByLecturerAction<T extends { id: string }>(
 				if (result.success && result.data) {
 					// Cache the data with lecturer-specific key
 					cacheUtils.set(entityName, cacheKey, result.data);
-
-					// Update store - handle special plural cases
-					const pluralEntityName =
-						entityName === 'thesis' ? 'theses' : `${entityName}s`;
-					const capitalizedEntityName =
-						entityName.charAt(0).toUpperCase() + entityName.slice(1);
-					const filteredPropertyName =
-						entityName === 'thesis'
-							? 'filteredTheses'
-							: `filtered${capitalizedEntityName}s`;
-					const filterFunctionName =
-						entityName === 'thesis'
-							? 'filterTheses'
-							: `filter${capitalizedEntityName}s`;
-
-					set({
-						[pluralEntityName]: result.data,
-						[filteredPropertyName]: result.data,
-					});
-
-					// Apply filters
-					const currentState = get();
-					const filterFunction = currentState[filterFunctionName];
-					if (typeof filterFunction === 'function') {
-						filterFunction();
-					}
+					// Update store and apply filters
+					cacheHelpers.updateStoreAndApplyFilters(
+						entityName,
+						result.data,
+						set,
+						get,
+					);
 				} else {
 					throw new Error(result.error?.message || 'Failed to fetch data');
 				}
-			} catch (error) {
-				console.error(`Error fetching ${entityName}s by lecturer:`, error);
-				set({
-					lastError: {
-						message: `Failed to fetch ${entityName}s`,
-						statusCode: 500,
-						timestamp: new Date(),
-					},
-				});
+			} catch {
+				set({ lastError: cacheHelpers.createError(entityName) });
 			} finally {
 				set({
 					loading: false,
