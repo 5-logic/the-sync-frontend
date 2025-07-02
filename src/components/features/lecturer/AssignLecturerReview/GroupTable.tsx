@@ -14,7 +14,7 @@ interface Props {
 	onAssign: (group: FullMockGroup) => void;
 }
 
-// ✅ Hàm lấy tên reviewer từ groupId
+// Hàm lấy tên reviewer từ groupId
 function getReviewersForGroup(groupId: string, phase: string): string[] {
 	const submission = mockSubmissions.find(
 		(s) => s.groupId === groupId && s.milestone === phase,
@@ -30,7 +30,7 @@ function getReviewersForGroup(groupId: string, phase: string): string[] {
 		.filter(Boolean) as string[];
 }
 
-// ✅ Hàm hiển thị danh sách Supervisor
+// Hàm hiển thị danh sách Reviewer
 function renderSupervisors(supervisors: string[]) {
 	return supervisors.length > 0 ? (
 		<div>
@@ -43,7 +43,7 @@ function renderSupervisors(supervisors: string[]) {
 	);
 }
 
-// ✅ Hàm hiển thị danh sách Reviewer
+// Hàm hiển thị danh sách Reviewer
 function renderReviewers(group: FullMockGroup) {
 	const reviewers = getReviewersForGroup(group.id, group.phase || '');
 	return reviewers.length > 0 ? (
