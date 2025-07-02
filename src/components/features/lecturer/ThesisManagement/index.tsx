@@ -1,51 +1,49 @@
 'use client';
 
-import { Space, Typography } from 'antd';
-import { useState } from 'react';
+import { Alert, Space, Typography } from 'antd';
+import { useEffect } from 'react';
 
 import ThesisFilterBar from '@/components/features/lecturer/ThesisManagement/ThesisFilterBar';
 import ThesisTable from '@/components/features/lecturer/ThesisManagement/ThesisTable';
-import mockGroups from '@/data/group';
-import { mockTheses } from '@/data/thesis';
-
-function getSemesterLabel(id: string) {
-	const year = id.slice(0, 4);
-	const term = id.slice(4);
-	const termName =
-		{ '1': 'Spring', '2': 'Summer', '3': 'Fall' }[term] ?? 'Unknown';
-	return `${termName} ${year}`;
-}
+import { useSessionData } from '@/hooks/auth/useAuth';
+import { useThesisStore } from '@/store';
 
 export default function ThesisManagement() {
-	const [search, setSearch] = useState('');
-	const [status, setStatus] = useState<
-		'all' | 'approved' | 'pending' | 'rejected'
-	>('all');
-	const [semester, setSemester] = useState<string | undefined>();
+	const { session } = useSessionData();
 
-	const data = mockTheses
-		.map((t) => {
-			const group = mockGroups.find((g) => g.thesisId === t.id);
-			return {
-				...t,
-				semesterId: group?.semesterId,
-				semesterLabel: group?.semesterId
-					? getSemesterLabel(group.semesterId)
-					: 'N/A',
-			};
-		})
-		.filter(
-			(t) =>
-				(status === 'all' || t.status.toLowerCase() === status) &&
-				(!semester || t.semesterId === semester) &&
-				t.englishName.toLowerCase().includes(search.toLowerCase()),
-		);
+	const {
+		filteredTheses,
+		loading,
+		lastError,
+		searchText,
+		selectedStatus,
+		selectedOwned,
+		fetchTheses,
+		setSearchText,
+		setSelectedStatus,
+		setSelectedOwned,
+		setSessionLecturerId,
+		clearError,
+	} = useThesisStore();
 
-	const semesterOptions = mockGroups
-		.map((g) => g.semesterId)
-		.filter((v, i, a) => a.indexOf(v) === i);
+	// Fetch all theses when component mounts
+	useEffect(() => {
+		fetchTheses();
+	}, [fetchTheses]);
+
+	// Set session lecturer ID for filtering
+	useEffect(() => {
+		if (session?.user?.id) {
+			setSessionLecturerId(session.user.id);
+		}
+	}, [session?.user?.id, setSessionLecturerId]);
+
+	const handleRefresh = () => {
+		fetchTheses(true); // Force refresh
+	};
 
 	const { Title, Paragraph } = Typography;
+
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
 			<div>
@@ -58,16 +56,28 @@ export default function ThesisManagement() {
 				</Paragraph>
 			</div>
 
+			{/* Error display */}
+			{lastError && (
+				<Alert
+					message="Error"
+					description={lastError.message}
+					type="error"
+					showIcon
+					closable
+					onClose={clearError}
+				/>
+			)}
+
 			<ThesisFilterBar
-				search={search}
-				onSearchChange={setSearch}
-				status={status}
-				onStatusChange={setStatus}
-				semester={semester}
-				onSemesterChange={setSemester}
-				semesterOptions={semesterOptions}
+				search={searchText}
+				onSearchChange={setSearchText}
+				status={selectedStatus}
+				onStatusChange={setSelectedStatus}
+				owned={selectedOwned}
+				onOwnedChange={setSelectedOwned}
+				onRefresh={handleRefresh}
 			/>
-			<ThesisTable data={data} />
+			<ThesisTable data={filteredTheses} loading={loading} />
 		</Space>
 	);
 }
