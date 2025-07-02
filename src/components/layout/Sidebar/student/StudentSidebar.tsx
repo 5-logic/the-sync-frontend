@@ -12,10 +12,12 @@ import {
 import { Menu } from 'antd';
 import { usePathname } from 'next/navigation';
 
+import {
+	STUDENT_MENU_KEYS,
+	getSelectedMenuKey,
+} from '@/components/layout/Sidebar/student/StudentSidebar.config';
 import { useNavigationLoader } from '@/hooks';
 import { DASHBOARD_PATHS } from '@/lib/auth/config/auth-constants';
-
-import { STUDENT_MENU_KEYS, getSelectedMenuKey } from './StudentSidebar.config';
 
 export default function StudentSidebar() {
 	const pathname = usePathname();
