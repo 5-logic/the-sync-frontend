@@ -159,6 +159,94 @@ export default function ThesisTable({ data, loading }: Readonly<Props>) {
 		],
 	);
 
+	// Extract register submit click handler to reduce nesting
+	const handleRegisterSubmitClick = useCallback(
+		(record: Thesis, isDisabled: boolean) => {
+			if (!isDisabled) {
+				handleRegisterSubmit(record).catch(() => {
+					// Error is already handled in handleRegisterSubmit
+				});
+			}
+		},
+		[handleRegisterSubmit],
+	);
+
+	// Extract register submit button props logic
+	const getRegisterSubmitProps = useCallback(
+		(record: Thesis, isThesisOwner: boolean) => {
+			if (!isThesisOwner) {
+				return {
+					disabled: true,
+					title: BUTTON_STATES.NOT_YOUR_THESIS,
+					type: 'default' as const,
+				};
+			}
+
+			switch (record.status) {
+				case THESIS_STATUS.NEW:
+					return {
+						disabled: false,
+						title: BUTTON_STATES.REGISTER_SUBMIT,
+						type: 'primary' as const,
+					};
+				case THESIS_STATUS.PENDING:
+					return {
+						disabled: true,
+						title: BUTTON_STATES.ALREADY_SUBMITTED,
+						type: 'default' as const,
+					};
+				default:
+					return {
+						disabled: true,
+						title: BUTTON_STATES.CANNOT_SUBMIT,
+						type: 'default' as const,
+					};
+			}
+		},
+		[],
+	);
+
+	// Extract actions render logic to reduce nesting
+	const renderActionsColumn = useCallback(
+		(record: Thesis) => {
+			// SECURITY: Check thesis ownership
+			const isThesisOwner = record.lecturerId === session?.user?.id;
+			const submitProps = getRegisterSubmitProps(record, isThesisOwner);
+
+			return (
+				<div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+					{/* Register Submit Button - Always visible with different states */}
+					<Tooltip title={submitProps.title}>
+						<Button
+							icon={<SendOutlined />}
+							type={submitProps.type}
+							size="small"
+							disabled={submitProps.disabled}
+							onClick={() =>
+								handleRegisterSubmitClick(record, submitProps.disabled)
+							}
+						/>
+					</Tooltip>
+
+					{/* Dropdown Menu for Edit/View/Delete */}
+					<Dropdown
+						menu={{ items: getDropdownItems(record) }}
+						trigger={['click']}
+						placement="bottomRight"
+					>
+						<Button icon={<MoreOutlined />} type="text" size="small" />
+					</Dropdown>
+				</div>
+			);
+		},
+		[
+			session?.user?.id,
+			getRegisterSubmitProps,
+			handleRegisterSubmitClick,
+			getDropdownItems,
+		],
+	);
+
 	// Memoize columns to prevent unnecessary re-renders
 	const columns: ColumnsType<Props['data'][number]> = useMemo(
 		() => [
@@ -276,86 +364,10 @@ export default function ThesisTable({ data, loading }: Readonly<Props>) {
 				key: 'actions',
 				width: UI_CONSTANTS.TABLE_WIDTHS.ACTIONS,
 				align: 'center' as const,
-				render: (_, record) => {
-					// SECURITY: Check thesis ownership
-					const isThesisOwner = record.lecturerId === session?.user?.id;
-
-					// Determine register submit button state based on ownership and status
-					const getRegisterSubmitProps = () => {
-						if (!isThesisOwner) {
-							return {
-								disabled: true,
-								title: BUTTON_STATES.NOT_YOUR_THESIS,
-								type: 'default' as const,
-							};
-						}
-
-						switch (record.status) {
-							case THESIS_STATUS.NEW:
-								return {
-									disabled: false,
-									title: BUTTON_STATES.REGISTER_SUBMIT,
-									type: 'primary' as const,
-								};
-							case THESIS_STATUS.PENDING:
-								return {
-									disabled: true,
-									title: BUTTON_STATES.ALREADY_SUBMITTED,
-									type: 'default' as const,
-								};
-							default:
-								return {
-									disabled: true,
-									title: BUTTON_STATES.CANNOT_SUBMIT,
-									type: 'default' as const,
-								};
-						}
-					};
-
-					const submitProps = getRegisterSubmitProps();
-
-					return (
-						<div
-							style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}
-						>
-							{/* Register Submit Button - Always visible with different states */}
-							<Tooltip title={submitProps.title}>
-								<Button
-									icon={<SendOutlined />}
-									type={submitProps.type}
-									size="small"
-									disabled={submitProps.disabled}
-									onClick={() => {
-										if (!submitProps.disabled) {
-											// Handle async function call
-											handleRegisterSubmit(record).catch(() => {
-												// Error is already handled in handleRegisterSubmit
-											});
-										}
-									}}
-								/>
-							</Tooltip>
-
-							{/* Dropdown Menu for Edit/View/Delete */}
-							<Dropdown
-								menu={{ items: getDropdownItems(record) }}
-								trigger={['click']}
-								placement="bottomRight"
-							>
-								<Button icon={<MoreOutlined />} type="text" size="small" />
-							</Dropdown>
-						</div>
-					);
-				},
+				render: (_, record) => renderActionsColumn(record),
 			},
 		],
-		[
-			session?.user?.id,
-			getLecturerById,
-			getDropdownItems,
-			getStatusColor,
-			handleRegisterSubmit,
-		],
+		[getLecturerById, getStatusColor, renderActionsColumn],
 	);
 
 	return (
