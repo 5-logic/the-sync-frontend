@@ -1,25 +1,38 @@
 'use client';
 
-import { Space, Typography } from 'antd';
+import { Card, Col, Row, Typography } from 'antd';
 
-import ThesisForm from '@/components/features/lecturer/CreateThesis/ThesisForm';
+// import ThesisDuplicateList from './ThesisDuplicateList';
+import ThesisForm from '@//components/features/lecturer/CreateThesis/ThesisForm';
+import { useThesisForm } from '@/hooks/thesis';
 
-const { Title, Paragraph } = Typography;
+const { Title } = Typography;
 
 export default function CreateThesis() {
-	const handleSubmit = (values: unknown) => {
-		console.log('Create new thesis:', values);
-	};
+	const { loading, handleSubmit } = useThesisForm({ mode: 'create' });
 
 	return (
-		<Space direction="vertical" size="large" style={{ width: '100%' }}>
-			<div>
-				<Title level={2}>Create New Thesis</Title>
-				<Paragraph type="secondary">
-					Register a new thesis proposal and validate for similarity
-				</Paragraph>
-			</div>
-			<ThesisForm mode="create" onSubmit={handleSubmit} />
-		</Space>
+		<div>
+			<Title level={3}>Create New Thesis</Title>
+
+			<Card>
+				<Row gutter={[24, 24]}>
+					<Col span={24}>
+						<ThesisForm
+							mode="create"
+							onSubmit={handleSubmit}
+							loading={loading}
+						/>
+					</Col>
+
+					{/* TODO: Implement duplicate thesis checking later */}
+					{/* {showDuplicates && (
+						<Col span={12}>
+							<ThesisDuplicateList />
+						</Col>
+					)} */}
+				</Row>
+			</Card>
+		</div>
 	);
 }
