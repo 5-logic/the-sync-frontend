@@ -1,6 +1,7 @@
-import { Col, Pagination, Row } from 'antd';
-import { useState } from 'react';
+import { Col, Row } from 'antd';
+import { useEffect, useState } from 'react';
 
+import ListPagination from '@/components/common/ListPagination/ListPagination';
 import GroupCard from '@/components/features/student/FormOrJoinGroup/GroupCard';
 
 type GroupUI = {
@@ -23,10 +24,24 @@ export default function PagedGroupListSection({
 	pageSize = 6,
 }: PagedGroupListSectionProps) {
 	const [current, setCurrent] = useState(1);
+	const [currentPageSize, setCurrentPageSize] = useState(pageSize);
 
-	const startIdx = (current - 1) * pageSize;
-	const endIdx = startIdx + pageSize;
+	useEffect(() => {
+		setCurrent(1);
+	}, [groups.length]);
+
+	const startIdx = (current - 1) * currentPageSize;
+	const endIdx = startIdx + currentPageSize;
 	const pagedGroups = groups.slice(startIdx, endIdx);
+
+	const handlePageChange = (page: number, newPageSize: number) => {
+		if (newPageSize !== currentPageSize) {
+			setCurrent(1);
+		} else {
+			setCurrent(page);
+		}
+		setCurrentPageSize(newPageSize);
+	};
 
 	return (
 		<>
@@ -48,18 +63,14 @@ export default function PagedGroupListSection({
 					</Col>
 				))}
 			</Row>
-			{groups.length > pageSize && (
-				<div
-					style={{ display: 'flex', justifyContent: 'center', marginTop: 24 }}
-				>
-					<Pagination
-						current={current}
-						pageSize={pageSize}
-						total={groups.length}
-						onChange={setCurrent}
-						showSizeChanger={false}
-					/>
-				</div>
+			{groups.length > 0 && (
+				<ListPagination
+					current={current}
+					pageSize={currentPageSize}
+					total={groups.length}
+					onChange={handlePageChange}
+					itemName="groups"
+				/>
 			)}
 		</>
 	);
