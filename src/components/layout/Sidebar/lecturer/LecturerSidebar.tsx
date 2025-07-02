@@ -14,13 +14,12 @@ import {
 import { Badge, Menu } from 'antd';
 import { usePathname } from 'next/navigation';
 
-import { useNavigationLoader, usePermissions } from '@/hooks';
-import { DASHBOARD_PATHS } from '@/lib/auth/config/auth-constants';
-
 import {
 	LECTURER_MENU_KEYS,
 	getSelectedMenuKey,
-} from './LecturerSidebar.config';
+} from '@/components/layout/Sidebar/lecturer/LecturerSidebar.config';
+import { useNavigationLoader, usePermissions } from '@/hooks';
+import { DASHBOARD_PATHS } from '@/lib/auth/config/auth-constants';
 
 export default function LecturerSidebar() {
 	const pathname = usePathname();

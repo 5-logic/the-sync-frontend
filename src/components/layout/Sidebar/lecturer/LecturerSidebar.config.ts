@@ -9,7 +9,7 @@ export const LECTURER_MENU_KEYS = {
 	GROUP_PROGRESS: '/lecturer/group-progress',
 	TIMELINE_REVIEW: '/lecturer/timeline-review',
 	// Moderator features
-	ASSIGN_STUDENT: '/lecturer/assign-student-list',
+	ASSIGN_STUDENT: '/lecturer/assign-student',
 	ASSIGN_SUPERVISOR: '/lecturer/assign-supervisor',
 	ASSIGN_LECTURER_REVIEW: '/lecturer/assign-lecturer-review',
 } as const;
@@ -23,6 +23,7 @@ export const LECTURER_PATH_MAPPING = {
 		'/lecturer/thesis-management',
 		'/lecturer/thesis-details',
 		'/lecturer/edit-thesis',
+		'/lecturer/create-thesis',
 	],
 	[LECTURER_MENU_KEYS.GROUP_PROGRESS]: [
 		'/lecturer/group-progress',
@@ -32,10 +33,7 @@ export const LECTURER_PATH_MAPPING = {
 		'/lecturer/timeline-review',
 		'/lecturer/review-timeline',
 	],
-	[LECTURER_MENU_KEYS.ASSIGN_STUDENT]: [
-		'/lecturer/assign-student-list',
-		'/lecturer/assign-student',
-	],
+	[LECTURER_MENU_KEYS.ASSIGN_STUDENT]: ['/lecturer/assign-student/[groupId]'],
 	[LECTURER_MENU_KEYS.ASSIGN_SUPERVISOR]: [
 		'/lecturer/assign-supervisor',
 		'/lecturer/supervisor-assignment',

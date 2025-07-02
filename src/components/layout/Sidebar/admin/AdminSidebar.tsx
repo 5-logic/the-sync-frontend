@@ -11,10 +11,12 @@ import {
 import { Menu } from 'antd';
 import { usePathname } from 'next/navigation';
 
+import {
+	ADMIN_MENU_KEYS,
+	getSelectedMenuKey,
+} from '@/components/layout/Sidebar/admin/AdminSidebar.config';
 import { useNavigationLoader } from '@/hooks';
 import { DASHBOARD_PATHS } from '@/lib/auth/config/auth-constants';
-
-import { ADMIN_MENU_KEYS, getSelectedMenuKey } from './AdminSidebar.config';
 
 export default function AdminSidebar() {
 	const pathname = usePathname();
