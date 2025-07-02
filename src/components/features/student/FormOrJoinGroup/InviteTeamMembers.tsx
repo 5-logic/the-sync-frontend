@@ -205,7 +205,6 @@ export default function InviteTeamMembers({
 							maxHeight: 200,
 							overflowY: 'auto',
 							backgroundColor: '#fff',
-							boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
 							zIndex: 1000,
 						}}
 					>
