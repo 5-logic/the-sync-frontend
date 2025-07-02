@@ -8,8 +8,8 @@ export const metadata = createMetadata({
 });
 
 interface Props {
-	params: {
-		id: string;
+	readonly params: {
+		readonly id: string;
 	};
 }
 
