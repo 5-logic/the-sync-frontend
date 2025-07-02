@@ -37,7 +37,7 @@ export const useThesisActions = (thesisId: string) => {
 	const handleSubmit = async () => {
 		// Find thesis title for confirmation modal
 		const thesis = theses.find((t) => t.id === thesisId);
-		const thesisTitle = thesis?.englishName || 'this thesis';
+		const thesisTitle = thesis?.englishName ?? 'this thesis';
 
 		// Show confirmation modal before submitting
 		ThesisConfirmationModals.submit(thesisTitle, async () => {
@@ -59,7 +59,7 @@ export const useThesisActions = (thesisId: string) => {
 	const handleDelete = async () => {
 		// Find thesis title for confirmation modal
 		const thesis = theses.find((t) => t.id === thesisId);
-		const thesisTitle = thesis?.englishName || 'this thesis';
+		const thesisTitle = thesis?.englishName ?? 'this thesis';
 
 		// Show confirmation modal before deleting
 		ThesisConfirmationModals.delete(thesisTitle, async () => {
