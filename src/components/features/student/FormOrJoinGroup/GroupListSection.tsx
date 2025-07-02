@@ -1,6 +1,7 @@
 import { SearchOutlined } from '@ant-design/icons';
 import { Col, Grid, Input, Row, Select, Space, Typography } from 'antd';
 
+import GroupCard from '@/components/features/student/FormOrJoinGroup/GroupCard';
 import PagedGroupListSection from '@/components/features/student/FormOrJoinGroup/PagedGroupListSection';
 
 const { Title } = Typography;
@@ -14,6 +15,11 @@ const domainColorMap: Record<string, string> = {
 	'Data Analytics': 'purple',
 	'Cloud Computing': 'volcano',
 	'App Development': 'blue',
+	'Web Development': 'blue',
+	IoT: 'gold',
+	Cybersecurity: 'red',
+	'Data Science': 'purple',
+	'Mobile Development': 'green',
 };
 
 type GroupUI = {
@@ -34,6 +40,7 @@ interface GroupListSectionProps {
 	onCategoryChange?: (value: string) => void;
 	fontSize?: number;
 	pageSize?: number;
+	enablePagination?: boolean;
 }
 
 export default function GroupListSection({
@@ -46,6 +53,7 @@ export default function GroupListSection({
 	onCategoryChange,
 	fontSize = 16,
 	pageSize = 6,
+	enablePagination = true,
 }: GroupListSectionProps) {
 	const screens = useBreakpoint();
 	return (
@@ -109,11 +117,32 @@ export default function GroupListSection({
 					</Col>
 				)}
 			</Row>
-			<PagedGroupListSection
-				groups={groups}
-				fontSize={fontSize}
-				pageSize={pageSize}
-			/>
+			{enablePagination ? (
+				<PagedGroupListSection
+					groups={groups}
+					fontSize={fontSize}
+					pageSize={pageSize}
+				/>
+			) : (
+				<Row gutter={[16, 16]} align="stretch">
+					{groups.map((group) => (
+						<Col
+							xs={24}
+							sm={12}
+							md={8}
+							key={group.id}
+							style={{
+								display: 'flex',
+								marginBottom: 16,
+							}}
+						>
+							<div style={{ width: '100%' }}>
+								<GroupCard group={group} fontSize={fontSize} />
+							</div>
+						</Col>
+					))}
+				</Row>
+			)}
 		</Space>
 	);
 }

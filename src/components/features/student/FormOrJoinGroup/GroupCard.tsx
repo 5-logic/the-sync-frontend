@@ -12,6 +12,11 @@ const domainColorMap: Record<string, string> = {
 	'Data Analytics': 'purple',
 	'Cloud Computing': 'volcano',
 	'App Development': 'blue',
+	'Web Development': 'blue',
+	IoT: 'gold',
+	Cybersecurity: 'red',
+	'Data Science': 'purple',
+	'Mobile Development': 'green',
 };
 
 type GroupUI = {
@@ -35,7 +40,6 @@ export default function GroupCard({
 		<Card
 			style={{
 				borderRadius: 12,
-				boxShadow: '0 2px 8px #f0f1f2',
 				width: '100%',
 				minHeight: 280,
 				height: '100%',
