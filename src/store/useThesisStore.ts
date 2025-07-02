@@ -198,11 +198,7 @@ export const useThesisStore = create<ThesisState>()(
 					} else {
 						throw new Error(result.error?.message || 'Failed to fetch theses');
 					}
-				} catch (error) {
-					// Use proper error logging instead of console.error in production
-					if (process.env.NODE_ENV === 'development') {
-						console.error('Error fetching theses:', error);
-					}
+				} catch {
 					set({
 						lastError: {
 							message: 'Failed to fetch theses',
