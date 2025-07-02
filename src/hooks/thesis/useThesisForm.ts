@@ -40,7 +40,7 @@ export const useThesisForm = ({
 
 		// Extract skill IDs from thesisRequiredSkills
 		const selectedSkillIds =
-			thesis.thesisRequiredSkills?.map((thesisSkill) => thesisSkill.skillId) ||
+			thesis.thesisRequiredSkills?.map((thesisSkill) => thesisSkill.skillId) ??
 			[];
 
 		return {
@@ -64,7 +64,8 @@ export const useThesisForm = ({
 		// Extract filename from URL
 		const url = latestVersion.supportingDocument;
 		const urlParts = url.split('/');
-		const filename = urlParts[urlParts.length - 1] || 'thesis-document.docx';
+		const lastPart = urlParts[urlParts.length - 1] ?? '';
+		const filename = lastPart === '' ? 'thesis-document.docx' : lastPart;
 
 		return {
 			name: filename,
@@ -73,67 +74,95 @@ export const useThesisForm = ({
 		};
 	}, [mode, thesis]);
 
+	// Helper functions to reduce cognitive complexity
+	const validateAuthentication = useCallback(() => {
+		if (!session?.user?.id) {
+			const errorConfig =
+				mode === 'create'
+					? THESIS_ERROR_CONFIGS.CREATE
+					: THESIS_ERROR_CONFIGS.UPDATE;
+			handleThesisError(new Error('User not authenticated'), errorConfig);
+			return false;
+		}
+		return true;
+	}, [session?.user?.id, mode]);
+
+	const handleCreateThesis = useCallback(
+		async (values: Record<string, unknown>) => {
+			const data = values as ThesisCreate;
+			const thesisData: ThesisCreate = { ...data };
+			const success = await createThesis(thesisData);
+
+			if (success) {
+				handleThesisSuccess(
+					{
+						...THESIS_SUCCESS_CONFIGS.CREATE,
+						redirectDelay: TIMING.REDIRECT_DELAY,
+					},
+					router,
+				);
+			} else {
+				throw new Error('Create thesis failed');
+			}
+		},
+		[createThesis, router],
+	);
+
+	const handleEditThesis = useCallback(
+		async (values: Record<string, unknown>) => {
+			if (!thesisId) throw new Error('Thesis ID is required for update');
+
+			const success = await updateThesis(thesisId, values as ThesisUpdate);
+
+			if (success) {
+				showNotification.success('Success', 'Thesis updated successfully!');
+				router.push('/lecturer/thesis-management');
+			} else {
+				throw new Error('Update thesis failed');
+			}
+		},
+		[thesisId, updateThesis, router],
+	);
+
+	const handleError = useCallback(
+		(error: unknown) => {
+			if (mode === 'create') {
+				handleThesisError(error, THESIS_ERROR_CONFIGS.CREATE, setLoading);
+			} else {
+				showNotification.error(
+					'Error',
+					'Failed to update thesis. Please try again.',
+				);
+				setLoading(false);
+			}
+		},
+		[mode],
+	);
+
 	// Handle form submission for both create and edit
 	const handleSubmit = useCallback(
 		async (values: Record<string, unknown>) => {
-			if (!session?.user?.id) {
-				handleThesisError(
-					new Error('User not authenticated'),
-					mode === 'create'
-						? THESIS_ERROR_CONFIGS.CREATE
-						: THESIS_ERROR_CONFIGS.UPDATE,
-				);
-				return;
-			}
+			if (!validateAuthentication()) return;
 
 			try {
 				setLoading(true);
 
 				if (mode === 'create') {
-					// Create mode
-					const data = values as ThesisCreate;
-					const thesisData: ThesisCreate = { ...data };
-
-					const success = await createThesis(thesisData);
-
-					if (success) {
-						handleThesisSuccess(
-							{
-								...THESIS_SUCCESS_CONFIGS.CREATE,
-								redirectDelay: TIMING.REDIRECT_DELAY,
-							},
-							router,
-						);
-					} else {
-						throw new Error('Create thesis failed');
-					}
+					await handleCreateThesis(values);
 				} else {
-					// Edit mode
-					if (!thesisId) throw new Error('Thesis ID is required for update');
-
-					// Use store's updateThesis method
-					const success = await updateThesis(thesisId, values as ThesisUpdate);
-
-					if (success) {
-						showNotification.success('Success', 'Thesis updated successfully!');
-						router.push('/lecturer/thesis-management');
-					} else {
-						throw new Error('Update thesis failed');
-					}
+					await handleEditThesis(values);
 				}
 			} catch (error) {
-				if (mode === 'create') {
-					handleThesisError(error, THESIS_ERROR_CONFIGS.CREATE, setLoading);
-				} else {
-					showNotification.error(
-						'Error',
-						'Failed to update thesis. Please try again.',
-					);
-					setLoading(false);
-				}
+				handleError(error);
 			}
 		},
-		[mode, session?.user?.id, thesisId, createThesis, updateThesis, router],
+		[
+			validateAuthentication,
+			mode,
+			handleCreateThesis,
+			handleEditThesis,
+			handleError,
+		],
 	);
 
 	return {
