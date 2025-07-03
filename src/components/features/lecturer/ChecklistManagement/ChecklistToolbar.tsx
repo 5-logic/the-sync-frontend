@@ -1,3 +1,4 @@
+import { PlusOutlined } from '@ant-design/icons';
 import { Button, Col, Row, Select, Space } from 'antd';
 
 export default function ChecklistToolbar() {
@@ -18,7 +19,9 @@ export default function ChecklistToolbar() {
 				</Space>
 			</Col>
 			<Col>
-				<Button type="primary">+ Create New Checklist</Button>
+				<Button type="primary" icon={<PlusOutlined />}>
+					Create New Checklist
+				</Button>
 			</Col>
 		</Row>
 	);

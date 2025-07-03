@@ -1,5 +1,5 @@
 import { createMetadata } from '@/app/metadata';
-import ChecklistManager from '@/components/features/lecturer/ChecklistManager';
+import ChecklistManagement from '@/components/features/lecturer/ChecklistManagement';
 
 export const metadata = createMetadata({
 	title: 'Lecturer Checklist Management',
@@ -8,5 +8,5 @@ export const metadata = createMetadata({
 });
 
 export default function LecturerChecklistMangementPage() {
-	return <ChecklistManager />;
+	return <ChecklistManagement />;
 }
