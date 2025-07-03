@@ -4,13 +4,12 @@ export type ExtendedThesis = Thesis & {
 	skills: string[];
 	highlight?: string;
 	version: string;
-	semester?: string; // Add this line
+	semester?: string;
 	supervisor?: {
 		name: string;
 		phone: string;
 		email: string;
 	};
-	rejectReasons: string[];
 	group?: {
 		id: string;
 		members: {
@@ -21,6 +20,12 @@ export type ExtendedThesis = Thesis & {
 			avatar?: string;
 		}[];
 	};
+	// Add thesisVersions to support download functionality
+	thesisVersions?: {
+		id: string;
+		version: number;
+		supportingDocument: string;
+	}[];
 };
 
 export const mockTheses: ExtendedThesis[] = [
@@ -48,7 +53,6 @@ export const mockTheses: ExtendedThesis[] = [
 			phone: '0123456789',
 			email: 'sarah.chen@university.edu',
 		},
-		rejectReasons: [],
 		group: {
 			id: 'g1',
 			members: [
@@ -95,7 +99,6 @@ export const mockTheses: ExtendedThesis[] = [
 			phone: '0987654321',
 			email: 'alex.nguyen@university.edu',
 		},
-		rejectReasons: [],
 	},
 	{
 		id: 't3',
@@ -118,10 +121,6 @@ export const mockTheses: ExtendedThesis[] = [
 			phone: '0111222333',
 			email: 'emily.tran@university.edu',
 		},
-		rejectReasons: [
-			"Topic is not aligned with the student's or group's major.",
-			'Incomplete or insufficient topic description.',
-		],
 	},
 ];
 

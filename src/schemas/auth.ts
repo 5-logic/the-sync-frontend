@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { ApiResponseSchema } from './_common';
+import { ApiResponseSchema } from '@/schemas/_common';
 
 // Password validation regex pattern
 const PASSWORD_REGEX =

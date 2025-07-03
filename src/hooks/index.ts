@@ -9,3 +9,6 @@ export * from '@/hooks/ui';
 
 // UX/Navigation hooks
 export * from '@/hooks/ux';
+
+// Thesis hooks
+export * from '@/hooks/thesis';

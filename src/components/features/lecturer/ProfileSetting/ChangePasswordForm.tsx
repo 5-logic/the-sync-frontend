@@ -1,6 +1,6 @@
 import { Button, Form, Input, Typography } from 'antd';
 
-import FormLabel from '@/components/common/FormLabel/FormLabel';
+import { FormLabel } from '@/components/common/FormLabel';
 
 export default function ChangePasswordForm() {
 	const [form] = Form.useForm();
