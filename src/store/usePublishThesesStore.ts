@@ -3,6 +3,7 @@ import thesisService from '@/lib/services/theses.service';
 import { isTextMatch } from '@/lib/utils';
 import { handleApiResponse } from '@/lib/utils/handleApi';
 import { Thesis } from '@/schemas/thesis';
+import { cacheUtils } from '@/store/helpers/cacheHelpers';
 import {
 	ExtendThesisStore,
 	createThesisStoreFactory,
@@ -153,18 +154,31 @@ const baseStore = createThesisStoreFactory<
 // Extend base store with publish-specific actions
 export const usePublishThesesStore = () => {
 	const store = baseStore();
-
-	// Toggle publish status for a single thesis
+	// Toggle publish status for a single thesis using bulk API
 	const togglePublishStatus = async (thesisId: string): Promise<boolean> => {
 		try {
-			const response = await thesisService.togglePublishStatus(thesisId);
+			// Get current thesis to determine new publish state
+			const currentThesis = store.items.find(
+				(thesis) => thesis.id === thesisId,
+			);
+			if (!currentThesis) {
+				console.error('Thesis not found:', thesisId);
+				return false;
+			}
+
+			// Use the bulk API for single thesis toggle
+			const response = await thesisService.publishTheses({
+				thesesIds: [thesisId],
+				isPublish: !currentThesis.isPublish, // Toggle current state
+			});
+
 			const result = handleApiResponse(response);
 
-			if (result.success && result.data) {
-				// Update local state
+			if (result.success) {
+				// Update local state - only the toggled item
 				const updatedItems = store.items.map((thesis) =>
 					thesis.id === thesisId
-						? { ...thesis, isPublish: result.data!.isPublish }
+						? { ...thesis, isPublish: !thesis.isPublish }
 						: thesis,
 				);
 
@@ -176,6 +190,9 @@ export const usePublishThesesStore = () => {
 				// Re-apply filters
 				store.filterItems();
 
+				// Update cache with new data (like thesis management store pattern)
+				cacheUtils.set('publishTheses', 'all', updatedItems);
+
 				return true;
 			}
 			return false;
@@ -185,7 +202,7 @@ export const usePublishThesesStore = () => {
 		}
 	};
 
-	// Publish multiple theses
+	// Publish multiple theses using bulk API
 	const publishMultiple = async (thesisIds: string[]): Promise<boolean> => {
 		try {
 			// Get theses that are not currently published
@@ -197,18 +214,16 @@ export const usePublishThesesStore = () => {
 				return true; // Nothing to publish
 			}
 
-			const promises = thesesToPublish.map((thesis) =>
-				thesisService.togglePublishStatus(thesis.id),
-			);
-
-			const results = await Promise.all(promises);
-			const allSuccessful = results.every((response) => {
-				const result = handleApiResponse(response);
-				return result.success;
+			// Use the new bulk publish API
+			const response = await thesisService.publishTheses({
+				thesesIds: thesesToPublish.map((thesis) => thesis.id),
+				isPublish: true,
 			});
 
-			if (allSuccessful) {
-				// Update local state - mark all selected theses as published
+			const result = handleApiResponse(response);
+
+			if (result.success) {
+				// Update local state - only mark selected theses as published
 				const updatedItems = store.items.map((thesis) =>
 					thesisIds.includes(thesis.id)
 						? { ...thesis, isPublish: true }
@@ -222,6 +237,9 @@ export const usePublishThesesStore = () => {
 
 				// Re-apply filters
 				store.filterItems();
+
+				// Update cache with new data (like thesis management store pattern)
+				cacheUtils.set('publishTheses', 'all', updatedItems);
 
 				return true;
 			}
