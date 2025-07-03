@@ -46,7 +46,7 @@ export default function ThesisFilterBar({
 		<Row gutter={[16, 16]} className="mb-4">
 			<Col xs={24} md={16}>
 				<Input
-					placeholder="Search thesis by name..."
+					placeholder="Search by thesis name or lecturer name..."
 					prefix={<SearchOutlined />}
 					allowClear
 					style={{ width: '100%' }}
