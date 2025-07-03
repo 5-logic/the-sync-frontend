@@ -1,5 +1,5 @@
 import { createMetadata } from '@/app/metadata';
-import AssignListPublishThesisPage from '@/components/features/lecturer/AssignListPublishThesis';
+import LecturerListPublishThesisClient from '@/components/pages/lecturer/LecturerListPublishThesisClient';
 
 export const metadata = createMetadata({
 	title: 'Lecturer Assign List Publish Thesis',
@@ -8,5 +8,5 @@ export const metadata = createMetadata({
 });
 
 export default function LecturerListPublishThesisPage() {
-	return <AssignListPublishThesisPage />;
+	return <LecturerListPublishThesisClient />;
 }
