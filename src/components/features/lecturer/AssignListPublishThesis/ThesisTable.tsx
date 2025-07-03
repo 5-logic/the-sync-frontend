@@ -118,7 +118,10 @@ export default function ThesisTable({
 		{
 			title: 'Lecturer',
 			key: 'lecturer',
-			render: (_, record) => (record.lecturerName ?? '').trim() || 'Unknown',
+			render: (_, record) => {
+				const trimmedName = (record.lecturerName ?? '').trim();
+				return trimmedName !== '' ? trimmedName : 'Unknown';
+			},
 			width: '15%',
 		},
 		{
