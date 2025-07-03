@@ -47,9 +47,11 @@ export const usePublishTheses = () => {
 			const lecturerResult = handleApiResponse(lecturerResponse);
 
 			if (!thesisResult.success || !lecturerResult.success) {
-				throw new Error(
-					thesisResult.error || lecturerResult.error || 'Failed to fetch data',
-				);
+				const errorMessage =
+					(thesisResult.success ? '' : thesisResult.error?.message) ||
+					(lecturerResult.success ? '' : lecturerResult.error?.message) ||
+					'Failed to fetch data';
+				throw new Error(errorMessage);
 			}
 
 			const allTheses = thesisResult.data || [];
