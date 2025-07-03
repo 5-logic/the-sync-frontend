@@ -41,7 +41,8 @@ interface StudentState {
 	creating: boolean;
 	updating: boolean;
 	deleting: boolean;
-	creatingManyStudents: boolean; // Batch creation state
+	creatingMany: boolean; // Legacy field for backward compatibility
+	creatingManyStudents: boolean; // New field for consistency
 	togglingStatus: boolean;
 	changingPassword: boolean;
 	updatingProfile: boolean;
@@ -89,7 +90,6 @@ interface StudentState {
 	) => Promise<boolean>;
 	changePassword: (data: StudentPasswordUpdate) => Promise<boolean>;
 	updateProfile: (data: StudentUpdate) => Promise<boolean>;
-
 	// Error management
 	clearError: () => void;
 
@@ -127,6 +127,7 @@ export const useStudentStore = create<StudentState>()(
 			creating: false,
 			updating: false,
 			deleting: false,
+			creatingMany: false,
 			creatingManyStudents: false,
 			togglingStatus: false,
 			changingPassword: false,
@@ -339,9 +340,10 @@ export const useStudentStore = create<StudentState>()(
 					selectedSemesterId: semesterId,
 				});
 				// Apply filters with empty data
-				const state = get();
-				if (typeof state.filterStudents === 'function') {
-					state.filterStudents();
+				const currentState = get();
+				const filterFunction = currentState.filterStudents;
+				if (typeof filterFunction === 'function') {
+					filterFunction();
 				}
 			},
 			setSelectedMajorId: commonStoreUtilities.createFieldSetter(
