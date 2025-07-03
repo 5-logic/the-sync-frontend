@@ -88,6 +88,16 @@ class StudentService {
 		return response.data;
 	}
 
+	async updateProfile(
+		updateProfileDto: StudentUpdate,
+	): Promise<ApiResponse<Student>> {
+		const response = await httpClient.put<ApiResponse<Student>>(
+			this.baseUrl,
+			updateProfileDto,
+		);
+		return response.data;
+	}
+
 	async changePassword(
 		passwordDto: StudentPasswordUpdate,
 	): Promise<ApiResponse<void>> {
