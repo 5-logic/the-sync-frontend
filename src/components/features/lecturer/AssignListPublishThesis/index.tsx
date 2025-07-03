@@ -1,11 +1,21 @@
 'use client';
 
-import { Button, Card, Col, Row, Space, Typography, message } from 'antd';
+import {
+	Alert,
+	Button,
+	Card,
+	Col,
+	Row,
+	Space,
+	Spin,
+	Typography,
+	message,
+} from 'antd';
 import { useMemo, useState } from 'react';
 
 import ThesisFilterBar from '@/components/features/lecturer/AssignListPublishThesis/ThesisFilterBar';
 import ThesisTable from '@/components/features/lecturer/AssignListPublishThesis/ThesisTable';
-import { mockTheses } from '@/data/thesis';
+import { usePublishTheses } from '@/hooks/thesis';
 
 const { Title, Paragraph } = Typography;
 
@@ -17,11 +27,20 @@ export default function AssignListPublishThesisPage() {
 	});
 
 	const [selectedIds, setSelectedIds] = useState<string[]>([]);
-	const [theses, setTheses] = useState(mockTheses);
+
+	// Use the new hook to fetch real data
+	const {
+		theses,
+		loading,
+		error,
+		refetch,
+		publishMultiple,
+		togglePublishStatus,
+	} = usePublishTheses();
 
 	// ✅ Extract unique domain list for dropdown
 	const domainOptions = useMemo(() => {
-		const domains = theses.map((t) => t.domain);
+		const domains = theses.map((t) => t.domain).filter(Boolean);
 		return Array.from(new Set(domains)).filter(
 			(d): d is string => typeof d === 'string',
 		);
@@ -29,43 +48,76 @@ export default function AssignListPublishThesisPage() {
 
 	// ✅ Filter logic
 	const filteredTheses = useMemo(() => {
-		return theses
-			.filter((t) => t.status === 'Approved')
-			.filter((thesis) => {
-				const keyword = filters.englishName?.toLowerCase() ?? '';
-				const englishName = thesis.englishName?.toLowerCase() ?? '';
-				const vietnameseName = thesis.vietnameseName?.toLowerCase() ?? '';
-				const nameMatch =
-					keyword === ''
-						? true
-						: [englishName, vietnameseName].some((name) =>
-								name.includes(keyword),
-							);
+		return theses.filter((thesis) => {
+			const keyword = filters.englishName?.toLowerCase() ?? '';
+			const englishName = thesis.englishName?.toLowerCase() ?? '';
+			const vietnameseName = thesis.vietnameseName?.toLowerCase() ?? '';
+			const nameMatch =
+				keyword === ''
+					? true
+					: [englishName, vietnameseName].some((name) =>
+							name.includes(keyword),
+						);
 
-				const publishMatch =
-					filters.isPublish === undefined
-						? true
-						: thesis.isPublish === filters.isPublish;
+			const publishMatch =
+				filters.isPublish === undefined
+					? true
+					: thesis.isPublish === filters.isPublish;
 
-				const domainMatch =
-					filters.domain === undefined
-						? true
-						: thesis.domain === filters.domain;
+			const domainMatch =
+				filters.domain === undefined ? true : thesis.domain === filters.domain;
 
-				return nameMatch && publishMatch && domainMatch;
-			});
+			return nameMatch && publishMatch && domainMatch;
+		});
 	}, [filters, theses]);
 
-	const handlePublishSelected = () => {
+	const handlePublishSelected = async () => {
 		if (selectedIds.length === 0) return;
 
-		const updated = theses.map((thesis) =>
-			selectedIds.includes(thesis.id) ? { ...thesis, isPublish: true } : thesis,
-		);
-		setTheses(updated);
-		message.success(`Published ${selectedIds.length} thesis(es)`);
-		setSelectedIds([]);
+		try {
+			const success = await publishMultiple(selectedIds);
+
+			if (success) {
+				message.success(
+					`Published ${selectedIds.length} thesis(es) successfully`,
+				);
+				setSelectedIds([]);
+			} else {
+				message.error('Failed to publish some theses. Please try again.');
+			}
+		} catch {
+			message.error('An error occurred while publishing theses.');
+		}
 	};
+
+	// Loading state
+	if (loading) {
+		return (
+			<div style={{ textAlign: 'center', padding: '50px' }}>
+				<Spin size="large" />
+				<div style={{ marginTop: 16 }}>Loading thesis data...</div>
+			</div>
+		);
+	}
+
+	// Error state
+	if (error) {
+		return (
+			<Space direction="vertical" size="large" style={{ width: '100%' }}>
+				<Alert
+					message="Error Loading Data"
+					description={error}
+					type="error"
+					showIcon
+					action={
+						<Button size="small" onClick={refetch}>
+							Retry
+						</Button>
+					}
+				/>
+			</Space>
+		);
+	}
 
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
@@ -76,17 +128,20 @@ export default function AssignListPublishThesisPage() {
 					</Title>
 					<Paragraph type="secondary" style={{ marginBottom: 0 }}>
 						Manage the list of published thesis topics available for student
-						selection.
+						selection. Only approved theses are shown here.
 					</Paragraph>
 				</Col>
 				<Col>
-					<Button
-						type="primary"
-						onClick={handlePublishSelected}
-						disabled={selectedIds.length === 0}
-					>
-						Publish Selected
-					</Button>
+					<Space>
+						<Button onClick={refetch}>Refresh</Button>
+						<Button
+							type="primary"
+							onClick={handlePublishSelected}
+							disabled={selectedIds.length === 0}
+						>
+							Publish Selected ({selectedIds.length})
+						</Button>
+					</Space>
 				</Col>
 			</Row>
 
@@ -104,6 +159,7 @@ export default function AssignListPublishThesisPage() {
 						<ThesisTable
 							theses={filteredTheses}
 							onSelectionChange={setSelectedIds}
+							onTogglePublish={togglePublishStatus}
 						/>
 					</Card>
 				</Col>
