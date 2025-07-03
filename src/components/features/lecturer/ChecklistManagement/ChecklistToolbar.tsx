@@ -3,13 +3,11 @@
 import { PlusOutlined } from '@ant-design/icons';
 import { Button, Col, Row, Select } from 'antd';
 
-import { mockSemesters } from '@/data/semeter';
+import { mockSemesters } from '@/data/semester';
 
 const { Option } = Select;
 
 interface Props {
-	search: string;
-	onSearchChange: (val: string) => void;
 	semester: string;
 	onSemesterChange: (val: string) => void;
 	milestone: string;

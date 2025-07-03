@@ -21,13 +21,13 @@ export default function ChecklistTable({ data, getTotalItems }: Props) {
 			key: 'description',
 		},
 		{
-			title: 'createdAt',
+			title: 'Created At',
 			dataIndex: 'createdAt',
 			key: 'createdAt',
 			render: (date: Date) => new Date(date).toLocaleDateString(),
 		},
 		{
-			title: 'updatedAt',
+			title: 'Updated At',
 			dataIndex: 'updatedAt',
 			key: 'updatedAt',
 			render: (date: Date) => new Date(date).toLocaleDateString(),
