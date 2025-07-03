@@ -14,6 +14,9 @@ export default function ChangePasswordForm() {
 	// Use Student Store for change password
 	const { changePassword, changingPassword, clearError } = useStudentStore();
 
+	// Type assertion for changingPassword
+	const isChangingPassword = Boolean(changingPassword);
+
 	// Clear errors when component mounts or unmounts
 	useEffect(() => {
 		clearError();
@@ -88,7 +91,7 @@ export default function ChangePasswordForm() {
 					label={<FormLabel text="Current Password" isRequired isBold />}
 					rules={[{ required: true, message: 'Please enter Current Password' }]}
 				>
-					<Input.Password disabled={changingPassword} />
+					<Input.Password disabled={isChangingPassword} />
 				</Form.Item>
 
 				<Form.Item
@@ -108,7 +111,7 @@ export default function ChangePasswordForm() {
 						},
 					]}
 				>
-					<Input.Password disabled={changingPassword} />
+					<Input.Password disabled={isChangingPassword} />
 				</Form.Item>
 
 				<Form.Item
@@ -123,7 +126,10 @@ export default function ChangePasswordForm() {
 								const isEmpty = !value;
 								const passwordsMatch = newPassword === value;
 
-								if (isEmpty ?? passwordsMatch) {
+								if (isEmpty) {
+									return Promise.resolve();
+								}
+								if (passwordsMatch) {
 									return Promise.resolve();
 								}
 								return Promise.reject(new Error('Passwords do not match'));
@@ -131,7 +137,7 @@ export default function ChangePasswordForm() {
 						}),
 					]}
 				>
-					<Input.Password disabled={changingPassword} />
+					<Input.Password disabled={isChangingPassword} />
 				</Form.Item>
 
 				<Typography.Text type="secondary" className="block mb-4">
@@ -151,11 +157,11 @@ export default function ChangePasswordForm() {
 				<Button
 					htmlType="button"
 					onClick={handleCancel}
-					disabled={changingPassword}
+					disabled={isChangingPassword}
 				>
 					Cancel
 				</Button>
-				<Button type="primary" htmlType="submit" loading={changingPassword}>
+				<Button type="primary" htmlType="submit" loading={isChangingPassword}>
 					Update Password
 				</Button>
 			</div>
