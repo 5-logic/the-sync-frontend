@@ -82,44 +82,58 @@ export default function ThesisTable({
 		</Tooltip>
 	);
 
+	const renderThesisName = (text: string) => (
+		<Tooltip title={text} placement="topLeft">
+			<div
+				style={{
+					display: '-webkit-box',
+					WebkitLineClamp: 2,
+					WebkitBoxOrient: 'vertical',
+					overflow: 'hidden',
+					textOverflow: 'ellipsis',
+					lineHeight: '1.4',
+					maxHeight: '2.8em',
+				}}
+			>
+				{text}
+			</div>
+		</Tooltip>
+	);
+
 	const columns: ColumnsType<ThesisWithLecturer> = [
 		{
 			title: 'English Name',
 			dataIndex: 'englishName',
 			key: 'englishName',
-			ellipsis: true,
+			width: '30%',
+			render: (text: string) => renderThesisName(text),
 		},
 		{
 			title: 'Vietnamese Name',
 			dataIndex: 'vietnameseName',
 			key: 'vietnameseName',
-			ellipsis: true,
+			width: '30%',
+			render: (text: string) => renderThesisName(text),
 		},
 		{
 			title: 'Lecturer',
 			key: 'lecturer',
 			render: (_, record) => record.lecturerName || 'Unknown',
-		},
-		{
-			title: 'Domain',
-			dataIndex: 'domain',
-			key: 'domain',
-			render: (domain) => domain || 'N/A',
-		},
-		{
-			title: 'Status',
-			dataIndex: 'status',
-			key: 'status',
+			width: '15%',
 		},
 		{
 			title: 'Public Access',
 			key: 'publicAccess',
 			render: (_, record) => renderSwitch(record),
+			width: '15%',
+			align: 'center',
 		},
 		{
 			title: 'Actions',
 			key: 'actions',
 			render: () => renderViewButton(),
+			width: '10%',
+			align: 'center',
 		},
 	];
 
@@ -129,6 +143,7 @@ export default function ThesisTable({
 		getCheckboxProps: (record) => ({
 			disabled: record.isPublish, // Disable selection if already published
 		}),
+		columnWidth: 50,
 	};
 
 	return (
