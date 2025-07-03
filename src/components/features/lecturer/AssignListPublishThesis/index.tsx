@@ -11,66 +11,55 @@ import {
 	Typography,
 	message,
 } from 'antd';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import ThesisFilterBar from '@/components/features/lecturer/AssignListPublishThesis/ThesisFilterBar';
 import ThesisTable from '@/components/features/lecturer/AssignListPublishThesis/ThesisTable';
-import { usePublishTheses } from '@/hooks/thesis';
-import { isTextMatch } from '@/lib/utils';
+import { usePublishThesesStore } from '@/store';
 
 const { Title, Paragraph } = Typography;
 
 export default function AssignListPublishThesisPage() {
-	const [filters, setFilters] = useState({
-		englishName: undefined as string | undefined,
-		isPublish: undefined as boolean | undefined,
-		domain: undefined as string | undefined,
-	});
-
 	const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
-	// Use the new hook to fetch real data
+	// Use the new store for data management
 	const {
-		theses,
+		filteredTheses,
 		loading,
 		refreshing,
-		error,
+		lastError,
+		filters,
+		setFilters,
+		fetchItems,
 		refetch,
-		publishMultiple,
 		togglePublishStatus,
-	} = usePublishTheses();
+		publishMultiple,
+		getDomainOptions,
+		clearError,
+	} = usePublishThesesStore();
+
+	// Fetch data when component mounts
+	useEffect(() => {
+		fetchItems();
+	}, [fetchItems]);
+
+	// Initialize filters on mount
+	useEffect(() => {
+		setFilters({
+			searchText: '',
+			isPublish: undefined,
+			domain: undefined,
+		});
+	}, [setFilters]);
 
 	// ✅ Extract unique domain list for dropdown
 	const domainOptions = useMemo(() => {
-		const domains = theses.map((t) => t.domain).filter(Boolean);
-		return Array.from(new Set(domains)).filter(
-			(d): d is string => typeof d === 'string',
-		);
-	}, [theses]);
+		return getDomainOptions();
+	}, [getDomainOptions]);
 
-	// ✅ Filter logic with Vietnamese text normalization
-	const filteredTheses = useMemo(() => {
-		return theses.filter((thesis) => {
-			const keyword = filters.englishName ?? '';
-
-			// Use utility function for text matching
-			const nameMatch = isTextMatch(keyword, [
-				thesis.englishName,
-				thesis.vietnameseName,
-				thesis.lecturerName,
-			]);
-
-			const publishMatch =
-				filters.isPublish === undefined
-					? true
-					: thesis.isPublish === filters.isPublish;
-
-			const domainMatch =
-				filters.domain === undefined ? true : thesis.domain === filters.domain;
-
-			return nameMatch && publishMatch && domainMatch;
-		});
-	}, [filters, theses]);
+	const handleFilterChange = (newFilters: Partial<typeof filters>) => {
+		setFilters(newFilters);
+	};
 
 	const handlePublishSelected = async () => {
 		if (selectedIds.length === 0) return;
@@ -91,23 +80,13 @@ export default function AssignListPublishThesisPage() {
 		}
 	};
 
-	// Loading state
-	if (loading) {
-		return (
-			<div style={{ textAlign: 'center', padding: '50px' }}>
-				<Spin size="large" />
-				<div style={{ marginTop: 16 }}>Loading thesis data...</div>
-			</div>
-		);
-	}
-
 	// Error state
-	if (error) {
+	if (lastError) {
 		return (
 			<Space direction="vertical" size="large" style={{ width: '100%' }}>
 				<Alert
 					message="Error Loading Data"
-					description={error}
+					description={lastError.message}
 					type="error"
 					showIcon
 					action={
@@ -115,6 +94,8 @@ export default function AssignListPublishThesisPage() {
 							Retry
 						</Button>
 					}
+					closable
+					onClose={clearError}
 				/>
 			</Space>
 		);
@@ -145,25 +126,26 @@ export default function AssignListPublishThesisPage() {
 
 			<Row gutter={[16, 16]}>
 				<Col span={24}>
-					<Card>
-						<ThesisFilterBar
-							currentFilters={filters}
-							onFilterChange={(newFilters) =>
-								setFilters((prev) => ({ ...prev, ...newFilters }))
-							}
-							domainOptions={domainOptions}
-							onRefresh={refetch}
-							loading={refreshing}
-						/>
+					<Spin
+						spinning={loading || refreshing}
+						tip={loading ? 'Loading thesis data...' : 'Refreshing data...'}
+					>
+						<Card>
+							<ThesisFilterBar
+								currentFilters={filters}
+								onFilterChange={handleFilterChange}
+								domainOptions={domainOptions}
+								onRefresh={refetch}
+								loading={refreshing}
+							/>
 
-						<Spin spinning={refreshing} tip="Refreshing data...">
 							<ThesisTable
 								theses={filteredTheses}
 								onSelectionChange={setSelectedIds}
 								onTogglePublish={togglePublishStatus}
 							/>
-						</Spin>
-					</Card>
+						</Card>
+					</Spin>
 				</Col>
 			</Row>
 		</Space>
