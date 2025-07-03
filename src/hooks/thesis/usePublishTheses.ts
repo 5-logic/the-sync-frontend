@@ -54,8 +54,8 @@ export const usePublishTheses = () => {
 				throw new Error(errorMessage);
 			}
 
-			const allTheses = thesisResult.data || [];
-			const allLecturers = lecturerResult.data || [];
+			const allTheses = thesisResult.data ?? [];
+			const allLecturers = lecturerResult.data ?? [];
 
 			// Filter only approved theses
 			const approvedTheses = allTheses.filter(
@@ -73,7 +73,7 @@ export const usePublishTheses = () => {
 					const lecturer = lecturerMap.get(thesis.lecturerId);
 					return {
 						...thesis,
-						lecturerName: lecturer?.fullName || 'Unknown',
+						lecturerName: (lecturer?.fullName ?? '').trim() || 'Unknown',
 						lecturerEmail: lecturer?.email,
 					};
 				},
