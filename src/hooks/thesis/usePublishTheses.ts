@@ -47,10 +47,18 @@ export const usePublishTheses = () => {
 			const lecturerResult = handleApiResponse(lecturerResponse);
 
 			if (!thesisResult.success || !lecturerResult.success) {
+				const thesisError = thesisResult.success
+					? ''
+					: (thesisResult.error?.message ?? '');
+				const lecturerError = lecturerResult.success
+					? ''
+					: (lecturerResult.error?.message ?? '');
 				const errorMessage =
-					(thesisResult.success ? '' : thesisResult.error?.message) ||
-					(lecturerResult.success ? '' : lecturerResult.error?.message) ||
-					'Failed to fetch data';
+					thesisError !== ''
+						? thesisError
+						: lecturerError !== ''
+							? lecturerError
+							: 'Failed to fetch data';
 				throw new Error(errorMessage);
 			}
 
@@ -73,7 +81,10 @@ export const usePublishTheses = () => {
 					const lecturer = lecturerMap.get(thesis.lecturerId);
 					return {
 						...thesis,
-						lecturerName: (lecturer?.fullName ?? '').trim() || 'Unknown',
+						lecturerName: (() => {
+							const trimmedName = (lecturer?.fullName ?? '').trim();
+							return trimmedName !== '' ? trimmedName : 'Unknown';
+						})(),
 						lecturerEmail: lecturer?.email,
 					};
 				},
