@@ -1,12 +1,14 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 
+import { AuthService } from '@/lib/services/auth';
 import studentService from '@/lib/services/students.service';
 import { handleApiResponse } from '@/lib/utils/handleApi';
 import {
 	ImportStudent,
 	Student,
 	StudentCreate,
+	StudentPasswordUpdate,
 	StudentToggleStatus,
 	StudentUpdate,
 } from '@/schemas/student';
@@ -42,6 +44,8 @@ interface StudentState {
 	creatingMany: boolean; // Legacy field for backward compatibility
 	creatingManyStudents: boolean; // New field for consistency
 	togglingStatus: boolean;
+	changingPassword: boolean;
+	updatingProfile: boolean;
 
 	// Error states
 	lastError: {
@@ -84,7 +88,8 @@ interface StudentState {
 		id: string,
 		data: StudentToggleStatus,
 	) => Promise<boolean>;
-
+	changePassword: (data: StudentPasswordUpdate) => Promise<boolean>;
+	updateProfile: (data: StudentUpdate) => Promise<boolean>;
 	// Error management
 	clearError: () => void;
 
@@ -125,6 +130,8 @@ export const useStudentStore = create<StudentState>()(
 			creatingMany: false,
 			creatingManyStudents: false,
 			togglingStatus: false,
+			changingPassword: false,
+			updatingProfile: false,
 			lastError: null,
 			selectedSemesterId: null,
 			selectedMajorId: null,
@@ -254,6 +261,72 @@ export const useStudentStore = create<StudentState>()(
 			toggleStudentStatus: createStudentToggleFunction(get, set, () =>
 				get().filterStudents(),
 			),
+
+			// Change password action
+			changePassword: async (data: StudentPasswordUpdate) => {
+				set({ changingPassword: true, lastError: null });
+				try {
+					const response = await studentService.changePassword(data);
+					const result = handleApiResponse(
+						response,
+						'Success',
+						'Password changed successfully. You will be logged out.',
+					);
+
+					if (result.success) {
+						// Auto logout after successful password change for security
+						try {
+							await AuthService.logout({ redirect: false });
+							// Redirect to login page after logout
+							window.location.href = '/login';
+						} catch (logoutError) {
+							console.error('Logout error after password change:', logoutError);
+							// Force redirect even if logout fails
+							window.location.href = '/login';
+						}
+						return true;
+					}
+
+					if (result.error) {
+						handleResultError(result.error, set);
+						return false;
+					}
+				} catch (error) {
+					handleActionError(error, 'student', 'change password', set);
+					return false;
+				} finally {
+					set({ changingPassword: false });
+				}
+				return false;
+			},
+
+			// Update profile action (for student self-update)
+			updateProfile: async (data: StudentUpdate) => {
+				set({ updatingProfile: true, lastError: null });
+				try {
+					const response = await studentService.updateProfile(data);
+					const result = handleApiResponse(
+						response,
+						'Success',
+						'Profile updated successfully',
+					);
+
+					if (result.success) {
+						return true;
+					}
+
+					if (result.error) {
+						handleResultError(result.error, set);
+						return false;
+					}
+				} catch (error) {
+					handleActionError(error, 'student', 'update profile', set);
+					return false;
+				} finally {
+					set({ updatingProfile: false });
+				}
+				return false;
+			},
 
 			// Error management
 			clearError: () => set(commonStoreUtilities.clearError()),
