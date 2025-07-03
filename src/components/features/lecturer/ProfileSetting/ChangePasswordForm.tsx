@@ -119,7 +119,11 @@ export default function ChangePasswordForm() {
 						{ required: true, message: 'Please enter Confirm New Password' },
 						({ getFieldValue }) => ({
 							validator(_, value) {
-								if (!value || getFieldValue('newPassword') === value) {
+								const newPassword = getFieldValue('newPassword');
+								const isEmpty = !value;
+								const passwordsMatch = newPassword === value;
+
+								if (isEmpty ?? passwordsMatch) {
 									return Promise.resolve();
 								}
 								return Promise.reject(new Error('Passwords do not match'));
