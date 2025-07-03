@@ -4,14 +4,14 @@ import { ReloadOutlined, SearchOutlined } from '@ant-design/icons';
 import { Button, Col, Input, Row, Select } from 'antd';
 
 interface Filters {
-	readonly englishName?: string;
+	readonly searchText?: string;
 	readonly isPublish?: boolean;
 	readonly domain?: string;
 }
 
 interface Props {
 	readonly currentFilters: Filters;
-	readonly onFilterChange: (filters: Filters) => void;
+	readonly onFilterChange: (filters: Partial<Filters>) => void;
 	readonly domainOptions: string[];
 	readonly onRefresh?: () => void;
 	readonly loading?: boolean;
@@ -25,14 +25,12 @@ export default function ThesisFilterBar({
 }: Readonly<Props>) {
 	const handleNameChange = (value: string) => {
 		onFilterChange({
-			...currentFilters,
-			englishName: value.trim() || undefined,
+			searchText: value.trim() || undefined,
 		});
 	};
 
 	const handlePublishChange = (value: boolean | undefined) => {
 		onFilterChange({
-			...currentFilters,
 			isPublish: value,
 		});
 	};
@@ -50,7 +48,7 @@ export default function ThesisFilterBar({
 					prefix={<SearchOutlined />}
 					allowClear
 					style={{ width: '100%' }}
-					value={currentFilters.englishName ?? ''}
+					value={currentFilters.searchText ?? ''}
 					onChange={(e) => handleNameChange(e.target.value)}
 				/>
 			</Col>
