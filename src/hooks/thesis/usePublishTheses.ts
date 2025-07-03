@@ -53,12 +53,14 @@ export const usePublishTheses = () => {
 				const lecturerError = lecturerResult.success
 					? ''
 					: (lecturerResult.error?.message ?? '');
-				const errorMessage =
-					thesisError !== ''
-						? thesisError
-						: lecturerError !== ''
-							? lecturerError
-							: 'Failed to fetch data';
+
+				let errorMessage = 'Failed to fetch data';
+				if (thesisError !== '') {
+					errorMessage = thesisError;
+				} else if (lecturerError !== '') {
+					errorMessage = lecturerError;
+				}
+
 				throw new Error(errorMessage);
 			}
 
