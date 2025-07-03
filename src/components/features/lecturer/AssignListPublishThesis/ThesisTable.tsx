@@ -7,7 +7,7 @@ import { TableRowSelection } from 'antd/es/table/interface';
 import { useEffect, useState } from 'react';
 
 import { TablePagination } from '@/components/common/TablePagination';
-import { ThesisWithLecturer } from '@/hooks/thesis/usePublishTheses';
+import { ThesisWithLecturer } from '@/store/usePublishThesesStore';
 
 interface Props {
 	readonly theses: ThesisWithLecturer[];
