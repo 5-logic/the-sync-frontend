@@ -164,6 +164,32 @@ export const ThesisConfirmationModals = {
 			onOk: onConfirm,
 		}),
 
+	publish: (
+		thesisTitle: string,
+		isCurrentlyPublished: boolean,
+		onConfirm: () => void | Promise<void>,
+		loading = false,
+	) => {
+		const actionText = isCurrentlyPublished ? 'unpublish' : 'publish';
+		const statusText = isCurrentlyPublished ? 'unpublished' : 'published';
+
+		return ConfirmationModal.show({
+			title: `${isCurrentlyPublished ? 'Unpublish' : 'Publish'} Thesis`,
+			message: `Are you sure you want to ${actionText} this thesis?`,
+			details: thesisTitle,
+			note: `Once ${statusText}, the thesis will ${
+				isCurrentlyPublished
+					? 'no longer be available for student selection'
+					: 'be available for students to select for their projects'
+			}.`,
+			noteType: isCurrentlyPublished ? 'warning' : 'info',
+			okText: `Yes, ${isCurrentlyPublished ? 'Unpublish' : 'Publish'}`,
+			okType: isCurrentlyPublished ? 'danger' : 'primary',
+			loading,
+			onOk: onConfirm,
+		});
+	},
+
 	// Generic show method for custom modals (backwards compatibility)
 	show: ConfirmationModal.show,
 };
