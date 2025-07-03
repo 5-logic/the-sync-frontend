@@ -41,10 +41,10 @@ interface StudentState {
 	creating: boolean;
 	updating: boolean;
 	deleting: boolean;
-	creatingMany: boolean; // Legacy field for backward compatibility
-	creatingManyStudents: boolean; // New field for consistency
+	creatingManyStudents: boolean; // Batch creation state
 	togglingStatus: boolean;
 	changingPassword: boolean;
+	updatingProfile: boolean;
 
 	// Error states
 	lastError: {
@@ -88,6 +88,7 @@ interface StudentState {
 		data: StudentToggleStatus,
 	) => Promise<boolean>;
 	changePassword: (data: StudentPasswordUpdate) => Promise<boolean>;
+	updateProfile: (data: StudentUpdate) => Promise<boolean>;
 
 	// Error management
 	clearError: () => void;
@@ -126,10 +127,10 @@ export const useStudentStore = create<StudentState>()(
 			creating: false,
 			updating: false,
 			deleting: false,
-			creatingMany: false,
 			creatingManyStudents: false,
 			togglingStatus: false,
 			changingPassword: false,
+			updatingProfile: false,
 			lastError: null,
 			selectedSemesterId: null,
 			selectedMajorId: null,
@@ -298,6 +299,34 @@ export const useStudentStore = create<StudentState>()(
 				return false;
 			},
 
+			// Update profile action (for student self-update)
+			updateProfile: async (data: StudentUpdate) => {
+				set({ updatingProfile: true, lastError: null });
+				try {
+					const response = await studentService.updateProfile(data);
+					const result = handleApiResponse(
+						response,
+						'Success',
+						'Profile updated successfully',
+					);
+
+					if (result.success) {
+						return true;
+					}
+
+					if (result.error) {
+						handleResultError(result.error, set);
+						return false;
+					}
+				} catch (error) {
+					handleActionError(error, 'student', 'update profile', set);
+					return false;
+				} finally {
+					set({ updatingProfile: false });
+				}
+				return false;
+			},
+
 			// Error management
 			clearError: () => set(commonStoreUtilities.clearError()),
 
@@ -310,10 +339,9 @@ export const useStudentStore = create<StudentState>()(
 					selectedSemesterId: semesterId,
 				});
 				// Apply filters with empty data
-				const currentState = get();
-				const filterFunction = currentState.filterStudents;
-				if (typeof filterFunction === 'function') {
-					filterFunction();
+				const state = get();
+				if (typeof state.filterStudents === 'function') {
+					state.filterStudents();
 				}
 			},
 			setSelectedMajorId: commonStoreUtilities.createFieldSetter(
