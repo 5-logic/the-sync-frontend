@@ -127,7 +127,7 @@ export default function AssignListPublishThesisPage() {
 			<Row gutter={[16, 16]}>
 				<Col span={24}>
 					<Spin
-						spinning={loading || refreshing}
+						spinning={Boolean(loading) || Boolean(refreshing)}
 						tip={loading ? 'Loading thesis data...' : 'Refreshing data...'}
 					>
 						<Card>
