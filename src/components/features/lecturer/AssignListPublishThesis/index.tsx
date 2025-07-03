@@ -132,16 +132,13 @@ export default function AssignListPublishThesisPage() {
 					</Paragraph>
 				</Col>
 				<Col>
-					<Space>
-						<Button onClick={refetch}>Refresh</Button>
-						<Button
-							type="primary"
-							onClick={handlePublishSelected}
-							disabled={selectedIds.length === 0}
-						>
-							Publish Selected ({selectedIds.length})
-						</Button>
-					</Space>
+					<Button
+						type="primary"
+						onClick={handlePublishSelected}
+						disabled={selectedIds.length === 0}
+					>
+						Publish Selected ({selectedIds.length})
+					</Button>
 				</Col>
 			</Row>
 
@@ -154,6 +151,8 @@ export default function AssignListPublishThesisPage() {
 								setFilters((prev) => ({ ...prev, ...newFilters }))
 							}
 							domainOptions={domainOptions}
+							onRefresh={refetch}
+							loading={loading}
 						/>
 
 						<ThesisTable
