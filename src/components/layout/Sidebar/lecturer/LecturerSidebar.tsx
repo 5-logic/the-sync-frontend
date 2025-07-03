@@ -106,7 +106,7 @@ const createModeratorMenuItems = (
 		type: 'group' as const,
 		children: [
 			createMenuItem(
-				LECTURER_MENU_KEYS.PUBLISH_THESIS,
+				DASHBOARD_PATHS.LECTURER_ASSIGN_LIST_PUBLISH_THESIS,
 				<BookOutlined />,
 				'Publish Thesis',
 				navigateWithLoading,
@@ -130,7 +130,7 @@ const createModeratorMenuItems = (
 				targetPath,
 			),
 			createMenuItem(
-				'/lecturer/assign-lecturer-review',
+				DASHBOARD_PATHS.LECTURER_ASSIGN_LECTURER_REVIEW,
 				<ScheduleOutlined />,
 				'Assign Lecturer Review',
 				navigateWithLoading,
