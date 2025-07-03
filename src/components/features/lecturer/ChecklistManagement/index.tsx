@@ -4,8 +4,8 @@ import Header from '../AssignSupervisor/Header';
 import { Space, message } from 'antd';
 import { useState } from 'react';
 
+import { mockChecklistItems } from '@/data/ChecklistItems';
 import { mockChecklists } from '@/data/checklist';
-import { mockChecklistItems } from '@/data/mockChecklistItems';
 
 import ChecklistTable from './ChecklistTable';
 import ChecklistToolbar from './ChecklistToolbar';

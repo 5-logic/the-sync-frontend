@@ -1,4 +1,6 @@
+import { EditOutlined, EyeOutlined } from '@ant-design/icons';
 import { Table } from 'antd';
+import { Space, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 
 import { Checklist } from '@/schemas/checklist';
@@ -37,10 +39,32 @@ export default function ChecklistTable({ data, getTotalItems }: Props) {
 			key: 'totalItems',
 			render: (_, record) => getTotalItems(record.id),
 		},
+
 		{
 			title: 'Action',
 			key: 'action',
-			render: () => <span style={{ cursor: 'pointer' }}>⋮</span>,
+			render: (_, record) => (
+				<Space size="middle">
+					<Tooltip title="View Details">
+						<EyeOutlined
+							style={{ cursor: 'pointer', color: '#1890ff' }}
+							onClick={() => {
+								console.log('View', record);
+								// Replace with navigation or modal logic
+							}}
+						/>
+					</Tooltip>
+					<Tooltip title="Edit">
+						<EditOutlined
+							style={{ cursor: 'pointer', color: '#52c41a' }}
+							onClick={() => {
+								console.log('Edit', record);
+								// Replace with navigation or modal logic
+							}}
+						/>
+					</Tooltip>
+				</Space>
+			),
 		},
 	];
 
