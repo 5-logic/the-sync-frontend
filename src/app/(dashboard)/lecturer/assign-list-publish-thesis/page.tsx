@@ -7,6 +7,6 @@ export const metadata = createMetadata({
 		'Lecturer Assign List Publish Thesis for TheSync - Group Formation and Capstone Thesis Development',
 });
 
-export default function LecturerAssignListPublishThesisPage() {
+export default function LecturerListPublishThesisPage() {
 	return <AssignListPublishThesisPage />;
 }
