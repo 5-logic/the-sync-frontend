@@ -118,7 +118,8 @@ const StudentAccountForm: React.FC = () => {
 	// Fetch user profile data
 	useEffect(() => {
 		const loadProfile = async () => {
-			if (!isAuthenticated || !session?.user) {
+			const hasValidSession = isAuthenticated && session?.user;
+			if (!hasValidSession) {
 				setLoadingProfile(false);
 				return;
 			}
@@ -233,11 +234,14 @@ const StudentAccountForm: React.FC = () => {
 		};
 	}, []);
 
+	// Check if any loading is in progress
+	const isLoading = React.useMemo(() => {
+		const states = [loadingProfile, sessionLoading, majorsLoading];
+		return states.some(Boolean);
+	}, [loadingProfile, sessionLoading, majorsLoading]);
+
 	return (
-		<Spin
-			spinning={loadingProfile || sessionLoading || majorsLoading}
-			tip="Loading profile..."
-		>
+		<Spin spinning={isLoading} tip="Loading profile...">
 			<Form
 				requiredMark={false}
 				form={form}
