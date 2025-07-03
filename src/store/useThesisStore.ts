@@ -371,14 +371,26 @@ export const useThesisStore = create<ThesisState>()(
 			toggleThesisPublishStatus: async (id: string) => {
 				set({ toggling: true, lastError: null });
 				try {
-					const response = await thesisService.togglePublishStatus(id);
+					// Get current thesis to determine new publish state
+					const { theses } = get();
+					const currentThesis = theses.find((thesis) => thesis.id === id);
+					if (!currentThesis) {
+						throw new Error('Thesis not found');
+					}
+
+					// Use bulk API for single thesis toggle
+					const response = await thesisService.publishTheses({
+						thesesIds: [id],
+						isPublish: !currentThesis.isPublish,
+					});
 					const result = handleApiResponse(response);
 
-					if (result.success && result.data) {
+					if (result.success) {
 						// Update local state
-						const { theses } = get();
 						const updatedTheses = theses.map((thesis) =>
-							thesis.id === id ? result.data! : thesis,
+							thesis.id === id
+								? { ...thesis, isPublish: !thesis.isPublish }
+								: thesis,
 						);
 						set({
 							theses: updatedTheses,
