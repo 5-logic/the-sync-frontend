@@ -15,6 +15,7 @@ interface UsePublishThesesState {
 	theses: ThesisWithLecturer[];
 	lecturers: Lecturer[];
 	loading: boolean;
+	refreshing: boolean;
 	error: string | null;
 }
 
@@ -23,11 +24,17 @@ export const usePublishTheses = () => {
 		theses: [],
 		lecturers: [],
 		loading: false,
+		refreshing: false,
 		error: null,
 	});
 
-	const fetchData = async () => {
-		setState((prev) => ({ ...prev, loading: true, error: null }));
+	const fetchData = async (isRefresh = false) => {
+		setState((prev) => ({
+			...prev,
+			loading: !isRefresh && prev.theses.length === 0, // Only show loading for initial fetch
+			refreshing: isRefresh,
+			error: null,
+		}));
 
 		try {
 			// Fetch both theses and lecturers in parallel
@@ -74,6 +81,7 @@ export const usePublishTheses = () => {
 				theses: thesesWithLecturer,
 				lecturers: allLecturers,
 				loading: false,
+				refreshing: false,
 				error: null,
 			});
 		} catch (error) {
@@ -82,6 +90,7 @@ export const usePublishTheses = () => {
 			setState((prev) => ({
 				...prev,
 				loading: false,
+				refreshing: false,
 				error: errorMessage,
 			}));
 		}
@@ -148,13 +157,15 @@ export const usePublishTheses = () => {
 		}
 	};
 
+	const refetch = () => fetchData(true);
+
 	useEffect(() => {
 		fetchData();
 	}, []);
 
 	return {
 		...state,
-		refetch: fetchData,
+		refetch,
 		togglePublishStatus,
 		publishMultiple,
 	};
