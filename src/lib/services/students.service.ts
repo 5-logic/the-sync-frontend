@@ -4,6 +4,7 @@ import {
 	ImportStudent,
 	Student,
 	StudentCreate,
+	StudentPasswordUpdate,
 	StudentToggleStatus,
 	StudentUpdate,
 } from '@/schemas/student';
@@ -83,6 +84,16 @@ class StudentService {
 	): Promise<ApiResponse<void>> {
 		const response = await httpClient.delete<ApiResponse<void>>(
 			`${this.baseUrl}/${id}/semester/${semesterId}`,
+		);
+		return response.data;
+	}
+
+	async changePassword(
+		passwordDto: StudentPasswordUpdate,
+	): Promise<ApiResponse<void>> {
+		const response = await httpClient.put<ApiResponse<void>>(
+			`${this.baseUrl}/change-password`,
+			passwordDto,
 		);
 		return response.data;
 	}
