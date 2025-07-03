@@ -192,7 +192,8 @@ export default function ThesisTable({
 		selectedRowKeys,
 		onChange: handleRowSelectionChange,
 		getCheckboxProps: (record) => ({
-			disabled: record.isPublish || Boolean(record.groupId), // Disable if published or has group assigned
+			// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+			disabled: record.isPublish || Boolean(record.groupId), // Disable if published OR has group assigned
 		}),
 		columnWidth: 50,
 	};
