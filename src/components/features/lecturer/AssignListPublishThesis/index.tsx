@@ -1,20 +1,11 @@
 'use client';
 
-import {
-	Alert,
-	Button,
-	Card,
-	Col,
-	Row,
-	Space,
-	Spin,
-	Typography,
-	message,
-} from 'antd';
+import { Alert, Button, Card, Col, Row, Space, Spin, Typography } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
 
 import ThesisFilterBar from '@/components/features/lecturer/AssignListPublishThesis/ThesisFilterBar';
 import ThesisTable from '@/components/features/lecturer/AssignListPublishThesis/ThesisTable';
+import { showNotification } from '@/lib/utils/notification';
 import { usePublishThesesStore } from '@/store';
 
 const { Title, Paragraph } = Typography;
@@ -68,15 +59,22 @@ export default function AssignListPublishThesisPage() {
 			const success = await publishMultiple(selectedIds);
 
 			if (success) {
-				message.success(
+				showNotification.success(
+					'Bulk Publish Successful',
 					`Published ${selectedIds.length} thesis(es) successfully`,
 				);
 				setSelectedIds([]);
 			} else {
-				message.error('Failed to publish some theses. Please try again.');
+				showNotification.error(
+					'Bulk Publish Failed',
+					'Failed to publish some theses. Please try again.',
+				);
 			}
 		} catch {
-			message.error('An error occurred while publishing theses.');
+			showNotification.error(
+				'Bulk Publish Error',
+				'An error occurred while publishing theses.',
+			);
 		}
 	};
 
