@@ -100,6 +100,18 @@ export default function LecturerSidebar() {
 			type: 'group' as const,
 			children: [
 				{
+					key: LECTURER_MENU_KEYS.PUBLISH_THESIS,
+					icon: isMenuItemLoading(LECTURER_MENU_KEYS.PUBLISH_THESIS) ? (
+						<LoadingOutlined spin />
+					) : (
+						<BookOutlined />
+					),
+					label: 'Publish Thesis',
+					onClick: () => navigateWithLoading(LECTURER_MENU_KEYS.PUBLISH_THESIS),
+					disabled:
+						isNavigating && targetPath !== LECTURER_MENU_KEYS.PUBLISH_THESIS,
+				},
+				{
 					key: DASHBOARD_PATHS.LECTURER_ASSIGN_STUDENT_LIST,
 					icon: isMenuItemLoading(
 						DASHBOARD_PATHS.LECTURER_ASSIGN_STUDENT_LIST,
