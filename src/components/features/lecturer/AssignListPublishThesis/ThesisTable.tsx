@@ -1,12 +1,14 @@
 'use client';
 
 import { EyeOutlined } from '@ant-design/icons';
-import { Button, Switch, Table, Tooltip, message } from 'antd';
+import { Button, Switch, Table, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { TableRowSelection } from 'antd/es/table/interface';
 import { useEffect, useState } from 'react';
 
+import { ThesisConfirmationModals } from '@/components/common/ConfirmModal';
 import { TablePagination } from '@/components/common/TablePagination';
+import { showNotification } from '@/lib/utils/notification';
 import { ThesisWithLecturer } from '@/store/usePublishThesesStore';
 
 interface Props {
@@ -38,27 +40,56 @@ export default function ThesisTable({
 			return;
 		}
 
-		setToggleLoading((prev) => new Set(prev).add(id));
+		// Find the thesis to get its name for the confirmation dialog
+		const thesis = data.find((item) => item.id === id);
+		if (!thesis) return;
 
-		try {
-			const success = await onTogglePublish(id);
-
-			if (success) {
-				message.success(
-					`Thesis ${newValue ? 'published' : 'unpublished'} successfully`,
-				);
-			} else {
-				message.error('Failed to toggle publish status');
-			}
-		} catch {
-			message.error('An error occurred while updating publish status');
-		} finally {
-			setToggleLoading((prev) => {
-				const newSet = new Set(prev);
-				newSet.delete(id);
-				return newSet;
-			});
+		// Check if trying to unpublish a thesis that has been assigned to a group
+		const isUnpublishing = thesis.isPublish && !newValue;
+		if (isUnpublishing && thesis.groupId) {
+			showNotification.warning(
+				'Cannot Unpublish',
+				'This thesis cannot be unpublished because it has been assigned to a student group.',
+			);
+			return;
 		}
+
+		// Show confirmation dialog
+		ThesisConfirmationModals.publish(
+			thesis.englishName,
+			thesis.isPublish, // current publish status
+			async () => {
+				setToggleLoading((prev) => new Set(prev).add(id));
+
+				try {
+					const success = await onTogglePublish(id);
+
+					if (success) {
+						const statusText = newValue ? 'published' : 'unpublished';
+						showNotification.success(
+							'Publish Status Updated',
+							`Thesis ${statusText} successfully`,
+						);
+					} else {
+						showNotification.error(
+							'Update Failed',
+							'Failed to toggle publish status',
+						);
+					}
+				} catch {
+					showNotification.error(
+						'Update Error',
+						'An error occurred while updating publish status',
+					);
+				} finally {
+					setToggleLoading((prev) => {
+						const newSet = new Set(prev);
+						newSet.delete(id);
+						return newSet;
+					});
+				}
+			},
+		);
 	};
 
 	const handleRowSelectionChange = (newSelectedKeys: React.Key[]) => {
@@ -66,15 +97,32 @@ export default function ThesisTable({
 		onSelectionChange?.(newSelectedKeys.map(String));
 	};
 
-	const renderSwitch = (record: ThesisWithLecturer) => (
-		<Switch
-			checked={record.isPublish}
-			checkedChildren="Published"
-			unCheckedChildren="Unpublished"
-			loading={toggleLoading.has(record.id)}
-			onChange={(checked) => handleTogglePublish(record.id, checked)}
-		/>
-	);
+	const renderSwitch = (record: ThesisWithLecturer) => {
+		// Check if thesis has been assigned to a group
+		const hasGroupAssigned = Boolean(record.groupId);
+		const canUnpublish = !hasGroupAssigned;
+
+		const switchElement = (
+			<Switch
+				checked={record.isPublish}
+				checkedChildren="Published"
+				unCheckedChildren="Unpublished"
+				loading={toggleLoading.has(record.id)}
+				onChange={(checked) => handleTogglePublish(record.id, checked)}
+			/>
+		);
+
+		// Show warning tooltip if thesis is published but cannot be unpublished
+		if (record.isPublish && !canUnpublish) {
+			return (
+				<Tooltip title="Cannot unpublish: This thesis has been assigned to a student group">
+					{switchElement}
+				</Tooltip>
+			);
+		}
+
+		return switchElement;
+	};
 
 	const renderViewButton = () => (
 		<Tooltip title="View Detail">
@@ -144,7 +192,7 @@ export default function ThesisTable({
 		selectedRowKeys,
 		onChange: handleRowSelectionChange,
 		getCheckboxProps: (record) => ({
-			disabled: record.isPublish, // Disable selection if already published
+			disabled: record.isPublish || Boolean(record.groupId), // Disable if published or has group assigned
 		}),
 		columnWidth: 50,
 	};
