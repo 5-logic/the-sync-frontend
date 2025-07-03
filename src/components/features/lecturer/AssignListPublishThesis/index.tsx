@@ -16,6 +16,7 @@ import { useMemo, useState } from 'react';
 import ThesisFilterBar from '@/components/features/lecturer/AssignListPublishThesis/ThesisFilterBar';
 import ThesisTable from '@/components/features/lecturer/AssignListPublishThesis/ThesisTable';
 import { usePublishTheses } from '@/hooks/thesis';
+import { isTextMatch } from '@/lib/utils';
 
 const { Title, Paragraph } = Typography;
 
@@ -32,6 +33,7 @@ export default function AssignListPublishThesisPage() {
 	const {
 		theses,
 		loading,
+		refreshing,
 		error,
 		refetch,
 		publishMultiple,
@@ -46,18 +48,17 @@ export default function AssignListPublishThesisPage() {
 		);
 	}, [theses]);
 
-	// ✅ Filter logic
+	// ✅ Filter logic with Vietnamese text normalization
 	const filteredTheses = useMemo(() => {
 		return theses.filter((thesis) => {
-			const keyword = filters.englishName?.toLowerCase() ?? '';
-			const englishName = thesis.englishName?.toLowerCase() ?? '';
-			const vietnameseName = thesis.vietnameseName?.toLowerCase() ?? '';
-			const nameMatch =
-				keyword === ''
-					? true
-					: [englishName, vietnameseName].some((name) =>
-							name.includes(keyword),
-						);
+			const keyword = filters.englishName ?? '';
+
+			// Use utility function for text matching
+			const nameMatch = isTextMatch(keyword, [
+				thesis.englishName,
+				thesis.vietnameseName,
+				thesis.lecturerName,
+			]);
 
 			const publishMatch =
 				filters.isPublish === undefined
@@ -152,14 +153,16 @@ export default function AssignListPublishThesisPage() {
 							}
 							domainOptions={domainOptions}
 							onRefresh={refetch}
-							loading={loading}
+							loading={refreshing}
 						/>
 
-						<ThesisTable
-							theses={filteredTheses}
-							onSelectionChange={setSelectedIds}
-							onTogglePublish={togglePublishStatus}
-						/>
+						<Spin spinning={refreshing} tip="Refreshing data...">
+							<ThesisTable
+								theses={filteredTheses}
+								onSelectionChange={setSelectedIds}
+								onTogglePublish={togglePublishStatus}
+							/>
+						</Spin>
 					</Card>
 				</Col>
 			</Row>
