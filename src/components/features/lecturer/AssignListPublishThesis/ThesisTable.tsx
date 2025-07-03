@@ -1,32 +1,64 @@
 'use client';
 
 import { EyeOutlined } from '@ant-design/icons';
-import { Button, Switch, Table, Tooltip } from 'antd';
+import { Button, Switch, Table, Tooltip, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { TableRowSelection } from 'antd/es/table/interface';
 import { useEffect, useState } from 'react';
 
 import { TablePagination } from '@/components/common/TablePagination';
-import { ExtendedThesis } from '@/data/thesis';
+import { ThesisWithLecturer } from '@/hooks/thesis/usePublishTheses';
 
 interface Props {
-	readonly theses: ExtendedThesis[];
+	readonly theses: ThesisWithLecturer[];
 	readonly onSelectionChange?: (selectedIds: string[]) => void;
+	readonly onTogglePublish?: (thesisId: string) => Promise<boolean>;
 }
 
-export default function ThesisTable({ theses, onSelectionChange }: Props) {
-	const [data, setData] = useState<ExtendedThesis[]>([]);
+export default function ThesisTable({
+	theses,
+	onSelectionChange,
+	onTogglePublish,
+}: Props) {
+	const [data, setData] = useState<ThesisWithLecturer[]>([]);
 	const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+	const [toggleLoading, setToggleLoading] = useState<Set<string>>(new Set());
 
 	useEffect(() => {
 		setData(theses);
 	}, [theses]);
 
-	const handleTogglePublish = (id: string, newValue: boolean) => {
-		const updated = data.map((item) =>
-			item.id === id ? { ...item, isPublish: newValue } : item,
-		);
-		setData(updated);
+	const handleTogglePublish = async (id: string, newValue: boolean) => {
+		if (!onTogglePublish) {
+			// Fallback to local state update if no API handler provided
+			const updated = data.map((item) =>
+				item.id === id ? { ...item, isPublish: newValue } : item,
+			);
+			setData(updated);
+			return;
+		}
+
+		setToggleLoading((prev) => new Set(prev).add(id));
+
+		try {
+			const success = await onTogglePublish(id);
+
+			if (success) {
+				message.success(
+					`Thesis ${newValue ? 'published' : 'unpublished'} successfully`,
+				);
+			} else {
+				message.error('Failed to toggle publish status');
+			}
+		} catch {
+			message.error('An error occurred while updating publish status');
+		} finally {
+			setToggleLoading((prev) => {
+				const newSet = new Set(prev);
+				newSet.delete(id);
+				return newSet;
+			});
+		}
 	};
 
 	const handleRowSelectionChange = (newSelectedKeys: React.Key[]) => {
@@ -34,11 +66,12 @@ export default function ThesisTable({ theses, onSelectionChange }: Props) {
 		onSelectionChange?.(newSelectedKeys.map(String));
 	};
 
-	const renderSwitch = (record: ExtendedThesis) => (
+	const renderSwitch = (record: ThesisWithLecturer) => (
 		<Switch
 			checked={record.isPublish}
-			checkedChildren="Publish"
-			unCheckedChildren="Unpublish"
+			checkedChildren="Published"
+			unCheckedChildren="Unpublished"
+			loading={toggleLoading.has(record.id)}
 			onChange={(checked) => handleTogglePublish(record.id, checked)}
 		/>
 	);
@@ -49,21 +82,34 @@ export default function ThesisTable({ theses, onSelectionChange }: Props) {
 		</Tooltip>
 	);
 
-	const columns: ColumnsType<ExtendedThesis> = [
+	const columns: ColumnsType<ThesisWithLecturer> = [
 		{
 			title: 'English Name',
 			dataIndex: 'englishName',
 			key: 'englishName',
+			ellipsis: true,
 		},
 		{
-			title: 'VietNamese Name',
+			title: 'Vietnamese Name',
 			dataIndex: 'vietnameseName',
 			key: 'vietnameseName',
+			ellipsis: true,
 		},
 		{
 			title: 'Lecturer',
-			dataIndex: 'lecturerId',
-			key: 'lecturerId',
+			key: 'lecturer',
+			render: (_, record) => record.lecturerName || 'Unknown',
+		},
+		{
+			title: 'Domain',
+			dataIndex: 'domain',
+			key: 'domain',
+			render: (domain) => domain || 'N/A',
+		},
+		{
+			title: 'Status',
+			dataIndex: 'status',
+			key: 'status',
 		},
 		{
 			title: 'Public Access',
@@ -77,9 +123,12 @@ export default function ThesisTable({ theses, onSelectionChange }: Props) {
 		},
 	];
 
-	const rowSelection: TableRowSelection<ExtendedThesis> = {
+	const rowSelection: TableRowSelection<ThesisWithLecturer> = {
 		selectedRowKeys,
 		onChange: handleRowSelectionChange,
+		getCheckboxProps: (record) => ({
+			disabled: record.isPublish, // Disable selection if already published
+		}),
 	};
 
 	return (
