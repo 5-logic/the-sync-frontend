@@ -4,6 +4,7 @@ import { EyeOutlined } from '@ant-design/icons';
 import { Button, Switch, Table, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { TableRowSelection } from 'antd/es/table/interface';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { ThesisConfirmationModals } from '@/components/common/ConfirmModal';
@@ -24,9 +25,11 @@ export default function ThesisTable({
 	onSelectionChange,
 	onTogglePublish,
 }: Props) {
+	const router = useRouter();
 	const [data, setData] = useState<ThesisWithLecturer[]>([]);
 	const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 	const [toggleLoading, setToggleLoading] = useState<Set<string>>(new Set());
+	const [navigatingId, setNavigatingId] = useState<string | null>(null);
 
 	useEffect(() => {
 		setData(theses);
@@ -133,9 +136,24 @@ export default function ThesisTable({
 		return switchElement;
 	};
 
-	const renderViewButton = () => (
+	const renderViewButton = (record: ThesisWithLecturer) => (
 		<Tooltip title="View Detail">
-			<Button type="text" icon={<EyeOutlined />} onClick={() => {}} />
+			<Button
+				type="text"
+				icon={<EyeOutlined />}
+				loading={navigatingId === record.id}
+				onClick={async () => {
+					setNavigatingId(record.id);
+					try {
+						await router.push(
+							`/lecturer/assign-list-publish-thesis/${record.id}`,
+						);
+					} finally {
+						// Reset loading state after navigation
+						setTimeout(() => setNavigatingId(null), 100);
+					}
+				}}
+			/>
 		</Tooltip>
 	);
 
@@ -191,7 +209,7 @@ export default function ThesisTable({
 		{
 			title: 'Actions',
 			key: 'actions',
-			render: () => renderViewButton(),
+			render: (_, record) => renderViewButton(record),
 			width: '10%',
 			align: 'center',
 		},
