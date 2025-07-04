@@ -33,6 +33,7 @@ interface ActionButtonProps {
 	publishLoading?: boolean;
 	mode?: 'thesis-management' | 'publish-list';
 	isPublished?: boolean;
+	canUnpublish?: boolean;
 }
 
 export default function ActionButtons({
@@ -55,6 +56,7 @@ export default function ActionButtons({
 	publishLoading = false,
 	mode = 'thesis-management',
 	isPublished = false,
+	canUnpublish = true,
 }: Readonly<ActionButtonProps>) {
 	// Determine if we should show moderator actions (Approve/Reject)
 	// BUSINESS LOGIC: Only show for "Pending" status (already submitted for review)
@@ -161,6 +163,7 @@ export default function ActionButtons({
 									}
 									onClick={onPublishThesis}
 									loading={publishLoading}
+									disabled={isPublished && !canUnpublish}
 								>
 									{isPublished ? 'Unpublish Thesis' : 'Publish Thesis'}
 								</Button>
