@@ -3,7 +3,7 @@
 import { SearchOutlined } from '@ant-design/icons';
 import { Col, Input, Row } from 'antd';
 
-import SemesterMilestoneSelect from './SemesterMilestoneSelect';
+import SemesterMilestoneSelect from '@/components/features/lecturer/AssignLecturerReview/SemesterMilestoneSelect';
 
 interface Props {
 	search: string;

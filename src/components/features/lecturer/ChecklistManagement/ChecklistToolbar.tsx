@@ -1,8 +1,9 @@
 'use client';
 
-import SemesterMilestoneSelect from '../AssignLecturerReview/SemesterMilestoneSelect';
 import { PlusOutlined } from '@ant-design/icons';
 import { Button, Col, Row } from 'antd';
+
+import SemesterMilestoneSelect from '@/components/features/lecturer/AssignLecturerReview/SemesterMilestoneSelect';
 
 interface Props {
 	semester: string;
