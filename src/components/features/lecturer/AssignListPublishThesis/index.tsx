@@ -3,6 +3,7 @@
 import { Alert, Button, Card, Col, Row, Space, Spin, Typography } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
 
+import { ThesisConfirmationModals } from '@/components/common/ConfirmModal';
 import ThesisFilterBar from '@/components/features/lecturer/AssignListPublishThesis/ThesisFilterBar';
 import ThesisTable from '@/components/features/lecturer/AssignListPublishThesis/ThesisTable';
 import { showNotification } from '@/lib/utils/notification';
@@ -12,6 +13,7 @@ const { Title, Paragraph } = Typography;
 
 export default function AssignListPublishThesisPage() {
 	const [selectedIds, setSelectedIds] = useState<string[]>([]);
+	const [bulkPublishLoading, setBulkPublishLoading] = useState(false);
 
 	// Use the new store for data management
 	const {
@@ -55,27 +57,56 @@ export default function AssignListPublishThesisPage() {
 	const handlePublishSelected = async () => {
 		if (selectedIds.length === 0) return;
 
-		try {
-			const success = await publishMultiple(selectedIds);
+		// Get selected theses for confirmation dialog
+		const selectedTheses = filteredTheses.filter((thesis) =>
+			selectedIds.includes(thesis.id),
+		);
 
-			if (success) {
-				showNotification.success(
-					'Bulk Publish Successful',
-					`Published ${selectedIds.length} thesis(es) successfully`,
-				);
-				setSelectedIds([]);
-			} else {
-				showNotification.error(
-					'Bulk Publish Failed',
-					'Failed to publish some theses. Please try again.',
-				);
-			}
-		} catch {
-			showNotification.error(
-				'Bulk Publish Error',
-				'An error occurred while publishing theses.',
+		// Count how many will actually be published (not already published, no groupId)
+		const thesesToPublish = selectedTheses.filter(
+			(thesis) => !thesis.isPublish && !thesis.groupId,
+		);
+
+		if (thesesToPublish.length === 0) {
+			showNotification.warning(
+				'No Theses to Publish',
+				'All selected theses are already published or assigned to groups.',
 			);
+			return;
 		}
+
+		// Show confirmation dialog
+		ThesisConfirmationModals.bulkPublish(
+			thesesToPublish.length,
+			selectedIds.length,
+			async () => {
+				setBulkPublishLoading(true);
+
+				try {
+					const success = await publishMultiple(selectedIds);
+
+					if (success) {
+						showNotification.success(
+							'Bulk Publish Successful',
+							`Published ${thesesToPublish.length} thesis(es) successfully`,
+						);
+						setSelectedIds([]);
+					} else {
+						showNotification.error(
+							'Bulk Publish Failed',
+							'Failed to publish some theses. Please try again.',
+						);
+					}
+				} catch {
+					showNotification.error(
+						'Bulk Publish Error',
+						'An error occurred while publishing theses.',
+					);
+				} finally {
+					setBulkPublishLoading(false);
+				}
+			},
+		);
 	};
 
 	// Error state
@@ -115,7 +146,8 @@ export default function AssignListPublishThesisPage() {
 					<Button
 						type="primary"
 						onClick={handlePublishSelected}
-						disabled={selectedIds.length === 0}
+						disabled={selectedIds.length === 0 || bulkPublishLoading}
+						loading={bulkPublishLoading}
 					>
 						Publish Selected ({selectedIds.length})
 					</Button>
@@ -139,6 +171,7 @@ export default function AssignListPublishThesisPage() {
 
 							<ThesisTable
 								theses={filteredTheses}
+								selectedKeys={selectedIds}
 								onSelectionChange={setSelectedIds}
 								onTogglePublish={togglePublishStatus}
 							/>
