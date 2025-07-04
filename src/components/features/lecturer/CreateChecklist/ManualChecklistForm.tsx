@@ -154,7 +154,9 @@ export default function ManualChecklistForm() {
 			<Card
 				title={
 					<Row justify="space-between" align="middle">
-						<Typography.Text strong>Manual Checklist Create</Typography.Text>
+						<Typography.Text strong>
+							Create manual checklist for Semester2023 / Milestone review 2
+						</Typography.Text>
 						<Button
 							type="primary"
 							icon={<PlusOutlined />}
