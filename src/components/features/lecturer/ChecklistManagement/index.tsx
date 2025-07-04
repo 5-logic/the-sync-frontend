@@ -1,6 +1,6 @@
 'use client';
 
-import { Space, message } from 'antd';
+import { Space } from 'antd';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -9,6 +9,7 @@ import ChecklistTable from '@/components/features/lecturer/ChecklistManagement/C
 import ChecklistToolbar from '@/components/features/lecturer/ChecklistManagement/ChecklistToolbar';
 import { mockChecklistItems } from '@/data/ChecklistItems';
 import { mockChecklists } from '@/data/checklist';
+import { showNotification } from '@/lib/utils/notification';
 
 export default function ChecklistManagement() {
 	const router = useRouter();
@@ -26,7 +27,7 @@ export default function ChecklistManagement() {
 		mockChecklistItems.filter((item) => item.checklistId === checklistId)
 			.length;
 
-	// ✅ Kiểm tra nếu đã tồn tại checklist với semester + milestone thì disable
+	// ✅ Disable nếu đã tồn tại checklist
 	const checklistExists =
 		semester !== '' &&
 		milestone !== '' &&
@@ -36,7 +37,8 @@ export default function ChecklistManagement() {
 
 	const handleCreateChecklist = () => {
 		if (!semester || !milestone) {
-			message.warning(
+			showNotification.warning(
+				'Missing Selection',
 				'Please select both semester and milestone before creating a checklist.',
 			);
 			return;
@@ -51,7 +53,10 @@ export default function ChecklistManagement() {
 		if (checklist) {
 			router.push(`/lecturer/checklist/create-checklist/${checklist.id}`);
 		} else {
-			message.error('Checklist ID not found for the selected filters.');
+			showNotification.error(
+				'Checklist Not Found',
+				'Checklist ID not found for the selected filters.',
+			);
 		}
 	};
 
