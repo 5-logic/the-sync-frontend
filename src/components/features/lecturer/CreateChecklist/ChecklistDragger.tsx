@@ -8,6 +8,7 @@ import { UploadFile } from 'antd/es/upload/interface';
 import { useState } from 'react';
 
 import { ChecklistItem } from '@/components/features/lecturer/CreateChecklist/ImportChecklistExcel';
+import { mockChecklistItems } from '@/data/ChecklistItems';
 
 interface Props {
 	fileList: UploadFile[];
@@ -31,24 +32,19 @@ const ChecklistDragger = ({
 	const isValidFileSize = (file: File) => file.size / 1024 / 1024 < 100;
 
 	const handleUpload = async (file: File) => {
-		// Mock parse logic
-		const dummyData = [
-			{
-				id: '1',
-				name: 'Submit Proposal Document',
-				description: 'Upload your proposal as PDF',
-				isRequired: true,
-			},
-			{
-				id: '2',
-				name: 'Initial Presentation',
-				description: 'Slides + recording required',
-				isRequired: false,
-			},
-		];
-		setChecklistItems(dummyData);
+		// Giả lập parse Excel (lấy từ mock file)
+		const transformedData = mockChecklistItems.map(
+			({ id, name, description, isRequired }) => ({
+				id,
+				name,
+				description: description ?? '',
+				isRequired,
+			}),
+		);
+
+		setChecklistItems(transformedData);
 		setFileList([file as unknown as UploadFile]);
-		message.success(`${dummyData.length} items imported successfully`);
+		message.success(`${transformedData.length} items imported successfully`);
 		return false;
 	};
 

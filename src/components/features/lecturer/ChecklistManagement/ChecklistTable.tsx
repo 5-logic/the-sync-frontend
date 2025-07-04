@@ -1,6 +1,5 @@
 import { EditOutlined, EyeOutlined } from '@ant-design/icons';
-import { Table } from 'antd';
-import { Space, Tooltip } from 'antd';
+import { Space, Table, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 
 import { Checklist } from '@/schemas/checklist';

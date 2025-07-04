@@ -12,7 +12,6 @@ export default function CreateChecklist() {
 	const [activeTab, setActiveTab] = useState('manual');
 
 	return (
-		// <Space direction="vertical" size="large" style={{ width: '100%' }}>
 		<Layout style={{ minHeight: '100vh', background: '#fff' }}>
 			<Header
 				title="Create Checklist"
@@ -25,6 +24,5 @@ export default function CreateChecklist() {
 			{/* {activeTab === 'manual' && <ManualChecklistForm />} */}
 			{activeTab === 'excel' && <ImportChecklistExcel />}
 		</Layout>
-		// </Space>
 	);
 }
