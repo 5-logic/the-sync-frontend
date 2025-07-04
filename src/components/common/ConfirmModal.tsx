@@ -190,6 +190,30 @@ export const ThesisConfirmationModals = {
 		});
 	},
 
+	bulkPublish: (
+		publishCount: number,
+		totalSelected: number,
+		onConfirm: () => void | Promise<void>,
+		loading = false,
+	) => {
+		const skippedCount = totalSelected - publishCount;
+		const skippedMessage =
+			skippedCount > 0
+				? ` (${skippedCount} thesis(es) will be skipped as they are already published or assigned to groups)`
+				: '';
+
+		return ConfirmationModal.show({
+			title: 'Bulk Publish Theses',
+			message: `Are you sure you want to publish ${publishCount} thesis(es)?`,
+			details: `${publishCount} out of ${totalSelected} selected thesis(es) will be published${skippedMessage}`,
+			note: 'Once published, these theses will be available for students to select for their projects.',
+			noteType: 'info',
+			okText: 'Yes, Publish All',
+			loading,
+			onOk: onConfirm,
+		});
+	},
+
 	// Generic show method for custom modals (backwards compatibility)
 	show: ConfirmationModal.show,
 };
