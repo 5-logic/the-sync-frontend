@@ -57,6 +57,14 @@ export default function ViewThesisDetail({
 
 		const isCurrentlyPublished = thesis.isPublish;
 
+		// Business rule: Cannot unpublish if thesis has group assigned
+		if (isCurrentlyPublished && thesis.groupId) {
+			showNotification.warning(
+				'Cannot unpublish thesis that has been assigned to a group.',
+			);
+			return;
+		}
+
 		ThesisConfirmationModals.publish(
 			thesis.englishName,
 			isCurrentlyPublished,
@@ -173,6 +181,7 @@ export default function ViewThesisDetail({
 					publishLoading={publishLoading}
 					mode={mode}
 					isPublished={thesis.isPublish}
+					canUnpublish={!thesis.groupId}
 					onToggleDuplicate={() => {}}
 					onExit={handleExit}
 					onEdit={actions.handleEdit}
