@@ -6,42 +6,68 @@ import { useState } from 'react';
 
 import { showNotification } from '@/lib/utils/notification';
 
-interface Props {
+interface DownloadTemplateButtonProps {
 	templateFileName: string;
-	onDownloaded?: () => void;
+	buttonText?: string;
+	buttonType?: 'default' | 'primary' | 'link' | 'text';
+	icon?: React.ReactNode;
+	disabled?: boolean;
 }
 
-const DownloadTemplateButton = ({ templateFileName, onDownloaded }: Props) => {
+export default function DownloadTemplateButton({
+	templateFileName,
+	buttonText = 'Download Template',
+	buttonType = 'default',
+	icon = <DownloadOutlined />,
+	disabled = false,
+}: DownloadTemplateButtonProps) {
 	const [downloading, setDownloading] = useState(false);
 
-	const handleDownload = () => {
+	const handleDownload = async () => {
+		if (!templateFileName) {
+			showNotification.error('Error', 'Template file is not available');
+			return;
+		}
+
 		setDownloading(true);
-		setTimeout(() => {
-			showNotification.success(
-				'Template Downloaded',
-				'Excel template has been downloaded.',
+		try {
+			const downloadUrl = `/files/${templateFileName}`;
+			const link = document.createElement('a');
+			link.href = downloadUrl;
+			link.download = templateFileName;
+			link.target = '_blank';
+			link.rel = 'noopener noreferrer';
+
+			document.body.appendChild(link);
+			link.click();
+			document.body.removeChild(link);
+
+			showNotification.success('Success', 'Template download started');
+		} catch (error) {
+			console.error('Download failed:', error);
+			showNotification.error(
+				'Error',
+				'Failed to download template. Please try again.',
 			);
-			setDownloading(false);
-			onDownloaded?.();
-		}, 1000);
+		} finally {
+			setTimeout(() => setDownloading(false), 1000);
+		}
 	};
 
 	return (
 		<Button
-			icon={<DownloadOutlined />}
-			type="default"
+			icon={icon}
+			type={buttonType}
 			onClick={handleDownload}
-			disabled={!templateFileName || downloading}
 			loading={downloading}
+			disabled={!templateFileName || disabled || downloading}
 			title={
 				!templateFileName
 					? 'Template file not available'
 					: 'Download Excel template'
 			}
 		>
-			{downloading ? 'Downloading...' : 'Download Template'}
+			{downloading ? 'Downloading...' : buttonText}
 		</Button>
 	);
-};
-
-export default DownloadTemplateButton;
+}
