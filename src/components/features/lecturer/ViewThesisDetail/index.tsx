@@ -16,12 +16,12 @@ import { showNotification } from '@/lib/utils/notification';
 import { usePublishThesesStore } from '@/store/usePublishThesesStore';
 
 interface ViewThesisDetailProps {
-	mode?: 'thesis-management' | 'publish-list';
+	readonly mode?: 'thesis-management' | 'publish-list';
 }
 
 export default function ViewThesisDetail({
 	mode = 'thesis-management',
-}: ViewThesisDetailProps) {
+}: Readonly<ViewThesisDetailProps>) {
 	const { id: thesisId } = useParams() as { id: string };
 	const router = useRouter();
 	const { session } = useSessionData();
