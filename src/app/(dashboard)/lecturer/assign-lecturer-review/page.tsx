@@ -1,5 +1,5 @@
 import { createMetadata } from '@/app/metadata';
-import AssignLecturerReview from '@/components/features/lecturer/AssignLecturerReview';
+import LecturerAssignLecturerReviewClient from '@/components/pages/lecturer/LecturerAssignLecturerReviewClient';
 
 export const metadata = createMetadata({
 	title: 'Assign Lecturer Review',
@@ -8,5 +8,5 @@ export const metadata = createMetadata({
 });
 
 export default function AssignLecturerReviewPage() {
-	return <AssignLecturerReview />;
+	return <LecturerAssignLecturerReviewClient />;
 }
