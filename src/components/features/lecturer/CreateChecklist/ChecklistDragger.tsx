@@ -1,12 +1,12 @@
 'use client';
 
-import { CloudUploadOutlined, DownloadOutlined } from '@ant-design/icons';
-import { Button, Card, Col, Row, Typography, Upload } from 'antd';
+import { CloudUploadOutlined } from '@ant-design/icons';
+import { Card, Col, Row, Typography, Upload } from 'antd';
 import { DraggerProps } from 'antd/es/upload';
 import Dragger from 'antd/es/upload/Dragger';
 import { UploadFile } from 'antd/es/upload/interface';
-import { useState } from 'react';
 
+import DownloadTemplateButton from '@/components/features/lecturer/CreateChecklist/DownloadTemplateButton';
 import { ChecklistItem } from '@/components/features/lecturer/CreateChecklist/ImportChecklistExcel';
 import { mockChecklistItems } from '@/data/ChecklistItems';
 import { showNotification } from '@/lib/utils/notification';
@@ -22,7 +22,6 @@ const ChecklistDragger = ({
 	setFileList,
 	setChecklistItems,
 }: Props) => {
-	const [downloading, setDownloading] = useState(false);
 	const templateFileName = 'checklist-template.xlsx';
 
 	const isExcelFile = (file: File) =>
@@ -52,17 +51,6 @@ const ChecklistDragger = ({
 		);
 
 		return false;
-	};
-
-	const handleDownloadTemplate = () => {
-		setDownloading(true);
-		setTimeout(() => {
-			showNotification.success(
-				'Template Downloaded',
-				'Excel template has been downloaded.',
-			);
-			setDownloading(false);
-		}, 1000);
 	};
 
 	const draggerProps: DraggerProps = {
@@ -115,20 +103,7 @@ const ChecklistDragger = ({
 						</Typography.Text>
 					</Col>
 					<Col xs={24} sm={24} md={8} style={{ textAlign: 'right' }}>
-						<Button
-							icon={<DownloadOutlined />}
-							type="default"
-							onClick={handleDownloadTemplate}
-							disabled={!templateFileName || downloading}
-							loading={downloading}
-							title={
-								!templateFileName
-									? 'Template file not available'
-									: 'Download Excel template'
-							}
-						>
-							{downloading ? 'Downloading...' : 'Download Template'}
-						</Button>
+						<DownloadTemplateButton templateFileName={templateFileName} />
 					</Col>
 				</Row>
 			</Card>
