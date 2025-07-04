@@ -7,6 +7,6 @@ export const metadata = createMetadata({
 		'Lecturer Create Checlist for TheSync - Group Formation and Capstone Thesis Development',
 });
 
-export default function AdminThesisManagementPage() {
+export default function CreateChecklistPage() {
 	return <CreateChecklist />;
 }
