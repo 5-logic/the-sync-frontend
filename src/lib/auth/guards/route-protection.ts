@@ -29,6 +29,16 @@ export const ROUTE_CONFIGS: RouteConfig[] = [
 		requiredRole: USER_ROLES.LECTURER,
 		requiresModerator: true,
 	},
+	{
+		path: DASHBOARD_PATHS.LECTURER_ASSIGN_LIST_PUBLISH_THESIS,
+		requiredRole: USER_ROLES.LECTURER,
+		requiresModerator: true,
+	},
+	{
+		path: DASHBOARD_PATHS.LECTURER_ASSIGN_LECTURER_REVIEW,
+		requiredRole: USER_ROLES.LECTURER,
+		requiresModerator: true,
+	},
 	{ path: DASHBOARD_PATHS.ADMIN, requiredRole: USER_ROLES.ADMIN },
 ];
 
