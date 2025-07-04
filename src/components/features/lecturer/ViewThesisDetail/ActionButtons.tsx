@@ -4,6 +4,8 @@ import {
 	CheckOutlined,
 	CloseOutlined,
 	DeleteOutlined,
+	EyeInvisibleOutlined,
+	EyeOutlined,
 	SearchOutlined,
 	SendOutlined,
 } from '@ant-design/icons';
@@ -19,6 +21,7 @@ interface ActionButtonProps {
 	onEdit?: () => void;
 	onDelete?: () => void;
 	onRegisterSubmit?: () => void;
+	onPublishThesis?: () => void;
 	status: string;
 	canModerate?: boolean;
 	isThesisOwner?: boolean;
@@ -27,6 +30,9 @@ interface ActionButtonProps {
 	submitLoading?: boolean;
 	approveLoading?: boolean;
 	rejectLoading?: boolean;
+	publishLoading?: boolean;
+	mode?: 'thesis-management' | 'publish-list';
+	isPublished?: boolean;
 }
 
 export default function ActionButtons({
@@ -37,6 +43,7 @@ export default function ActionButtons({
 	onEdit,
 	onDelete,
 	onRegisterSubmit,
+	onPublishThesis,
 	status,
 	canModerate = false,
 	isThesisOwner = false,
@@ -45,14 +52,20 @@ export default function ActionButtons({
 	submitLoading = false,
 	approveLoading = false,
 	rejectLoading = false,
+	publishLoading = false,
+	mode = 'thesis-management',
+	isPublished = false,
 }: Readonly<ActionButtonProps>) {
 	// Determine if we should show moderator actions (Approve/Reject)
 	// BUSINESS LOGIC: Only show for "Pending" status (already submitted for review)
 	// "New" status means not submitted yet, so no need for approval
 	const showModeratorActions = canModerate && status === THESIS_STATUS.PENDING;
 
-	// SECURITY FIX: Only show register submit button for thesis owner
-	const showRegisterSubmit = isThesisOwner;
+	// SECURITY FIX: Only show register submit button for thesis owner (in thesis management mode)
+	const showRegisterSubmit = isThesisOwner && mode === 'thesis-management';
+
+	// Show publish thesis button when in publish-list mode
+	const showPublishThesis = mode === 'publish-list';
 
 	// SECURITY FIX: Only allow delete for thesis owner AND correct status
 	const canDelete =
@@ -138,6 +151,19 @@ export default function ActionButtons({
 									onClick={onRegisterSubmit}
 									{...getRegisterSubmitProps()}
 								/>
+							)}
+
+							{showPublishThesis && (
+								<Button
+									type="primary"
+									icon={
+										isPublished ? <EyeInvisibleOutlined /> : <EyeOutlined />
+									}
+									onClick={onPublishThesis}
+									loading={publishLoading}
+								>
+									{isPublished ? 'Unpublish Thesis' : 'Publish Thesis'}
+								</Button>
 							)}
 
 							{showModeratorActions && (
