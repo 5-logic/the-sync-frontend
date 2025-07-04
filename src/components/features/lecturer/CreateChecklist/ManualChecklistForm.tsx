@@ -173,7 +173,7 @@ export default function ManualChecklistForm() {
 					locale={{ emptyText: 'No checklist items added.' }}
 				/>
 
-				<Row justify="end" style={{ marginTop: 24 }}>
+				<Row justify="end" style={{ marginTop: 36 }}>
 					<Col>
 						<Space style={{ gap: 16 }}>
 							<Button onClick={handleCancel}>Cancel</Button>
