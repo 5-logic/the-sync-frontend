@@ -4,11 +4,11 @@ import { devtools } from 'zustand/middleware';
 import { AuthService } from '@/lib/services/auth';
 import studentService from '@/lib/services/students.service';
 import { handleApiResponse } from '@/lib/utils/handleApi';
+import { PasswordChange } from '@/schemas/_common';
 import {
 	ImportStudent,
 	Student,
 	StudentCreate,
-	StudentPasswordUpdate,
 	StudentToggleStatus,
 	StudentUpdate,
 } from '@/schemas/student';
@@ -88,7 +88,7 @@ interface StudentState {
 		id: string,
 		data: StudentToggleStatus,
 	) => Promise<boolean>;
-	changePassword: (data: StudentPasswordUpdate) => Promise<boolean>;
+	changePassword: (data: PasswordChange) => Promise<boolean>;
 	updateProfile: (data: StudentUpdate) => Promise<boolean>;
 	// Error management
 	clearError: () => void;
@@ -263,10 +263,10 @@ export const useStudentStore = create<StudentState>()(
 			),
 
 			// Change password action
-			changePassword: async (data: StudentPasswordUpdate) => {
+			changePassword: async (data: PasswordChange) => {
 				set({ changingPassword: true, lastError: null });
 				try {
-					const response = await studentService.changePassword(data);
+					const response = await AuthService.changePassword(data);
 					const result = handleApiResponse(
 						response,
 						'Success',
