@@ -24,6 +24,7 @@ type ChecklistItemTemp = ChecklistItemCreate & { id: string };
 
 export default function ManualChecklistForm() {
 	const [items, setItems] = useState<ChecklistItemTemp[]>([]);
+	const [showErrors, setShowErrors] = useState(false); // ✅ Thêm state này
 
 	const handleAddItem = () => {
 		const newItem: ChecklistItemTemp = {
@@ -52,10 +53,13 @@ export default function ManualChecklistForm() {
 
 	const handleCancel = () => {
 		setItems([]);
+		setShowErrors(false);
 		showNotification.info('Checklist creation cancelled.');
 	};
 
 	const handleSaveAll = () => {
+		setShowErrors(true); // ✅ Chỉ bật highlight khi nhấn Save
+
 		if (items.length === 0) {
 			showNotification.warning(
 				'No items added',
@@ -78,6 +82,7 @@ export default function ManualChecklistForm() {
 
 		console.log('Checklist items:', items);
 		showNotification.success('Checklist saved successfully!');
+		setShowErrors(false); // Reset sau khi lưu thành công
 	};
 
 	const columns: ColumnsType<ChecklistItemTemp> = [
@@ -90,6 +95,7 @@ export default function ManualChecklistForm() {
 					placeholder="Enter item name"
 					value={record.name}
 					onChange={(e) => handleChangeItem(record.id, 'name', e.target.value)}
+					status={showErrors && !record.name.trim() ? 'error' : undefined}
 				/>
 			),
 		},
@@ -103,6 +109,9 @@ export default function ManualChecklistForm() {
 					value={record.description || ''}
 					onChange={(e) =>
 						handleChangeItem(record.id, 'description', e.target.value)
+					}
+					status={
+						showErrors && !record.description?.trim() ? 'error' : undefined
 					}
 				/>
 			),
