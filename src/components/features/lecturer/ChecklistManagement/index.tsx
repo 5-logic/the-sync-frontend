@@ -41,9 +41,18 @@ export default function ChecklistManagement() {
 			);
 			return;
 		}
-		router.push(
-			`/admin/checklist/create-checklist?semester=${semester}&milestone=${milestone}`,
+
+		const checklist = mockChecklists.find(
+			(cl) =>
+				cl.semester.trim() === semester.trim() &&
+				cl.milestone.trim().toLowerCase() === milestone.trim().toLowerCase(),
 		);
+
+		if (checklist) {
+			router.push(`/lecturer/checklist/create-checklist/${checklist.id}`);
+		} else {
+			message.error('Checklist ID not found for the selected filters.');
+		}
 	};
 
 	return (
@@ -60,9 +69,7 @@ export default function ChecklistManagement() {
 				milestone={milestone}
 				onMilestoneChange={setMilestone}
 				onCreate={handleCreateChecklist}
-				disabledCreate={
-					!semester || !milestone || checklistExists // 👈 chỉ active khi chưa có checklist cho combo đó
-				}
+				disabledCreate={!semester || !milestone || checklistExists}
 			/>
 
 			<ChecklistTable data={filteredChecklists} getTotalItems={getTotalItems} />
