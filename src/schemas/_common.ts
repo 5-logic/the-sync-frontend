@@ -1,5 +1,11 @@
 import { z } from 'zod';
 
+// Common Password Change Schema
+export const PasswordChangeSchema = z.object({
+	currentPassword: z.string().min(1),
+	newPassword: z.string().min(12),
+});
+
 export const ApiResponseSchema = <T extends z.ZodTypeAny>(dataSchema: T) =>
 	z.discriminatedUnion('success', [
 		// Success case
@@ -17,6 +23,8 @@ export const ApiResponseSchema = <T extends z.ZodTypeAny>(dataSchema: T) =>
 	]);
 
 // Export inferred types
+export type PasswordChange = z.infer<typeof PasswordChangeSchema>;
+
 export type ApiResponse<T> =
 	| {
 			success: true;

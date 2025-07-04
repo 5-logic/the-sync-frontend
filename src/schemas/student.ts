@@ -70,11 +70,6 @@ export const StudentToggleStatusSchema = StudentSchema.pick({
 	isActive: true,
 });
 
-export const StudentPasswordUpdateSchema = z.object({
-	currentPassword: z.string().min(1),
-	newPassword: z.string().min(12),
-});
-
 export const StudentSkillCreateSchema = StudentSkillSchema;
 export const StudentSkillUpdateSchema = StudentSkillSchema.pick({
 	studentCode: true,
@@ -88,7 +83,6 @@ export type Student = z.infer<typeof StudentSchema>;
 export type StudentCreate = z.infer<typeof StudentCreateSchema>;
 export type StudentUpdate = z.infer<typeof StudentUpdateSchema>;
 export type StudentToggleStatus = z.infer<typeof StudentToggleStatusSchema>;
-export type StudentPasswordUpdate = z.infer<typeof StudentPasswordUpdateSchema>;
 
 export type ImportStudentItem = z.infer<typeof ImportStudentItemSchema>;
 export type ImportStudent = z.infer<typeof ImportStudentSchema>;
