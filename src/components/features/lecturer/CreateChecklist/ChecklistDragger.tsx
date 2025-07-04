@@ -6,12 +6,10 @@ import { DraggerProps } from 'antd/es/upload';
 import Dragger from 'antd/es/upload/Dragger';
 import { UploadFile } from 'antd/es/upload/interface';
 
-// import DownloadTemplateButton from '@/components/features/lecturer/CreateChecklist/DownloadTemplateButton';
+import { DownloadTemplateButton } from '@/components/common/DownloadTemplateButton';
 import { ChecklistItem } from '@/components/features/lecturer/CreateChecklist/ImportChecklistExcel';
 import { mockChecklistItems } from '@/data/ChecklistItems';
 import { showNotification } from '@/lib/utils/notification';
-
-import DownloadTemplateButton from './DownloadTemplateButton';
 
 interface Props {
 	fileList: UploadFile[];
@@ -24,8 +22,6 @@ const ChecklistDragger = ({
 	setFileList,
 	setChecklistItems,
 }: Props) => {
-	// const templateFileName = 'checklist-template.xlsx';
-
 	const isExcelFile = (file: File) =>
 		file.type ===
 			'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
@@ -106,7 +102,6 @@ const ChecklistDragger = ({
 					</Col>
 					<Col xs={24} sm={24} md={8} style={{ textAlign: 'right' }}>
 						{/* download template button */}
-						{/* <DownloadTemplateButton templateFileName={templateFileName} /> */}
 						<DownloadTemplateButton
 							templateFileName="Create Checklist Template.xlsx"
 							buttonText="Download Checklist Template"
