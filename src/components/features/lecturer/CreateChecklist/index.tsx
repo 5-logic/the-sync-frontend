@@ -8,6 +8,7 @@ import TabNavigation from '@/components/features/admin/CreateNewUser/TabNavigati
 import Header from '@/components/features/lecturer/AssignSupervisor/Header';
 import ChecklistToolbar from '@/components/features/lecturer/ChecklistManagement/ChecklistToolbar';
 import ImportChecklistExcel from '@/components/features/lecturer/CreateChecklist/ImportChecklistExcel';
+import ManualChecklistForm from '@/components/features/lecturer/CreateChecklist/ManualChecklistForm';
 
 export default function CreateChecklist() {
 	const searchParams = useSearchParams();
@@ -62,7 +63,7 @@ export default function CreateChecklist() {
 					disabledMilestone={disabledMilestone}
 				/>
 
-				{/* {activeTab === 'manual' && <ManualChecklistForm />} */}
+				{activeTab === 'manual' && <ManualChecklistForm />}
 				{activeTab === 'excel' && <ImportChecklistExcel />}
 			</Space>
 		</Layout>
