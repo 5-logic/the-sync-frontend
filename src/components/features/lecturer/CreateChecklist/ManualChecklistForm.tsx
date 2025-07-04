@@ -4,19 +4,22 @@ import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import {
 	Button,
 	Card,
+	Col,
 	Input,
+	Row,
 	Space,
 	Switch,
 	Table,
 	Tooltip,
 	Typography,
+	message,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useState } from 'react';
 
 import type { ChecklistItemCreate } from '@/schemas/checklist';
 
-// Dùng tạm id trong UI
+// Dùng tạm id kiểu string trong UI
 type ChecklistItemTemp = ChecklistItemCreate & { id: string };
 
 export default function ManualChecklistForm() {
@@ -24,11 +27,11 @@ export default function ManualChecklistForm() {
 
 	const handleAddItem = () => {
 		const newItem: ChecklistItemTemp = {
-			id: Date.now().toString(),
+			id: Date.now().toString(), // string id tạm
 			name: '',
 			description: '',
 			isRequired: false,
-			checklistId: '', // mặc định rỗng, có thể set sau
+			checklistId: '', // sẽ gán sau nếu cần
 		};
 		setItems((prev) => [...prev, newItem]);
 	};
@@ -45,6 +48,20 @@ export default function ManualChecklistForm() {
 		setItems((prev) =>
 			prev.map((item) => (item.id === id ? { ...item, [field]: value } : item)),
 		);
+	};
+
+	const handleCancel = () => {
+		setItems([]);
+		message.info('Checklist creation cancelled.');
+	};
+
+	const handleSaveAll = () => {
+		if (items.length === 0) {
+			message.warning('Please add at least one checklist item before saving.');
+			return;
+		}
+		console.log('Checklist items:', items);
+		message.success('Checklist saved successfully!');
 	};
 
 	const columns: ColumnsType<ChecklistItemTemp> = [
@@ -111,16 +128,16 @@ export default function ManualChecklistForm() {
 		<Space direction="vertical" size="middle" style={{ width: '100%' }}>
 			<Card
 				title={
-					<Space>
-						<Typography.Text strong>Manual Checklist Builder</Typography.Text>
+					<Row justify="space-between" align="middle">
+						<Typography.Text strong>Manual Checklist Create</Typography.Text>
 						<Button
 							type="primary"
 							icon={<PlusOutlined />}
 							onClick={handleAddItem}
 						>
-							Add new Item
+							Add New Item
 						</Button>
-					</Space>
+					</Row>
 				}
 			>
 				<Table
@@ -130,6 +147,17 @@ export default function ManualChecklistForm() {
 					pagination={false}
 					locale={{ emptyText: 'No checklist items added.' }}
 				/>
+
+				<Row justify="end" style={{ marginTop: 24 }}>
+					<Col>
+						<Space style={{ gap: 16 }}>
+							<Button onClick={handleCancel}>Cancel</Button>
+							<Button type="primary" onClick={handleSaveAll}>
+								Save All
+							</Button>
+						</Space>
+					</Col>
+				</Row>
 			</Card>
 		</Space>
 	);
