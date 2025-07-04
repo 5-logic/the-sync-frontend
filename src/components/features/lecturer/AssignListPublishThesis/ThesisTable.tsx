@@ -13,12 +13,14 @@ import { ThesisWithLecturer } from '@/store/usePublishThesesStore';
 
 interface Props {
 	readonly theses: ThesisWithLecturer[];
+	readonly selectedKeys?: React.Key[];
 	readonly onSelectionChange?: (selectedIds: string[]) => void;
 	readonly onTogglePublish?: (thesisId: string) => Promise<boolean>;
 }
 
 export default function ThesisTable({
 	theses,
+	selectedKeys,
 	onSelectionChange,
 	onTogglePublish,
 }: Props) {
@@ -29,6 +31,13 @@ export default function ThesisTable({
 	useEffect(() => {
 		setData(theses);
 	}, [theses]);
+
+	// Sync selectedRowKeys with parent component's selectedKeys
+	useEffect(() => {
+		if (selectedKeys !== undefined) {
+			setSelectedRowKeys(selectedKeys);
+		}
+	}, [selectedKeys]);
 
 	const handleTogglePublish = async (id: string, newValue: boolean) => {
 		if (!onTogglePublish) {
