@@ -1,14 +1,13 @@
 'use client';
 
-import Header from '../AssignSupervisor/Header';
 import { Space, message } from 'antd';
 import { useState } from 'react';
 
+import Header from '@/components/features/lecturer/AssignSupervisor/Header';
+import ChecklistTable from '@/components/features/lecturer/ChecklistManagement/ChecklistTable';
+import ChecklistToolbar from '@/components/features/lecturer/ChecklistManagement/ChecklistToolbar';
 import { mockChecklistItems } from '@/data/ChecklistItems';
 import { mockChecklists } from '@/data/checklist';
-
-import ChecklistTable from './ChecklistTable';
-import ChecklistToolbar from './ChecklistToolbar';
 
 export default function ChecklistManagement() {
 	const [semester, setSemester] = useState('');
