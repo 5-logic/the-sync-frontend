@@ -58,7 +58,7 @@ export default function ManualChecklistForm() {
 	};
 
 	const handleSaveAll = () => {
-		setShowErrors(true); // ✅ Chỉ bật highlight khi nhấn Save
+		setShowErrors(true);
 
 		if (items.length === 0) {
 			showNotification.warning(
@@ -82,7 +82,7 @@ export default function ManualChecklistForm() {
 
 		console.log('Checklist items:', items);
 		showNotification.success('Checklist saved successfully!');
-		setShowErrors(false); // Reset sau khi lưu thành công
+		setShowErrors(false);
 	};
 
 	const columns: ColumnsType<ChecklistItemTemp> = [
