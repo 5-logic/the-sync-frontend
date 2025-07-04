@@ -15,6 +15,8 @@ interface Props {
 	onCreate?: () => void;
 	buttonLabel?: string;
 	hideButton?: boolean;
+	disabledSemester?: boolean;
+	disabledMilestone?: boolean;
 }
 
 export default function ChecklistToolbar({

@@ -1,6 +1,7 @@
 'use client';
 
-import { Layout, message } from 'antd';
+import { Layout, Space, Tag, Typography, message } from 'antd';
+import { useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 
 import TabNavigation from '@/components/features/admin/CreateNewUser/TabNavigation';
@@ -9,42 +10,60 @@ import ChecklistToolbar from '@/components/features/lecturer/ChecklistManagement
 import ImportChecklistExcel from '@/components/features/lecturer/CreateChecklist/ImportChecklistExcel';
 
 export default function CreateChecklist() {
+	const searchParams = useSearchParams();
+
+	const defaultSemester = searchParams.get('semester') || '';
+	const defaultMilestone = searchParams.get('milestone') || '';
+
 	const [activeTab, setActiveTab] = useState('manual');
-	const [semester, setSemester] = useState('');
-	const [milestone, setMilestone] = useState('');
+	const [semester, setSemester] = useState(defaultSemester);
+	const [milestone, setMilestone] = useState(defaultMilestone);
+	const disabledSemester = !!defaultSemester;
+	const disabledMilestone = !!defaultMilestone;
 
 	const handleAddItem = () => {
 		if (!semester || !milestone) {
-			message.warning('please...');
+			message.warning('Please select both semester and milestone');
 			return;
 		}
-		// Đây chỉ là mô phỏng, bạn có thể mở modal tạo checklist tại đây
 		console.log(
 			`Add new item for checklist: ${semester}, Milestone: ${milestone}`,
 		);
 	};
 
 	return (
-		<Layout style={{ minHeight: '100vh', background: '#fff' }}>
-			<Header
-				title="Create Checklist"
-				description="Start building a checklist manually or import one from an Excel file to streamline the evaluation process."
-				badgeText="Moderator Only"
-			/>
+		<Layout style={{ minHeight: '100vh', background: '#fff', padding: 24 }}>
+			<Space direction="vertical" size="large" style={{ width: '100%' }}>
+				<Header
+					title="Create Checklist"
+					description="Start building a checklist manually or import one from an Excel file to streamline the evaluation process."
+					badgeText="Moderator Only"
+				/>
 
-			<TabNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
+				{/* Hiển thị context tạo checklist */}
+				{semester && milestone && (
+					<Typography.Text type="secondary">
+						You are creating checklist for: <Tag color="blue">{semester}</Tag>
+						<Tag color="purple">{milestone}</Tag>
+					</Typography.Text>
+				)}
 
-			<ChecklistToolbar
-				semester={semester}
-				onSemesterChange={setSemester}
-				milestone={milestone}
-				onMilestoneChange={setMilestone}
-				onCreate={handleAddItem}
-				buttonLabel="Add New Item"
-			/>
+				<TabNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
 
-			{/* {activeTab === 'manual' && <ManualChecklistForm />} */}
-			{activeTab === 'excel' && <ImportChecklistExcel />}
+				<ChecklistToolbar
+					semester={semester}
+					onSemesterChange={setSemester}
+					milestone={milestone}
+					onMilestoneChange={setMilestone}
+					onCreate={handleAddItem}
+					buttonLabel="Add New Item"
+					disabledSemester={disabledSemester}
+					disabledMilestone={disabledMilestone}
+				/>
+
+				{/* {activeTab === 'manual' && <ManualChecklistForm />} */}
+				{activeTab === 'excel' && <ImportChecklistExcel />}
+			</Space>
 		</Layout>
 	);
 }
