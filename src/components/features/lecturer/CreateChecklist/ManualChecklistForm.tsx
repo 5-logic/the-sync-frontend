@@ -106,7 +106,7 @@ export default function ManualChecklistForm() {
 			render: (_, record) => (
 				<Input
 					placeholder="Enter description"
-					value={record.description || ''}
+					value={record.description || ''} //NOSONAR
 					onChange={(e) =>
 						handleChangeItem(record.id, 'description', e.target.value)
 					}

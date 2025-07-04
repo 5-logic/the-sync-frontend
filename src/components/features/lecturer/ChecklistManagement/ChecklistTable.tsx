@@ -5,8 +5,8 @@ import type { ColumnsType } from 'antd/es/table';
 import { Checklist } from '@/schemas/checklist';
 
 interface Props {
-	data: Checklist[];
-	getTotalItems: (checklistId: string) => number;
+	readonly data: Checklist[];
+	readonly getTotalItems: (checklistId: string) => number;
 }
 
 export default function ChecklistTable({ data, getTotalItems }: Props) {
