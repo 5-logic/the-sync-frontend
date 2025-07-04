@@ -25,6 +25,10 @@ export interface PublishThesesFilters {
 
 // Additional actions specific to publish theses
 export interface PublishThesesActions {
+	updatePublishStatus: (
+		thesisIds: string[],
+		isPublish: boolean,
+	) => Promise<boolean>;
 	togglePublishStatus: (thesisId: string) => Promise<boolean>;
 	publishMultiple: (thesisIds: string[]) => Promise<boolean>;
 	getDomainOptions: () => string[];
@@ -154,31 +158,41 @@ const baseStore = createThesisStoreFactory<
 // Extend base store with publish-specific actions
 export const usePublishThesesStore = () => {
 	const store = baseStore();
-	// Toggle publish status for a single thesis using bulk API
-	const togglePublishStatus = async (thesisId: string): Promise<boolean> => {
+
+	// Unified function to update publish status for single or multiple theses
+	const updatePublishStatus = async (
+		thesisIds: string[],
+		isPublish: boolean,
+	): Promise<boolean> => {
 		try {
-			// Get current thesis to determine new publish state
-			const currentThesis = store.items.find(
-				(thesis) => thesis.id === thesisId,
-			);
-			if (!currentThesis) {
-				console.error('Thesis not found:', thesisId);
-				return false;
+			// Filter valid theses that can be updated
+			const validTheses = store.items.filter((thesis) => {
+				if (!thesisIds.includes(thesis.id)) return false;
+
+				// Cannot unpublish if thesis has group assigned
+				if (!isPublish && thesis.groupId) return false;
+
+				// Only process if status would actually change
+				return thesis.isPublish !== isPublish;
+			});
+
+			if (validTheses.length === 0) {
+				return true; // Nothing to update
 			}
 
-			// Use the bulk API for single thesis toggle
+			// Call API
 			const response = await thesisService.publishTheses({
-				thesesIds: [thesisId],
-				isPublish: !currentThesis.isPublish, // Toggle current state
+				thesesIds: validTheses.map((thesis) => thesis.id),
+				isPublish,
 			});
 
 			const result = handleApiResponse(response);
 
 			if (result.success) {
-				// Update local state - only the toggled item
+				// Update local state
 				const updatedItems = store.items.map((thesis) =>
-					thesis.id === thesisId
-						? { ...thesis, isPublish: !thesis.isPublish }
+					validTheses.some((t) => t.id === thesis.id)
+						? { ...thesis, isPublish }
 						: thesis,
 				);
 
@@ -190,64 +204,30 @@ export const usePublishThesesStore = () => {
 				// Re-apply filters
 				store.filterItems();
 
-				// Update cache with new data (like thesis management store pattern)
+				// Update cache
 				cacheUtils.set('publishTheses', 'all', updatedItems);
 
 				return true;
 			}
 			return false;
 		} catch (error) {
-			console.error('Failed to toggle publish status:', error);
+			console.error('Failed to update publish status:', error);
 			return false;
 		}
 	};
 
-	// Publish multiple theses using bulk API
-	const publishMultiple = async (thesisIds: string[]): Promise<boolean> => {
-		try {
-			// Get theses that are not currently published
-			const thesesToPublish = store.items.filter(
-				(thesis) => thesisIds.includes(thesis.id) && !thesis.isPublish,
-			);
-
-			if (thesesToPublish.length === 0) {
-				return true; // Nothing to publish
-			}
-
-			// Use the new bulk publish API
-			const response = await thesisService.publishTheses({
-				thesesIds: thesesToPublish.map((thesis) => thesis.id),
-				isPublish: true,
-			});
-
-			const result = handleApiResponse(response);
-
-			if (result.success) {
-				// Update local state - only mark selected theses as published
-				const updatedItems = store.items.map((thesis) =>
-					thesisIds.includes(thesis.id)
-						? { ...thesis, isPublish: true }
-						: thesis,
-				);
-
-				// Update store state
-				baseStore.setState({
-					items: updatedItems,
-				});
-
-				// Re-apply filters
-				store.filterItems();
-
-				// Update cache with new data (like thesis management store pattern)
-				cacheUtils.set('publishTheses', 'all', updatedItems);
-
-				return true;
-			}
-			return false;
-		} catch (error) {
-			console.error('Failed to publish multiple theses:', error);
+	// Helper methods for backward compatibility and easier usage
+	const togglePublishStatus = async (thesisId: string): Promise<boolean> => {
+		const currentThesis = store.items.find((thesis) => thesis.id === thesisId);
+		if (!currentThesis) {
+			console.error('Thesis not found:', thesisId);
 			return false;
 		}
+		return updatePublishStatus([thesisId], !currentThesis.isPublish);
+	};
+
+	const publishMultiple = async (thesisIds: string[]): Promise<boolean> => {
+		return updatePublishStatus(thesisIds, true);
 	};
 
 	// Get unique domain options from current items
@@ -263,6 +243,7 @@ export const usePublishThesesStore = () => {
 
 	return {
 		...store,
+		updatePublishStatus,
 		togglePublishStatus,
 		publishMultiple,
 		getDomainOptions,
