@@ -63,6 +63,19 @@ export default function ManualChecklistForm() {
 			);
 			return;
 		}
+
+		const hasEmptyFields = items.some(
+			(item) => !item.name.trim() || !item.description?.trim(),
+		);
+
+		if (hasEmptyFields) {
+			showNotification.warning(
+				'Missing Required Fields',
+				'Please ensure all checklist items have a name and description.',
+			);
+			return;
+		}
+
 		console.log('Checklist items:', items);
 		showNotification.success('Checklist saved successfully!');
 	};
