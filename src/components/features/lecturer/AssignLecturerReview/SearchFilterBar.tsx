@@ -1,11 +1,9 @@
 'use client';
 
 import { SearchOutlined } from '@ant-design/icons';
-import { Col, Input, Row, Select } from 'antd';
+import { Col, Input, Row } from 'antd';
 
-import { mockSemesters } from '@/data/semester';
-
-const { Option } = Select;
+import SemesterMilestoneSelect from './SemesterMilestoneSelect';
 
 interface Props {
 	search: string;
@@ -32,37 +30,12 @@ export default function SearchFilterBar({
 			justify="start"
 			style={{ marginBottom: 10 }}
 		>
-			<Col style={{ width: 160 }}>
-				<Select
-					value={semester}
-					onChange={onSemesterChange}
-					placeholder="Select Semester"
-					style={{ width: '100%' }}
-					size="middle"
-				>
-					<Option value="">All Semesters</Option>
-					{mockSemesters.map((s) => (
-						<Option key={s.value} value={s.value}>
-							{s.label}
-						</Option>
-					))}
-				</Select>
-			</Col>
-
-			<Col style={{ width: 160 }}>
-				<Select
-					value={milestone}
-					onChange={onMilestoneChange}
-					placeholder="Select Milestone"
-					style={{ width: '100%' }}
-					size="middle"
-				>
-					<Option value="Review 1">Review 1</Option>
-					<Option value="Review 2">Review 2</Option>
-					<Option value="Review 3">Review 3</Option>
-					<Option value="Final Review">Final Review</Option>
-				</Select>
-			</Col>
+			<SemesterMilestoneSelect
+				semester={semester}
+				onSemesterChange={onSemesterChange}
+				milestone={milestone}
+				onMilestoneChange={onMilestoneChange}
+			/>
 
 			<Col flex="auto">
 				<Input

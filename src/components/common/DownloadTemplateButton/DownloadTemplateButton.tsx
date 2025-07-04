@@ -7,11 +7,11 @@ import { useState } from 'react';
 import { showNotification } from '@/lib/utils/notification';
 
 interface DownloadTemplateButtonProps {
-	templateFileName: string;
-	buttonText?: string;
-	buttonType?: 'default' | 'primary' | 'link' | 'text';
-	icon?: React.ReactNode;
-	disabled?: boolean;
+	readonly templateFileName: string;
+	readonly buttonText?: string;
+	readonly buttonType?: 'default' | 'primary' | 'link' | 'text';
+	readonly icon?: React.ReactNode;
+	readonly disabled?: boolean;
 }
 
 export default function DownloadTemplateButton({
