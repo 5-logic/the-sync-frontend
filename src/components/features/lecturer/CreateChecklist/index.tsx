@@ -57,6 +57,7 @@ export default function CreateChecklist() {
 					onMilestoneChange={setMilestone}
 					onCreate={handleAddItem}
 					buttonLabel="Add New Item"
+					disabledCreate={false}
 					disabledSemester={disabledSemester}
 					disabledMilestone={disabledMilestone}
 				/>

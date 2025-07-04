@@ -13,8 +13,10 @@ interface Props {
 	milestone: string;
 	onMilestoneChange: (val: string) => void;
 	onCreate?: () => void;
+	disabledCreate: boolean;
 	buttonLabel?: string;
 	hideButton?: boolean;
+
 	disabledSemester?: boolean;
 	disabledMilestone?: boolean;
 }
@@ -25,6 +27,7 @@ export default function ChecklistToolbar({
 	milestone,
 	onMilestoneChange,
 	onCreate,
+	disabledCreate,
 	buttonLabel = 'Create New Checklist',
 	hideButton = false,
 }: Readonly<Props>) {
@@ -75,7 +78,12 @@ export default function ChecklistToolbar({
 
 			{!hideButton && (
 				<Col>
-					<Button type="primary" icon={<PlusOutlined />} onClick={onCreate}>
+					<Button
+						type="primary"
+						icon={<PlusOutlined />}
+						onClick={onCreate}
+						disabled={disabledCreate}
+					>
 						{buttonLabel}
 					</Button>
 				</Col>

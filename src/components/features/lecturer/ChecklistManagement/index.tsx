@@ -1,6 +1,7 @@
 'use client';
 
 import { Space, message } from 'antd';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import Header from '@/components/features/lecturer/AssignSupervisor/Header';
@@ -10,6 +11,7 @@ import { mockChecklistItems } from '@/data/ChecklistItems';
 import { mockChecklists } from '@/data/checklist';
 
 export default function ChecklistManagement() {
+	const router = useRouter();
 	const [semester, setSemester] = useState('');
 	const [milestone, setMilestone] = useState('');
 	const [checklists] = useState(mockChecklists);
@@ -24,6 +26,14 @@ export default function ChecklistManagement() {
 		mockChecklistItems.filter((item) => item.checklistId === checklistId)
 			.length;
 
+	// ✅ Kiểm tra nếu đã tồn tại checklist với semester + milestone thì disable
+	const checklistExists =
+		semester !== '' &&
+		milestone !== '' &&
+		checklists.some(
+			(cl) => cl.semester === semester && cl.milestone === milestone,
+		);
+
 	const handleCreateChecklist = () => {
 		if (!semester || !milestone) {
 			message.warning(
@@ -31,9 +41,8 @@ export default function ChecklistManagement() {
 			);
 			return;
 		}
-		// Đây chỉ là mô phỏng, bạn có thể mở modal tạo checklist tại đây
-		console.log(
-			`Create checklist for Semester: ${semester}, Milestone: ${milestone}`,
+		router.push(
+			`/admin/checklist/create-checklist?semester=${semester}&milestone=${milestone}`,
 		);
 	};
 
@@ -51,6 +60,9 @@ export default function ChecklistManagement() {
 				milestone={milestone}
 				onMilestoneChange={setMilestone}
 				onCreate={handleCreateChecklist}
+				disabledCreate={
+					!semester || !milestone || checklistExists // 👈 chỉ active khi chưa có checklist cho combo đó
+				}
 			/>
 
 			<ChecklistTable data={filteredChecklists} getTotalItems={getTotalItems} />
