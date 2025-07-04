@@ -1,6 +1,6 @@
 'use client';
 
-import { Layout, Space, Tag, Typography, message } from 'antd';
+import { Layout, Space, Tag, Typography } from 'antd';
 import { useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 
@@ -9,6 +9,7 @@ import Header from '@/components/features/lecturer/AssignSupervisor/Header';
 import ChecklistToolbar from '@/components/features/lecturer/ChecklistManagement/ChecklistToolbar';
 import ImportChecklistExcel from '@/components/features/lecturer/CreateChecklist/ImportChecklistExcel';
 import ManualChecklistForm from '@/components/features/lecturer/CreateChecklist/ManualChecklistForm';
+import { showNotification } from '@/lib/utils/notification';
 
 export default function CreateChecklist() {
 	const searchParams = useSearchParams();
@@ -24,7 +25,10 @@ export default function CreateChecklist() {
 
 	const handleAddItem = () => {
 		if (!semester || !milestone) {
-			message.warning('Please select both semester and milestone');
+			showNotification.warning(
+				'Missing Information',
+				'Please select both semester and milestone before adding items.',
+			);
 			return;
 		}
 		console.log(

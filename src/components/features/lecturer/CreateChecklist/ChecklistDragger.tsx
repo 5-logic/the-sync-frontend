@@ -1,7 +1,7 @@
 'use client';
 
 import { CloudUploadOutlined, DownloadOutlined } from '@ant-design/icons';
-import { Button, Card, Col, Row, Typography, Upload, message } from 'antd';
+import { Button, Card, Col, Row, Typography, Upload } from 'antd';
 import { DraggerProps } from 'antd/es/upload';
 import Dragger from 'antd/es/upload/Dragger';
 import { UploadFile } from 'antd/es/upload/interface';
@@ -9,6 +9,7 @@ import { useState } from 'react';
 
 import { ChecklistItem } from '@/components/features/lecturer/CreateChecklist/ImportChecklistExcel';
 import { mockChecklistItems } from '@/data/ChecklistItems';
+import { showNotification } from '@/lib/utils/notification';
 
 interface Props {
 	fileList: UploadFile[];
@@ -32,7 +33,7 @@ const ChecklistDragger = ({
 	const isValidFileSize = (file: File) => file.size / 1024 / 1024 < 100;
 
 	const handleUpload = async (file: File) => {
-		// Giả lập parse Excel (lấy từ mock file)
+		// Giả lập parse Excel
 		const transformedData = mockChecklistItems.map(
 			({ id, name, description, isRequired }) => ({
 				id,
@@ -44,14 +45,22 @@ const ChecklistDragger = ({
 
 		setChecklistItems(transformedData);
 		setFileList([file as unknown as UploadFile]);
-		message.success(`${transformedData.length} items imported successfully`);
+
+		showNotification.success(
+			'Import Successful',
+			`${transformedData.length} items imported successfully.`,
+		);
+
 		return false;
 	};
 
 	const handleDownloadTemplate = () => {
 		setDownloading(true);
 		setTimeout(() => {
-			message.success('Template downloaded');
+			showNotification.success(
+				'Template Downloaded',
+				'Excel template has been downloaded.',
+			);
 			setDownloading(false);
 		}, 1000);
 	};
@@ -63,12 +72,18 @@ const ChecklistDragger = ({
 			const isLt100MB = isValidFileSize(file);
 
 			if (!isExcel) {
-				message.warning('You can only upload Excel (.xlsx, .xls) files!');
+				showNotification.warning(
+					'Invalid File Type',
+					'You can only upload Excel (.xlsx, .xls) files!',
+				);
 				return Upload.LIST_IGNORE;
 			}
 
 			if (!isLt100MB) {
-				message.error('File must be smaller than 100MB!');
+				showNotification.error(
+					'File Too Large',
+					'File must be smaller than 100MB!',
+				);
 				return Upload.LIST_IGNORE;
 			}
 

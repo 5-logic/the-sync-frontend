@@ -12,11 +12,11 @@ import {
 	Table,
 	Tooltip,
 	Typography,
-	message,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useState } from 'react';
 
+import { showNotification } from '@/lib/utils/notification';
 import type { ChecklistItemCreate } from '@/schemas/checklist';
 
 // Dùng tạm id kiểu string trong UI
@@ -27,11 +27,11 @@ export default function ManualChecklistForm() {
 
 	const handleAddItem = () => {
 		const newItem: ChecklistItemTemp = {
-			id: Date.now().toString(), // string id tạm
+			id: Date.now().toString(),
 			name: '',
 			description: '',
 			isRequired: false,
-			checklistId: '', // sẽ gán sau nếu cần
+			checklistId: '',
 		};
 		setItems((prev) => [...prev, newItem]);
 	};
@@ -52,16 +52,19 @@ export default function ManualChecklistForm() {
 
 	const handleCancel = () => {
 		setItems([]);
-		message.info('Checklist creation cancelled.');
+		showNotification.info('Checklist creation cancelled.');
 	};
 
 	const handleSaveAll = () => {
 		if (items.length === 0) {
-			message.warning('Please add at least one checklist item before saving.');
+			showNotification.warning(
+				'No items added',
+				'Please add at least one checklist item before saving.',
+			);
 			return;
 		}
 		console.log('Checklist items:', items);
-		message.success('Checklist saved successfully!');
+		showNotification.success('Checklist saved successfully!');
 	};
 
 	const columns: ColumnsType<ChecklistItemTemp> = [
