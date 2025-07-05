@@ -3,14 +3,15 @@
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import { Input, Switch, Table, Tooltip } from 'antd';
 import type { ColumnType } from 'antd/es/table';
+import dayjs from 'dayjs';
 
 import { ChecklistItem } from '@/schemas/checklist';
 
 interface Props {
 	items: ChecklistItem[];
-	editable?: boolean;
-	allowEdit?: boolean;
-	allowDelete?: boolean;
+	editable?: boolean; // Cho phép sửa trực tiếp (trang edit)
+	allowEdit?: boolean; // Có nút Edit (trang detail)
+	allowDelete?: boolean; // Có nút Delete
 	onEdit?: (item: ChecklistItem) => void;
 	onDelete?: (item: ChecklistItem) => void;
 	onChangeField?: (
@@ -79,34 +80,60 @@ export default function ChecklistItemsTable({
 		},
 	];
 
-	// Only show Action column if edit or delete is enabled
-	if (allowEdit || allowDelete) {
-		columns.push({
-			title: 'Action',
-			key: 'action',
-			width: 100,
-			render: (_, record) => (
-				<>
-					{allowEdit && (
-						<Tooltip title="Edit">
-							<EditOutlined
-								style={{ color: '#1890ff', marginRight: 12, cursor: 'pointer' }}
-								onClick={() => onEdit?.(record)}
-							/>
-						</Tooltip>
-					)}
+	// If not editable (i.e. View mode), show timestamps
+	if (!editable) {
+		columns.push(
+			{
+				title: 'Created At',
+				dataIndex: 'createdAt',
+				key: 'createdAt',
+				render: (value: Date) => dayjs(value).format('YYYY-MM-DD HH:mm'),
+			},
+			{
+				title: 'Updated At',
+				dataIndex: 'updatedAt',
+				key: 'updatedAt',
+				render: (value: Date) => dayjs(value).format('YYYY-MM-DD HH:mm'),
+			},
+		);
+	}
 
-					{allowDelete && (
-						<Tooltip title="Delete">
-							<DeleteOutlined
-								style={{ color: '#ff4d4f', cursor: 'pointer' }}
-								onClick={() => onDelete?.(record)}
-							/>
-						</Tooltip>
-					)}
-				</>
-			),
-		});
+	// Only show Action column in editable mode or view mode with allowEdit/allowDelete
+	if (editable || allowEdit || allowDelete) {
+		const showAction = allowEdit || allowDelete;
+
+		if (showAction) {
+			columns.push({
+				title: 'Action',
+				key: 'action',
+				width: 100,
+				render: (_, record) => (
+					<>
+						{allowEdit && (
+							<Tooltip title="Edit">
+								<EditOutlined
+									style={{
+										color: '#1890ff',
+										marginRight: 12,
+										cursor: 'pointer',
+									}}
+									onClick={() => onEdit?.(record)}
+								/>
+							</Tooltip>
+						)}
+
+						{allowDelete && (
+							<Tooltip title="Delete">
+								<DeleteOutlined
+									style={{ color: '#ff4d4f', cursor: 'pointer' }}
+									onClick={() => onDelete?.(record)}
+								/>
+							</Tooltip>
+						)}
+					</>
+				),
+			});
+		}
 	}
 
 	return (

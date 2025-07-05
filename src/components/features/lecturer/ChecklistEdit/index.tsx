@@ -11,8 +11,8 @@ import { mockChecklists } from '@/data/checklist';
 import { ChecklistItem } from '@/schemas/checklist';
 
 export default function ChecklistEditPage() {
+	// ======================== Data & State ========================
 	const checklistId = 'c1';
-
 	const originalChecklist = mockChecklists.find((cl) => cl.id === checklistId);
 
 	const [name, setName] = useState(originalChecklist?.name || '');
@@ -24,9 +24,11 @@ export default function ChecklistEditPage() {
 		mockChecklistItems.filter((item) => item.checklistId === checklistId),
 	);
 
+	// ======================== Handlers ========================
 	const handleDeleteItem = (item: ChecklistItem) => {
 		setChecklistItems((prev) => prev.filter((i) => i.id !== item.id));
 	};
+
 	const handleChangeField = (
 		id: string,
 		field: keyof ChecklistItem,
@@ -35,6 +37,18 @@ export default function ChecklistEditPage() {
 		setChecklistItems((prev) =>
 			prev.map((item) => (item.id === id ? { ...item, [field]: value } : item)),
 		);
+	};
+
+	const handleSave = () => {
+		console.log('Saving checklist...', {
+			name,
+			description,
+			items: checklistItems,
+		});
+	};
+
+	const handleBack = () => {
+		console.log('Back to checklist list or detail');
 	};
 
 	if (!originalChecklist) {
@@ -71,8 +85,10 @@ export default function ChecklistEditPage() {
 
 			<Row justify="end">
 				<Space>
-					<Button>Back</Button>
-					<Button type="primary">Save Checklist</Button>
+					<Button onClick={handleBack}>Back</Button>
+					<Button type="primary" onClick={handleSave}>
+						Save Checklist
+					</Button>
 				</Space>
 			</Row>
 		</Space>

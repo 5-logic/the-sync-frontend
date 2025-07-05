@@ -1,6 +1,6 @@
 'use client';
 
-import { Card, Space, Typography } from 'antd';
+import { Button, Card, Row, Space, Typography } from 'antd';
 import { useState } from 'react';
 
 import Header from '@/components/features/lecturer/AssignSupervisor/Header';
@@ -14,22 +14,16 @@ export default function ChecklistDetailPage() {
 	const checklistId = 'c1';
 	const checklist = mockChecklists.find((cl) => cl.id === checklistId);
 
-	const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>(
+	const [checklistItems] = useState<ChecklistItem[]>(
 		mockChecklistItems.filter((item) => item.checklistId === checklistId),
 	);
-
-	const handleEditItem = (item: ChecklistItem) => {
-		console.log('Edit item:', item);
-		// Open modal or navigate to edit page
-	};
-
-	const handleDeleteItem = (item: ChecklistItem) => {
-		setChecklistItems((prev) => prev.filter((i) => i.id !== item.id));
-	};
 
 	if (!checklist) {
 		return <Typography.Text type="danger">Checklist not found</Typography.Text>;
 	}
+	const handleBack = () => {
+		console.log('Back to checklist list or detail');
+	};
 
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
@@ -46,15 +40,12 @@ export default function ChecklistDetailPage() {
 				milestone={checklist.milestone}
 			/>
 
-			<Card title="Checklist">
-				<ChecklistItemsTable
-					items={checklistItems}
-					allowEdit
-					allowDelete
-					onEdit={handleEditItem}
-					onDelete={handleDeleteItem}
-				/>
+			<Card title="Checklist Items">
+				<ChecklistItemsTable items={checklistItems} />
 			</Card>
+			<Row justify="end">
+				<Button onClick={handleBack}>Back</Button>
+			</Row>
 		</Space>
 	);
 }
