@@ -1,11 +1,23 @@
 'use client';
 
 import { DeleteOutlined } from '@ant-design/icons';
-import { Button, Col, Input, Row, Space, Switch, Table, Tooltip } from 'antd';
+import {
+	Button,
+	Card,
+	Col,
+	Input,
+	Row,
+	Space,
+	Switch,
+	Table,
+	Tooltip,
+} from 'antd';
 import { UploadFile } from 'antd/es/upload/interface';
 import { useState } from 'react';
 
+import ChecklistContextTitle from '@/components/features/lecturer/CreateChecklist/ChecklistContextTitle';
 import ChecklistDragger from '@/components/features/lecturer/CreateChecklist/ChecklistDragger';
+import { showNotification } from '@/lib/utils';
 
 export interface ChecklistItem {
 	id: string;
@@ -30,6 +42,12 @@ export default function ImportChecklistExcel() {
 		setChecklistItems((prev) =>
 			prev.map((item) => (item.id === id ? { ...item, [field]: value } : item)),
 		);
+	};
+
+	const handleCancel = () => {
+		setChecklistItems([]);
+		setFileList([]);
+		showNotification.info('Checklist import cancelled.');
 	};
 
 	const columns = [
@@ -89,46 +107,53 @@ export default function ImportChecklistExcel() {
 
 	return (
 		<Space direction="vertical" size="middle" style={{ width: '100%' }}>
-			<ChecklistDragger
-				fileList={fileList}
-				setFileList={setFileList}
-				setChecklistItems={setChecklistItems}
-			/>
-
-			{checklistItems.length > 0 && (
-				<Space direction="vertical" style={{ width: '100%' }}>
-					<Table
-						columns={columns}
-						dataSource={checklistItems}
-						rowKey="id"
-						pagination={false}
-					/>
-
-					<Row justify="end" gutter={16} style={{ marginTop: 24 }}>
-						<Col>
-							<Button
-								onClick={() => {
-									setChecklistItems([]);
-									setFileList([]);
-								}}
-							>
-								Cancel
-							</Button>
-						</Col>
-						<Col>
-							<Button
-								type="primary"
-								onClick={() => {
-									// Thêm logic gọi API hoặc xử lý tại đây
-									console.log('Imported items:', checklistItems);
-								}}
-							>
-								Import All Checklist
-							</Button>
-						</Col>
+			<Card
+				title={
+					<Row justify="space-between" align="middle">
+						<ChecklistContextTitle
+							semester="Semester2023"
+							milestone="Milestone review 2"
+							fontSize={16}
+						/>
+						{/* Nếu bạn cần thêm button tải template Excel thì đặt tại đây */}
 					</Row>
-				</Space>
-			)}
+				}
+			>
+				<ChecklistDragger
+					fileList={fileList}
+					setFileList={setFileList}
+					setChecklistItems={setChecklistItems}
+				/>
+
+				{checklistItems.length > 0 && (
+					<>
+						<Table
+							columns={columns}
+							dataSource={checklistItems}
+							rowKey={(item) => item.name + item.description}
+							pagination={false}
+							style={{ marginTop: 24 }}
+						/>
+
+						<Row justify="end" style={{ marginTop: 36 }}>
+							<Col>
+								<Space style={{ gap: 16 }}>
+									<Button onClick={handleCancel}>Cancel</Button>
+									<Button
+										type="primary"
+										onClick={() => {
+											// Thêm logic gọi API hoặc xử lý tại đây
+											console.log('Imported items:', checklistItems);
+										}}
+									>
+										Import All Checklist
+									</Button>
+								</Space>
+							</Col>
+						</Row>
+					</>
+				)}
+			</Card>
 		</Space>
 	);
 }

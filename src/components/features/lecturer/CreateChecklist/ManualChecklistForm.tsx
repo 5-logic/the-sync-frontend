@@ -11,12 +11,12 @@ import {
 	Switch,
 	Table,
 	Tooltip,
-	Typography,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useState } from 'react';
 
-import { showNotification } from '@/lib/utils/notification';
+import ChecklistContextTitle from '@/components/features/lecturer/CreateChecklist/ChecklistContextTitle';
+import { showNotification } from '@/lib/utils';
 import type { ChecklistItemCreate } from '@/schemas/checklist';
 
 // Dùng tạm id kiểu string trong UI
@@ -24,7 +24,7 @@ type ChecklistItemTemp = ChecklistItemCreate & { id: string };
 
 export default function ManualChecklistForm() {
 	const [items, setItems] = useState<ChecklistItemTemp[]>([]);
-	const [showErrors, setShowErrors] = useState(false); // ✅ Thêm state này
+	const [showErrors, setShowErrors] = useState(false);
 
 	const handleAddItem = () => {
 		const newItem: ChecklistItemTemp = {
@@ -154,9 +154,12 @@ export default function ManualChecklistForm() {
 			<Card
 				title={
 					<Row justify="space-between" align="middle">
-						<Typography.Text strong>
-							Create manual checklist for Semester2023 / Milestone review 2
-						</Typography.Text>
+						<ChecklistContextTitle
+							semester="Semester2023"
+							milestone="Milestone review 2"
+							fontSize={16}
+						/>
+
 						<Button
 							type="primary"
 							icon={<PlusOutlined />}
