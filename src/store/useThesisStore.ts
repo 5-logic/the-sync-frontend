@@ -5,7 +5,6 @@ import thesisService from '@/lib/services/theses.service';
 import { handleApiResponse } from '@/lib/utils/handleApi';
 import { Thesis, ThesisCreate, ThesisUpdate } from '@/schemas/thesis';
 import {
-	cacheInvalidation,
 	cacheUtils,
 	createCachedFetchByLecturerAction,
 } from '@/store/helpers/cacheHelpers';
@@ -24,14 +23,15 @@ type ThesisStatusFilter =
 	| 'new'
 	| undefined;
 
-// Helper function to handle error messages with nullish coalescing
-const getErrorMessage = (
-	errorMessage: string | undefined,
-	fallback: string,
-): string => {
-	return errorMessage ?? fallback;
-};
+// Thesis management filters
+export interface ThesisFilters {
+	searchText: string;
+	selectedStatus: ThesisStatusFilter;
+	selectedDomain?: string;
+	selectedOwned?: boolean;
+}
 
+// Complete thesis store state
 interface ThesisState {
 	// Data
 	theses: Thesis[];
@@ -110,12 +110,20 @@ interface ThesisState {
 	[key: string]: unknown;
 }
 
+// Helper function to create error message with nullish coalescing
+const getErrorMessage = (
+	errorMessage: string | undefined,
+	fallback: string,
+): string => {
+	return errorMessage ?? fallback;
+};
+
 // Filter function for theses
 const thesisSearchFilter = createSearchFilter<Thesis>((thesis) => [
 	thesis.englishName,
 	thesis.vietnameseName,
-	thesis.abbreviation,
-	thesis.description,
+	thesis.abbreviation ?? '',
+	thesis.description ?? '',
 	thesis.domain ?? '',
 ]);
 
@@ -152,12 +160,16 @@ export const useThesisStore = create<ThesisState>()(
 
 			// Cache utilities
 			cache: {
-				clear: () => cacheInvalidation.invalidateEntity('thesis'),
+				clear: () => {
+					cacheUtils.clear('thesis');
+				},
 				stats: () => cacheUtils.getStats('thesis'),
-				invalidate: () => cacheInvalidation.invalidateEntity('thesis'),
+				invalidate: () => {
+					cacheUtils.clear('thesis');
+				},
 			},
 
-			// Fetch all theses with sorting
+			// Fetch all theses with sorting and caching
 			fetchTheses: async (force = false) => {
 				const cacheKey = 'all';
 
@@ -359,14 +371,26 @@ export const useThesisStore = create<ThesisState>()(
 			toggleThesisPublishStatus: async (id: string) => {
 				set({ toggling: true, lastError: null });
 				try {
-					const response = await thesisService.togglePublishStatus(id);
+					// Get current thesis to determine new publish state
+					const { theses } = get();
+					const currentThesis = theses.find((thesis) => thesis.id === id);
+					if (!currentThesis) {
+						throw new Error('Thesis not found');
+					}
+
+					// Use bulk API for single thesis toggle
+					const response = await thesisService.publishTheses({
+						thesesIds: [id],
+						isPublish: !currentThesis.isPublish,
+					});
 					const result = handleApiResponse(response);
 
-					if (result.success && result.data) {
+					if (result.success) {
 						// Update local state
-						const { theses } = get();
 						const updatedTheses = theses.map((thesis) =>
-							thesis.id === id ? result.data! : thesis,
+							thesis.id === id
+								? { ...thesis, isPublish: !thesis.isPublish }
+								: thesis,
 						);
 						set({
 							theses: updatedTheses,
@@ -507,6 +531,7 @@ export const useThesisStore = create<ThesisState>()(
 					selectedStatus,
 					selectedDomain,
 					selectedOwned,
+					sessionLecturerId,
 				} = get();
 
 				let filtered = theses;
@@ -532,7 +557,6 @@ export const useThesisStore = create<ThesisState>()(
 
 				// Filter by owned
 				if (selectedOwned !== undefined) {
-					const { sessionLecturerId } = get();
 					if (selectedOwned && sessionLecturerId) {
 						// Show only my theses
 						filtered = filtered.filter(
@@ -547,7 +571,7 @@ export const useThesisStore = create<ThesisState>()(
 
 			// Utility functions
 			reset: () => {
-				cacheInvalidation.invalidateEntity('thesis');
+				cacheUtils.clear('thesis');
 				set({
 					theses: [],
 					filteredTheses: [],
@@ -560,7 +584,9 @@ export const useThesisStore = create<ThesisState>()(
 					searchText: '',
 					selectedStatus: undefined,
 					selectedDomain: undefined,
+					selectedOwned: undefined,
 					currentLecturerId: null,
+					sessionLecturerId: null,
 					_thesisLoadingStates: new Map(),
 					_backgroundRefreshRunning: false,
 					_lastBackgroundRefresh: 0,
@@ -582,7 +608,7 @@ export const useThesisStore = create<ThesisState>()(
 					thesis.id === updatedThesis.id ? updatedThesis : thesis,
 				);
 				set({ theses: updatedTheses });
-				cacheInvalidation.invalidateEntity('thesis');
+				cacheUtils.clear('thesis');
 				get().filterTheses();
 			},
 
@@ -593,6 +619,8 @@ export const useThesisStore = create<ThesisState>()(
 
 			setSessionLecturerId: (lecturerId: string | null) => {
 				set({ sessionLecturerId: lecturerId });
+				// Re-apply filters since owned filter depends on sessionLecturerId
+				get().filterTheses();
 			},
 		}),
 		{

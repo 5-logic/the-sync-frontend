@@ -1,5 +1,5 @@
 import { createMetadata } from '@/app/metadata';
-import AssignSupervisors from '@/components/features/lecturer/AssignSupervisor';
+import LecturerAssignSupervisorClient from '@/components/pages/lecturer/LecturerAssignSupervisorClient';
 
 export const metadata = createMetadata({
 	title: 'Lecturer Assign Supervisor',
@@ -8,5 +8,5 @@ export const metadata = createMetadata({
 });
 
 export default function LecturerAssignSupervisorPage() {
-	return <AssignSupervisors />;
+	return <LecturerAssignSupervisorClient />;
 }

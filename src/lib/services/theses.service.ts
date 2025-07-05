@@ -55,13 +55,6 @@ class ThesisService {
 		return response.data;
 	}
 
-	async togglePublishStatus(id: string): Promise<ApiResponse<Thesis>> {
-		const response = await httpClient.patch<ApiResponse<Thesis>>(
-			`${this.baseUrl}/${id}/toggle-publish`,
-		);
-		return response.data;
-	}
-
 	async submitThesis(id: string): Promise<ApiResponse<Thesis>> {
 		const response = await httpClient.post<ApiResponse<Thesis>>(
 			`${this.baseUrl}/${id}/submit`,
@@ -76,6 +69,18 @@ class ThesisService {
 		const response = await httpClient.post<ApiResponse<Thesis>>(
 			`${this.baseUrl}/${id}/review`,
 			reviewData,
+		);
+		return response.data;
+	}
+
+	// Bulk publish theses
+	async publishTheses(data: {
+		thesesIds: string[];
+		isPublish: boolean;
+	}): Promise<ApiResponse<void>> {
+		const response = await httpClient.put<ApiResponse<void>>(
+			`${this.baseUrl}/publish`,
+			data,
 		);
 		return response.data;
 	}

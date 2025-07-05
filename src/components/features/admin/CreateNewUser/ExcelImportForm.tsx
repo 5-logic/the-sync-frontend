@@ -1,10 +1,6 @@
 'use client';
 
-import {
-	CloudUploadOutlined,
-	DeleteOutlined,
-	DownloadOutlined,
-} from '@ant-design/icons';
+import { CloudUploadOutlined, DeleteOutlined } from '@ant-design/icons';
 import {
 	Alert,
 	Button,
@@ -27,6 +23,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import * as XLSX from 'xlsx';
 
+import { DownloadTemplateButton } from '@/components/common/DownloadTemplateButton';
 import { FormLabel } from '@/components/common/FormLabel';
 import { SEMESTER_STATUS_TAGS } from '@/lib/constants/semester';
 import { showNotification } from '@/lib/utils/notification';
@@ -751,7 +748,6 @@ export default function ExcelImportForm<
 	const [data, setData] = useState<T[]>([]);
 	const [selectedSemester, setSelectedSemester] = useState<string>('');
 	const [selectedMajor, setSelectedMajor] = useState<string>('');
-	const [downloading, setDownloading] = useState(false);
 	// Store hooks
 	const {
 		semesters,
@@ -807,36 +803,6 @@ export default function ExcelImportForm<
 	);
 	const hasAvailableSemesters = availableSemesters.length > 0;
 
-	const handleDownloadTemplate = async () => {
-		if (!templateFileName) {
-			showNotification.error('Error', 'Template file is not available');
-			return;
-		}
-
-		setDownloading(true);
-		try {
-			const downloadUrl = `/files/${templateFileName}`;
-			const link = document.createElement('a');
-			link.href = downloadUrl;
-			link.download = templateFileName;
-			link.target = '_blank';
-			link.rel = 'noopener noreferrer';
-
-			document.body.appendChild(link);
-			link.click();
-			document.body.removeChild(link);
-
-			showNotification.success('Success', 'Template download started');
-		} catch (error) {
-			console.error('Download failed:', error);
-			showNotification.error(
-				'Error',
-				'Failed to download template. Please try again.',
-			);
-		} finally {
-			setTimeout(() => setDownloading(false), 1000);
-		}
-	};
 	const handleUpload = (file: RcFile): boolean | typeof Upload.LIST_IGNORE => {
 		// Validate prerequisites first - return false if validation fails
 		const prerequisitesValid = validateUploadPrerequisites(
@@ -1098,20 +1064,7 @@ export default function ExcelImportForm<
 						</Typography.Text>
 					</Col>
 					<Col xs={24} sm={24} md={8} style={{ textAlign: 'right' }}>
-						<Button
-							icon={<DownloadOutlined />}
-							type="default"
-							onClick={handleDownloadTemplate}
-							disabled={!templateFileName || downloading}
-							loading={downloading}
-							title={
-								!templateFileName
-									? 'Template file not available'
-									: 'Download Excel template'
-							}
-						>
-							{downloading ? 'Downloading...' : 'Download Template'}
-						</Button>
+						<DownloadTemplateButton templateFileName={templateFileName!} />
 					</Col>
 				</Row>
 			</Card>
