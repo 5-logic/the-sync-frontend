@@ -1,12 +1,12 @@
 'use client';
 
-import { EditOutlined } from '@ant-design/icons';
-import { Card, Space, Switch, Table, Tooltip, Typography } from 'antd';
+import { Card, Space, Typography } from 'antd';
 
 import Header from '@/components/features/lecturer/AssignSupervisor/Header';
+import ChecklistInfoCard from '@/components/features/lecturer/ChecklistDetail/ChecklistInfoCard';
+import ChecklistItemsTable from '@/components/features/lecturer/ChecklistDetail/ChecklistItemTable';
 import { mockChecklistItems } from '@/data/ChecklistItems';
 import { mockChecklists } from '@/data/checklist';
-import { ChecklistItem } from '@/schemas/checklist';
 
 export default function ChecklistDetailPage() {
 	const checklistId = 'c1';
@@ -20,43 +20,6 @@ export default function ChecklistDetailPage() {
 		return <Typography.Text type="danger">Checklist not found</Typography.Text>;
 	}
 
-	const columns = [
-		{
-			title: 'Item Name',
-			dataIndex: 'name',
-			key: 'name',
-		},
-		{
-			title: 'Description',
-			dataIndex: 'description',
-			key: 'description',
-			render: (text: string | null) => text || <i>No description</i>,
-		},
-		{
-			title: 'Required',
-			dataIndex: 'isRequired',
-			key: 'isRequired',
-			render: (required: boolean) => (
-				<Switch
-					checked={required}
-					disabled
-					checkedChildren="Mandatory"
-					unCheckedChildren="Optional"
-				/>
-			),
-		},
-		{
-			title: 'Action',
-			key: 'action',
-			// eslint-disable-next-line @typescript-eslint/no-unused-vars
-			render: (_: unknown) => (
-				<Tooltip title="Edit">
-					<EditOutlined style={{ color: '#52c41a', cursor: 'pointer' }} />
-				</Tooltip>
-			),
-		},
-	];
-
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
 			<Header
@@ -65,21 +28,18 @@ export default function ChecklistDetailPage() {
 				badgeText="Moderator Only"
 			/>
 
-			<Card>
-				<Typography.Title level={3}>{checklist.name}</Typography.Title>
-				<Typography.Paragraph>{checklist.description}</Typography.Paragraph>
-				<Typography.Paragraph type="secondary">
-					<b>Semester:</b> {checklist.semester} &nbsp;&nbsp;|&nbsp;&nbsp;{' '}
-					<b>Milestone:</b> {checklist.milestone}
-				</Typography.Paragraph>
-			</Card>
+			<ChecklistInfoCard
+				name={checklist.name}
+				description={checklist.description ?? ''}
+				semester={checklist.semester}
+				milestone={checklist.milestone}
+			/>
 
 			<Card title="Checklist Items">
-				<Table<ChecklistItem>
-					rowKey="id"
-					dataSource={checklistItems}
-					columns={columns}
-					pagination={false}
+				<ChecklistItemsTable
+					items={checklistItems}
+					editable
+					onEdit={(item) => console.log('Edit', item)}
 				/>
 			</Card>
 		</Space>
