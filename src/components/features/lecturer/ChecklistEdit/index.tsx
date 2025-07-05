@@ -1,7 +1,8 @@
 'use client';
 
+import ChecklistInfoCard from '../ChecklistDetail/ChecklistInfoCard';
 import ChecklistItemsTable from '../ChecklistDetail/ChecklistItemTable';
-import { Card, Input, Space, Typography } from 'antd';
+import { Card, Space, Typography } from 'antd';
 import { useState } from 'react';
 
 import Header from '@/components/features/lecturer/AssignSupervisor/Header';
@@ -39,25 +40,15 @@ export default function ChecklistEditPage() {
 				badgeText="Moderator Only"
 			/>
 
-			<Card title="Checklist Info">
-				<Space direction="vertical" style={{ width: '100%' }}>
-					<Input
-						value={name}
-						onChange={(e) => setName(e.target.value)}
-						placeholder="Checklist name"
-					/>
-					<Input.TextArea
-						value={description}
-						onChange={(e) => setDescription(e.target.value)}
-						placeholder="Checklist description"
-						autoSize={{ minRows: 2, maxRows: 5 }}
-					/>
-					<Typography.Text type="secondary">
-						Semester: <b>{originalChecklist.semester}</b> | Milestone:{' '}
-						<b>{originalChecklist.milestone}</b>
-					</Typography.Text>
-				</Space>
-			</Card>
+			<ChecklistInfoCard
+				name={name}
+				description={description}
+				semester={originalChecklist.semester}
+				milestone={originalChecklist.milestone}
+				editable
+				onNameChange={setName}
+				onDescriptionChange={setDescription}
+			/>
 
 			<Card title="Checklist Items">
 				<ChecklistItemsTable
