@@ -1,3 +1,5 @@
+'use client';
+
 import { EditOutlined, EyeOutlined } from '@ant-design/icons';
 import { Space, Table, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
@@ -20,25 +22,23 @@ export default function ChecklistTable({ data, getTotalItems }: Props) {
 			title: 'Description',
 			dataIndex: 'description',
 			key: 'description',
+			render: (text) => text || <i>No description</i>,
 		},
 		{
-			title: 'Created At',
-			dataIndex: 'createdAt',
-			key: 'createdAt',
-			render: (date: Date) => new Date(date).toLocaleDateString(),
+			title: 'Semester',
+			dataIndex: 'semester',
+			key: 'semester',
 		},
 		{
-			title: 'Updated At',
-			dataIndex: 'updatedAt',
-			key: 'updatedAt',
-			render: (date: Date) => new Date(date).toLocaleDateString(),
+			title: 'Milestone',
+			dataIndex: 'milestone',
+			key: 'milestone',
 		},
 		{
 			title: 'Total Items',
 			key: 'totalItems',
 			render: (_, record) => getTotalItems(record.id),
 		},
-
 		{
 			title: 'Action',
 			key: 'action',
@@ -49,7 +49,7 @@ export default function ChecklistTable({ data, getTotalItems }: Props) {
 							style={{ cursor: 'pointer', color: '#1890ff' }}
 							onClick={() => {
 								console.log('View', record);
-								// Replace with navigation or modal logic
+								// TODO: Add navigation or modal view
 							}}
 						/>
 					</Tooltip>
@@ -58,7 +58,7 @@ export default function ChecklistTable({ data, getTotalItems }: Props) {
 							style={{ cursor: 'pointer', color: '#52c41a' }}
 							onClick={() => {
 								console.log('Edit', record);
-								// Replace with navigation or modal logic
+								// TODO: Add navigation or modal edit
 							}}
 						/>
 					</Tooltip>
