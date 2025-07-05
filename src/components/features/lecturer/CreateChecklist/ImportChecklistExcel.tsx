@@ -17,9 +17,8 @@ import { useState } from 'react';
 
 import ChecklistContextTitle from '@/components/features/lecturer/CreateChecklist/ChecklistContextTitle';
 import ChecklistDragger from '@/components/features/lecturer/CreateChecklist/ChecklistDragger';
+import ChecklistGeneralInfoForm from '@/components/features/lecturer/CreateChecklist/ChecklistGeneral';
 import { showNotification } from '@/lib/utils';
-
-import ChecklistGeneralInfoForm from './ChecklistGeneralInfoForm';
 
 export interface ChecklistItem {
 	id: string;

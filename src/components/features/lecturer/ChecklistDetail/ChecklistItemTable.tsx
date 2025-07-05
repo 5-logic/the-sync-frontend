@@ -9,9 +9,9 @@ import { ChecklistItem } from '@/schemas/checklist';
 
 interface Props {
 	items: ChecklistItem[];
-	editable?: boolean; // Cho phép sửa trực tiếp (trang edit)
-	allowEdit?: boolean; // Có nút Edit (trang detail)
-	allowDelete?: boolean; // Có nút Delete
+	editable?: boolean;
+	allowEdit?: boolean;
+	allowDelete?: boolean;
 	onEdit?: (item: ChecklistItem) => void;
 	onDelete?: (item: ChecklistItem) => void;
 	onChangeField?: (

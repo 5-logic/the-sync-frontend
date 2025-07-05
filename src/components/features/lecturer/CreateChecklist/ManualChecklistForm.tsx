@@ -6,10 +6,9 @@ import type { ColumnsType } from 'antd/es/table';
 import { useState } from 'react';
 
 import ChecklistContextTitle from '@/components/features/lecturer/CreateChecklist/ChecklistContextTitle';
+import ChecklistGeneralInfoForm from '@/components/features/lecturer/CreateChecklist/ChecklistGeneral';
 import { showNotification } from '@/lib/utils';
 import type { ChecklistItemCreate } from '@/schemas/checklist';
-
-import ChecklistGeneralInfoForm from './ChecklistGeneralInfoForm';
 
 // Dùng tạm id kiểu string trong UI
 type ChecklistItemTemp = ChecklistItemCreate & { id: string };
