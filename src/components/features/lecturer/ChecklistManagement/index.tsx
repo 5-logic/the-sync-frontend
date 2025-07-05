@@ -57,7 +57,7 @@ export default function ChecklistManagement() {
 	const filteredChecklists = useMemo(() => {
 		return mockChecklists.filter((item) => {
 			const matchesSearch =
-				item.name.toLowerCase().includes(searchValue.toLowerCase()) ||
+				item.name.toLowerCase().includes(searchValue.toLowerCase()) || //NOSONAR
 				item.description?.toLowerCase().includes(searchValue.toLowerCase());
 
 			const matchesSemester = semester ? item.semester === semester : true;

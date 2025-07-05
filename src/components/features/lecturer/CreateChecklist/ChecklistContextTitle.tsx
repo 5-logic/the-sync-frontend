@@ -4,9 +4,9 @@ import { BookOutlined, FlagOutlined } from '@ant-design/icons';
 import { Tag, Typography } from 'antd';
 
 interface Props {
-	semester: string;
-	milestone: string;
-	fontSize?: number;
+	readonly semester: string;
+	readonly milestone: string;
+	readonly fontSize?: number;
 }
 
 export default function ChecklistContextTitle({
