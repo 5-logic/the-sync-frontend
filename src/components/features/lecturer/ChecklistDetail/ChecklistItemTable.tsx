@@ -1,7 +1,7 @@
 'use client';
 
-import { EditOutlined } from '@ant-design/icons';
-import { Switch, Table, Tooltip } from 'antd';
+import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
+import { Input, Switch, Table, Tooltip } from 'antd';
 import type { ColumnType } from 'antd/es/table';
 
 import { ChecklistItem } from '@/schemas/checklist';
@@ -9,52 +9,102 @@ import { ChecklistItem } from '@/schemas/checklist';
 interface Props {
 	items: ChecklistItem[];
 	editable?: boolean;
+	allowEdit?: boolean;
+	allowDelete?: boolean;
 	onEdit?: (item: ChecklistItem) => void;
+	onDelete?: (item: ChecklistItem) => void;
+	onChangeField?: (
+		id: string,
+		field: keyof ChecklistItem,
+		value: string | boolean,
+	) => void;
 }
 
 export default function ChecklistItemsTable({
 	items,
 	editable = false,
+	allowEdit,
+	allowDelete,
 	onEdit,
+	onDelete,
+	onChangeField,
 }: Props) {
 	const columns: ColumnType<ChecklistItem>[] = [
 		{
 			title: 'Question',
 			dataIndex: 'name',
 			key: 'name',
+			render: (text, record) =>
+				editable ? (
+					<Input
+						value={text}
+						onChange={(e) => onChangeField?.(record.id, 'name', e.target.value)}
+					/>
+				) : (
+					text
+				),
 		},
 		{
 			title: 'Description',
 			dataIndex: 'description',
 			key: 'description',
-			render: (text: string | null) => text || <i>No description</i>,
+			render: (text, record) =>
+				editable ? (
+					<Input
+						value={text || ''}
+						placeholder="No description"
+						onChange={(e) =>
+							onChangeField?.(record.id, 'description', e.target.value)
+						}
+					/>
+				) : (
+					text || <i>No description</i>
+				),
 		},
 		{
 			title: 'Required',
 			dataIndex: 'isRequired',
 			key: 'isRequired',
-			render: (required: boolean) => (
+			render: (required: boolean, record) => (
 				<Switch
 					checked={required}
 					disabled={!editable}
 					checkedChildren="Mandatory"
 					unCheckedChildren="Optional"
+					onChange={(checked) =>
+						onChangeField?.(record.id, 'isRequired', checked)
+					}
 				/>
 			),
 		},
 	];
 
-	if (editable) {
+	// Only show Action column if edit or delete is enabled
+	if (allowEdit || allowDelete) {
 		columns.push({
 			title: 'Action',
 			key: 'action',
-			render: (_: unknown, record: ChecklistItem) => (
-				<Tooltip title="Edit">
-					<EditOutlined
-						style={{ color: '#52c41a', cursor: 'pointer' }}
-						onClick={() => onEdit?.(record)}
-					/>
-				</Tooltip>
+			width: 100,
+			render: (_, record) => (
+				<>
+					{allowEdit && (
+						<Tooltip title="Edit">
+							<EditOutlined
+								style={{ color: '#1890ff', marginRight: 12, cursor: 'pointer' }}
+								onClick={() => onEdit?.(record)}
+							/>
+						</Tooltip>
+					)}
+
+					{allowDelete && (
+						<Tooltip title="Delete">
+							<DeleteOutlined
+								style={{ color: '#ff4d4f', cursor: 'pointer' }}
+								onClick={() => onDelete?.(record)}
+							/>
+						</Tooltip>
+					)}
+				</>
 			),
 		});
 	}

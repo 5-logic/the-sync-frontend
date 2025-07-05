@@ -12,6 +12,7 @@ interface Props {
 	editable?: boolean;
 	onNameChange?: (val: string) => void;
 	onDescriptionChange?: (val: string) => void;
+	showErrors?: boolean;
 }
 
 export default function ChecklistInfoCard({
@@ -22,30 +23,45 @@ export default function ChecklistInfoCard({
 	editable = false,
 	onNameChange,
 	onDescriptionChange,
+	showErrors = false,
 }: Props) {
+	const nameError = showErrors && !name.trim();
+	const descriptionError = showErrors && !description?.trim();
+
 	return (
-		<Card title="Checklist Info">
+		<Card title="Checklist Information">
 			{editable ? (
 				<>
-					<Typography.Text strong>Checklist Name</Typography.Text>
-					<Input
-						value={name}
-						onChange={(e) => onNameChange?.(e.target.value)}
-						placeholder="Enter checklist name"
-						style={{ marginBottom: 12 }}
-					/>
-					<Typography.Text strong>Description</Typography.Text>
-					<Input.TextArea
-						value={description}
-						onChange={(e) => onDescriptionChange?.(e.target.value)}
-						placeholder="Enter checklist description"
-						autoSize={{ minRows: 2, maxRows: 4 }}
-						style={{ marginBottom: 12 }}
-					/>
+					<Form.Item
+						label={<FormLabel text="Checklist Name" isBold />}
+						validateStatus={nameError ? 'error' : ''}
+						help={nameError ? 'Checklist name is required' : ''}
+						style={{ width: '100%', marginBottom: 16 }}
+					>
+						<Input
+							value={name}
+							onChange={(e) => onNameChange?.(e.target.value)}
+							placeholder="Enter checklist name"
+						/>
+					</Form.Item>
+
+					<Form.Item
+						label={<FormLabel text="Description" isBold />}
+						validateStatus={descriptionError ? 'error' : ''}
+						help={descriptionError ? 'Description is required' : ''}
+					>
+						<Input.TextArea
+							value={description}
+							onChange={(e) => onDescriptionChange?.(e.target.value)}
+							placeholder="Enter checklist description"
+							autoSize={{ minRows: 1, maxRows: 1 }}
+							style={{ resize: 'none' }}
+						/>
+					</Form.Item>
 				</>
 			) : (
 				<>
-					<Typography.Title level={5} style={{ marginBottom: 12 }}>
+					<Typography.Title level={5} style={{ marginBottom: 0 }}>
 						Checklist Name: {name}
 					</Typography.Title>
 

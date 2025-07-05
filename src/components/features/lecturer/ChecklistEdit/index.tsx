@@ -2,7 +2,7 @@
 
 import ChecklistInfoCard from '../ChecklistDetail/ChecklistInfoCard';
 import ChecklistItemsTable from '../ChecklistDetail/ChecklistItemTable';
-import { Card, Space, Typography } from 'antd';
+import { Button, Card, Row, Space, Typography } from 'antd';
 import { useState } from 'react';
 
 import Header from '@/components/features/lecturer/AssignSupervisor/Header';
@@ -14,18 +14,27 @@ export default function ChecklistEditPage() {
 	const checklistId = 'c1';
 
 	const originalChecklist = mockChecklists.find((cl) => cl.id === checklistId);
-	const checklistItems = mockChecklistItems.filter(
-		(item) => item.checklistId === checklistId,
-	);
 
 	const [name, setName] = useState(originalChecklist?.name || '');
 	const [description, setDescription] = useState(
 		originalChecklist?.description || '',
 	);
 
-	const handleEditItem = (item: ChecklistItem) => {
-		console.log('Edit item:', item);
-		// Mở modal hoặc drawer ở đây
+	const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>(
+		mockChecklistItems.filter((item) => item.checklistId === checklistId),
+	);
+
+	const handleDeleteItem = (item: ChecklistItem) => {
+		setChecklistItems((prev) => prev.filter((i) => i.id !== item.id));
+	};
+	const handleChangeField = (
+		id: string,
+		field: keyof ChecklistItem,
+		value: string | boolean,
+	) => {
+		setChecklistItems((prev) =>
+			prev.map((item) => (item.id === id ? { ...item, [field]: value } : item)),
+		);
 	};
 
 	if (!originalChecklist) {
@@ -54,9 +63,18 @@ export default function ChecklistEditPage() {
 				<ChecklistItemsTable
 					items={checklistItems}
 					editable
-					onEdit={handleEditItem}
+					allowDelete
+					onDelete={handleDeleteItem}
+					onChangeField={handleChangeField}
 				/>
 			</Card>
+
+			<Row justify="end">
+				<Space>
+					<Button>Back</Button>
+					<Button type="primary">Save Checklist</Button>
+				</Space>
+			</Row>
 		</Space>
 	);
 }
