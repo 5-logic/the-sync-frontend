@@ -2,7 +2,7 @@
 
 import { Space } from 'antd';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import Header from '@/components/features/lecturer/AssignSupervisor/Header';
 import ChecklistTable from '@/components/features/lecturer/ChecklistManagement/ChecklistTable';
@@ -15,23 +15,16 @@ export default function ChecklistManagement() {
 	const router = useRouter();
 	const [semester, setSemester] = useState('');
 	const [milestone, setMilestone] = useState('');
-	const [checklists] = useState(mockChecklists);
-
-	const filteredChecklists = checklists.filter((cl) => {
-		const matchSemester = semester ? cl.semester === semester : true;
-		const matchMilestone = milestone ? cl.milestone === milestone : true;
-		return matchSemester && matchMilestone;
-	});
+	const [searchValue, setSearchValue] = useState('');
 
 	const getTotalItems = (checklistId: string) =>
 		mockChecklistItems.filter((item) => item.checklistId === checklistId)
 			.length;
 
-	// ✅ Disable nếu đã tồn tại checklist
 	const checklistExists =
 		semester !== '' &&
 		milestone !== '' &&
-		checklists.some(
+		mockChecklists.some(
 			(cl) => cl.semester === semester && cl.milestone === milestone,
 		);
 
@@ -60,6 +53,20 @@ export default function ChecklistManagement() {
 		}
 	};
 
+	// Lọctheo search + semester + milestone
+	const filteredChecklists = useMemo(() => {
+		return mockChecklists.filter((item) => {
+			const matchesSearch =
+				item.name.toLowerCase().includes(searchValue.toLowerCase()) ||
+				item.description?.toLowerCase().includes(searchValue.toLowerCase());
+
+			const matchesSemester = semester ? item.semester === semester : true;
+			const matchesMilestone = milestone ? item.milestone === milestone : true;
+
+			return matchesSearch && matchesSemester && matchesMilestone;
+		});
+	}, [searchValue, semester, milestone]);
+
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
 			<Header
@@ -75,6 +82,7 @@ export default function ChecklistManagement() {
 				onMilestoneChange={setMilestone}
 				onCreate={handleCreateChecklist}
 				disabledCreate={!semester || !milestone || checklistExists}
+				onSearchChange={setSearchValue}
 			/>
 
 			<ChecklistTable data={filteredChecklists} getTotalItems={getTotalItems} />

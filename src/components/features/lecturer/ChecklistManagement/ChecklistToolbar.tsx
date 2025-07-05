@@ -1,11 +1,13 @@
 'use client';
 
-import { PlusOutlined } from '@ant-design/icons';
-import { Button, Col, Row } from 'antd';
+import { PlusOutlined, SearchOutlined } from '@ant-design/icons';
+import { Button, Col, Input, Row } from 'antd';
+import { useState } from 'react';
 
 import SemesterMilestoneSelect from '@/components/features/lecturer/AssignLecturerReview/SemesterMilestoneSelect';
 
 interface Props {
+	onSearchChange: (val: string) => void;
 	semester: string;
 	onSemesterChange: (val: string) => void;
 	milestone: string;
@@ -20,6 +22,7 @@ interface Props {
 }
 
 export default function ChecklistToolbar({
+	onSearchChange,
 	semester,
 	onSemesterChange,
 	milestone,
@@ -31,6 +34,8 @@ export default function ChecklistToolbar({
 	disabledSemester = false,
 	disabledMilestone = false,
 }: Readonly<Props>) {
+	const [searchValue, setSearchValue] = useState('');
+
 	return (
 		<Row
 			gutter={[12, 12]}
@@ -39,7 +44,22 @@ export default function ChecklistToolbar({
 			justify="space-between"
 			style={{ marginBottom: 16 }}
 		>
+			{/* search */}
 			<Col flex="auto">
+				<Input
+					allowClear
+					prefix={<SearchOutlined />}
+					placeholder="Search checklist name"
+					value={searchValue}
+					onChange={(e) => {
+						setSearchValue(e.target.value);
+						onSearchChange(e.target.value);
+					}}
+				/>
+			</Col>
+
+			{/* filter */}
+			<Col flex="none" style={{ minWidth: 250 }}>
 				<SemesterMilestoneSelect
 					semester={semester}
 					onSemesterChange={onSemesterChange}
@@ -50,6 +70,7 @@ export default function ChecklistToolbar({
 				/>
 			</Col>
 
+			{/* add */}
 			{!hideButton && (
 				<Col>
 					<Button
