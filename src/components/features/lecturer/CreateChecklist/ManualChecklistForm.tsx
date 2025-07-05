@@ -1,17 +1,7 @@
 'use client';
 
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
-import {
-	Button,
-	Card,
-	Col,
-	Input,
-	Row,
-	Space,
-	Switch,
-	Table,
-	Tooltip,
-} from 'antd';
+import { Button, Card, Input, Row, Space, Switch, Table, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useState } from 'react';
 
@@ -19,12 +9,16 @@ import ChecklistContextTitle from '@/components/features/lecturer/CreateChecklis
 import { showNotification } from '@/lib/utils';
 import type { ChecklistItemCreate } from '@/schemas/checklist';
 
+import ChecklistGeneralInfoForm from './ChecklistGeneralInfoForm';
+
 // Dùng tạm id kiểu string trong UI
 type ChecklistItemTemp = ChecklistItemCreate & { id: string };
 
 export default function ManualChecklistForm() {
 	const [items, setItems] = useState<ChecklistItemTemp[]>([]);
 	const [showErrors, setShowErrors] = useState(false);
+	const [checklistName, setChecklistName] = useState('');
+	const [checklistDescription, setChecklistDescription] = useState('');
 
 	const handleAddItem = () => {
 		const newItem: ChecklistItemTemp = {
@@ -150,24 +144,36 @@ export default function ManualChecklistForm() {
 	];
 
 	return (
-		<Space direction="vertical" size="middle" style={{ width: '100%' }}>
-			<Card
-				title={
-					<Row justify="space-between" align="middle">
-						<ChecklistContextTitle
-							semester="Semester2023"
-							milestone="Milestone review 2"
-							fontSize={16}
-						/>
+		<Space direction="vertical" size="large" style={{ width: '100%' }}>
+			{/* Tiêu đề context (Semester + Milestone) */}
+			<ChecklistContextTitle
+				semester="Semester2023"
+				milestone="Milestone review 2"
+				fontSize={16}
+			/>
 
-						<Button
-							type="primary"
-							icon={<PlusOutlined />}
-							onClick={handleAddItem}
-						>
-							Add New Item
-						</Button>
-					</Row>
+			{/* Thông tin Checklist tổng */}
+			<Card title="Checklist Info">
+				<ChecklistGeneralInfoForm
+					name={checklistName}
+					description={checklistDescription}
+					onNameChange={setChecklistName}
+					onDescriptionChange={setChecklistDescription}
+					showErrors={showErrors}
+				/>
+			</Card>
+
+			{/* Danh sách Checklist Items */}
+			<Card
+				title="Checklist Items"
+				extra={
+					<Button
+						type="primary"
+						icon={<PlusOutlined />}
+						onClick={handleAddItem}
+					>
+						Add New Item
+					</Button>
 				}
 			>
 				<Table
@@ -178,15 +184,14 @@ export default function ManualChecklistForm() {
 					locale={{ emptyText: 'No checklist items added.' }}
 				/>
 
+				{/* Nút Save + Cancel */}
 				<Row justify="end" style={{ marginTop: 36 }}>
-					<Col>
-						<Space style={{ gap: 16 }}>
-							<Button onClick={handleCancel}>Cancel</Button>
-							<Button type="primary" onClick={handleSaveAll}>
-								Save All
-							</Button>
-						</Space>
-					</Col>
+					<Space style={{ gap: 16 }}>
+						<Button onClick={handleCancel}>Cancel</Button>
+						<Button type="primary" onClick={handleSaveAll}>
+							Save All
+						</Button>
+					</Space>
 				</Row>
 			</Card>
 		</Space>

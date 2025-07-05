@@ -19,6 +19,8 @@ import ChecklistContextTitle from '@/components/features/lecturer/CreateChecklis
 import ChecklistDragger from '@/components/features/lecturer/CreateChecklist/ChecklistDragger';
 import { showNotification } from '@/lib/utils';
 
+import ChecklistGeneralInfoForm from './ChecklistGeneralInfoForm';
+
 export interface ChecklistItem {
 	id: string;
 	name: string;
@@ -29,6 +31,9 @@ export interface ChecklistItem {
 export default function ImportChecklistExcel() {
 	const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>([]);
 	const [fileList, setFileList] = useState<UploadFile[]>([]);
+	const [checklistName, setChecklistName] = useState('');
+	const [checklistDescription, setChecklistDescription] = useState('');
+	const [showErrors] = useState(false);
 
 	const handleRemoveItem = (id: string) => {
 		setChecklistItems((prev) => prev.filter((item) => item.id !== id));
@@ -106,19 +111,27 @@ export default function ImportChecklistExcel() {
 	];
 
 	return (
-		<Space direction="vertical" size="middle" style={{ width: '100%' }}>
-			<Card
-				title={
-					<Row justify="space-between" align="middle">
-						<ChecklistContextTitle
-							semester="Semester2023"
-							milestone="Milestone review 2"
-							fontSize={16}
-						/>
-						{/* Nếu bạn cần thêm button tải template Excel thì đặt tại đây */}
-					</Row>
-				}
-			>
+		<Space direction="vertical" size="large" style={{ width: '100%' }}>
+			{/* Tiêu đề context (Semester + Milestone) */}
+			<ChecklistContextTitle
+				semester="Semester2023"
+				milestone="Milestone review 2"
+				fontSize={16}
+			/>
+
+			{/* Thông tin Checklist tổng */}
+			<Card title="Checklist Info">
+				<ChecklistGeneralInfoForm
+					name={checklistName}
+					description={checklistDescription}
+					onNameChange={setChecklistName}
+					onDescriptionChange={setChecklistDescription}
+					showErrors={showErrors}
+				/>
+			</Card>
+
+			{/* Import checklist từ Excel */}
+			<Card title="Import Checklist Items">
 				<ChecklistDragger
 					fileList={fileList}
 					setFileList={setFileList}
@@ -133,6 +146,7 @@ export default function ImportChecklistExcel() {
 							rowKey={(item) => item.name + item.description}
 							pagination={false}
 							style={{ marginTop: 24 }}
+							locale={{ emptyText: 'No checklist items imported.' }}
 						/>
 
 						<Row justify="end" style={{ marginTop: 36 }}>
@@ -142,7 +156,7 @@ export default function ImportChecklistExcel() {
 									<Button
 										type="primary"
 										onClick={() => {
-											// Thêm logic gọi API hoặc xử lý tại đây
+											// TODO: Gọi API hoặc xử lý lưu
 											console.log('Imported items:', checklistItems);
 										}}
 									>
