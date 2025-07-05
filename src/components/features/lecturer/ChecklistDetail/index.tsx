@@ -29,13 +29,13 @@ export default function ChecklistDetailPage() {
 			/>
 
 			<ChecklistInfoCard
-				name={checklist.name}
-				description={checklist.description ?? ''}
-				semester={checklist.semester}
-				milestone={checklist.milestone}
+				name="Final Review Checklist"
+				description="This checklist is used to evaluate students' final thesis submission."
+				semester="Semester2024"
+				milestone="Final Review"
 			/>
 
-			<Card title="Checklist Items">
+			<Card title="Checklist">
 				<ChecklistItemsTable
 					items={checklistItems}
 					editable

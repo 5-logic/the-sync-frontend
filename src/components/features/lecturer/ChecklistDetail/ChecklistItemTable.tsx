@@ -19,7 +19,7 @@ export default function ChecklistItemsTable({
 }: Props) {
 	const columns: ColumnType<ChecklistItem>[] = [
 		{
-			title: 'Item Name',
+			title: 'Question',
 			dataIndex: 'name',
 			key: 'name',
 		},
