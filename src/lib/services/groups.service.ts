@@ -1,5 +1,6 @@
 import httpClient from '@/lib/services/_httpClient';
 import { ApiResponse } from '@/schemas/_common';
+import { GroupDashboard } from '@/schemas/group';
 
 // Group interfaces
 export interface GroupCreate {
@@ -38,6 +39,13 @@ class GroupService {
 	async findOne(id: string): Promise<ApiResponse<Group>> {
 		const response = await httpClient.get<ApiResponse<Group>>(
 			`${this.baseUrl}/${id}`,
+		);
+		return response.data;
+	}
+
+	async getStudentGroup(): Promise<ApiResponse<GroupDashboard[]>> {
+		const response = await httpClient.get<ApiResponse<GroupDashboard[]>>(
+			`${this.baseUrl}/student`,
 		);
 		return response.data;
 	}
