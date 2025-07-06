@@ -4,65 +4,15 @@ import type { ColumnsType } from 'antd/es/table';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { FormLabel } from '@/components/common/FormLabel';
-import { mockStudents } from '@/data/student';
+import { useSessionData } from '@/hooks/auth/useAuth';
+import { TEAM_CONFIG, TEAM_STYLES } from '@/lib/constants';
 import { showNotification } from '@/lib/utils/notification';
 import type { Student } from '@/schemas/student';
-
-const TEAM_CONFIG = {
-	MAX_MEMBERS: 5,
-	MIN_MEMBERS: 4,
-	SEARCH_DEBOUNCE_MS: 300,
-} as const;
-
-const UI_CONFIG = {
-	SEARCH_RESULTS_MAX_HEIGHT: 200,
-	BUTTON_HEIGHT: 40,
-	BUTTON_FONT_SIZE: 14,
-} as const;
-
-const STYLES = {
-	searchResultsContainer: {
-		border: '1px solid #d9d9d9',
-		borderRadius: 6,
-		marginTop: 4,
-		maxHeight: UI_CONFIG.SEARCH_RESULTS_MAX_HEIGHT,
-		overflowY: 'auto' as const,
-		backgroundColor: '#fff',
-		zIndex: 1000,
-	},
-	searchResultItem: {
-		padding: '8px 12px',
-		cursor: 'pointer' as const,
-		borderBottom: '1px solid #f0f0f0',
-	},
-	noResultsContainer: {
-		padding: '12px',
-		textAlign: 'center' as const,
-		color: '#999',
-		backgroundColor: '#f9f9f9',
-		borderRadius: 6,
-		marginTop: 4,
-	},
-	infoContainer: {
-		color: '#1890ff',
-		marginBottom: 24,
-		padding: '8px 12px',
-		background: '#f0f8ff',
-		borderRadius: '4px',
-		fontSize: '14px',
-	},
-} as const;
-
-interface Member {
-	readonly id: string;
-	readonly name: string;
-	readonly email: string;
-	readonly studentId: string;
-}
+import { useStudentStore } from '@/store';
 
 interface InviteTeamMembersProps {
-	readonly members: Member[];
-	readonly onMembersChange: (members: Member[]) => void;
+	readonly members: Student[];
+	readonly onMembersChange: (members: Student[]) => void;
 }
 
 export default function InviteTeamMembers({
@@ -72,6 +22,18 @@ export default function InviteTeamMembers({
 	const [searchText, setSearchText] = useState('');
 	const [searchResults, setSearchResults] = useState<Student[]>([]);
 
+	// Fetch students from store
+	const { students, fetchStudents } = useStudentStore();
+
+	// Get current user session to exclude self from search
+	const { session } = useSessionData();
+	const currentUserId = session?.user?.id;
+
+	// Fetch students on component mount
+	useEffect(() => {
+		fetchStudents();
+	}, [fetchStudents]);
+
 	useEffect(() => {
 		if (!searchText.trim()) {
 			setSearchResults([]);
@@ -80,7 +42,12 @@ export default function InviteTeamMembers({
 
 		const timeoutId = setTimeout(() => {
 			const searchLower = searchText.toLowerCase();
-			const filtered = mockStudents.filter((student) => {
+			const filtered = students.filter((student) => {
+				// Exclude current logged-in student
+				if (currentUserId && student.id === currentUserId) {
+					return false;
+				}
+
 				const emailMatch = (student.email ?? '')
 					.toLowerCase()
 					.includes(searchLower);
@@ -102,11 +69,21 @@ export default function InviteTeamMembers({
 		}, TEAM_CONFIG.SEARCH_DEBOUNCE_MS);
 
 		return () => clearTimeout(timeoutId);
-	}, [searchText]);
+	}, [searchText, students, currentUserId]);
 
 	const handleAddMember = useCallback(
 		(student?: Student) => {
 			let targetStudent = student ?? null;
+
+			// Prevent adding current logged-in student
+			if (
+				targetStudent &&
+				currentUserId &&
+				targetStudent.id === currentUserId
+			) {
+				showNotification.warning('You cannot add yourself to the group.');
+				return;
+			}
 
 			if (!targetStudent) {
 				if (!searchText.trim()) {
@@ -115,7 +92,12 @@ export default function InviteTeamMembers({
 
 				const searchLower = searchText.toLowerCase();
 				targetStudent =
-					mockStudents.find((s) => {
+					students.find((s) => {
+						// Exclude current logged-in student
+						if (currentUserId && s.id === currentUserId) {
+							return false;
+						}
+
 						const emailMatch = (s.email ?? '').toLowerCase() === searchLower;
 						const codeMatch =
 							(s.studentCode ?? '').toLowerCase() === searchLower;
@@ -146,18 +128,13 @@ export default function InviteTeamMembers({
 				return;
 			}
 
-			const newMember: Member = {
-				id: targetStudent.id,
-				name: targetStudent.fullName,
-				email: targetStudent.email,
-				studentId: targetStudent.studentCode,
-			};
+			const newMember: Student = targetStudent;
 
 			onMembersChange([...members, newMember]);
 			showNotification.success(`${targetStudent.fullName} added successfully!`);
 			setSearchText('');
 		},
-		[searchText, members, onMembersChange],
+		[searchText, members, onMembersChange, students, currentUserId],
 	);
 
 	const handleRemoveMember = useCallback(
@@ -169,12 +146,12 @@ export default function InviteTeamMembers({
 		[members, onMembersChange],
 	);
 
-	const columns: ColumnsType<Member> = useMemo(
+	const columns: ColumnsType<Student> = useMemo(
 		() => [
 			{
 				title: 'Name',
-				dataIndex: 'name',
-				key: 'name',
+				dataIndex: 'fullName',
+				key: 'fullName',
 				width: '30%',
 				responsive: ['sm'],
 			},
@@ -187,8 +164,8 @@ export default function InviteTeamMembers({
 			},
 			{
 				title: 'Student ID',
-				dataIndex: 'studentId',
-				key: 'studentId',
+				dataIndex: 'studentCode',
+				key: 'studentCode',
 				width: '20%',
 				responsive: ['md'],
 			},
@@ -196,13 +173,13 @@ export default function InviteTeamMembers({
 				title: 'Action',
 				key: 'action',
 				width: '10%',
-				render: (_: unknown, record: Member) => (
+				render: (_: unknown, record: Student) => (
 					<Button
 						type="text"
 						danger
 						icon={<DeleteOutlined />}
 						onClick={() => handleRemoveMember(record.id)}
-						aria-label={`Remove ${record.name}`}
+						aria-label={`Remove ${record.fullName}`}
 						size="small"
 					/>
 				),
@@ -229,44 +206,16 @@ export default function InviteTeamMembers({
 							}}
 						/>
 					</Col>
-					<Col>
-						<Button
-							type="primary"
-							onClick={() => {
-								if (searchResults.length === 1) {
-									handleAddMember(searchResults[0]);
-								} else if (searchResults.length === 0 && searchText.trim()) {
-									showNotification.warning(
-										'No student found with this information',
-									);
-								} else if (searchResults.length > 1) {
-									showNotification.info(
-										'Multiple students found, please be more specific',
-									);
-								}
-							}}
-							disabled={!searchText.trim()}
-							style={{
-								fontSize: UI_CONFIG.BUTTON_FONT_SIZE,
-								height: UI_CONFIG.BUTTON_HEIGHT,
-								whiteSpace: 'nowrap',
-								overflow: 'hidden',
-								textOverflow: 'ellipsis',
-							}}
-						>
-							Add Member
-						</Button>
-					</Col>
 				</Row>
 
 				{searchText.trim() && searchResults.length > 0 && (
-					<div style={STYLES.searchResultsContainer}>
+					<div style={TEAM_STYLES.searchResultsContainer}>
 						{searchResults.map((student) => {
 							const isAlreadyAdded = members.some(
 								(member) => member.id === student.id,
 							);
 							const itemStyle = {
-								...STYLES.searchResultItem,
+								...TEAM_STYLES.searchResultItem,
 								cursor: isAlreadyAdded ? 'not-allowed' : 'pointer',
 								backgroundColor: isAlreadyAdded ? '#f5f5f5' : '#fff',
 								opacity: isAlreadyAdded ? 0.6 : 1,
@@ -322,7 +271,7 @@ export default function InviteTeamMembers({
 				)}
 
 				{searchText.trim() && searchResults.length === 0 && (
-					<div style={STYLES.noResultsContainer}>
+					<div style={TEAM_STYLES.noResultsContainer}>
 						No students found with &ldquo;{searchText}&rdquo;
 					</div>
 				)}
@@ -337,15 +286,13 @@ export default function InviteTeamMembers({
 				scroll={{ x: true }}
 				style={{ marginBottom: 16 }}
 				locale={{
-					emptyText: 'No members added yet',
+					emptyText: 'Search and add students to form your team',
 				}}
 			/>
-			<div style={STYLES.infoContainer}>
+			<div style={TEAM_STYLES.infoContainer}>
 				💡 Each group must have {TEAM_CONFIG.MIN_MEMBERS}-
 				{TEAM_CONFIG.MAX_MEMBERS} members (Current: {members.length} members)
 			</div>
 		</div>
 	);
 }
-
-export type { Member };
