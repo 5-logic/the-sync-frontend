@@ -126,7 +126,7 @@ export default function GroupFormFields() {
 						}}
 						treeNodeFilterProp="title"
 						filterTreeNode={(input, treeNode) => {
-							const title = String(treeNode?.title || '');
+							const title = String(treeNode?.title ?? '');
 							return title.toLowerCase().includes(input.toLowerCase());
 						}}
 					/>
