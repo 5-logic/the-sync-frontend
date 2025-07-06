@@ -1,5 +1,5 @@
-import { DeleteOutlined, SearchOutlined } from '@ant-design/icons';
-import { Button, Col, Input, Row, Table } from 'antd';
+import { DeleteOutlined } from '@ant-design/icons';
+import { AutoComplete, Button, Col, Row, Table, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
@@ -9,6 +9,8 @@ import { TEAM_CONFIG, TEAM_STYLES } from '@/lib/constants';
 import { showNotification } from '@/lib/utils/notification';
 import type { Student } from '@/schemas/student';
 import { useStudentStore } from '@/store';
+
+const { Text } = Typography;
 
 interface InviteTeamMembersProps {
 	readonly members: Student[];
@@ -34,6 +36,7 @@ export default function InviteTeamMembers({
 		fetchStudents();
 	}, [fetchStudents]);
 
+	// Filter students based on search text
 	useEffect(() => {
 		if (!searchText.trim()) {
 			setSearchResults([]);
@@ -70,6 +73,52 @@ export default function InviteTeamMembers({
 
 		return () => clearTimeout(timeoutId);
 	}, [searchText, students, currentUserId]);
+
+	// Build options for AutoComplete
+	const studentOptions = useMemo(() => {
+		if (!searchText.trim()) return [];
+
+		return searchResults
+			.filter((student) => {
+				// Exclude current logged-in student
+				if (currentUserId && student.id === currentUserId) {
+					return false;
+				}
+				return true;
+			})
+			.map((student) => {
+				const isAlreadyAdded = members.some(
+					(member) => member.id === student.id,
+				);
+				return {
+					value: student.id,
+					label: (
+						<div style={{ opacity: isAlreadyAdded ? 0.6 : 1 }}>
+							<div
+								style={{
+									fontWeight: 500,
+									display: 'flex',
+									justifyContent: 'space-between',
+									alignItems: 'center',
+								}}
+							>
+								<span>{student.fullName}</span>
+								{isAlreadyAdded && (
+									<Text type="secondary" style={{ fontSize: '12px' }}>
+										(Added)
+									</Text>
+								)}
+							</div>
+							<Text type="secondary" style={{ fontSize: '12px' }}>
+								{student.email} • {student.studentCode}
+							</Text>
+						</div>
+					),
+					disabled: isAlreadyAdded,
+					student: student,
+				};
+			});
+	}, [searchResults, currentUserId, members, searchText]);
 
 	const handleAddMember = useCallback(
 		(student?: Student) => {
@@ -137,6 +186,16 @@ export default function InviteTeamMembers({
 		[searchText, members, onMembersChange, students, currentUserId],
 	);
 
+	const handleStudentSelect = useCallback(
+		(value: string) => {
+			const selectedStudent = students.find((s) => s.id === value);
+			if (selectedStudent) {
+				handleAddMember(selectedStudent);
+			}
+		},
+		[students, handleAddMember],
+	);
+
 	const handleRemoveMember = useCallback(
 		(memberId: string) => {
 			const updatedMembers = members.filter((m) => m.id !== memberId);
@@ -194,87 +253,31 @@ export default function InviteTeamMembers({
 			<div style={{ marginTop: 8, marginBottom: 16 }}>
 				<Row gutter={[8, 8]} align="middle">
 					<Col flex="auto">
-						<Input
+						<AutoComplete
 							placeholder="Enter student email, Student ID"
 							value={searchText}
-							onChange={(e) => setSearchText(e.target.value)}
-							prefix={<SearchOutlined />}
-							onPressEnter={() => {
-								if (searchResults.length === 1) {
-									handleAddMember(searchResults[0]);
-								}
-							}}
+							options={studentOptions}
+							onSearch={setSearchText}
+							onSelect={handleStudentSelect}
+							notFoundContent={
+								searchText.trim() && searchResults.length === 0 ? (
+									<div
+										style={{
+											padding: '8px',
+											textAlign: 'center',
+											color: '#999',
+										}}
+									>
+										No students found with &ldquo;{searchText}&rdquo;
+									</div>
+								) : null
+							}
+							style={{ width: '100%' }}
+							filterOption={false}
+							allowClear
 						/>
 					</Col>
 				</Row>
-
-				{searchText.trim() && searchResults.length > 0 && (
-					<div style={TEAM_STYLES.searchResultsContainer}>
-						{searchResults.map((student) => {
-							const isAlreadyAdded = members.some(
-								(member) => member.id === student.id,
-							);
-							const itemStyle = {
-								...TEAM_STYLES.searchResultItem,
-								cursor: isAlreadyAdded ? 'not-allowed' : 'pointer',
-								backgroundColor: isAlreadyAdded ? '#f5f5f5' : '#fff',
-								opacity: isAlreadyAdded ? 0.6 : 1,
-							};
-
-							return (
-								<button
-									key={student.id}
-									type="button"
-									disabled={isAlreadyAdded}
-									style={{
-										...itemStyle,
-										border: 'none',
-										background: 'transparent',
-										width: '100%',
-										textAlign: 'left',
-									}}
-									onClick={() => !isAlreadyAdded && handleAddMember(student)}
-									onMouseEnter={(e) => {
-										if (!isAlreadyAdded) {
-											e.currentTarget.style.backgroundColor = '#f5f5f5';
-										}
-									}}
-									onMouseLeave={(e) => {
-										e.currentTarget.style.backgroundColor = isAlreadyAdded
-											? '#f5f5f5'
-											: '#fff';
-									}}
-									aria-label={`${isAlreadyAdded ? 'Already added:' : 'Add'} ${student.fullName}`}
-								>
-									<div
-										style={{
-											fontWeight: 500,
-											display: 'flex',
-											justifyContent: 'space-between',
-											alignItems: 'center',
-										}}
-									>
-										<span>{student.fullName}</span>
-										{isAlreadyAdded && (
-											<span style={{ fontSize: '12px', color: '#999' }}>
-												(Added)
-											</span>
-										)}
-									</div>
-									<div style={{ fontSize: '12px', color: '#666' }}>
-										{student.email} • {student.studentCode}
-									</div>
-								</button>
-							);
-						})}
-					</div>
-				)}
-
-				{searchText.trim() && searchResults.length === 0 && (
-					<div style={TEAM_STYLES.noResultsContainer}>
-						No students found with &ldquo;{searchText}&rdquo;
-					</div>
-				)}
 			</div>
 
 			<Table
@@ -289,10 +292,10 @@ export default function InviteTeamMembers({
 					emptyText: 'Search and add students to form your team',
 				}}
 			/>
-			<div style={TEAM_STYLES.infoContainer}>
+			<Typography.Text type="secondary" style={TEAM_STYLES.infoContainer}>
 				💡 Each group must have {TEAM_CONFIG.MIN_MEMBERS}-
 				{TEAM_CONFIG.MAX_MEMBERS} members (Current: {members.length} members)
-			</div>
+			</Typography.Text>
 		</div>
 	);
 }
