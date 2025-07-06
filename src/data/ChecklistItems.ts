@@ -1,27 +1,19 @@
 import { ChecklistItem } from '@/schemas/checklist';
 
-// Helper function to create checklist items
-const createChecklistItem = (
-	id: string,
-	name: string,
-	acceptance: 'Yes' | 'No' | 'NotAvailable',
-	description: string,
-	isRequired: boolean,
-	checklistId: string,
-	createdAt: string,
-): Omit<ChecklistItem, 'createdAt' | 'updatedAt'> & { createdAt: string } => ({
-	id,
-	name,
-	acceptance,
-	description,
-	isRequired,
-	checklistId,
-	createdAt,
-});
+// Define parameter types for checklist items
+type ChecklistItemParams = [
+	string, // id
+	string, // name
+	'Yes' | 'No' | 'NotAvailable', // acceptance
+	string, // description
+	boolean, // isRequired
+	string, // checklistId
+	string, // createdAt
+];
 
-// Create checklist items data using the helper function
-const checklistItemData = [
-	createChecklistItem(
+// Array of parameters for all checklist items
+const checklistItemParams: ChecklistItemParams[] = [
+	[
 		'i1',
 		'Did you submit the proposal document?',
 		'NotAvailable',
@@ -29,8 +21,8 @@ const checklistItemData = [
 		true,
 		'c1',
 		'2024-06-01',
-	),
-	createChecklistItem(
+	],
+	[
 		'i2',
 		'Has your supervisor approved the proposal?',
 		'No',
@@ -38,8 +30,8 @@ const checklistItemData = [
 		true,
 		'c1',
 		'2024-06-02',
-	),
-	createChecklistItem(
+	],
+	[
 		'i3',
 		'Did you complete the initial presentation?',
 		'Yes',
@@ -47,8 +39,8 @@ const checklistItemData = [
 		false,
 		'c1',
 		'2024-06-03',
-	),
-	createChecklistItem(
+	],
+	[
 		'i4',
 		'Have you submitted the progress report?',
 		'NotAvailable',
@@ -56,8 +48,8 @@ const checklistItemData = [
 		true,
 		'c2',
 		'2024-06-03',
-	),
-	createChecklistItem(
+	],
+	[
 		'i5',
 		'Did your supervisor provide midterm feedback?',
 		'No',
@@ -65,8 +57,8 @@ const checklistItemData = [
 		false,
 		'c2',
 		'2024-06-04',
-	),
-	createChecklistItem(
+	],
+	[
 		'i6',
 		'Have you submitted a complete draft report?',
 		'Yes',
@@ -74,8 +66,8 @@ const checklistItemData = [
 		true,
 		'c3',
 		'2024-06-05',
-	),
-	createChecklistItem(
+	],
+	[
 		'i7',
 		'Did you summarize all supervisor comments?',
 		'NotAvailable',
@@ -83,8 +75,8 @@ const checklistItemData = [
 		false,
 		'c3',
 		'2024-06-06',
-	),
-	createChecklistItem(
+	],
+	[
 		'i8',
 		'Have you submitted the final thesis?',
 		'NotAvailable',
@@ -92,8 +84,8 @@ const checklistItemData = [
 		true,
 		'c4',
 		'2024-06-07',
-	),
-	createChecklistItem(
+	],
+	[
 		'i9',
 		'Did you attach an anti-plagiarism report?',
 		'Yes',
@@ -101,8 +93,8 @@ const checklistItemData = [
 		true,
 		'c4',
 		'2024-06-08',
-	),
-	createChecklistItem(
+	],
+	[
 		'i10',
 		'Have you prepared the final presentation slides?',
 		'No',
@@ -110,8 +102,8 @@ const checklistItemData = [
 		false,
 		'c4',
 		'2024-06-09',
-	),
-	createChecklistItem(
+	],
+	[
 		'i11',
 		'Did you submit the proposal document (2023)?',
 		'NotAvailable',
@@ -119,8 +111,8 @@ const checklistItemData = [
 		true,
 		'c5',
 		'2023-06-01',
-	),
-	createChecklistItem(
+	],
+	[
 		'i12',
 		'Have you been assigned a supervisor?',
 		'Yes',
@@ -128,8 +120,8 @@ const checklistItemData = [
 		false,
 		'c5',
 		'2023-06-02',
-	),
-	createChecklistItem(
+	],
+	[
 		'i13',
 		'Did you submit the final thesis (2023)?',
 		'Yes',
@@ -137,8 +129,8 @@ const checklistItemData = [
 		true,
 		'c6',
 		'2023-06-10',
-	),
-	createChecklistItem(
+	],
+	[
 		'i14',
 		'Did you attach a Turnitin report?',
 		'Yes',
@@ -146,14 +138,27 @@ const checklistItemData = [
 		true,
 		'c6',
 		'2023-06-11',
-	),
+	],
 ];
 
-// Convert to final ChecklistItem type
-export const mockChecklistItems: ChecklistItem[] = checklistItemData.map(
-	(item) => ({
-		...item,
-		createdAt: new Date(item.createdAt),
+// Create checklist items from parameters
+export const mockChecklistItems: ChecklistItem[] = checklistItemParams.map(
+	([
+		id,
+		name,
+		acceptance,
+		description,
+		isRequired,
+		checklistId,
+		createdAt,
+	]) => ({
+		id,
+		name,
+		acceptance,
+		description,
+		isRequired,
+		checklistId,
+		createdAt: new Date(createdAt),
 		updatedAt: new Date('2024-07-01'),
 	}),
 );
