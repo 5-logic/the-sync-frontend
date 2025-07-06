@@ -1,14 +1,15 @@
 'use client';
 
-import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
-import { Button, Card, Input, Row, Space, Switch, Table, Tooltip } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
+import { Button, Card, Input, Row, Space, Switch, Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useState } from 'react';
 
-import ChecklistContextTitle from '@/components/features/lecturer/CreateChecklist/ChecklistContextTitle';
-import ChecklistGeneralInfoForm from '@/components/features/lecturer/CreateChecklist/ChecklistGeneral';
 import { showNotification } from '@/lib/utils';
 import type { ChecklistItemCreate } from '@/schemas/checklist';
+
+import ChecklistCommonHeader from './ChecklistCommonHeader';
+import ChecklistDeleteButton from './ChecklistDeleteButton';
 
 // Dùng tạm id kiểu string trong UI
 type ChecklistItemTemp = ChecklistItemCreate & { id: string };
@@ -130,14 +131,7 @@ export default function ManualChecklistForm() {
 			width: 80,
 			align: 'center',
 			render: (_, record) => (
-				<Tooltip title="Delete">
-					<Button
-						icon={<DeleteOutlined />}
-						danger
-						type="text"
-						onClick={() => handleRemoveItem(record.id)}
-					/>
-				</Tooltip>
+				<ChecklistDeleteButton onDelete={() => handleRemoveItem(record.id)} />
 			),
 		},
 	];
@@ -145,22 +139,15 @@ export default function ManualChecklistForm() {
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
 			{/* Tiêu đề context (Semester + Milestone) */}
-			<ChecklistContextTitle
+			<ChecklistCommonHeader
 				semester="Semester2023"
 				milestone="Milestone review 2"
-				fontSize={16}
+				checklistName={checklistName}
+				checklistDescription={checklistDescription}
+				onNameChange={setChecklistName}
+				onDescriptionChange={setChecklistDescription}
+				showErrors={showErrors}
 			/>
-
-			{/* Thông tin Checklist tổng */}
-			<Card title="Checklist Info">
-				<ChecklistGeneralInfoForm
-					name={checklistName}
-					description={checklistDescription}
-					onNameChange={setChecklistName}
-					onDescriptionChange={setChecklistDescription}
-					showErrors={showErrors}
-				/>
-			</Card>
 
 			{/* Danh sách Checklist Items */}
 			<Card

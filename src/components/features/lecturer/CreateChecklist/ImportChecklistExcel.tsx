@@ -1,23 +1,12 @@
 'use client';
 
-import { DeleteOutlined } from '@ant-design/icons';
-import {
-	Button,
-	Card,
-	Col,
-	Input,
-	Row,
-	Space,
-	Switch,
-	Table,
-	Tooltip,
-} from 'antd';
+import { Button, Card, Col, Input, Row, Space, Switch, Table } from 'antd';
 import { UploadFile } from 'antd/es/upload/interface';
 import { useState } from 'react';
 
-import ChecklistContextTitle from '@/components/features/lecturer/CreateChecklist/ChecklistContextTitle';
+import ChecklistCommonHeader from '@/components/features/lecturer/CreateChecklist/ChecklistCommonHeader';
+import ChecklistDeleteButton from '@/components/features/lecturer/CreateChecklist/ChecklistDeleteButton';
 import ChecklistDragger from '@/components/features/lecturer/CreateChecklist/ChecklistDragger';
-import ChecklistGeneralInfoForm from '@/components/features/lecturer/CreateChecklist/ChecklistGeneral';
 import { showNotification } from '@/lib/utils';
 
 export interface ChecklistItem {
@@ -97,39 +86,23 @@ export default function ImportChecklistExcel() {
 			key: 'action',
 			width: '10%',
 			render: (_: unknown, record: ChecklistItem) => (
-				<Tooltip title="Delete">
-					<Button
-						icon={<DeleteOutlined />}
-						danger
-						type="text"
-						onClick={() => handleRemoveItem(record.id)}
-					/>
-				</Tooltip>
+				<ChecklistDeleteButton onDelete={() => handleRemoveItem(record.id)} />
 			),
 		},
 	];
 
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
-			{/* Tiêu đề context (Semester + Milestone) */}
-			<ChecklistContextTitle
+			<ChecklistCommonHeader
 				semester="Semester2023"
 				milestone="Milestone review 2"
-				fontSize={16}
+				checklistName={checklistName}
+				checklistDescription={checklistDescription}
+				onNameChange={setChecklistName}
+				onDescriptionChange={setChecklistDescription}
+				showErrors={showErrors}
 			/>
 
-			{/* Thông tin Checklist tổng */}
-			<Card title="Checklist Info">
-				<ChecklistGeneralInfoForm
-					name={checklistName}
-					description={checklistDescription}
-					onNameChange={setChecklistName}
-					onDescriptionChange={setChecklistDescription}
-					showErrors={showErrors}
-				/>
-			</Card>
-
-			{/* Import checklist từ Excel */}
 			<Card title="Import Checklist Items">
 				<ChecklistDragger
 					fileList={fileList}
@@ -142,7 +115,7 @@ export default function ImportChecklistExcel() {
 						<Table
 							columns={columns}
 							dataSource={checklistItems}
-							rowKey={(item) => item.name + item.description}
+							rowKey={(item) => item.id}
 							pagination={false}
 							style={{ marginTop: 24 }}
 							locale={{ emptyText: 'No checklist items imported.' }}
@@ -155,7 +128,7 @@ export default function ImportChecklistExcel() {
 									<Button
 										type="primary"
 										onClick={() => {
-											// TODO: Gọi API hoặc xử lý lưu
+											// Gọi API hoặc xử lý lưu
 											console.log('Imported items:', checklistItems);
 										}}
 									>
