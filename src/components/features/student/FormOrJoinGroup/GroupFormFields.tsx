@@ -124,6 +124,11 @@ export default function GroupFormFields() {
 							maxHeight: VALIDATION_RULES.TREE_SELECT.MAX_HEIGHT,
 							overflow: 'auto',
 						}}
+						treeNodeFilterProp="title"
+						filterTreeNode={(input, treeNode) => {
+							const title = String(treeNode?.title || '');
+							return title.toLowerCase().includes(input.toLowerCase());
+						}}
 					/>
 				</Form.Item>
 			</Col>
