@@ -57,7 +57,7 @@ export default function GroupFormFields() {
 				set.skills?.map((skill) => ({
 					value: skill.id,
 					title: skill.name,
-				})) || [],
+				})) ?? [],
 		}));
 	}, [skillSets]);
 
