@@ -5,6 +5,7 @@ import groupService, { type GroupCreate } from '@/lib/services/groups.service';
 import requestService from '@/lib/services/requests.service';
 import { showNotification } from '@/lib/utils/notification';
 import type { Student } from '@/schemas/student';
+import { useGroupDashboardStore } from '@/store/useGroupDashboardStore';
 
 import GroupFormFields from './GroupFormFields';
 import InviteTeamMembers from './InviteTeamMembers';
@@ -20,6 +21,7 @@ export default function CreateGroupForm() {
 	const [form] = Form.useForm<CreateGroupFormValues>();
 	const [members, setMembers] = useState<Student[]>([]);
 	const [loading, setLoading] = useState(false);
+	const { refreshGroup } = useGroupDashboardStore();
 
 	const handleMembersChange = useCallback((newMembers: Student[]) => {
 		setMembers(newMembers);
@@ -76,9 +78,12 @@ export default function CreateGroupForm() {
 					}
 				}
 
-				// Reset form
+				// Reset form and trigger group status update
 				form.resetFields();
 				setMembers([]);
+
+				// Fetch updated group status to trigger redirect
+				await refreshGroup();
 			} catch (error) {
 				console.error('Error creating group:', error);
 				showNotification.error(
@@ -88,7 +93,7 @@ export default function CreateGroupForm() {
 				setLoading(false);
 			}
 		},
-		[members, form],
+		[members, form, refreshGroup],
 	);
 
 	return (
