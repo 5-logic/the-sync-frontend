@@ -3,7 +3,7 @@
 import { Card, Space } from 'antd';
 
 import ChecklistContextTitle from './ChecklistContextTitle';
-import ChecklistGeneralInfoForm from './ChecklistGeneral';
+import ChecklistGeneral from './ChecklistGeneral';
 
 interface Props {
 	semester: string;
@@ -33,7 +33,7 @@ export default function ChecklistCommonHeader({
 			/>
 
 			<Card title="Checklist Info">
-				<ChecklistGeneralInfoForm
+				<ChecklistGeneral
 					name={checklistName}
 					description={checklistDescription}
 					onNameChange={onNameChange}

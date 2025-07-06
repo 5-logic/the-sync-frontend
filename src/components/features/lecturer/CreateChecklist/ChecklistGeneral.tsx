@@ -12,7 +12,7 @@ interface Props {
 	showErrors?: boolean;
 }
 
-export default function ChecklistGeneralInfoForm({
+export default function ChecklistGeneral({
 	name,
 	description,
 	onNameChange,

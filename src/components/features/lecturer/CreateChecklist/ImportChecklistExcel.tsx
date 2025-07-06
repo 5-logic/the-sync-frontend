@@ -75,6 +75,8 @@ export default function ImportChecklistExcel() {
 			render: (_: unknown, record: ChecklistItem) => (
 				<Switch
 					checked={record.isRequired}
+					checkedChildren="Mandatory"
+					unCheckedChildren="Optional"
 					onChange={(checked) =>
 						handleChangeItem(record.id, 'isRequired', checked)
 					}
