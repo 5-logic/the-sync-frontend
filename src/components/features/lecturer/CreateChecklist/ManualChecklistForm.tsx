@@ -5,11 +5,10 @@ import { Button, Card, Input, Row, Space, Switch, Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useState } from 'react';
 
+import ChecklistCommonHeader from '@/components/features/lecturer/CreateChecklist/ChecklistCommonHeader';
+import ChecklistDeleteButton from '@/components/features/lecturer/CreateChecklist/ChecklistDeleteButton';
 import { showNotification } from '@/lib/utils';
 import type { ChecklistItemCreate } from '@/schemas/checklist';
-
-import ChecklistCommonHeader from './ChecklistCommonHeader';
-import ChecklistDeleteButton from './ChecklistDeleteButton';
 
 // Dùng tạm id kiểu string trong UI
 type ChecklistItemTemp = ChecklistItemCreate & { id: string };

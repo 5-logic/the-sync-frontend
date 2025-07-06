@@ -1,11 +1,11 @@
 'use client';
 
-import ChecklistInfoCard from '../ChecklistDetail/ChecklistInfoCard';
-import ChecklistItemsTable from '../ChecklistDetail/ChecklistItemTable';
 import { Button, Card, Row, Space, Typography } from 'antd';
 import { useState } from 'react';
 
 import Header from '@/components/features/lecturer/AssignSupervisor/Header';
+import ChecklistInfoCard from '@/components/features/lecturer/ChecklistDetail/ChecklistInfoCard';
+import ChecklistItemsTable from '@/components/features/lecturer/ChecklistDetail/ChecklistItemTable';
 import { mockChecklistItems } from '@/data/ChecklistItems';
 import { mockChecklists } from '@/data/checklist';
 import { ChecklistItem } from '@/schemas/checklist';

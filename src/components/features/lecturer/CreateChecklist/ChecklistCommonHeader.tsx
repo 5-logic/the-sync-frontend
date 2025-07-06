@@ -1,9 +1,9 @@
 'use client';
 
-import { Card, Space } from 'antd';
+import { BookOutlined, FlagOutlined } from '@ant-design/icons';
+import { Card, Input, Space, Tag, Typography } from 'antd';
 
-import ChecklistContextTitle from './ChecklistContextTitle';
-import ChecklistGeneral from './ChecklistGeneral';
+import { FormLabel } from '@/components/common/FormLabel';
 
 interface Props {
 	semester: string;
@@ -26,20 +26,53 @@ export default function ChecklistCommonHeader({
 }: Readonly<Props>) {
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
-			<ChecklistContextTitle
-				semester={semester}
-				milestone={milestone}
-				fontSize={16}
-			/>
+			{/* Context title */}
+			<div>
+				<Typography.Text strong style={{ fontSize: 16 }}>
+					Create checklist for{' '}
+					<Tag
+						icon={<BookOutlined />}
+						color="blue"
+						style={{ fontWeight: 600, marginInline: 4 }}
+					>
+						{semester}
+					</Tag>
+					<Tag
+						icon={<FlagOutlined />}
+						color="volcano"
+						style={{ fontWeight: 600, marginInline: 4 }}
+					>
+						{milestone}
+					</Tag>
+				</Typography.Text>
+			</div>
 
+			{/* Checklist general info form */}
 			<Card title="Checklist Info">
-				<ChecklistGeneral
-					name={checklistName}
-					description={checklistDescription}
-					onNameChange={onNameChange}
-					onDescriptionChange={onDescriptionChange}
-					showErrors={showErrors}
-				/>
+				<Space direction="vertical" size="middle" style={{ width: '100%' }}>
+					<div>
+						<FormLabel text="Checklist Name" isRequired />
+						<Input
+							placeholder="Enter checklist name"
+							value={checklistName}
+							onChange={(e) => onNameChange(e.target.value)}
+							status={showErrors && !checklistName.trim() ? 'error' : undefined}
+						/>
+					</div>
+
+					<div>
+						<FormLabel text="Checklist Description" isRequired />
+						<Input.TextArea
+							placeholder="Enter checklist description"
+							value={checklistDescription}
+							onChange={(e) => onDescriptionChange(e.target.value)}
+							autoSize={{ minRows: 2 }}
+							status={
+								showErrors && !checklistDescription.trim() ? 'error' : undefined
+							}
+						/>
+					</div>
+				</Space>
 			</Card>
 		</Space>
 	);
