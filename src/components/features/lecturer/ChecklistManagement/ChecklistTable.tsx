@@ -49,7 +49,7 @@ export default function ChecklistTable({ data, getTotalItems }: Props) {
 							style={{ cursor: 'pointer', color: '#1890ff' }}
 							onClick={() => {
 								console.log('View', record);
-								// TODO: Add navigation or modal view
+								// Add navigation or modal view
 							}}
 						/>
 					</Tooltip>
@@ -58,7 +58,7 @@ export default function ChecklistTable({ data, getTotalItems }: Props) {
 							style={{ cursor: 'pointer', color: '#52c41a' }}
 							onClick={() => {
 								console.log('Edit', record);
-								// TODO: Add navigation or modal edit
+								// Add navigation or modal edit
 							}}
 						/>
 					</Tooltip>

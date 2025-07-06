@@ -23,7 +23,7 @@ export default function ChecklistCommonHeader({
 	onNameChange,
 	onDescriptionChange,
 	showErrors,
-}: Props) {
+}: Readonly<Props>) {
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
 			<ChecklistContextTitle
