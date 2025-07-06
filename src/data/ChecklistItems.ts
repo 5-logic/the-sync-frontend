@@ -1,35 +1,8 @@
 import { ChecklistItem } from '@/schemas/checklist';
 
-const createChecklistItem = (
-	id: string,
-	name: string,
-	acceptance: 'Yes' | 'No' | 'NotAvailable',
-	description: string | null,
-	isRequired: boolean,
-	checklistId: string,
-	createdAt: string,
-): ChecklistItem => ({
-	id,
-	name,
-	acceptance,
-	description,
-	isRequired,
-	checklistId,
-	createdAt: new Date(createdAt),
-	updatedAt: new Date('2024-07-01'),
-});
-
-// ✅ Dữ liệu rút gọn chỉ chứa phần nội dung thay đổi
-const checklistItemData: Array<{
-	id: string;
-	name: string;
-	acceptance: 'Yes' | 'No' | 'NotAvailable';
-	description: string;
-	isRequired: boolean;
-	checklistId: string;
-	createdAt: string;
-}> = [
-	// Checklist c1 – 2024 – Review 1
+const checklistItemData: Array<
+	Omit<ChecklistItem, 'createdAt' | 'updatedAt'> & { createdAt: string }
+> = [
 	{
 		id: 'i1',
 		name: 'Did you submit the proposal document?',
@@ -58,7 +31,6 @@ const checklistItemData: Array<{
 		createdAt: '2024-06-03',
 	},
 
-	// Checklist c2 – 2024 – Review 2
 	{
 		id: 'i4',
 		name: 'Have you submitted the progress report?',
@@ -78,7 +50,6 @@ const checklistItemData: Array<{
 		createdAt: '2024-06-04',
 	},
 
-	// Checklist c3 – 2024 – Review 3
 	{
 		id: 'i6',
 		name: 'Have you submitted a complete draft report?',
@@ -99,7 +70,6 @@ const checklistItemData: Array<{
 		createdAt: '2024-06-06',
 	},
 
-	// Checklist c4 – 2024 – Final Review
 	{
 		id: 'i8',
 		name: 'Have you submitted the final thesis?',
@@ -129,7 +99,6 @@ const checklistItemData: Array<{
 		createdAt: '2024-06-09',
 	},
 
-	// Checklist c5 – 2023 – Review 1
 	{
 		id: 'i11',
 		name: 'Did you submit the proposal document (2023)?',
@@ -149,7 +118,6 @@ const checklistItemData: Array<{
 		createdAt: '2023-06-02',
 	},
 
-	// Checklist c6 – 2023 – Final Review
 	{
 		id: 'i13',
 		name: 'Did you submit the final thesis (2023)?',
@@ -170,16 +138,11 @@ const checklistItemData: Array<{
 	},
 ];
 
-// ✅ Cuối cùng: map ra danh sách checklist thật
+// ✅ Sinh mockChecklistItems từ object chuẩn hóa
 export const mockChecklistItems: ChecklistItem[] = checklistItemData.map(
-	(item) =>
-		createChecklistItem(
-			item.id,
-			item.name,
-			item.acceptance,
-			item.description,
-			item.isRequired,
-			item.checklistId,
-			item.createdAt,
-		),
+	(item) => ({
+		...item,
+		createdAt: new Date(item.createdAt),
+		updatedAt: new Date('2024-07-01'),
+	}),
 );
