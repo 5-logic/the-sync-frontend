@@ -38,27 +38,23 @@ class RequestService {
 			this.inviteStudent(groupId, { studentId }),
 		);
 
-		try {
-			const results = await Promise.allSettled(invitePromises);
-			const successful: InviteResponse[] = [];
-			const failed: string[] = [];
+		const results = await Promise.allSettled(invitePromises);
+		const successful: InviteResponse[] = [];
+		const failed: string[] = [];
 
-			results.forEach((result, index) => {
-				if (result.status === 'fulfilled' && result.value.success) {
-					successful.push(result.value.data);
-				} else {
-					failed.push(studentIds[index]);
-				}
-			});
-
-			if (failed.length > 0) {
-				console.warn('Failed to invite students:', failed);
+		results.forEach((result, index) => {
+			if (result.status === 'fulfilled' && result.value.success) {
+				successful.push(result.value.data);
+			} else {
+				failed.push(studentIds[index]);
 			}
+		});
 
-			return successful;
-		} catch (error) {
-			throw error;
+		if (failed.length > 0) {
+			console.warn('Failed to invite students:', failed);
 		}
+
+		return successful;
 	}
 }
 
