@@ -1,9 +1,9 @@
 import { Col, Form, Input, Row, Select, TreeSelect } from 'antd';
+import { useEffect, useMemo } from 'react';
 
 import { FormLabel } from '@/components/common/FormLabel';
-import mockSkills from '@/data/skill';
-import mockSkillSets from '@/data/skillSet';
-import { mockTheses } from '@/data/thesis';
+import { THESIS_DOMAINS } from '@/lib/constants/domains';
+import { useResponsibilityStore, useSkillSetStore } from '@/store';
 
 // Constants for better maintainability
 const VALIDATION_RULES = {
@@ -16,35 +16,60 @@ const VALIDATION_RULES = {
 	},
 } as const;
 
-// Pre-computed project areas to avoid recalculation
-const projectAreas = Array.from(new Set(mockTheses.map((t) => t.domain))).map(
-	(domain) => ({
-		value: domain,
-		label: domain,
-	}),
-);
-
-const buildSkillTreeData = () =>
-	mockSkillSets.map((set) => ({
-		value: set.id,
-		title: set.name,
-		selectable: false,
-		children: mockSkills
-			.filter((skill) => skill.skillSetId === set.id)
-			.map((skill) => ({
-				value: skill.id,
-				title: skill.name,
-			})),
-	}));
-
-const skillTreeData = buildSkillTreeData();
-
-const responsibilityOptions = [
-	{ value: 'Researcher', label: 'Researcher' },
-	{ value: 'Developer', label: 'Developer' },
-];
-
 export default function GroupFormFields() {
+	// Fetch data from stores
+	const {
+		skillSets,
+		loading: skillsLoading,
+		fetchSkillSets,
+	} = useSkillSetStore();
+	const {
+		responsibilities,
+		loading: responsibilitiesLoading,
+		fetchResponsibilities,
+	} = useResponsibilityStore();
+
+	// Fetch data on component mount
+	useEffect(() => {
+		fetchSkillSets();
+		fetchResponsibilities();
+	}, [fetchSkillSets, fetchResponsibilities]);
+
+	// Project areas from constants
+	const projectAreas = useMemo(
+		() =>
+			THESIS_DOMAINS.map((domain) => ({
+				value: domain,
+				label: domain,
+			})),
+		[],
+	);
+
+	// Build skill tree data from API
+	const skillTreeData = useMemo(() => {
+		if (!skillSets || skillSets.length === 0) return [];
+
+		return skillSets.map((set) => ({
+			value: set.id,
+			title: set.name,
+			selectable: false,
+			children:
+				set.skills?.map((skill) => ({
+					value: skill.id,
+					title: skill.name,
+				})) || [],
+		}));
+	}, [skillSets]);
+
+	// Build responsibility options from API
+	const responsibilityOptions = useMemo(() => {
+		if (!responsibilities || responsibilities.length === 0) return [];
+
+		return responsibilities.map((responsibility) => ({
+			value: responsibility.id,
+			label: responsibility.name,
+		}));
+	}, [responsibilities]);
 	const getGroupNameRules = () => [
 		{ required: true, message: 'Please enter group name' },
 		{
@@ -94,6 +119,7 @@ export default function GroupFormFields() {
 						treeCheckable={false}
 						showCheckedStrategy={TreeSelect.SHOW_CHILD}
 						style={{ width: '100%' }}
+						loading={skillsLoading}
 						dropdownStyle={{
 							maxHeight: VALIDATION_RULES.TREE_SELECT.MAX_HEIGHT,
 							overflow: 'auto',
@@ -107,9 +133,15 @@ export default function GroupFormFields() {
 					label={<FormLabel text="Expected Responsibility" isBold />}
 				>
 					<Select
+						mode="multiple"
 						options={responsibilityOptions}
-						placeholder="Select responsibility"
+						placeholder="Select responsibilities"
 						allowClear
+						showSearch
+						loading={responsibilitiesLoading}
+						filterOption={(input, option) =>
+							(option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+						}
 					/>
 				</Form.Item>
 			</Col>
