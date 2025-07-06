@@ -5,6 +5,7 @@ export const API_BASE_URL =
 export * from '@/lib/constants/domains';
 export * from '@/lib/constants/excelImport';
 export * from '@/lib/constants/semester';
+export * from '@/lib/constants/team';
 export * from '@/lib/constants/thesis';
 
 // Thesis Template URLs
