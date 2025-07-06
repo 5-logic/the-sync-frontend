@@ -19,142 +19,167 @@ const createChecklistItem = (
 	updatedAt: new Date('2024-07-01'),
 });
 
-export const mockChecklistItems: ChecklistItem[] = [
+// ✅ Dữ liệu rút gọn chỉ chứa phần nội dung thay đổi
+const checklistItemData: Array<{
+	id: string;
+	name: string;
+	acceptance: 'Yes' | 'No' | 'NotAvailable';
+	description: string;
+	isRequired: boolean;
+	checklistId: string;
+	createdAt: string;
+}> = [
 	// Checklist c1 – 2024 – Review 1
-	createChecklistItem(
-		'i1',
-		'Did you submit the proposal document?',
-		'NotAvailable',
-		'Please upload your thesis proposal in PDF format.',
-		true,
-		'c1',
-		'2024-06-01',
-	),
-	createChecklistItem(
-		'i2',
-		'Has your supervisor approved the proposal?',
-		'No',
-		'Make sure your supervisor has formally approved it.',
-		true,
-		'c1',
-		'2024-06-02',
-	),
-	createChecklistItem(
-		'i3',
-		'Did you complete the initial presentation?',
-		'Yes',
-		'Slides and a video recording are required.',
-		false,
-		'c1',
-		'2024-06-03',
-	),
+	{
+		id: 'i1',
+		name: 'Did you submit the proposal document?',
+		acceptance: 'NotAvailable',
+		description: 'Please upload your thesis proposal in PDF format.',
+		isRequired: true,
+		checklistId: 'c1',
+		createdAt: '2024-06-01',
+	},
+	{
+		id: 'i2',
+		name: 'Has your supervisor approved the proposal?',
+		acceptance: 'No',
+		description: 'Make sure your supervisor has formally approved it.',
+		isRequired: true,
+		checklistId: 'c1',
+		createdAt: '2024-06-02',
+	},
+	{
+		id: 'i3',
+		name: 'Did you complete the initial presentation?',
+		acceptance: 'Yes',
+		description: 'Slides and a video recording are required.',
+		isRequired: false,
+		checklistId: 'c1',
+		createdAt: '2024-06-03',
+	},
 
 	// Checklist c2 – 2024 – Review 2
-	createChecklistItem(
-		'i4',
-		'Have you submitted the progress report?',
-		'NotAvailable',
-		'The report should reflect your current thesis progress.',
-		true,
-		'c2',
-		'2024-06-03',
-	),
-	createChecklistItem(
-		'i5',
-		'Did your supervisor provide midterm feedback?',
-		'No',
-		'You should have written or verbal feedback.',
-		false,
-		'c2',
-		'2024-06-04',
-	),
+	{
+		id: 'i4',
+		name: 'Have you submitted the progress report?',
+		acceptance: 'NotAvailable',
+		description: 'The report should reflect your current thesis progress.',
+		isRequired: true,
+		checklistId: 'c2',
+		createdAt: '2024-06-03',
+	},
+	{
+		id: 'i5',
+		name: 'Did your supervisor provide midterm feedback?',
+		acceptance: 'No',
+		description: 'You should have written or verbal feedback.',
+		isRequired: false,
+		checklistId: 'c2',
+		createdAt: '2024-06-04',
+	},
 
 	// Checklist c3 – 2024 – Review 3
-	createChecklistItem(
-		'i6',
-		'Have you submitted a complete draft report?',
-		'Yes',
-		'The draft should include methodology and preliminary results.',
-		true,
-		'c3',
-		'2024-06-05',
-	),
-	createChecklistItem(
-		'i7',
-		'Did you summarize all supervisor comments?',
-		'NotAvailable',
-		'Consolidate all supervisor feedback into a summary.',
-		false,
-		'c3',
-		'2024-06-06',
-	),
+	{
+		id: 'i6',
+		name: 'Have you submitted a complete draft report?',
+		acceptance: 'Yes',
+		description:
+			'The draft should include methodology and preliminary results.',
+		isRequired: true,
+		checklistId: 'c3',
+		createdAt: '2024-06-05',
+	},
+	{
+		id: 'i7',
+		name: 'Did you summarize all supervisor comments?',
+		acceptance: 'NotAvailable',
+		description: 'Consolidate all supervisor feedback into a summary.',
+		isRequired: false,
+		checklistId: 'c3',
+		createdAt: '2024-06-06',
+	},
 
 	// Checklist c4 – 2024 – Final Review
-	createChecklistItem(
-		'i8',
-		'Have you submitted the final thesis?',
-		'NotAvailable',
-		'Ensure the final version is supervisor-approved and in PDF format.',
-		true,
-		'c4',
-		'2024-06-07',
-	),
-	createChecklistItem(
-		'i9',
-		'Did you attach an anti-plagiarism report?',
-		'Yes',
-		'Submit a Turnitin or iThenticate report.',
-		true,
-		'c4',
-		'2024-06-08',
-	),
-	createChecklistItem(
-		'i10',
-		'Have you prepared the final presentation slides?',
-		'No',
-		'Include key findings and recommendations in your slides.',
-		false,
-		'c4',
-		'2024-06-09',
-	),
+	{
+		id: 'i8',
+		name: 'Have you submitted the final thesis?',
+		acceptance: 'NotAvailable',
+		description:
+			'Ensure the final version is supervisor-approved and in PDF format.',
+		isRequired: true,
+		checklistId: 'c4',
+		createdAt: '2024-06-07',
+	},
+	{
+		id: 'i9',
+		name: 'Did you attach an anti-plagiarism report?',
+		acceptance: 'Yes',
+		description: 'Submit a Turnitin or iThenticate report.',
+		isRequired: true,
+		checklistId: 'c4',
+		createdAt: '2024-06-08',
+	},
+	{
+		id: 'i10',
+		name: 'Have you prepared the final presentation slides?',
+		acceptance: 'No',
+		description: 'Include key findings and recommendations in your slides.',
+		isRequired: false,
+		checklistId: 'c4',
+		createdAt: '2024-06-09',
+	},
 
 	// Checklist c5 – 2023 – Review 1
-	createChecklistItem(
-		'i11',
-		'Did you submit the proposal document (2023)?',
-		'NotAvailable',
-		'Upload your thesis proposal in PDF format for 2023 review.',
-		true,
-		'c5',
-		'2023-06-01',
-	),
-	createChecklistItem(
-		'i12',
-		'Have you been assigned a supervisor?',
-		'Yes',
-		'Ensure your supervisor is registered in the system.',
-		false,
-		'c5',
-		'2023-06-02',
-	),
+	{
+		id: 'i11',
+		name: 'Did you submit the proposal document (2023)?',
+		acceptance: 'NotAvailable',
+		description: 'Upload your thesis proposal in PDF format for 2023 review.',
+		isRequired: true,
+		checklistId: 'c5',
+		createdAt: '2023-06-01',
+	},
+	{
+		id: 'i12',
+		name: 'Have you been assigned a supervisor?',
+		acceptance: 'Yes',
+		description: 'Ensure your supervisor is registered in the system.',
+		isRequired: false,
+		checklistId: 'c5',
+		createdAt: '2023-06-02',
+	},
 
 	// Checklist c6 – 2023 – Final Review
-	createChecklistItem(
-		'i13',
-		'Did you submit the final thesis (2023)?',
-		'Yes',
-		'Upload the final PDF version approved by your supervisor.',
-		true,
-		'c6',
-		'2023-06-10',
-	),
-	createChecklistItem(
-		'i14',
-		'Did you attach a Turnitin report?',
-		'Yes',
-		'Make sure it meets the plagiarism threshold.',
-		true,
-		'c6',
-		'2023-06-11',
-	),
+	{
+		id: 'i13',
+		name: 'Did you submit the final thesis (2023)?',
+		acceptance: 'Yes',
+		description: 'Upload the final PDF version approved by your supervisor.',
+		isRequired: true,
+		checklistId: 'c6',
+		createdAt: '2023-06-10',
+	},
+	{
+		id: 'i14',
+		name: 'Did you attach a Turnitin report?',
+		acceptance: 'Yes',
+		description: 'Make sure it meets the plagiarism threshold.',
+		isRequired: true,
+		checklistId: 'c6',
+		createdAt: '2023-06-11',
+	},
 ];
+
+// ✅ Cuối cùng: map ra danh sách checklist thật
+export const mockChecklistItems: ChecklistItem[] = checklistItemData.map(
+	(item) =>
+		createChecklistItem(
+			item.id,
+			item.name,
+			item.acceptance,
+			item.description,
+			item.isRequired,
+			item.checklistId,
+			item.createdAt,
+		),
+);

@@ -22,7 +22,7 @@ export default function ChecklistTable({ data, getTotalItems }: Props) {
 			title: 'Description',
 			dataIndex: 'description',
 			key: 'description',
-			render: (text) => text || <i>No description</i>,
+			render: (text) => text ?? <i>No description</i>,
 		},
 		{
 			title: 'Semester',

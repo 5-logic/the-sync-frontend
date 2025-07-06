@@ -29,7 +29,7 @@ export default function ChecklistItemsTable({
 	onEdit,
 	onDelete,
 	onChangeField,
-}: Props) {
+}: Readonly<Props>) {
 	const columns: ColumnType<ChecklistItem>[] = [
 		{
 			title: 'Question',
@@ -52,14 +52,14 @@ export default function ChecklistItemsTable({
 			render: (text, record) =>
 				editable ? (
 					<Input
-						value={text || ''}
+						value={text ?? ''}
 						placeholder="No description"
 						onChange={(e) =>
 							onChangeField?.(record.id, 'description', e.target.value)
 						}
 					/>
 				) : (
-					text || <i>No description</i>
+					(text ?? <i>No description</i>)
 				),
 		},
 		{

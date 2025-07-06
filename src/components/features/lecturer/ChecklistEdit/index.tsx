@@ -11,20 +11,18 @@ import { mockChecklists } from '@/data/checklist';
 import { ChecklistItem } from '@/schemas/checklist';
 
 export default function ChecklistEditPage() {
-	// ======================== Data & State ========================
 	const checklistId = 'c1';
 	const originalChecklist = mockChecklists.find((cl) => cl.id === checklistId);
 
-	const [name, setName] = useState(originalChecklist?.name || '');
+	const [name, setName] = useState(originalChecklist?.name ?? '');
 	const [description, setDescription] = useState(
-		originalChecklist?.description || '',
+		originalChecklist?.description ?? '',
 	);
 
 	const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>(
 		mockChecklistItems.filter((item) => item.checklistId === checklistId),
 	);
 
-	// ======================== Handlers ========================
 	const handleDeleteItem = (item: ChecklistItem) => {
 		setChecklistItems((prev) => prev.filter((i) => i.id !== item.id));
 	};
