@@ -18,7 +18,7 @@ export default function ChecklistGeneralInfoForm({
 	onNameChange,
 	onDescriptionChange,
 	showErrors = false,
-}: Props) {
+}: Readonly<Props>) {
 	return (
 		<Space direction="vertical" size="middle" style={{ width: '100%' }}>
 			<div>
