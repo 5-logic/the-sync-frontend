@@ -2,9 +2,10 @@ import { Button, Col, Form, Row } from 'antd';
 import { useCallback, useState } from 'react';
 
 import { showNotification } from '@/lib/utils/notification';
+import type { Student } from '@/schemas/student';
 
 import GroupFormFields from './GroupFormFields';
-import InviteTeamMembers, { type Member } from './InviteTeamMembers';
+import InviteTeamMembers from './InviteTeamMembers';
 
 interface CreateGroupFormValues {
 	name: string;
@@ -15,16 +16,9 @@ interface CreateGroupFormValues {
 
 export default function CreateGroupForm() {
 	const [form] = Form.useForm<CreateGroupFormValues>();
-	const [members, setMembers] = useState<Member[]>([
-		{
-			id: '1',
-			name: 'Alice Nguyen',
-			email: 'alice.nguyen@student.edu',
-			studentId: 'ST0001',
-		},
-	]);
+	const [members, setMembers] = useState<Student[]>([]);
 
-	const handleMembersChange = useCallback((newMembers: Member[]) => {
+	const handleMembersChange = useCallback((newMembers: Student[]) => {
 		setMembers(newMembers);
 	}, []);
 
@@ -33,14 +27,7 @@ export default function CreateGroupForm() {
 			console.log('Create group:', { ...values, members });
 			showNotification.success('Group created successfully!');
 			form.resetFields();
-			setMembers([
-				{
-					id: '1',
-					name: 'Alice Nguyen',
-					email: 'alice.nguyen@student.edu',
-					studentId: 'ST0001',
-				},
-			]);
+			setMembers([]);
 		},
 		[members, form],
 	);
