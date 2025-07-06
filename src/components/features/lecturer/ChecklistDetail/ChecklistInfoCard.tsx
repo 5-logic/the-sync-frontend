@@ -24,7 +24,7 @@ export default function ChecklistInfoCard({
 	onNameChange,
 	onDescriptionChange,
 	showErrors = false,
-}: Props) {
+}: Readonly<Props>) {
 	const nameError = showErrors && !name.trim();
 	const descriptionError = showErrors && !description?.trim();
 
