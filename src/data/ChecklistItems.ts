@@ -161,4 +161,4 @@ export const mockChecklistItems: ChecklistItem[] = checklistItemParams.map(
 		createdAt: new Date(createdAt),
 		updatedAt: new Date('2024-07-01'),
 	}),
-);
+); //NOSONAR
