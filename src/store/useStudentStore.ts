@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 
+import semesterService from '@/lib/services/semesters.service';
 import studentService from '@/lib/services/students.service';
 import { handleApiResponse } from '@/lib/utils/handleApi';
 import {
@@ -76,6 +77,8 @@ interface StudentState {
 	// Actions
 	fetchStudents: (force?: boolean) => Promise<void>;
 	fetchStudentsBySemester: (semesterId: string) => Promise<void>;
+	fetchStudentsWithoutGroup: (semesterId: string) => Promise<void>;
+	fetchStudentsWithoutGroupAuto: () => Promise<void>;
 	createStudent: (data: StudentCreate) => Promise<boolean>;
 	createManyStudents: (data: ImportStudent) => Promise<boolean>;
 	updateStudent: (id: string, data: StudentUpdate) => Promise<boolean>;
@@ -155,6 +158,97 @@ export const useStudentStore = create<StudentState>()(
 				studentService,
 				'student',
 			)(set, get),
+
+			fetchStudentsWithoutGroup: async (semesterId: string) => {
+				set({ loading: true, lastError: null });
+				try {
+					const response =
+						await studentService.findStudentsWithoutGroup(semesterId);
+					const result = handleApiResponse(response, 'Success', '');
+
+					if (result.success && result.data) {
+						// Filter only active students
+						const activeStudents = result.data.filter(
+							(student) => student.isActive,
+						);
+
+						set({
+							students: activeStudents,
+							loading: false,
+						});
+
+						// Apply current filters
+						get().filterStudents();
+					} else if (result.error) {
+						handleResultError(result.error, set);
+					}
+				} catch (error) {
+					handleActionError(error, 'student', 'fetch without group', set);
+				} finally {
+					set({ loading: false });
+				}
+			},
+
+			fetchStudentsWithoutGroupAuto: async () => {
+				set({ loading: true, lastError: null });
+				try {
+					// First, get all semesters to find the one with "Preparing" status
+					const semesterResponse = await semesterService.findAll();
+					const semesterResult = handleApiResponse(
+						semesterResponse,
+						'Success',
+						'',
+					);
+
+					if (!semesterResult.success || !semesterResult.data) {
+						if (semesterResult.error) {
+							handleResultError(semesterResult.error, set);
+						}
+						return;
+					}
+
+					// Find semester with "Preparing" status
+					const preparingSemester = semesterResult.data.find(
+						(semester) => semester.status === 'Preparing',
+					);
+
+					if (!preparingSemester) {
+						const error = createErrorState({
+							message: 'No semester with "Preparing" status found',
+							statusCode: 404,
+						});
+						set({ lastError: error, loading: false });
+						return;
+					}
+
+					// Now fetch students without group for this semester
+					const response = await studentService.findStudentsWithoutGroup(
+						preparingSemester.id,
+					);
+					const result = handleApiResponse(response, 'Success', '');
+
+					if (result.success && result.data) {
+						// Filter only active students
+						const activeStudents = result.data.filter(
+							(student) => student.isActive,
+						);
+
+						set({
+							students: activeStudents,
+							loading: false,
+						});
+
+						// Apply current filters
+						get().filterStudents();
+					} else if (result.error) {
+						handleResultError(result.error, set);
+					}
+				} catch (error) {
+					handleActionError(error, 'student', 'fetch without group auto', set);
+				} finally {
+					set({ loading: false });
+				}
+			},
 
 			// Enhanced CRUD actions with smart cache management
 			createStudent: async (data: StudentCreate) => {
