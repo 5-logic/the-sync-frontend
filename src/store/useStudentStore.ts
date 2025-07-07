@@ -4,6 +4,7 @@ import { devtools } from 'zustand/middleware';
 import semesterService from '@/lib/services/semesters.service';
 import studentService from '@/lib/services/students.service';
 import { handleApiResponse } from '@/lib/utils/handleApi';
+import { ApiResponse } from '@/schemas/_common';
 import {
 	ImportStudent,
 	Student,
@@ -115,6 +116,35 @@ const studentSearchFilter = createSearchFilter<Student>((student) => [
 	student.studentCode,
 ]);
 
+// Helper function to process students without group response
+const processStudentsWithoutGroupResponse = (
+	response: ApiResponse<Student[]>,
+	set: (state: Partial<StudentState>) => void,
+	get: () => StudentState,
+): boolean => {
+	const result = handleApiResponse(response, 'Success', '');
+
+	if (result.success && result.data) {
+		// Filter only active students
+		const activeStudents = result.data.filter(
+			(student: Student) => student.isActive,
+		);
+
+		set({
+			students: activeStudents,
+			loading: false,
+		});
+
+		// Apply current filters
+		get().filterStudents();
+		return true;
+	} else if (result.error) {
+		handleResultError(result.error, set);
+		return false;
+	}
+	return false;
+};
+
 export const useStudentStore = create<StudentState>()(
 	devtools(
 		(set, get) => ({
@@ -164,24 +194,8 @@ export const useStudentStore = create<StudentState>()(
 				try {
 					const response =
 						await studentService.findStudentsWithoutGroup(semesterId);
-					const result = handleApiResponse(response, 'Success', '');
 
-					if (result.success && result.data) {
-						// Filter only active students
-						const activeStudents = result.data.filter(
-							(student) => student.isActive,
-						);
-
-						set({
-							students: activeStudents,
-							loading: false,
-						});
-
-						// Apply current filters
-						get().filterStudents();
-					} else if (result.error) {
-						handleResultError(result.error, set);
-					}
+					processStudentsWithoutGroupResponse(response, set, get);
 				} catch (error) {
 					handleActionError(error, 'student', 'fetch without group', set);
 				} finally {
@@ -225,24 +239,8 @@ export const useStudentStore = create<StudentState>()(
 					const response = await studentService.findStudentsWithoutGroup(
 						preparingSemester.id,
 					);
-					const result = handleApiResponse(response, 'Success', '');
 
-					if (result.success && result.data) {
-						// Filter only active students
-						const activeStudents = result.data.filter(
-							(student) => student.isActive,
-						);
-
-						set({
-							students: activeStudents,
-							loading: false,
-						});
-
-						// Apply current filters
-						get().filterStudents();
-					} else if (result.error) {
-						handleResultError(result.error, set);
-					}
+					processStudentsWithoutGroupResponse(response, set, get);
 				} catch (error) {
 					handleActionError(error, 'student', 'fetch without group auto', set);
 				} finally {
