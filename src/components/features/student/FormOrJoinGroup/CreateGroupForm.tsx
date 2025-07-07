@@ -54,20 +54,23 @@ export default function CreateGroupForm() {
 				if (members.length > 0) {
 					try {
 						const studentIds = members.map((member) => member.id);
-						const inviteResults = await requestService.inviteMultipleStudents(
+						const inviteResponse = await requestService.inviteMultipleStudents(
 							createdGroup.id,
 							studentIds,
 						);
 
-						if (inviteResults.length > 0) {
+						if (inviteResponse.success && inviteResponse.data.length > 0) {
 							showNotification.success(
-								`Successfully invited ${inviteResults.length}/${members.length} members`,
+								`Successfully invited ${inviteResponse.data.length}/${members.length} members`,
 							);
-						}
-
-						if (inviteResults.length < members.length) {
+						} else if (
+							inviteResponse.success &&
+							inviteResponse.data.length === 0
+						) {
+							showNotification.warning('No invitations were sent.');
+						} else {
 							showNotification.warning(
-								`Some invitations failed. ${inviteResults.length}/${members.length} members invited successfully.`,
+								'Group created successfully, but failed to send invitations.',
 							);
 						}
 					} catch (inviteError) {
