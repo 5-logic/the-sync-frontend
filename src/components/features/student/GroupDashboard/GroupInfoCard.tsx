@@ -7,7 +7,7 @@ import { GroupDashboard } from '@/schemas/group';
 const { Title, Text } = Typography;
 
 interface GroupInfoCardProps {
-	group: GroupDashboard;
+	readonly group: GroupDashboard;
 }
 
 export default function GroupInfoCard({ group }: GroupInfoCardProps) {
