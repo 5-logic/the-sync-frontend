@@ -61,7 +61,7 @@ export default function GroupDashboard() {
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
 			{/* Header */}
-			<GroupDashboardHeader />
+			<GroupDashboardHeader group={group} />
 
 			{/* Group Information Card */}
 			<GroupInfoCard group={group} />
