@@ -7,8 +7,8 @@ import { useEffect } from 'react';
 import { useStudentGroupStatus } from '@/hooks/useStudentGroupStatus';
 
 interface GroupStatusGuardProps {
-	children: React.ReactNode;
-	requiresGroup?: boolean; // true for pages that require group (Group Dashboard), false for pages that require no group (Form/Join Group)
+	readonly children: React.ReactNode;
+	readonly requiresGroup?: boolean; // true for pages that require group (Group Dashboard), false for pages that require no group (Form/Join Group)
 }
 
 export default function GroupStatusGuard({
