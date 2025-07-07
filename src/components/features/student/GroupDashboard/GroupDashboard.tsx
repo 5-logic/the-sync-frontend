@@ -1,13 +1,9 @@
-import { Alert, Col, Empty, Row, Space, Spin, Typography } from 'antd';
+import { Alert, Empty, Space, Spin, Typography } from 'antd';
 import { useEffect } from 'react';
 
 import GroupDashboardHeader from '@/components/features/student/GroupDashboard/GroupDashboardHeader';
 import GroupInfoCard from '@/components/features/student/GroupDashboard/GroupInfoCard';
-import GroupMembersCard from '@/components/features/student/GroupDashboard/GroupMembersCard';
-import GroupResponsibilitiesCard from '@/components/features/student/GroupDashboard/GroupResponsibilitiesCard';
-import GroupSkillsCard from '@/components/features/student/GroupDashboard/GroupSkillsCard';
 import NoThesisCard from '@/components/features/student/GroupDashboard/NoThesisCard';
-import ProjectDirectionCard from '@/components/features/student/GroupDashboard/ProjectDirectionCard';
 import { useGroupDashboardStore } from '@/store/useGroupDashboardStore';
 
 const { Title, Text } = Typography;
@@ -52,7 +48,7 @@ export default function GroupDashboard() {
 	const hasThesis = group.thesis !== null;
 
 	if (hasThesis) {
-		// TODO: Implement thesis view
+		// Implement thesis view
 		return (
 			<div className="p-6">
 				<Title level={2}>Group Dashboard - With Thesis</Title>
@@ -64,29 +60,13 @@ export default function GroupDashboard() {
 	// No thesis view
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
+			{/* Header */}
 			<GroupDashboardHeader />
 
+			{/* Group Information Card */}
 			<GroupInfoCard group={group} />
 
-			{/* Group Details Grid */}
-			<Row gutter={[16, 16]}>
-				<Col xs={24} lg={12}>
-					<ProjectDirectionCard group={group} />
-				</Col>
-
-				<Col xs={24} lg={12}>
-					<GroupMembersCard group={group} />
-				</Col>
-
-				<Col xs={24} lg={12}>
-					<GroupSkillsCard group={group} />
-				</Col>
-
-				<Col xs={24} lg={12}>
-					<GroupResponsibilitiesCard group={group} />
-				</Col>
-			</Row>
-
+			{/* Choose Thesis Topic Section */}
 			<NoThesisCard />
 		</Space>
 	);
