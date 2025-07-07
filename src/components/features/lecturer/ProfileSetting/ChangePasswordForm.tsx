@@ -4,15 +4,28 @@ import { Button, Form, Input, Typography } from 'antd';
 import { useEffect } from 'react';
 
 import { FormLabel } from '@/components/common/FormLabel';
+import { useSessionData } from '@/hooks/auth/useAuth';
 import { showNotification } from '@/lib/utils/notification';
-import { StudentPasswordUpdate } from '@/schemas/student';
-import { useStudentStore } from '@/store';
+import { PasswordChange } from '@/schemas/_common';
+import { useLecturerStore, useStudentStore } from '@/store';
 
 export default function ChangePasswordForm() {
 	const [form] = Form.useForm();
+	const { session } = useSessionData();
 
-	// Use Student Store for change password
-	const { changePassword, changingPassword, clearError } = useStudentStore();
+	// Get the user role to determine which store to use
+	const userRole = session?.user?.role;
+
+	// Use the appropriate store based on user role
+	const studentStore = useStudentStore();
+	const lecturerStore = useLecturerStore();
+
+	// Determine which store to use based on user role
+	const isStudent = userRole === 'STUDENT';
+
+	const { changePassword, changingPassword, clearError } = isStudent
+		? studentStore
+		: lecturerStore;
 
 	// Type assertion for changingPassword
 	const isChangingPassword = Boolean(changingPassword);
@@ -53,7 +66,7 @@ export default function ChangePasswordForm() {
 			return;
 		}
 
-		const passwordData: StudentPasswordUpdate = {
+		const passwordData: PasswordChange = {
 			currentPassword: values.currentPassword,
 			newPassword: values.newPassword,
 		};

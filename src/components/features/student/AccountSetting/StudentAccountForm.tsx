@@ -18,15 +18,19 @@ import {
 import React, { useEffect, useState } from 'react';
 
 import { FormLabel } from '@/components/common/FormLabel';
-import mockSkills from '@/data/skill';
-import mockSkillSets from '@/data/skillSet';
 import { useOptimizedSession } from '@/hooks/auth/useAuth';
 import {
 	ProfileData,
 	fetchUserProfile,
 } from '@/lib/utils/auth/profile-fetcher';
+import { SkillSet } from '@/schemas/skill';
 import { StudentUpdate } from '@/schemas/student';
-import { useMajorStore, useStudentStore } from '@/store';
+import {
+	useMajorStore,
+	useResponsibilityStore,
+	useSkillSetStore,
+	useStudentStore,
+} from '@/store';
 
 // TypeScript interfaces
 interface FormValues {
@@ -46,11 +50,6 @@ interface FormValues {
 const { Title } = Typography;
 
 // Constants moved outside component to prevent re-creation on each render
-const RESPONSIBILITY_OPTIONS = [
-	{ value: 'Researcher', label: 'Researcher' },
-	{ value: 'Developer', label: 'Developer' },
-];
-
 const LEVEL_TOOLTIPS = [
 	'Beginner',
 	'Intermediate',
@@ -68,21 +67,17 @@ const LEVEL_COLORS = [
 ] as const;
 
 // Memoized skill tree data to prevent unnecessary re-computation
-const buildSkillTreeData = () =>
-	mockSkillSets.map((set) => ({
+const buildSkillTreeData = (skillSets: SkillSet[]) =>
+	skillSets.map((set) => ({
 		value: set.id,
 		title: set.name,
 		selectable: false,
-		children: mockSkills
-			.filter((sk) => sk.skillSetId === set.id)
-			.map((sk) => ({
-				value: sk.id,
-				title: sk.name,
-			})),
+		children:
+			set.skills?.map((skill) => ({
+				value: skill.id,
+				title: skill.name,
+			})) ?? [],
 	}));
-
-// Pre-compute skill tree data once
-const skillTreeData = buildSkillTreeData();
 
 const StudentAccountForm: React.FC = () => {
 	const [form] = Form.useForm();
@@ -97,6 +92,20 @@ const StudentAccountForm: React.FC = () => {
 
 	// Use Major Store to get major names
 	const { majors, loading: majorsLoading, fetchMajors } = useMajorStore();
+
+	// Use Skill Set Store to get skill sets data
+	const {
+		skillSets,
+		loading: skillSetsLoading,
+		fetchSkillSets,
+	} = useSkillSetStore();
+
+	// Use Responsibility Store to get responsibilities data
+	const {
+		responsibilities,
+		loading: responsibilitiesLoading,
+		fetchResponsibilities,
+	} = useResponsibilityStore();
 
 	// Get current user session
 	const {
@@ -114,6 +123,16 @@ const StudentAccountForm: React.FC = () => {
 	useEffect(() => {
 		fetchMajors();
 	}, [fetchMajors]);
+
+	// Fetch skill sets for display
+	useEffect(() => {
+		fetchSkillSets();
+	}, [fetchSkillSets]);
+
+	// Fetch responsibilities for display
+	useEffect(() => {
+		fetchResponsibilities();
+	}, [fetchResponsibilities]);
 
 	// Fetch user profile data
 	useEffect(() => {
@@ -142,7 +161,7 @@ const StudentAccountForm: React.FC = () => {
 						major: profile.majorId ?? '', // Keep as ID for now, will display name separately
 						phoneNumber: profile.phoneNumber ?? '',
 						gender: profile.gender ?? '',
-						responsibility: ['Researcher'], // Keep default for now
+						responsibility: [], // Start with empty array, user can select
 					});
 				}
 			} catch (error) {
@@ -166,6 +185,19 @@ const StudentAccountForm: React.FC = () => {
 		[majors],
 	);
 
+	// Build skill tree data from skill sets
+	const skillTreeData = React.useMemo(() => {
+		return buildSkillTreeData(skillSets);
+	}, [skillSets]);
+
+	// Build responsibility options from responsibilities data
+	const responsibilityOptions = React.useMemo(() => {
+		return responsibilities.map((responsibility) => ({
+			value: responsibility.name,
+			label: responsibility.name,
+		}));
+	}, [responsibilities]);
+
 	// Get the display value for major field
 	const majorDisplayValue = React.useMemo(() => {
 		if (!profileData?.majorId) return '';
@@ -181,7 +213,7 @@ const StudentAccountForm: React.FC = () => {
 			major: profileData?.majorId ?? '',
 			phoneNumber: profileData?.phoneNumber ?? '',
 			gender: profileData?.gender ?? '',
-			responsibility: ['Researcher'],
+			responsibility: [],
 		}),
 		[profileData],
 	);
@@ -236,9 +268,21 @@ const StudentAccountForm: React.FC = () => {
 
 	// Check if any loading is in progress
 	const isLoading = React.useMemo(() => {
-		const states = [loadingProfile, sessionLoading, majorsLoading];
+		const states = [
+			loadingProfile,
+			sessionLoading,
+			majorsLoading,
+			skillSetsLoading,
+			responsibilitiesLoading,
+		];
 		return states.some(Boolean);
-	}, [loadingProfile, sessionLoading, majorsLoading]);
+	}, [
+		loadingProfile,
+		sessionLoading,
+		majorsLoading,
+		skillSetsLoading,
+		responsibilitiesLoading,
+	]);
 
 	return (
 		<Spin spinning={isLoading} tip="Loading profile...">
@@ -348,7 +392,7 @@ const StudentAccountForm: React.FC = () => {
 				>
 					<Select
 						mode="multiple"
-						options={RESPONSIBILITY_OPTIONS}
+						options={responsibilityOptions}
 						placeholder="Select responsibility"
 					/>
 				</Form.Item>

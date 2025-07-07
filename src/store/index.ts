@@ -3,6 +3,7 @@ export { useAppStore } from '@/store/useAppStore';
 export { useLecturerStore } from '@/store/useLecturerStore';
 export { useMajorStore } from '@/store/useMajorStore';
 export { useMilestoneStore } from '@/store/useMilestoneStore';
+export { useResponsibilityStore } from '@/store/useResponsibilityStore';
 export { useSemesterStore } from '@/store/useSemesterStore';
 export { useSkillSetStore } from '@/store/useSkillSetStore';
 export { useStudentStore } from '@/store/useStudentStore';
