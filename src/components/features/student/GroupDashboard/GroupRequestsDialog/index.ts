@@ -4,6 +4,7 @@ export { default as JoinActions } from '@/components/features/student/GroupDashb
 export { default as JoinRequestsTable } from '@/components/features/student/GroupDashboard/GroupRequestsDialog/JoinRequestsTable';
 export { default as RequestsSearchControls } from '@/components/features/student/GroupDashboard/GroupRequestsDialog/RequestsSearchControls';
 export { default as RequestsTab } from '@/components/features/student/GroupDashboard/GroupRequestsDialog/RequestsTab';
+export { default as RequestsTable } from '@/components/features/student/GroupDashboard/GroupRequestsDialog/RequestsTable';
 export { default as RequestStatusTag } from '@/components/features/student/GroupDashboard/GroupRequestsDialog/RequestStatusTag';
 export { default as StudentInfo } from '@/components/features/student/GroupDashboard/GroupRequestsDialog/StudentInfo';
 
