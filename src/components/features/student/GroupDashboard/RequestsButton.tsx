@@ -2,7 +2,6 @@ import { Badge, Button } from 'antd';
 import { useEffect, useState } from 'react';
 
 import GroupRequestsDialog from '@/components/features/student/GroupDashboard/GroupRequestsDialog';
-import { useSessionData } from '@/hooks/auth/useAuth';
 import { GroupDashboard } from '@/schemas/group';
 import { useRequestsStore } from '@/store';
 
@@ -16,18 +15,12 @@ export default function RequestsButton({
 	children,
 }: RequestsButtonProps) {
 	const [dialogVisible, setDialogVisible] = useState(false);
-	const { session } = useSessionData();
 	const { requests, fetchGroupRequests } = useRequestsStore();
-
-	// Check if current user is the leader
-	const isCurrentUserLeader = session?.user?.id === group.leader.userId;
 
 	// Fetch requests count for badge
 	useEffect(() => {
-		if (isCurrentUserLeader) {
-			fetchGroupRequests(group.id);
-		}
-	}, [group.id, isCurrentUserLeader, fetchGroupRequests]);
+		fetchGroupRequests(group.id);
+	}, [group.id, fetchGroupRequests]);
 
 	// Count pending requests
 	const pendingRequestsCount = requests.filter(
@@ -35,21 +28,15 @@ export default function RequestsButton({
 	).length;
 
 	const handleClick = () => {
-		if (isCurrentUserLeader) {
-			setDialogVisible(true);
-		}
+		setDialogVisible(true);
 	};
 
 	return (
 		<>
-			<Badge
-				count={isCurrentUserLeader ? pendingRequestsCount : 0}
-				size="small"
-			>
+			<Badge count={pendingRequestsCount} size="small">
 				<Button
 					type="default"
 					onClick={handleClick}
-					disabled={!isCurrentUserLeader}
 					style={{
 						borderRadius: 6,
 						height: 32,
