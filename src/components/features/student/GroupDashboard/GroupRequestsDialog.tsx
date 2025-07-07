@@ -70,50 +70,39 @@ export default function GroupRequestsDialog({
 		).length;
 	}, [requests]);
 
-	// Filter requests by type, status, and search text
-	const inviteRequests = useMemo(() => {
-		let filtered = requests.filter((req) => req.type === 'Invite');
+	// Helper function to filter requests by type, status, and search text
+	const filterRequests = useMemo(() => {
+		return (requestType: 'Invite' | 'Join') => {
+			let filtered = requests.filter((req) => req.type === requestType);
 
-		// Filter by status
-		if (statusFilter) {
-			filtered = filtered.filter((req) => req.status === statusFilter);
-		}
+			// Filter by status
+			if (statusFilter) {
+				filtered = filtered.filter((req) => req.status === statusFilter);
+			}
 
-		// Filter by search text (user name using Vietnamese text normalization)
-		if (searchText.trim()) {
-			filtered = filtered.filter((req) =>
-				isTextMatch(searchText, [
-					req.student.user.fullName,
-					req.student.studentCode,
-					req.student.user.email,
-				]),
-			);
-		}
+			// Filter by search text (user name using Vietnamese text normalization)
+			if (searchText.trim()) {
+				filtered = filtered.filter((req) =>
+					isTextMatch(searchText, [
+						req.student.user.fullName,
+						req.student.studentCode,
+						req.student.user.email,
+					]),
+				);
+			}
 
-		return filtered;
+			return filtered;
+		};
 	}, [requests, statusFilter, searchText]);
+
+	// Filter requests by type using the helper function
+	const inviteRequests = useMemo(() => {
+		return filterRequests('Invite');
+	}, [filterRequests]);
 
 	const joinRequests = useMemo(() => {
-		let filtered = requests.filter((req) => req.type === 'Join');
-
-		// Filter by status
-		if (statusFilter) {
-			filtered = filtered.filter((req) => req.status === statusFilter);
-		}
-
-		// Filter by search text (user name using Vietnamese text normalization)
-		if (searchText.trim()) {
-			filtered = filtered.filter((req) =>
-				isTextMatch(searchText, [
-					req.student.user.fullName,
-					req.student.studentCode,
-					req.student.user.email,
-				]),
-			);
-		}
-
-		return filtered;
-	}, [requests, statusFilter, searchText]);
+		return filterRequests('Join');
+	}, [filterRequests]);
 
 	const handleUpdateStatus = async (
 		requestId: string,
