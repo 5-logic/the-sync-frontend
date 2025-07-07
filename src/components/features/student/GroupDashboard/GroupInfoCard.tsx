@@ -1,8 +1,12 @@
 import { Button, Card, Divider, Tag, Typography } from 'antd';
+import { useState } from 'react';
 
 import GroupMembersCard from '@/components/features/student/GroupDashboard/GroupMembersCard';
+import InviteMembersDialog from '@/components/features/student/GroupDashboard/InviteMembersDialog';
+import { useSessionData } from '@/hooks/auth/useAuth';
 import { formatDate } from '@/lib/utils/dateFormat';
 import { GroupDashboard } from '@/schemas/group';
+import { useGroupDashboardStore } from '@/store/useGroupDashboardStore';
 
 const { Title, Text } = Typography;
 
@@ -11,6 +15,19 @@ interface GroupInfoCardProps {
 }
 
 export default function GroupInfoCard({ group }: GroupInfoCardProps) {
+	const [isInviteDialogVisible, setIsInviteDialogVisible] = useState(false);
+	const { session } = useSessionData();
+	const { refreshGroup } = useGroupDashboardStore();
+
+	const handleInviteSuccess = () => {
+		setIsInviteDialogVisible(false);
+		// Refresh group data to reflect any changes
+		refreshGroup();
+	};
+
+	// Check if current user is the leader
+	const isCurrentUserLeader = session?.user?.id === group.leader.userId;
+
 	return (
 		<Card className="bg-white border border-gray-200 rounded-md">
 			<div className="pb-4">
@@ -122,9 +139,24 @@ export default function GroupInfoCard({ group }: GroupInfoCardProps) {
 							{formatDate(group.createdAt)}
 						</Text>
 					</div>
-					<Button type="primary">Invite Members</Button>
+					{isCurrentUserLeader && (
+						<Button
+							type="primary"
+							onClick={() => setIsInviteDialogVisible(true)}
+						>
+							Invite Members
+						</Button>
+					)}
 				</div>
 			</div>
+
+			<InviteMembersDialog
+				visible={isInviteDialogVisible}
+				onCancel={() => setIsInviteDialogVisible(false)}
+				onSuccess={handleInviteSuccess}
+				groupId={group.id}
+				group={group}
+			/>
 		</Card>
 	);
 }
