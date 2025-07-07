@@ -19,6 +19,35 @@ export interface InviteResponse {
 	updatedAt: string;
 }
 
+export interface GroupRequest {
+	id: string;
+	type: 'Invite' | 'Join';
+	status: 'Pending' | 'Approved' | 'Rejected';
+	studentId: string;
+	groupId: string;
+	createdAt: string;
+	updatedAt: string;
+	student: {
+		userId: string;
+		studentCode: string;
+		majorId: string;
+		user: {
+			id: string;
+			fullName: string;
+			email: string;
+		};
+	};
+	group: {
+		id: string;
+		code: string;
+		name: string;
+	};
+}
+
+export interface UpdateRequestStatusRequest {
+	status: 'Approved' | 'Rejected';
+}
+
 class RequestService {
 	private readonly baseUrl = '/requests';
 
@@ -71,6 +100,28 @@ class RequestService {
 		}
 
 		return successful;
+	}
+
+	// Get all requests for a group (only accessible by group leader)
+	async getGroupRequests(
+		groupId: string,
+	): Promise<ApiResponse<GroupRequest[]>> {
+		const response = await httpClient.get<ApiResponse<GroupRequest[]>>(
+			`${this.baseUrl}/group/${groupId}`,
+		);
+		return response.data;
+	}
+
+	// Update request status (approve/reject)
+	async updateRequestStatus(
+		requestId: string,
+		statusData: UpdateRequestStatusRequest,
+	): Promise<ApiResponse<GroupRequest>> {
+		const response = await httpClient.put<ApiResponse<GroupRequest>>(
+			`${this.baseUrl}/${requestId}/status`,
+			statusData,
+		);
+		return response.data;
 	}
 }
 
