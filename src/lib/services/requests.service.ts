@@ -6,6 +6,10 @@ export interface InviteRequest {
 	studentId: string;
 }
 
+export interface BulkInviteRequest {
+	studentIds: string[];
+}
+
 export interface InviteResponse {
 	id: string;
 	groupId: string;
@@ -29,8 +33,20 @@ class RequestService {
 		return response.data;
 	}
 
-	// Bulk invite multiple students
+	// Bulk invite multiple students with new API
 	async inviteMultipleStudents(
+		groupId: string,
+		studentIds: string[],
+	): Promise<ApiResponse<InviteResponse[]>> {
+		const response = await httpClient.post<ApiResponse<InviteResponse[]>>(
+			`${this.baseUrl}/invite/${groupId}`,
+			{ studentIds },
+		);
+		return response.data;
+	}
+
+	// Legacy method for backward compatibility
+	async inviteMultipleStudentsLegacy(
 		groupId: string,
 		studentIds: string[],
 	): Promise<InviteResponse[]> {
