@@ -1,9 +1,18 @@
 import { UserAddOutlined } from '@ant-design/icons';
-import { Button, Typography } from 'antd';
+import { Typography } from 'antd';
+
+import RequestsButton from '@/components/features/student/GroupDashboard/RequestsButton';
+import { GroupDashboard } from '@/schemas/group';
 
 const { Title, Paragraph } = Typography;
 
-export default function GroupDashboardHeader() {
+interface GroupDashboardHeaderProps {
+	readonly group: GroupDashboard;
+}
+
+export default function GroupDashboardHeader({
+	group,
+}: GroupDashboardHeaderProps) {
 	return (
 		<div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
 			<div>
@@ -17,22 +26,10 @@ export default function GroupDashboardHeader() {
 					View your group information, members, and thesis progress
 				</Paragraph>
 			</div>
-			<Button
-				icon={<UserAddOutlined />}
-				style={{
-					borderRadius: 6,
-					height: 32,
-					fontSize: 14,
-					padding: '4px 15px',
-					whiteSpace: 'nowrap',
-					border: '1px solid #d9d9d9',
-					backgroundColor: '#fff',
-					color: 'rgba(0, 0, 0, 0.88)',
-					fontWeight: 400,
-				}}
-			>
+			<RequestsButton group={group}>
+				<UserAddOutlined />
 				Request Invite/Join Group
-			</Button>
+			</RequestsButton>
 		</div>
 	);
 }
