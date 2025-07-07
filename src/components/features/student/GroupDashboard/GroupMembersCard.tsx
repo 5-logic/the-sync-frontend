@@ -9,15 +9,18 @@ import {
 import { Avatar, Button, Card, Dropdown, Tag, Typography } from 'antd';
 import type { MenuProps } from 'antd';
 
+import { useSessionData } from '@/hooks/auth/useAuth';
 import { GroupDashboard, GroupMember } from '@/schemas/group';
 
 const { Text } = Typography;
 
 interface GroupMembersCardProps {
-	group: GroupDashboard;
+	readonly group: GroupDashboard;
 }
 
 export default function GroupMembersCard({ group }: GroupMembersCardProps) {
+	const { session } = useSessionData();
+
 	// Function to get menu items for each member
 	const getMemberMenuItems = (
 		member: GroupMember,
@@ -62,7 +65,8 @@ export default function GroupMembersCard({ group }: GroupMembersCardProps) {
 			{' '}
 			<div className="space-y-3">
 				{group.members.map((member) => {
-					const isCurrentUserLeader = true; // TODO: Replace with actual current user check
+					// Check if the current user is the leader by comparing user IDs
+					const isCurrentUserLeader = session?.user?.id === group.leader.userId;
 					const menuItems = getMemberMenuItems(member, isCurrentUserLeader);
 
 					return (
