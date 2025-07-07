@@ -5,11 +5,11 @@ const { Title, Text } = Typography;
 
 // ThesisOptionCard component
 interface ThesisOptionCardProps {
-	title: string;
-	description: string;
-	buttonText: string;
-	icon: React.ReactNode;
-	buttonType?: 'primary' | 'default';
+	readonly title: string;
+	readonly description: string;
+	readonly buttonText: string;
+	readonly icon: React.ReactNode;
+	readonly buttonType?: 'primary' | 'default';
 }
 
 function ThesisOptionCard({
