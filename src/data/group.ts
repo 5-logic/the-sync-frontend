@@ -137,10 +137,10 @@ const fullGroupMetaData: Record<string, FullGroupMeta> = {
 		milestoneAlert: 'All milestones completed on time',
 		progress: 95,
 		milestones: [
-			'Proposal Submitted - Completed',
-			'Literature Review - Completed',
-			'Implementation - In Progress',
-			'Testing Phase - Pending',
+			'Review 1 - Completed on Dec 15, 2023',
+			'Review 2 - Completed on Dec 30, 2023',
+			'Reivew 3 - In Progress - Due Feb 1, 2024',
+			'Final review - Pending',
 		],
 	},
 	g2: {
