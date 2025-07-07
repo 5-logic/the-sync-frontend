@@ -15,11 +15,15 @@ const { Text } = Typography;
 interface InviteTeamMembersProps {
 	readonly members: Student[];
 	readonly onMembersChange: (members: Student[]) => void;
+	readonly excludeUserIds?: string[]; // Optional: IDs to exclude from search (e.g., existing group members)
+	readonly currentMemberCount?: number; // Optional: Current total members (for invite existing group context)
 }
 
 export default function InviteTeamMembers({
 	members,
 	onMembersChange,
+	excludeUserIds = [],
+	currentMemberCount,
 }: InviteTeamMembersProps) {
 	const [searchText, setSearchText] = useState('');
 	const [searchResults, setSearchResults] = useState<Student[]>([]);
@@ -51,6 +55,11 @@ export default function InviteTeamMembers({
 					return false;
 				}
 
+				// Exclude users from excludeUserIds list (e.g., existing group members)
+				if (excludeUserIds.includes(student.id)) {
+					return false;
+				}
+
 				const emailMatch = (student.email ?? '')
 					.toLowerCase()
 					.includes(searchLower);
@@ -72,7 +81,7 @@ export default function InviteTeamMembers({
 		}, TEAM_CONFIG.SEARCH_DEBOUNCE_MS);
 
 		return () => clearTimeout(timeoutId);
-	}, [searchText, students, currentUserId]);
+	}, [searchText, students, currentUserId, excludeUserIds]);
 
 	// Build options for AutoComplete
 	const studentOptions = useMemo(() => {
@@ -82,6 +91,10 @@ export default function InviteTeamMembers({
 			.filter((student) => {
 				// Exclude current logged-in student
 				if (currentUserId && student.id === currentUserId) {
+					return false;
+				}
+				// Exclude users from excludeUserIds list
+				if (excludeUserIds.includes(student.id)) {
 					return false;
 				}
 				return true;
@@ -118,7 +131,7 @@ export default function InviteTeamMembers({
 					student: student,
 				};
 			});
-	}, [searchResults, currentUserId, members, searchText]);
+	}, [searchResults, currentUserId, members, searchText, excludeUserIds]);
 
 	const handleAddMember = useCallback(
 		(student?: Student) => {
@@ -134,6 +147,12 @@ export default function InviteTeamMembers({
 				return;
 			}
 
+			// Prevent adding excluded users
+			if (targetStudent && excludeUserIds.includes(targetStudent.id)) {
+				showNotification.warning('This student is already a group member.');
+				return;
+			}
+
 			if (!targetStudent) {
 				if (!searchText.trim()) {
 					return;
@@ -144,6 +163,11 @@ export default function InviteTeamMembers({
 					students.find((s) => {
 						// Exclude current logged-in student
 						if (currentUserId && s.id === currentUserId) {
+							return false;
+						}
+
+						// Exclude users from excludeUserIds list
+						if (excludeUserIds.includes(s.id)) {
 							return false;
 						}
 
@@ -170,10 +194,19 @@ export default function InviteTeamMembers({
 				return;
 			}
 
-			if (members.length >= TEAM_CONFIG.MAX_MEMBERS) {
-				showNotification.error(
-					`Group can have maximum ${TEAM_CONFIG.MAX_MEMBERS} members`,
-				);
+			// Check member limit based on context
+			const totalMembersAfterAdd =
+				currentMemberCount !== undefined
+					? currentMemberCount + members.length + 1 // Existing group: current + selected + new one
+					: members.length + 1 + 1; // New group: selected + leader + new one
+
+			if (totalMembersAfterAdd > TEAM_CONFIG.MAX_MEMBERS) {
+				const contextMessage =
+					currentMemberCount !== undefined
+						? `Group would have ${totalMembersAfterAdd} members, exceeding limit of ${TEAM_CONFIG.MAX_MEMBERS}`
+						: `Group can have maximum ${TEAM_CONFIG.MAX_MEMBERS} members`;
+
+				showNotification.error(contextMessage);
 				return;
 			}
 
@@ -183,7 +216,15 @@ export default function InviteTeamMembers({
 			showNotification.success(`${targetStudent.fullName} added successfully!`);
 			setSearchText('');
 		},
-		[searchText, members, onMembersChange, students, currentUserId],
+		[
+			searchText,
+			members,
+			onMembersChange,
+			students,
+			currentUserId,
+			excludeUserIds,
+			currentMemberCount,
+		],
 	);
 
 	const handleStudentSelect = useCallback(
@@ -293,8 +334,20 @@ export default function InviteTeamMembers({
 				}}
 			/>
 			<Typography.Text type="secondary" style={TEAM_STYLES.infoContainer}>
-				💡 Each group must have {TEAM_CONFIG.MIN_MEMBERS}-
-				{TEAM_CONFIG.MAX_MEMBERS} members (Current: {members.length} members)
+				{currentMemberCount !== undefined ? (
+					// Invite to existing group context
+					<>
+						💡 Current group has {currentMemberCount} members. Select students
+						to invite (Selected: {members.length} to invite)
+					</>
+				) : (
+					// Create new group context
+					<>
+						💡 Each group must have {TEAM_CONFIG.MIN_MEMBERS}-
+						{TEAM_CONFIG.MAX_MEMBERS} members (Current: {members.length + 1}{' '}
+						members including you)
+					</>
+				)}
 			</Typography.Text>
 		</div>
 	);
