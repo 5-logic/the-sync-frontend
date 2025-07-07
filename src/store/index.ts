@@ -10,3 +10,4 @@ export { useMilestoneStore } from '@/store/useMilestoneStore';
 export { useSkillSetStore } from '@/store/useSkillSetStore';
 export { useResponsibilityStore } from '@/store/useResponsibilityStore';
 export { useGroupDashboardStore } from '@/store/useGroupDashboardStore';
+export { useRequestsStore } from '@/store/useRequestsStore';
