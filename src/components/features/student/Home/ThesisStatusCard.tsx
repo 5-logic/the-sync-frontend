@@ -12,13 +12,13 @@ interface Props {
 export default function ThesisStatusCard({ group }: Props) {
 	return (
 		<Card
+			style={{ height: '100%' }}
 			title={
 				<Space align="center">
 					<FileTextOutlined />
 					<Typography.Text strong>Thesis Status</Typography.Text>
 				</Space>
 			}
-			style={{ height: '100%' }}
 		>
 			{group ? (
 				<Space direction="vertical" size="middle" style={{ width: '100%' }}>

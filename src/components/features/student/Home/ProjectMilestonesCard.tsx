@@ -14,6 +14,7 @@ export default function ProjectMilestonesCard({ group }: Props) {
 
 	return (
 		<Card
+			style={{ height: '100%' }}
 			title={
 				<>
 					<CheckSquareOutlined /> Project Milestones

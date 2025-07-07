@@ -12,6 +12,7 @@ interface Props {
 export default function GroupInformationCard({ group }: Props) {
 	return (
 		<Card
+			style={{ height: '100%' }}
 			title={
 				<>
 					<TeamOutlined /> Group Information

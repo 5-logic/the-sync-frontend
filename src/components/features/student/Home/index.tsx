@@ -13,7 +13,6 @@ export default function StudentHomePage() {
 
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
-			{/* Section: Page Header */}
 			<Row justify="start">
 				<Col span={24}>
 					<Title level={2} style={{ marginBottom: 4 }}>
@@ -26,21 +25,27 @@ export default function StudentHomePage() {
 				</Col>
 			</Row>
 
-			<Row justify="end" align="middle" style={{ marginBottom: 24 }}>
+			<Row justify="end" align="middle" style={{ marginBottom: 0 }}>
 				<Col>
 					<Text type="secondary">Spring Semester 2024</Text>
 				</Col>
 			</Row>
 
-			<Row gutter={[16, 16]}>
-				<Col xs={24} md={8}>
-					<GroupInformationCard group={studentGroup} />
+			<Row gutter={[16, 16]} style={{ display: 'flex' }}>
+				<Col xs={24} md={8} style={{ display: 'flex' }}>
+					<div style={{ flex: 1 }}>
+						<GroupInformationCard group={studentGroup} />
+					</div>
 				</Col>
-				<Col xs={24} md={8}>
-					<ProjectMilestonesCard group={studentGroup} />
+				<Col xs={24} md={8} style={{ display: 'flex' }}>
+					<div style={{ flex: 1 }}>
+						<ProjectMilestonesCard group={studentGroup} />
+					</div>
 				</Col>
-				<Col xs={24} md={8}>
-					<ThesisStatusCard group={studentGroup} />
+				<Col xs={24} md={8} style={{ display: 'flex' }}>
+					<div style={{ flex: 1 }}>
+						<ThesisStatusCard group={studentGroup} />
+					</div>
 				</Col>
 			</Row>
 		</Space>
