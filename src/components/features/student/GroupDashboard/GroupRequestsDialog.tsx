@@ -1,30 +1,10 @@
-import {
-	CheckOutlined,
-	CloseOutlined,
-	ReloadOutlined,
-	SearchOutlined,
-	StopOutlined,
-} from '@ant-design/icons';
-import {
-	Button,
-	Input,
-	Modal,
-	Popconfirm,
-	Select,
-	Table,
-	Tabs,
-	Tag,
-	Tooltip,
-	Typography,
-} from 'antd';
-import type { ColumnsType } from 'antd/es/table';
+import { Modal, Tabs, Typography } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
 
-import TablePagination from '@/components/common/TablePagination/TablePagination';
+import RequestsTab from '@/components/features/student/GroupDashboard/GroupRequestsDialog/RequestsTab';
 import { useSessionData } from '@/hooks/auth/useAuth';
-import { type GroupRequest } from '@/lib/services/requests.service';
-import { formatDate } from '@/lib/utils/dateFormat';
 import { showNotification } from '@/lib/utils/notification';
+import { isTextMatch } from '@/lib/utils/textNormalization';
 import { GroupDashboard } from '@/schemas/group';
 import { useRequestsStore } from '@/store';
 
@@ -99,12 +79,14 @@ export default function GroupRequestsDialog({
 			filtered = filtered.filter((req) => req.status === statusFilter);
 		}
 
-		// Filter by search text (user name)
+		// Filter by search text (user name using Vietnamese text normalization)
 		if (searchText.trim()) {
 			filtered = filtered.filter((req) =>
-				req.student.user.fullName
-					.toLowerCase()
-					.includes(searchText.toLowerCase()),
+				isTextMatch(searchText, [
+					req.student.user.fullName,
+					req.student.studentCode,
+					req.student.user.email,
+				]),
 			);
 		}
 
@@ -119,12 +101,14 @@ export default function GroupRequestsDialog({
 			filtered = filtered.filter((req) => req.status === statusFilter);
 		}
 
-		// Filter by search text (user name)
+		// Filter by search text (user name using Vietnamese text normalization)
 		if (searchText.trim()) {
 			filtered = filtered.filter((req) =>
-				req.student.user.fullName
-					.toLowerCase()
-					.includes(searchText.toLowerCase()),
+				isTextMatch(searchText, [
+					req.student.user.fullName,
+					req.student.studentCode,
+					req.student.user.email,
+				]),
 			);
 		}
 
@@ -171,249 +155,47 @@ export default function GroupRequestsDialog({
 		fetchGroupRequests(group.id, true); // Force refresh
 	};
 
-	// Columns for Invite Requests table
-	const inviteColumns: ColumnsType<GroupRequest> = [
-		{
-			title: 'Student',
-			key: 'student',
-			render: (_, record) => (
-				<div>
-					<div className="font-medium">{record.student.user.fullName}</div>
-					<Text type="secondary" className="text-sm">
-						{record.student.studentCode} • {record.student.user.email}
-					</Text>
-				</div>
-			),
-		},
-		{
-			title: 'Status',
-			dataIndex: 'status',
-			key: 'status',
-			render: (status: string) => (
-				<Tag
-					color={
-						status === 'Pending'
-							? 'orange'
-							: status === 'Approved'
-								? 'green'
-								: 'red'
-					}
-				>
-					{status}
-				</Tag>
-			),
-		},
-		{
-			title: 'Sent At',
-			dataIndex: 'createdAt',
-			key: 'createdAt',
-			render: (date: string) => formatDate(date),
-		},
-		{
-			title: 'Action',
-			key: 'action',
-			align: 'center',
-			render: (_, record) => (
-				<div className="flex justify-center">
-					<Popconfirm
-						{...getPopconfirmProps(
-							record.id,
-							'Rejected',
-							'Invite',
-							record.student.user.fullName,
-						)}
-					>
-						<Tooltip title="Cancel Invitation" placement="bottom">
-							<Button type="text" danger icon={<StopOutlined />} size="small" />
-						</Tooltip>
-					</Popconfirm>
-				</div>
-			),
-		},
-	];
+	const handleSearchChange = (value: string) => {
+		setSearchText(value);
+	};
 
-	// Columns for Join Requests table
-	const joinColumns: ColumnsType<GroupRequest> = [
-		{
-			title: 'Student',
-			key: 'student',
-			render: (_, record) => (
-				<div>
-					<div className="font-medium">{record.student.user.fullName}</div>
-					<Text type="secondary" className="text-sm">
-						{record.student.studentCode} • {record.student.user.email}
-					</Text>
-				</div>
-			),
-		},
-		{
-			title: 'Status',
-			dataIndex: 'status',
-			key: 'status',
-			render: (status: string) => (
-				<Tag
-					color={
-						status === 'Pending'
-							? 'orange'
-							: status === 'Approved'
-								? 'green'
-								: 'red'
-					}
-				>
-					{status}
-				</Tag>
-			),
-		},
-		{
-			title: 'Requested At',
-			dataIndex: 'createdAt',
-			key: 'createdAt',
-			render: (date: string) => formatDate(date),
-		},
-		{
-			title: 'Action',
-			key: 'action',
-			align: 'center',
-			render: (_, record) => (
-				<div className="flex gap-2 justify-center">
-					<Popconfirm
-						{...getPopconfirmProps(
-							record.id,
-							'Approved',
-							'Join',
-							record.student.user.fullName,
-						)}
-					>
-						<Tooltip title="Approve Request" placement="bottom">
-							<Button
-								type="text"
-								icon={<CheckOutlined />}
-								size="small"
-								className="text-green-600 hover:text-green-700"
-							/>
-						</Tooltip>
-					</Popconfirm>
-					<Popconfirm
-						{...getPopconfirmProps(
-							record.id,
-							'Rejected',
-							'Join',
-							record.student.user.fullName,
-						)}
-					>
-						<Tooltip title="Reject Request" placement="bottom">
-							<Button
-								type="text"
-								danger
-								icon={<CloseOutlined />}
-								size="small"
-							/>
-						</Tooltip>
-					</Popconfirm>
-				</div>
-			),
-		},
-	];
+	const handleStatusFilterChange = (value: string | undefined) => {
+		setStatusFilter(value);
+	};
 
 	const tabItems = [
 		{
 			key: 'invite',
 			label: `Invite Requests (${totalInviteRequestsCount})`,
 			children: (
-				<div>
-					{/* Search and Filter Controls */}
-					<div className="mb-4 flex gap-3 items-center">
-						<Input
-							prefix={<SearchOutlined />}
-							placeholder="Search by user name..."
-							value={searchText}
-							onChange={(e) => setSearchText(e.target.value)}
-							className="flex-1"
-							allowClear
-						/>
-						<Select
-							value={statusFilter}
-							onChange={setStatusFilter}
-							style={{ width: 140 }}
-							placeholder="All Status"
-							allowClear
-							options={[
-								{ label: 'Pending', value: 'Pending' },
-								{ label: 'Approved', value: 'Approved' },
-								{ label: 'Rejected', value: 'Rejected' },
-							]}
-						/>
-						<Button
-							icon={<ReloadOutlined />}
-							onClick={handleRefresh}
-							loading={loading}
-							title="Refresh data"
-						>
-							Refresh
-						</Button>
-					</div>
-
-					<Table
-						dataSource={inviteRequests}
-						columns={inviteColumns}
-						rowKey="id"
-						loading={loading}
-						pagination={TablePagination}
-						locale={{
-							emptyText: 'No invite requests found',
-						}}
-					/>
-				</div>
+				<RequestsTab
+					requestType="invite"
+					dataSource={inviteRequests}
+					loading={loading}
+					searchText={searchText}
+					statusFilter={statusFilter}
+					onSearchChange={handleSearchChange}
+					onStatusFilterChange={handleStatusFilterChange}
+					onRefresh={handleRefresh}
+					getPopconfirmProps={getPopconfirmProps}
+				/>
 			),
 		},
 		{
 			key: 'join',
 			label: `Join Requests (${totalJoinRequestsCount})`,
 			children: (
-				<div>
-					{/* Search and Filter Controls */}
-					<div className="mb-4 flex gap-3 items-center">
-						<Input
-							prefix={<SearchOutlined />}
-							placeholder="Search by user name..."
-							value={searchText}
-							onChange={(e) => setSearchText(e.target.value)}
-							className="flex-1"
-							allowClear
-						/>
-						<Select
-							value={statusFilter}
-							onChange={setStatusFilter}
-							style={{ width: 140 }}
-							placeholder="All Status"
-							allowClear
-							options={[
-								{ label: 'Pending', value: 'Pending' },
-								{ label: 'Approved', value: 'Approved' },
-								{ label: 'Rejected', value: 'Rejected' },
-							]}
-						/>
-						<Button
-							icon={<ReloadOutlined />}
-							onClick={handleRefresh}
-							loading={loading}
-							title="Refresh data"
-						>
-							Refresh
-						</Button>
-					</div>
-
-					<Table
-						dataSource={joinRequests}
-						columns={joinColumns}
-						rowKey="id"
-						loading={loading}
-						pagination={TablePagination}
-						locale={{
-							emptyText: 'No join requests found',
-						}}
-					/>
-				</div>
+				<RequestsTab
+					requestType="join"
+					dataSource={joinRequests}
+					loading={loading}
+					searchText={searchText}
+					statusFilter={statusFilter}
+					onSearchChange={handleSearchChange}
+					onStatusFilterChange={handleStatusFilterChange}
+					onRefresh={handleRefresh}
+					getPopconfirmProps={getPopconfirmProps}
+				/>
 			),
 		},
 	];
