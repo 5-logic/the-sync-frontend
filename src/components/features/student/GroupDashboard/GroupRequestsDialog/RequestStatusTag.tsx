@@ -5,17 +5,11 @@ interface RequestStatusTagProps {
 }
 
 export default function RequestStatusTag({ status }: RequestStatusTagProps) {
-	return (
-		<Tag
-			color={
-				status === 'Pending'
-					? 'orange'
-					: status === 'Approved'
-						? 'green'
-						: 'red'
-			}
-		>
-			{status}
-		</Tag>
-	);
+	const getStatusColor = (status: string): string => {
+		if (status === 'Pending') return 'orange';
+		if (status === 'Approved') return 'green';
+		return 'red';
+	};
+
+	return <Tag color={getStatusColor(status)}>{status}</Tag>;
 }
