@@ -2,6 +2,7 @@ import { UserAddOutlined } from '@ant-design/icons';
 import { Typography } from 'antd';
 
 import RequestsButton from '@/components/features/student/GroupDashboard/RequestsButton';
+import { useSessionData } from '@/hooks/auth/useAuth';
 import { GroupDashboard } from '@/schemas/group';
 
 const { Title, Paragraph } = Typography;
@@ -13,6 +14,11 @@ interface GroupDashboardHeaderProps {
 export default function GroupDashboardHeader({
 	group,
 }: GroupDashboardHeaderProps) {
+	const { session } = useSessionData();
+
+	// Check if current user is the leader
+	const isCurrentUserLeader = session?.user?.id === group.leader.userId;
+
 	return (
 		<div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
 			<div>
@@ -26,10 +32,12 @@ export default function GroupDashboardHeader({
 					View your group information, members, and thesis progress
 				</Paragraph>
 			</div>
-			<RequestsButton group={group}>
-				<UserAddOutlined />
-				Request Invite/Join Group
-			</RequestsButton>
+			{isCurrentUserLeader && (
+				<RequestsButton group={group}>
+					<UserAddOutlined />
+					Request Invite/Join Group
+				</RequestsButton>
+			)}
 		</div>
 	);
 }
