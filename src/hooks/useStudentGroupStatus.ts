@@ -32,6 +32,9 @@ export const useStudentGroupStatus = () => {
 	return {
 		hasGroup,
 		group,
+		// Using || instead of ?? is intentional here - we want to show loading
+		// when either the store is loading OR when not yet initialized
+		// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
 		loading: loading || !isInitialized,
 		redirectToAppropriateScreen,
 	};
