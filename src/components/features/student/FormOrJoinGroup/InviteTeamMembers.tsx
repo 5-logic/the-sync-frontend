@@ -25,16 +25,16 @@ export default function InviteTeamMembers({
 	const [searchResults, setSearchResults] = useState<Student[]>([]);
 
 	// Fetch students from store
-	const { students, fetchStudents } = useStudentStore();
+	const { students, fetchStudentsWithoutGroupAuto } = useStudentStore();
 
 	// Get current user session to exclude self from search
 	const { session } = useSessionData();
 	const currentUserId = session?.user?.id;
 
-	// Fetch students on component mount
+	// Fetch students without group on component mount
 	useEffect(() => {
-		fetchStudents();
-	}, [fetchStudents]);
+		fetchStudentsWithoutGroupAuto();
+	}, [fetchStudentsWithoutGroupAuto]);
 
 	// Filter students based on search text
 	useEffect(() => {
