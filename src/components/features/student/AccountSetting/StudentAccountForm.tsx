@@ -76,7 +76,7 @@ const buildSkillTreeData = (skillSets: SkillSet[]) =>
 			set.skills?.map((skill) => ({
 				value: skill.id,
 				title: skill.name,
-			})) || [],
+			})) ?? [],
 	}));
 
 const StudentAccountForm: React.FC = () => {
