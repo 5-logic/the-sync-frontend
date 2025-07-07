@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 
 import { FormLabel } from '@/components/common/FormLabel';
 import { useSessionData } from '@/hooks/auth/useAuth';
+import { USER_ROLES } from '@/lib/auth/config/auth-constants';
 import { showNotification } from '@/lib/utils/notification';
 import { PasswordChange } from '@/schemas/_common';
 import { useLecturerStore, useStudentStore } from '@/store';
@@ -21,7 +22,7 @@ export default function ChangePasswordForm() {
 	const lecturerStore = useLecturerStore();
 
 	// Determine which store to use based on user role
-	const isStudent = userRole === 'STUDENT';
+	const isStudent = userRole === USER_ROLES.STUDENT;
 
 	const { changePassword, changingPassword, clearError } = isStudent
 		? studentStore
