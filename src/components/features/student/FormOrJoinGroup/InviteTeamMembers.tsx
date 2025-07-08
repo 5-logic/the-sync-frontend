@@ -7,10 +7,13 @@ import { FormLabel } from '@/components/common/FormLabel';
 import { useSessionData } from '@/hooks/auth/useAuth';
 import { TEAM_CONFIG, TEAM_STYLES } from '@/lib/constants';
 import { showNotification } from '@/lib/utils/notification';
+import {
+	createRemoveMemberHandler,
+	createStudentAutoCompleteOptions,
+	createStudentSelectHandler,
+} from '@/lib/utils/studentInviteHelpers';
 import type { Student } from '@/schemas/student';
 import { useStudentStore } from '@/store';
-
-const { Text } = Typography;
 
 interface InviteTeamMembersProps {
 	readonly members: Student[];
@@ -85,52 +88,13 @@ export default function InviteTeamMembers({
 
 	// Build options for AutoComplete
 	const studentOptions = useMemo(() => {
-		if (!searchText.trim()) return [];
-
-		return searchResults
-			.filter((student) => {
-				// Exclude current logged-in student
-				if (currentUserId && student.id === currentUserId) {
-					return false;
-				}
-				// Exclude users from excludeUserIds list
-				if (excludeUserIds.includes(student.id)) {
-					return false;
-				}
-				return true;
-			})
-			.map((student) => {
-				const isAlreadyAdded = members.some(
-					(member) => member.id === student.id,
-				);
-				return {
-					value: student.id,
-					label: (
-						<div style={{ opacity: isAlreadyAdded ? 0.6 : 1 }}>
-							<div
-								style={{
-									fontWeight: 500,
-									display: 'flex',
-									justifyContent: 'space-between',
-									alignItems: 'center',
-								}}
-							>
-								<span>{student.fullName}</span>
-								{isAlreadyAdded && (
-									<Text type="secondary" style={{ fontSize: '12px' }}>
-										(Added)
-									</Text>
-								)}
-							</div>
-							<Text type="secondary" style={{ fontSize: '12px' }}>
-								{student.email} • {student.studentCode}
-							</Text>
-						</div>
-					),
-					disabled: isAlreadyAdded,
-					student: student,
-				};
-			});
+		return createStudentAutoCompleteOptions(
+			searchResults,
+			currentUserId,
+			members,
+			searchText,
+			excludeUserIds,
+		);
 	}, [searchResults, currentUserId, members, searchText, excludeUserIds]);
 
 	const handleAddMember = useCallback(
@@ -229,19 +193,20 @@ export default function InviteTeamMembers({
 
 	const handleStudentSelect = useCallback(
 		(value: string) => {
-			const selectedStudent = students.find((s) => s.id === value);
-			if (selectedStudent) {
-				handleAddMember(selectedStudent);
-			}
+			const handler = createStudentSelectHandler(students, handleAddMember);
+			handler(value);
 		},
 		[students, handleAddMember],
 	);
 
 	const handleRemoveMember = useCallback(
 		(memberId: string) => {
-			const updatedMembers = members.filter((m) => m.id !== memberId);
-			onMembersChange(updatedMembers);
-			showNotification.success('Member removed successfully!');
+			const handler = createRemoveMemberHandler(
+				members,
+				onMembersChange,
+				showNotification,
+			);
+			handler(memberId);
 		},
 		[members, onMembersChange],
 	);
