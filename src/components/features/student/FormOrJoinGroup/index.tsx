@@ -1,6 +1,6 @@
 'use client';
 
-import { Alert, Card, Col, Row, Space, Typography } from 'antd';
+import { Card, Col, Row, Space, Typography } from 'antd';
 import { useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
@@ -19,10 +19,6 @@ const SUGGESTED_GROUPS_COUNT = 3;
 const TAB_KEYS = {
 	JOIN: 'join',
 	CREATE: 'create',
-} as const;
-
-const ALERT_STYLES = {
-	borderRadius: 8,
 } as const;
 
 const CARD_STYLES = {
@@ -117,13 +113,6 @@ export default function FormOrJoinGroup() {
 					<InviteRequestButton />
 				</Col>
 			</Row>
-
-			<Alert
-				message="You are already part of a group. Visit Group Dashboard to view details."
-				type="info"
-				showIcon
-				style={ALERT_STYLES}
-			/>
 
 			<Card style={CARD_STYLES}>
 				<Space direction="vertical" size="large" style={{ width: '100%' }}>
