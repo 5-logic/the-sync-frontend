@@ -43,7 +43,9 @@ export default function GroupInformationCard({ group }: Readonly<Props>) {
 					</Avatar.Group>
 				</Space>
 			) : (
-				<Button type="primary">Join or Create a Group</Button>
+				<Button type="primary" block>
+					Join or Create a Group
+				</Button>
 			)}
 		</Card>
 	);

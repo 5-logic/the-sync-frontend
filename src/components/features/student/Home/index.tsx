@@ -35,6 +35,8 @@ export default function StudentHomePage() {
 				<Col xs={24} md={8} style={{ display: 'flex' }}>
 					<div style={{ flex: 1 }}>
 						<GroupInformationCard group={studentGroup} />
+						{/* test with no group */}
+						{/* <GroupInformationCard group={null} /> */}
 					</div>
 				</Col>
 				<Col xs={24} md={8} style={{ display: 'flex' }}>
@@ -45,6 +47,8 @@ export default function StudentHomePage() {
 				<Col xs={24} md={8} style={{ display: 'flex' }}>
 					<div style={{ flex: 1 }}>
 						<ThesisStatusCard group={studentGroup} />
+						{/* test with no group */}
+						{/* <ThesisStatusCard group={null} /> */}
 					</div>
 				</Col>
 			</Row>
