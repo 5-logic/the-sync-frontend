@@ -7,9 +7,9 @@ import Dragger from 'antd/es/upload/Dragger';
 import { UploadFile } from 'antd/es/upload/interface';
 
 import { DownloadTemplateButton } from '@/components/common/DownloadTemplateButton';
-import { ChecklistItem } from '@/components/features/lecturer/CreateChecklist/ImportChecklistExcel';
 import { mockChecklistItems } from '@/data/ChecklistItems';
 import { showNotification } from '@/lib/utils/notification';
+import { ChecklistItem } from '@/schemas/checklist';
 
 interface Props {
 	fileList: UploadFile[];
@@ -37,6 +37,10 @@ const ChecklistDragger = ({
 				name,
 				description: description ?? '',
 				isRequired,
+				acceptance: 'NotAvailable' as const,
+				checklistId: '', // or provide a real checklistId if available
+				createdAt: new Date(),
+				updatedAt: new Date(),
 			}),
 		);
 
