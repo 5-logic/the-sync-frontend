@@ -1,14 +1,14 @@
 import { Button, Col, Form, Row } from 'antd';
-import { useCallback, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { memo, useCallback, useState } from 'react';
 
+import CreateGroupInviteMembersSimple from '@/components/features/student/FormOrJoinGroup/CreateGroupInviteMembersSimple';
+import GroupFormFields from '@/components/features/student/FormOrJoinGroup/GroupFormFields';
 import groupService, { type GroupCreate } from '@/lib/services/groups.service';
 import requestService from '@/lib/services/requests.service';
 import { showNotification } from '@/lib/utils/notification';
 import type { Student } from '@/schemas/student';
 import { useGroupDashboardStore } from '@/store/useGroupDashboardStore';
-
-import GroupFormFields from './GroupFormFields';
-import InviteTeamMembers from './InviteTeamMembers';
 
 interface CreateGroupFormValues {
 	name: string;
@@ -17,11 +17,14 @@ interface CreateGroupFormValues {
 	responsibility?: string[];
 }
 
-export default function CreateGroupForm() {
+function CreateGroupForm() {
+	const router = useRouter();
 	const [form] = Form.useForm<CreateGroupFormValues>();
 	const [members, setMembers] = useState<Student[]>([]);
 	const [loading, setLoading] = useState(false);
-	const { refreshGroup } = useGroupDashboardStore();
+
+	// Use simple, stable selector to prevent re-renders
+	const refreshGroup = useGroupDashboardStore((state) => state.refreshGroup);
 
 	const handleMembersChange = useCallback((newMembers: Student[]) => {
 		setMembers(newMembers);
@@ -85,8 +88,18 @@ export default function CreateGroupForm() {
 				form.resetFields();
 				setMembers([]);
 
-				// Fetch updated group status to trigger redirect
+				// Fetch updated group status - the GroupStatusGuard will handle redirect
 				await refreshGroup();
+
+				// Add a small delay to ensure API has processed the group creation
+				await new Promise((resolve) => setTimeout(resolve, 1000));
+				await refreshGroup();
+
+				// Since the GroupStatusGuard will handle redirect when group is available,
+				// we don't need to check group state here. Just redirect after delay.
+				setTimeout(() => {
+					router.push('/student/group-dashboard');
+				}, 500);
 			} catch (error) {
 				console.error('Error creating group:', error);
 				showNotification.error(
@@ -96,7 +109,7 @@ export default function CreateGroupForm() {
 				setLoading(false);
 			}
 		},
-		[members, form, refreshGroup],
+		[members, form, refreshGroup, router], // Removed group dependency since not used in callback
 	);
 
 	return (
@@ -108,7 +121,8 @@ export default function CreateGroupForm() {
 		>
 			<GroupFormFields />
 
-			<InviteTeamMembers
+			{/* Using simple component for create group */}
+			<CreateGroupInviteMembersSimple
 				members={members}
 				onMembersChange={handleMembersChange}
 			/>
@@ -123,9 +137,6 @@ export default function CreateGroupForm() {
 							minWidth: 120,
 							fontSize: 14,
 							height: 40,
-							whiteSpace: 'nowrap',
-							overflow: 'hidden',
-							textOverflow: 'ellipsis',
 						}}
 					>
 						Create Group
@@ -135,3 +146,5 @@ export default function CreateGroupForm() {
 		</Form>
 	);
 }
+
+export default memo(CreateGroupForm);
