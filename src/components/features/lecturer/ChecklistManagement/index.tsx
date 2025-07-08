@@ -21,13 +21,6 @@ export default function ChecklistManagement() {
 		mockChecklistItems.filter((item) => item.checklistId === checklistId)
 			.length;
 
-	const checklistExists =
-		semester !== '' &&
-		milestone !== '' &&
-		mockChecklists.some(
-			(cl) => cl.semester === semester && cl.milestone === milestone,
-		);
-
 	const handleCreateChecklist = () => {
 		if (!semester || !milestone) {
 			showNotification.warning(
@@ -81,7 +74,6 @@ export default function ChecklistManagement() {
 				milestone={milestone}
 				onMilestoneChange={setMilestone}
 				onCreate={handleCreateChecklist}
-				disabledCreate={!semester || !milestone || checklistExists}
 				onSearchChange={setSearchValue}
 			/>
 
