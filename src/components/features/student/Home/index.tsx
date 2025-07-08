@@ -2,11 +2,10 @@
 
 import { Col, Row, Space, Typography } from 'antd';
 
+import GroupInformationCard from '@/components/features/student/Home/GroupInformationCard';
+import ProjectMilestonesCard from '@/components/features/student/Home/ProjectMilestonesCard';
+import ThesisStatusCard from '@/components/features/student/Home/ThesisStatusCard';
 import { studentGroup } from '@/data/studentGroup';
-
-import GroupInformationCard from './GroupInformationCard';
-import ProjectMilestonesCard from './ProjectMilestonesCard';
-import ThesisStatusCard from './ThesisStatusCard';
 
 export default function StudentHomePage() {
 	const { Title, Paragraph, Text } = Typography;
