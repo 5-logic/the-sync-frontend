@@ -42,20 +42,18 @@ export default function GroupRequestsDialog({
 	// Fetch requests when dialog opens
 	useEffect(() => {
 		if (visible && isCurrentUserLeader) {
-			fetchGroupRequests(group.id);
+			// Force refresh when dialog opens to get latest data
+			fetchGroupRequests(group.id, true);
 		}
 		return () => {
 			if (!visible) {
 				clearRequests();
 			}
 		};
-	}, [
-		visible,
-		group.id,
-		isCurrentUserLeader,
-		fetchGroupRequests,
-		clearRequests,
-	]);
+		// ESLint is disabled here because including store functions in dependencies
+		// would cause infinite re-renders as Zustand functions get new references
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [visible, group.id, isCurrentUserLeader]);
 
 	// Count pending requests by type (for tab labels - always show pending count)
 	const totalInviteRequestsCount = useMemo(() => {
@@ -141,6 +139,7 @@ export default function GroupRequestsDialog({
 	};
 
 	const handleRefresh = () => {
+		console.log('Manual refresh triggered for group requests');
 		fetchGroupRequests(group.id, true); // Force refresh
 	};
 
