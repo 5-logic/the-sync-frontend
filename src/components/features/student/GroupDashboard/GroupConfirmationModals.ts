@@ -58,18 +58,16 @@ export const GroupConfirmationModals = {
 		let message = 'Are you sure you want to delete this group?';
 		let note =
 			'This action cannot be undone. All members will be notified via email about the group deletion.';
-		let noteType: 'info' | 'warning' | 'danger' = 'danger';
+		const noteType: 'info' | 'warning' | 'danger' = 'danger';
 
 		if (!canModifyGroup) {
 			message = 'Cannot delete group at this time.';
 			note =
 				'Group modifications are only allowed during PREPARING semester status.';
-			noteType = 'danger';
 		} else if (hasThesisOrSubmissions) {
 			message = 'Cannot delete group with assigned thesis or submissions.';
 			note =
 				'Groups with assigned thesis, submitted work, or milestone submissions cannot be deleted.';
-			noteType = 'danger';
 		}
 
 		return ConfirmationModal.show({
