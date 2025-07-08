@@ -13,30 +13,39 @@ export default function ThesisCard({ thesis }: Props) {
 	return (
 		<Card
 			title={thesis.englishName}
-			extra={<Button>AI Suggest</Button>}
 			headStyle={{ minHeight: 64 }}
-			style={{ height: '100%' }}
+			style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
 		>
-			<Space direction="vertical" size="middle" style={{ width: '100%' }}>
-				<Typography.Text type="secondary">{thesis.description}</Typography.Text>
-
-				<Space direction="vertical">
-					<Typography.Text strong>
-						<UserOutlined /> {thesis.supervisor?.name}
+			<div style={{ flexGrow: 1 }}>
+				<Space direction="vertical" size="middle" style={{ width: '100%' }}>
+					<Typography.Text type="secondary">
+						{thesis.description}
 					</Typography.Text>
-					<Tag>{thesis.domain}</Tag>
-					<Space wrap>
-						{thesis.skills.map((skill) => (
-							<Tag key={skill}>{skill}</Tag>
-						))}
+
+					<Space direction="vertical">
+						<Typography.Text strong>
+							<UserOutlined /> {thesis.supervisor?.name}
+						</Typography.Text>
+						<Tag>{thesis.domain}</Tag>
+						<Space wrap>
+							{thesis.skills.map((skill) => (
+								<Tag key={skill}>{skill}</Tag>
+							))}
+						</Space>
 					</Space>
 				</Space>
+			</div>
 
-				<Space>
-					<Button type="primary">View Details</Button>
-					<Button disabled>Register</Button>
-				</Space>
-			</Space>
+			<div
+				style={{
+					marginTop: 'auto',
+					display: 'flex',
+					justifyContent: 'space-between',
+				}}
+			>
+				<Button type="primary">View Details</Button>
+				<Button disabled>Register</Button>
+			</div>
 		</Card>
 	);
 }

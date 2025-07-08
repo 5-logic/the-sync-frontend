@@ -108,7 +108,7 @@ export const mockTheses: ExtendedThesis[] = [
 		description: 'Building a scalable IoT platform.',
 		domain: 'IoT',
 		status: 'Rejected',
-		isPublish: false,
+		isPublish: true,
 		groupId: 'g3',
 		lecturerId: 'lect3',
 		createdAt: new Date('2024-01-05'),

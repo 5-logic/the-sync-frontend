@@ -1,6 +1,6 @@
 'use client';
 
-import { Col, Empty, Pagination, Row, Tabs } from 'antd';
+import { Button, Col, Empty, Pagination, Row, Tabs } from 'antd';
 import { useState } from 'react';
 
 import { mockTheses } from '@/data/thesis';
@@ -19,7 +19,11 @@ export default function ViewListThesis() {
 
 	return (
 		<div className="px-6 py-4">
-			<h2 className="text-2xl font-semibold mb-4">List Thesis</h2>
+			<div className="flex justify-between items-center mb-4">
+				<h2 className="text-2xl font-semibold">List Thesis</h2>
+				<Button type="primary">AI Suggest</Button>
+			</div>
+
 			<Tabs
 				defaultActiveKey="1"
 				items={[
