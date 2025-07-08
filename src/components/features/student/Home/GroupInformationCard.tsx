@@ -9,7 +9,7 @@ interface Props {
 	group: FullMockGroup | null;
 }
 
-export default function GroupInformationCard({ group }: Props) {
+export default function GroupInformationCard({ group }: Readonly<Props>) {
 	return (
 		<Card
 			style={{ height: '100%' }}
@@ -29,13 +29,13 @@ export default function GroupInformationCard({ group }: Props) {
 
 					<Typography.Text strong>Supervisor:</Typography.Text>
 					<Typography.Text>
-						{group.supervisors.join(', ') || 'Unassigned'}
+						{group.supervisors.join(', ') ?? 'Unassigned'}
 					</Typography.Text>
 
 					<Typography.Text strong>Members:</Typography.Text>
 					<Avatar.Group>
-						{group.members.slice(0, 4).map((member, index) => (
-							<Avatar key={index} icon={<UserOutlined />} alt={member} />
+						{group.members.slice(0, 4).map((member) => (
+							<Avatar key={member} icon={<UserOutlined />} alt={member} />
 						))}
 						{group.members.length > 4 && (
 							<Avatar>+{group.members.length - 4}</Avatar>

@@ -9,7 +9,7 @@ interface Props {
 	group: FullMockGroup | null;
 }
 
-export default function ProjectMilestonesCard({ group }: Props) {
+export default function ProjectMilestonesCard({ group }: Readonly<Props>) {
 	const milestones = group?.milestones ?? [];
 
 	return (
@@ -22,20 +22,20 @@ export default function ProjectMilestonesCard({ group }: Props) {
 			}
 		>
 			<Timeline mode="left">
-				{milestones.map((item, idx) => (
-					<Timeline.Item
-						key={idx}
-						color={
-							item.includes('Completed')
-								? 'green'
-								: item.includes('In Progress')
-									? 'blue'
-									: 'gray'
-						}
-					>
-						{item}
-					</Timeline.Item>
-				))}
+				{milestones.map((item) => {
+					let color: 'green' | 'blue' | 'gray' = 'gray';
+					if (item.includes('Completed')) {
+						color = 'green';
+					} else if (item.includes('In Progress')) {
+						color = 'blue';
+					}
+
+					return (
+						<Timeline.Item key={item} color={color}>
+							{item}
+						</Timeline.Item>
+					);
+				})}
 			</Timeline>
 		</Card>
 	);

@@ -9,7 +9,7 @@ interface Props {
 	group: FullMockGroup | null;
 }
 
-export default function ThesisStatusCard({ group }: Props) {
+export default function ThesisStatusCard({ group }: Readonly<Props>) {
 	return (
 		<Card
 			style={{ height: '100%' }}
