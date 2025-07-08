@@ -1,7 +1,7 @@
 'use client';
 
 import { UserOutlined } from '@ant-design/icons';
-import { Button, Card, Space, Tag, Typography } from 'antd';
+import { Avatar, Button, Card, Space, Tag, Typography } from 'antd';
 
 import { ExtendedThesis } from '@/data/thesis';
 
@@ -12,39 +12,67 @@ interface Props {
 export default function ThesisCard({ thesis }: Props) {
 	return (
 		<Card
-			title={thesis.englishName}
-			headStyle={{ minHeight: 64 }}
-			style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
+			title={null}
+			style={{
+				height: '100%',
+				display: 'flex',
+				flexDirection: 'column',
+				borderRadius: 12,
+			}}
+			bodyStyle={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}
 		>
-			<div style={{ flexGrow: 1 }}>
-				<Space direction="vertical" size="middle" style={{ width: '100%' }}>
-					<Typography.Text type="secondary">
-						{thesis.description}
-					</Typography.Text>
+			<Space
+				direction="vertical"
+				size="middle"
+				style={{ width: '100%', flexGrow: 1 }}
+			>
+				<Typography.Title level={5} style={{ marginBottom: 0 }}>
+					{thesis.englishName}
+				</Typography.Title>
 
-					<Space direction="vertical">
-						<Typography.Text strong>
-							<UserOutlined /> {thesis.supervisor?.name}
-						</Typography.Text>
-						<Tag>{thesis.domain}</Tag>
-						<Space wrap>
-							{thesis.skills.map((skill) => (
-								<Tag key={skill}>{skill}</Tag>
-							))}
-						</Space>
-					</Space>
+				<Typography.Text type="secondary">{thesis.description}</Typography.Text>
+
+				<Space align="center">
+					<Avatar size="small" icon={<UserOutlined />} />
+					<Typography.Text strong>{thesis.supervisor?.name}</Typography.Text>
 				</Space>
-			</div>
+
+				{thesis.domain && (
+					<Tag
+						bordered
+						style={{ background: '#f5f5f5', borderColor: '#d9d9d9' }}
+					>
+						{thesis.domain}
+					</Tag>
+				)}
+
+				<Space wrap>
+					{thesis.skills.map((skill) => (
+						<Tag
+							key={skill}
+							color="processing"
+							style={{ borderRadius: 6, border: '1px solid #91d5ff' }}
+						>
+							{skill}
+						</Tag>
+					))}
+				</Space>
+			</Space>
 
 			<div
 				style={{
-					marginTop: 'auto',
+					// marginTop: 'auto',
 					display: 'flex',
-					justifyContent: 'space-between',
+					gap: 8,
+					marginTop: 24,
 				}}
 			>
-				<Button type="primary">View Details</Button>
-				<Button disabled>Register</Button>
+				<Button type="primary" block>
+					View Details
+				</Button>
+				<Button disabled block>
+					Register
+				</Button>
 			</div>
 		</Card>
 	);
