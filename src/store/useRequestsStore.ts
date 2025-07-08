@@ -38,20 +38,31 @@ export const useRequestsStore = create<RequestsState>((set, get) => ({
 		const cacheKey = `group_${groupId}`;
 		const cachedData = cacheUtils.get<GroupRequest[]>(ENTITY_NAME, cacheKey);
 
+		console.log('fetchGroupRequests:', {
+			groupId,
+			forceRefresh,
+			hasCachedData: !!cachedData,
+			cachedDataLength: cachedData?.length || 0,
+		});
+
 		if (!forceRefresh && cachedData) {
+			console.log('Using cached data for requests');
 			set({ requests: cachedData, loading: false, error: null });
 			return;
 		}
 
 		// Check if should fetch
 		if (!forceRefresh && !cacheUtils.shouldFetch(ENTITY_NAME, forceRefresh)) {
+			console.log('Skipping fetch due to cache policy');
 			return;
 		}
 
+		console.log('Fetching fresh data from API...');
 		set({ loading: true, error: null });
 		try {
 			const response = await requestService.getGroupRequests(groupId);
 			if (response.success) {
+				console.log('API response:', { dataLength: response.data.length });
 				// Update cache
 				cacheUtils.set(ENTITY_NAME, cacheKey, response.data);
 				set({
