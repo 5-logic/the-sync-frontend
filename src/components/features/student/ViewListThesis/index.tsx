@@ -1,8 +1,9 @@
 'use client';
 
-import { Button, Col, Empty, Pagination, Row, Tabs } from 'antd';
+import { Button, Col, Empty, Row, Space, Tabs, Typography } from 'antd';
 import { useState } from 'react';
 
+import { ListPagination } from '@/components/common/ListPagination';
 import ThesisCard from '@/components/features/student/ViewListThesis/ThesisCard';
 import { mockTheses } from '@/data/thesis';
 
@@ -16,11 +17,19 @@ export default function ViewListThesis() {
 		currentPage * pageSize,
 	);
 
+	const { Title, Paragraph } = Typography;
+
 	return (
-		<div className="px-6 py-4">
-			<div className="flex justify-between items-center mb-4">
-				<h2 className="text-2xl font-semibold">List Thesis</h2>
+		<Space direction="vertical" size="large" style={{ width: '100%' }}>
+			<div>
+				<Title level={2} style={{ marginBottom: '4px' }}>
+					List Thesis
+				</Title>
 				<Button type="primary">AI Suggest</Button>
+				<Paragraph type="secondary" style={{ marginBottom: 0 }}>
+					Browse available thesis topics proposed and published by lecturers.
+					You can view details and register once your group is ready.
+				</Paragraph>
 			</div>
 
 			<Tabs
@@ -47,15 +56,13 @@ export default function ViewListThesis() {
 					},
 				]}
 			/>
-			<div className="flex justify-center mt-6">
-				<Pagination
-					current={currentPage}
-					pageSize={pageSize}
-					total={publishedTheses.length}
-					onChange={(page) => setCurrentPage(page)}
-					showSizeChanger={false}
-				/>
-			</div>
-		</div>
+			<ListPagination
+				current={currentPage}
+				pageSize={pageSize}
+				total={publishedTheses.length}
+				onChange={(page) => setCurrentPage(page)}
+				itemName="thesis"
+			/>
+		</Space>
 	);
 }
