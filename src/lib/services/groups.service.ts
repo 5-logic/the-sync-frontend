@@ -49,6 +49,20 @@ class GroupService {
 		);
 		return response.data;
 	}
+
+	async leaveGroup(groupId: string): Promise<ApiResponse<void>> {
+		const response = await httpClient.put<ApiResponse<void>>(
+			`${this.baseUrl}/${groupId}/leave`,
+		);
+		return response.data;
+	}
+
+	async deleteGroup(groupId: string): Promise<ApiResponse<void>> {
+		const response = await httpClient.delete<ApiResponse<void>>(
+			`${this.baseUrl}/${groupId}`,
+		);
+		return response.data;
+	}
 }
 
 const groupService = new GroupService();
