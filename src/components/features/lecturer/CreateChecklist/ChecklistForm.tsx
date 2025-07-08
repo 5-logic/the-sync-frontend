@@ -21,7 +21,7 @@ interface ChecklistItemTemp extends ChecklistItemCreate {
 type Mode = 'import' | 'manual';
 
 interface UnifiedChecklistFormProps {
-	mode: Mode;
+	readonly mode: Mode;
 }
 
 export default function UnifiedChecklistForm({
