@@ -2,12 +2,45 @@
 
 import { UserOutlined } from '@ant-design/icons';
 import { Avatar, Button, Form, Input, Radio, Space } from 'antd';
-import { useEffect } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 
 import { FormLabel } from '@/components/common/FormLabel';
 import { useOptimizedSession } from '@/hooks/auth/useAuth';
 import { LecturerUpdate } from '@/schemas/lecturer';
 import { useLecturerStore } from '@/store';
+
+// Types
+interface FormValues {
+	fullName: string;
+	phoneNumber: string;
+	gender: string;
+	email: string;
+}
+
+// Constants moved outside component to prevent recreation
+const PHONE_PATTERN =
+	/^(?:\+84|0084|84|0)(?:3[2-9]|5[2689]|7[06-9]|8[1-5]|9[0-4|6-9])\d{7}$/;
+
+const VALIDATION_RULES = {
+	fullName: [
+		{ required: true, message: 'Please enter Full Name' },
+		{ min: 2, message: 'Name must be at least 2 characters' },
+		{ max: 100, message: 'Name is too long' },
+	],
+	phoneNumber: [
+		{ required: true, message: 'Please enter Phone Number' },
+		{
+			pattern: PHONE_PATTERN,
+			message: 'Please enter a valid Vietnamese phone number',
+		},
+	],
+	gender: [{ required: true, message: 'Please select gender' }],
+};
+
+// Styling constants
+const AVATAR_SIZE = 80;
+const FORM_SPACING = 16;
+const BUTTON_GAP = 8;
 
 export default function PersonalInfoForm() {
 	const [form] = Form.useForm();
@@ -16,6 +49,25 @@ export default function PersonalInfoForm() {
 	// Use Lecturer Store for update profile
 	const { updateProfile, updatingProfile, clearError } = useLecturerStore();
 
+	// Memoize form data to prevent unnecessary re-renders
+	const formData = useMemo((): FormValues => {
+		if (!isAuthenticated || !session?.user) {
+			return {
+				fullName: '',
+				phoneNumber: '',
+				email: '',
+				gender: '',
+			};
+		}
+
+		return {
+			fullName: session.user.fullName ?? '',
+			phoneNumber: session.user.phoneNumber ?? '',
+			email: session.user.email ?? '',
+			gender: session.user.gender ?? '',
+		};
+	}, [isAuthenticated, session?.user]);
+
 	// Clear errors when component mounts
 	useEffect(() => {
 		clearError();
@@ -23,53 +75,43 @@ export default function PersonalInfoForm() {
 
 	// Set form values from session data
 	useEffect(() => {
-		if (isAuthenticated && session?.user) {
-			form.setFieldsValue({
-				fullName: session.user.fullName || '',
-				phoneNumber: session.user.phoneNumber || '',
-				email: session.user.email || '',
-				gender: session.user.gender || '',
-			});
-		}
-	}, [session, isAuthenticated, form]);
+		form.setFieldsValue(formData);
+	}, [form, formData]);
 
-	const handleFinish = async (values: {
-		fullName: string;
-		phoneNumber: string;
-		gender: string;
-	}) => {
-		// Clear any previous errors
-		clearError();
+	const handleFinish = useCallback(
+		async (values: Pick<FormValues, 'fullName' | 'phoneNumber' | 'gender'>) => {
+			// Clear any previous errors
+			clearError();
 
-		// Prepare update profile data (only the fields that can be updated)
-		const profileUpdateData: LecturerUpdate = {
-			fullName: values.fullName.trim(),
-			phoneNumber: values.phoneNumber.trim(),
-			gender: values.gender as 'Male' | 'Female',
-		};
+			// Validate input data
+			if (!values.fullName?.trim()) {
+				return;
+			}
 
-		// Use store method to update profile
-		const success = await updateProfile(profileUpdateData);
+			// Prepare update profile data (only the fields that can be updated)
+			const profileUpdateData: LecturerUpdate = {
+				fullName: values.fullName.trim(),
+				phoneNumber: values.phoneNumber.trim(),
+				gender: values.gender as 'Male' | 'Female',
+			};
 
-		if (success) {
-			// Success notification is handled in store
-			// Form will keep current values as they are now updated
-		}
-		// Error notification is handled in store
-	};
+			// Use store method to update profile
+			const success = await updateProfile(profileUpdateData);
 
-	const handleCancel = () => {
+			if (success) {
+				// Success notification is handled in store
+				// Form will keep current values as they are now updated
+			}
+			// Error notification is handled in store
+		},
+		[clearError, updateProfile],
+	);
+
+	const handleCancel = useCallback(() => {
 		clearError();
 		// Reset form to original values from session
-		if (isAuthenticated && session?.user) {
-			form.setFieldsValue({
-				fullName: session.user.fullName || '',
-				phoneNumber: session.user.phoneNumber || '',
-				email: session.user.email || '',
-				gender: session.user.gender || '',
-			});
-		}
-	};
+		form.setFieldsValue(formData);
+	}, [clearError, form, formData]);
 
 	return (
 		<Form
@@ -81,19 +123,15 @@ export default function PersonalInfoForm() {
 			<Space
 				direction="vertical"
 				align="center"
-				style={{ width: '100%', marginBottom: 16 }}
+				style={{ width: '100%', marginBottom: FORM_SPACING }}
 			>
-				<Avatar size={80} icon={<UserOutlined />} />
+				<Avatar size={AVATAR_SIZE} icon={<UserOutlined />} />
 			</Space>
 
 			<Form.Item
 				name="fullName"
 				label={<FormLabel text="Full Name" isBold />}
-				rules={[
-					{ required: true, message: 'Please enter Full Name' },
-					{ min: 2, message: 'Name must be at least 2 characters' },
-					{ max: 100, message: 'Name is too long' },
-				]}
+				rules={VALIDATION_RULES.fullName}
 			>
 				<Input disabled={updatingProfile} />
 			</Form.Item>
@@ -101,14 +139,7 @@ export default function PersonalInfoForm() {
 			<Form.Item
 				name="phoneNumber"
 				label={<FormLabel text="Phone Number" isBold />}
-				rules={[
-					{ required: true, message: 'Please enter Phone Number' },
-					{
-						pattern:
-							/^(?:\+84|0084|84|0)(?:3[2-9]|5[2689]|7[06-9]|8[1-5]|9[0-4|6-9])\d{7}$/,
-						message: 'Please enter a valid Vietnamese phone number',
-					},
-				]}
+				rules={VALIDATION_RULES.phoneNumber}
 			>
 				<Input disabled={updatingProfile} />
 			</Form.Item>
@@ -116,7 +147,7 @@ export default function PersonalInfoForm() {
 			<Form.Item
 				name="gender"
 				label={<FormLabel text="Gender" isBold />}
-				rules={[{ required: true, message: 'Please select gender' }]}
+				rules={VALIDATION_RULES.gender}
 			>
 				<Radio.Group disabled={updatingProfile}>
 					<Radio value="Male">Male</Radio>
@@ -131,7 +162,7 @@ export default function PersonalInfoForm() {
 			<div
 				style={{
 					display: 'flex',
-					gap: 8,
+					gap: BUTTON_GAP,
 					justifyContent: 'flex-end',
 				}}
 			>
