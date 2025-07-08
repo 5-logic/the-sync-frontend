@@ -7,7 +7,7 @@ import { mockTheses } from '@/data/thesis';
 
 import ThesisCard from './ThesisCard';
 
-export default function ThesisListStudentPage() {
+export default function ViewListThesis() {
 	const [currentPage, setCurrentPage] = useState(1);
 	const pageSize = 6;
 

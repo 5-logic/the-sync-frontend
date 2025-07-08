@@ -1,4 +1,5 @@
 import { createMetadata } from '@/app/metadata';
+import ViewListThesis from '@/components/features/student/ViewListThesis';
 
 export const metadata = createMetadata({
 	title: 'Student View List Thesis',
