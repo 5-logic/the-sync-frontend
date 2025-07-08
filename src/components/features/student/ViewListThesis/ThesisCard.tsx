@@ -61,7 +61,6 @@ export default function ThesisCard({ thesis }: Props) {
 
 			<div
 				style={{
-					// marginTop: 'auto',
 					display: 'flex',
 					gap: 8,
 					marginTop: 24,

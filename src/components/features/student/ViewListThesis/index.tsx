@@ -3,9 +3,8 @@
 import { Button, Col, Empty, Pagination, Row, Tabs } from 'antd';
 import { useState } from 'react';
 
+import ThesisCard from '@/components/features/student/ViewListThesis/ThesisCard';
 import { mockTheses } from '@/data/thesis';
-
-import ThesisCard from './ThesisCard';
 
 export default function ViewListThesis() {
 	const [currentPage, setCurrentPage] = useState(1);
