@@ -33,11 +33,11 @@ export default function ChecklistInfoCard({
 			{editable ? (
 				<>
 					<Form.Item
-						label={<FormLabel text="Checklist Name" isBold />}
+						style={{ width: '100%', marginBottom: 16 }}
 						validateStatus={nameError ? 'error' : ''}
 						help={nameError ? 'Checklist name is required' : ''}
-						style={{ width: '100%', marginBottom: 16 }}
 					>
+						<FormLabel text="Checklist Name" isBold />
 						<Input
 							value={name}
 							onChange={(e) => onNameChange?.(e.target.value)}
@@ -46,15 +46,16 @@ export default function ChecklistInfoCard({
 					</Form.Item>
 
 					<Form.Item
-						label={<FormLabel text="Description" isBold />}
+						style={{ width: '100%', marginBottom: 16 }}
 						validateStatus={descriptionError ? 'error' : ''}
 						help={descriptionError ? 'Description is required' : ''}
 					>
+						<FormLabel text="Description" isBold />
 						<Input.TextArea
 							value={description}
 							onChange={(e) => onDescriptionChange?.(e.target.value)}
 							placeholder="Enter checklist description"
-							autoSize={{ minRows: 1, maxRows: 1 }}
+							autoSize={{ minRows: 2 }}
 							style={{ resize: 'none' }}
 						/>
 					</Form.Item>
