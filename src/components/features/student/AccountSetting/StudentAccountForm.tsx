@@ -19,12 +19,8 @@ import React, { useEffect, useState } from 'react';
 
 import { FormLabel } from '@/components/common/FormLabel';
 import { useOptimizedSession } from '@/hooks/auth/useAuth';
-import {
-	ProfileData,
-	fetchUserProfile,
-} from '@/lib/utils/auth/profile-fetcher';
 import { SkillSet } from '@/schemas/skill';
-import { StudentUpdate } from '@/schemas/student';
+import { StudentProfile, StudentSelfUpdate } from '@/schemas/student';
 import {
 	useMajorStore,
 	useResponsibilityStore,
@@ -81,14 +77,12 @@ const buildSkillTreeData = (skillSets: SkillSet[]) =>
 
 const StudentAccountForm: React.FC = () => {
 	const [form] = Form.useForm();
-	const [skillLevels, setSkillLevels] = React.useState<{
-		[key: number]: number;
-	}>({});
-	const [profileData, setProfileData] = useState<ProfileData | null>(null);
+	const [profileData, setProfileData] = useState<StudentProfile | null>(null);
 	const [loadingProfile, setLoadingProfile] = useState(true);
 
-	// Use Student Store for update profile
-	const { updateProfile, updatingProfile, clearError } = useStudentStore();
+	// Use Student Store for update profile and fetch profile
+	const { updateProfile, updatingProfile, clearError, fetchProfile } =
+		useStudentStore();
 
 	// Use Major Store to get major names
 	const { majors, loading: majorsLoading, fetchMajors } = useMajorStore();
@@ -145,23 +139,26 @@ const StudentAccountForm: React.FC = () => {
 
 			try {
 				setLoadingProfile(true);
-				const profile = await fetchUserProfile({
-					id: session.user.id,
-					role: session.user.role,
-					accessToken: session.accessToken ?? '',
-				});
+				const profile = await fetchProfile(session.user.id, true);
 
 				if (profile) {
 					setProfileData(profile);
-					// Set form values with real data
+
+					// Initialize form with profile data
 					form.setFieldsValue({
-						fullName: profile.fullName ?? '',
-						email: profile.email ?? '',
-						studentId: profile.studentCode ?? '',
-						major: profile.majorId ?? '', // Keep as ID for now, will display name separately
-						phoneNumber: profile.phoneNumber ?? '',
-						gender: profile.gender ?? '',
-						responsibility: [], // Start with empty array, user can select
+						fullName: profile.fullName,
+						email: profile.email,
+						studentId: profile.studentCode,
+						major: profile.majorId,
+						phoneNumber: profile.phoneNumber,
+						gender: profile.gender,
+						responsibility: profile.studentExpectedResponsibilities.map(
+							(r) => r.responsibilityId,
+						),
+						skills: profile.studentSkills.map((skill) => ({
+							skillId: skill.skillId,
+							level: LEVEL_TOOLTIPS.indexOf(skill.level) + 1 || 1,
+						})),
 					});
 				}
 			} catch (error) {
@@ -171,10 +168,10 @@ const StudentAccountForm: React.FC = () => {
 			}
 		};
 
-		if (!sessionLoading && isAuthenticated) {
+		if (!sessionLoading) {
 			loadProfile();
 		}
-	}, [session, isAuthenticated, sessionLoading, form]);
+	}, [session, isAuthenticated, sessionLoading, form, fetchProfile]);
 
 	// Get major name from ID
 	const getMajorName = React.useCallback(
@@ -193,7 +190,7 @@ const StudentAccountForm: React.FC = () => {
 	// Build responsibility options from responsibilities data
 	const responsibilityOptions = React.useMemo(() => {
 		return responsibilities.map((responsibility) => ({
-			value: responsibility.name,
+			value: responsibility.id,
 			label: responsibility.name,
 		}));
 	}, [responsibilities]);
@@ -213,7 +210,10 @@ const StudentAccountForm: React.FC = () => {
 			major: profileData?.majorId ?? '',
 			phoneNumber: profileData?.phoneNumber ?? '',
 			gender: profileData?.gender ?? '',
-			responsibility: [],
+			responsibility:
+				profileData?.studentExpectedResponsibilities?.map(
+					(r) => r.responsibilityId,
+				) ?? [],
 		}),
 		[profileData],
 	);
@@ -222,34 +222,40 @@ const StudentAccountForm: React.FC = () => {
 		async (values: FormValues) => {
 			// Clear any previous errors
 			clearError();
+			// Get selected skills and their levels from form
+			const formSkills = values.skills || [];
+			const studentSkills = formSkills.map((skill) => ({
+				skillId: skill.skillId,
+				level: LEVEL_TOOLTIPS[(skill.level || 1) - 1] || 'Beginner',
+			}));
 
-			// Prepare update profile data (only the fields that can be updated)
-			const profileUpdateData: StudentUpdate = {
+			// Get selected responsibilities
+			const studentExpectedResponsibilities = (values.responsibility || []).map(
+				(responsibilityId) => ({
+					responsibilityId,
+				}),
+			);
+
+			// Prepare update profile data using new API structure
+			const profileUpdateData: StudentSelfUpdate = {
 				fullName: values.fullName.trim(),
 				gender: values.gender as 'Male' | 'Female',
 				phoneNumber: values.phoneNumber.trim(),
+				studentSkills,
+				studentExpectedResponsibilities,
 			};
 
 			// Use store method to update profile
 			const success = await updateProfile(profileUpdateData);
 
 			if (success) {
-				// Success notification is handled in store
-				// Form will keep current values as they are now updated
+				// Refresh profile data after successful update
+				if (session?.user?.id) {
+					await fetchProfile(session.user.id, true);
+				}
 			}
-			// Error notification is handled in store
 		},
-		[updateProfile, clearError],
-	);
-
-	const handleSkillLevelChange = React.useCallback(
-		(name: number, value: number) => {
-			setSkillLevels((prev) => ({
-				...prev,
-				[name]: value,
-			}));
-		},
-		[],
+		[updateProfile, clearError, fetchProfile, session],
 	);
 
 	const tooltipFormatter = React.useCallback(
@@ -458,10 +464,10 @@ const StudentAccountForm: React.FC = () => {
 															tooltip={{
 																formatter: tooltipFormatter,
 															}}
-															onChange={(value) =>
-																handleSkillLevelChange(name, value)
-															}
-															{...getSliderStyle(skillLevels[name] ?? 1)}
+															{...getSliderStyle(
+																form.getFieldValue(['skills', name, 'level']) ||
+																	1,
+															)}
 														/>
 													</Form.Item>
 												</Col>
