@@ -6,6 +6,7 @@ import requestService from '@/lib/services/requests.service';
 import { showNotification } from '@/lib/utils/notification';
 import { GroupDashboard } from '@/schemas/group';
 import type { Student } from '@/schemas/student';
+import { useRequestsStore } from '@/store';
 
 const { Text } = Typography;
 
@@ -26,6 +27,7 @@ export default function InviteMembersDialog({
 }: InviteMembersDialogProps) {
 	const [selectedMembers, setSelectedMembers] = useState<Student[]>([]);
 	const [loading, setLoading] = useState(false);
+	const { fetchGroupRequests } = useRequestsStore();
 
 	// Get existing member IDs to exclude from invites
 	const existingMemberIds = group.members.map((member) => member.userId);
@@ -45,10 +47,16 @@ export default function InviteMembersDialog({
 			);
 
 			if (response.success) {
+				console.log('Invite successful, refreshing requests...');
 				showNotification.success(
 					`Successfully sent ${selectedMembers.length} invitation(s)!`,
 				);
 				setSelectedMembers([]);
+
+				// Refresh requests to update badge and table
+				await fetchGroupRequests(groupId, true);
+				console.log('Requests refreshed after invite');
+
 				onSuccess();
 			} else {
 				showNotification.error('Failed to send invitations. Please try again.');
