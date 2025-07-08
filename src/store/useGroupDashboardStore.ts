@@ -28,29 +28,50 @@ export const useGroupDashboardStore = create<GroupDashboardState>()(
 				const state = get();
 				const now = Date.now();
 
-				// Check if we have cached data and it's still fresh
+				console.log('fetchStudentGroup called:', {
+					forceRefresh,
+					currentGroup: state.group?.id,
+					lastFetched: state.lastFetched
+						? new Date(state.lastFetched).toLocaleString()
+						: 'never',
+					loading: state.loading,
+				});
+
+				// Check if we have cached data (either group or null) and it's still fresh
 				const isCacheValid =
-					state.group &&
-					state.lastFetched &&
-					now - state.lastFetched < CACHE_DURATION;
+					state.lastFetched && now - state.lastFetched < CACHE_DURATION;
 
 				if (!forceRefresh && isCacheValid) {
+					console.log('Using cached data, not making API call');
 					// Return cached data without making API call
+					return;
+				}
+
+				// Prevent multiple simultaneous fetches
+				if (state.loading) {
+					console.log('Already loading, skipping fetch');
 					return;
 				}
 
 				try {
 					set({ loading: true, error: null });
+					console.log('Fetching student group from API...');
 					const response = await groupService.getStudentGroup();
+					console.log('API Response:', response);
 
 					if (response.success && response.data.length > 0) {
 						// Student should only have one group, take the first one
+						console.log('Setting group:', response.data[0]);
 						set({
 							group: response.data[0],
 							loading: false,
 							lastFetched: now,
 						});
 					} else {
+						console.log(
+							'No group found, setting group to null. Response:',
+							response.success ? response.data : response.error,
+						);
 						set({
 							group: null,
 							loading: false,
@@ -58,6 +79,7 @@ export const useGroupDashboardStore = create<GroupDashboardState>()(
 						});
 					}
 				} catch (error) {
+					console.error('Error fetching group:', error);
 					set({
 						error:
 							error instanceof Error ? error.message : 'Failed to fetch group',
@@ -73,7 +95,12 @@ export const useGroupDashboardStore = create<GroupDashboardState>()(
 			},
 
 			clearGroup: () => {
-				set({ group: null, error: null, lastFetched: null });
+				set({
+					group: null,
+					error: null,
+					lastFetched: null,
+					loading: false, // Reset loading state to prevent stuck loading
+				});
 			},
 		}),
 		{
