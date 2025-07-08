@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Input, Radio, Space, Table, Tag } from 'antd';
+import { Button, Input, Radio, Row, Space, Table, Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useMemo, useState } from 'react';
 
@@ -102,11 +102,11 @@ export default function ReviewChecklistTable({ phase }: Props) {
 				columns={columns}
 				pagination={false}
 			/>
-			<div style={{ textAlign: 'end' }}>
+			<Row justify="end">
 				<Button type="primary" onClick={handleSaveChecklist}>
 					Save Checklist
 				</Button>
-			</div>
+			</Row>
 		</Space>
 	);
 }
