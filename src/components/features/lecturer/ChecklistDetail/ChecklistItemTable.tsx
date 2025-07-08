@@ -1,7 +1,7 @@
 'use client';
 
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
-import { Input, Switch, Table, Tooltip } from 'antd';
+import { Input, Table, Tag, Tooltip } from 'antd';
 import type { ColumnType } from 'antd/es/table';
 import dayjs from 'dayjs';
 
@@ -20,6 +20,11 @@ interface Props {
 		value: string | boolean,
 	) => void;
 }
+
+const priorityColorMap = {
+	Mandatory: 'red',
+	Optional: 'blue',
+};
 
 export default function ChecklistItemsTable({
 	items,
@@ -63,20 +68,13 @@ export default function ChecklistItemsTable({
 				),
 		},
 		{
-			title: 'Required',
-			dataIndex: 'isRequired',
-			key: 'isRequired',
-			render: (required: boolean, record) => (
-				<Switch
-					checked={required}
-					disabled={!editable}
-					checkedChildren="Mandatory"
-					unCheckedChildren="Optional"
-					onChange={(checked) =>
-						onChangeField?.(record.id, 'isRequired', checked)
-					}
-				/>
-			),
+			title: 'Priority',
+			key: 'priority',
+			render: (_value, record) => {
+				const label = record.isRequired ? 'Mandatory' : 'Optional';
+				const color = priorityColorMap[label];
+				return <Tag color={color}>{label}</Tag>;
+			},
 		},
 	];
 

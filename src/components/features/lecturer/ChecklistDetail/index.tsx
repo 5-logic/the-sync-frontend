@@ -25,10 +25,14 @@ export default function ChecklistDetailPage() {
 		console.log('Back to checklist list or detail');
 	};
 
+	const handleEdit = () => {
+		console.log('Edit Checklist', checklist.id);
+	};
+
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
 			<Header
-				title="View Checklist Detail"
+				title="Checklist Detail"
 				description="Inspect checklist content for a specific milestone and semester, including required fields and criteria."
 				badgeText="Moderator Only"
 			/>
@@ -44,7 +48,13 @@ export default function ChecklistDetailPage() {
 				<ChecklistItemsTable items={checklistItems} />
 			</Card>
 			<Row justify="end">
-				<Button onClick={handleBack}>Back</Button>
+				<Space size="middle">
+					{' '}
+					<Button onClick={handleBack}>Back</Button>
+					<Button type="primary" onClick={handleEdit}>
+						Edit
+					</Button>
+				</Space>
 			</Row>
 		</Space>
 	);
