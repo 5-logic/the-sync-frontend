@@ -1,6 +1,4 @@
-import { DeleteOutlined } from '@ant-design/icons';
-import { AutoComplete, Button, Col, Row, Table } from 'antd';
-import type { ColumnsType } from 'antd/es/table';
+import { AutoComplete, Col, Row, Table } from 'antd';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { FormLabel } from '@/components/common/FormLabel';
@@ -12,16 +10,10 @@ import {
 	createRemoveMemberHandler,
 	createStudentAutoCompleteOptions,
 	createStudentSelectHandler,
+	createStudentTableColumns,
 } from '@/lib/utils/studentInviteHelpers';
 import type { Student } from '@/schemas/student';
 import { useStudentStore } from '@/store';
-
-// Styles for table cell content
-const CELL_STYLES = {
-	email: {
-		maxWidth: '100%',
-	} as const,
-};
 
 interface CreateGroupInviteMembersSimpleProps {
 	readonly members: Student[];
@@ -141,48 +133,8 @@ function CreateGroupInviteMembersSimple({
 	);
 
 	// Stable columns definition to prevent re-renders
-	const columns: ColumnsType<Student> = useMemo(
-		() => [
-			{
-				title: 'Name',
-				dataIndex: 'fullName',
-				key: 'fullName',
-				width: '30%',
-				responsive: ['sm'],
-			},
-			{
-				title: 'Student Code',
-				dataIndex: 'studentCode',
-				key: 'studentCode',
-				width: '20%',
-				responsive: ['md'],
-			},
-			{
-				title: 'Email',
-				dataIndex: 'email',
-				key: 'email',
-				width: '35%',
-				responsive: ['lg'],
-				render: (email: string) => <div style={CELL_STYLES.email}>{email}</div>,
-			},
-			{
-				title: 'Action',
-				key: 'action',
-				width: '15%',
-				render: (_: unknown, record: Student) => (
-					<Button
-						type="text"
-						danger
-						size="small"
-						icon={<DeleteOutlined />}
-						onClick={() => handleRemoveMember(record.id)}
-						aria-label={`Remove ${record.fullName}`}
-					>
-						Remove
-					</Button>
-				),
-			},
-		],
+	const columns = useMemo(
+		() => createStudentTableColumns(handleRemoveMember, 'create'),
 		[handleRemoveMember],
 	);
 
