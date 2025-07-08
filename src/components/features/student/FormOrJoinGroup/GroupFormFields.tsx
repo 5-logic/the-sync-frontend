@@ -1,5 +1,5 @@
 import { Col, Form, Input, Row, Select, TreeSelect } from 'antd';
-import { useEffect, useMemo } from 'react';
+import { memo, useEffect, useMemo } from 'react';
 
 import { FormLabel } from '@/components/common/FormLabel';
 import { THESIS_DOMAINS } from '@/lib/constants/domains';
@@ -16,24 +16,29 @@ const VALIDATION_RULES = {
 	},
 } as const;
 
-export default function GroupFormFields() {
-	// Fetch data from stores
-	const {
-		skillSets,
-		loading: skillsLoading,
-		fetchSkillSets,
-	} = useSkillSetStore();
-	const {
-		responsibilities,
-		loading: responsibilitiesLoading,
-		fetchResponsibilities,
-	} = useResponsibilityStore();
+function GroupFormFields() {
+	// Use separate, stable selectors to prevent re-renders
+	const skillSets = useSkillSetStore((state) => state.skillSets);
+	const skillsLoading = useSkillSetStore((state) => state.loading);
+	const fetchSkillSets = useSkillSetStore((state) => state.fetchSkillSets);
+
+	const responsibilities = useResponsibilityStore(
+		(state) => state.responsibilities,
+	);
+	const responsibilitiesLoading = useResponsibilityStore(
+		(state) => state.loading,
+	);
+	const fetchResponsibilities = useResponsibilityStore(
+		(state) => state.fetchResponsibilities,
+	);
 
 	// Fetch data on component mount
 	useEffect(() => {
 		fetchSkillSets();
 		fetchResponsibilities();
-	}, [fetchSkillSets, fetchResponsibilities]);
+		// ESLint disabled: We want this to run only once on mount
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []); // Only run once on mount
 
 	// Project areas from constants
 	const projectAreas = useMemo(
@@ -47,6 +52,10 @@ export default function GroupFormFields() {
 
 	// Build skill tree data from API
 	const skillTreeData = useMemo(() => {
+		console.log(
+			'🟡 GroupFormFields: useMemo skillTreeData triggered, skillSets:',
+			skillSets.length,
+		);
 		if (!skillSets || skillSets.length === 0) return [];
 
 		return skillSets.map((set) => ({
@@ -70,17 +79,22 @@ export default function GroupFormFields() {
 			label: responsibility.name,
 		}));
 	}, [responsibilities]);
-	const getGroupNameRules = () => [
-		{ required: true, message: 'Please enter group name' },
-		{
-			min: VALIDATION_RULES.GROUP_NAME.MIN_LENGTH,
-			message: `Group name must be at least ${VALIDATION_RULES.GROUP_NAME.MIN_LENGTH} characters`,
-		},
-		{
-			max: VALIDATION_RULES.GROUP_NAME.MAX_LENGTH,
-			message: `Group name must be less than ${VALIDATION_RULES.GROUP_NAME.MAX_LENGTH} characters`,
-		},
-	];
+
+	// Memoize group name rules to prevent re-creation on every render
+	const getGroupNameRules = useMemo(
+		() => [
+			{ required: true, message: 'Please enter group name' },
+			{
+				min: VALIDATION_RULES.GROUP_NAME.MIN_LENGTH,
+				message: `Group name must be at least ${VALIDATION_RULES.GROUP_NAME.MIN_LENGTH} characters`,
+			},
+			{
+				max: VALIDATION_RULES.GROUP_NAME.MAX_LENGTH,
+				message: `Group name must be less than ${VALIDATION_RULES.GROUP_NAME.MAX_LENGTH} characters`,
+			},
+		],
+		[],
+	);
 
 	return (
 		<Row gutter={[16, 16]}>
@@ -88,7 +102,7 @@ export default function GroupFormFields() {
 				<Form.Item
 					name="name"
 					label={<FormLabel text="Group Name" isBold isRequired />}
-					rules={getGroupNameRules()}
+					rules={getGroupNameRules}
 				>
 					<Input placeholder="Enter group name" />
 				</Form.Item>
@@ -116,7 +130,7 @@ export default function GroupFormFields() {
 						showSearch
 						multiple
 						allowClear
-						treeCheckable={false}
+						treeCheckable={true}
 						showCheckedStrategy={TreeSelect.SHOW_CHILD}
 						style={{ width: '100%' }}
 						loading={skillsLoading}
@@ -145,7 +159,9 @@ export default function GroupFormFields() {
 						showSearch
 						loading={responsibilitiesLoading}
 						filterOption={(input, option) =>
-							(option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+							String(option?.label ?? '')
+								.toLowerCase()
+								.includes(input.toLowerCase())
 						}
 					/>
 				</Form.Item>
@@ -153,3 +169,5 @@ export default function GroupFormFields() {
 		</Row>
 	);
 }
+
+export default memo(GroupFormFields);
