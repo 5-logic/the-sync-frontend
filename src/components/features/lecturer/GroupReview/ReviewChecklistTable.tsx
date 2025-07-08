@@ -1,6 +1,6 @@
 'use client';
 
-import { Input, Radio, Table, Tag } from 'antd';
+import { Button, Input, Radio, Space, Table, Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useMemo, useState } from 'react';
 
@@ -18,7 +18,7 @@ interface ChecklistResponse {
 }
 
 const priorityColorMap = {
-	High: 'red',
+	Mandatory: 'red',
 	Optional: 'blue',
 };
 
@@ -45,6 +45,11 @@ export default function ReviewChecklistTable({ phase }: Props) {
 			...prev,
 			[id]: { ...prev[id], notes: value },
 		}));
+	};
+
+	const handleSaveChecklist = () => {
+		console.log('Checklist saved:', answers);
+		// Bạn có thể thay console.log bằng API call hoặc callback truyền từ props
 	};
 
 	const columns: ColumnsType<ChecklistItem> = [
@@ -82,7 +87,7 @@ export default function ReviewChecklistTable({ phase }: Props) {
 			title: 'Priority',
 			key: 'priority',
 			render: (_value, record) => {
-				const label = record.isRequired ? 'High' : 'Optional';
+				const label = record.isRequired ? 'Mandatory' : 'Optional';
 				const color = priorityColorMap[label];
 				return <Tag color={color}>{label}</Tag>;
 			},
@@ -90,11 +95,18 @@ export default function ReviewChecklistTable({ phase }: Props) {
 	];
 
 	return (
-		<Table
-			rowKey="id"
-			dataSource={checklist}
-			columns={columns}
-			pagination={false}
-		/>
+		<Space direction="vertical" size="large" style={{ width: '100%' }}>
+			<Table
+				rowKey="id"
+				dataSource={checklist}
+				columns={columns}
+				pagination={false}
+			/>
+			<div style={{ textAlign: 'end' }}>
+				<Button type="primary" onClick={handleSaveChecklist}>
+					Save Checklist
+				</Button>
+			</div>
+		</Space>
 	);
 }
