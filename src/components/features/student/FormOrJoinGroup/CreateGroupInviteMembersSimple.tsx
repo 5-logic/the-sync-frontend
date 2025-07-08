@@ -8,6 +8,11 @@ import { useSessionData } from '@/hooks/auth/useAuth';
 import { TEAM_CONFIG, TEAM_STYLES } from '@/lib/constants';
 import { MemberManagementUtils } from '@/lib/utils/memberManagement';
 import { showNotification } from '@/lib/utils/notification';
+import {
+	createRemoveMemberHandler,
+	createStudentAutoCompleteOptions,
+	createStudentSelectHandler,
+} from '@/lib/utils/studentInviteHelpers';
 import type { Student } from '@/schemas/student';
 import { useStudentStore } from '@/store';
 
@@ -82,47 +87,13 @@ function CreateGroupInviteMembersSimple({
 
 	// Build options for AutoComplete
 	const studentOptions = useMemo(() => {
-		if (!searchText.trim() || searchResults.length === 0) return [];
-
-		return searchResults
-			.filter((student) => {
-				// Exclude current logged-in student
-				if (currentUserId && student.id === currentUserId) {
-					return false;
-				}
-				return true;
-			})
-			.map((student) => {
-				const isAlreadyAdded = members.some(
-					(member) => member.id === student.id,
-				);
-				return {
-					value: student.id,
-					label: (
-						<div style={{ opacity: isAlreadyAdded ? 0.6 : 1 }}>
-							<div
-								style={{
-									fontWeight: 500,
-									display: 'flex',
-									justifyContent: 'space-between',
-									alignItems: 'center',
-								}}
-							>
-								<span>{student.fullName}</span>
-								{isAlreadyAdded && (
-									<span style={{ fontSize: '12px', color: '#999' }}>
-										Already added
-									</span>
-								)}
-							</div>
-							<div style={{ fontSize: '12px', color: '#666' }}>
-								{student.studentCode} • {student.email}
-							</div>
-						</div>
-					),
-					student,
-				};
-			});
+		return createStudentAutoCompleteOptions(
+			searchResults,
+			currentUserId,
+			members,
+			searchText,
+			[], // No excludeUserIds for create-group mode
+		);
 	}, [searchResults, currentUserId, members, searchText]);
 
 	const handleAddMember = useCallback(
@@ -151,19 +122,20 @@ function CreateGroupInviteMembersSimple({
 
 	const handleStudentSelect = useCallback(
 		(value: string) => {
-			const selectedStudent = students.find((s) => s.id === value);
-			if (selectedStudent) {
-				handleAddMember(selectedStudent);
-			}
+			const handler = createStudentSelectHandler(students, handleAddMember);
+			handler(value);
 		},
 		[students, handleAddMember],
 	);
 
 	const handleRemoveMember = useCallback(
 		(memberId: string) => {
-			const updatedMembers = members.filter((m) => m.id !== memberId);
-			onMembersChange(updatedMembers);
-			showNotification.success('Member removed successfully!');
+			const handler = createRemoveMemberHandler(
+				members,
+				onMembersChange,
+				showNotification,
+			);
+			handler(memberId);
 		},
 		[members, onMembersChange],
 	);
