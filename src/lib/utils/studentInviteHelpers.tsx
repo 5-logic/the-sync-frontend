@@ -1,3 +1,6 @@
+import { DeleteOutlined } from '@ant-design/icons';
+import { Button } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
 import React from 'react';
 
 import type { Student } from '@/schemas/student';
@@ -87,4 +90,78 @@ export function createRemoveMemberHandler(
 		onMembersChange(updatedMembers);
 		showNotification.success('Member removed successfully!');
 	};
+}
+
+// Helper for creating table columns configuration
+export function createStudentTableColumns(
+	handleRemoveMember: (memberId: string) => void,
+	variant: 'create' | 'invite' = 'create',
+): ColumnsType<Student> {
+	const baseColumns: ColumnsType<Student> = [
+		{
+			title: 'Name',
+			dataIndex: 'fullName',
+			key: 'fullName',
+			width: '30%',
+			responsive: ['sm'],
+		},
+	];
+
+	// Add email column with different configurations based on variant
+	if (variant === 'create') {
+		baseColumns.push({
+			title: 'Student Code',
+			dataIndex: 'studentCode',
+			key: 'studentCode',
+			width: '20%',
+			responsive: ['md'],
+		});
+		baseColumns.push({
+			title: 'Email',
+			dataIndex: 'email',
+			key: 'email',
+			width: '35%',
+			responsive: ['lg'],
+			render: (email: string) => (
+				<div style={{ wordBreak: 'break-word' }}>{email}</div>
+			),
+		});
+	} else {
+		// invite variant
+		baseColumns.push({
+			title: 'Email',
+			dataIndex: 'email',
+			key: 'email',
+			width: '40%',
+			ellipsis: true,
+		});
+		baseColumns.push({
+			title: 'Student ID',
+			dataIndex: 'studentCode',
+			key: 'studentCode',
+			width: '20%',
+			responsive: ['md'],
+		});
+	}
+
+	// Add action column
+	baseColumns.push({
+		title: 'Action',
+		key: 'action',
+		width: variant === 'create' ? '15%' : '10%',
+		render: (_: unknown, record: Student) => (
+			<Button
+				type="text"
+				danger
+				size="small"
+				icon={<DeleteOutlined />}
+				onClick={() => handleRemoveMember(record.id)}
+				aria-label={`Remove ${record.fullName}`}
+			>
+				{variant === 'create' ? 'Remove' : undefined}
+			</Button>
+		),
+	});
+
+	return baseColumns;
 }
