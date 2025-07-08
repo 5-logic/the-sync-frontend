@@ -5,8 +5,8 @@ import { useState } from 'react';
 
 import TabNavigation from '@/components/features/admin/CreateNewUser/TabNavigation';
 import Header from '@/components/features/lecturer/AssignSupervisor/Header';
-import ImportChecklistExcel from '@/components/features/lecturer/CreateChecklist/ImportChecklistExcel';
-import ManualChecklistForm from '@/components/features/lecturer/CreateChecklist/ManualChecklistForm';
+
+import UnifiedChecklistForm from './ChecklistForm';
 
 export default function CreateChecklist() {
 	const [activeTab, setActiveTab] = useState('manual');
@@ -22,8 +22,8 @@ export default function CreateChecklist() {
 
 				<TabNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
 
-				{activeTab === 'manual' && <ManualChecklistForm />}
-				{activeTab === 'excel' && <ImportChecklistExcel />}
+				{activeTab === 'manual' && <UnifiedChecklistForm mode="manual" />}
+				{activeTab === 'excel' && <UnifiedChecklistForm mode="import" />}
 			</Space>
 		</Layout>
 	);

@@ -12,6 +12,7 @@ import { mockSemesters } from '@/data/semester';
 import { showNotification } from '@/lib/utils';
 
 export interface ChecklistItem {
+	checklistId: string;
 	id: string;
 	name: string;
 	description: string;
