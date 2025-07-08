@@ -20,12 +20,21 @@ export default function RequestsButton({
 	// Fetch requests count for badge
 	useEffect(() => {
 		fetchGroupRequests(group.id);
-	}, [group.id, fetchGroupRequests]);
+		// ESLint is disabled here because including store functions in dependencies
+		// would cause infinite re-renders as Zustand functions get new references
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [group.id]);
 
 	// Count pending requests
 	const pendingRequestsCount = requests.filter(
 		(req) => req.status === 'Pending',
 	).length;
+
+	console.log('RequestsButton render:', {
+		totalRequests: requests.length,
+		pendingRequestsCount,
+		groupId: group.id,
+	});
 
 	const handleClick = () => {
 		setDialogVisible(true);
