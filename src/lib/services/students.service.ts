@@ -4,6 +4,8 @@ import {
 	ImportStudent,
 	Student,
 	StudentCreate,
+	StudentProfile,
+	StudentSelfUpdate,
 	StudentToggleStatus,
 	StudentUpdate,
 } from '@/schemas/student';
@@ -16,8 +18,8 @@ class StudentService {
 		return response.data;
 	}
 
-	async findOne(id: string): Promise<ApiResponse<Student>> {
-		const response = await httpClient.get<ApiResponse<Student>>(
+	async findOne(id: string): Promise<ApiResponse<StudentProfile>> {
+		const response = await httpClient.get<ApiResponse<StudentProfile>>(
 			`${this.baseUrl}/${id}`,
 		);
 		return response.data;
@@ -88,7 +90,7 @@ class StudentService {
 	}
 
 	async updateProfile(
-		updateProfileDto: StudentUpdate,
+		updateProfileDto: StudentSelfUpdate,
 	): Promise<ApiResponse<Student>> {
 		const response = await httpClient.put<ApiResponse<Student>>(
 			this.baseUrl,

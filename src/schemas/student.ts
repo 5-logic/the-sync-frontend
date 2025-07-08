@@ -66,6 +66,75 @@ export const StudentUpdateSchema = StudentSchema.pick({
 	majorId: true,
 }).partial();
 
+// Schema for student self-update (profile update)
+export const StudentSelfUpdateSchema = z.object({
+	fullName: z.string().min(1).optional(),
+	gender: GenderSchema.optional(),
+	phoneNumber: z.string().min(1).optional(),
+	studentSkills: z
+		.array(
+			z.object({
+				skillId: uuidField,
+				level: SkillLevelSchema,
+			}),
+		)
+		.optional(),
+	studentExpectedResponsibilities: z
+		.array(
+			z.object({
+				responsibilityId: uuidField,
+			}),
+		)
+		.optional(),
+});
+
+// Schema for detailed student profile response
+export const StudentProfileSchema = z.object({
+	id: uuidField,
+	fullName: z.string(),
+	email: z.string().email(),
+	gender: GenderSchema,
+	phoneNumber: z.string(),
+	isActive: z.boolean(),
+	createdAt: z.string().transform((val) => new Date(val)),
+	updatedAt: z.string().transform((val) => new Date(val)),
+	studentCode: z.string(),
+	majorId: uuidField,
+	major: z.object({
+		id: uuidField,
+		name: z.string(),
+		code: z.string(),
+	}),
+	enrollments: z.array(
+		z.object({
+			status: z.string(),
+			semester: z.object({
+				id: uuidField,
+				name: z.string(),
+				code: z.string(),
+				status: z.string(),
+			}),
+		}),
+	),
+	studentSkills: z.array(
+		z.object({
+			skillId: uuidField,
+			skillName: z.string(),
+			level: SkillLevelSchema,
+			skillSet: z.object({
+				id: uuidField,
+				name: z.string(),
+			}),
+		}),
+	),
+	studentExpectedResponsibilities: z.array(
+		z.object({
+			responsibilityId: uuidField,
+			responsibilityName: z.string(),
+		}),
+	),
+});
+
 export const StudentToggleStatusSchema = StudentSchema.pick({
 	isActive: true,
 });
@@ -82,6 +151,8 @@ export const StudentSkillUpdateSchema = StudentSkillSchema.pick({
 export type Student = z.infer<typeof StudentSchema>;
 export type StudentCreate = z.infer<typeof StudentCreateSchema>;
 export type StudentUpdate = z.infer<typeof StudentUpdateSchema>;
+export type StudentSelfUpdate = z.infer<typeof StudentSelfUpdateSchema>;
+export type StudentProfile = z.infer<typeof StudentProfileSchema>;
 export type StudentToggleStatus = z.infer<typeof StudentToggleStatusSchema>;
 
 export type ImportStudentItem = z.infer<typeof ImportStudentItemSchema>;

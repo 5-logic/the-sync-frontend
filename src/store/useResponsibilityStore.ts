@@ -1,9 +1,7 @@
 import { create } from 'zustand';
 
-import {
-	type Responsibility,
-	ResponsibilityService,
-} from '@/lib/services/responsibility.service';
+import { ResponsibilityService } from '@/lib/services/responsibility.service';
+import { type Responsibility } from '@/schemas/responsibility';
 
 interface ResponsibilityState {
 	responsibilities: Responsibility[];
