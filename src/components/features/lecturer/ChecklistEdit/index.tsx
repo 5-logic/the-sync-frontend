@@ -1,5 +1,6 @@
 'use client';
 
+import { PlusOutlined } from '@ant-design/icons';
 import { Button, Card, Row, Space, Typography } from 'antd';
 import { useState } from 'react';
 
@@ -22,6 +23,21 @@ export default function ChecklistEditPage() {
 	const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>(
 		mockChecklistItems.filter((item) => item.checklistId === checklistId),
 	);
+
+	// ✅ Thêm item mới
+	const handleAddItem = () => {
+		const newItem: ChecklistItem = {
+			id: Date.now().toString(),
+			name: '',
+			description: '',
+			isRequired: false,
+			checklistId: checklistId,
+			createdAt: new Date(),
+			updatedAt: new Date(),
+			acceptance: 'Yes',
+		};
+		setChecklistItems((prev) => [...prev, newItem]);
+	};
 
 	const handleDeleteItem = (item: ChecklistItem) => {
 		setChecklistItems((prev) => prev.filter((i) => i.id !== item.id));
@@ -71,7 +87,18 @@ export default function ChecklistEditPage() {
 				onDescriptionChange={setDescription}
 			/>
 
-			<Card title="Checklist Items">
+			<Card
+				title="Checklist Items"
+				extra={
+					<Button
+						type="primary"
+						icon={<PlusOutlined />}
+						onClick={handleAddItem}
+					>
+						Add New Item
+					</Button>
+				}
+			>
 				<ChecklistItemsTable
 					items={checklistItems}
 					editable

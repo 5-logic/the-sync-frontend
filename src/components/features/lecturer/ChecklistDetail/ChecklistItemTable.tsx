@@ -1,7 +1,7 @@
 'use client';
 
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
-import { Input, Table, Tag, Tooltip } from 'antd';
+import { Input, Switch, Table, Tag, Tooltip } from 'antd';
 import type { ColumnType } from 'antd/es/table';
 import dayjs from 'dayjs';
 
@@ -43,6 +43,7 @@ export default function ChecklistItemsTable({
 			render: (text, record) =>
 				editable ? (
 					<Input
+						placeholder="Enter item name"
 						value={text}
 						onChange={(e) => onChangeField?.(record.id, 'name', e.target.value)}
 					/>
@@ -58,7 +59,7 @@ export default function ChecklistItemsTable({
 				editable ? (
 					<Input
 						value={text ?? ''}
-						placeholder="No description"
+						placeholder="Enter description"
 						onChange={(e) =>
 							onChangeField?.(record.id, 'description', e.target.value)
 						}
@@ -71,9 +72,22 @@ export default function ChecklistItemsTable({
 			title: 'Priority',
 			key: 'priority',
 			render: (_value, record) => {
-				const label = record.isRequired ? 'Mandatory' : 'Optional';
-				const color = priorityColorMap[label];
-				return <Tag color={color}>{label}</Tag>;
+				if (editable) {
+					return (
+						<Switch
+							checked={record.isRequired}
+							checkedChildren="Mandatory"
+							unCheckedChildren="Optional"
+							onChange={(checked) =>
+								onChangeField?.(record.id, 'isRequired', checked)
+							}
+						/>
+					);
+				} else {
+					const label = record.isRequired ? 'Mandatory' : 'Optional';
+					const color = priorityColorMap[label];
+					return <Tag color={color}>{label}</Tag>;
+				}
 			},
 		},
 	];
