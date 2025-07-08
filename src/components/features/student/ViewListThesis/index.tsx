@@ -20,16 +20,21 @@ export default function ViewListThesis() {
 	const { Title, Paragraph } = Typography;
 
 	return (
-		<Space direction="vertical" size="large" style={{ width: '100%' }}>
-			<div>
-				<Title level={2} style={{ marginBottom: '4px' }}>
-					List Thesis
-				</Title>
+		<Space direction="vertical" size="middle" style={{ width: '100%' }}>
+			<div className="flex justify-between items-start">
+				<div>
+					<Title level={2} style={{ marginBottom: 4 }}>
+						List Thesis
+					</Title>
+					<Paragraph
+						type="secondary"
+						style={{ marginBottom: 0, maxWidth: 'auto' }}
+					>
+						Browse available thesis topics proposed and published by lecturers.
+						You can view details and register once your group is ready.
+					</Paragraph>
+				</div>
 				<Button type="primary">AI Suggest</Button>
-				<Paragraph type="secondary" style={{ marginBottom: 0 }}>
-					Browse available thesis topics proposed and published by lecturers.
-					You can view details and register once your group is ready.
-				</Paragraph>
 			</div>
 
 			<Tabs
@@ -56,6 +61,7 @@ export default function ViewListThesis() {
 					},
 				]}
 			/>
+
 			<ListPagination
 				current={currentPage}
 				pageSize={pageSize}
