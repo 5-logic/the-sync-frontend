@@ -7,6 +7,8 @@ import { useState } from 'react';
 import ChecklistCommonHeader from '@/components/features/lecturer/CreateChecklist/ChecklistCommonHeader';
 import ChecklistDeleteButton from '@/components/features/lecturer/CreateChecklist/ChecklistDeleteButton';
 import ChecklistDragger from '@/components/features/lecturer/CreateChecklist/ChecklistDragger';
+import { mockMilestones } from '@/data/milestone';
+import { mockSemesters } from '@/data/semester';
 import { showNotification } from '@/lib/utils';
 
 export interface ChecklistItem {
@@ -22,6 +24,8 @@ export default function ImportChecklistExcel() {
 	const [checklistName, setChecklistName] = useState('');
 	const [checklistDescription, setChecklistDescription] = useState('');
 	const [showErrors] = useState(false);
+	const [selectedSemester, setSelectedSemester] = useState<string>('');
+	const [selectedMilestone, setSelectedMilestone] = useState<string>('');
 
 	const handleRemoveItem = (id: string) => {
 		setChecklistItems((prev) => prev.filter((item) => item.id !== id));
@@ -96,12 +100,16 @@ export default function ImportChecklistExcel() {
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
 			<ChecklistCommonHeader
-				semester="Semester2023"
-				milestone="Milestone review 2"
+				semester={selectedSemester}
+				milestone={selectedMilestone}
 				checklistName={checklistName}
 				checklistDescription={checklistDescription}
 				onNameChange={setChecklistName}
 				onDescriptionChange={setChecklistDescription}
+				onSemesterChange={setSelectedSemester}
+				onMilestoneChange={setSelectedMilestone}
+				availableSemesters={mockSemesters}
+				availableMilestones={mockMilestones}
 				showErrors={showErrors}
 			/>
 

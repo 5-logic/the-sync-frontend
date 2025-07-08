@@ -1,7 +1,6 @@
 'use client';
 
-import { BookOutlined, FlagOutlined } from '@ant-design/icons';
-import { Card, Input, Space, Tag, Typography } from 'antd';
+import { Card, Input, Select, Space, Typography } from 'antd';
 
 import { FormLabel } from '@/components/common/FormLabel';
 
@@ -12,6 +11,10 @@ interface Props {
 	checklistDescription: string;
 	onNameChange: (val: string) => void;
 	onDescriptionChange: (val: string) => void;
+	onSemesterChange: (val: string) => void;
+	onMilestoneChange: (val: string) => void;
+	availableSemesters: { label: string; value: string }[];
+	availableMilestones: { label: string; value: string }[];
 	showErrors: boolean;
 }
 
@@ -22,6 +25,10 @@ export default function ChecklistCommonHeader({
 	checklistDescription,
 	onNameChange,
 	onDescriptionChange,
+	onSemesterChange,
+	onMilestoneChange,
+	availableSemesters,
+	availableMilestones,
 	showErrors,
 }: Readonly<Props>) {
 	return (
@@ -29,22 +36,32 @@ export default function ChecklistCommonHeader({
 			{/* Context title */}
 			<div>
 				<Typography.Text strong style={{ fontSize: 16 }}>
-					Create checklist for{' '}
-					<Tag
-						icon={<BookOutlined />}
-						color="blue"
-						style={{ fontWeight: 600, marginInline: 4 }}
-					>
-						{semester}
-					</Tag>
-					<Tag
-						icon={<FlagOutlined />}
-						color="volcano"
-						style={{ fontWeight: 600, marginInline: 4 }}
-					>
-						{milestone}
-					</Tag>
+					Create checklist for {'  '}
 				</Typography.Text>
+
+				<Space size="middle" wrap>
+					<Select
+						value={
+							availableSemesters.find((s) => s.value === semester)?.value ??
+							undefined
+						}
+						onChange={onSemesterChange}
+						options={availableSemesters}
+						style={{ minWidth: 160 }}
+						placeholder="Select semester"
+					/>
+
+					<Select
+						value={
+							availableMilestones.find((m) => m.value === milestone)?.value ??
+							undefined
+						}
+						onChange={onMilestoneChange}
+						options={availableMilestones}
+						style={{ minWidth: 200 }}
+						placeholder="Select milestone"
+					/>
+				</Space>
 			</div>
 
 			{/* Checklist general info form */}

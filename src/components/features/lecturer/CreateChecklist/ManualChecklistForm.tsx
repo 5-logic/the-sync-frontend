@@ -7,6 +7,8 @@ import { useState } from 'react';
 
 import ChecklistCommonHeader from '@/components/features/lecturer/CreateChecklist/ChecklistCommonHeader';
 import ChecklistDeleteButton from '@/components/features/lecturer/CreateChecklist/ChecklistDeleteButton';
+import { mockMilestones } from '@/data/milestone';
+import { mockSemesters } from '@/data/semester';
 import { showNotification } from '@/lib/utils';
 import type { ChecklistItemCreate } from '@/schemas/checklist';
 
@@ -18,6 +20,9 @@ export default function ManualChecklistForm() {
 	const [showErrors, setShowErrors] = useState(false);
 	const [checklistName, setChecklistName] = useState('');
 	const [checklistDescription, setChecklistDescription] = useState('');
+
+	const [selectedSemester, setSelectedSemester] = useState<string>('');
+	const [selectedMilestone, setSelectedMilestone] = useState<string>('');
 
 	const handleAddItem = () => {
 		const newItem: ChecklistItemTemp = {
@@ -53,6 +58,22 @@ export default function ManualChecklistForm() {
 	const handleSaveAll = () => {
 		setShowErrors(true);
 
+		if (!selectedSemester || !selectedMilestone) {
+			showNotification.warning(
+				'Missing Semester or Milestone',
+				'Please select both semester and milestone before saving.',
+			);
+			return;
+		}
+
+		if (!checklistName.trim() || !checklistDescription.trim()) {
+			showNotification.warning(
+				'Missing Checklist Info',
+				'Please provide checklist name and description.',
+			);
+			return;
+		}
+
 		if (items.length === 0) {
 			showNotification.warning(
 				'No items added',
@@ -73,7 +94,13 @@ export default function ManualChecklistForm() {
 			return;
 		}
 
-		console.log('Checklist items:', items);
+		console.log('Checklist saved with:', {
+			semester: selectedSemester,
+			milestone: selectedMilestone,
+			name: checklistName,
+			description: checklistDescription,
+			items,
+		});
 		showNotification.success('Checklist saved successfully!');
 		setShowErrors(false);
 	};
@@ -99,7 +126,7 @@ export default function ManualChecklistForm() {
 			render: (_, record) => (
 				<Input
 					placeholder="Enter description"
-					value={record.description || ''} //NOSONAR
+					value={record.description || ''}
 					onChange={(e) =>
 						handleChangeItem(record.id, 'description', e.target.value)
 					}
@@ -139,18 +166,20 @@ export default function ManualChecklistForm() {
 
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
-			{/* Tiêu đề context (Semester + Milestone) */}
 			<ChecklistCommonHeader
-				semester="Semester2023"
-				milestone="Milestone review 2"
+				semester={selectedSemester}
+				milestone={selectedMilestone}
 				checklistName={checklistName}
 				checklistDescription={checklistDescription}
 				onNameChange={setChecklistName}
 				onDescriptionChange={setChecklistDescription}
+				onSemesterChange={setSelectedSemester}
+				onMilestoneChange={setSelectedMilestone}
+				availableSemesters={mockSemesters}
+				availableMilestones={mockMilestones}
 				showErrors={showErrors}
 			/>
 
-			{/* Danh sách Checklist Items */}
 			<Card
 				title="Checklist Items"
 				extra={
@@ -171,7 +200,6 @@ export default function ManualChecklistForm() {
 					locale={{ emptyText: 'No checklist items added.' }}
 				/>
 
-				{/* Nút Save + Cancel */}
 				<Row justify="end" style={{ marginTop: 36 }}>
 					<Space style={{ gap: 16 }}>
 						<Button onClick={handleCancel}>Cancel</Button>
