@@ -5,8 +5,7 @@ import { useState } from 'react';
 
 import TabNavigation from '@/components/features/admin/CreateNewUser/TabNavigation';
 import Header from '@/components/features/lecturer/AssignSupervisor/Header';
-
-import UnifiedChecklistForm from './ChecklistForm';
+import UnifiedChecklistForm from '@/components/features/lecturer/CreateChecklist/ChecklistForm';
 
 export default function CreateChecklist() {
 	const [activeTab, setActiveTab] = useState('manual');
