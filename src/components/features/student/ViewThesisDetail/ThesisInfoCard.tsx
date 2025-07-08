@@ -6,7 +6,7 @@ import { Avatar, Card, Descriptions, Space, Tag, Typography } from 'antd';
 import { ExtendedThesis } from '@/data/thesis';
 
 interface Props {
-	thesis: ExtendedThesis;
+	readonly thesis: ExtendedThesis;
 }
 
 export default function ThesisInfoCard({ thesis }: Props) {
