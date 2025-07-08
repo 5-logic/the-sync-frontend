@@ -44,6 +44,31 @@ export default memo(function GroupInfoCard({ group }: GroupInfoCardProps) {
 	// Check if user is the only member (cannot leave - must delete instead)
 	const isOnlyMember = group.members.length === 1;
 
+	// Helper function to get Leave Group button title
+	const getLeaveGroupButtonTitle = () => {
+		if (!canModifyGroup) {
+			return 'Cannot leave group during this semester status';
+		}
+		if (isCurrentUserLeader && group.members.length > 1) {
+			return 'Transfer leadership before leaving';
+		}
+		if (isOnlyMember) {
+			return 'Cannot leave as the only member';
+		}
+		return 'Leave this group';
+	};
+
+	// Helper function to get Delete Group button title
+	const getDeleteGroupButtonTitle = () => {
+		if (!canModifyGroup) {
+			return 'Cannot delete group during this semester status';
+		}
+		if (hasThesisOrSubmissions) {
+			return 'Cannot delete group with thesis or submissions';
+		}
+		return 'Delete this group permanently';
+	};
+
 	const handleLeaveGroup = async () => {
 		if (!canModifyGroup) {
 			showNotification.error(
@@ -264,15 +289,7 @@ export default memo(function GroupInfoCard({ group }: GroupInfoCardProps) {
 								isOnlyMember
 							}
 							onClick={showLeaveGroupConfirm}
-							title={
-								!canModifyGroup
-									? 'Cannot leave group during this semester status'
-									: isCurrentUserLeader && group.members.length > 1
-										? 'Transfer leadership before leaving'
-										: isOnlyMember
-											? 'Cannot leave as the only member'
-											: 'Leave this group'
-							}
+							title={getLeaveGroupButtonTitle()}
 						>
 							Leave Group
 						</Button>
@@ -284,13 +301,7 @@ export default memo(function GroupInfoCard({ group }: GroupInfoCardProps) {
 								loading={isDeleting}
 								disabled={!canModifyGroup || hasThesisOrSubmissions}
 								onClick={showDeleteGroupConfirm}
-								title={
-									!canModifyGroup
-										? 'Cannot delete group during this semester status'
-										: hasThesisOrSubmissions
-											? 'Cannot delete group with thesis or submissions'
-											: 'Delete this group permanently'
-								}
+								title={getDeleteGroupButtonTitle()}
 							>
 								Delete Group
 							</Button>
