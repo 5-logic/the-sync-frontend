@@ -13,7 +13,10 @@ export default function GroupDashboard() {
 
 	useEffect(() => {
 		fetchStudentGroup();
-	}, [fetchStudentGroup]);
+		// ESLint is disabled here because including store functions in dependencies
+		// would cause infinite re-renders as Zustand functions get new references
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
 
 	if (loading) {
 		return (
