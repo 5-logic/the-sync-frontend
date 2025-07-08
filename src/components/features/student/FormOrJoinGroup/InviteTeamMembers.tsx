@@ -1,6 +1,4 @@
-import { DeleteOutlined } from '@ant-design/icons';
-import { AutoComplete, Button, Col, Row, Table, Typography } from 'antd';
-import type { ColumnsType } from 'antd/es/table';
+import { AutoComplete, Col, Row, Table, Typography } from 'antd';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { FormLabel } from '@/components/common/FormLabel';
@@ -11,6 +9,7 @@ import {
 	createRemoveMemberHandler,
 	createStudentAutoCompleteOptions,
 	createStudentSelectHandler,
+	createStudentTableColumns,
 } from '@/lib/utils/studentInviteHelpers';
 import type { Student } from '@/schemas/student';
 import { useStudentStore } from '@/store';
@@ -211,45 +210,8 @@ export default function InviteTeamMembers({
 		[members, onMembersChange],
 	);
 
-	const columns: ColumnsType<Student> = useMemo(
-		() => [
-			{
-				title: 'Name',
-				dataIndex: 'fullName',
-				key: 'fullName',
-				width: '30%',
-				responsive: ['sm'],
-			},
-			{
-				title: 'Email',
-				dataIndex: 'email',
-				key: 'email',
-				width: '40%',
-				ellipsis: true,
-			},
-			{
-				title: 'Student ID',
-				dataIndex: 'studentCode',
-				key: 'studentCode',
-				width: '20%',
-				responsive: ['md'],
-			},
-			{
-				title: 'Action',
-				key: 'action',
-				width: '10%',
-				render: (_: unknown, record: Student) => (
-					<Button
-						type="text"
-						danger
-						icon={<DeleteOutlined />}
-						onClick={() => handleRemoveMember(record.id)}
-						aria-label={`Remove ${record.fullName}`}
-						size="small"
-					/>
-				),
-			},
-		],
+	const columns = useMemo(
+		() => createStudentTableColumns(handleRemoveMember, 'invite'),
 		[handleRemoveMember],
 	);
 
