@@ -8,5 +8,8 @@ export { default as RequestsTable } from '@/components/features/student/GroupDas
 export { default as RequestStatusTag } from '@/components/features/student/GroupDashboard/GroupRequestsDialog/RequestStatusTag';
 export { default as StudentInfo } from '@/components/features/student/GroupDashboard/GroupRequestsDialog/StudentInfo';
 
+// Export Group Confirmation Modals
+export { GroupConfirmationModals } from '@/components/features/student/GroupDashboard/GroupConfirmationModals';
+
 // Re-export the main component for convenience
 export { default } from '@/components/features/student/GroupDashboard/GroupRequestsDialog';
