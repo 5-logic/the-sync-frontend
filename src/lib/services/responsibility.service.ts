@@ -1,17 +1,6 @@
 import httpClient from '@/lib/services/_httpClient';
-
-export interface Responsibility {
-	id: string;
-	name: string;
-	createdAt: Date;
-	updatedAt: Date;
-}
-
-export interface ResponsibilityApiResponse {
-	success: boolean;
-	statusCode: number;
-	data: Responsibility[];
-}
+import { ApiResponse } from '@/schemas/_common';
+import { type Responsibility } from '@/schemas/responsibility';
 
 export class ResponsibilityService {
 	private static readonly baseUrl = '/responsibilities';
@@ -21,10 +10,12 @@ export class ResponsibilityService {
 	 */
 	static async getAll(): Promise<Responsibility[]> {
 		try {
-			const response = await httpClient.get(this.baseUrl);
+			const response = await httpClient.get<ApiResponse<Responsibility[]>>(
+				this.baseUrl,
+			);
 
 			// Get the actual API response (axios wraps it in response.data)
-			const apiResponse: ResponsibilityApiResponse = response.data;
+			const apiResponse = response.data;
 
 			if (!apiResponse.success) {
 				throw new Error('Failed to fetch responsibilities');
@@ -39,12 +30,8 @@ export class ResponsibilityService {
 				);
 			}
 
-			// Transform string dates to Date objects
-			return responsibilitiesData.map((responsibility) => ({
-				...responsibility,
-				createdAt: new Date(responsibility.createdAt),
-				updatedAt: new Date(responsibility.updatedAt),
-			}));
+			// Return the data directly since schema transformation handles date parsing
+			return responsibilitiesData;
 		} catch (error) {
 			if (error instanceof Error) {
 				throw error;
