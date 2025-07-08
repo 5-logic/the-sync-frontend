@@ -3,12 +3,11 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { FormLabel } from '@/components/common/FormLabel';
 import { useSessionData } from '@/hooks/auth/useAuth';
+import { useStudentInviteHandlers } from '@/hooks/useStudentInviteHandlers';
 import { TEAM_CONFIG, TEAM_STYLES } from '@/lib/constants';
 import { showNotification } from '@/lib/utils/notification';
 import {
-	createRemoveMemberHandler,
 	createStudentAutoCompleteOptions,
-	createStudentSelectHandler,
 	createStudentTableColumns,
 } from '@/lib/utils/studentInviteHelpers';
 import type { Student } from '@/schemas/student';
@@ -190,24 +189,12 @@ export default function InviteTeamMembers({
 		],
 	);
 
-	const handleStudentSelect = useCallback(
-		(value: string) => {
-			const handler = createStudentSelectHandler(students, handleAddMember);
-			handler(value);
-		},
-		[students, handleAddMember],
-	);
-
-	const handleRemoveMember = useCallback(
-		(memberId: string) => {
-			const handler = createRemoveMemberHandler(
-				members,
-				onMembersChange,
-				showNotification,
-			);
-			handler(memberId);
-		},
-		[members, onMembersChange],
+	// Use shared handlers from custom hook
+	const { handleStudentSelect, handleRemoveMember } = useStudentInviteHandlers(
+		students,
+		members,
+		onMembersChange,
+		handleAddMember,
 	);
 
 	const columns = useMemo(
