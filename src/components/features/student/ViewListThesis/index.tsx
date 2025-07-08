@@ -47,7 +47,7 @@ export default function ViewListThesis() {
 							<Row gutter={[16, 16]}>
 								{paginatedTheses.length > 0 ? (
 									paginatedTheses.map((thesis) => (
-										<Col span={8} key={thesis.id}>
+										<Col xs={24} sm={12} md={8} key={thesis.id}>
 											<ThesisCard thesis={thesis} />
 										</Col>
 									))

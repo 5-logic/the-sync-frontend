@@ -46,7 +46,7 @@ export default function ThesisCard({ thesis }: Props) {
 					</Tag>
 				)}
 
-				<Space wrap>
+				<Space wrap size={[8, 8]}>
 					{thesis.skills.map((skill) => (
 						<Tag
 							key={skill}
@@ -59,13 +59,7 @@ export default function ThesisCard({ thesis }: Props) {
 				</Space>
 			</Space>
 
-			<div
-				style={{
-					display: 'flex',
-					gap: 8,
-					marginTop: 24,
-				}}
-			>
+			<div style={{ display: 'flex', gap: 8, marginTop: 24 }}>
 				<Button type="primary" block>
 					View Details
 				</Button>
