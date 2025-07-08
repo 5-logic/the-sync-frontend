@@ -18,7 +18,7 @@ const GroupStatusContext = createContext<GroupStatusContextType | undefined>(
 );
 
 interface GroupStatusProviderProps {
-	children: ReactNode;
+	readonly children: ReactNode;
 }
 
 export function GroupStatusProvider({ children }: GroupStatusProviderProps) {
