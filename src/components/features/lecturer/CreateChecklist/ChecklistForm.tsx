@@ -15,7 +15,7 @@ import type { ChecklistItemCreate } from '@/schemas/checklist';
 
 // Type dùng chung cho cả Import và Manual Form
 interface ChecklistItemTemp extends ChecklistItemCreate {
-	id: string;
+	readonly id: string;
 }
 
 type Mode = 'import' | 'manual';
