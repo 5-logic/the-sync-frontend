@@ -9,17 +9,33 @@ export const useStudentGroupStatus = () => {
 	const router = useRouter();
 
 	useEffect(() => {
-		const checkGroupStatus = async () => {
-			if (!isInitialized) {
-				await fetchStudentGroup();
-				setIsInitialized(true);
-			}
-		};
+		if (!isInitialized) {
+			console.log('useStudentGroupStatus: fetching group status...');
 
-		checkGroupStatus();
-	}, [fetchStudentGroup, isInitialized]);
+			// Debug: Check localStorage
+			try {
+				const storedData = localStorage.getItem('group-dashboard-storage');
+				console.log('Stored group data:', storedData);
+			} catch (e) {
+				console.log('Error reading localStorage:', e);
+			}
+
+			// Force refresh to bypass any cache issues
+			fetchStudentGroup(true);
+			setIsInitialized(true);
+		}
+		// ESLint disabled: We want this to run only once to initialize
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [isInitialized]); // Only depend on isInitialized
 
 	const hasGroup = group !== null;
+
+	console.log('useStudentGroupStatus state:', {
+		hasGroup,
+		group: group?.id,
+		loading,
+		isInitialized,
+	});
 
 	const redirectToAppropriateScreen = () => {
 		if (hasGroup) {
@@ -29,6 +45,10 @@ export const useStudentGroupStatus = () => {
 		}
 	};
 
+	const resetInitialization = () => {
+		setIsInitialized(false);
+	};
+
 	return {
 		hasGroup,
 		group,
@@ -36,6 +56,7 @@ export const useStudentGroupStatus = () => {
 		// when either the store is loading OR when not yet initialized
 		// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
 		loading: loading || !isInitialized,
+		resetInitialization,
 		redirectToAppropriateScreen,
 	};
 };
