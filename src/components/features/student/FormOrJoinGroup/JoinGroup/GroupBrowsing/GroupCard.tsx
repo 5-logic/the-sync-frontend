@@ -1,5 +1,6 @@
 import { UserOutlined } from '@ant-design/icons';
 import { Button, Card, Grid, Space, Tag, Typography } from 'antd';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { GroupConfirmationModals } from '@/components/common/ConfirmModal';
@@ -50,16 +51,25 @@ export default function GroupCard({
 	existingRequests = [],
 }: GroupCardProps) {
 	const [isRequesting, setIsRequesting] = useState(false);
+	const router = useRouter();
 	const screens = useBreakpoint();
 	const padding = screens.xs
 		? CARD_CONFIG.PADDING_MOBILE
 		: CARD_CONFIG.PADDING_DESKTOP;
 
-	// Check if user already has a pending request for this group
-	const hasExistingRequest = existingRequests.some(
+	// Check if user already has a pending join request for this group
+	const hasPendingJoinRequest = existingRequests.some(
 		(request) =>
 			request.groupId === group.id &&
 			request.type === 'Join' &&
+			request.status === 'Pending',
+	);
+
+	// Check if user has a pending invite request for this group
+	const hasPendingInviteRequest = existingRequests.some(
+		(request) =>
+			request.groupId === group.id &&
+			request.type === 'Invite' &&
 			request.status === 'Pending',
 	);
 
@@ -84,6 +94,10 @@ export default function GroupCard({
 			},
 			isRequesting,
 		);
+	};
+
+	const handleViewDetail = () => {
+		router.push(`/student/form-or-join-group/${group.id}`);
 	};
 
 	const getCardStyles = () => ({
@@ -195,6 +209,7 @@ export default function GroupCard({
 							style={getButtonStyles()}
 							title="View Group Detail"
 							aria-label={`View details for ${group.name}`}
+							onClick={handleViewDetail}
 						>
 							View Group Detail
 						</Button>
@@ -202,18 +217,30 @@ export default function GroupCard({
 							type="primary"
 							style={getButtonStyles(true)}
 							title={
-								hasExistingRequest ? 'Request already sent' : 'Request to Join'
+								hasPendingInviteRequest
+									? 'You have been invited to this group - click to view details'
+									: hasPendingJoinRequest
+										? 'Request already sent'
+										: 'Request to Join'
 							}
 							aria-label={
-								hasExistingRequest
-									? `Request already sent to ${group.name}`
-									: `Request to join ${group.name}`
+								hasPendingInviteRequest
+									? `You have been invited to ${group.name}`
+									: hasPendingJoinRequest
+										? `Request already sent to ${group.name}`
+										: `Request to join ${group.name}`
 							}
-							onClick={handleJoinRequest}
+							onClick={
+								hasPendingInviteRequest ? handleViewDetail : handleJoinRequest
+							}
 							loading={isRequesting}
-							disabled={isRequesting || hasExistingRequest}
+							disabled={isRequesting || hasPendingJoinRequest}
 						>
-							{hasExistingRequest ? 'Request Sent' : 'Request to Join'}
+							{hasPendingInviteRequest
+								? 'View Invite'
+								: hasPendingJoinRequest
+									? 'Request Sent'
+									: 'Request to Join'}
 						</Button>
 					</div>
 				</div>
