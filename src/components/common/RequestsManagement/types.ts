@@ -10,29 +10,29 @@ export interface RequestsConfig {
 }
 
 export interface RequestsDialogProps {
-	visible: boolean;
-	onCancel: () => void;
-	config: RequestsConfig;
-	onRequestsUpdate?: () => void;
+	readonly visible: boolean;
+	readonly onCancel: () => void;
+	readonly config: RequestsConfig;
+	readonly onRequestsUpdate?: () => void;
 }
 
 export interface RequestsButtonProps {
-	config: RequestsConfig;
-	children: React.ReactNode;
-	requests: GroupRequest[];
+	readonly config: RequestsConfig;
+	readonly children: React.ReactNode;
+	readonly requests: GroupRequest[];
 }
 
 export interface RequestsTabProps {
-	requestType: 'invite' | 'join';
-	dataSource: GroupRequest[];
-	loading: boolean;
-	searchText: string;
-	statusFilter: string | undefined;
-	onSearchChange: (value: string) => void;
-	onStatusFilterChange: (value: string | undefined) => void;
-	onRefresh: () => void;
-	mode: RequestsMode;
-	getActionProps: (
+	readonly requestType: 'invite' | 'join';
+	readonly dataSource: GroupRequest[];
+	readonly loading: boolean;
+	readonly searchText: string;
+	readonly statusFilter: string | undefined;
+	readonly onSearchChange: (value: string) => void;
+	readonly onStatusFilterChange: (value: string | undefined) => void;
+	readonly onRefresh: () => void;
+	readonly mode: RequestsMode;
+	readonly getActionProps: (
 		requestId: string,
 		requestType: 'Invite' | 'Join',
 		targetName: string, // Group name for student, Student name for leader
