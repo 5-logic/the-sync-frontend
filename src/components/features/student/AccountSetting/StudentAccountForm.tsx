@@ -19,6 +19,10 @@ import React, { useEffect, useState } from 'react';
 
 import { FormLabel } from '@/components/common/FormLabel';
 import { useOptimizedSession } from '@/hooks/auth/useAuth';
+import {
+	isValidVietnamesePhone,
+	normalizeVietnamesePhone,
+} from '@/lib/utils/validations';
 import { SkillSet } from '@/schemas/skill';
 import { StudentProfile, StudentSelfUpdate } from '@/schemas/student';
 import {
@@ -232,7 +236,7 @@ const StudentAccountForm: React.FC = () => {
 			const profileUpdateData: StudentSelfUpdate = {
 				fullName: values.fullName.trim(),
 				gender: values.gender as 'Male' | 'Female',
-				phoneNumber: values.phoneNumber.trim(),
+				phoneNumber: normalizeVietnamesePhone(values.phoneNumber.trim()),
 				studentSkills,
 				studentExpectedResponsibilities,
 			};
@@ -441,9 +445,16 @@ const StudentAccountForm: React.FC = () => {
 						rules={[
 							{ required: true, message: 'Please enter your phone number' },
 							{
-								pattern:
-									/^(?:\+84|0084|84|0)(?:3[2-9]|5[2689]|7[06-9]|8[1-5]|9[0-4|6-9])\d{7}$/,
-								message: 'Please enter a valid Vietnamese phone number',
+								validator: (_, value) => {
+									if (!value) return Promise.resolve();
+									const normalized = normalizeVietnamesePhone(value);
+									if (isValidVietnamesePhone(normalized)) {
+										return Promise.resolve();
+									}
+									return Promise.reject(
+										new Error('Please enter a valid Vietnamese phone number'),
+									);
+								},
 							},
 						]}
 					>
