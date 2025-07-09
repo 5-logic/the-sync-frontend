@@ -79,10 +79,12 @@ export default function FormOrJoinGroup() {
 	// All Available Groups (using API data)
 	const allApiGroups = useMemo(() => mapApiGroupsToUI(apiGroups), [apiGroups]);
 
-	// Fetch groups on component mount
+	// Fetch groups and requests on component mount
 	useEffect(() => {
 		fetchGroups();
-	}, [fetchGroups]);
+		// Also fetch requests to make sure badge is up to date
+		fetchStudentRequests(true);
+	}, [fetchGroups, fetchStudentRequests]);
 
 	useEffect(() => {
 		const tab = searchParams.get('tab');
