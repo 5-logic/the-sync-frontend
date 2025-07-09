@@ -98,6 +98,7 @@ export default function RequestsTable({
 						requestType={requestType}
 						targetName={targetName}
 						mode={mode}
+						status={record.status}
 						getActionProps={getActionProps}
 					/>
 				);
