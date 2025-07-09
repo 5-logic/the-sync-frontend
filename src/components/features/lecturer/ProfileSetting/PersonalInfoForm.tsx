@@ -1,11 +1,14 @@
 'use client';
 
-import { UserOutlined } from '@ant-design/icons';
-import { Avatar, Button, Form, Input, Radio, Space } from 'antd';
+import { Button, Form, Input, Radio } from 'antd';
 import { useCallback, useEffect, useMemo } from 'react';
 
 import { FormLabel } from '@/components/common/FormLabel';
 import { useOptimizedSession } from '@/hooks/auth/useAuth';
+import {
+	isValidVietnamesePhone,
+	normalizeVietnamesePhone,
+} from '@/lib/utils/validations';
 import { LecturerUpdate } from '@/schemas/lecturer';
 import { useLecturerStore } from '@/store';
 
@@ -18,9 +21,6 @@ interface FormValues {
 }
 
 // Constants moved outside component to prevent recreation
-const PHONE_PATTERN =
-	/^(?:\+84|0084|84|0)(?:3[2-9]|5[2689]|7[06-9]|8[1-5]|9[0-4|6-9])\d{7}$/;
-
 const VALIDATION_RULES = {
 	fullName: [
 		{ required: true, message: 'Please enter Full Name' },
@@ -30,16 +30,25 @@ const VALIDATION_RULES = {
 	phoneNumber: [
 		{ required: true, message: 'Please enter Phone Number' },
 		{
-			pattern: PHONE_PATTERN,
-			message: 'Please enter a valid Vietnamese phone number',
+			validator: (_: unknown, value: string) => {
+				if (!value) {
+					return Promise.reject(new Error('Please enter Phone Number'));
+				}
+
+				if (!isValidVietnamesePhone(value)) {
+					return Promise.reject(
+						new Error('Please enter a valid Vietnamese phone number'),
+					);
+				}
+
+				return Promise.resolve();
+			},
 		},
 	],
 	gender: [{ required: true, message: 'Please select gender' }],
 };
 
 // Styling constants
-const AVATAR_SIZE = 80;
-const FORM_SPACING = 16;
 const BUTTON_GAP = 8;
 
 export default function PersonalInfoForm() {
@@ -88,10 +97,13 @@ export default function PersonalInfoForm() {
 				return;
 			}
 
+			// Normalize phone number before sending to API
+			const normalizedPhone = normalizeVietnamesePhone(values.phoneNumber);
+
 			// Prepare update profile data (only the fields that can be updated)
 			const profileUpdateData: LecturerUpdate = {
 				fullName: values.fullName.trim(),
-				phoneNumber: values.phoneNumber.trim(),
+				phoneNumber: normalizedPhone,
 				gender: values.gender as 'Male' | 'Female',
 			};
 
@@ -120,13 +132,9 @@ export default function PersonalInfoForm() {
 			requiredMark={false}
 			onFinish={handleFinish}
 		>
-			<Space
-				direction="vertical"
-				align="center"
-				style={{ width: '100%', marginBottom: FORM_SPACING }}
-			>
-				<Avatar size={AVATAR_SIZE} icon={<UserOutlined />} />
-			</Space>
+			<Form.Item name="email" label={<FormLabel text="Email" isBold />}>
+				<Input disabled />
+			</Form.Item>
 
 			<Form.Item
 				name="fullName"
@@ -153,10 +161,6 @@ export default function PersonalInfoForm() {
 					<Radio value="Male">Male</Radio>
 					<Radio value="Female">Female</Radio>
 				</Radio.Group>
-			</Form.Item>
-
-			<Form.Item name="email" label={<FormLabel text="Email" isBold />}>
-				<Input disabled />
 			</Form.Item>
 
 			<div
