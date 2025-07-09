@@ -4,15 +4,16 @@ import { Card, Col, Row, Space, Typography } from 'antd';
 import { useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import CreateGroupForm from '@/components/features/student/FormOrJoinGroup/CreateGroupForm';
+import { RequestsButton } from '@/components/common/RequestsManagement';
+import CreateGroupForm from '@/components/features/student/FormOrJoinGroup/CreateGroup/CreateGroupForm';
 import FormOrJoinTabs from '@/components/features/student/FormOrJoinGroup/FormOrJoinTabs';
-import GroupListSection from '@/components/features/student/FormOrJoinGroup/GroupListSection';
-import InviteRequestButton from '@/components/features/student/FormOrJoinGroup/InviteRequestButton';
-import JoinGroupForm from '@/components/features/student/FormOrJoinGroup/JoinGroupForm';
+import GroupListSection from '@/components/features/student/FormOrJoinGroup/JoinGroup/GroupBrowsing/GroupListSection';
+import JoinGroupForm from '@/components/features/student/FormOrJoinGroup/JoinGroup/JoinGroupForm';
 import { type ExtendedGroup, extendedGroups } from '@/data/group';
 import { mockTheses } from '@/data/thesis';
 import { type Group } from '@/lib/services/groups.service';
 import { Thesis } from '@/schemas/thesis';
+import { useRequestsStore } from '@/store';
 import { useGroupsStore } from '@/store/useGroupsStore';
 
 const { Title, Paragraph } = Typography;
@@ -30,7 +31,7 @@ const CARD_STYLES = {
 interface GroupUI {
 	readonly id: string;
 	readonly name: string;
-	readonly description: string;
+	readonly leader: string; // Changed from description to leader
 	readonly domain: string;
 	readonly members: number;
 }
@@ -40,9 +41,9 @@ const mapApiGroupsToUI = (apiGroups: Group[]): GroupUI[] =>
 	apiGroups.map((group) => ({
 		id: group.id,
 		name: group.name,
-		description: group.projectDirection || 'No description available',
+		leader: group.leader?.student?.user?.fullName || 'No leader assigned', // Map leader name
 		domain: group.projectDirection || 'General',
-		members: 0, // Will be updated when we have member data from API
+		members: group.memberCount || 0, // Use memberCount from API
 	}));
 
 // Helper function to map mock data (for Suggested Groups by AI)
@@ -55,7 +56,7 @@ const mapMockGroupsToUI = (
 		return {
 			id: group.id,
 			name: thesis?.englishName ?? group.thesisTitle ?? group.name,
-			description: thesis?.description ?? '',
+			leader: 'AI Suggested', // For suggested groups, use placeholder
 			domain: thesis?.domain ?? 'Unknown',
 			members: group.members ?? 0,
 		};
@@ -64,6 +65,7 @@ const mapMockGroupsToUI = (
 export default function FormOrJoinGroup() {
 	const searchParams = useSearchParams();
 	const { groups: apiGroups, loading, error, fetchGroups } = useGroupsStore();
+	const { requests, fetchStudentRequests } = useRequestsStore();
 	const [tabKey, setTabKey] = useState<string>(TAB_KEYS.JOIN);
 	const [search, setSearch] = useState<string>('');
 	const [category, setCategory] = useState<string | undefined>(undefined);
@@ -99,7 +101,7 @@ export default function FormOrJoinGroup() {
 			const matchesSearch =
 				!search ||
 				group.name.toLowerCase().includes(searchLower) ||
-				group.description.toLowerCase().includes(searchLower);
+				group.leader.toLowerCase().includes(searchLower);
 			const matchesCategory = !category || group.domain === category;
 			return matchesSearch && matchesCategory;
 		});
@@ -141,6 +143,13 @@ export default function FormOrJoinGroup() {
 		);
 	};
 
+	// Configuration for shared RequestsButton (student mode)
+	const requestsConfig = {
+		mode: 'student' as const,
+		title: 'My Requests',
+		fetchRequests: fetchStudentRequests,
+	};
+
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
 			{/* Header Section */}
@@ -157,7 +166,19 @@ export default function FormOrJoinGroup() {
 					</Space>
 				</Col>
 				<Col xs={24} sm={6} md={6} lg={4}>
-					<InviteRequestButton />
+					<div
+						style={{
+							textAlign: 'right',
+							display: 'flex',
+							justifyContent: 'flex-end',
+							alignItems: 'center',
+							height: '100%',
+						}}
+					>
+						<RequestsButton config={requestsConfig} requests={requests}>
+							My Requests
+						</RequestsButton>
+					</div>
 				</Col>
 			</Row>
 
