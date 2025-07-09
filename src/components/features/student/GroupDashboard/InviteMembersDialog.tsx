@@ -47,7 +47,6 @@ export default function InviteMembersDialog({
 			);
 
 			if (response.success) {
-				console.log('Invite successful, refreshing requests...');
 				showNotification.success(
 					`Successfully sent ${selectedMembers.length} invitation(s)!`,
 				);
@@ -55,7 +54,6 @@ export default function InviteMembersDialog({
 
 				// Refresh requests to update badge and table
 				await fetchGroupRequests(groupId, true);
-				console.log('Requests refreshed after invite');
 
 				onSuccess();
 			} else {
