@@ -239,6 +239,23 @@ export const GroupConfirmationModals = {
 			onOk: onConfirm,
 		}),
 
+	cancelJoinRequest: (
+		groupName: string,
+		onConfirm: () => void | Promise<void>,
+		loading = false,
+	) =>
+		ConfirmationModal.show({
+			title: 'Cancel Join Request',
+			message: 'Are you sure you want to cancel your join request?',
+			details: groupName,
+			note: 'You can send another request later if you change your mind.',
+			noteType: 'warning',
+			okText: 'Yes, Cancel Request',
+			okType: 'danger',
+			loading,
+			onOk: onConfirm,
+		}),
+
 	// Generic show method for custom modals
 	show: ConfirmationModal.show,
 };
