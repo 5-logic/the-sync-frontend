@@ -116,6 +116,31 @@ export default function FormOrJoinGroup() {
 		[],
 	);
 
+	// Helper function to render All Available Groups section
+	const renderAllAvailableGroups = () => {
+		if (loading) {
+			return <div>Loading groups...</div>;
+		}
+
+		if (error) {
+			return <div>Error loading groups: {error}</div>;
+		}
+
+		return (
+			<GroupListSection
+				title="All Available Groups"
+				groups={filteredApiGroups}
+				showFilter
+				search={search}
+				onSearchChange={handleSearchChange}
+				category={category}
+				onCategoryChange={handleCategoryChange}
+				pageSize={6}
+				enablePagination={true}
+			/>
+		);
+	};
+
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
 			{/* Header Section */}
@@ -150,23 +175,7 @@ export default function FormOrJoinGroup() {
 								enablePagination={false}
 							/>
 							{/* All Available Groups uses API data with loading/error states */}
-							{loading ? (
-								<div>Loading groups...</div>
-							) : error ? (
-								<div>Error loading groups: {error}</div>
-							) : (
-								<GroupListSection
-									title="All Available Groups"
-									groups={filteredApiGroups}
-									showFilter
-									search={search}
-									onSearchChange={handleSearchChange}
-									category={category}
-									onCategoryChange={handleCategoryChange}
-									pageSize={6}
-									enablePagination={true}
-								/>
-							)}
+							{renderAllAvailableGroups()}
 						</>
 					)}
 
