@@ -125,14 +125,6 @@ export default function FormOrJoinGroup() {
 
 	// Helper function to render All Available Groups section
 	const renderAllAvailableGroups = () => {
-		if (loading) {
-			return <div>Loading groups...</div>;
-		}
-
-		if (error) {
-			return <div>Error loading groups: {error}</div>;
-		}
-
 		return (
 			<GroupListSection
 				title="All Available Groups"
@@ -146,6 +138,12 @@ export default function FormOrJoinGroup() {
 				enablePagination={true}
 				onRequestSent={handleRequestSent}
 				existingRequests={requests}
+				loading={loading}
+				error={error}
+				onRefresh={() => {
+					// Force refresh groups data
+					fetchGroups();
+				}}
 			/>
 		);
 	};
