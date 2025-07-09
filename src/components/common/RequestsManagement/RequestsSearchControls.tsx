@@ -38,6 +38,7 @@ export default function RequestsSearchControls({
 					{ label: 'Pending', value: 'Pending' },
 					{ label: 'Approved', value: 'Approved' },
 					{ label: 'Rejected', value: 'Rejected' },
+					{ label: 'Cancelled', value: 'Cancelled' },
 				]}
 			/>
 			<Button
