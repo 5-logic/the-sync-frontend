@@ -89,7 +89,7 @@ const renderFilterControls = (
 	onCategoryChange?: (value: string | undefined) => void,
 ) => {
 	return (
-		<Row gutter={[16, 8]} style={{ width: '100%' }}>
+		<>
 			<Col {...BREAKPOINT_CONFIGS.SEARCH_WIDTH}>
 				<Input
 					placeholder={MESSAGES.SEARCH_PLACEHOLDER}
@@ -130,7 +130,7 @@ const renderFilterControls = (
 					}))}
 				/>
 			</Col>
-		</Row>
+		</>
 	);
 };
 
@@ -261,17 +261,14 @@ export default function GroupListSection({
 			size={STYLE_CONSTANTS.SPACE_SIZE}
 			style={{ width: '100%' }}
 		>
+			{/* Title Row */}
 			<Row
-				align="middle"
-				justify="space-between"
 				style={{
 					marginTop: STYLE_CONSTANTS.MARGIN_TOP,
-					marginBottom: STYLE_CONSTANTS.MARGIN_BOTTOM,
+					marginBottom: showFilter ? 8 : STYLE_CONSTANTS.MARGIN_BOTTOM,
 				}}
-				wrap
-				gutter={[16, 8]}
 			>
-				<Col xs={24} sm={24} md={12} lg={16} xl={18}>
+				<Col span={24}>
 					<Title
 						level={2}
 						style={{
@@ -282,19 +279,26 @@ export default function GroupListSection({
 						{title}
 					</Title>
 				</Col>
-				{showFilter && (
-					<Col xs={24} sm={24} md={12} lg={8} xl={6}>
-						{renderFilterControls(
-							fontSize,
-							screens,
-							search,
-							onSearchChange,
-							category,
-							onCategoryChange,
-						)}
-					</Col>
-				)}
 			</Row>
+
+			{/* Search and Filter Row */}
+			{showFilter && (
+				<Row
+					gutter={[16, 8]}
+					style={{
+						marginBottom: STYLE_CONSTANTS.MARGIN_BOTTOM,
+					}}
+				>
+					{renderFilterControls(
+						fontSize,
+						screens,
+						search,
+						onSearchChange,
+						category,
+						onCategoryChange,
+					)}
+				</Row>
+			)}
 
 			{enablePagination
 				? renderContentWithPagination(
