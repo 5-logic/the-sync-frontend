@@ -12,12 +12,30 @@ export interface GroupCreate {
 
 export interface Group {
 	id: string;
+	code: string;
 	name: string;
 	projectDirection?: string;
-	skillIds?: string[];
-	responsibilityIds?: string[];
 	createdAt: string;
 	updatedAt: string;
+	semester: {
+		id: string;
+		name: string;
+		code: string;
+		status: string;
+	};
+	memberCount: number;
+	skillCount: number;
+	responsibilityCount: number;
+	leader: {
+		student: {
+			userId: string;
+			studentCode: string;
+			user: {
+				id: string;
+				fullName: string;
+			};
+		};
+	};
 }
 
 class GroupService {
