@@ -48,9 +48,6 @@ const VALIDATION_RULES = {
 	gender: [{ required: true, message: 'Please select gender' }],
 };
 
-// Styling constants
-const BUTTON_GAP = 8;
-
 export default function PersonalInfoForm() {
 	const [form] = Form.useForm();
 	const { session, isAuthenticated } = useOptimizedSession();
@@ -119,12 +116,6 @@ export default function PersonalInfoForm() {
 		[clearError, updateProfile],
 	);
 
-	const handleCancel = useCallback(() => {
-		clearError();
-		// Reset form to original values from session
-		form.setFieldsValue(formData);
-	}, [clearError, form, formData]);
-
 	return (
 		<Form
 			layout="vertical"
@@ -166,13 +157,9 @@ export default function PersonalInfoForm() {
 			<div
 				style={{
 					display: 'flex',
-					gap: BUTTON_GAP,
 					justifyContent: 'flex-end',
 				}}
 			>
-				<Button onClick={handleCancel} disabled={updatingProfile}>
-					Cancel
-				</Button>
 				<Button type="primary" htmlType="submit" loading={updatingProfile}>
 					Save Changes
 				</Button>
