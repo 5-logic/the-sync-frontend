@@ -1,7 +1,7 @@
 'use client';
 
 import { PlusOutlined } from '@ant-design/icons';
-import { Button, Card, Input, Row, Space, Switch, Table } from 'antd';
+import { Button, Card, Form, Input, Row, Space, Switch, Table } from 'antd';
 import { UploadFile } from 'antd/es/upload/interface';
 import { useState } from 'react';
 
@@ -11,23 +11,17 @@ import ChecklistDragger from '@/components/features/lecturer/CreateChecklist/Che
 import { mockMilestones } from '@/data/milestone';
 import { mockSemesters } from '@/data/semester';
 import { showNotification } from '@/lib/utils';
-import type { ChecklistItemCreate } from '@/schemas/checklist';
-
-// Type dùng chung cho cả Import và Manual Form
-interface ChecklistItemTemp extends ChecklistItemCreate {
-	readonly id: string;
-}
 
 type Mode = 'import' | 'manual';
 
 interface UnifiedChecklistFormProps {
-	readonly mode: Mode;
+	mode: Mode;
 }
 
 export default function UnifiedChecklistForm({
 	mode,
 }: UnifiedChecklistFormProps) {
-	const [items, setItems] = useState<ChecklistItemTemp[]>([]);
+	const [form] = Form.useForm();
 	const [fileList, setFileList] = useState<UploadFile[]>([]);
 	const [checklistName, setChecklistName] = useState('');
 	const [checklistDescription, setChecklistDescription] = useState('');
@@ -35,146 +29,56 @@ export default function UnifiedChecklistForm({
 	const [selectedSemester, setSelectedSemester] = useState<string>('');
 	const [selectedMilestone, setSelectedMilestone] = useState<string>('');
 
-	const handleAddItem = () => {
-		const newItem: ChecklistItemTemp = {
-			id: Date.now().toString(),
-			name: '',
-			description: '',
-			isRequired: false,
-			checklistId: '',
-		};
-		setItems((prev) => [...prev, newItem]);
-	};
-
-	const handleRemoveItem = (id: string) => {
-		setItems((prev) => prev.filter((item) => item.id !== id));
-	};
-
-	const handleChangeItem = (
-		id: string,
-		field: keyof ChecklistItemCreate,
-		value: string | boolean,
-	) => {
-		setItems((prev) =>
-			prev.map((item) => (item.id === id ? { ...item, [field]: value } : item)),
-		);
-	};
-
 	const handleCancel = () => {
-		setItems([]);
+		form.resetFields();
 		setFileList([]);
 		setShowErrors(false);
 		showNotification.info('Checklist action cancelled.');
 	};
 
-	const handleSaveAll = () => {
+	const handleSaveAll = async () => {
 		setShowErrors(true);
+		try {
+			const values = await form.validateFields();
 
-		if (!selectedSemester || !selectedMilestone) {
-			showNotification.warning(
-				'Missing Semester or Milestone',
-				'Please select both semester and milestone before saving.',
-			);
-			return;
+			if (!selectedSemester || !selectedMilestone) {
+				showNotification.warning(
+					'Missing Semester or Milestone',
+					'Please select both semester and milestone before saving.',
+				);
+				return;
+			}
+
+			if (!checklistName.trim() || !checklistDescription.trim()) {
+				showNotification.warning(
+					'Missing Checklist Info',
+					'Please provide checklist name and description.',
+				);
+				return;
+			}
+
+			if (values.items.length === 0) {
+				showNotification.warning(
+					'No items added',
+					'Please add at least one checklist item before saving.',
+				);
+				return;
+			}
+
+			console.log('Checklist saved with:', {
+				semester: selectedSemester,
+				milestone: selectedMilestone,
+				name: checklistName,
+				description: checklistDescription,
+				items: values.items,
+			});
+			showNotification.success('Checklist saved successfully!');
+			setShowErrors(false);
+			// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		} catch (err) {
+			// Validation failed, already shown in UI
 		}
-
-		if (!checklistName.trim() || !checklistDescription.trim()) {
-			showNotification.warning(
-				'Missing Checklist Info',
-				'Please provide checklist name and description.',
-			);
-			return;
-		}
-
-		if (items.length === 0) {
-			showNotification.warning(
-				'No items added',
-				'Please add at least one checklist item before saving.',
-			);
-			return;
-		}
-
-		const hasEmptyFields = items.some(
-			(item) => !item.name.trim() || !item.description?.trim(),
-		);
-
-		if (hasEmptyFields) {
-			showNotification.warning(
-				'Missing Required Fields',
-				'Please ensure all checklist items have a name and description.',
-			);
-			return;
-		}
-
-		console.log('Checklist saved with:', {
-			semester: selectedSemester,
-			milestone: selectedMilestone,
-			name: checklistName,
-			description: checklistDescription,
-			items,
-		});
-		showNotification.success('Checklist saved successfully!');
-		setShowErrors(false);
 	};
-
-	const columns = [
-		{
-			title: 'Item Name',
-			dataIndex: 'name',
-			key: 'name',
-			render: (_: unknown, record: ChecklistItemTemp) => (
-				<Input
-					placeholder="Enter item name"
-					value={record.name}
-					onChange={(e) => handleChangeItem(record.id, 'name', e.target.value)}
-					status={showErrors && !record.name.trim() ? 'error' : undefined}
-				/>
-			),
-		},
-		{
-			title: 'Description',
-			dataIndex: 'description',
-			key: 'description',
-			render: (_: unknown, record: ChecklistItemTemp) => (
-				<Input
-					placeholder="Enter description"
-					value={record.description || ''}
-					onChange={(e) =>
-						handleChangeItem(record.id, 'description', e.target.value)
-					}
-					status={
-						showErrors && !record.description?.trim() ? 'error' : undefined
-					}
-				/>
-			),
-		},
-		{
-			title: 'Required',
-			dataIndex: 'isRequired',
-			key: 'isRequired',
-			align: 'center' as const,
-			width: 100,
-			render: (_: unknown, record: ChecklistItemTemp) => (
-				<Switch
-					checked={record.isRequired}
-					checkedChildren="Mandatory"
-					unCheckedChildren="Optional"
-					onChange={(checked) =>
-						handleChangeItem(record.id, 'isRequired', checked)
-					}
-				/>
-			),
-		},
-		{
-			title: 'Action',
-			key: 'action',
-			width: 80,
-			align: 'center' as const,
-			render: (_: unknown, record: ChecklistItemTemp) => (
-				<ChecklistDeleteButton onDelete={() => handleRemoveItem(record.id)} />
-			),
-		},
-	];
 
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
@@ -192,57 +96,126 @@ export default function UnifiedChecklistForm({
 				showErrors={showErrors}
 			/>
 
-			<Card
-				title="Checklist Items"
-				extra={
-					mode === 'manual' && (
-						<Button
-							type="primary"
-							icon={<PlusOutlined />}
-							onClick={handleAddItem}
-						>
-							Add New Item
-						</Button>
-					)
-				}
-			>
+			<Card title="Checklist Items">
 				{mode === 'import' && (
 					<ChecklistDragger
 						fileList={fileList}
 						setFileList={setFileList}
 						setChecklistItems={(items) =>
-							setItems(
-								items.map((item, idx) => ({
-									...item,
-									id: item.id ?? Date.now().toString() + idx,
-									checklistId: item.checklistId ?? '',
+							form.setFieldsValue({
+								items: items.map((item) => ({
+									name: item.name,
+									description: item.description,
+									isRequired: item.isRequired,
 								})),
-							)
+							})
 						}
 					/>
 				)}
 
-				{items.length > 0 && (
-					<>
-						<Table
-							columns={columns}
-							dataSource={items}
-							rowKey="id"
-							pagination={false}
-							style={{ marginTop: 24 }}
-							locale={{ emptyText: 'No checklist items added.' }}
-						/>
+				<Form form={form} name="checklist-form" layout="vertical">
+					<Form.List name="items">
+						{(fields, { add, remove }) => (
+							<>
+								<Table
+									dataSource={fields}
+									rowKey="key"
+									pagination={false}
+									locale={{ emptyText: 'No checklist items added.' }}
+									columns={[
+										{
+											title: 'Item Name',
+											dataIndex: 'name',
+											key: 'name',
+											render: (_, field) => (
+												<Form.Item
+													name={[field.name, 'name']}
+													rules={[{ required: true, message: 'Required' }]}
+													validateStatus={
+														showErrors &&
+														!form.getFieldValue(['items', field.name, 'name'])
+															? 'error'
+															: ''
+													}
+												>
+													<Input placeholder="Enter item name" />
+												</Form.Item>
+											),
+										},
+										{
+											title: 'Description',
+											dataIndex: 'description',
+											key: 'description',
+											render: (_, field) => (
+												<Form.Item
+													name={[field.name, 'description']}
+													rules={[{ required: true, message: 'Required' }]}
+													validateStatus={
+														showErrors &&
+														!form.getFieldValue([
+															'items',
+															field.name,
+															'description',
+														])
+															? 'error'
+															: ''
+													}
+												>
+													<Input placeholder="Enter description" />
+												</Form.Item>
+											),
+										},
+										{
+											title: 'Required',
+											dataIndex: 'isRequired',
+											key: 'isRequired',
+											align: 'center' as const,
+											width: 120,
+											render: (_, field) => (
+												<Form.Item
+													name={[field.name, 'isRequired']}
+													valuePropName="checked"
+												>
+													<Switch
+														checkedChildren="Mandatory"
+														unCheckedChildren="Optional"
+													/>
+												</Form.Item>
+											),
+										},
+										{
+											title: 'Action',
+											key: 'action',
+											width: 80,
+											align: 'center' as const,
+											render: (_, field) => (
+												<ChecklistDeleteButton
+													onDelete={() => remove(field.name)}
+												/>
+											),
+										},
+									]}
+								/>
 
-						<Row justify="end" style={{ marginTop: 36 }}>
-							<Space style={{ gap: 16 }}>
-								<Button onClick={handleCancel}>Cancel</Button>
-								<Button type="primary" onClick={handleSaveAll}>
-									{mode === 'manual' ? 'Save All' : 'Import All Checklist'}
-								</Button>
-							</Space>
-						</Row>
-					</>
-				)}
+								{/* Footer buttons */}
+								<Row justify="space-between" style={{ marginTop: 36 }}>
+									{mode === 'manual' && (
+										<Button icon={<PlusOutlined />} onClick={() => add()}>
+											Add New Item
+										</Button>
+									)}
+
+									<Space>
+										<Button onClick={handleCancel}>Cancel</Button>
+										<Button type="primary" onClick={handleSaveAll}>
+											{mode === 'manual' ? 'Save All' : 'Import All Checklist'}
+										</Button>
+									</Space>
+								</Row>
+							</>
+						)}
+					</Form.List>
+				</Form>
 			</Card>
 		</Space>
 	);
