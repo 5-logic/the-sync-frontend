@@ -118,6 +118,11 @@ export default function FormOrJoinGroup() {
 		[],
 	);
 
+	// Callback to refresh requests when a join request is sent
+	const handleRequestSent = useCallback(() => {
+		fetchStudentRequests(true); // Force refresh
+	}, [fetchStudentRequests]);
+
 	// Helper function to render All Available Groups section
 	const renderAllAvailableGroups = () => {
 		if (loading) {
@@ -139,6 +144,8 @@ export default function FormOrJoinGroup() {
 				onCategoryChange={handleCategoryChange}
 				pageSize={6}
 				enablePagination={true}
+				onRequestSent={handleRequestSent}
+				existingRequests={requests}
 			/>
 		);
 	};
@@ -194,6 +201,8 @@ export default function FormOrJoinGroup() {
 								title="Suggested Groups by AI"
 								groups={suggestedGroups}
 								enablePagination={false}
+								onRequestSent={handleRequestSent}
+								existingRequests={requests}
 							/>
 							{/* All Available Groups uses API data with loading/error states */}
 							{renderAllAvailableGroups()}
