@@ -13,11 +13,12 @@ export default function RequestsButton({
 
 	// Fetch requests on mount
 	useEffect(() => {
-		config.fetchRequests();
+		// Force fetch requests on mount
+		config.fetchRequests(true);
 		// ESLint is disabled here because including store functions in dependencies
 		// would cause infinite re-renders as Zustand functions get new references
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [config.groupId]);
+	}, []);
 
 	// Count pending requests
 	const pendingRequestsCount = requests.filter(
