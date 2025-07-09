@@ -1,4 +1,5 @@
 import { createMetadata } from '@/app/metadata';
+import GroupStatusGuard from '@/components/common/GroupStatusGuard';
 import FormOrJoinGroupPageClient from '@/components/pages/student/FormOrJoinGroupPageClient';
 
 export const metadata = createMetadata({
@@ -8,5 +9,9 @@ export const metadata = createMetadata({
 });
 
 export default function StudentFormOrJoinGroupPage() {
-	return <FormOrJoinGroupPageClient />;
+	return (
+		<GroupStatusGuard requiresGroup={false}>
+			<FormOrJoinGroupPageClient />
+		</GroupStatusGuard>
+	);
 }

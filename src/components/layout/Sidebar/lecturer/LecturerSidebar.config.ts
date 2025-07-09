@@ -1,17 +1,20 @@
+import { DASHBOARD_PATHS } from '@/lib/auth/config/auth-constants';
+
 /**
  * Lecturer sidebar path mapping configuration
  * Maps multiple routes to their corresponding menu keys for proper highlighting
  */
 
 export const LECTURER_MENU_KEYS = {
-	DASHBOARD: '/lecturer',
+	DASHBOARD: DASHBOARD_PATHS.LECTURER,
 	THESIS_MANAGEMENT: '/lecturer/thesis-management',
 	GROUP_PROGRESS: '/lecturer/group-progress',
 	TIMELINE_REVIEW: '/lecturer/timeline-review',
 	// Moderator features
-	ASSIGN_STUDENT: '/lecturer/assign-student',
-	ASSIGN_SUPERVISOR: '/lecturer/assign-supervisor',
-	ASSIGN_LECTURER_REVIEW: '/lecturer/assign-lecturer-review',
+	PUBLISH_THESIS: DASHBOARD_PATHS.LECTURER_ASSIGN_LIST_PUBLISH_THESIS,
+	ASSIGN_STUDENT: DASHBOARD_PATHS.LECTURER_ASSIGN_STUDENT_LIST,
+	ASSIGN_SUPERVISOR: DASHBOARD_PATHS.LECTURER_ASSIGN_SUPERVISOR,
+	ASSIGN_LECTURER_REVIEW: DASHBOARD_PATHS.LECTURER_ASSIGN_LECTURER_REVIEW,
 } as const;
 
 /**
@@ -33,13 +36,19 @@ export const LECTURER_PATH_MAPPING = {
 		'/lecturer/timeline-review',
 		'/lecturer/review-timeline',
 	],
-	[LECTURER_MENU_KEYS.ASSIGN_STUDENT]: ['/lecturer/assign-student/[groupId]'],
+	[LECTURER_MENU_KEYS.PUBLISH_THESIS]: [
+		DASHBOARD_PATHS.LECTURER_ASSIGN_LIST_PUBLISH_THESIS,
+	],
+	[LECTURER_MENU_KEYS.ASSIGN_STUDENT]: [
+		DASHBOARD_PATHS.LECTURER_ASSIGN_STUDENT_LIST,
+		'/lecturer/assign-student/[groupId]',
+	],
 	[LECTURER_MENU_KEYS.ASSIGN_SUPERVISOR]: [
-		'/lecturer/assign-supervisor',
+		DASHBOARD_PATHS.LECTURER_ASSIGN_SUPERVISOR,
 		'/lecturer/supervisor-assignment',
 	],
 	[LECTURER_MENU_KEYS.ASSIGN_LECTURER_REVIEW]: [
-		'/lecturer/assign-lecturer-review',
+		DASHBOARD_PATHS.LECTURER_ASSIGN_LECTURER_REVIEW,
 		'/lecturer/lecturer-review-assignment',
 	],
 } as const;

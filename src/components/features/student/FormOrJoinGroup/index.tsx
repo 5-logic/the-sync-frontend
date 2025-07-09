@@ -1,17 +1,20 @@
 'use client';
 
-import { Alert, Card, Col, Row, Space, Typography } from 'antd';
+import { Card, Col, Row, Space, Typography } from 'antd';
 import { useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import CreateGroupForm from '@/components/features/student/FormOrJoinGroup/CreateGroupForm';
+import { RequestsButton } from '@/components/common/RequestsManagement';
+import CreateGroupForm from '@/components/features/student/FormOrJoinGroup/CreateGroup/CreateGroupForm';
 import FormOrJoinTabs from '@/components/features/student/FormOrJoinGroup/FormOrJoinTabs';
-import GroupListSection from '@/components/features/student/FormOrJoinGroup/GroupListSection';
-import InviteRequestButton from '@/components/features/student/FormOrJoinGroup/InviteRequestButton';
-import JoinGroupForm from '@/components/features/student/FormOrJoinGroup/JoinGroupForm';
+import GroupListSection from '@/components/features/student/FormOrJoinGroup/JoinGroup/GroupBrowsing/GroupListSection';
+import JoinGroupForm from '@/components/features/student/FormOrJoinGroup/JoinGroup/JoinGroupForm';
 import { type ExtendedGroup, extendedGroups } from '@/data/group';
 import { mockTheses } from '@/data/thesis';
+import { type Group } from '@/lib/services/groups.service';
 import { Thesis } from '@/schemas/thesis';
+import { useRequestsStore } from '@/store';
+import { useGroupsStore } from '@/store/useGroupsStore';
 
 const { Title, Paragraph } = Typography;
 
@@ -21,10 +24,6 @@ const TAB_KEYS = {
 	CREATE: 'create',
 } as const;
 
-const ALERT_STYLES = {
-	borderRadius: 8,
-} as const;
-
 const CARD_STYLES = {
 	borderRadius: 8,
 } as const;
@@ -32,12 +31,23 @@ const CARD_STYLES = {
 interface GroupUI {
 	readonly id: string;
 	readonly name: string;
-	readonly description: string;
+	readonly leader: string; // Changed from description to leader
 	readonly domain: string;
 	readonly members: number;
 }
 
-const mapGroups = (
+// Helper function to map API groups to UI format (for All Available Groups)
+const mapApiGroupsToUI = (apiGroups: Group[]): GroupUI[] =>
+	apiGroups.map((group) => ({
+		id: group.id,
+		name: group.name,
+		leader: group.leader?.student?.user?.fullName || 'No leader assigned', // Map leader name
+		domain: group.projectDirection || 'General',
+		members: group.memberCount || 0, // Use memberCount from API
+	}));
+
+// Helper function to map mock data (for Suggested Groups by AI)
+const mapMockGroupsToUI = (
 	groups: readonly ExtendedGroup[],
 	theses: readonly Thesis[],
 ): GroupUI[] =>
@@ -46,23 +56,35 @@ const mapGroups = (
 		return {
 			id: group.id,
 			name: thesis?.englishName ?? group.thesisTitle ?? group.name,
-			description: thesis?.description ?? '',
+			leader: 'AI Suggested', // For suggested groups, use placeholder
 			domain: thesis?.domain ?? 'Unknown',
 			members: group.members ?? 0,
 		};
 	});
 
-const allGroups: readonly GroupUI[] = mapGroups(extendedGroups, mockTheses);
-const suggestedGroups: readonly GroupUI[] = allGroups.slice(
-	0,
-	SUGGESTED_GROUPS_COUNT,
-);
-
 export default function FormOrJoinGroup() {
 	const searchParams = useSearchParams();
+	const { groups: apiGroups, loading, error, fetchGroups } = useGroupsStore();
+	const { requests, fetchStudentRequests } = useRequestsStore();
 	const [tabKey, setTabKey] = useState<string>(TAB_KEYS.JOIN);
 	const [search, setSearch] = useState<string>('');
 	const [category, setCategory] = useState<string | undefined>(undefined);
+
+	// Suggested Groups (using mock data for AI suggestions)
+	const suggestedGroups = useMemo(() => {
+		const mockGroups = mapMockGroupsToUI(extendedGroups, mockTheses);
+		return mockGroups.slice(0, SUGGESTED_GROUPS_COUNT);
+	}, []);
+
+	// All Available Groups (using API data)
+	const allApiGroups = useMemo(() => mapApiGroupsToUI(apiGroups), [apiGroups]);
+
+	// Fetch groups and requests on component mount
+	useEffect(() => {
+		fetchGroups();
+		// Also fetch requests to make sure badge is up to date
+		fetchStudentRequests(true);
+	}, [fetchGroups, fetchStudentRequests]);
 
 	useEffect(() => {
 		const tab = searchParams.get('tab');
@@ -71,21 +93,21 @@ export default function FormOrJoinGroup() {
 		}
 	}, [searchParams]);
 
-	const filteredGroups = useMemo(() => {
+	const filteredApiGroups = useMemo(() => {
 		if (!search && !category) {
-			return [...allGroups];
+			return allApiGroups;
 		}
 
 		const searchLower = search.toLowerCase();
-		return allGroups.filter((group) => {
+		return allApiGroups.filter((group) => {
 			const matchesSearch =
 				!search ||
 				group.name.toLowerCase().includes(searchLower) ||
-				group.description.toLowerCase().includes(searchLower);
+				group.leader.toLowerCase().includes(searchLower);
 			const matchesCategory = !category || group.domain === category;
 			return matchesSearch && matchesCategory;
 		});
-	}, [search, category]);
+	}, [search, category, allApiGroups]);
 
 	const handleSearchChange = useCallback((newSearch: string) => {
 		setSearch(newSearch);
@@ -97,6 +119,43 @@ export default function FormOrJoinGroup() {
 		},
 		[],
 	);
+
+	// Callback to refresh requests when a join request is sent
+	const handleRequestSent = useCallback(() => {
+		fetchStudentRequests(true); // Force refresh
+	}, [fetchStudentRequests]);
+
+	// Helper function to render All Available Groups section
+	const renderAllAvailableGroups = () => {
+		return (
+			<GroupListSection
+				title="All Available Groups"
+				groups={filteredApiGroups}
+				showFilter
+				search={search}
+				onSearchChange={handleSearchChange}
+				category={category}
+				onCategoryChange={handleCategoryChange}
+				pageSize={6}
+				enablePagination={true}
+				onRequestSent={handleRequestSent}
+				existingRequests={requests}
+				loading={loading}
+				error={error}
+				onRefresh={() => {
+					// Force refresh groups data
+					fetchGroups();
+				}}
+			/>
+		);
+	};
+
+	// Configuration for shared RequestsButton (student mode)
+	const requestsConfig = {
+		mode: 'student' as const,
+		title: 'My Requests',
+		fetchRequests: fetchStudentRequests,
+	};
 
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
@@ -114,16 +173,21 @@ export default function FormOrJoinGroup() {
 					</Space>
 				</Col>
 				<Col xs={24} sm={6} md={6} lg={4}>
-					<InviteRequestButton />
+					<div
+						style={{
+							textAlign: 'right',
+							display: 'flex',
+							justifyContent: 'flex-end',
+							alignItems: 'center',
+							height: '100%',
+						}}
+					>
+						<RequestsButton config={requestsConfig} requests={requests}>
+							My Requests
+						</RequestsButton>
+					</div>
 				</Col>
 			</Row>
-
-			<Alert
-				message="You are already part of a group. Visit Group Dashboard to view details."
-				type="info"
-				showIcon
-				style={ALERT_STYLES}
-			/>
 
 			<Card style={CARD_STYLES}>
 				<Space direction="vertical" size="large" style={{ width: '100%' }}>
@@ -132,22 +196,16 @@ export default function FormOrJoinGroup() {
 					{tabKey === TAB_KEYS.JOIN && (
 						<>
 							<JoinGroupForm />
+							{/* Suggested Groups always shows mock data */}
 							<GroupListSection
 								title="Suggested Groups by AI"
-								groups={[...suggestedGroups]} // Create mutable copy
+								groups={suggestedGroups}
 								enablePagination={false}
+								onRequestSent={handleRequestSent}
+								existingRequests={requests}
 							/>
-							<GroupListSection
-								title="All Available Groups"
-								groups={filteredGroups}
-								showFilter
-								search={search}
-								onSearchChange={handleSearchChange}
-								category={category}
-								onCategoryChange={handleCategoryChange}
-								pageSize={6}
-								enablePagination={true}
-							/>
+							{/* All Available Groups uses API data with loading/error states */}
+							{renderAllAvailableGroups()}
 						</>
 					)}
 
