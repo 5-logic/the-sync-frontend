@@ -8,7 +8,7 @@ export default function RequestsButton({
 	config,
 	children,
 	requests,
-}: RequestsButtonProps) {
+}: Readonly<RequestsButtonProps>) {
 	const [dialogVisible, setDialogVisible] = useState(false);
 
 	// Fetch requests on mount
