@@ -10,7 +10,6 @@ import {
 	Row,
 	Select,
 	Slider,
-	Space,
 	Spin,
 	TreeSelect,
 	Typography,
@@ -634,35 +633,14 @@ const StudentAccountForm: React.FC = () => {
 
 			<Form.Item>
 				<Row justify="end" style={{ marginTop: 24 }}>
-					<Space>
-						<Button
-							htmlType="button"
-							aria-label="Cancel form changes"
-							disabled={updatingProfile}
-							onClick={() => {
-								form.resetFields();
-								// Reset skill levels to original state
-								if (profileData) {
-									const originalSkillLevels: { [key: string]: number } = {};
-									profileData.studentSkills.forEach((skill, index) => {
-										originalSkillLevels[index.toString()] =
-											LEVEL_TOOLTIPS.indexOf(skill.level) + 1 || 1;
-									});
-									setSkillLevels(originalSkillLevels);
-								}
-							}}
-						>
-							Cancel
-						</Button>
-						<Button
-							type="primary"
-							htmlType="submit"
-							aria-label="Save profile changes"
-							loading={updatingProfile}
-						>
-							Save Changes
-						</Button>
-					</Space>
+					<Button
+						type="primary"
+						htmlType="submit"
+						aria-label="Save profile changes"
+						loading={updatingProfile}
+					>
+						Save Changes
+					</Button>
 				</Row>
 			</Form.Item>
 		</Form>
