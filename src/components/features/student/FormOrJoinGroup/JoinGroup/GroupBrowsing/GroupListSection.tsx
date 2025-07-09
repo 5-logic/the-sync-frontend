@@ -110,17 +110,31 @@ const getEmptyStateMessageForFilteredView = (
 
 const getEmptyStateMessageForDefaultView = (): string => MESSAGES.NO_GROUPS;
 
+// Interface for filter controls props to reduce parameter count
+interface FilterControlsProps {
+	readonly fontSize: number;
+	readonly screens: Record<string, boolean>;
+	readonly search?: string;
+	readonly onSearchChange?: (value: string) => void;
+	readonly category?: string;
+	readonly onCategoryChange?: (value: string | undefined) => void;
+	readonly loading?: boolean;
+	readonly onRefresh?: () => void;
+}
+
 // Helper function to render filter controls
-const renderFilterControls = (
-	fontSize: number,
-	screens: Record<string, boolean>,
-	search?: string,
-	onSearchChange?: (value: string) => void,
-	category?: string,
-	onCategoryChange?: (value: string | undefined) => void,
-	loading?: boolean,
-	onRefresh?: () => void,
-) => {
+const renderFilterControls = (props: FilterControlsProps) => {
+	const {
+		fontSize,
+		screens,
+		search,
+		onSearchChange,
+		category,
+		onCategoryChange,
+		loading,
+		onRefresh,
+	} = props;
+
 	return (
 		<>
 			<Col {...BREAKPOINT_CONFIGS.SEARCH_WIDTH}>
@@ -398,7 +412,7 @@ export default function GroupListSection({
 						marginBottom: STYLE_CONSTANTS.MARGIN_BOTTOM,
 					}}
 				>
-					{renderFilterControls(
+					{renderFilterControls({
 						fontSize,
 						screens,
 						search,
@@ -407,7 +421,7 @@ export default function GroupListSection({
 						onCategoryChange,
 						loading,
 						onRefresh,
-					)}
+					})}
 				</Row>
 			)}
 
