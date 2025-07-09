@@ -1,7 +1,6 @@
-import { type RequestsTabProps } from '@/components/common/RequestsManagement/types';
-
 import RequestsSearchControls from './RequestsSearchControls';
 import RequestsTable from './RequestsTable';
+import { type RequestsTabProps } from './types';
 
 export default function RequestsTab({
 	requestType,
@@ -14,7 +13,7 @@ export default function RequestsTab({
 	onRefresh,
 	mode,
 	getActionProps,
-}: RequestsTabProps) {
+}: Readonly<RequestsTabProps>) {
 	return (
 		<div>
 			<RequestsSearchControls
