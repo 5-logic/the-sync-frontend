@@ -20,24 +20,11 @@ export default function GroupStatusGuard({
 
 	useEffect(() => {
 		if (!loading) {
-			console.log('GroupStatusGuard: checking redirect', {
-				requiresGroup,
-				hasGroup,
-				loading,
-				currentPath: window.location.pathname,
-			});
-
 			if (requiresGroup && !hasGroup) {
 				// Page requires group but student doesn't have one
-				console.log(
-					'Redirecting to form-or-join-group: requires group but has none',
-				);
 				router.replace('/student/form-or-join-group');
 			} else if (!requiresGroup && hasGroup) {
 				// Page requires no group but student has one
-				console.log(
-					'Redirecting to group-dashboard: requires no group but has one',
-				);
 				router.replace('/student/group-dashboard');
 			}
 		}
