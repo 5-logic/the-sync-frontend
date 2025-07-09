@@ -1,0 +1,50 @@
+import { create } from 'zustand';
+
+import groupService, { type Group } from '@/lib/services/groups.service';
+
+interface GroupsState {
+	groups: Group[];
+	loading: boolean;
+	error: string | null;
+	fetchGroups: () => Promise<void>;
+	clearGroups: () => void;
+}
+
+export const useGroupsStore = create<GroupsState>((set, get) => ({
+	groups: [],
+	loading: false,
+	error: null,
+
+	fetchGroups: async () => {
+		const { loading } = get();
+
+		// Prevent multiple simultaneous fetches
+		if (loading) return;
+
+		try {
+			set({ loading: true, error: null });
+
+			const response = await groupService.findAll();
+
+			if (response.success) {
+				set({ groups: response.data, error: null });
+			} else {
+				set({ error: response.error || 'Failed to fetch groups' });
+			}
+		} catch (error) {
+			console.error('Error fetching groups:', error);
+			set({
+				error:
+					error instanceof Error
+						? error.message
+						: 'An unexpected error occurred',
+			});
+		} finally {
+			set({ loading: false });
+		}
+	},
+
+	clearGroups: () => {
+		set({ groups: [], error: null });
+	},
+}));
