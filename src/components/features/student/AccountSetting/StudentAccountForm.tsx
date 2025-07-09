@@ -617,7 +617,18 @@ const StudentAccountForm: React.FC = () => {
 							htmlType="button"
 							aria-label="Cancel form changes"
 							disabled={updatingProfile}
-							onClick={() => form.resetFields()}
+							onClick={() => {
+								form.resetFields();
+								// Reset skill levels to original state
+								if (profileData) {
+									const originalSkillLevels: { [key: string]: number } = {};
+									profileData.studentSkills.forEach((skill, index) => {
+										originalSkillLevels[index.toString()] =
+											LEVEL_TOOLTIPS.indexOf(skill.level) + 1 || 1;
+									});
+									setSkillLevels(originalSkillLevels);
+								}
+							}}
 						>
 							Cancel
 						</Button>
