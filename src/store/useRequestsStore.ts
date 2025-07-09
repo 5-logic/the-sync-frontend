@@ -39,22 +39,13 @@ const handleCacheLogic = (
 	// Check cache first
 	const cachedData = cacheUtils.get<GroupRequest[]>(ENTITY_NAME, cacheKey);
 
-	console.log('Cache check:', {
-		cacheKey,
-		forceRefresh,
-		hasCachedData: !!cachedData,
-		cachedDataLength: cachedData?.length || 0,
-	});
-
 	if (!forceRefresh && cachedData) {
-		console.log('Using cached data');
 		set({ requests: cachedData, loading: false, error: null });
 		return { shouldProceed: false, cachedData };
 	}
 
 	// Check if should fetch
 	if (!forceRefresh && !cacheUtils.shouldFetch(ENTITY_NAME, forceRefresh)) {
-		console.log('Skipping fetch due to cache policy');
 		return { shouldProceed: false };
 	}
 
@@ -74,12 +65,10 @@ export const useRequestsStore = create<RequestsState>((set, get) => ({
 			return;
 		}
 
-		console.log('Fetching fresh data from API...');
 		set({ loading: true, error: null });
 		try {
 			const response = await requestService.getGroupRequests(groupId);
 			if (response.success) {
-				console.log('API response:', { dataLength: response.data.length });
 				// Update cache
 				cacheUtils.set(ENTITY_NAME, cacheKey, response.data);
 				set({
@@ -93,7 +82,6 @@ export const useRequestsStore = create<RequestsState>((set, get) => ({
 				});
 			}
 		} catch (error) {
-			console.error('Error fetching group requests:', error);
 			set({
 				error:
 					error instanceof Error ? error.message : 'Failed to fetch requests',
@@ -110,12 +98,10 @@ export const useRequestsStore = create<RequestsState>((set, get) => ({
 			return;
 		}
 
-		console.log('Fetching fresh student requests from API...');
 		set({ loading: true, error: null });
 		try {
 			const response = await requestService.getStudentRequests();
 			if (response.success) {
-				console.log('API response:', { dataLength: response.data.length });
 				// Update cache
 				cacheUtils.set(ENTITY_NAME, cacheKey, response.data);
 				set({
@@ -129,7 +115,6 @@ export const useRequestsStore = create<RequestsState>((set, get) => ({
 				});
 			}
 		} catch (error) {
-			console.error('Error fetching student requests:', error);
 			set({
 				error:
 					error instanceof Error
@@ -173,7 +158,6 @@ export const useRequestsStore = create<RequestsState>((set, get) => ({
 				return false;
 			}
 		} catch (error) {
-			console.error('Error updating request status:', error);
 			set({
 				error:
 					error instanceof Error
@@ -205,7 +189,6 @@ export const useRequestsStore = create<RequestsState>((set, get) => ({
 				return false;
 			}
 		} catch (error) {
-			console.error('Error canceling request:', error);
 			set({
 				error:
 					error instanceof Error ? error.message : 'Failed to cancel request',
