@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 
 import ListPagination from '@/components/common/ListPagination/ListPagination';
 import GroupCard from '@/components/features/student/FormOrJoinGroup/JoinGroup/GroupBrowsing/GroupCard';
+import { type GroupRequest } from '@/lib/services/requests.service';
 
 type GroupUI = {
 	id: string;
@@ -16,12 +17,16 @@ interface PagedGroupListSectionProps {
 	readonly groups: readonly GroupUI[];
 	readonly fontSize: number;
 	readonly pageSize?: number;
+	readonly onRequestSent?: () => void;
+	readonly existingRequests?: readonly GroupRequest[];
 }
 
 export default function PagedGroupListSection({
 	groups,
 	fontSize,
 	pageSize = 6,
+	onRequestSent,
+	existingRequests = [],
 }: PagedGroupListSectionProps) {
 	const [current, setCurrent] = useState(1);
 	const [currentPageSize, setCurrentPageSize] = useState(pageSize);
@@ -63,7 +68,12 @@ export default function PagedGroupListSection({
 								}}
 							>
 								<div style={{ width: '100%' }}>
-									<GroupCard group={group} fontSize={fontSize} />
+									<GroupCard
+										group={group}
+										fontSize={fontSize}
+										onRequestSent={onRequestSent}
+										existingRequests={existingRequests}
+									/>
 								</div>
 							</Col>
 						))}
