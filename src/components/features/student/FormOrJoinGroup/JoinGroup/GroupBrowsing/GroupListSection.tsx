@@ -4,6 +4,7 @@ import { Col, Empty, Grid, Input, Row, Select, Space, Typography } from 'antd';
 import GroupCard from '@/components/features/student/FormOrJoinGroup/JoinGroup/GroupBrowsing/GroupCard';
 import PagedGroupListSection from '@/components/features/student/FormOrJoinGroup/JoinGroup/GroupBrowsing/PagedGroupListSection';
 import { THESIS_DOMAINS } from '@/lib/constants/domains';
+import { type GroupRequest } from '@/lib/services/requests.service';
 
 const { Title } = Typography;
 const { useBreakpoint } = Grid;
@@ -48,10 +49,12 @@ interface GroupListSectionProps {
 	readonly search?: string;
 	readonly onSearchChange?: (value: string) => void;
 	readonly category?: string;
-	readonly onCategoryChange?: (value: string) => void;
+	readonly onCategoryChange?: (value: string | undefined) => void;
 	readonly fontSize?: number;
 	readonly pageSize?: number;
 	readonly enablePagination?: boolean;
+	readonly onRequestSent?: () => void;
+	readonly existingRequests?: readonly GroupRequest[];
 }
 
 // Helper functions for empty state messages
@@ -59,82 +62,84 @@ const getFilteredEmptyMessage = (
 	search?: string,
 	category?: string,
 ): string => {
-	return search || category ? MESSAGES.NO_RESULTS : MESSAGES.NO_GROUPS;
+	if (search && category) {
+		return `No groups found for "${search}" in ${category}`;
+	} else if (search) {
+		return `No groups found for "${search}"`;
+	} else if (category) {
+		return `No groups found in ${category}`;
+	}
+	return MESSAGES.NO_RESULTS;
 };
 
-const getDefaultEmptyMessage = (): string => {
-	return MESSAGES.NO_GROUPS;
-};
-
-// Separate methods for different empty state scenarios
 const getEmptyStateMessageForFilteredView = (
 	search?: string,
 	category?: string,
-): string => {
-	return getFilteredEmptyMessage(search, category);
-};
+): string => getFilteredEmptyMessage(search, category);
 
-const getEmptyStateMessageForDefaultView = (): string => {
-	return getDefaultEmptyMessage();
-};
+const getEmptyStateMessageForDefaultView = (): string => MESSAGES.NO_GROUPS;
 
-// Helper function to render search and category filters
-const renderFilters = (
-	screens: ReturnType<typeof useBreakpoint>,
-	search: string | undefined,
-	onSearchChange: ((value: string) => void) | undefined,
-	category: string | undefined,
-	onCategoryChange: ((value: string) => void) | undefined,
+// Helper function to render filter controls
+const renderFilterControls = (
 	fontSize: number,
-) => (
-	<Row gutter={[16, 8]} style={{ width: '100%' }}>
-		<Col {...BREAKPOINT_CONFIGS.SEARCH_WIDTH}>
-			<Input
-				placeholder={MESSAGES.SEARCH_PLACEHOLDER}
-				prefix={<SearchOutlined />}
-				value={search}
-				onChange={(e) => onSearchChange?.(e.target.value)}
-				style={{
-					width: '100%',
-					fontSize: screens.xs ? fontSize - 1 : fontSize,
-					height: screens.xs
-						? STYLE_CONSTANTS.INPUT_HEIGHT.xs
-						: STYLE_CONSTANTS.INPUT_HEIGHT.default,
-				}}
-				allowClear
-				size={screens.xs ? 'small' : 'middle'}
-			/>
-		</Col>
-		<Col {...BREAKPOINT_CONFIGS.CATEGORY_WIDTH}>
-			<Select
-				placeholder={MESSAGES.CATEGORY_PLACEHOLDER}
-				style={{
-					width: '100%',
-					fontSize: screens.xs ? fontSize - 1 : fontSize,
-					height: screens.xs
-						? STYLE_CONSTANTS.INPUT_HEIGHT.xs
-						: STYLE_CONSTANTS.INPUT_HEIGHT.default,
-				}}
-				dropdownStyle={{
-					fontSize: screens.xs ? fontSize - 1 : fontSize,
-				}}
-				value={category}
-				onChange={onCategoryChange}
-				allowClear
-				size={screens.xs ? 'small' : 'middle'}
-				options={THESIS_DOMAINS.map((domain) => ({
-					label: domain,
-					value: domain,
-				}))}
-			/>
-		</Col>
-	</Row>
-);
+	screens: Record<string, boolean>,
+	search?: string,
+	onSearchChange?: (value: string) => void,
+	category?: string,
+	onCategoryChange?: (value: string | undefined) => void,
+) => {
+	return (
+		<Row gutter={[16, 8]} style={{ width: '100%' }}>
+			<Col {...BREAKPOINT_CONFIGS.SEARCH_WIDTH}>
+				<Input
+					placeholder={MESSAGES.SEARCH_PLACEHOLDER}
+					prefix={<SearchOutlined />}
+					value={search}
+					onChange={(e) => onSearchChange?.(e.target.value)}
+					style={{
+						width: '100%',
+						fontSize: screens.xs ? fontSize - 1 : fontSize,
+						height: screens.xs
+							? STYLE_CONSTANTS.INPUT_HEIGHT.xs
+							: STYLE_CONSTANTS.INPUT_HEIGHT.default,
+					}}
+					allowClear
+					size={screens.xs ? 'small' : 'middle'}
+				/>
+			</Col>
+			<Col {...BREAKPOINT_CONFIGS.CATEGORY_WIDTH}>
+				<Select
+					placeholder={MESSAGES.CATEGORY_PLACEHOLDER}
+					style={{
+						width: '100%',
+						fontSize: screens.xs ? fontSize - 1 : fontSize,
+						height: screens.xs
+							? STYLE_CONSTANTS.INPUT_HEIGHT.xs
+							: STYLE_CONSTANTS.INPUT_HEIGHT.default,
+					}}
+					dropdownStyle={{
+						fontSize: screens.xs ? fontSize - 1 : fontSize,
+					}}
+					value={category}
+					onChange={onCategoryChange}
+					allowClear
+					size={screens.xs ? 'small' : 'middle'}
+					options={THESIS_DOMAINS.map((domain) => ({
+						label: domain,
+						value: domain,
+					}))}
+				/>
+			</Col>
+		</Row>
+	);
+};
 
 // Helper function to render groups without pagination
 const renderGroupsWithoutPagination = (
 	groups: readonly GroupUI[],
 	fontSize: number,
+	onRequestSent?: () => void,
+	existingRequests?: readonly GroupRequest[],
 ) => (
 	<Row gutter={[16, 16]} align="stretch">
 		{groups.map((group) => (
@@ -147,7 +152,12 @@ const renderGroupsWithoutPagination = (
 				}}
 			>
 				<div style={{ width: '100%' }}>
-					<GroupCard group={group} fontSize={fontSize} />
+					<GroupCard
+						group={group}
+						fontSize={fontSize}
+						onRequestSent={onRequestSent}
+						existingRequests={existingRequests}
+					/>
 				</div>
 			</Col>
 		))}
@@ -181,6 +191,8 @@ const renderContentWithPagination = (
 	showFilter: boolean,
 	search?: string,
 	category?: string,
+	onRequestSent?: () => void,
+	existingRequests?: readonly GroupRequest[],
 ) => {
 	const hasGroups = groups.length > 0;
 
@@ -190,6 +202,8 @@ const renderContentWithPagination = (
 				groups={groups}
 				fontSize={fontSize}
 				pageSize={pageSize}
+				onRequestSent={onRequestSent}
+				existingRequests={existingRequests}
 			/>
 		);
 	}
@@ -206,11 +220,18 @@ const renderContentWithoutPagination = (
 	showFilter: boolean,
 	search?: string,
 	category?: string,
+	onRequestSent?: () => void,
+	existingRequests?: readonly GroupRequest[],
 ) => {
 	const hasGroups = groups.length > 0;
 
 	if (hasGroups) {
-		return renderGroupsWithoutPagination(groups, fontSize);
+		return renderGroupsWithoutPagination(
+			groups,
+			fontSize,
+			onRequestSent,
+			existingRequests,
+		);
 	}
 
 	return showFilter
@@ -229,6 +250,8 @@ export default function GroupListSection({
 	fontSize = 16,
 	pageSize = 6,
 	enablePagination = true,
+	onRequestSent,
+	existingRequests = [],
 }: GroupListSectionProps) {
 	const screens = useBreakpoint();
 
@@ -238,9 +261,17 @@ export default function GroupListSection({
 			size={STYLE_CONSTANTS.SPACE_SIZE}
 			style={{ width: '100%' }}
 		>
-			{/* Title Row */}
-			<Row style={{ marginTop: STYLE_CONSTANTS.MARGIN_TOP }}>
-				<Col span={24}>
+			<Row
+				align="middle"
+				justify="space-between"
+				style={{
+					marginTop: STYLE_CONSTANTS.MARGIN_TOP,
+					marginBottom: STYLE_CONSTANTS.MARGIN_BOTTOM,
+				}}
+				wrap
+				gutter={[16, 8]}
+			>
+				<Col xs={24} sm={24} md={12} lg={16} xl={18}>
 					<Title
 						level={2}
 						style={{
@@ -251,25 +282,20 @@ export default function GroupListSection({
 						{title}
 					</Title>
 				</Col>
-			</Row>
-
-			{/* Filter Row - only show if showFilter is true */}
-			{showFilter && (
-				<Row style={{ marginBottom: STYLE_CONSTANTS.MARGIN_BOTTOM }}>
-					<Col span={24}>
-						{renderFilters(
+				{showFilter && (
+					<Col xs={24} sm={24} md={12} lg={8} xl={6}>
+						{renderFilterControls(
+							fontSize,
 							screens,
 							search,
 							onSearchChange,
 							category,
 							onCategoryChange,
-							fontSize,
 						)}
 					</Col>
-				</Row>
-			)}
+				)}
+			</Row>
 
-			{/* Content */}
 			{enablePagination
 				? renderContentWithPagination(
 						groups,
@@ -278,6 +304,8 @@ export default function GroupListSection({
 						showFilter,
 						search,
 						category,
+						onRequestSent,
+						existingRequests,
 					)
 				: renderContentWithoutPagination(
 						groups,
@@ -285,6 +313,8 @@ export default function GroupListSection({
 						showFilter,
 						search,
 						category,
+						onRequestSent,
+						existingRequests,
 					)}
 		</Space>
 	);
