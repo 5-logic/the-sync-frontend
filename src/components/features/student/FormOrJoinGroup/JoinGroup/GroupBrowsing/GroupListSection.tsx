@@ -1,8 +1,8 @@
 import { SearchOutlined } from '@ant-design/icons';
 import { Col, Empty, Grid, Input, Row, Select, Space, Typography } from 'antd';
 
-import GroupCard from '@/components/features/student/FormOrJoinGroup/GroupCard';
-import PagedGroupListSection from '@/components/features/student/FormOrJoinGroup/PagedGroupListSection';
+import GroupCard from '@/components/features/student/FormOrJoinGroup/JoinGroup/GroupBrowsing/GroupCard';
+import PagedGroupListSection from '@/components/features/student/FormOrJoinGroup/JoinGroup/GroupBrowsing/PagedGroupListSection';
 import { THESIS_DOMAINS } from '@/lib/constants/domains';
 
 const { Title } = Typography;
@@ -36,7 +36,7 @@ const MESSAGES = {
 type GroupUI = {
 	id: string;
 	name: string;
-	description: string;
+	leader: string;
 	domain: string;
 	members: number;
 };
