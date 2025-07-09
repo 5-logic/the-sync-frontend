@@ -26,7 +26,7 @@ export interface InviteResponse {
 export interface GroupRequest {
 	id: string;
 	type: 'Invite' | 'Join';
-	status: 'Pending' | 'Approved' | 'Rejected';
+	status: 'Pending' | 'Approved' | 'Rejected' | 'Cancelled';
 	studentId: string;
 	groupId: string;
 	createdAt: string;
@@ -49,7 +49,7 @@ export interface GroupRequest {
 }
 
 export interface UpdateRequestStatusRequest {
-	status: 'Approved' | 'Rejected';
+	status: 'Approved' | 'Rejected' | 'Cancelled';
 }
 
 class RequestService {
