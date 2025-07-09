@@ -115,105 +115,125 @@ export default function UnifiedChecklistForm({
 
 				<Form form={form} name="checklist-form" layout="vertical">
 					<Form.List name="items">
-						{(fields, { add, remove }) => (
-							<>
-								<Table
-									dataSource={fields}
-									rowKey="key"
-									pagination={false}
-									locale={{ emptyText: 'No checklist items added.' }}
-									columns={[
-										{
-											title: 'Item Name',
-											dataIndex: 'name',
-											key: 'name',
-											render: (_, field) => (
-												<Form.Item
-													name={[field.name, 'name']}
-													rules={[{ required: true, message: 'Required' }]}
-													validateStatus={
-														showErrors &&
-														!form.getFieldValue(['items', field.name, 'name'])
-															? 'error'
-															: ''
-													}
-												>
-													<Input placeholder="Enter item name" />
-												</Form.Item>
-											),
-										},
-										{
-											title: 'Description',
-											dataIndex: 'description',
-											key: 'description',
-											render: (_, field) => (
-												<Form.Item
-													name={[field.name, 'description']}
-													rules={[{ required: true, message: 'Required' }]}
-													validateStatus={
-														showErrors &&
-														!form.getFieldValue([
-															'items',
-															field.name,
-															'description',
-														])
-															? 'error'
-															: ''
-													}
-												>
-													<Input placeholder="Enter description" />
-												</Form.Item>
-											),
-										},
-										{
-											title: 'Required',
-											dataIndex: 'isRequired',
-											key: 'isRequired',
-											align: 'center' as const,
-											width: 120,
-											render: (_, field) => (
-												<Form.Item
-													name={[field.name, 'isRequired']}
-													valuePropName="checked"
-												>
-													<Switch
-														checkedChildren="Mandatory"
-														unCheckedChildren="Optional"
-													/>
-												</Form.Item>
-											),
-										},
-										{
-											title: 'Action',
-											key: 'action',
-											width: 80,
-											align: 'center' as const,
-											render: (_, field) => (
-												<ChecklistDeleteButton
-													onDelete={() => remove(field.name)}
-												/>
-											),
-										},
-									]}
-								/>
+						{(fields, { add, remove }) => {
+							const hasItems = fields.length > 0;
 
-								{/* Footer buttons */}
-								<Row justify="space-between" style={{ marginTop: 36 }}>
-									{mode === 'manual' && (
-										<Button icon={<PlusOutlined />} onClick={() => add()}>
-											Add New Item
-										</Button>
+							return (
+								<>
+									{(mode === 'manual' || hasItems) && (
+										<>
+											<Table
+												dataSource={fields}
+												rowKey="key"
+												pagination={false}
+												locale={{ emptyText: 'No checklist items added.' }}
+												columns={[
+													{
+														title: 'Item Name',
+														dataIndex: 'name',
+														key: 'name',
+														render: (_, field) => (
+															<Form.Item
+																name={[field.name, 'name']}
+																rules={[
+																	{ required: true, message: 'Required' },
+																]}
+																validateStatus={
+																	showErrors &&
+																	!form.getFieldValue([
+																		'items',
+																		field.name,
+																		'name',
+																	])
+																		? 'error'
+																		: ''
+																}
+															>
+																<Input placeholder="Enter item name" />
+															</Form.Item>
+														),
+													},
+													{
+														title: 'Description',
+														dataIndex: 'description',
+														key: 'description',
+														render: (_, field) => (
+															<Form.Item
+																name={[field.name, 'description']}
+																rules={[
+																	{ required: true, message: 'Required' },
+																]}
+																validateStatus={
+																	showErrors &&
+																	!form.getFieldValue([
+																		'items',
+																		field.name,
+																		'description',
+																	])
+																		? 'error'
+																		: ''
+																}
+															>
+																<Input placeholder="Enter description" />
+															</Form.Item>
+														),
+													},
+													{
+														title: 'Required',
+														dataIndex: 'isRequired',
+														key: 'isRequired',
+														align: 'center' as const,
+														width: 120,
+														render: (_, field) => (
+															<Form.Item
+																name={[field.name, 'isRequired']}
+																valuePropName="checked"
+															>
+																<Switch
+																	checkedChildren="Mandatory"
+																	unCheckedChildren="Optional"
+																/>
+															</Form.Item>
+														),
+													},
+													{
+														title: 'Action',
+														key: 'action',
+														width: 80,
+														align: 'center' as const,
+														render: (_, field) => (
+															<ChecklistDeleteButton
+																onDelete={() => remove(field.name)}
+															/>
+														),
+													},
+												]}
+											/>
+
+											<Row
+												justify={mode === 'manual' ? 'space-between' : 'end'}
+												style={{ marginTop: 36 }}
+											>
+												{mode === 'manual' && (
+													<Button icon={<PlusOutlined />} onClick={() => add()}>
+														Add New Item
+													</Button>
+												)}
+
+												<Space>
+													<Button onClick={handleCancel}>Cancel</Button>
+													<Button type="primary" onClick={handleSaveAll}>
+														{mode === 'manual'
+															? 'Save All'
+															: 'Import All Checklist'}
+													</Button>
+												</Space>
+											</Row>
+										</>
 									)}
-
-									<Space>
-										<Button onClick={handleCancel}>Cancel</Button>
-										<Button type="primary" onClick={handleSaveAll}>
-											{mode === 'manual' ? 'Save All' : 'Import All Checklist'}
-										</Button>
-									</Space>
-								</Row>
-							</>
-						)}
+								</>
+							);
+						}}
 					</Form.List>
 				</Form>
 			</Card>
