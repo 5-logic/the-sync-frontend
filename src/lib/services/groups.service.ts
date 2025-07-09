@@ -90,6 +90,28 @@ class GroupService {
 		);
 		return response.data;
 	}
+
+	async removeMember(
+		groupId: string,
+		studentId: string,
+	): Promise<ApiResponse<void>> {
+		const response = await httpClient.put<ApiResponse<void>>(
+			`${this.baseUrl}/${groupId}/remove-student`,
+			{ studentId },
+		);
+		return response.data;
+	}
+
+	async changeLeader(
+		groupId: string,
+		newLeaderId: string,
+	): Promise<ApiResponse<void>> {
+		const response = await httpClient.put<ApiResponse<void>>(
+			`${this.baseUrl}/${groupId}/change-leader`,
+			{ newLeaderId },
+		);
+		return response.data;
+	}
 }
 
 const groupService = new GroupService();
