@@ -1,6 +1,7 @@
 'use client';
 
 import { Modal, Tabs } from 'antd';
+import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 
 import RequestsTab from '@/components/common/RequestsManagement/RequestsTab';
@@ -20,6 +21,7 @@ export default function RequestsDialog({
 	const [statusFilter, setStatusFilter] = useState<string | undefined>(
 		undefined,
 	);
+	const router = useRouter();
 
 	const {
 		requests,
@@ -115,7 +117,9 @@ export default function RequestsDialog({
 	};
 
 	const handleRejectInvite = async (requestId: string) => {
-		const success = await updateRequestStatus(requestId, 'Rejected');
+		// Use 'Cancelled' for student rejecting invite, 'Rejected' for group leader cancelling invite
+		const status = config.mode === 'student' ? 'Cancelled' : 'Rejected';
+		const success = await updateRequestStatus(requestId, status);
 		if (success) {
 			const message =
 				config.mode === 'student'
@@ -174,6 +178,9 @@ export default function RequestsDialog({
 		requestType: 'Invite' | 'Join',
 		targetName: string,
 	) => {
+		// Find the request to get groupId for view detail action
+		const request = requests.find((r) => r.id === requestId);
+
 		if (config.mode === 'student') {
 			// Student perspective
 			if (requestType === 'Invite') {
@@ -194,6 +201,14 @@ export default function RequestsDialog({
 						okType: 'danger' as const,
 						onConfirm: () => handleRejectInvite(requestId),
 					},
+					viewDetailAction: request
+						? {
+								onViewDetail: () => {
+									// Navigate to group detail page in same tab
+									router.push(`/student/form-or-join-group/${request.groupId}`);
+								},
+							}
+						: undefined,
 				};
 			} else {
 				return {
@@ -205,6 +220,14 @@ export default function RequestsDialog({
 						okType: 'danger' as const,
 						onConfirm: () => handleCancelJoinRequest(requestId),
 					},
+					viewDetailAction: request
+						? {
+								onViewDetail: () => {
+									// Navigate to group detail page in same tab
+									router.push(`/student/form-or-join-group/${request.groupId}`);
+								},
+							}
+						: undefined,
 				};
 			}
 		} else if (requestType === 'Invite') {
