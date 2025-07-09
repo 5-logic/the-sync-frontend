@@ -66,9 +66,23 @@ class LecturerService {
 		id: string,
 		toggleStatusDto: LecturerToggleStatus,
 	): Promise<ApiResponse<Lecturer>> {
-		const response = await httpClient.post<ApiResponse<Lecturer>>(
+		const response = await httpClient.put<ApiResponse<Lecturer>>(
 			`${this.baseUrl}/${id}/toggle-status`,
 			toggleStatusDto,
+		);
+		return response.data;
+	}
+
+	/**
+	 * Update lecturer profile (for lecturer self-update)
+	 * Uses PUT /lecturers endpoint for current user
+	 */
+	async updateProfile(
+		updateLecturerDto: LecturerUpdate,
+	): Promise<ApiResponse<Lecturer>> {
+		const response = await httpClient.put<ApiResponse<Lecturer>>(
+			this.baseUrl,
+			updateLecturerDto,
 		);
 		return response.data;
 	}
