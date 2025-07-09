@@ -52,10 +52,6 @@ function GroupFormFields() {
 
 	// Build skill tree data from API
 	const skillTreeData = useMemo(() => {
-		console.log(
-			'🟡 GroupFormFields: useMemo skillTreeData triggered, skillSets:',
-			skillSets.length,
-		);
 		if (!skillSets || skillSets.length === 0) return [];
 
 		return skillSets.map((set) => ({
