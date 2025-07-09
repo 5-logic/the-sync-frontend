@@ -16,7 +16,7 @@ interface RequestsState {
 	fetchStudentRequests: (forceRefresh?: boolean) => Promise<void>;
 	updateRequestStatus: (
 		requestId: string,
-		status: 'Approved' | 'Rejected',
+		status: 'Approved' | 'Rejected' | 'Cancelled',
 	) => Promise<boolean>;
 	cancelRequest: (requestId: string) => Promise<boolean>;
 	clearRequests: () => void;
@@ -127,7 +127,7 @@ export const useRequestsStore = create<RequestsState>((set, get) => ({
 
 	updateRequestStatus: async (
 		requestId: string,
-		status: 'Approved' | 'Rejected',
+		status: 'Approved' | 'Rejected' | 'Cancelled',
 	) => {
 		try {
 			const response = await requestService.updateRequestStatus(requestId, {
@@ -167,15 +167,23 @@ export const useRequestsStore = create<RequestsState>((set, get) => ({
 			return false;
 		}
 	},
-
 	cancelRequest: async (requestId: string) => {
 		try {
-			const response = await requestService.cancelStudentRequest(requestId);
+			// Use updateRequestStatus with 'Cancelled' status instead of delete
+			const response = await requestService.updateRequestStatus(requestId, {
+				status: 'Cancelled',
+			});
 			if (response.success) {
-				// Remove the request from local state
+				// Update the request status in local state
 				const currentRequests = get().requests;
-				const updatedRequests = currentRequests.filter(
-					(req) => req.id !== requestId,
+				const updatedRequests = currentRequests.map((request) =>
+					request.id === requestId
+						? {
+								...request,
+								status: 'Cancelled' as const,
+								updatedAt: new Date().toISOString(),
+							}
+						: request,
 				);
 				set({ requests: updatedRequests });
 
