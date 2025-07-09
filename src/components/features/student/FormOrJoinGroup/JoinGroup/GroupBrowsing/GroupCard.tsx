@@ -18,14 +18,14 @@ const CARD_CONFIG = {
 const TEXT_CONFIG = {
 	TITLE_LINE_CLAMP: 2,
 	TITLE_LINE_HEIGHT: 1.3,
-	DESC_LINE_CLAMP: 2,
-	DESC_LINE_HEIGHT: 1.4,
+	LEADER_LINE_CLAMP: 2, // Changed from DESC_LINE_CLAMP
+	LEADER_LINE_HEIGHT: 1.4, // Changed from DESC_LINE_HEIGHT
 } as const;
 
 interface GroupUI {
 	readonly id: string;
 	readonly name: string;
-	readonly description: string;
+	readonly leader: string; // Changed from description to leader
 	readonly domain: string;
 	readonly members: number;
 }
@@ -76,17 +76,17 @@ export default function GroupCard({ group, fontSize }: GroupCardProps) {
 		color: 'rgba(0, 0, 0, 0.88)',
 	});
 
-	const getDescriptionStyles = () => ({
+	const getLeaderStyles = () => ({
 		fontSize,
-		lineHeight: TEXT_CONFIG.DESC_LINE_HEIGHT,
+		lineHeight: TEXT_CONFIG.LEADER_LINE_HEIGHT,
 		overflow: 'hidden',
 		display: '-webkit-box',
-		WebkitLineClamp: TEXT_CONFIG.DESC_LINE_CLAMP,
+		WebkitLineClamp: TEXT_CONFIG.LEADER_LINE_CLAMP,
 		WebkitBoxOrient: 'vertical' as const,
 		textOverflow: 'ellipsis',
 		wordBreak: 'break-word' as const,
-		minHeight: `${fontSize * TEXT_CONFIG.DESC_LINE_HEIGHT * TEXT_CONFIG.DESC_LINE_CLAMP}px`,
-		maxHeight: `${fontSize * TEXT_CONFIG.DESC_LINE_HEIGHT * TEXT_CONFIG.DESC_LINE_CLAMP}px`,
+		minHeight: `${fontSize * TEXT_CONFIG.LEADER_LINE_HEIGHT * TEXT_CONFIG.LEADER_LINE_CLAMP}px`,
+		maxHeight: `${fontSize * TEXT_CONFIG.LEADER_LINE_HEIGHT * TEXT_CONFIG.LEADER_LINE_CLAMP}px`,
 		whiteSpace: 'normal' as const,
 		color: 'rgba(0, 0, 0, 0.45)',
 	});
@@ -116,8 +116,8 @@ export default function GroupCard({ group, fontSize }: GroupCardProps) {
 					>
 						{group.domain}
 					</Tag>
-					<div style={getDescriptionStyles()} title={group.description}>
-						{group.description}
+					<div style={getLeaderStyles()} title={`Leader: ${group.leader}`}>
+						<strong>Leader:</strong> {group.leader}
 					</div>
 					<Space align="center" style={{ marginTop: 8 }}>
 						<UserOutlined
