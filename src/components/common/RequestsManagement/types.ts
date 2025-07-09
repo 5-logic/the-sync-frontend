@@ -56,4 +56,7 @@ export interface ActionProps {
 		readonly okType?: 'primary' | 'danger';
 		readonly onConfirm: () => void;
 	};
+	readonly viewDetailAction?: {
+		readonly onViewDetail: () => void;
+	};
 }
