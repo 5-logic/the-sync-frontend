@@ -1,7 +1,13 @@
 import { UserOutlined } from '@ant-design/icons';
 import { Button, Card, Grid, Space, Tag, Typography } from 'antd';
+import { useState } from 'react';
 
+import { GroupConfirmationModals } from '@/components/common/ConfirmModal';
 import { DOMAIN_COLOR_MAP } from '@/lib/constants/domains';
+import requestService, {
+	type GroupRequest,
+} from '@/lib/services/requests.service';
+import { showNotification } from '@/lib/utils/notification';
 
 const { Text } = Typography;
 const { useBreakpoint } = Grid;
@@ -33,13 +39,52 @@ interface GroupUI {
 interface GroupCardProps {
 	readonly group: GroupUI;
 	readonly fontSize: number;
+	readonly onRequestSent?: () => void;
+	readonly existingRequests?: readonly GroupRequest[];
 }
 
-export default function GroupCard({ group, fontSize }: GroupCardProps) {
+export default function GroupCard({
+	group,
+	fontSize,
+	onRequestSent,
+	existingRequests = [],
+}: GroupCardProps) {
+	const [isRequesting, setIsRequesting] = useState(false);
 	const screens = useBreakpoint();
 	const padding = screens.xs
 		? CARD_CONFIG.PADDING_MOBILE
 		: CARD_CONFIG.PADDING_DESKTOP;
+
+	// Check if user already has a pending request for this group
+	const hasExistingRequest = existingRequests.some(
+		(request) =>
+			request.groupId === group.id &&
+			request.type === 'Join' &&
+			request.status === 'Pending',
+	);
+
+	const handleJoinRequest = () => {
+		GroupConfirmationModals.requestToJoin(
+			group.name,
+			async () => {
+				setIsRequesting(true);
+				try {
+					await requestService.joinGroup(group.id);
+					showNotification.success(
+						'Join request sent successfully! The group leader will review your request.',
+					);
+					onRequestSent?.();
+				} catch {
+					showNotification.error(
+						'Failed to send join request. Please try again.',
+					);
+				} finally {
+					setIsRequesting(false);
+				}
+			},
+			isRequesting,
+		);
+	};
 
 	const getCardStyles = () => ({
 		borderRadius: CARD_CONFIG.BORDER_RADIUS,
@@ -156,10 +201,19 @@ export default function GroupCard({ group, fontSize }: GroupCardProps) {
 						<Button
 							type="primary"
 							style={getButtonStyles(true)}
-							title="Request to Join"
-							aria-label={`Request to join ${group.name}`}
+							title={
+								hasExistingRequest ? 'Request already sent' : 'Request to Join'
+							}
+							aria-label={
+								hasExistingRequest
+									? `Request already sent to ${group.name}`
+									: `Request to join ${group.name}`
+							}
+							onClick={handleJoinRequest}
+							loading={isRequesting}
+							disabled={isRequesting || hasExistingRequest}
 						>
-							Request to Join
+							{hasExistingRequest ? 'Request Sent' : 'Request to Join'}
 						</Button>
 					</div>
 				</div>
