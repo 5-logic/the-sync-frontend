@@ -208,39 +208,38 @@ export default function RequestsDialog({
 					},
 				};
 			}
+		} else if (requestType === 'Invite') {
+			// Group leader perspective - Invite
+			return {
+				primaryAction: {
+					text: 'Cancel',
+					title: 'Cancel invitation?',
+					description: `Student: ${targetName}`,
+					okText: 'Yes, Cancel',
+					okType: 'danger' as const,
+					onConfirm: () => handleRejectInvite(requestId),
+				},
+			};
 		} else {
-			// Group leader perspective
-			if (requestType === 'Invite') {
-				return {
-					primaryAction: {
-						text: 'Cancel',
-						title: 'Cancel invitation?',
-						description: `Student: ${targetName}`,
-						okText: 'Yes, Cancel',
-						okType: 'danger' as const,
-						onConfirm: () => handleRejectInvite(requestId),
-					},
-				};
-			} else {
-				return {
-					primaryAction: {
-						text: 'Approve',
-						title: 'Approve join request?',
-						description: `Student: ${targetName}`,
-						okText: 'Yes, Approve',
-						okType: 'primary' as const,
-						onConfirm: () => handleApproveJoinRequest(requestId),
-					},
-					secondaryAction: {
-						text: 'Reject',
-						title: 'Reject join request?',
-						description: `Student: ${targetName}`,
-						okText: 'Yes, Reject',
-						okType: 'danger' as const,
-						onConfirm: () => handleRejectJoinRequest(requestId),
-					},
-				};
-			}
+			// Group leader perspective - Join
+			return {
+				primaryAction: {
+					text: 'Approve',
+					title: 'Approve join request?',
+					description: `Student: ${targetName}`,
+					okText: 'Yes, Approve',
+					okType: 'primary' as const,
+					onConfirm: () => handleApproveJoinRequest(requestId),
+				},
+				secondaryAction: {
+					text: 'Reject',
+					title: 'Reject join request?',
+					description: `Student: ${targetName}`,
+					okText: 'Yes, Reject',
+					okType: 'danger' as const,
+					onConfirm: () => handleRejectJoinRequest(requestId),
+				},
+			};
 		}
 	};
 
