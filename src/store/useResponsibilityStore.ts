@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
-import { ResponsibilityService } from '@/lib/services/responsibility.service';
-import { type Responsibility } from '@/schemas/responsibility';
+import ResponsibilitiesService from '@/lib/services/responsibilities.service';
+import type { Responsibility } from '@/schemas/responsibility';
 
 interface ResponsibilityState {
 	responsibilities: Responsibility[];
@@ -31,8 +31,13 @@ export const useResponsibilityStore = create<ResponsibilityState>(
 			set({ loading: true, error: null });
 
 			try {
-				const data = await ResponsibilityService.getAll();
-				set({ responsibilities: data, loading: false });
+				const response = await ResponsibilitiesService.getAll();
+
+				if (response.success) {
+					set({ responsibilities: response.data, loading: false });
+				} else {
+					set({ error: response.error, loading: false });
+				}
 			} catch (error) {
 				const errorMessage =
 					error instanceof Error ? error.message : 'Unknown error';
