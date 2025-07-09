@@ -11,6 +11,7 @@ export interface ConfirmationModalProps {
 	okType?: 'default' | 'primary' | 'danger';
 	loading?: boolean;
 	centered?: boolean;
+	closeOnMaskClick?: boolean;
 	onOk: () => void | Promise<void>;
 	onCancel?: () => void;
 }
@@ -28,6 +29,7 @@ export const ConfirmationModal = {
 			okType = 'primary',
 			loading = false,
 			centered = true,
+			closeOnMaskClick = true,
 			onOk,
 			onCancel,
 		} = props;
@@ -77,6 +79,7 @@ export const ConfirmationModal = {
 			cancelText,
 			okType,
 			centered,
+			maskClosable: closeOnMaskClick,
 			...(loading && { okButtonProps: { loading } }),
 			onOk: onOk,
 			onCancel,
@@ -215,5 +218,27 @@ export const ThesisConfirmationModals = {
 	},
 
 	// Generic show method for custom modals (backwards compatibility)
+	show: ConfirmationModal.show,
+};
+
+// Group-related confirmation modals
+export const GroupConfirmationModals = {
+	requestToJoin: (
+		groupName: string,
+		onConfirm: () => void | Promise<void>,
+		loading = false,
+	) =>
+		ConfirmationModal.show({
+			title: 'Request to Join Group',
+			message: 'Are you sure you want to request to join this group?',
+			details: groupName,
+			note: 'The group leader will review your request and decide whether to accept or reject it.',
+			noteType: 'info',
+			okText: 'Send Request',
+			loading,
+			onOk: onConfirm,
+		}),
+
+	// Generic show method for custom modals
 	show: ConfirmationModal.show,
 };
