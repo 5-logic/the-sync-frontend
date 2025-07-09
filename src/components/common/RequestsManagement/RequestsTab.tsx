@@ -1,6 +1,6 @@
-import RequestsSearchControls from './RequestsSearchControls';
-import RequestsTable from './RequestsTable';
-import { type RequestsTabProps } from './types';
+import RequestsSearchControls from '@/components/common/RequestsManagement/RequestsSearchControls';
+import RequestsTable from '@/components/common/RequestsManagement/RequestsTable';
+import { type RequestsTabProps } from '@/components/common/RequestsManagement/types';
 
 export default function RequestsTab({
 	requestType,
