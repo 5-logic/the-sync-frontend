@@ -8,6 +8,7 @@ export default function RequestStatusTag({ status }: RequestStatusTagProps) {
 	const getStatusColor = (status: string): string => {
 		if (status === 'Pending') return 'orange';
 		if (status === 'Approved') return 'green';
+		if (status === 'Cancelled') return 'gray';
 		return 'red';
 	};
 
