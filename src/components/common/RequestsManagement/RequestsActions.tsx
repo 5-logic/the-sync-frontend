@@ -17,6 +17,7 @@ interface RequestsActionsProps {
 	readonly targetName: string;
 	readonly mode: RequestsMode;
 	readonly status: string;
+	readonly studentId?: string; // Optional student ID for group leader mode
 	readonly getActionProps: (
 		requestId: string,
 		requestType: 'Invite' | 'Join',
@@ -30,6 +31,7 @@ export default function RequestsActions({
 	targetName,
 	mode,
 	status,
+	studentId,
 	getActionProps,
 }: RequestsActionsProps) {
 	const { primaryAction, secondaryAction, viewDetailAction } = getActionProps(
@@ -145,62 +147,103 @@ export default function RequestsActions({
 		);
 	}
 
-	// Group leader mode - Invitations: Cancel only
+	// Group leader mode - Invitations: Cancel only for pending, View Profile for all
 	if (!isStudentMode && isInviteType) {
 		return (
-			<div className="flex justify-center">
-				<Popconfirm
-					title={primaryAction.title}
-					description={primaryAction.description}
-					okText={primaryAction.okText}
-					cancelText="Cancel"
-					okType={primaryAction.okType || 'danger'}
-					onConfirm={primaryAction.onConfirm}
-				>
-					<Tooltip title="Cancel Invitation" placement="bottom">
-						<Button type="text" danger icon={<StopOutlined />} size="small" />
-					</Tooltip>
-				</Popconfirm>
-			</div>
+			<Space size="small" className="flex justify-center">
+				{/* View Profile button for all requests */}
+				<Tooltip title="View Student Profile" placement="bottom">
+					<Button
+						type="text"
+						icon={<EyeOutlined />}
+						size="small"
+						className="text-blue-600 hover:text-blue-700"
+						onClick={() => {
+							// This is a group leader view, so we're looking at students
+							console.log('View student profile with studentId:', studentId);
+						}}
+					/>
+				</Tooltip>
+
+				{/* Cancel button - only show for pending requests */}
+				{isPendingStatus && (
+					<Popconfirm
+						title={primaryAction.title}
+						description={primaryAction.description}
+						okText={primaryAction.okText}
+						cancelText="Cancel"
+						okType={primaryAction.okType || 'danger'}
+						onConfirm={primaryAction.onConfirm}
+					>
+						<Tooltip title="Cancel Invitation" placement="bottom">
+							<Button type="text" danger icon={<StopOutlined />} size="small" />
+						</Tooltip>
+					</Popconfirm>
+				)}
+			</Space>
 		);
 	}
 
-	// Group leader mode - Join Requests: Approve/Reject
+	// Group leader mode - Join Requests: View Profile + Approve/Reject (only for pending)
 	return (
 		<Space size="small">
-			{/* Approve button */}
-			<Popconfirm
-				title={primaryAction.title}
-				description={primaryAction.description}
-				okText={primaryAction.okText}
-				cancelText="Cancel"
-				okType={primaryAction.okType || 'primary'}
-				onConfirm={primaryAction.onConfirm}
-			>
-				<Tooltip title="Approve Request" placement="bottom">
-					<Button
-						type="text"
-						icon={<CheckOutlined />}
-						size="small"
-						className="text-green-600 hover:text-green-700"
-					/>
-				</Tooltip>
-			</Popconfirm>
+			{/* View Profile button for all requests */}
+			<Tooltip title="View Student Profile" placement="bottom">
+				<Button
+					type="text"
+					icon={<EyeOutlined />}
+					size="small"
+					className="text-blue-600 hover:text-blue-700"
+					onClick={() => {
+						// This is a group leader view, so we're looking at students
+						console.log('View student profile with studentId:', studentId);
+					}}
+				/>
+			</Tooltip>
 
-			{/* Reject button */}
-			{secondaryAction && (
-				<Popconfirm
-					title={secondaryAction.title}
-					description={secondaryAction.description}
-					okText={secondaryAction.okText}
-					cancelText="Cancel"
-					okType={secondaryAction.okType || 'danger'}
-					onConfirm={secondaryAction.onConfirm}
-				>
-					<Tooltip title="Reject Request" placement="bottom">
-						<Button type="text" danger icon={<CloseOutlined />} size="small" />
-					</Tooltip>
-				</Popconfirm>
+			{/* Only show approve/reject buttons for pending requests */}
+			{isPendingStatus && (
+				<>
+					{/* Approve button */}
+					<Popconfirm
+						title={primaryAction.title}
+						description={primaryAction.description}
+						okText={primaryAction.okText}
+						cancelText="Cancel"
+						okType={primaryAction.okType || 'primary'}
+						onConfirm={primaryAction.onConfirm}
+					>
+						<Tooltip title="Approve Request" placement="bottom">
+							<Button
+								type="text"
+								icon={<CheckOutlined />}
+								size="small"
+								className="text-green-600 hover:text-green-700"
+							/>
+						</Tooltip>
+					</Popconfirm>
+
+					{/* Reject button */}
+					{secondaryAction && (
+						<Popconfirm
+							title={secondaryAction.title}
+							description={secondaryAction.description}
+							okText={secondaryAction.okText}
+							cancelText="Cancel"
+							okType={secondaryAction.okType || 'danger'}
+							onConfirm={secondaryAction.onConfirm}
+						>
+							<Tooltip title="Reject Request" placement="bottom">
+								<Button
+									type="text"
+									danger
+									icon={<CloseOutlined />}
+									size="small"
+								/>
+							</Tooltip>
+						</Popconfirm>
+					)}
+				</>
 			)}
 		</Space>
 	);
