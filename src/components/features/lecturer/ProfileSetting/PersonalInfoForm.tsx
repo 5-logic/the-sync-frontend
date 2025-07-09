@@ -1,7 +1,6 @@
 'use client';
 
-import { UserOutlined } from '@ant-design/icons';
-import { Avatar, Button, Form, Input, Radio, Space } from 'antd';
+import { Button, Form, Input, Radio } from 'antd';
 import { useCallback, useEffect, useMemo } from 'react';
 
 import { FormLabel } from '@/components/common/FormLabel';
@@ -50,8 +49,6 @@ const VALIDATION_RULES = {
 };
 
 // Styling constants
-const AVATAR_SIZE = 80;
-const FORM_SPACING = 16;
 const BUTTON_GAP = 8;
 
 export default function PersonalInfoForm() {
@@ -135,13 +132,9 @@ export default function PersonalInfoForm() {
 			requiredMark={false}
 			onFinish={handleFinish}
 		>
-			<Space
-				direction="vertical"
-				align="center"
-				style={{ width: '100%', marginBottom: FORM_SPACING }}
-			>
-				<Avatar size={AVATAR_SIZE} icon={<UserOutlined />} />
-			</Space>
+			<Form.Item name="email" label={<FormLabel text="Email" isBold />}>
+				<Input disabled />
+			</Form.Item>
 
 			<Form.Item
 				name="fullName"
@@ -168,10 +161,6 @@ export default function PersonalInfoForm() {
 					<Radio value="Male">Male</Radio>
 					<Radio value="Female">Female</Radio>
 				</Radio.Group>
-			</Form.Item>
-
-			<Form.Item name="email" label={<FormLabel text="Email" isBold />}>
-				<Input disabled />
 			</Form.Item>
 
 			<div
