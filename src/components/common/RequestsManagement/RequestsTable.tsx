@@ -54,6 +54,13 @@ export default function RequestsTable({
 	const isInviteType = requestType === 'invite';
 	const isStudentMode = mode === 'student';
 
+	const getDateColumnTitle = (): string => {
+		if (isInviteType) {
+			return isStudentMode ? 'Invited At' : 'Sent At';
+		}
+		return 'Requested At';
+	};
+
 	const columns: ColumnsType<GroupRequest> = [
 		{
 			title: isStudentMode ? 'Group' : 'Student',
@@ -72,13 +79,7 @@ export default function RequestsTable({
 			render: (status: string) => <RequestStatusTag status={status} />,
 		},
 		{
-			title: isInviteType
-				? isStudentMode
-					? 'Invited At'
-					: 'Sent At'
-				: isStudentMode
-					? 'Requested At'
-					: 'Requested At',
+			title: getDateColumnTitle(),
 			dataIndex: 'createdAt',
 			key: 'createdAt',
 			render: (date: string) => formatDate(date),
