@@ -2,8 +2,8 @@ import { Button, Col, Form, Row } from 'antd';
 import { useRouter } from 'next/navigation';
 import { memo, useCallback, useState } from 'react';
 
-import CreateGroupInviteMembersSimple from '@/components/features/student/FormOrJoinGroup/CreateGroupInviteMembersSimple';
-import GroupFormFields from '@/components/features/student/FormOrJoinGroup/GroupFormFields';
+import CreateGroupInviteMembersSimple from '@/components/features/student/FormOrJoinGroup/CreateGroup/CreateGroupInviteMembersSimple';
+import GroupFormFields from '@/components/features/student/FormOrJoinGroup/CreateGroup/GroupFormFields';
 import groupService, { type GroupCreate } from '@/lib/services/groups.service';
 import requestService from '@/lib/services/requests.service';
 import { showNotification } from '@/lib/utils/notification';
