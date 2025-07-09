@@ -1,23 +1,10 @@
 import { UserOutlined } from '@ant-design/icons';
 import { Button, Card, Grid, Space, Tag, Typography } from 'antd';
 
+import { DOMAIN_COLOR_MAP } from '@/lib/constants/domains';
+
 const { Text } = Typography;
 const { useBreakpoint } = Grid;
-
-const DOMAIN_COLOR_MAP: Readonly<Record<string, string>> = {
-	AI: 'geekblue',
-	'Artificial Intelligence': 'geekblue',
-	Blockchain: 'cyan',
-	'Internet of Things': 'gold',
-	'Data Analytics': 'purple',
-	'Cloud Computing': 'volcano',
-	'App Development': 'blue',
-	'Web Development': 'blue',
-	IoT: 'gold',
-	Cybersecurity: 'red',
-	'Data Science': 'purple',
-	'Mobile Development': 'green',
-} as const;
 
 const CARD_CONFIG = {
 	MIN_HEIGHT: 280,
@@ -117,7 +104,7 @@ export default function GroupCard({ group, fontSize }: GroupCardProps) {
 	});
 
 	return (
-		<Card style={getCardStyles()} bodyStyle={getBodyStyles()}>
+		<Card hoverable style={getCardStyles()} bodyStyle={getBodyStyles()}>
 			<div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
 				<div style={{ flex: 1 }}>
 					<div style={getTitleStyles()} title={group.name}>
