@@ -500,7 +500,45 @@ const StudentAccountForm: React.FC = () => {
 												<Form.Item
 													{...restField}
 													name={[name, 'level']}
-													label={<FormLabel text="Skill Level" isBold />}
+													label={
+														<div
+															style={{
+																display: 'flex',
+																alignItems: 'center',
+																gap: 8,
+															}}
+														>
+															<FormLabel text="Skill Level" isBold />
+															<span
+																style={{
+																	color:
+																		LEVEL_COLORS[
+																			(skillLevels[name] ||
+																				form.getFieldValue([
+																					'skills',
+																					name,
+																					'level',
+																				]) ||
+																				1) - 1
+																		],
+																	fontWeight: 'bold',
+																	fontSize: '12px',
+																}}
+															>
+																{
+																	LEVEL_TOOLTIPS[
+																		(skillLevels[name] ||
+																			form.getFieldValue([
+																				'skills',
+																				name,
+																				'level',
+																			]) ||
+																			1) - 1
+																	]
+																}
+															</span>
+														</div>
+													}
 													rules={[
 														{ required: true, message: 'Select skill level' },
 													]}
