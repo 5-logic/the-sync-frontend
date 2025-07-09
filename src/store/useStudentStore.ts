@@ -2,9 +2,10 @@ import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 
 import { AuthService } from '@/lib/services/auth';
+import semesterService from '@/lib/services/semesters.service';
 import studentService from '@/lib/services/students.service';
 import { handleApiResponse } from '@/lib/utils/handleApi';
-import { PasswordChange } from '@/schemas/_common';
+import { ApiResponse, PasswordChange } from '@/schemas/_common';
 import {
 	ImportStudent,
 	Student,
@@ -88,6 +89,8 @@ interface StudentState {
 	// Actions
 	fetchStudents: (force?: boolean) => Promise<void>;
 	fetchStudentsBySemester: (semesterId: string) => Promise<void>;
+	fetchStudentsWithoutGroup: (semesterId: string) => Promise<void>;
+	fetchStudentsWithoutGroupAuto: () => Promise<void>;
 	fetchProfile: (id: string, force?: boolean) => Promise<StudentProfile | null>;
 	createStudent: (data: StudentCreate) => Promise<boolean>;
 	createManyStudents: (data: ImportStudent) => Promise<boolean>;
@@ -125,6 +128,35 @@ const studentSearchFilter = createSearchFilter<Student>((student) => [
 	student.email,
 	student.studentCode,
 ]);
+
+// Helper function to process students without group response
+const processStudentsWithoutGroupResponse = (
+	response: ApiResponse<Student[]>,
+	set: (state: Partial<StudentState>) => void,
+	get: () => StudentState,
+): boolean => {
+	const result = handleApiResponse(response, 'Success', '');
+
+	if (result.success && result.data) {
+		// Filter only active students
+		const activeStudents = result.data.filter(
+			(student: Student) => student.isActive,
+		);
+
+		set({
+			students: activeStudents,
+			loading: false,
+		});
+
+		// Apply current filters
+		get().filterStudents();
+		return true;
+	} else if (result.error) {
+		handleResultError(result.error, set);
+		return false;
+	}
+	return false;
+};
 
 export const useStudentStore = create<StudentState>()(
 	devtools(
@@ -173,6 +205,70 @@ export const useStudentStore = create<StudentState>()(
 				studentService,
 				ENTITY_NAME,
 			)(set, get),
+
+			fetchStudentsWithoutGroup: async (semesterId: string) => {
+				set({ loading: true, lastError: null });
+				try {
+					const response =
+						await studentService.findStudentsWithoutGroup(semesterId);
+
+					processStudentsWithoutGroupResponse(response, set, get);
+				} catch (error) {
+					handleActionError(error, ENTITY_NAME, 'fetch without group', set);
+				} finally {
+					set({ loading: false });
+				}
+			},
+
+			fetchStudentsWithoutGroupAuto: async () => {
+				set({ loading: true, lastError: null });
+				try {
+					// First, get all semesters to find the one with "Preparing" status
+					const semesterResponse = await semesterService.findAll();
+					const semesterResult = handleApiResponse(
+						semesterResponse,
+						'Success',
+						'',
+					);
+
+					if (!semesterResult.success || !semesterResult.data) {
+						if (semesterResult.error) {
+							handleResultError(semesterResult.error, set);
+						}
+						return;
+					}
+
+					// Find semester with "Preparing" status
+					const preparingSemester = semesterResult.data.find(
+						(semester) => semester.status === 'Preparing',
+					);
+
+					if (!preparingSemester) {
+						const error = createErrorState({
+							message: 'No semester with "Preparing" status found',
+							statusCode: 404,
+						});
+						set({ lastError: error, loading: false });
+						return;
+					}
+
+					// Now fetch students without group for this semester
+					const response = await studentService.findStudentsWithoutGroup(
+						preparingSemester.id,
+					);
+
+					processStudentsWithoutGroupResponse(response, set, get);
+				} catch (error) {
+					handleActionError(
+						error,
+						ENTITY_NAME,
+						'fetch without group auto',
+						set,
+					);
+				} finally {
+					set({ loading: false });
+				}
+			},
 
 			// Fetch detailed profile data
 			fetchProfile: async (

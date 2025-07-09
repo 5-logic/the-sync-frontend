@@ -61,6 +61,15 @@ class StudentService {
 		return response.data;
 	}
 
+	async findStudentsWithoutGroup(
+		semesterId: string,
+	): Promise<ApiResponse<Student[]>> {
+		const response = await httpClient.get<ApiResponse<Student[]>>(
+			`${this.baseUrl}/semester/${semesterId}/without-group`,
+		);
+		return response.data;
+	}
+
 	async toggleStatus(
 		id: string,
 		toggleStatusDto: StudentToggleStatus,
