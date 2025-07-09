@@ -32,8 +32,8 @@ export default function RequestsDialog({
 	// Fetch requests when dialog opens
 	useEffect(() => {
 		if (visible) {
-			// Force refresh when dialog opens to get latest data
-			config.fetchRequests(true);
+			// Only fetch if we don't have data yet, don't force refresh on dialog open
+			config.fetchRequests(false);
 		}
 		return () => {
 			if (!visible) {
