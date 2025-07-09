@@ -11,7 +11,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 interface GroupDetailPageProps {
-	params: {
+	readonly params: {
 		groupId: string;
 	};
 }
