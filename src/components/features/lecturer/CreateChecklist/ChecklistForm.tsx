@@ -15,7 +15,7 @@ import { showNotification } from '@/lib/utils';
 type Mode = 'import' | 'manual';
 
 interface UnifiedChecklistFormProps {
-	mode: Mode;
+	readonly mode: Mode;
 }
 
 export default function UnifiedChecklistForm({
@@ -74,9 +74,8 @@ export default function UnifiedChecklistForm({
 			});
 			showNotification.success('Checklist saved successfully!');
 			setShowErrors(false);
-			// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		} catch (err) {
-			// Validation failed, already shown in UI
+			console.error('Checklist validation failed', err);
 		}
 	};
 
