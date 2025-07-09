@@ -11,7 +11,9 @@ import InviteRequestButton from '@/components/features/student/FormOrJoinGroup/I
 import JoinGroupForm from '@/components/features/student/FormOrJoinGroup/JoinGroupForm';
 import { type ExtendedGroup, extendedGroups } from '@/data/group';
 import { mockTheses } from '@/data/thesis';
+import { type Group } from '@/lib/services/groups.service';
 import { Thesis } from '@/schemas/thesis';
+import { useGroupsStore } from '@/store/useGroupsStore';
 
 const { Title, Paragraph } = Typography;
 
@@ -33,7 +35,18 @@ interface GroupUI {
 	readonly members: number;
 }
 
-const mapGroups = (
+// Helper function to map API groups to UI format (for All Available Groups)
+const mapApiGroupsToUI = (apiGroups: Group[]): GroupUI[] =>
+	apiGroups.map((group) => ({
+		id: group.id,
+		name: group.name,
+		description: group.projectDirection || 'No description available',
+		domain: group.projectDirection || 'General',
+		members: 0, // Will be updated when we have member data from API
+	}));
+
+// Helper function to map mock data (for Suggested Groups by AI)
+const mapMockGroupsToUI = (
 	groups: readonly ExtendedGroup[],
 	theses: readonly Thesis[],
 ): GroupUI[] =>
@@ -48,17 +61,26 @@ const mapGroups = (
 		};
 	});
 
-const allGroups: readonly GroupUI[] = mapGroups(extendedGroups, mockTheses);
-const suggestedGroups: readonly GroupUI[] = allGroups.slice(
-	0,
-	SUGGESTED_GROUPS_COUNT,
-);
-
 export default function FormOrJoinGroup() {
 	const searchParams = useSearchParams();
+	const { groups: apiGroups, loading, error, fetchGroups } = useGroupsStore();
 	const [tabKey, setTabKey] = useState<string>(TAB_KEYS.JOIN);
 	const [search, setSearch] = useState<string>('');
 	const [category, setCategory] = useState<string | undefined>(undefined);
+
+	// Suggested Groups (using mock data for AI suggestions)
+	const suggestedGroups = useMemo(() => {
+		const mockGroups = mapMockGroupsToUI(extendedGroups, mockTheses);
+		return mockGroups.slice(0, SUGGESTED_GROUPS_COUNT);
+	}, []);
+
+	// All Available Groups (using API data)
+	const allApiGroups = useMemo(() => mapApiGroupsToUI(apiGroups), [apiGroups]);
+
+	// Fetch groups on component mount
+	useEffect(() => {
+		fetchGroups();
+	}, [fetchGroups]);
 
 	useEffect(() => {
 		const tab = searchParams.get('tab');
@@ -67,13 +89,13 @@ export default function FormOrJoinGroup() {
 		}
 	}, [searchParams]);
 
-	const filteredGroups = useMemo(() => {
+	const filteredApiGroups = useMemo(() => {
 		if (!search && !category) {
-			return [...allGroups];
+			return allApiGroups;
 		}
 
 		const searchLower = search.toLowerCase();
-		return allGroups.filter((group) => {
+		return allApiGroups.filter((group) => {
 			const matchesSearch =
 				!search ||
 				group.name.toLowerCase().includes(searchLower) ||
@@ -81,7 +103,7 @@ export default function FormOrJoinGroup() {
 			const matchesCategory = !category || group.domain === category;
 			return matchesSearch && matchesCategory;
 		});
-	}, [search, category]);
+	}, [search, category, allApiGroups]);
 
 	const handleSearchChange = useCallback((newSearch: string) => {
 		setSearch(newSearch);
@@ -121,22 +143,30 @@ export default function FormOrJoinGroup() {
 					{tabKey === TAB_KEYS.JOIN && (
 						<>
 							<JoinGroupForm />
+							{/* Suggested Groups always shows mock data */}
 							<GroupListSection
 								title="Suggested Groups by AI"
-								groups={[...suggestedGroups]} // Create mutable copy
+								groups={suggestedGroups}
 								enablePagination={false}
 							/>
-							<GroupListSection
-								title="All Available Groups"
-								groups={filteredGroups}
-								showFilter
-								search={search}
-								onSearchChange={handleSearchChange}
-								category={category}
-								onCategoryChange={handleCategoryChange}
-								pageSize={6}
-								enablePagination={true}
-							/>
+							{/* All Available Groups uses API data with loading/error states */}
+							{loading ? (
+								<div>Loading groups...</div>
+							) : error ? (
+								<div>Error loading groups: {error}</div>
+							) : (
+								<GroupListSection
+									title="All Available Groups"
+									groups={filteredApiGroups}
+									showFilter
+									search={search}
+									onSearchChange={handleSearchChange}
+									category={category}
+									onCategoryChange={handleCategoryChange}
+									pageSize={6}
+									enablePagination={true}
+								/>
+							)}
 						</>
 					)}
 
