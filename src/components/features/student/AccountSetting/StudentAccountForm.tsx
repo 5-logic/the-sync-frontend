@@ -275,6 +275,33 @@ const StudentAccountForm: React.FC = () => {
 		[],
 	);
 
+	// Handler for removing a skill
+	const handleRemoveSkill = React.useCallback(
+		(name: number, remove: (index: number) => void) => {
+			remove(name);
+			// Remove from skillLevels state
+			setSkillLevels((prev) => {
+				const newState = { ...prev };
+				delete newState[name];
+				return newState;
+			});
+		},
+		[],
+	);
+
+	// Handler for adding a new skill
+	const handleAddSkill = React.useCallback(
+		(add: () => void, fieldsLength: number) => {
+			add();
+			// Initialize skill level for new skill
+			setSkillLevels((prev) => ({
+				...prev,
+				[fieldsLength]: 1,
+			}));
+		},
+		[],
+	);
+
 	// Check if any loading is in progress
 	const isLoading = React.useMemo(() => {
 		const states = [
@@ -567,15 +594,7 @@ const StudentAccountForm: React.FC = () => {
 												<Button
 													type="text"
 													icon={<MinusCircleOutlined />}
-													onClick={() => {
-														remove(name);
-														// Remove from skillLevels state
-														setSkillLevels((prev) => {
-															const newState = { ...prev };
-															delete newState[name];
-															return newState;
-														});
-													}}
+													onClick={() => handleRemoveSkill(name, remove)}
 													danger
 													disabled={updatingProfile}
 													aria-label="Remove skill"
@@ -588,15 +607,7 @@ const StudentAccountForm: React.FC = () => {
 							<Form.Item style={{ marginBottom: 0 }}>
 								<Button
 									type="dashed"
-									onClick={() => {
-										add();
-										// Initialize skill level for new skill
-										const newIndex = fields.length;
-										setSkillLevels((prev) => ({
-											...prev,
-											[newIndex]: 1,
-										}));
-									}}
+									onClick={() => handleAddSkill(add, fields.length)}
 									icon={<PlusOutlined />}
 									block
 									disabled={updatingProfile}
