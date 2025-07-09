@@ -53,14 +53,12 @@ export default function AssignStudentsDetailPage() {
 			size={24}
 			style={{ width: '100%', padding: 24 }}
 		>
-			<div>
-				<Header
-					title="Assign Students Detail"
-					description="Facilitate the grouping process by assigning ungrouped students to
+			<Header
+				title="Assign Students Detail"
+				description="Facilitate the grouping process by assigning ungrouped students to
 					available project groups."
-					badgeText="Moderator Only"
-				/>
-			</div>
+				badgeText="Moderator Only"
+			/>
 
 			<GroupInfoCard thesis={thesis} />
 
