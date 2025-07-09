@@ -100,6 +100,41 @@ export default function GroupCard({
 		router.push(`/student/form-or-join-group/${group.id}`);
 	};
 
+	// Extract nested ternary operations into independent statements
+	const getButtonTitle = () => {
+		if (hasPendingInviteRequest) {
+			return 'You have been invited to this group - click to view details';
+		}
+		if (hasPendingJoinRequest) {
+			return 'Request already sent';
+		}
+		return 'Request to Join';
+	};
+
+	const getButtonAriaLabel = () => {
+		if (hasPendingInviteRequest) {
+			return `You have been invited to ${group.name}`;
+		}
+		if (hasPendingJoinRequest) {
+			return `Request already sent to ${group.name}`;
+		}
+		return `Request to join ${group.name}`;
+	};
+
+	const getButtonText = () => {
+		if (hasPendingInviteRequest) {
+			return 'View Invite';
+		}
+		if (hasPendingJoinRequest) {
+			return 'Request Sent';
+		}
+		return 'Request to Join';
+	};
+
+	const getButtonClickHandler = () => {
+		return hasPendingInviteRequest ? handleViewDetail : handleJoinRequest;
+	};
+
 	const getCardStyles = () => ({
 		borderRadius: CARD_CONFIG.BORDER_RADIUS,
 		width: '100%',
@@ -216,31 +251,13 @@ export default function GroupCard({
 						<Button
 							type="primary"
 							style={getButtonStyles(true)}
-							title={
-								hasPendingInviteRequest
-									? 'You have been invited to this group - click to view details'
-									: hasPendingJoinRequest
-										? 'Request already sent'
-										: 'Request to Join'
-							}
-							aria-label={
-								hasPendingInviteRequest
-									? `You have been invited to ${group.name}`
-									: hasPendingJoinRequest
-										? `Request already sent to ${group.name}`
-										: `Request to join ${group.name}`
-							}
-							onClick={
-								hasPendingInviteRequest ? handleViewDetail : handleJoinRequest
-							}
+							title={getButtonTitle()}
+							aria-label={getButtonAriaLabel()}
+							onClick={getButtonClickHandler()}
 							loading={isRequesting}
 							disabled={isRequesting || hasPendingJoinRequest}
 						>
-							{hasPendingInviteRequest
-								? 'View Invite'
-								: hasPendingJoinRequest
-									? 'Request Sent'
-									: 'Request to Join'}
+							{getButtonText()}
 						</Button>
 					</div>
 				</div>
