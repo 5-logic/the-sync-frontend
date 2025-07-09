@@ -7,16 +7,16 @@ import { useState } from 'react';
 import SemesterMilestoneSelect from '@/components/features/lecturer/AssignLecturerReview/SemesterMilestoneSelect';
 
 interface Props {
-	onSearchChange: (val: string) => void;
-	semester: string;
-	onSemesterChange: (val: string) => void;
-	milestone: string;
-	onMilestoneChange: (val: string) => void;
-	onCreate?: () => void;
-	buttonLabel?: string;
-	hideButton?: boolean;
-	disabledSemester?: boolean;
-	disabledMilestone?: boolean;
+	readonly onSearchChange: (val: string) => void;
+	readonly semester: string;
+	readonly onSemesterChange: (val: string) => void;
+	readonly milestone: string;
+	readonly onMilestoneChange: (val: string) => void;
+	readonly onCreate?: () => void;
+	readonly buttonLabel?: string;
+	readonly hideButton?: boolean;
+	readonly disabledSemester?: boolean;
+	readonly disabledMilestone?: boolean;
 }
 
 export default function ChecklistToolbar({
@@ -30,8 +30,13 @@ export default function ChecklistToolbar({
 	hideButton = false,
 	disabledSemester = false,
 	disabledMilestone = false,
-}: Readonly<Props>) {
+}: Props) {
 	const [searchValue, setSearchValue] = useState('');
+
+	const handleSearchChange = (value: string) => {
+		setSearchValue(value);
+		onSearchChange(value);
+	};
 
 	return (
 		<Row
@@ -41,21 +46,18 @@ export default function ChecklistToolbar({
 			justify="space-between"
 			style={{ marginBottom: 16 }}
 		>
-			{/* search */}
+			{/* Search input */}
 			<Col flex="auto">
 				<Input
 					allowClear
 					prefix={<SearchOutlined />}
 					placeholder="Search checklist name"
 					value={searchValue}
-					onChange={(e) => {
-						setSearchValue(e.target.value);
-						onSearchChange(e.target.value);
-					}}
+					onChange={(e) => handleSearchChange(e.target.value)}
 				/>
 			</Col>
 
-			{/* filter */}
+			{/* Semester & Milestone filter */}
 			<Col flex="none" style={{ minWidth: 250 }}>
 				<SemesterMilestoneSelect
 					semester={semester}
@@ -67,7 +69,7 @@ export default function ChecklistToolbar({
 				/>
 			</Col>
 
-			{/* add */}
+			{/* Create button */}
 			{!hideButton && (
 				<Col>
 					<Button type="primary" icon={<PlusOutlined />} onClick={onCreate}>

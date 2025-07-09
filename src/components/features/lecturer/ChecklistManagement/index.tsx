@@ -9,7 +9,6 @@ import ChecklistTable from '@/components/features/lecturer/ChecklistManagement/C
 import ChecklistToolbar from '@/components/features/lecturer/ChecklistManagement/ChecklistToolbar';
 import { mockChecklistItems } from '@/data/ChecklistItems';
 import { mockChecklists } from '@/data/checklist';
-import { showNotification } from '@/lib/utils/notification';
 
 export default function ChecklistManagement() {
 	const router = useRouter();
@@ -22,35 +21,14 @@ export default function ChecklistManagement() {
 			.length;
 
 	const handleCreateChecklist = () => {
-		if (!semester || !milestone) {
-			showNotification.warning(
-				'Missing Selection',
-				'Please select both semester and milestone before creating a checklist.',
-			);
-			return;
-		}
-
-		const checklist = mockChecklists.find(
-			(cl) =>
-				cl.semester.trim() === semester.trim() &&
-				cl.milestone.trim().toLowerCase() === milestone.trim().toLowerCase(),
-		);
-
-		if (checklist) {
-			router.push(`/lecturer/checklist/create-checklist/${checklist.id}`);
-		} else {
-			showNotification.error(
-				'Checklist Not Found',
-				'Checklist ID not found for the selected filters.',
-			);
-		}
+		router.push(`/lecturer/create-checklist`);
 	};
 
-	// Lọctheo search + semester + milestone
+	// Lọc theo search + semester + milestone
 	const filteredChecklists = useMemo(() => {
 		return mockChecklists.filter((item) => {
 			const matchesSearch =
-				item.name.toLowerCase().includes(searchValue.toLowerCase()) || //NOSONAR
+				item.name.toLowerCase().includes(searchValue.toLowerCase()) || // NOSONAR
 				item.description?.toLowerCase().includes(searchValue.toLowerCase());
 
 			const matchesSemester = semester ? item.semester === semester : true;
