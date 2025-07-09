@@ -9,6 +9,7 @@ import { type RequestsDialogProps } from '@/components/common/RequestsManagement
 import { showNotification } from '@/lib/utils/notification';
 import { isTextMatch } from '@/lib/utils/textNormalization';
 import { useRequestsStore } from '@/store';
+import { useGroupDashboardStore } from '@/store/useGroupDashboardStore';
 
 export default function RequestsDialog({
 	visible,
@@ -101,15 +102,38 @@ export default function RequestsDialog({
 		return filterRequests('Join');
 	}, [filterRequests]);
 
+	// Get group dashboard store for refreshing group data and redirecting
+
 	// Action handlers based on mode
 	const handleAcceptInvite = async (requestId: string) => {
 		const success = await updateRequestStatus(requestId, 'Approved');
 		if (success) {
 			showNotification.success('Invitation accepted successfully!');
 			onRequestsUpdate?.();
-			// Close dialog after accepting invite since student will now have a group
+
+			// For student mode, refresh group status and redirect to dashboard
 			if (config.mode === 'student') {
-				onCancel();
+				try {
+					// Get refreshGroup from the store to update the group status
+					const { refreshGroup } = useGroupDashboardStore.getState();
+
+					// Similar to group creation flow, trigger refresh and redirect
+					await refreshGroup();
+
+					// Add a small delay to ensure API has processed the group membership
+					await new Promise((resolve) => setTimeout(resolve, 1000));
+					await refreshGroup();
+
+					// Close dialog
+					onCancel();
+
+					// Redirect to group dashboard
+					router.push('/student/group-dashboard');
+				} catch (error) {
+					console.error('Error refreshing group status:', error);
+					// Close dialog if we can't refresh
+					onCancel();
+				}
 			}
 		} else {
 			showNotification.error('Failed to accept invitation. Please try again.');
