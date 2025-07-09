@@ -1,6 +1,4 @@
-import { ChecklistItem } from '@/schemas/checklist';
-// import { ChecklistReviewAcceptance } from '@/schemas/_enums';
-import { Checklist } from '@/schemas/checklist';
+import { Checklist, ChecklistItem } from '@/schemas/checklist';
 
 // ========== MOCK CHECKLISTS THEO PHASE ==========
 
