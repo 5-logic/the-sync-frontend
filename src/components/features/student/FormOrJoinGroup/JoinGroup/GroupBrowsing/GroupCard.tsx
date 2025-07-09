@@ -1,23 +1,17 @@
 import { UserOutlined } from '@ant-design/icons';
 import { Button, Card, Grid, Space, Tag, Typography } from 'antd';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+
+import { GroupConfirmationModals } from '@/components/common/ConfirmModal';
+import { DOMAIN_COLOR_MAP } from '@/lib/constants/domains';
+import requestService, {
+	type GroupRequest,
+} from '@/lib/services/requests.service';
+import { showNotification } from '@/lib/utils/notification';
 
 const { Text } = Typography;
 const { useBreakpoint } = Grid;
-
-const DOMAIN_COLOR_MAP: Readonly<Record<string, string>> = {
-	AI: 'geekblue',
-	'Artificial Intelligence': 'geekblue',
-	Blockchain: 'cyan',
-	'Internet of Things': 'gold',
-	'Data Analytics': 'purple',
-	'Cloud Computing': 'volcano',
-	'App Development': 'blue',
-	'Web Development': 'blue',
-	IoT: 'gold',
-	Cybersecurity: 'red',
-	'Data Science': 'purple',
-	'Mobile Development': 'green',
-} as const;
 
 const CARD_CONFIG = {
 	MIN_HEIGHT: 280,
@@ -31,14 +25,14 @@ const CARD_CONFIG = {
 const TEXT_CONFIG = {
 	TITLE_LINE_CLAMP: 2,
 	TITLE_LINE_HEIGHT: 1.3,
-	DESC_LINE_CLAMP: 2,
-	DESC_LINE_HEIGHT: 1.4,
+	LEADER_LINE_CLAMP: 2, // Changed from DESC_LINE_CLAMP
+	LEADER_LINE_HEIGHT: 1.4, // Changed from DESC_LINE_HEIGHT
 } as const;
 
 interface GroupUI {
 	readonly id: string;
 	readonly name: string;
-	readonly description: string;
+	readonly leader: string; // Changed from description to leader
 	readonly domain: string;
 	readonly members: number;
 }
@@ -46,13 +40,100 @@ interface GroupUI {
 interface GroupCardProps {
 	readonly group: GroupUI;
 	readonly fontSize: number;
+	readonly onRequestSent?: () => void;
+	readonly existingRequests?: readonly GroupRequest[];
 }
 
-export default function GroupCard({ group, fontSize }: GroupCardProps) {
+export default function GroupCard({
+	group,
+	fontSize,
+	onRequestSent,
+	existingRequests = [],
+}: GroupCardProps) {
+	const [isRequesting, setIsRequesting] = useState(false);
+	const router = useRouter();
 	const screens = useBreakpoint();
 	const padding = screens.xs
 		? CARD_CONFIG.PADDING_MOBILE
 		: CARD_CONFIG.PADDING_DESKTOP;
+
+	// Check if user already has a pending join request for this group
+	const hasPendingJoinRequest = existingRequests.some(
+		(request) =>
+			request.groupId === group.id &&
+			request.type === 'Join' &&
+			request.status === 'Pending',
+	);
+
+	// Check if user has a pending invite request for this group
+	const hasPendingInviteRequest = existingRequests.some(
+		(request) =>
+			request.groupId === group.id &&
+			request.type === 'Invite' &&
+			request.status === 'Pending',
+	);
+
+	const handleJoinRequest = () => {
+		GroupConfirmationModals.requestToJoin(
+			group.name,
+			async () => {
+				setIsRequesting(true);
+				try {
+					await requestService.joinGroup(group.id);
+					showNotification.success(
+						'Join request sent successfully! The group leader will review your request.',
+					);
+					onRequestSent?.();
+				} catch {
+					showNotification.error(
+						'Failed to send join request. Please try again.',
+					);
+				} finally {
+					setIsRequesting(false);
+				}
+			},
+			isRequesting,
+		);
+	};
+
+	const handleViewDetail = () => {
+		router.push(`/student/form-or-join-group/${group.id}`);
+	};
+
+	// Extract nested ternary operations into independent statements
+	const getButtonTitle = () => {
+		if (hasPendingInviteRequest) {
+			return 'You have been invited to this group - click to view details';
+		}
+		if (hasPendingJoinRequest) {
+			return 'Request already sent';
+		}
+		return 'Request to Join';
+	};
+
+	const getButtonAriaLabel = () => {
+		if (hasPendingInviteRequest) {
+			return `You have been invited to ${group.name}`;
+		}
+		if (hasPendingJoinRequest) {
+			return `Request already sent to ${group.name}`;
+		}
+		return `Request to join ${group.name}`;
+	};
+
+	const getButtonText = () => {
+		if (hasPendingInviteRequest) {
+			return 'View Invite';
+		}
+		if (hasPendingJoinRequest) {
+			return 'Request Sent';
+		}
+		return 'Request to Join';
+	};
+
+	const getButtonClickHandler = () => {
+		return hasPendingInviteRequest ? handleViewDetail : handleJoinRequest;
+	};
 
 	const getCardStyles = () => ({
 		borderRadius: CARD_CONFIG.BORDER_RADIUS,
@@ -89,17 +170,17 @@ export default function GroupCard({ group, fontSize }: GroupCardProps) {
 		color: 'rgba(0, 0, 0, 0.88)',
 	});
 
-	const getDescriptionStyles = () => ({
+	const getLeaderStyles = () => ({
 		fontSize,
-		lineHeight: TEXT_CONFIG.DESC_LINE_HEIGHT,
+		lineHeight: TEXT_CONFIG.LEADER_LINE_HEIGHT,
 		overflow: 'hidden',
 		display: '-webkit-box',
-		WebkitLineClamp: TEXT_CONFIG.DESC_LINE_CLAMP,
+		WebkitLineClamp: TEXT_CONFIG.LEADER_LINE_CLAMP,
 		WebkitBoxOrient: 'vertical' as const,
 		textOverflow: 'ellipsis',
 		wordBreak: 'break-word' as const,
-		minHeight: `${fontSize * TEXT_CONFIG.DESC_LINE_HEIGHT * TEXT_CONFIG.DESC_LINE_CLAMP}px`,
-		maxHeight: `${fontSize * TEXT_CONFIG.DESC_LINE_HEIGHT * TEXT_CONFIG.DESC_LINE_CLAMP}px`,
+		minHeight: `${fontSize * TEXT_CONFIG.LEADER_LINE_HEIGHT * TEXT_CONFIG.LEADER_LINE_CLAMP}px`,
+		maxHeight: `${fontSize * TEXT_CONFIG.LEADER_LINE_HEIGHT * TEXT_CONFIG.LEADER_LINE_CLAMP}px`,
 		whiteSpace: 'normal' as const,
 		color: 'rgba(0, 0, 0, 0.45)',
 	});
@@ -117,7 +198,7 @@ export default function GroupCard({ group, fontSize }: GroupCardProps) {
 	});
 
 	return (
-		<Card style={getCardStyles()} bodyStyle={getBodyStyles()}>
+		<Card hoverable style={getCardStyles()} bodyStyle={getBodyStyles()}>
 			<div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
 				<div style={{ flex: 1 }}>
 					<div style={getTitleStyles()} title={group.name}>
@@ -129,8 +210,8 @@ export default function GroupCard({ group, fontSize }: GroupCardProps) {
 					>
 						{group.domain}
 					</Tag>
-					<div style={getDescriptionStyles()} title={group.description}>
-						{group.description}
+					<div style={getLeaderStyles()} title={`Leader: ${group.leader}`}>
+						<strong>Leader:</strong> {group.leader}
 					</div>
 					<Space align="center" style={{ marginTop: 8 }}>
 						<UserOutlined
@@ -163,16 +244,20 @@ export default function GroupCard({ group, fontSize }: GroupCardProps) {
 							style={getButtonStyles()}
 							title="View Group Detail"
 							aria-label={`View details for ${group.name}`}
+							onClick={handleViewDetail}
 						>
 							View Group Detail
 						</Button>
 						<Button
 							type="primary"
 							style={getButtonStyles(true)}
-							title="Request to Join"
-							aria-label={`Request to join ${group.name}`}
+							title={getButtonTitle()}
+							aria-label={getButtonAriaLabel()}
+							onClick={getButtonClickHandler()}
+							loading={isRequesting}
+							disabled={isRequesting || hasPendingJoinRequest}
 						>
-							Request to Join
+							{getButtonText()}
 						</Button>
 					</div>
 				</div>
