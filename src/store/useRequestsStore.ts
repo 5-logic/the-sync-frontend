@@ -25,37 +25,52 @@ interface RequestsState {
 
 const ENTITY_NAME = 'groupRequests';
 
+// Helper function to handle cache initialization and checking
+const handleCacheLogic = (
+	cacheKey: string,
+	forceRefresh: boolean,
+	set: (partial: Partial<RequestsState>) => void,
+): { shouldProceed: boolean; cachedData?: GroupRequest[] } => {
+	// Initialize cache if not exists
+	if (!cacheUtils.getCache(ENTITY_NAME)) {
+		cacheUtils.initCache(ENTITY_NAME, { ttl: 5 * 60 * 1000 }); // 5 minutes
+	}
+
+	// Check cache first
+	const cachedData = cacheUtils.get<GroupRequest[]>(ENTITY_NAME, cacheKey);
+
+	console.log('Cache check:', {
+		cacheKey,
+		forceRefresh,
+		hasCachedData: !!cachedData,
+		cachedDataLength: cachedData?.length || 0,
+	});
+
+	if (!forceRefresh && cachedData) {
+		console.log('Using cached data');
+		set({ requests: cachedData, loading: false, error: null });
+		return { shouldProceed: false, cachedData };
+	}
+
+	// Check if should fetch
+	if (!forceRefresh && !cacheUtils.shouldFetch(ENTITY_NAME, forceRefresh)) {
+		console.log('Skipping fetch due to cache policy');
+		return { shouldProceed: false };
+	}
+
+	return { shouldProceed: true };
+};
+
 export const useRequestsStore = create<RequestsState>((set, get) => ({
 	requests: [],
 	loading: false,
 	error: null,
 
 	fetchGroupRequests: async (groupId: string, forceRefresh = false) => {
-		// Initialize cache if not exists
-		if (!cacheUtils.getCache(ENTITY_NAME)) {
-			cacheUtils.initCache(ENTITY_NAME, { ttl: 5 * 60 * 1000 }); // 5 minutes
-		}
-
-		// Check cache first
 		const cacheKey = `group_${groupId}`;
-		const cachedData = cacheUtils.get<GroupRequest[]>(ENTITY_NAME, cacheKey);
+		const cacheResult = handleCacheLogic(cacheKey, forceRefresh, set);
 
-		console.log('fetchGroupRequests:', {
-			groupId,
-			forceRefresh,
-			hasCachedData: !!cachedData,
-			cachedDataLength: cachedData?.length || 0,
-		});
-
-		if (!forceRefresh && cachedData) {
-			console.log('Using cached data for requests');
-			set({ requests: cachedData, loading: false, error: null });
-			return;
-		}
-
-		// Check if should fetch
-		if (!forceRefresh && !cacheUtils.shouldFetch(ENTITY_NAME, forceRefresh)) {
-			console.log('Skipping fetch due to cache policy');
+		if (!cacheResult.shouldProceed) {
 			return;
 		}
 
@@ -88,30 +103,10 @@ export const useRequestsStore = create<RequestsState>((set, get) => ({
 	},
 
 	fetchStudentRequests: async (forceRefresh = false) => {
-		// Initialize cache if not exists
-		if (!cacheUtils.getCache(ENTITY_NAME)) {
-			cacheUtils.initCache(ENTITY_NAME, { ttl: 5 * 60 * 1000 }); // 5 minutes
-		}
-
-		// Check cache first
 		const cacheKey = 'student_requests';
-		const cachedData = cacheUtils.get<GroupRequest[]>(ENTITY_NAME, cacheKey);
+		const cacheResult = handleCacheLogic(cacheKey, forceRefresh, set);
 
-		console.log('fetchStudentRequests:', {
-			forceRefresh,
-			hasCachedData: !!cachedData,
-			cachedDataLength: cachedData?.length || 0,
-		});
-
-		if (!forceRefresh && cachedData) {
-			console.log('Using cached data for student requests');
-			set({ requests: cachedData, loading: false, error: null });
-			return;
-		}
-
-		// Check if should fetch
-		if (!forceRefresh && !cacheUtils.shouldFetch(ENTITY_NAME, forceRefresh)) {
-			console.log('Skipping fetch due to cache policy');
+		if (!cacheResult.shouldProceed) {
 			return;
 		}
 
