@@ -2,12 +2,12 @@ import { Col, Empty, Row } from 'antd';
 import { useEffect, useState } from 'react';
 
 import ListPagination from '@/components/common/ListPagination/ListPagination';
-import GroupCard from '@/components/features/student/FormOrJoinGroup/GroupCard';
+import GroupCard from '@/components/features/student/FormOrJoinGroup/JoinGroup/GroupBrowsing/GroupCard';
 
 type GroupUI = {
 	id: string;
 	name: string;
-	description: string;
+	leader: string;
 	domain: string;
 	members: number;
 };
