@@ -3,10 +3,10 @@ import { type GroupRequest } from '@/lib/services/requests.service';
 export type RequestsMode = 'group-leader' | 'student';
 
 export interface RequestsConfig {
-	mode: RequestsMode;
-	title: string;
-	fetchRequests: (forceRefresh?: boolean) => Promise<void>;
-	groupId?: string; // For group leader mode
+	readonly mode: RequestsMode;
+	readonly title: string;
+	readonly fetchRequests: (forceRefresh?: boolean) => Promise<void>;
+	readonly groupId?: string; // For group leader mode
 }
 
 export interface RequestsDialogProps {
@@ -40,20 +40,20 @@ export interface RequestsTabProps {
 }
 
 export interface ActionProps {
-	primaryAction: {
-		text: string;
-		title: string;
-		description: string;
-		okText: string;
-		okType?: 'primary' | 'danger';
-		onConfirm: () => void;
+	readonly primaryAction: {
+		readonly text: string;
+		readonly title: string;
+		readonly description: string;
+		readonly okText: string;
+		readonly okType?: 'primary' | 'danger';
+		readonly onConfirm: () => void;
 	};
-	secondaryAction?: {
-		text: string;
-		title: string;
-		description: string;
-		okText: string;
-		okType?: 'primary' | 'danger';
-		onConfirm: () => void;
+	readonly secondaryAction?: {
+		readonly text: string;
+		readonly title: string;
+		readonly description: string;
+		readonly okText: string;
+		readonly okType?: 'primary' | 'danger';
+		readonly onConfirm: () => void;
 	};
 }
