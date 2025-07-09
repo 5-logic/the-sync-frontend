@@ -1,6 +1,9 @@
 import { Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 
+import RequestStatusTag from '@/components/common/RequestsManagement/RequestStatusTag';
+import RequestsActions from '@/components/common/RequestsManagement/RequestsActions';
+import StudentInfo from '@/components/common/RequestsManagement/StudentInfo';
 import {
 	type ActionProps,
 	type RequestsMode,
@@ -8,10 +11,6 @@ import {
 import TablePagination from '@/components/common/TablePagination/TablePagination';
 import { type GroupRequest } from '@/lib/services/requests.service';
 import { formatDate } from '@/lib/utils/dateFormat';
-
-import RequestStatusTag from './RequestStatusTag';
-import RequestsActions from './RequestsActions';
-import StudentInfo from './StudentInfo';
 
 interface GroupInfo {
 	id: string;
