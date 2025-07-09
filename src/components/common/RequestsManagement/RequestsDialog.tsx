@@ -15,7 +15,7 @@ export default function RequestsDialog({
 	onCancel,
 	config,
 	onRequestsUpdate,
-}: RequestsDialogProps) {
+}: Readonly<RequestsDialogProps>) {
 	const [activeTab, setActiveTab] = useState('invite');
 	const [searchText, setSearchText] = useState('');
 	const [statusFilter, setStatusFilter] = useState<string | undefined>(
