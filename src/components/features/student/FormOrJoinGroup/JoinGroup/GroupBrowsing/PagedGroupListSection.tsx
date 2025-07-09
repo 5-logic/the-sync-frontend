@@ -1,4 +1,4 @@
-import { Col, Empty, Row } from 'antd';
+import { Col, Empty, Row, Spin } from 'antd';
 import { useEffect, useState } from 'react';
 
 import ListPagination from '@/components/common/ListPagination/ListPagination';
@@ -19,6 +19,7 @@ interface PagedGroupListSectionProps {
 	readonly pageSize?: number;
 	readonly onRequestSent?: () => void;
 	readonly existingRequests?: readonly GroupRequest[];
+	readonly loading?: boolean;
 }
 
 export default function PagedGroupListSection({
@@ -27,6 +28,7 @@ export default function PagedGroupListSection({
 	pageSize = 6,
 	onRequestSent,
 	existingRequests = [],
+	loading = false,
 }: PagedGroupListSectionProps) {
 	const [current, setCurrent] = useState(1);
 	const [currentPageSize, setCurrentPageSize] = useState(pageSize);
@@ -52,32 +54,34 @@ export default function PagedGroupListSection({
 		<>
 			{groups.length > 0 ? (
 				<>
-					<Row gutter={[16, 16]} align="stretch">
-						{pagedGroups.map((group) => (
-							<Col
-								xs={24}
-								sm={24}
-								md={24}
-								lg={12}
-								xl={8}
-								xxl={8}
-								key={group.id}
-								style={{
-									display: 'flex',
-									marginBottom: 16,
-								}}
-							>
-								<div style={{ width: '100%' }}>
-									<GroupCard
-										group={group}
-										fontSize={fontSize}
-										onRequestSent={onRequestSent}
-										existingRequests={existingRequests}
-									/>
-								</div>
-							</Col>
-						))}
-					</Row>
+					<Spin spinning={loading}>
+						<Row gutter={[16, 16]} align="stretch">
+							{pagedGroups.map((group) => (
+								<Col
+									xs={24}
+									sm={24}
+									md={24}
+									lg={12}
+									xl={8}
+									xxl={8}
+									key={group.id}
+									style={{
+										display: 'flex',
+										marginBottom: 16,
+									}}
+								>
+									<div style={{ width: '100%' }}>
+										<GroupCard
+											group={group}
+											fontSize={fontSize}
+											onRequestSent={onRequestSent}
+											existingRequests={existingRequests}
+										/>
+									</div>
+								</Col>
+							))}
+						</Row>
+					</Spin>
 					<ListPagination
 						current={current}
 						pageSize={currentPageSize}
