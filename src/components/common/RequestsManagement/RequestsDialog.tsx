@@ -3,12 +3,11 @@
 import { Modal, Tabs } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
 
+import RequestsTab from '@/components/common/RequestsManagement/RequestsTab';
+import { type RequestsDialogProps } from '@/components/common/RequestsManagement/types';
 import { showNotification } from '@/lib/utils/notification';
 import { isTextMatch } from '@/lib/utils/textNormalization';
 import { useRequestsStore } from '@/store';
-
-import RequestsTab from './RequestsTab';
-import { type RequestsDialogProps } from './types';
 
 export default function RequestsDialog({
 	visible,
