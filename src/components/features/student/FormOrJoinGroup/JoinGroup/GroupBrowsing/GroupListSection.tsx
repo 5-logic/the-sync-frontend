@@ -1,5 +1,16 @@
-import { SearchOutlined } from '@ant-design/icons';
-import { Col, Empty, Grid, Input, Row, Select, Space, Typography } from 'antd';
+import { ReloadOutlined, SearchOutlined } from '@ant-design/icons';
+import {
+	Button,
+	Col,
+	Empty,
+	Grid,
+	Input,
+	Row,
+	Select,
+	Space,
+	Spin,
+	Typography,
+} from 'antd';
 
 import GroupCard from '@/components/features/student/FormOrJoinGroup/JoinGroup/GroupBrowsing/GroupCard';
 import PagedGroupListSection from '@/components/features/student/FormOrJoinGroup/JoinGroup/GroupBrowsing/PagedGroupListSection';
@@ -11,8 +22,9 @@ const { useBreakpoint } = Grid;
 
 // Constants to avoid magic numbers
 const BREAKPOINT_CONFIGS = {
-	SEARCH_WIDTH: { span: 17 }, // ~70% of 24 columns
-	CATEGORY_WIDTH: { span: 7 }, // ~30% of 24 columns
+	SEARCH_WIDTH: { span: 15 }, // Reduced width for search
+	CATEGORY_WIDTH: { span: 6 }, // Reduced width for category
+	REFRESH_WIDTH: { span: 3 }, // Further reduced width for refresh button
 	CARD_WIDTH: { xs: 24, sm: 24, md: 24, lg: 12, xl: 8, xxl: 8 },
 } as const;
 
@@ -50,10 +62,12 @@ interface RenderContentParams {
 	readonly category?: string;
 	readonly onRequestSent?: () => void;
 	readonly existingRequests?: readonly GroupRequest[];
+	readonly loading?: boolean;
 }
 
 interface RenderContentWithPaginationParams extends RenderContentParams {
 	readonly pageSize: number;
+	readonly loading?: boolean;
 }
 
 interface GroupListSectionProps {
@@ -69,6 +83,9 @@ interface GroupListSectionProps {
 	readonly enablePagination?: boolean;
 	readonly onRequestSent?: () => void;
 	readonly existingRequests?: readonly GroupRequest[];
+	readonly loading?: boolean;
+	readonly error?: string | null;
+	readonly onRefresh?: () => void;
 }
 
 // Helper functions for empty state messages
@@ -101,6 +118,8 @@ const renderFilterControls = (
 	onSearchChange?: (value: string) => void,
 	category?: string,
 	onCategoryChange?: (value: string | undefined) => void,
+	loading?: boolean,
+	onRefresh?: () => void,
 ) => {
 	return (
 		<>
@@ -144,6 +163,24 @@ const renderFilterControls = (
 					}))}
 				/>
 			</Col>
+			<Col {...BREAKPOINT_CONFIGS.REFRESH_WIDTH}>
+				<Button
+					icon={<ReloadOutlined />}
+					onClick={onRefresh}
+					loading={loading}
+					style={{
+						width: '100%',
+						height: screens.xs
+							? STYLE_CONSTANTS.INPUT_HEIGHT.xs
+							: STYLE_CONSTANTS.INPUT_HEIGHT.default,
+						padding: '0 4px',
+						fontSize: screens.xs ? fontSize - 2 : fontSize - 1,
+					}}
+					size={screens.xs ? 'small' : 'middle'}
+				>
+					{screens.xs ? '' : 'Refresh'}
+				</Button>
+			</Col>
 		</>
 	);
 };
@@ -154,28 +191,31 @@ const renderGroupsWithoutPagination = (
 	fontSize: number,
 	onRequestSent?: () => void,
 	existingRequests?: readonly GroupRequest[],
+	loading?: boolean,
 ) => (
-	<Row gutter={[16, 16]} align="stretch">
-		{groups.map((group) => (
-			<Col
-				{...BREAKPOINT_CONFIGS.CARD_WIDTH}
-				key={group.id}
-				style={{
-					display: 'flex',
-					marginBottom: STYLE_CONSTANTS.CARD_MARGIN_BOTTOM,
-				}}
-			>
-				<div style={{ width: '100%' }}>
-					<GroupCard
-						group={group}
-						fontSize={fontSize}
-						onRequestSent={onRequestSent}
-						existingRequests={existingRequests}
-					/>
-				</div>
-			</Col>
-		))}
-	</Row>
+	<Spin spinning={loading}>
+		<Row gutter={[16, 16]} align="stretch">
+			{groups.map((group) => (
+				<Col
+					{...BREAKPOINT_CONFIGS.CARD_WIDTH}
+					key={group.id}
+					style={{
+						display: 'flex',
+						marginBottom: STYLE_CONSTANTS.CARD_MARGIN_BOTTOM,
+					}}
+				>
+					<div style={{ width: '100%' }}>
+						<GroupCard
+							group={group}
+							fontSize={fontSize}
+							onRequestSent={onRequestSent}
+							existingRequests={existingRequests}
+						/>
+					</div>
+				</Col>
+			))}
+		</Row>
+	</Spin>
 );
 
 // Helper function to render empty state for filtered view
@@ -210,7 +250,29 @@ const renderContentWithPagination = (
 		category,
 		onRequestSent,
 		existingRequests,
+		loading,
 	} = params;
+
+	// Hiển thị loading state khi đang loading ngay cả khi không có groups
+	if (loading) {
+		return (
+			<Spin spinning={loading}>
+				<div
+					style={{
+						minHeight: 200,
+						display: 'flex',
+						alignItems: 'center',
+						justifyContent: 'center',
+					}}
+				>
+					<Empty
+						description="Loading groups..."
+						image={Empty.PRESENTED_IMAGE_SIMPLE}
+					/>
+				</div>
+			</Spin>
+		);
+	}
 
 	const hasGroups = groups.length > 0;
 
@@ -222,6 +284,7 @@ const renderContentWithPagination = (
 				pageSize={pageSize}
 				onRequestSent={onRequestSent}
 				existingRequests={existingRequests}
+				loading={loading}
 			/>
 		);
 	}
@@ -241,7 +304,29 @@ const renderContentWithoutPagination = (params: RenderContentParams) => {
 		category,
 		onRequestSent,
 		existingRequests,
+		loading,
 	} = params;
+
+	// Hiển thị loading state khi đang loading ngay cả khi không có groups
+	if (loading) {
+		return (
+			<Spin spinning={loading}>
+				<div
+					style={{
+						minHeight: 200,
+						display: 'flex',
+						alignItems: 'center',
+						justifyContent: 'center',
+					}}
+				>
+					<Empty
+						description="Loading groups..."
+						image={Empty.PRESENTED_IMAGE_SIMPLE}
+					/>
+				</div>
+			</Spin>
+		);
+	}
 
 	const hasGroups = groups.length > 0;
 
@@ -251,6 +336,7 @@ const renderContentWithoutPagination = (params: RenderContentParams) => {
 			fontSize,
 			onRequestSent,
 			existingRequests,
+			loading,
 		);
 	}
 
@@ -272,6 +358,9 @@ export default function GroupListSection({
 	enablePagination = true,
 	onRequestSent,
 	existingRequests = [],
+	loading = false,
+	error = null,
+	onRefresh,
 }: GroupListSectionProps) {
 	const screens = useBreakpoint();
 
@@ -316,30 +405,44 @@ export default function GroupListSection({
 						onSearchChange,
 						category,
 						onCategoryChange,
+						loading,
+						onRefresh,
 					)}
 				</Row>
 			)}
 
-			{enablePagination
-				? renderContentWithPagination({
-						groups,
-						fontSize,
-						pageSize,
-						showFilter,
-						search,
-						category,
-						onRequestSent,
-						existingRequests,
-					})
-				: renderContentWithoutPagination({
-						groups,
-						fontSize,
-						showFilter,
-						search,
-						category,
-						onRequestSent,
-						existingRequests,
-					})}
+			{/* Error State */}
+			{error && (
+				<Empty
+					description={`Error loading groups: ${error}`}
+					style={{ margin: STYLE_CONSTANTS.EMPTY_STATE_MARGIN }}
+				/>
+			)}
+
+			{/* Content */}
+			{!error &&
+				(enablePagination
+					? renderContentWithPagination({
+							groups,
+							fontSize,
+							pageSize,
+							showFilter,
+							search,
+							category,
+							onRequestSent,
+							existingRequests,
+							loading,
+						})
+					: renderContentWithoutPagination({
+							groups,
+							fontSize,
+							showFilter,
+							search,
+							category,
+							onRequestSent,
+							existingRequests,
+							loading,
+						}))}
 		</Space>
 	);
 }
