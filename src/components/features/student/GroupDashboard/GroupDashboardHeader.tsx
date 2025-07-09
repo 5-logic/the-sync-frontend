@@ -1,9 +1,10 @@
 import { UserAddOutlined } from '@ant-design/icons';
 import { Typography } from 'antd';
 
-import RequestsButton from '@/components/features/student/GroupDashboard/RequestsButton';
+import { RequestsButton } from '@/components/common/RequestsManagement';
 import { useSessionData } from '@/hooks/auth/useAuth';
 import { GroupDashboard } from '@/schemas/group';
+import { useRequestsStore } from '@/store';
 
 const { Title, Paragraph } = Typography;
 
@@ -15,9 +16,19 @@ export default function GroupDashboardHeader({
 	group,
 }: GroupDashboardHeaderProps) {
 	const { session } = useSessionData();
+	const { requests, fetchGroupRequests } = useRequestsStore();
 
 	// Check if current user is the leader
 	const isCurrentUserLeader = session?.user?.id === group.leader.userId;
+
+	// Configuration for shared RequestsButton (group leader mode)
+	const requestsConfig = {
+		mode: 'group-leader' as const,
+		title: 'Group Requests',
+		fetchRequests: (forceRefresh?: boolean) =>
+			fetchGroupRequests(group.id, forceRefresh),
+		groupId: group.id,
+	};
 
 	return (
 		<div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -33,7 +44,7 @@ export default function GroupDashboardHeader({
 				</Paragraph>
 			</div>
 			{isCurrentUserLeader && (
-				<RequestsButton group={group}>
+				<RequestsButton config={requestsConfig} requests={requests}>
 					<UserAddOutlined />
 					Request Invite/Join Group
 				</RequestsButton>
