@@ -6,6 +6,10 @@ import { useCallback, useEffect, useMemo } from 'react';
 
 import { FormLabel } from '@/components/common/FormLabel';
 import { useOptimizedSession } from '@/hooks/auth/useAuth';
+import {
+	isValidVietnamesePhone,
+	normalizeVietnamesePhone,
+} from '@/lib/utils/validations';
 import { LecturerUpdate } from '@/schemas/lecturer';
 import { useLecturerStore } from '@/store';
 
@@ -18,9 +22,6 @@ interface FormValues {
 }
 
 // Constants moved outside component to prevent recreation
-const PHONE_PATTERN =
-	/^(?:\+84|0084|84|0)(?:3[2-9]|5[2689]|7[06-9]|8[1-5]|9[0-4|6-9])\d{7}$/;
-
 const VALIDATION_RULES = {
 	fullName: [
 		{ required: true, message: 'Please enter Full Name' },
@@ -30,8 +31,19 @@ const VALIDATION_RULES = {
 	phoneNumber: [
 		{ required: true, message: 'Please enter Phone Number' },
 		{
-			pattern: PHONE_PATTERN,
-			message: 'Please enter a valid Vietnamese phone number',
+			validator: (_: unknown, value: string) => {
+				if (!value) {
+					return Promise.reject(new Error('Please enter Phone Number'));
+				}
+
+				if (!isValidVietnamesePhone(value)) {
+					return Promise.reject(
+						new Error('Please enter a valid Vietnamese phone number'),
+					);
+				}
+
+				return Promise.resolve();
+			},
 		},
 	],
 	gender: [{ required: true, message: 'Please select gender' }],
@@ -88,10 +100,13 @@ export default function PersonalInfoForm() {
 				return;
 			}
 
+			// Normalize phone number before sending to API
+			const normalizedPhone = normalizeVietnamesePhone(values.phoneNumber);
+
 			// Prepare update profile data (only the fields that can be updated)
 			const profileUpdateData: LecturerUpdate = {
 				fullName: values.fullName.trim(),
-				phoneNumber: values.phoneNumber.trim(),
+				phoneNumber: normalizedPhone,
 				gender: values.gender as 'Male' | 'Female',
 			};
 
