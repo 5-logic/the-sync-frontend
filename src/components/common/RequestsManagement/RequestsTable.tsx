@@ -92,6 +92,9 @@ export default function RequestsTable({
 					? record.group.name
 					: record.student.user.fullName;
 
+				// Pass student ID for group leader mode to support View Profile button
+				const studentId = !isStudentMode ? record.student.userId : undefined;
+
 				return (
 					<RequestsActions
 						requestId={record.id}
@@ -99,6 +102,7 @@ export default function RequestsTable({
 						targetName={targetName}
 						mode={mode}
 						status={record.status}
+						studentId={studentId}
 						getActionProps={getActionProps}
 					/>
 				);
