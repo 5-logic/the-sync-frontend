@@ -17,7 +17,7 @@ import { useRequestsStore } from '@/store/useRequestsStore';
 const { Title, Paragraph } = Typography;
 
 interface GroupDetailClientProps {
-	groupId: string;
+	readonly groupId: string;
 }
 
 export default function GroupDetailClient({ groupId }: GroupDetailClientProps) {
@@ -241,6 +241,65 @@ export default function GroupDetailClient({ groupId }: GroupDetailClientProps) {
 	// Check if semester is in PREPARING status (when join requests are allowed)
 	const canJoinGroup = group.semester.status === 'Preparing';
 
+	// Extract nested ternary operations into independent statements
+	const getJoinButtonTitle = () => {
+		if (!canJoinGroup) {
+			return 'Join requests are not allowed during this semester status';
+		}
+		return 'Send a request to join this group';
+	};
+
+	const renderActionButtons = () => {
+		if (hasPendingInviteRequest) {
+			// If user has pending invite, show approve/reject buttons
+			return (
+				<>
+					<Button
+						danger
+						onClick={() => handleInviteResponse('Rejected')}
+						loading={isRequesting}
+					>
+						Reject Invite
+					</Button>
+					<Button
+						type="primary"
+						onClick={() => handleInviteResponse('Approved')}
+						loading={isRequesting}
+					>
+						Accept Invite
+					</Button>
+				</>
+			);
+		}
+
+		if (hasPendingJoinRequest) {
+			// If user has pending join request, show cancel button
+			return (
+				<Button
+					danger
+					onClick={handleCancelJoinRequest}
+					loading={isRequesting}
+					title="Cancel your join request to this group"
+				>
+					Cancel Request
+				</Button>
+			);
+		}
+
+		// Default: show join request button
+		return (
+			<Button
+				type="primary"
+				onClick={handleJoinRequest}
+				loading={isRequesting}
+				disabled={!canJoinGroup}
+				title={getJoinButtonTitle()}
+			>
+				Request to Join
+			</Button>
+		);
+	};
+
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
 			{/* Header Section */}
@@ -296,53 +355,7 @@ export default function GroupDetailClient({ groupId }: GroupDetailClientProps) {
 					</Button>
 
 					{/* Show different buttons based on request status */}
-					{!isCurrentUserMember && (
-						<>
-							{/* If user has pending invite, show approve/reject buttons */}
-							{hasPendingInviteRequest ? (
-								<>
-									<Button
-										danger
-										onClick={() => handleInviteResponse('Rejected')}
-										loading={isRequesting}
-									>
-										Reject Invite
-									</Button>
-									<Button
-										type="primary"
-										onClick={() => handleInviteResponse('Approved')}
-										loading={isRequesting}
-									>
-										Accept Invite
-									</Button>
-								</>
-							) : /* If no pending invite, show normal join request or cancel button */
-							hasPendingJoinRequest ? (
-								<Button
-									danger
-									onClick={handleCancelJoinRequest}
-									loading={isRequesting}
-									title="Cancel your join request to this group"
-								>
-									Cancel Request
-								</Button>
-							) : (
-								<Button
-									type="primary"
-									onClick={handleJoinRequest}
-									loading={isRequesting}
-									disabled={!canJoinGroup}
-									title={
-										!canJoinGroup
-											? 'Join requests are not allowed during this semester status'
-											: 'Send a request to join this group'
-									}
-								>
-									Request to Join
-								</Button>
-							)}
-						</>
-					)}
+					{!isCurrentUserMember && renderActionButtons()}
 				</div>
 			</Card>
 		</Space>
