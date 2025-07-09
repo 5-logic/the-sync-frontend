@@ -112,6 +112,14 @@ class RequestService {
 		return response.data;
 	}
 
+	// Get all requests for current student (student without group)
+	async getStudentRequests(): Promise<ApiResponse<GroupRequest[]>> {
+		const response = await httpClient.get<ApiResponse<GroupRequest[]>>(
+			`${this.baseUrl}/student`,
+		);
+		return response.data;
+	}
+
 	// Update request status (approve/reject)
 	async updateRequestStatus(
 		requestId: string,
@@ -120,6 +128,14 @@ class RequestService {
 		const response = await httpClient.put<ApiResponse<GroupRequest>>(
 			`${this.baseUrl}/${requestId}/status`,
 			statusData,
+		);
+		return response.data;
+	}
+
+	// Cancel student's own request
+	async cancelStudentRequest(requestId: string): Promise<ApiResponse<void>> {
+		const response = await httpClient.delete<ApiResponse<void>>(
+			`${this.baseUrl}/${requestId}`,
 		);
 		return response.data;
 	}
