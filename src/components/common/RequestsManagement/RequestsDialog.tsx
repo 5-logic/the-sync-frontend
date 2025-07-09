@@ -243,7 +243,6 @@ export default function RequestsDialog({
 	};
 
 	const handleRefresh = () => {
-		console.log('Manual refresh triggered for requests');
 		config.fetchRequests(true); // Force refresh
 	};
 
