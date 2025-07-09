@@ -1,8 +1,8 @@
 import { Badge, Button } from 'antd';
 import { useEffect, useState } from 'react';
 
-import RequestsDialog from './RequestsDialog';
-import { type RequestsButtonProps } from './types';
+import RequestsDialog from '@/components/common/RequestsManagement/RequestsDialog';
+import { type RequestsButtonProps } from '@/components/common/RequestsManagement/types';
 
 export default function RequestsButton({
 	config,
