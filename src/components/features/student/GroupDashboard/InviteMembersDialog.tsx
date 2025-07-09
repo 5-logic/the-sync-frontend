@@ -1,7 +1,7 @@
 import { Button, Modal, Typography } from 'antd';
 import { useState } from 'react';
 
-import InviteTeamMembers from '@/components/features/student/FormOrJoinGroup/InviteTeamMembers';
+import InviteTeamMembers from '@/components/features/student/FormOrJoinGroup/CreateGroup/InviteTeamMembers';
 import requestService from '@/lib/services/requests.service';
 import { showNotification } from '@/lib/utils/notification';
 import { GroupDashboard } from '@/schemas/group';
