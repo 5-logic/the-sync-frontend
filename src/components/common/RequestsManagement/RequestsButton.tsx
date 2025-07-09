@@ -1,43 +1,36 @@
 import { Badge, Button } from 'antd';
 import { useEffect, useState } from 'react';
 
-import GroupRequestsDialog from '@/components/features/student/GroupDashboard/GroupRequestsDialog';
-import { GroupDashboard } from '@/schemas/group';
-import { useRequestsStore } from '@/store';
-
-interface RequestsButtonProps {
-	readonly group: GroupDashboard;
-	readonly children: React.ReactNode;
-}
+import RequestsDialog from './RequestsDialog';
+import { type RequestsButtonProps } from './types';
 
 export default function RequestsButton({
-	group,
+	config,
 	children,
+	requests,
 }: RequestsButtonProps) {
 	const [dialogVisible, setDialogVisible] = useState(false);
-	const { requests, fetchGroupRequests } = useRequestsStore();
 
-	// Fetch requests count for badge
+	// Fetch requests on mount
 	useEffect(() => {
-		fetchGroupRequests(group.id);
+		config.fetchRequests();
 		// ESLint is disabled here because including store functions in dependencies
 		// would cause infinite re-renders as Zustand functions get new references
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [group.id]);
+	}, [config.groupId]);
 
 	// Count pending requests
 	const pendingRequestsCount = requests.filter(
 		(req) => req.status === 'Pending',
 	).length;
 
-	console.log('RequestsButton render:', {
-		totalRequests: requests.length,
-		pendingRequestsCount,
-		groupId: group.id,
-	});
-
 	const handleClick = () => {
 		setDialogVisible(true);
+	};
+
+	const handleRequestsUpdate = () => {
+		// Refresh requests to update badge count
+		config.fetchRequests(true);
 	};
 
 	return (
@@ -65,10 +58,11 @@ export default function RequestsButton({
 				</Button>
 			</Badge>
 
-			<GroupRequestsDialog
+			<RequestsDialog
 				visible={dialogVisible}
 				onCancel={() => setDialogVisible(false)}
-				group={group}
+				config={config}
+				onRequestsUpdate={handleRequestsUpdate}
 			/>
 		</>
 	);
