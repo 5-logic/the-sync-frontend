@@ -3,17 +3,16 @@ import { Col, Empty, Grid, Input, Row, Select, Space, Typography } from 'antd';
 
 import GroupCard from '@/components/features/student/FormOrJoinGroup/GroupCard';
 import PagedGroupListSection from '@/components/features/student/FormOrJoinGroup/PagedGroupListSection';
+import { THESIS_DOMAINS } from '@/lib/constants/domains';
 
 const { Title } = Typography;
 const { useBreakpoint } = Grid;
 
 // Constants to avoid magic numbers
 const BREAKPOINT_CONFIGS = {
-	SEARCH_WIDTH: { xs: 14, sm: 14, md: 14, lg: 14, xl: 14 },
-	CATEGORY_WIDTH: { xs: 10, sm: 10, md: 10, lg: 10, xl: 10 },
+	SEARCH_WIDTH: { span: 17 }, // ~70% of 24 columns
+	CATEGORY_WIDTH: { span: 7 }, // ~30% of 24 columns
 	CARD_WIDTH: { xs: 24, sm: 24, md: 24, lg: 12, xl: 8, xxl: 8 },
-	TITLE_WIDTH: { xs: 24, sm: 24, md: 12, lg: 16, xl: 18 },
-	FILTER_WIDTH: { xs: 24, sm: 24, md: 12, lg: 8, xl: 6 },
 } as const;
 
 const STYLE_CONSTANTS = {
@@ -33,21 +32,6 @@ const MESSAGES = {
 	SEARCH_PLACEHOLDER: 'Search groups',
 	CATEGORY_PLACEHOLDER: 'Category',
 } as const;
-
-const domainColorMap: Record<string, string> = {
-	AI: 'geekblue',
-	'Artificial Intelligence': 'geekblue',
-	Blockchain: 'cyan',
-	'Internet of Things': 'gold',
-	'Data Analytics': 'purple',
-	'Cloud Computing': 'volcano',
-	'App Development': 'blue',
-	'Web Development': 'blue',
-	IoT: 'gold',
-	Cybersecurity: 'red',
-	'Data Science': 'purple',
-	'Mobile Development': 'green',
-};
 
 type GroupUI = {
 	id: string;
@@ -103,10 +87,7 @@ const renderFilters = (
 	onCategoryChange: ((value: string) => void) | undefined,
 	fontSize: number,
 ) => (
-	<Row
-		gutter={STYLE_CONSTANTS.GUTTER_SIZE}
-		justify={screens.md ? 'end' : 'center'}
-	>
+	<Row gutter={[16, 8]} style={{ width: '100%' }}>
 		<Col {...BREAKPOINT_CONFIGS.SEARCH_WIDTH}>
 			<Input
 				placeholder={MESSAGES.SEARCH_PLACEHOLDER}
@@ -141,7 +122,7 @@ const renderFilters = (
 				onChange={onCategoryChange}
 				allowClear
 				size={screens.xs ? 'small' : 'middle'}
-				options={Object.keys(domainColorMap).map((domain) => ({
+				options={THESIS_DOMAINS.map((domain) => ({
 					label: domain,
 					value: domain,
 				}))}
@@ -257,17 +238,9 @@ export default function GroupListSection({
 			size={STYLE_CONSTANTS.SPACE_SIZE}
 			style={{ width: '100%' }}
 		>
-			<Row
-				align="middle"
-				justify="space-between"
-				style={{
-					marginTop: STYLE_CONSTANTS.MARGIN_TOP,
-					marginBottom: STYLE_CONSTANTS.MARGIN_BOTTOM,
-				}}
-				wrap
-				gutter={[16, 8]}
-			>
-				<Col {...BREAKPOINT_CONFIGS.TITLE_WIDTH}>
+			{/* Title Row */}
+			<Row style={{ marginTop: STYLE_CONSTANTS.MARGIN_TOP }}>
+				<Col span={24}>
 					<Title
 						level={2}
 						style={{
@@ -278,8 +251,12 @@ export default function GroupListSection({
 						{title}
 					</Title>
 				</Col>
-				{showFilter && (
-					<Col {...BREAKPOINT_CONFIGS.FILTER_WIDTH}>
+			</Row>
+
+			{/* Filter Row - only show if showFilter is true */}
+			{showFilter && (
+				<Row style={{ marginBottom: STYLE_CONSTANTS.MARGIN_BOTTOM }}>
+					<Col span={24}>
 						{renderFilters(
 							screens,
 							search,
@@ -289,8 +266,10 @@ export default function GroupListSection({
 							fontSize,
 						)}
 					</Col>
-				)}
-			</Row>
+				</Row>
+			)}
+
+			{/* Content */}
 			{enablePagination
 				? renderContentWithPagination(
 						groups,
