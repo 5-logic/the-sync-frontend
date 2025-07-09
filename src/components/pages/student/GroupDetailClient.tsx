@@ -12,6 +12,7 @@ import groupService from '@/lib/services/groups.service';
 import requestService from '@/lib/services/requests.service';
 import { showNotification } from '@/lib/utils/notification';
 import { GroupDashboard } from '@/schemas/group';
+import { useGroupDashboardStore } from '@/store/useGroupDashboardStore';
 import { useRequestsStore } from '@/store/useRequestsStore';
 
 const { Title, Paragraph } = Typography;
@@ -118,8 +119,24 @@ export default function GroupDetailClient({ groupId }: GroupDetailClientProps) {
 				showNotification.success(
 					`Invite ${action.toLowerCase()} successfully!`,
 				);
-				// Navigate back to groups page
-				router.push('/student/form-or-join-group');
+
+				if (action === 'Approved') {
+					// Get refreshGroup from the store to update the group status
+					const { refreshGroup } = useGroupDashboardStore.getState();
+
+					// Similar to group creation flow, trigger refresh and redirect
+					await refreshGroup();
+
+					// Add a small delay to ensure API has processed the group membership
+					await new Promise((resolve) => setTimeout(resolve, 1000));
+					await refreshGroup();
+
+					// Redirect to group dashboard
+					router.push('/student/group-dashboard');
+				} else {
+					// If rejecting, navigate back to groups page
+					router.push('/student/form-or-join-group');
+				}
 			} else {
 				showNotification.error(
 					`Failed to ${action.toLowerCase()} invite. Please try again.`,
