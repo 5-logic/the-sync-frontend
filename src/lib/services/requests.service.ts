@@ -10,6 +10,10 @@ export interface BulkInviteRequest {
 	studentIds: string[];
 }
 
+export interface JoinRequest {
+	groupId: string;
+}
+
 export interface InviteResponse {
 	id: string;
 	groupId: string;
@@ -136,6 +140,15 @@ class RequestService {
 	async cancelStudentRequest(requestId: string): Promise<ApiResponse<void>> {
 		const response = await httpClient.delete<ApiResponse<void>>(
 			`${this.baseUrl}/${requestId}`,
+		);
+		return response.data;
+	}
+
+	// Student request to join a group
+	async joinGroup(groupId: string): Promise<ApiResponse<GroupRequest>> {
+		const response = await httpClient.post<ApiResponse<GroupRequest>>(
+			`${this.baseUrl}/join`,
+			{ groupId },
 		);
 		return response.data;
 	}
