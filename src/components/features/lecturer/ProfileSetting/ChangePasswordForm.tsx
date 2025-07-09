@@ -173,7 +173,7 @@ export default function ChangePasswordForm() {
 					onClick={handleCancel}
 					disabled={isChangingPassword}
 				>
-					Cancel
+					Clear
 				</Button>
 				<Button type="primary" htmlType="submit" loading={isChangingPassword}>
 					Update Password
