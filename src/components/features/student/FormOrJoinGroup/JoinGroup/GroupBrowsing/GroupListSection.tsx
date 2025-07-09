@@ -42,6 +42,20 @@ type GroupUI = {
 	members: number;
 };
 
+interface RenderContentParams {
+	readonly groups: readonly GroupUI[];
+	readonly fontSize: number;
+	readonly showFilter: boolean;
+	readonly search?: string;
+	readonly category?: string;
+	readonly onRequestSent?: () => void;
+	readonly existingRequests?: readonly GroupRequest[];
+}
+
+interface RenderContentWithPaginationParams extends RenderContentParams {
+	readonly pageSize: number;
+}
+
 interface GroupListSectionProps {
 	readonly title: string;
 	readonly groups: readonly GroupUI[];
@@ -185,15 +199,19 @@ const renderEmptyStateForDefaultView = () => (
 
 // Helper function to render content with pagination
 const renderContentWithPagination = (
-	groups: readonly GroupUI[],
-	fontSize: number,
-	pageSize: number,
-	showFilter: boolean,
-	search?: string,
-	category?: string,
-	onRequestSent?: () => void,
-	existingRequests?: readonly GroupRequest[],
+	params: RenderContentWithPaginationParams,
 ) => {
+	const {
+		groups,
+		fontSize,
+		pageSize,
+		showFilter,
+		search,
+		category,
+		onRequestSent,
+		existingRequests,
+	} = params;
+
 	const hasGroups = groups.length > 0;
 
 	if (hasGroups) {
@@ -214,15 +232,17 @@ const renderContentWithPagination = (
 };
 
 // Helper function to render content without pagination
-const renderContentWithoutPagination = (
-	groups: readonly GroupUI[],
-	fontSize: number,
-	showFilter: boolean,
-	search?: string,
-	category?: string,
-	onRequestSent?: () => void,
-	existingRequests?: readonly GroupRequest[],
-) => {
+const renderContentWithoutPagination = (params: RenderContentParams) => {
+	const {
+		groups,
+		fontSize,
+		showFilter,
+		search,
+		category,
+		onRequestSent,
+		existingRequests,
+	} = params;
+
 	const hasGroups = groups.length > 0;
 
 	if (hasGroups) {
@@ -301,7 +321,7 @@ export default function GroupListSection({
 			)}
 
 			{enablePagination
-				? renderContentWithPagination(
+				? renderContentWithPagination({
 						groups,
 						fontSize,
 						pageSize,
@@ -310,8 +330,8 @@ export default function GroupListSection({
 						category,
 						onRequestSent,
 						existingRequests,
-					)
-				: renderContentWithoutPagination(
+					})
+				: renderContentWithoutPagination({
 						groups,
 						fontSize,
 						showFilter,
@@ -319,7 +339,7 @@ export default function GroupListSection({
 						category,
 						onRequestSent,
 						existingRequests,
-					)}
+					})}
 		</Space>
 	);
 }
