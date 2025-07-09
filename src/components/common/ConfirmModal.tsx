@@ -256,6 +256,40 @@ export const GroupConfirmationModals = {
 			onOk: onConfirm,
 		}),
 
+	removeMember: (
+		memberName: string,
+		onConfirm: () => void | Promise<void>,
+		loading = false,
+	) =>
+		ConfirmationModal.show({
+			title: 'Remove Member',
+			message: 'Are you sure you want to remove this member from the group?',
+			details: memberName,
+			note: 'This action cannot be undone. The student will need to request to join again if they want to be part of this group.',
+			noteType: 'danger',
+			okText: 'Remove',
+			okType: 'danger',
+			loading,
+			onOk: onConfirm,
+		}),
+
+	assignLeader: (
+		memberName: string,
+		onConfirm: () => void | Promise<void>,
+		loading = false,
+	) =>
+		ConfirmationModal.show({
+			title: 'Assign New Leader',
+			message:
+				'Are you sure you want to make this member the leader of the group?',
+			details: memberName,
+			note: 'You will no longer be the leader of this group and will not have access to leader-only functions.',
+			noteType: 'warning',
+			okText: 'Confirm',
+			loading,
+			onOk: onConfirm,
+		}),
+
 	// Generic show method for custom modals
 	show: ConfirmationModal.show,
 };
