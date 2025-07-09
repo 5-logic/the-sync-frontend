@@ -16,9 +16,13 @@ const { Title, Text } = Typography;
 
 interface GroupInfoCardProps {
 	readonly group: GroupDashboard;
+	readonly viewOnly?: boolean;
 }
 
-export default memo(function GroupInfoCard({ group }: GroupInfoCardProps) {
+export default memo(function GroupInfoCard({
+	group,
+	viewOnly = false,
+}: GroupInfoCardProps) {
 	const [isInviteDialogVisible, setIsInviteDialogVisible] = useState(false);
 	const [isLeaving, setIsLeaving] = useState(false);
 	const [isDeleting, setIsDeleting] = useState(false);
@@ -265,10 +269,12 @@ export default memo(function GroupInfoCard({ group }: GroupInfoCardProps) {
 				</div>
 
 				{/* Members Card */}
-				<GroupMembersCard group={group} />
+				<GroupMembersCard group={group} viewOnly={viewOnly} />
 
 				{/* Created Date and Action Buttons */}
-				<div className="flex items-end justify-between pt-4">
+				<div
+					className={`flex items-end ${viewOnly ? 'justify-start' : 'justify-between'} pt-4`}
+				>
 					<div>
 						<Text className="text-sm text-gray-400 block font-semibold">
 							Created Date
@@ -278,61 +284,67 @@ export default memo(function GroupInfoCard({ group }: GroupInfoCardProps) {
 						</Text>
 					</div>
 
-					<Space>
-						{/* Leave Group Button - visible to all members */}
-						<Button
-							danger
-							loading={isLeaving}
-							disabled={
-								!canModifyGroup ||
-								(isCurrentUserLeader && group.members.length > 1) ||
-								isOnlyMember
-							}
-							onClick={showLeaveGroupConfirm}
-							title={getLeaveGroupButtonTitle()}
-						>
-							Leave Group
-						</Button>
-
-						{/* Delete Group Button - only visible to leader */}
-						{isCurrentUserLeader && (
+					{/* Action buttons only shown when not in viewOnly mode */}
+					{!viewOnly && (
+						<Space>
+							{/* Leave Group Button - visible to all members */}
 							<Button
 								danger
-								loading={isDeleting}
-								disabled={!canModifyGroup || hasThesisOrSubmissions}
-								onClick={showDeleteGroupConfirm}
-								title={getDeleteGroupButtonTitle()}
-							>
-								Delete Group
-							</Button>
-						)}
-
-						{/* Invite Members Button - only visible to leader */}
-						{isCurrentUserLeader && (
-							<Button
-								type="primary"
-								onClick={() => setIsInviteDialogVisible(true)}
-								disabled={!canModifyGroup}
-								title={
-									!canModifyGroup
-										? 'Cannot invite members during this semester status'
-										: 'Invite new members to this group'
+								loading={isLeaving}
+								disabled={
+									!canModifyGroup ||
+									(isCurrentUserLeader && group.members.length > 1) ||
+									isOnlyMember
 								}
+								onClick={showLeaveGroupConfirm}
+								title={getLeaveGroupButtonTitle()}
 							>
-								Invite Members
+								Leave Group
 							</Button>
-						)}
-					</Space>
+
+							{/* Delete Group Button - only visible to leader */}
+							{isCurrentUserLeader && (
+								<Button
+									danger
+									loading={isDeleting}
+									disabled={!canModifyGroup || hasThesisOrSubmissions}
+									onClick={showDeleteGroupConfirm}
+									title={getDeleteGroupButtonTitle()}
+								>
+									Delete Group
+								</Button>
+							)}
+
+							{/* Invite Members Button - only visible to leader */}
+							{isCurrentUserLeader && (
+								<Button
+									type="primary"
+									onClick={() => setIsInviteDialogVisible(true)}
+									disabled={!canModifyGroup}
+									title={
+										!canModifyGroup
+											? 'Cannot invite members during this semester status'
+											: 'Invite new members to this group'
+									}
+								>
+									Invite Members
+								</Button>
+							)}
+						</Space>
+					)}
 				</div>
 			</div>
 
-			<InviteMembersDialog
-				visible={isInviteDialogVisible}
-				onCancel={() => setIsInviteDialogVisible(false)}
-				onSuccess={handleInviteSuccess}
-				groupId={group.id}
-				group={group}
-			/>
+			{/* Invite dialog only shown when not in viewOnly mode */}
+			{!viewOnly && (
+				<InviteMembersDialog
+					visible={isInviteDialogVisible}
+					onCancel={() => setIsInviteDialogVisible(false)}
+					onSuccess={handleInviteSuccess}
+					groupId={group.id}
+					group={group}
+				/>
+			)}
 		</Card>
 	);
 });
