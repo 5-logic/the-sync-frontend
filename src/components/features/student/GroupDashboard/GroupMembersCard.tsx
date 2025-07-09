@@ -16,9 +16,13 @@ const { Text } = Typography;
 
 interface GroupMembersCardProps {
 	readonly group: GroupDashboard;
+	readonly viewOnly?: boolean;
 }
 
-export default function GroupMembersCard({ group }: GroupMembersCardProps) {
+export default function GroupMembersCard({
+	group,
+	viewOnly = false,
+}: GroupMembersCardProps) {
 	const { session } = useSessionData();
 
 	// Function to get menu items for each member
@@ -33,6 +37,11 @@ export default function GroupMembersCard({ group }: GroupMembersCardProps) {
 				icon: <EyeOutlined />,
 			},
 		];
+
+		// In viewOnly mode, only show "View Profile" option
+		if (viewOnly) {
+			return baseItems;
+		}
 
 		// Add leader-only options if current user is leader and target is not the leader
 		if (isCurrentUserLeader && !member.isLeader) {
