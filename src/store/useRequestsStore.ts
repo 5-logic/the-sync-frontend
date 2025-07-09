@@ -13,10 +13,12 @@ interface RequestsState {
 		groupId: string,
 		forceRefresh?: boolean,
 	) => Promise<void>;
+	fetchStudentRequests: (forceRefresh?: boolean) => Promise<void>;
 	updateRequestStatus: (
 		requestId: string,
 		status: 'Approved' | 'Rejected',
 	) => Promise<boolean>;
+	cancelRequest: (requestId: string) => Promise<boolean>;
 	clearRequests: () => void;
 	clearCache: () => void;
 }
@@ -85,6 +87,64 @@ export const useRequestsStore = create<RequestsState>((set, get) => ({
 		}
 	},
 
+	fetchStudentRequests: async (forceRefresh = false) => {
+		// Initialize cache if not exists
+		if (!cacheUtils.getCache(ENTITY_NAME)) {
+			cacheUtils.initCache(ENTITY_NAME, { ttl: 5 * 60 * 1000 }); // 5 minutes
+		}
+
+		// Check cache first
+		const cacheKey = 'student_requests';
+		const cachedData = cacheUtils.get<GroupRequest[]>(ENTITY_NAME, cacheKey);
+
+		console.log('fetchStudentRequests:', {
+			forceRefresh,
+			hasCachedData: !!cachedData,
+			cachedDataLength: cachedData?.length || 0,
+		});
+
+		if (!forceRefresh && cachedData) {
+			console.log('Using cached data for student requests');
+			set({ requests: cachedData, loading: false, error: null });
+			return;
+		}
+
+		// Check if should fetch
+		if (!forceRefresh && !cacheUtils.shouldFetch(ENTITY_NAME, forceRefresh)) {
+			console.log('Skipping fetch due to cache policy');
+			return;
+		}
+
+		console.log('Fetching fresh student requests from API...');
+		set({ loading: true, error: null });
+		try {
+			const response = await requestService.getStudentRequests();
+			if (response.success) {
+				console.log('API response:', { dataLength: response.data.length });
+				// Update cache
+				cacheUtils.set(ENTITY_NAME, cacheKey, response.data);
+				set({
+					requests: response.data,
+					loading: false,
+				});
+			} else {
+				set({
+					error: response.error || 'Failed to fetch student requests',
+					loading: false,
+				});
+			}
+		} catch (error) {
+			console.error('Error fetching student requests:', error);
+			set({
+				error:
+					error instanceof Error
+						? error.message
+						: 'Failed to fetch student requests',
+				loading: false,
+			});
+		}
+	},
+
 	updateRequestStatus: async (
 		requestId: string,
 		status: 'Approved' | 'Rejected',
@@ -124,6 +184,36 @@ export const useRequestsStore = create<RequestsState>((set, get) => ({
 					error instanceof Error
 						? error.message
 						: 'Failed to update request status',
+			});
+			return false;
+		}
+	},
+
+	cancelRequest: async (requestId: string) => {
+		try {
+			const response = await requestService.cancelStudentRequest(requestId);
+			if (response.success) {
+				// Remove the request from local state
+				const currentRequests = get().requests;
+				const updatedRequests = currentRequests.filter(
+					(req) => req.id !== requestId,
+				);
+				set({ requests: updatedRequests });
+
+				// Update cache with new data
+				const cacheKey = 'student_requests';
+				cacheUtils.set(ENTITY_NAME, cacheKey, updatedRequests);
+
+				return true;
+			} else {
+				set({ error: response.error || 'Failed to cancel request' });
+				return false;
+			}
+		} catch (error) {
+			console.error('Error canceling request:', error);
+			set({
+				error:
+					error instanceof Error ? error.message : 'Failed to cancel request',
 			});
 			return false;
 		}
