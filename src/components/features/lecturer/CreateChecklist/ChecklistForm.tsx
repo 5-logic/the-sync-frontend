@@ -123,7 +123,7 @@ export default function UnifiedChecklistForm({
 										<>
 											<Table
 												dataSource={fields}
-												rowKey="key"
+												rowKey={(record) => record.key}
 												pagination={false}
 												locale={{ emptyText: 'No checklist items added.' }}
 												columns={[
@@ -134,6 +134,7 @@ export default function UnifiedChecklistForm({
 														render: (_, field) => (
 															<Form.Item
 																name={[field.name, 'name']}
+																style={{ marginBottom: 0 }}
 																rules={[
 																	{ required: true, message: 'Required' },
 																]}
@@ -159,6 +160,7 @@ export default function UnifiedChecklistForm({
 														render: (_, field) => (
 															<Form.Item
 																name={[field.name, 'description']}
+																style={{ marginBottom: 0 }}
 																rules={[
 																	{ required: true, message: 'Required' },
 																]}
@@ -186,6 +188,7 @@ export default function UnifiedChecklistForm({
 														render: (_, field) => (
 															<Form.Item
 																name={[field.name, 'isRequired']}
+																style={{ marginBottom: 0 }}
 																valuePropName="checked"
 															>
 																<Switch
@@ -201,9 +204,18 @@ export default function UnifiedChecklistForm({
 														width: 80,
 														align: 'center' as const,
 														render: (_, field) => (
-															<ChecklistDeleteButton
-																onDelete={() => remove(field.name)}
-															/>
+															<div
+																style={{
+																	display: 'flex',
+																	justifyContent: 'center',
+																}}
+															>
+																<Form.Item noStyle>
+																	<ChecklistDeleteButton
+																		onDelete={() => remove(field.name)}
+																	/>
+																</Form.Item>
+															</div>
 														),
 													},
 												]}
@@ -211,7 +223,7 @@ export default function UnifiedChecklistForm({
 
 											<Row
 												justify={mode === 'manual' ? 'space-between' : 'end'}
-												style={{ marginTop: 36 }}
+												style={{ marginTop: 16 }}
 											>
 												{mode === 'manual' && (
 													<Button icon={<PlusOutlined />} onClick={() => add()}>
