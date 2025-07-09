@@ -68,6 +68,15 @@ class GroupService {
 		return response.data;
 	}
 
+	async getPublicGroupDetail(
+		groupId: string,
+	): Promise<ApiResponse<GroupDashboard>> {
+		const response = await httpClient.get<ApiResponse<GroupDashboard>>(
+			`${this.baseUrl}/${groupId}`,
+		);
+		return response.data;
+	}
+
 	async leaveGroup(groupId: string): Promise<ApiResponse<void>> {
 		const response = await httpClient.put<ApiResponse<void>>(
 			`${this.baseUrl}/${groupId}/leave`,
