@@ -9,6 +9,122 @@ For more information about this project, see the [README](./README.md).
 
 ---
 
+## [0.4.0] - 2025-07-10
+
+### Added
+
+#### Group Management System
+
+- Complete group dashboard with comprehensive member management ([#158](https://github.com/5-logic/the-sync-frontend/pull/158), [#161](https://github.com/5-logic/the-sync-frontend/pull/161), [#169](https://github.com/5-logic/the-sync-frontend/pull/169))
+- Group creation with skill requirements and member invitation system
+- Advanced group member management with leader assignment and removal capabilities
+- Group requests management with invitation and join request handling
+- Group status guards and navigation protection
+- Enhanced group browsing and discovery features
+- Group confirmation modals for sensitive operations
+
+#### Student Features Enhancement
+
+- Student account management with skills and responsibilities ([#146](https://github.com/5-logic/the-sync-frontend/pull/146), [#183](https://github.com/5-logic/the-sync-frontend/pull/183), [#189](https://github.com/5-logic/the-sync-frontend/pull/189))
+- Enhanced student profile with skill level tracking and phone number validation
+- Student group dashboard with detailed group information
+- Improved form validation and user experience
+- Student thesis detail viewing capabilities
+
+#### Lecturer Tools & Management
+
+- Comprehensive checklist management system ([#150](https://github.com/5-logic/the-sync-frontend/pull/150), [#154](https://github.com/5-logic/the-sync-frontend/pull/154))
+- Checklist creation with manual and Excel import options
+- Checklist editing and detailed view functionality
+- Lecturer assignment and review workflows ([#140](https://github.com/5-logic/the-sync-frontend/pull/140), [#144](https://github.com/5-logic/the-sync-frontend/pull/144))
+- Enhanced thesis publishing management with bulk operations
+- Group review and evaluation capabilities
+- Improved lecturer profile settings and account management
+
+#### Request Management System
+
+- Centralized request management with status tracking ([#164](https://github.com/5-logic/the-sync-frontend/pull/164), [#170](https://github.com/5-logic/the-sync-frontend/pull/170))
+- Request status management with cancellation capabilities
+- Enhanced invite and join request workflows
+- Request filtering and search functionality
+- Real-time request status updates and notifications
+
+#### UI/UX Improvements
+
+- Enhanced navigation with role-based sidebar improvements ([#148](https://github.com/5-logic/the-sync-frontend/pull/148))
+- Common download template components for Excel operations
+- Improved form validation and error handling across all features
+- Enhanced responsive design and mobile compatibility
+- Better loading states and user feedback systems
+
+### Changed
+
+#### API Schema Enhancements
+
+- **Group Schema:** Added comprehensive `GroupDashboardSchema` with member, skill, and responsibility relationships
+- **Student Schema:** Enhanced with profile management and skill tracking capabilities
+- **Responsibility Schema:** Improved validation and API response handling
+- **Request Management:** Enhanced request status handling with 'Cancelled' status support
+
+#### Service Layer Improvements
+
+- **GroupService:** Added member management, leader assignment, and group operations
+- **RequestService:** Enhanced with cancellation and status management capabilities
+- **ResponsibilityService:** Converted to static class with improved method definitions
+- **PasswordService:** New centralized password management service
+- **StudentsService:** Enhanced with group-related filtering and profile management
+
+#### Performance & Architecture
+
+- Enhanced store management with specialized stores for groups, requests, and responsibilities
+- Improved caching strategies for group and request data
+- Better state management with context providers for group status
+- Optimized data fetching patterns with background refresh capabilities
+- Enhanced error handling and notification systems
+
+#### Authentication & Security
+
+- Enhanced password management with unified service layer
+- Improved phone number validation for Vietnamese format
+- Better session handling and user profile management
+- Enhanced role-based access controls
+
+### Fixed
+
+- Form validation edge cases in group creation and member management
+- Request management synchronization issues
+- Navigation state persistence in group workflows
+- Mobile responsiveness issues in group and checklist interfaces
+- Memory leaks in request polling and status updates
+- Excel import validation for checklist and member data
+- Search and filtering performance optimizations
+
+### API Breaking Changes
+
+- **Group Dashboard:** New API structure with detailed member and relationship data
+- **Request Management:** Enhanced request status with 'Cancelled' option
+- **Student Profile:** Changed API structure for profile updates and skill management
+- **Password Management:** Centralized password change endpoints
+
+### Technical Details
+
+- **New Services:** `GroupService`, `RequestService`, `ResponsibilityService`, `PasswordService`
+- **Enhanced Stores:** Group dashboard store, requests store, responsibility store
+- **Context Providers:** Group status context for navigation and state management
+- **Utility Functions:** Text normalization, member management helpers, student invite utilities
+- **Schema Validation:** Enhanced group, student, and responsibility schemas
+- **Excel Templates:** New templates for checklist creation
+
+### Migration Notes
+
+- Group-related API calls now return enhanced data structures with member details
+- Request management requires handling of new 'Cancelled' status
+- Student profile updates should use new unified profile API
+- Password management operations should use centralized PasswordService
+- Excel import templates have been updated with new field requirements
+
+---
+
 ## [0.3.0] - 2025-07-02
 
 ### Added
@@ -364,6 +480,7 @@ Changes that are committed but not yet released.
 
 **Tags:**
 
+- [0.4.0](https://github.com/5-logic/the-sync-frontend/releases/tag/0.4.0)
 - [0.3.0](https://github.com/5-logic/the-sync-frontend/releases/tag/0.3.0)
 - [0.2.0](https://github.com/5-logic/the-sync-frontend/releases/tag/0.2.0)
 - [0.1.0](https://github.com/5-logic/the-sync-frontend/releases/tag/0.1.0)
