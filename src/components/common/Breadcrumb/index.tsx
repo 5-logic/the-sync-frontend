@@ -119,7 +119,7 @@ function getDynamicRouteBreadcrumbs(pathname: string): BreadcrumbItem[] | null {
 
 	if (!dynamicPattern) return null;
 
-	const matches = pathname.match(dynamicPattern.pattern);
+	const matches = dynamicPattern.pattern.exec(pathname);
 	if (!matches) return null;
 
 	const items: BreadcrumbItem[] = [];
