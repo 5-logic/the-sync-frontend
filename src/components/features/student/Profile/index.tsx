@@ -2,13 +2,13 @@
 
 import { Col, Row, Typography } from 'antd';
 
-import StudentProfileLayout from './StudentProfileLayout';
-import StudentProfileSections from './StudentProfileSections';
+import StudentProfileLayout from '@/components/features/student/Profile/StudentProfileLayout';
+import StudentProfileSections from '@/components/features/student/Profile/StudentProfileSections';
 
 export default function StudentProfilePage() {
 	return (
 		<Row justify="center">
-			<Col xs={24} sm={22} md={20} lg={18} xl={16} style={{ padding: 24 }}>
+			<Col style={{ padding: 24 }}>
 				<Typography.Title level={2}>Student Profile</Typography.Title>
 				<StudentProfileLayout />
 				<StudentProfileSections />
