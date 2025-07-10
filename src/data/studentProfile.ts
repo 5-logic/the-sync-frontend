@@ -1,8 +1,8 @@
 const studentProfileData = {
-	fullName: 'Alexander Thompson',
-	studentCode: 'ST2023001',
-	email: 'alexander.t@university.edu',
-	gender: 'Male',
+	fullName: 'Nguyen Thi Thuy',
+	studentCode: 'QE170033',
+	email: 'thuyntqe170033@fpt.edu.vn',
+	gender: 'Female',
 	phoneNumber: '+84 123-456-555',
 	major: 'Computer Science',
 	roles: ['Researcher', 'Developer'],
