@@ -1,5 +1,4 @@
 import { Student } from '@/schemas/student';
-import { StudentProfile } from '@/schemas/student';
 
 // ✅ Đặt biến mock secret tránh tên "password" để tránh bị báo lỗi
 const mockSecret = 'MockPassword!123';
