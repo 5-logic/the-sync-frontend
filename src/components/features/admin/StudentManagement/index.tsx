@@ -1,9 +1,10 @@
 'use client';
 
-import { Alert, Space, Typography } from 'antd';
+import { Alert, Space } from 'antd';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
+import { Header } from '@/components/common/Header';
 import StudentFilterBar from '@/components/features/admin/StudentManagement/StudentFilterBar';
 import StudentTable from '@/components/features/admin/StudentManagement/StudentTable';
 import { useStudentStore } from '@/store';
@@ -43,18 +44,12 @@ export default function StudentManagement() {
 		}
 	};
 
-	const { Title, Paragraph } = Typography;
-
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
-			<div>
-				<Title level={2} style={{ marginBottom: '4px' }}>
-					Student Management
-				</Title>
-				<Paragraph type="secondary" style={{ marginBottom: 0 }}>
-					Create and manage students, registration windows
-				</Paragraph>
-			</div>
+			<Header
+				title="Student Management"
+				description="Create and manage students, registration windows"
+			/>
 			<StudentFilterBar
 				semesterFilter={selectedSemesterId}
 				setSemesterFilter={setSelectedSemesterId}
