@@ -95,16 +95,18 @@ export const StudentTable = () => {
 					<Input
 						placeholder="Search by name"
 						prefix={<SearchOutlined />}
+						allowClear
+						value={searchText}
+						onChange={(e) => setSearchText(e.target.value)}
 						onPressEnter={(e) =>
 							setSearchText((e.target as HTMLInputElement).value)
 						}
-						allowClear
 					/>
 				</Col>
 
 				<Col style={{ flex: '0 0 250px' }}>
 					<Select
-						placeholder={<span>Filter by Major</span>}
+						placeholder="Filter by Major"
 						style={{ width: '100%' }}
 						allowClear
 						onChange={(value) => setSelectedMajor(value)}
