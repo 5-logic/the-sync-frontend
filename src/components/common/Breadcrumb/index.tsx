@@ -107,8 +107,60 @@ interface BreadcrumbItem {
 }
 
 interface BreadcrumbProps {
-	className?: string;
-	style?: React.CSSProperties;
+	readonly className?: string;
+	readonly style?: React.CSSProperties;
+}
+
+// Extract dynamic route handling to a separate function to reduce complexity
+function getDynamicRouteBreadcrumbs(pathname: string): BreadcrumbItem[] | null {
+	const dynamicPattern = DYNAMIC_ROUTE_PATTERNS.find(({ pattern }) =>
+		pattern.test(pathname),
+	);
+
+	if (!dynamicPattern) return null;
+
+	const matches = pathname.match(dynamicPattern.pattern);
+	if (!matches) return null;
+
+	const items: BreadcrumbItem[] = [];
+
+	// Add parent path if available
+	if (dynamicPattern.getParentPath) {
+		const parentPath = dynamicPattern.getParentPath(matches);
+		const parentTitle = ROUTE_TITLES[parentPath];
+		if (parentTitle) {
+			items.push({
+				title: parentTitle,
+				href: parentPath,
+			});
+		}
+	}
+
+	// Add current page
+	items.push({
+		title: dynamicPattern.getTitle(matches),
+	});
+
+	return items;
+}
+
+// Extract static route handling to a separate function
+function getStaticRouteBreadcrumbs(segments: string[]): BreadcrumbItem[] {
+	const items: BreadcrumbItem[] = [];
+
+	for (let i = 0; i < segments.length; i++) {
+		const path = '/' + segments.slice(0, i + 1).join('/');
+		const title = ROUTE_TITLES[path];
+
+		if (title) {
+			items.push({
+				title,
+				href: i === segments.length - 1 ? undefined : path, // Last item has no href
+			});
+		}
+	}
+
+	return items;
 }
 
 export default function Breadcrumb({ className, style }: BreadcrumbProps) {
@@ -118,55 +170,17 @@ export default function Breadcrumb({ className, style }: BreadcrumbProps) {
 		// Split pathname into segments
 		const segments = pathname.split('/').filter(Boolean);
 
+		// Handle homepage
 		if (segments.length === 0) {
 			return [{ title: 'Home' }];
 		}
 
-		const items: BreadcrumbItem[] = [];
+		// First check if it's a dynamic route
+		const dynamicItems = getDynamicRouteBreadcrumbs(pathname);
+		if (dynamicItems) return dynamicItems;
 
-		// Check if this is a dynamic route
-		const dynamicPattern = DYNAMIC_ROUTE_PATTERNS.find(({ pattern }) =>
-			pattern.test(pathname),
-		);
-
-		if (dynamicPattern) {
-			const matches = pathname.match(dynamicPattern.pattern);
-			if (matches) {
-				// Add parent path first if available
-				if (dynamicPattern.getParentPath) {
-					const parentPath = dynamicPattern.getParentPath(matches);
-					const parentTitle = ROUTE_TITLES[parentPath];
-					if (parentTitle) {
-						items.push({
-							title: parentTitle,
-							href: parentPath,
-						});
-					}
-				}
-
-				// Add dynamic route title (current page, no href)
-				items.push({
-					title: dynamicPattern.getTitle(matches),
-				});
-
-				return items;
-			}
-		}
-
-		// Build breadcrumb items progressively for static routes
-		for (let i = 0; i < segments.length; i++) {
-			const path = '/' + segments.slice(0, i + 1).join('/');
-			const title = ROUTE_TITLES[path];
-
-			if (title) {
-				items.push({
-					title,
-					href: i === segments.length - 1 ? undefined : path, // Last item has no href
-				});
-			}
-		}
-
-		return items;
+		// Otherwise handle as static route
+		return getStaticRouteBreadcrumbs(segments);
 	}, [pathname]);
 
 	// Don't render if there's only one item or no items
