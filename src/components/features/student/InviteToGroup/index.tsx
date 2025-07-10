@@ -23,7 +23,6 @@ export default function FormJoinGroupPage() {
 
 			<Card
 				style={{
-					marginBottom: 32,
 					borderRadius: 8,
 					boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
 					border: '1px solid #f0f0f0',
@@ -51,8 +50,28 @@ export default function FormJoinGroupPage() {
 				</Row>
 			</Card>
 
-			<Divider orientation="left">All Students</Divider>
-			<StudentTable />
+			<Card
+				style={{
+					borderRadius: 8,
+					boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
+					border: '1px solid #f0f0f0',
+				}}
+				bodyStyle={{ padding: 24 }}
+			>
+				<Typography.Title level={5} style={{ margin: 0 }}>
+					All Students
+				</Typography.Title>
+
+				<Divider
+					style={{
+						marginTop: 12,
+						marginBottom: 24,
+						borderColor: 'rgba(0,0,0,0.06)',
+					}}
+				/>
+
+				<StudentTable />
+			</Card>
 		</Space>
 	);
 }
