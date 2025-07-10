@@ -1,4 +1,4 @@
-import { Card, List, Space, Tag, Typography } from 'antd';
+import { Button, Card, List, Space, Tag, Typography } from 'antd';
 
 import studentProfile from '@/data/studentProfile';
 
@@ -34,8 +34,8 @@ export default function StudentProfileSections() {
 			</Card>
 
 			{/* Group Membership (only if exists) */}
-			{data.group && (
-				<Card title="Group Membership">
+			<Card title="Group Membership">
+				{data.group ? (
 					<Space direction="vertical">
 						<Title level={5} style={{ margin: 0 }}>
 							{data.group.name}
@@ -43,8 +43,10 @@ export default function StudentProfileSections() {
 						<Text type="secondary">Role: {data.group.role}</Text>
 						<Link href="#">View Group Details</Link>
 					</Space>
-				</Card>
-			)}
+				) : (
+					<Button type="primary">Invite to Group</Button>
+				)}
+			</Card>
 		</Space>
 	);
 }
