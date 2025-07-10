@@ -22,7 +22,8 @@ export const StudentSuggestionCard: React.FC<{ student: Student }> = ({
 
 	return (
 		<Card
-			style={{ width: 300, textAlign: 'center' }}
+			hoverable
+			style={{ width: '100%', textAlign: 'center' }}
 			bodyStyle={{ paddingTop: 16, paddingBottom: 16 }}
 		>
 			<Avatar size={64} icon={<UserOutlined />} style={{ marginBottom: 12 }} />
