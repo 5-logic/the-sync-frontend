@@ -2,15 +2,19 @@ import { Card, List, Space, Tag, Typography } from 'antd';
 
 import studentProfile from '@/data/studentProfile';
 
-const { Title, Text } = Typography;
+const { Title, Text, Link } = Typography;
 
 export default function StudentProfileSections() {
 	const data = studentProfile;
 
 	return (
-		<div className="space-y-4 mt-6">
-			{/* Skill */}
-			<Card title="Skills" style={{ marginBottom: 24 }}>
+		<Space
+			direction="vertical"
+			size={24}
+			style={{ width: '100%', marginTop: 24 }}
+		>
+			{/* Skills */}
+			<Card title="Skills">
 				<Space wrap>
 					{data.skills.map((skill) => (
 						<Tag key={skill} color="blue">
@@ -25,19 +29,20 @@ export default function StudentProfileSections() {
 				<List
 					dataSource={data.academicInterests}
 					renderItem={(item) => <List.Item>{item}</List.Item>}
+					size="small"
 				/>
 			</Card>
 
 			{/* Group Info */}
 			<Card title="Group Membership">
-				<Title level={5}>{data.group.name}</Title>
-				<Text type="secondary">Role: {data.group.role}</Text>
-				<div>
-					<a href="#" style={{ color: '#1890ff' }}>
-						View Group Details
-					</a>
-				</div>
+				<Space direction="vertical">
+					<Title level={5} style={{ margin: 0 }}>
+						{data.group.name}
+					</Title>
+					<Text type="secondary">Role: {data.group.role}</Text>
+					<Link href="#">View Group Details</Link>
+				</Space>
 			</Card>
-		</div>
+		</Space>
 	);
 }
