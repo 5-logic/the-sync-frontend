@@ -2,7 +2,7 @@
 
 import { Button, Card, Col, Form, Input, Row } from 'antd';
 
-export const StudentSearchBar = () => {
+export const StudentSearch = () => {
 	return (
 		<Card>
 			<Form layout="vertical">
@@ -19,11 +19,7 @@ export const StudentSearchBar = () => {
 					</Col>
 				</Row>
 
-				<Form.Item>
-					<Button type="primary" shape="round">
-						Suggest Groups
-					</Button>
-				</Form.Item>
+				<Button type="primary">Suggest Groups</Button>
 			</Form>
 		</Card>
 	);

@@ -2,9 +2,9 @@
 
 import { Col, Divider, Row, Space, Typography } from 'antd';
 
-import { StudentSearchBar } from './StudentSearchBar';
-import { StudentSuggestionCard } from './StudentSuggestionCard';
-import { StudentTable } from './StudentTable';
+import { StudentSearchBar } from '@/components/features/student/InviteToGroup/StudentSearch';
+import { StudentSuggestionCard } from '@/components/features/student/InviteToGroup/StudentSuggestionCard';
+import { StudentTable } from '@/components/features/student/InviteToGroup/StudentTable';
 
 const { Title } = Typography;
 
