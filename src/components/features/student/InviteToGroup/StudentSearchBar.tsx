@@ -4,7 +4,7 @@ import { Button, Card, Col, Form, Input, Row } from 'antd';
 
 export const StudentSearchBar = () => {
 	return (
-		<Card style={{ marginBottom: 32 }}>
+		<Card>
 			<Form layout="vertical">
 				<Row gutter={16}>
 					<Col xs={24} sm={12}>
