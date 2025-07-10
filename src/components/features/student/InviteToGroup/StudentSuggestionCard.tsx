@@ -1,40 +1,57 @@
 'use client';
 
 import { UserOutlined } from '@ant-design/icons';
-import { Button, Card, Space, Tag } from 'antd';
+import { Avatar, Button, Card, Space, Tag, Typography } from 'antd';
 import React from 'react';
 
-interface StudentSuggestionProps {
-	name: string;
-	major: string;
-	roles: string[];
-	skills: string[];
-}
+import { Student } from '@/schemas/student';
 
-export const StudentSuggestionCard: React.FC<StudentSuggestionProps> = ({
-	name,
-	major,
-	roles,
-	skills,
+const { Paragraph } = Typography;
+
+export const StudentSuggestionCard: React.FC<{ student: Student }> = ({
+	student,
 }) => {
+	// Ép kiểu tạm thời để truy cập studentSkills và studentExpectedResponsibilities
+	const s = student as Student & {
+		studentSkills: { skillId: string; name: string; level: string }[];
+		studentExpectedResponsibilities: {
+			responsibilityId: string;
+			name: string;
+		}[];
+	};
+
 	return (
-		<Card style={{ width: 300 }}>
-			<Card.Meta
-				avatar={<UserOutlined style={{ fontSize: 40 }} />}
-				title={name}
-				description={major}
-			/>
-			<div style={{ marginTop: 12 }}>
-				<p style={{ marginBottom: 8 }}>Roles: {roles.join(', ')}</p>
-				<Space wrap>
-					{skills.map((skill) => (
-						<Tag color="blue" key={skill}>
-							{skill}
-						</Tag>
-					))}
-				</Space>
-			</div>
-			<Button type="primary" block style={{ marginTop: 12 }}>
+		<Card
+			style={{ width: 300, textAlign: 'center' }}
+			bodyStyle={{ paddingTop: 16, paddingBottom: 16 }}
+		>
+			<Avatar size={64} icon={<UserOutlined />} style={{ marginBottom: 12 }} />
+
+			<Typography.Title level={5} style={{ marginBottom: 4 }}>
+				{s.fullName}
+			</Typography.Title>
+
+			<Paragraph type="secondary" style={{ marginBottom: 8 }}>
+				{s.majorId === 'SE'
+					? 'Software Engineering'
+					: s.majorId === 'AI'
+						? 'Artificial Intelligence'
+						: s.majorId}
+			</Paragraph>
+
+			<Paragraph style={{ marginBottom: 8 }}>
+				Roles: {s.studentExpectedResponsibilities.map((r) => r.name).join(', ')}
+			</Paragraph>
+
+			<Space wrap style={{ marginBottom: 12 }}>
+				{s.studentSkills.map((skill) => (
+					<Tag color="blue" key={skill.skillId}>
+						{skill.name}
+					</Tag>
+				))}
+			</Space>
+
+			<Button type="primary" block>
 				Invite
 			</Button>
 		</Card>
