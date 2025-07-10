@@ -11,7 +11,7 @@ export default function StudentProfileSections() {
 		<Space
 			direction="vertical"
 			size={24}
-			style={{ width: '100%', marginTop: 24 }}
+			style={{ width: '100%', marginTop: 4 }}
 		>
 			{/* Skills */}
 			<Card title="Skills">
