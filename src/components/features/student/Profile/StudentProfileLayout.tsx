@@ -1,5 +1,5 @@
-import { MailOutlined, PhoneOutlined } from '@ant-design/icons';
-import { Card, Col, Divider, Row, Space, Tag, Typography } from 'antd';
+import { MailOutlined, PhoneOutlined, UserOutlined } from '@ant-design/icons';
+import { Avatar, Card, Col, Row, Space, Typography } from 'antd';
 
 import studentProfile from '@/data/studentProfile';
 
@@ -9,33 +9,60 @@ export default function StudentProfileLayout() {
 	const data = studentProfile;
 
 	return (
-		<Card bordered style={{ marginTop: 24 }} bodyStyle={{ padding: 24 }}>
-			<Row gutter={[24, 24]} align="top">
-				<Col xs={24} md={12}>
-					<Space direction="vertical" size="middle">
-						<Title level={4}>{data.fullName}</Title>
-						<Text type="secondary">ID: {data.studentCode}</Text>
-						<Text type="secondary">Major: {data.major}</Text>
-						<Text>
-							<MailOutlined /> {data.email}
-						</Text>
-						<Text>
-							<PhoneOutlined /> {data.phoneNumber}
-						</Text>
-						<Text>Gender: {data.gender}</Text>
-						<Text>Roles: {data.roles.join(', ')}</Text>
-					</Space>
+		<Card bordered bodyStyle={{ padding: 24 }}>
+			<Row gutter={[24, 24]} align="middle">
+				{/* Avatar + Basic Info */}
+				<Col span={24}>
+					<Row gutter={[16, 16]} align="middle">
+						<Col>
+							<Avatar size={96} icon={<UserOutlined />} />
+						</Col>
+						<Col>
+							<Space direction="vertical" size={2}>
+								<Title level={5} style={{ margin: 0 }}>
+									{data.fullName}
+								</Title>
+								<Text type="secondary">ID: {data.studentCode}</Text>
+								<Text type="secondary">{data.major}</Text>
+							</Space>
+						</Col>
+					</Row>
 				</Col>
 
-				<Col xs={24} md={12}>
-					<Divider orientation="left">Skills</Divider>
-					<Space wrap>
-						{data.skills.map((skill) => (
-							<Tag key={skill} color="blue">
-								{skill}
-							</Tag>
-						))}
-					</Space>
+				{/* Email + Phone */}
+				<Col span={24}>
+					<Row gutter={[16, 16]}>
+						<Col xs={24} sm={12}>
+							<Text type="secondary">
+								<MailOutlined /> Email
+							</Text>
+							<br />
+							<Text strong>{data.email}</Text>
+						</Col>
+						<Col xs={24} sm={12}>
+							<Text type="secondary">
+								<PhoneOutlined /> Phone
+							</Text>
+							<br />
+							<Text strong>{data.phoneNumber}</Text>
+						</Col>
+					</Row>
+				</Col>
+
+				{/* Gender + Roles */}
+				<Col span={24}>
+					<Row gutter={[16, 16]}>
+						<Col xs={24} sm={12}>
+							<Text type="secondary">Gender</Text>
+							<br />
+							<Text strong>{data.gender}</Text>
+						</Col>
+						<Col xs={24} sm={12}>
+							<Text type="secondary">Roles</Text>
+							<br />
+							<Text strong>{data.roles.join(', ')}</Text>
+						</Col>
+					</Row>
 				</Col>
 			</Row>
 		</Card>
