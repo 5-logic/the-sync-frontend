@@ -39,7 +39,7 @@ export default function StudentManagement() {
 
 	const handleRefresh = () => {
 		if (selectedSemesterId) {
-			fetchStudentsBySemester(selectedSemesterId);
+			fetchStudentsBySemester(selectedSemesterId, true); // Force refresh to bypass cache
 		}
 	};
 

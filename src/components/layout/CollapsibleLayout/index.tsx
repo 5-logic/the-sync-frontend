@@ -3,6 +3,7 @@
 import { Layout, theme } from 'antd';
 import React from 'react';
 
+import Breadcrumb from '@/components/common/Breadcrumb';
 import NavigationLoader from '@/components/common/NavigationLoader';
 import { ContentLoader } from '@/components/common/loading';
 import { CollapsibleLayoutProps } from '@/components/layout/CollapsibleLayout/CollapsibleLayout.types';
@@ -18,6 +19,7 @@ const { Content } = Layout;
 const CollapsibleLayout: React.FC<CollapsibleLayoutProps> = ({
 	children,
 	sidebar,
+	showBreadcrumb = false,
 }) => {
 	const { sidebarCollapsed, toggleSidebar, setSidebarCollapsed } =
 		useAppStore();
@@ -84,6 +86,15 @@ const CollapsibleLayout: React.FC<CollapsibleLayoutProps> = ({
 								overflow: 'auto',
 							}}
 						>
+							{/* Breadcrumb */}
+							{showBreadcrumb && (
+								<Breadcrumb
+									style={{
+										marginBottom: 16,
+										fontSize: '14px',
+									}}
+								/>
+							)}
 							<ContentLoader>{children}</ContentLoader>
 						</Content>
 					</Layout>

@@ -8,7 +8,7 @@ export default function StudentLayout({
 	readonly children: React.ReactNode;
 }) {
 	return (
-		<CollapsibleLayout sidebar={<StudentSidebar />}>
+		<CollapsibleLayout sidebar={<StudentSidebar />} showBreadcrumb={true}>
 			{children}
 			<ChatbotWidget />
 		</CollapsibleLayout>
