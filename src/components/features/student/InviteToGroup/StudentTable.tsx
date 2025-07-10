@@ -1,6 +1,6 @@
 'use client';
 
-import { BookOutlined, SearchOutlined } from '@ant-design/icons';
+import { SearchOutlined } from '@ant-design/icons';
 import { Button, Col, Input, Row, Select, Space, Table, Tag } from 'antd';
 import { useState } from 'react';
 
