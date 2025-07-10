@@ -1,6 +1,6 @@
 'use client';
 
-import { Col, Divider, Row, Typography } from 'antd';
+import { Col, Divider, Row, Space, Typography } from 'antd';
 
 import { StudentSearchBar } from './StudentSearchBar';
 import { StudentSuggestionCard } from './StudentSuggestionCard';
@@ -10,7 +10,11 @@ const { Title } = Typography;
 
 export default function FormJoinGroupPage() {
 	return (
-		<div style={{ padding: 24 }}>
+		<Space
+			direction="vertical"
+			size="large"
+			style={{ padding: 24, width: '100%' }}
+		>
 			<Title level={3}>Invite Students to Group</Title>
 
 			<StudentSearchBar />
@@ -45,6 +49,6 @@ export default function FormJoinGroupPage() {
 
 			<Divider orientation="left">All Students</Divider>
 			<StudentTable />
-		</div>
+		</Space>
 	);
 }
