@@ -116,6 +116,7 @@ export const StudentTable = () => {
 				dataSource={filteredStudents}
 				rowKey="id"
 				pagination={TablePagination}
+				scroll={{ x: 'max-content' }}
 			/>
 		</>
 	);
