@@ -9,6 +9,244 @@ For more information about this project, see the [README](./README.md).
 
 ---
 
+## [0.4.0] - 2025-07-10
+
+### Added
+
+#### Group Management System
+
+- Complete group dashboard with comprehensive member management ([#158](https://github.com/5-logic/the-sync-frontend/pull/158), [#161](https://github.com/5-logic/the-sync-frontend/pull/161), [#169](https://github.com/5-logic/the-sync-frontend/pull/169))
+- Group creation with skill requirements and member invitation system
+- Advanced group member management with leader assignment and removal capabilities
+- Group requests management with invitation and join request handling
+- Group status guards and navigation protection
+- Enhanced group browsing and discovery features
+- Group confirmation modals for sensitive operations
+
+#### Student Features Enhancement
+
+- Student account management with skills and responsibilities ([#146](https://github.com/5-logic/the-sync-frontend/pull/146), [#183](https://github.com/5-logic/the-sync-frontend/pull/183), [#189](https://github.com/5-logic/the-sync-frontend/pull/189))
+- Enhanced student profile with skill level tracking and phone number validation
+- Student group dashboard with detailed group information
+- Improved form validation and user experience
+- Student thesis detail viewing capabilities
+
+#### Lecturer Tools & Management
+
+- Comprehensive checklist management system ([#150](https://github.com/5-logic/the-sync-frontend/pull/150), [#154](https://github.com/5-logic/the-sync-frontend/pull/154))
+- Checklist creation with manual and Excel import options
+- Checklist editing and detailed view functionality
+- Lecturer assignment and review workflows ([#140](https://github.com/5-logic/the-sync-frontend/pull/140), [#144](https://github.com/5-logic/the-sync-frontend/pull/144))
+- Enhanced thesis publishing management with bulk operations
+- Group review and evaluation capabilities
+- Improved lecturer profile settings and account management
+
+#### Request Management System
+
+- Centralized request management with status tracking ([#164](https://github.com/5-logic/the-sync-frontend/pull/164), [#170](https://github.com/5-logic/the-sync-frontend/pull/170))
+- Request status management with cancellation capabilities
+- Enhanced invite and join request workflows
+- Request filtering and search functionality
+- Real-time request status updates and notifications
+
+#### UI/UX Improvements
+
+- Enhanced navigation with role-based sidebar improvements ([#148](https://github.com/5-logic/the-sync-frontend/pull/148))
+- Common download template components for Excel operations
+- Improved form validation and error handling across all features
+- Enhanced responsive design and mobile compatibility
+- Better loading states and user feedback systems
+
+### Changed
+
+#### API Schema Enhancements
+
+- **Group Schema:** Added comprehensive `GroupDashboardSchema` with member, skill, and responsibility relationships
+- **Student Schema:** Enhanced with profile management and skill tracking capabilities
+- **Responsibility Schema:** Improved validation and API response handling
+- **Request Management:** Enhanced request status handling with 'Cancelled' status support
+
+#### Service Layer Improvements
+
+- **GroupService:** Added member management, leader assignment, and group operations
+- **RequestService:** Enhanced with cancellation and status management capabilities
+- **ResponsibilityService:** Converted to static class with improved method definitions
+- **PasswordService:** New centralized password management service
+- **StudentsService:** Enhanced with group-related filtering and profile management
+
+#### Performance & Architecture
+
+- Enhanced store management with specialized stores for groups, requests, and responsibilities
+- Improved caching strategies for group and request data
+- Better state management with context providers for group status
+- Optimized data fetching patterns with background refresh capabilities
+- Enhanced error handling and notification systems
+
+#### Authentication & Security
+
+- Enhanced password management with unified service layer
+- Improved phone number validation for Vietnamese format
+- Better session handling and user profile management
+- Enhanced role-based access controls
+
+### Fixed
+
+- Form validation edge cases in group creation and member management
+- Request management synchronization issues
+- Navigation state persistence in group workflows
+- Mobile responsiveness issues in group and checklist interfaces
+- Memory leaks in request polling and status updates
+- Excel import validation for checklist and member data
+- Search and filtering performance optimizations
+
+### API Breaking Changes
+
+- **Group Dashboard:** New API structure with detailed member and relationship data
+- **Request Management:** Enhanced request status with 'Cancelled' option
+- **Student Profile:** Changed API structure for profile updates and skill management
+- **Password Management:** Centralized password change endpoints
+
+### Technical Details
+
+- **New Services:** `GroupService`, `RequestService`, `ResponsibilityService`, `PasswordService`
+- **Enhanced Stores:** Group dashboard store, requests store, responsibility store
+- **Context Providers:** Group status context for navigation and state management
+- **Utility Functions:** Text normalization, member management helpers, student invite utilities
+- **Schema Validation:** Enhanced group, student, and responsibility schemas
+- **Excel Templates:** New templates for checklist creation
+
+### Migration Notes
+
+- Group-related API calls now return enhanced data structures with member details
+- Request management requires handling of new 'Cancelled' status
+- Student profile updates should use new unified profile API
+- Password management operations should use centralized PasswordService
+- Excel import templates have been updated with new field requirements
+
+---
+
+## [0.3.0] - 2025-07-02
+
+### Added
+
+#### Storage & File Management
+
+- Complete Supabase Storage integration for file uploads ([#103](https://github.com/5-logic/the-sync-frontend/pull/103), [#117](https://github.com/5-logic/the-sync-frontend/pull/117))
+- `StorageService` with file upload, download, and deletion capabilities
+- File sanitization and unique naming for storage compatibility
+- Secure file URLs with expiration support
+- Support for thesis supporting documents and attachments
+
+#### Authentication & Security Enhancements
+
+- Enhanced authentication system with modular architecture ([#102](https://github.com/5-logic/the-sync-frontend/pull/102), [#115](https://github.com/5-logic/the-sync-frontend/pull/115))
+- Advanced TokenManager with remember me functionality and storage strategy
+- Throttled token refresh mechanism to prevent excessive API calls
+- Smart storage management (localStorage vs sessionStorage)
+- Enhanced session callbacks with proper typing and remember me support
+- Account validation and status checking during authentication
+- Token expiration aligned with backend settings (1h access, 7d refresh)
+
+#### Thesis Management System
+
+- Comprehensive thesis CRUD operations with enhanced API schema ([#120](https://github.com/5-logic/the-sync-frontend/pull/120), [#122](https://github.com/5-logic/the-sync-frontend/pull/122), [#124](https://github.com/5-logic/the-sync-frontend/pull/124))
+- Thesis creation with skill requirements and file uploads
+- Thesis version control and history tracking
+- Enhanced thesis filtering and status management
+- Thesis assignment and supervision features
+- Group assignment and supervision workflows
+- Milestone integration with thesis progress tracking
+
+#### Student & Group Management
+
+- Student account management with semester-based filtering ([#125](https://github.com/5-logic/the-sync-frontend/pull/125), [#126](https://github.com/5-logic/the-sync-frontend/pull/126))
+- Group creation and joining functionality
+- Enhanced student dashboard with first-login experience
+- Group progress tracking and milestone management
+- Student profile settings and account management
+
+#### Lecturer Features
+
+- Lecturer dashboard with comprehensive management tools ([#128](https://github.com/5-logic/the-sync-frontend/pull/128), [#130](https://github.com/5-logic/the-sync-frontend/pull/130))
+- Thesis assignment to students and groups
+- Supervisor assignment workflows
+- Group progress monitoring and milestone tracking
+- Enhanced lecturer profile management
+- Timeline review and approval system
+
+#### UI/UX Improvements
+
+- Enhanced navigation with role-based sidebar configurations ([#133](https://github.com/5-logic/the-sync-frontend/pull/133), [#136](https://github.com/5-logic/the-sync-frontend/pull/136))
+- Improved authentication flow with loading states
+- Enhanced form components with better validation
+- Responsive design improvements across all pages
+- Optimized pagination and table components
+- Enhanced modal and dialog components
+
+### Changed
+
+#### API Schema & Endpoints
+
+- **Thesis Schema Enhancement:** Added `ThesisWithRelationsSchema` for API responses with relationships
+- **Thesis Create Schema:** Simplified with `skillIds` array and `supportingDocument` field
+- **Thesis Update Schema:** Enhanced with skill management and file update support
+- **Authentication Schemas:** Enhanced validation patterns and error handling
+
+#### Package Dependencies
+
+- **Added:** `@supabase/supabase-js@2.50.2` for storage and database integration
+- **Removed:** `quill@2.0.3` and `react-quill@2.0.0` - replaced with simpler text editing solutions
+
+#### Performance & Architecture
+
+- Migrated to modular authentication architecture
+- Enhanced HTTP client timeout configuration (extended to 1 hour)
+- Improved caching strategies with TTL and invalidation
+- Optimized token management with smart storage selection
+- Enhanced error handling and user feedback systems
+
+#### Security Improvements
+
+- Token storage strategy based on remember me preference
+- Enhanced session management with proper expiration
+- Improved CSRF protection and request validation
+- Better error handling without exposing sensitive information
+
+### Fixed
+
+- Authentication flow edge cases and token refresh issues
+- File upload validation and error handling
+- Form validation and submission edge cases
+- Navigation state persistence across page reloads
+- Responsive design issues on mobile devices
+- Memory leaks in token refresh mechanisms
+- CORS and API communication improvements
+
+### API Breaking Changes
+
+- **Thesis Creation:** Now requires `supportingDocument` field and accepts `skillIds` array
+- **File Upload:** Migrated from custom backend storage to Supabase Storage
+- **Authentication:** Enhanced token structure with remember me metadata
+- **Storage URLs:** Changed from backend-generated to Supabase public URLs
+
+### Technical Details
+
+- **Storage Integration:** Complete Supabase Storage setup with bucket management
+- **Enhanced Services:** New `StorageService` for file operations
+- **Authentication Refactor:** Modular auth services (`AdminAuthService`, `UserAuthService`, `BaseAuthService`)
+- **Token Management:** Advanced `TokenManager` with conditional storage and throttling
+- **HTTP Client:** Enhanced timeout and interceptor configuration
+- **Error Handling:** Centralized `AuthErrorHandler` for consistent error processing
+
+### Migration Notes
+
+- Files previously stored on backend should be migrated to Supabase Storage
+- Authentication tokens will be automatically migrated to new storage strategy
+- Rich text editing features using Quill have been simplified to basic text input
+- Update environment variables to include Supabase configuration
+
+---
+
 ## [0.2.0] - 2025-06-25
 
 ### Added
@@ -242,4 +480,7 @@ Changes that are committed but not yet released.
 
 **Tags:**
 
+- [0.4.0](https://github.com/5-logic/the-sync-frontend/releases/tag/0.4.0)
+- [0.3.0](https://github.com/5-logic/the-sync-frontend/releases/tag/0.3.0)
+- [0.2.0](https://github.com/5-logic/the-sync-frontend/releases/tag/0.2.0)
 - [0.1.0](https://github.com/5-logic/the-sync-frontend/releases/tag/0.1.0)

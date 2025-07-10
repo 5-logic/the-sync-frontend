@@ -1,13 +1,12 @@
-'use client';
+import { createMetadata } from '@/app/metadata';
+import LecturerAssignStudentClient from '@/components/pages/lecturer/LecturerAssignStudentClient';
 
-import { Typography } from 'antd';
+export const metadata = createMetadata({
+	title: 'Lecturer Assign Student',
+	description:
+		'Lecturer Assign Student for TheSync - Group Formation and Capstone Thesis Development',
+});
 
-const { Title } = Typography;
-
-export default function AssignStudentPage() {
-	return (
-		<div className="p-6">
-			<Title level={2}>👨‍🏫 Assign Student Review</Title>
-		</div>
-	);
+export default function LecturerAssignStudentPage() {
+	return <LecturerAssignStudentClient />;
 }

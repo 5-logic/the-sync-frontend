@@ -23,13 +23,13 @@ const Home = () => {
 			// Redirect dựa vào role
 			if (role === 'admin') {
 				router.push('/admin');
-			} else if (role === 'lecturer') {
+			} else if (role === 'lecturer' || role === 'moderator') {
 				router.push('/lecturer');
 			} else if (role === 'student') {
 				router.push('/student');
 			} else {
-				// Default fallback
-				router.push('/student');
+				// Default fallback cho unknown roles
+				router.push('/login');
 			}
 		}
 	}, [status, session, router]);

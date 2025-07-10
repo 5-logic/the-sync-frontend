@@ -1,10 +1,12 @@
+import { createMetadata } from '@/app/metadata';
+import GroupDashboardPageClient from '@/components/pages/student/GroupDashboardPageClient';
+
+export const metadata = createMetadata({
+	title: 'Group Dashboard',
+	description:
+		'Group Dashboard for TheSync - View your group information, members, and thesis progress',
+});
+
 export default function StudentGroupDashboardPage() {
-	return (
-		<div className="p-6">
-			<h1 className="text-2xl font-bold mb-4">Group Dashboard</h1>
-			<p className="text-gray-600">
-				Overview of your group&apos;s progress and activities
-			</p>
-		</div>
-	);
+	return <GroupDashboardPageClient />;
 }

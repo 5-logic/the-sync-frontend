@@ -1,5 +1,8 @@
 import type { StoreApi } from 'zustand';
 
+import { handleApiResponse } from '@/lib/utils/handleApi';
+import { ApiResponse } from '@/schemas/_common';
+
 // Cache configuration
 interface CacheConfig {
 	ttl?: number; // Time to live in milliseconds (default: 5 minutes)
@@ -34,6 +37,90 @@ const DEFAULT_CACHE_CONFIG: Required<CacheConfig> = {
 	background: false,
 };
 
+/**
+ * Helper functions to reduce duplication
+ */
+const cacheHelpers = {
+	// Generate entity names for store properties
+	getEntityNames(entityName: string) {
+		const pluralEntityName =
+			entityName === 'thesis' ? 'theses' : `${entityName}s`;
+		const capitalizedEntityName =
+			entityName.charAt(0).toUpperCase() + entityName.slice(1);
+		const filteredPropertyName =
+			entityName === 'thesis'
+				? 'filteredTheses'
+				: `filtered${capitalizedEntityName}s`;
+		const filterFunctionName =
+			entityName === 'thesis'
+				? 'filterTheses'
+				: `filter${capitalizedEntityName}s`;
+
+		return {
+			pluralEntityName,
+			capitalizedEntityName,
+			filteredPropertyName,
+			filterFunctionName,
+		};
+	},
+
+	// Update store with data and apply filters
+	updateStoreAndApplyFilters<T>(
+		entityName: string,
+		data: T[],
+		set: StoreApi<Record<string, unknown>>['setState'],
+		get: StoreApi<Record<string, unknown>>['getState'],
+		additionalProps: Record<string, unknown> = {},
+	) {
+		const { pluralEntityName, filteredPropertyName, filterFunctionName } =
+			this.getEntityNames(entityName);
+
+		// Update store
+		set({
+			[pluralEntityName]: data,
+			[filteredPropertyName]: data,
+			...additionalProps,
+		});
+
+		// Apply filters
+		const currentState = get();
+		const filterFunction = currentState[filterFunctionName];
+		if (typeof filterFunction === 'function') {
+			filterFunction();
+		}
+	},
+
+	// Handle cache retrieval and store update
+	handleCacheHit<T>(
+		entityName: string,
+		cachedData: T[],
+		set: StoreApi<Record<string, unknown>>['setState'],
+		get: StoreApi<Record<string, unknown>>['getState'],
+		additionalProps: Record<string, unknown> = {},
+	) {
+		this.updateStoreAndApplyFilters(
+			entityName,
+			cachedData,
+			set,
+			get,
+			additionalProps,
+		);
+	},
+
+	// Create error object
+	createError(entityName: string): {
+		message: string;
+		statusCode: number;
+		timestamp: Date;
+	} {
+		return {
+			message: `Failed to fetch ${entityName}s`,
+			statusCode: 500,
+			timestamp: new Date(),
+		};
+	},
+};
+
 // Cache utilities
 export const cacheUtils = {
 	// Initialize cache for an entity
@@ -55,8 +142,8 @@ export const cacheUtils = {
 					const parsedEntries = JSON.parse(stored);
 					cache.entries = new Map(parsedEntries);
 				}
-			} catch (error) {
-				console.warn(`Failed to load cache for ${entityName}:`, error);
+			} catch {
+				// Failed to load cache from localStorage
 			}
 		}
 
@@ -115,8 +202,8 @@ export const cacheUtils = {
 					`cache_${entityName}`,
 					JSON.stringify(entriesToStore),
 				);
-			} catch (error) {
-				console.warn(`Failed to persist cache for ${entityName}:`, error);
+			} catch {
+				// Failed to persist cache to localStorage
 			}
 		}
 	},
@@ -175,9 +262,17 @@ export const cacheUtils = {
 	},
 };
 
+// Helper function to get error message with fallback
+const getErrorMessage = (
+	message: string | undefined,
+	fallback: string,
+): string => {
+	return (message ?? '') === '' ? fallback : message!;
+};
+
 // Enhanced fetch action with caching
 export function createCachedFetchAction<T extends { id: string }>(
-	service: { findAll: () => Promise<{ success: boolean; data?: T[] }> },
+	service: { findAll: () => Promise<ApiResponse<T[]>> },
 	entityName: string,
 	cacheConfig: CacheConfig = {},
 ) {
@@ -195,21 +290,7 @@ export function createCachedFetchAction<T extends { id: string }>(
 			if (!force) {
 				const cachedData = cacheUtils.get<T[]>(entityName, cacheKey);
 				if (cachedData) {
-					set({
-						[`${entityName}s`]: cachedData,
-						[`filtered${entityName.charAt(0).toUpperCase() + entityName.slice(1)}s`]:
-							cachedData,
-					});
-
-					// Apply filters if they exist
-					const currentState = get();
-					const filterFunction =
-						currentState[
-							`filter${entityName.charAt(0).toUpperCase() + entityName.slice(1)}s`
-						];
-					if (typeof filterFunction === 'function') {
-						filterFunction();
-					}
+					cacheHelpers.handleCacheHit(entityName, cachedData, set, get);
 					return;
 				}
 			}
@@ -223,37 +304,25 @@ export function createCachedFetchAction<T extends { id: string }>(
 
 			try {
 				const response = await service.findAll();
+				const result = handleApiResponse(response);
 
-				if (response.success && response.data) {
+				if (result.success && result.data) {
 					// Cache the data
-					cacheUtils.set(entityName, cacheKey, response.data);
-
-					// Update store
-					set({
-						[`${entityName}s`]: response.data,
-						[`filtered${entityName.charAt(0).toUpperCase() + entityName.slice(1)}s`]:
-							response.data,
-					});
-
-					// Apply filters
-					const currentState = get();
-					const filterFunction =
-						currentState[
-							`filter${entityName.charAt(0).toUpperCase() + entityName.slice(1)}s`
-						];
-					if (typeof filterFunction === 'function') {
-						filterFunction();
-					}
+					cacheUtils.set(entityName, cacheKey, result.data);
+					// Update store and apply filters
+					cacheHelpers.updateStoreAndApplyFilters(
+						entityName,
+						result.data,
+						set,
+						get,
+					);
+				} else {
+					throw new Error(
+						getErrorMessage(result.error?.message, 'Failed to fetch data'),
+					);
 				}
-			} catch (error) {
-				console.error(`Error fetching ${entityName}s:`, error);
-				set({
-					lastError: {
-						message: `Failed to fetch ${entityName}s`,
-						statusCode: 500,
-						timestamp: new Date(),
-					},
-				});
+			} catch {
+				set({ lastError: cacheHelpers.createError(entityName) });
 			} finally {
 				set({ loading: false });
 			}
@@ -282,12 +351,82 @@ export const cacheInvalidation = {
 		return setInterval(async () => {
 			try {
 				await fetchFunction();
-			} catch (error) {
-				console.warn(`Background refresh failed for ${entityName}:`, error);
+			} catch {
+				// Background refresh failed
 			}
 		}, interval);
 	},
 };
+
+// Enhanced fetch by lecturer action with caching
+export function createCachedFetchByLecturerAction<T extends { id: string }>(
+	service: {
+		findByLecturerId: (lecturerId: string) => Promise<ApiResponse<T[]>>;
+	},
+	entityName: string,
+	cacheConfig: CacheConfig = {},
+) {
+	// Initialize cache
+	cacheUtils.initCache<T[]>(entityName, cacheConfig);
+
+	return (
+			set: StoreApi<Record<string, unknown>>['setState'],
+			get: StoreApi<Record<string, unknown>>['getState'],
+		) =>
+		async (lecturerId: string, force = false) => {
+			const cacheKey = `lecturer_${lecturerId}`;
+
+			// Try to get from cache first
+			if (!force) {
+				const cachedData = cacheUtils.get<T[]>(entityName, cacheKey);
+				if (cachedData) {
+					cacheHelpers.handleCacheHit(entityName, cachedData, set, get, {
+						currentLecturerId: lecturerId,
+					});
+					return;
+				}
+			}
+
+			// Prevent duplicate calls
+			const { loading, _backgroundRefreshRunning } = get();
+			if (loading || _backgroundRefreshRunning) return;
+
+			set({
+				loading: true,
+				lastError: null,
+				currentLecturerId: lecturerId,
+				_backgroundRefreshRunning: true,
+			});
+
+			try {
+				const response = await service.findByLecturerId(lecturerId);
+				const result = handleApiResponse(response);
+
+				if (result.success && result.data) {
+					// Cache the data with lecturer-specific key
+					cacheUtils.set(entityName, cacheKey, result.data);
+					// Update store and apply filters
+					cacheHelpers.updateStoreAndApplyFilters(
+						entityName,
+						result.data,
+						set,
+						get,
+					);
+				} else {
+					throw new Error(
+						getErrorMessage(result.error?.message, 'Failed to fetch data'),
+					);
+				}
+			} catch {
+				set({ lastError: cacheHelpers.createError(entityName) });
+			} finally {
+				set({
+					loading: false,
+					_backgroundRefreshRunning: false,
+				});
+			}
+		};
+}
 
 // Cache middleware for Zustand
 export function createCacheMiddleware<T>(

@@ -3,8 +3,8 @@
 import { Card, Col, Row, Space, Typography } from 'antd';
 import React from 'react';
 
+import ChangePasswordForm from '@/components/features/lecturer/ProfileSetting/ChangePasswordForm';
 import StudentAccountForm from '@/components/features/student/AccountSetting/StudentAccountForm';
-import StudentChangePasswordForm from '@/components/features/student/AccountSetting/StudentChangePasswordForm';
 
 const { Title, Paragraph } = Typography;
 
@@ -23,6 +23,7 @@ export default function StudentAccountSettingContainer() {
 			<Row gutter={[24, 24]}>
 				<Col xs={24} md={16}>
 					<Card
+						title="Personal Information"
 						style={{
 							borderRadius: 12,
 							height: '100%',
@@ -34,13 +35,14 @@ export default function StudentAccountSettingContainer() {
 				</Col>
 				<Col xs={24} md={8}>
 					<Card
+						title="Change Password"
 						style={{
 							borderRadius: 12,
 							height: '100%',
 						}}
 						bodyStyle={{ padding: 24 }}
 					>
-						<StudentChangePasswordForm />
+						<ChangePasswordForm />
 					</Card>
 				</Col>
 			</Row>

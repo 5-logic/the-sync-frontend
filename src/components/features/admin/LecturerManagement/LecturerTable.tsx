@@ -17,11 +17,10 @@ import type { ColumnsType } from 'antd/es/table';
 import { useState } from 'react';
 
 import { TablePagination } from '@/components/common/TablePagination';
+// Import EditLecturerDialog component
+import EditLecturerDialog from '@/components/features/admin/LecturerManagement/EditLecturerDialog';
 import { Lecturer } from '@/schemas/lecturer';
 import { useLecturerStore } from '@/store';
-
-// Import EditLecturerDialog component
-import EditLecturerDialog from './EditLecturerDialog';
 
 type Props = Readonly<{
 	data: Lecturer[];

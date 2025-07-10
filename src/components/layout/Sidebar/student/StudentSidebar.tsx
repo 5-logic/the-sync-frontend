@@ -12,19 +12,62 @@ import {
 import { Menu } from 'antd';
 import { usePathname } from 'next/navigation';
 
+import {
+	STUDENT_MENU_KEYS,
+	getSelectedMenuKey,
+} from '@/components/layout/Sidebar/student/StudentSidebar.config';
 import { useNavigationLoader } from '@/hooks';
+import { useStudentGroupStatus } from '@/hooks/useStudentGroupStatus';
 import { DASHBOARD_PATHS } from '@/lib/auth/config/auth-constants';
-
-import { STUDENT_MENU_KEYS, getSelectedMenuKey } from './StudentSidebar.config';
 
 export default function StudentSidebar() {
 	const pathname = usePathname();
 	const { isNavigating, targetPath, navigateWithLoading } =
 		useNavigationLoader();
+	const { hasGroup, loading: groupLoading } = useStudentGroupStatus();
 
 	// Check if a specific menu item is loading
 	const isMenuItemLoading = (path: string) => {
 		return isNavigating && targetPath === path;
+	};
+
+	const getGroupMenuItem = () => {
+		if (groupLoading) {
+			return {
+				key: 'group-loading',
+				icon: <LoadingOutlined spin />,
+				label: 'Loading...',
+				onClick: () => {},
+				disabled: true,
+			};
+		}
+
+		if (hasGroup) {
+			return {
+				key: STUDENT_MENU_KEYS.GROUP_DASHBOARD,
+				icon: isMenuItemLoading(STUDENT_MENU_KEYS.GROUP_DASHBOARD) ? (
+					<LoadingOutlined spin />
+				) : (
+					<TeamOutlined />
+				),
+				label: 'Group Dashboard',
+				onClick: () => navigateWithLoading(STUDENT_MENU_KEYS.GROUP_DASHBOARD),
+				disabled:
+					isNavigating && targetPath !== STUDENT_MENU_KEYS.GROUP_DASHBOARD,
+			};
+		}
+
+		return {
+			key: STUDENT_MENU_KEYS.JOIN_GROUP,
+			icon: isMenuItemLoading(STUDENT_MENU_KEYS.JOIN_GROUP) ? (
+				<LoadingOutlined spin />
+			) : (
+				<UserAddOutlined />
+			),
+			label: 'Form / Join Group',
+			onClick: () => navigateWithLoading(STUDENT_MENU_KEYS.JOIN_GROUP),
+			disabled: isNavigating && targetPath !== STUDENT_MENU_KEYS.JOIN_GROUP,
+		};
 	};
 
 	const studentMenuItems = [
@@ -50,17 +93,7 @@ export default function StudentSidebar() {
 			onClick: () => navigateWithLoading(STUDENT_MENU_KEYS.LIST_THESIS),
 			disabled: isNavigating && targetPath !== STUDENT_MENU_KEYS.LIST_THESIS,
 		},
-		{
-			key: STUDENT_MENU_KEYS.JOIN_GROUP,
-			icon: isMenuItemLoading(STUDENT_MENU_KEYS.JOIN_GROUP) ? (
-				<LoadingOutlined spin />
-			) : (
-				<UserAddOutlined />
-			),
-			label: 'Form / Join Group',
-			onClick: () => navigateWithLoading(STUDENT_MENU_KEYS.JOIN_GROUP),
-			disabled: isNavigating && targetPath !== STUDENT_MENU_KEYS.JOIN_GROUP,
-		},
+		getGroupMenuItem(),
 		{
 			key: STUDENT_MENU_KEYS.REGISTER_THESIS,
 			icon: isMenuItemLoading(STUDENT_MENU_KEYS.REGISTER_THESIS) ? (
@@ -74,18 +107,6 @@ export default function StudentSidebar() {
 				isNavigating && targetPath !== STUDENT_MENU_KEYS.REGISTER_THESIS,
 		},
 		{
-			key: STUDENT_MENU_KEYS.GROUP_DASHBOARD,
-			icon: isMenuItemLoading(STUDENT_MENU_KEYS.GROUP_DASHBOARD) ? (
-				<LoadingOutlined spin />
-			) : (
-				<TeamOutlined />
-			),
-			label: 'Group Dashboard',
-			onClick: () => navigateWithLoading(STUDENT_MENU_KEYS.GROUP_DASHBOARD),
-			disabled:
-				isNavigating && targetPath !== STUDENT_MENU_KEYS.GROUP_DASHBOARD,
-		},
-		{
 			key: STUDENT_MENU_KEYS.TRACK_PROGRESS,
 			icon: isMenuItemLoading(STUDENT_MENU_KEYS.TRACK_PROGRESS) ? (
 				<LoadingOutlined spin />
@@ -97,6 +118,7 @@ export default function StudentSidebar() {
 			disabled: isNavigating && targetPath !== STUDENT_MENU_KEYS.TRACK_PROGRESS,
 		},
 	];
+
 	return (
 		<Menu
 			theme="light"

@@ -2,6 +2,7 @@
 import { signOut } from 'next-auth/react';
 
 import { AdminAuthService } from '@/lib/services/auth/admin-auth.service';
+import { PasswordService } from '@/lib/services/auth/password.service';
 import { TokenUtilsService } from '@/lib/services/auth/token-utils.service';
 import { UserAuthService } from '@/lib/services/auth/user-auth.service';
 import { TokenManager } from '@/lib/utils/auth/token-manager';
@@ -10,6 +11,7 @@ import { TokenManager } from '@/lib/utils/auth/token-manager';
 export { AdminAuthService } from '@/lib/services/auth/admin-auth.service';
 export { UserAuthService } from '@/lib/services/auth/user-auth.service';
 export { TokenUtilsService } from '@/lib/services/auth/token-utils.service';
+export { PasswordService } from '@/lib/services/auth/password.service';
 export { AuthErrorHandler } from '@/lib/services/auth/auth-error-handler';
 export { BaseAuthService } from '@/lib/services/auth/base-auth.service';
 
@@ -34,6 +36,11 @@ export class AuthService {
 		TokenUtilsService.getTokenExpirationTime;
 	static readonly getTimeUntilExpiration =
 		TokenUtilsService.getTimeUntilExpiration;
+
+	// Password methods
+	static readonly changePassword = PasswordService.changePassword;
+	static readonly requestPasswordReset = PasswordService.requestPasswordReset;
+	static readonly resetPassword = PasswordService.resetPassword;
 
 	/**
 	 * Logout: Clear tokens and NextAuth session with remember me support
