@@ -30,6 +30,7 @@ interface LecturerState {
 	loading: boolean;
 	creating: boolean;
 	updating: boolean;
+	updatingProfile: boolean;
 	deleting: boolean;
 	creatingMany: boolean; // Legacy field for backward compatibility
 	creatingManyLecturers: boolean; // New field for consistency
@@ -74,6 +75,7 @@ interface LecturerState {
 		lecturers: LecturerCreate[];
 	}) => Promise<boolean>;
 	updateLecturer: (id: string, data: LecturerUpdate) => Promise<boolean>;
+	updateProfile: (data: LecturerUpdate) => Promise<boolean>;
 	deleteLecturer: (id: string) => Promise<boolean>;
 
 	// Separate toggle methods for better type safety and state management
@@ -121,6 +123,7 @@ export const useLecturerStore = create<LecturerState>()(
 			loading: false,
 			creating: false,
 			updating: false,
+			updatingProfile: false,
 			deleting: false,
 			creatingMany: false,
 			creatingManyLecturers: false,
@@ -179,6 +182,68 @@ export const useLecturerStore = create<LecturerState>()(
 					cacheInvalidation.invalidateEntity('lecturer');
 				}
 				return result;
+			},
+
+			// Update profile action (for lecturer self-update)
+			updateProfile: async (data: LecturerUpdate) => {
+				set({ updatingProfile: true, lastError: null });
+				try {
+					const response = await lecturerService.updateProfile(data);
+
+					if (response.success) {
+						// Show success notification
+						const { showNotification } = await import(
+							'@/lib/utils/notification'
+						);
+						showNotification.success('Success', 'Profile updated successfully');
+
+						// Invalidate cache for future fetches
+						cacheInvalidation.invalidateEntity('lecturer');
+
+						return true;
+					} else {
+						// Handle error response
+						const errorMessage = response.error ?? 'Failed to update profile';
+						set({
+							lastError: {
+								message: errorMessage,
+								statusCode: response.statusCode,
+								timestamp: new Date(),
+							},
+						});
+
+						// Show error notification
+						const { showNotification } = await import(
+							'@/lib/utils/notification'
+						);
+						showNotification.error('Error', errorMessage);
+
+						return false;
+					}
+				} catch (error) {
+					// Handle network/unexpected errors
+					const errorMessage =
+						error instanceof Error ? error.message : 'Failed to update profile';
+					const statusCode =
+						(error as { response?: { status?: number } })?.response?.status ??
+						500;
+
+					set({
+						lastError: {
+							message: errorMessage,
+							statusCode,
+							timestamp: new Date(),
+						},
+					});
+
+					// Show error notification
+					const { showNotification } = await import('@/lib/utils/notification');
+					showNotification.error('Error', errorMessage);
+
+					return false;
+				} finally {
+					set({ updatingProfile: false });
+				}
 			},
 
 			createManyLecturers: async (data: { lecturers: LecturerCreate[] }) => {
