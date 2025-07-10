@@ -1,7 +1,9 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 
+import { AuthService } from '@/lib/services/auth';
 import lecturerService from '@/lib/services/lecturers.service';
+import { PasswordChange } from '@/schemas/_common';
 import { Lecturer, LecturerCreate, LecturerUpdate } from '@/schemas/lecturer';
 import {
 	cacheInvalidation,
@@ -36,6 +38,7 @@ interface LecturerState {
 	creatingManyLecturers: boolean; // New field for consistency
 	togglingStatus: boolean;
 	togglingModerator: boolean;
+	changingPassword: boolean;
 
 	// Error states
 	lastError: {
@@ -77,6 +80,7 @@ interface LecturerState {
 	updateLecturer: (id: string, data: LecturerUpdate) => Promise<boolean>;
 	updateProfile: (data: LecturerUpdate) => Promise<boolean>;
 	deleteLecturer: (id: string) => Promise<boolean>;
+	changePassword: (data: PasswordChange) => Promise<boolean>;
 
 	// Separate toggle methods for better type safety and state management
 	toggleLecturerStatus: (
@@ -129,6 +133,7 @@ export const useLecturerStore = create<LecturerState>()(
 			creatingManyLecturers: false,
 			togglingStatus: false,
 			togglingModerator: false,
+			changingPassword: false,
 			lastError: null,
 			selectedStatus: 'All',
 			selectedModerator: 'All',
@@ -350,6 +355,61 @@ export const useLecturerStore = create<LecturerState>()(
 			// Check if a specific lecturer is currently being toggled (moderator)
 			isLecturerModeratorLoading: (id: string) => {
 				return get()._lecturerModeratorLoadingStates.get(id) ?? false;
+			},
+
+			// Change password action
+			changePassword: async (data: PasswordChange) => {
+				set({ changingPassword: true, lastError: null });
+				try {
+					const response = await AuthService.changePassword(data);
+
+					if (response.success) {
+						// Auto logout after successful password change for security
+						try {
+							await AuthService.logout({ redirect: false });
+							// Redirect to login page after logout
+							window.location.href = '/login';
+						} catch (logoutError) {
+							console.error('Logout error after password change:', logoutError);
+							// Force redirect even if logout fails
+							window.location.href = '/login';
+						}
+						return true;
+					} else {
+						const errorMessage = response.error ?? 'Failed to change password';
+						set({
+							lastError: {
+								message: errorMessage,
+								statusCode: response.statusCode,
+								timestamp: new Date(),
+							},
+						});
+						return false;
+					}
+				} catch (error: unknown) {
+					const errorMessage =
+						error instanceof Error
+							? error.message
+							: 'Failed to change password';
+					const statusCode =
+						error &&
+						typeof error === 'object' &&
+						'response' in error &&
+						error.response
+							? ((error.response as { status?: number }).status ?? 500)
+							: 500;
+
+					set({
+						lastError: {
+							message: errorMessage,
+							statusCode,
+							timestamp: new Date(),
+						},
+					});
+					return false;
+				} finally {
+					set({ changingPassword: false });
+				}
 			},
 
 			deleteLecturer: async (id: string) => {
