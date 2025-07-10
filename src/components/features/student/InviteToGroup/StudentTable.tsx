@@ -100,12 +100,7 @@ export const StudentTable = () => {
 
 				<Col style={{ flex: '0 0 250px' }}>
 					<Select
-						placeholder={
-							<span>
-								<BookOutlined style={{ marginRight: 8 }} />
-								Filter by Major
-							</span>
-						}
+						placeholder={<span>Filter by Major</span>}
 						style={{ width: '100%' }}
 						allowClear
 						onChange={(value) => setSelectedMajor(value)}
@@ -121,7 +116,6 @@ export const StudentTable = () => {
 				dataSource={filteredStudents}
 				rowKey="id"
 				pagination={TablePagination}
-				scroll={{ x: 'max-content' }}
 			/>
 		</>
 	);

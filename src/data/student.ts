@@ -26,9 +26,9 @@ const SKILLS = {
 };
 
 const RESPONSIBILITIES = {
-	FRONTEND: { responsibilityId: '1', name: 'Frontend Developer' },
-	BACKEND: { responsibilityId: '2', name: 'Backend Developer' },
-	FULLSTACK: { responsibilityId: '3', name: 'Fullstack Developer' },
+	FRONTEND: { responsibilityId: '1', name: 'Frontend' },
+	BACKEND: { responsibilityId: '2', name: 'Backend' },
+	FULLSTACK: { responsibilityId: '3', name: 'Fullstack' },
 };
 
 export const mockStudents = [
@@ -74,7 +74,7 @@ export const mockStudents = [
 		password: mockSecret,
 		createdAt: new Date('2024-01-15'),
 		updatedAt: COMMON_UPDATE_DATE,
-		studentSkills: [SKILLS.JS, SKILLS.PYTHON],
+		studentSkills: [SKILLS.PYTHON],
 		studentExpectedResponsibilities: [RESPONSIBILITIES.FULLSTACK],
 	},
 	{
@@ -104,10 +104,7 @@ export const mockStudents = [
 		password: mockSecret,
 		createdAt: new Date('2024-01-20'),
 		updatedAt: COMMON_UPDATE_DATE,
-		studentSkills: [SKILLS.JS, SKILLS.REACT],
-		studentExpectedResponsibilities: [
-			RESPONSIBILITIES.BACKEND,
-			RESPONSIBILITIES.FRONTEND,
-		],
+		studentSkills: [SKILLS.REACT],
+		studentExpectedResponsibilities: [RESPONSIBILITIES.BACKEND],
 	},
 ] as unknown as Student[];
