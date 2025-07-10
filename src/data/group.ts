@@ -46,16 +46,10 @@ const createGroup = (
 
 // ===== Gốc: Dữ liệu group =====
 const mockGroups: Group[] = [
-	createGroup('g1', 'G1', 'Group A', '20251', 't1'),
-	createGroup('g2', 'G2', 'Group B', '20242', 't2'),
-	createGroup('g3', 'G3', 'Group C', '20252', 't3'),
-	createGroup('g4', 'G4', 'Group D', '20252', 't4'),
-	createGroup('g5', 'G5', 'Group E', '20252', 't5'),
-	createGroup('g6', 'G6', 'Group F', '20252', 't6'),
-	createGroup('g7', 'G7', 'Group G', '20252', 't7'),
-	createGroup('g8', 'G8', 'Group H', '20252', 't8'),
-	createGroup('g9', 'G9', 'Group I', '20252', 't9'),
-	createGroup('g10', 'G10', 'Group J', '20252', 't10'),
+	createGroup('g1', 'G1', 'Group A', '2023', 't1'),
+	createGroup('g2', 'G2', 'Group B', '2023', 't2'),
+	createGroup('g3', 'G3', 'Group C', '2023', 't3'),
+	createGroup('g4', 'G4', 'Group D', '2024', 't4'),
 ];
 
 // ===== Metadata bổ sung =====
@@ -279,7 +273,6 @@ export const createFullMockGroup = (
 
 // ===== Dữ liệu chia theo đợt review =====
 export const mockReviewGroups: Record<string, FullMockGroup[]> = {
-	Start: [],
 	'Review 1': [
 		createFullMockGroup('g1', 'Review 1'),
 		createFullMockGroup('g2', 'Review 1'),

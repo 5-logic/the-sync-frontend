@@ -20,7 +20,7 @@ const UserProfile: React.FC = () => {
 	const router = useRouter();
 	const { isMobile } = useResponsiveLayout();
 
-	const userName = session?.user?.name ?? 'User';
+	const userName = session?.user?.fullName ?? session?.user?.name ?? 'User';
 	const avatarSrc = session?.user?.image ?? '/images/user_avatar.png';
 
 	const handleLogoutClick = () => {
@@ -51,6 +51,22 @@ const UserProfile: React.FC = () => {
 		});
 	};
 
+	// Dynamic settings URL based on user role
+	const getSettingsUrl = () => {
+		const userRole = session?.user?.role;
+		switch (userRole) {
+			case 'student':
+				return '/student/account-setting';
+			case 'lecturer':
+			case 'moderator':
+				return '/lecturer/account-setting';
+			case 'admin':
+				return '/admin/account-setting';
+			default:
+				return '/account-setting'; // fallback
+		}
+	};
+
 	const menuItems: MenuProps['items'] = [
 		{
 			key: 'profile',
@@ -60,7 +76,7 @@ const UserProfile: React.FC = () => {
 		{
 			key: 'settings',
 			icon: <SettingOutlined />,
-			label: <Link href="/settings">Settings</Link>,
+			label: <Link href={getSettingsUrl()}>Settings</Link>,
 		},
 		{
 			type: 'divider',

@@ -1,9 +1,10 @@
 'use client';
 
 import { Modal, Spin, Typography } from 'antd';
-import { useParams } from 'next/navigation';
-import { useMemo } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { useMemo, useState } from 'react';
 
+import { ThesisConfirmationModals } from '@/components/common/ConfirmModal';
 import ContentLoader from '@/components/common/loading/ContentLoader';
 import ActionButtons from '@/components/features/lecturer/ViewThesisDetail/ActionButtons';
 import ThesisHeader from '@/components/features/lecturer/ViewThesisDetail/ThesisHeader';
@@ -11,15 +12,28 @@ import ThesisInfoCard from '@/components/features/lecturer/ViewThesisDetail/Thes
 import { useSessionData } from '@/hooks/auth/useAuth';
 import { usePermissions } from '@/hooks/auth/usePermissions';
 import { useThesisActions, useThesisDetail } from '@/hooks/thesis';
+import { showNotification } from '@/lib/utils/notification';
+import { usePublishThesesStore } from '@/store/usePublishThesesStore';
 
-export default function ViewThesisDetail() {
+interface ViewThesisDetailProps {
+	readonly mode?: 'thesis-management' | 'publish-list';
+}
+
+export default function ViewThesisDetail({
+	mode = 'thesis-management',
+}: Readonly<ViewThesisDetailProps>) {
 	const { id: thesisId } = useParams() as { id: string };
+	const router = useRouter();
 	const { session } = useSessionData();
 	const permissions = usePermissions();
 
 	// Use custom hooks for data and actions
 	const { thesis, loading, error, loadingMessage } = useThesisDetail(thesisId);
 	const { loadingStates, modalStates, actions } = useThesisActions(thesisId);
+
+	// Publish thesis functionality
+	const { updatePublishStatus } = usePublishThesesStore();
+	const [publishLoading, setPublishLoading] = useState(false);
 
 	// Memoize permission checks
 	const permissionChecks = useMemo(() => {
@@ -36,6 +50,66 @@ export default function ViewThesisDetail() {
 			canModerate,
 		};
 	}, [thesis, session?.user, permissions]);
+
+	// Handle publish thesis action
+	const handlePublishThesis = async () => {
+		if (!thesis) return;
+
+		const isCurrentlyPublished = thesis.isPublish;
+
+		// Business rule: Cannot unpublish if thesis has group assigned
+		if (isCurrentlyPublished && thesis.groupId) {
+			showNotification.warning(
+				'Cannot unpublish thesis that has been assigned to a group.',
+			);
+			return;
+		}
+
+		ThesisConfirmationModals.publish(
+			thesis.englishName,
+			isCurrentlyPublished,
+			async () => {
+				setPublishLoading(true);
+				try {
+					const success = await updatePublishStatus(
+						[thesis.id],
+						!isCurrentlyPublished,
+					);
+					if (success) {
+						const actionText = isCurrentlyPublished
+							? 'unpublished'
+							: 'published';
+						showNotification.success(`Thesis ${actionText} successfully!`);
+						router.back();
+					} else {
+						const actionText = isCurrentlyPublished ? 'unpublish' : 'publish';
+						showNotification.error(
+							`Failed to ${actionText} thesis. Please try again.`,
+						);
+					}
+				} catch (error) {
+					console.error('Error updating thesis publish status:', error);
+					showNotification.error(
+						'An unexpected error occurred while updating the thesis.',
+					);
+				} finally {
+					setPublishLoading(false);
+				}
+			},
+			publishLoading,
+		);
+	};
+
+	// Handle exit action based on mode
+	const handleExit = async () => {
+		if (mode === 'publish-list') {
+			// If in publish mode, go back to publish list
+			router.push('/lecturer/assign-list-publish-thesis');
+		} else {
+			// Otherwise use the default thesis actions handler
+			actions.handleExit();
+		}
+	};
 
 	if (loading) {
 		return (
@@ -104,12 +178,17 @@ export default function ViewThesisDetail() {
 					deleteLoading={loadingStates.deleteLoading}
 					approveLoading={loadingStates.approveLoading}
 					rejectLoading={loadingStates.rejectLoading}
+					publishLoading={publishLoading}
+					mode={mode}
+					isPublished={thesis.isPublish}
+					canUnpublish={!thesis.groupId}
 					onToggleDuplicate={() => {}}
-					onExit={actions.handleExit}
+					onExit={handleExit}
 					onEdit={actions.handleEdit}
 					onApprove={() => modalStates.setShowApproveConfirm(true)}
 					onReject={() => modalStates.setShowRejectConfirm(true)}
 					onRegisterSubmit={actions.handleSubmit}
+					onPublishThesis={handlePublishThesis}
 					onDelete={actions.handleDelete}
 				/>
 			</div>

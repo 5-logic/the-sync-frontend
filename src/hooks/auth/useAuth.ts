@@ -31,8 +31,15 @@ function checkPermissions({
 	}
 
 	// Check moderator permissions
-	if (requireModerator && !isModerator) {
-		return false;
+	if (requireModerator) {
+		// Role "moderator" has moderator privileges by default
+		if (role === 'moderator') {
+			return true;
+		}
+		// For other roles (like "lecturer"), check isModerator flag
+		if (!isModerator) {
+			return false;
+		}
 	}
 
 	return true;
@@ -189,7 +196,10 @@ export const useLecturerAuth = () =>
 	useAuthGuard({ allowedRoles: ['lecturer'] });
 export const useAdminAuth = () => useAuthGuard({ allowedRoles: ['admin'] });
 export const useModeratorAuth = () =>
-	useAuthGuard({ allowedRoles: ['lecturer'], requireModerator: true });
+	useAuthGuard({
+		allowedRoles: ['lecturer', 'moderator'],
+		requireModerator: true,
+	});
 
 // Export optimized session for components that only need session data
 export { useOptimizedSession as useSessionData };
