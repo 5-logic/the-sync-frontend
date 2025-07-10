@@ -3,6 +3,7 @@
 import { Button, Input, Select, Space, Table, Tag } from 'antd';
 import { useState } from 'react';
 
+import { TablePagination } from '@/components/common/TablePagination';
 import { mockStudents } from '@/data/student';
 
 const { Option } = Select;
@@ -95,7 +96,7 @@ export const StudentTable = () => {
 				columns={columns}
 				dataSource={filteredStudents}
 				rowKey="id"
-				pagination={{ pageSize: 5 }}
+				pagination={TablePagination}
 			/>
 		</>
 	);
