@@ -1,4 +1,5 @@
 import { Student } from '@/schemas/student';
+import { StudentProfile } from '@/schemas/student';
 
 // ✅ Đặt biến mock secret tránh tên "password" để tránh bị báo lỗi
 const mockSecret = 'MockPassword!123';
@@ -18,7 +19,20 @@ const MAJORS = {
 	ARTIFICIAL_INTELLIGENCE: 'AI',
 } as const;
 
-export const mockStudents: Student[] = [
+// Mock skill và role ID đơn giản
+const SKILLS = {
+	JS: { skillId: '1', level: 'Intermediate' },
+	PYTHON: { skillId: '2', level: 'Advanced' },
+	REACT: { skillId: '3', level: 'Beginner' },
+};
+
+const RESPONSIBILITIES = {
+	FRONTEND: { responsibilityId: '1' },
+	BACKEND: { responsibilityId: '2' },
+	FULLSTACK: { responsibilityId: '3' },
+};
+
+export const mockStudents = [
 	{
 		id: '1',
 		fullName: 'Alice Nguyen',
@@ -31,6 +45,8 @@ export const mockStudents: Student[] = [
 		password: mockSecret,
 		createdAt: new Date('2024-01-01'),
 		updatedAt: COMMON_UPDATE_DATE,
+		studentSkills: [SKILLS.JS],
+		studentExpectedResponsibilities: [RESPONSIBILITIES.FRONTEND],
 	},
 	{
 		id: '2',
@@ -44,6 +60,8 @@ export const mockStudents: Student[] = [
 		password: mockSecret,
 		createdAt: new Date('2024-02-15'),
 		updatedAt: COMMON_UPDATE_DATE,
+		studentSkills: [SKILLS.PYTHON],
+		studentExpectedResponsibilities: [RESPONSIBILITIES.BACKEND],
 	},
 	{
 		id: '3',
@@ -57,6 +75,8 @@ export const mockStudents: Student[] = [
 		password: mockSecret,
 		createdAt: new Date('2024-01-15'),
 		updatedAt: COMMON_UPDATE_DATE,
+		studentSkills: [SKILLS.JS, SKILLS.PYTHON],
+		studentExpectedResponsibilities: [RESPONSIBILITIES.FULLSTACK],
 	},
 	{
 		id: '4',
@@ -70,6 +90,8 @@ export const mockStudents: Student[] = [
 		password: mockSecret,
 		createdAt: new Date('2024-02-01'),
 		updatedAt: COMMON_UPDATE_DATE,
+		studentSkills: [SKILLS.REACT],
+		studentExpectedResponsibilities: [RESPONSIBILITIES.FRONTEND],
 	},
 	{
 		id: '5',
@@ -83,5 +105,10 @@ export const mockStudents: Student[] = [
 		password: mockSecret,
 		createdAt: new Date('2024-01-20'),
 		updatedAt: COMMON_UPDATE_DATE,
+		studentSkills: [SKILLS.JS, SKILLS.REACT],
+		studentExpectedResponsibilities: [
+			RESPONSIBILITIES.BACKEND,
+			RESPONSIBILITIES.FRONTEND,
+		],
 	},
-];
+] as unknown as Student[];
