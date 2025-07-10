@@ -6,6 +6,7 @@ const { Title, Text, Link } = Typography;
 
 export default function StudentProfileSections() {
 	const data = studentProfile;
+	const hasGroup = !!data.group;
 
 	return (
 		<Space
@@ -33,9 +34,9 @@ export default function StudentProfileSections() {
 				/>
 			</Card>
 
-			{/* Group Membership (only if exists) */}
-			<Card title="Group Membership">
-				{data.group ? (
+			{/* Group Membership Card (only if group exists) */}
+			{hasGroup && (
+				<Card title="Group Membership">
 					<Space direction="vertical">
 						<Title level={5} style={{ margin: 0 }}>
 							{data.group.name}
@@ -43,10 +44,23 @@ export default function StudentProfileSections() {
 						<Text type="secondary">Role: {data.group.role}</Text>
 						<Link href="#">View Group Details</Link>
 					</Space>
-				) : (
-					<Button type="primary">Invite to Group</Button>
-				)}
-			</Card>
+				</Card>
+			)}
+
+			{/* Invite To Group button outside Group Membership card, only if no group */}
+			{!hasGroup && (
+				<div style={{ textAlign: 'right' }}>
+					<Button
+						type="primary"
+						onClick={() => {
+							// Xử lý invite nhóm ở đây
+							console.log('Invite to Group clicked');
+						}}
+					>
+						Invite to Group
+					</Button>
+				</div>
+			)}
 		</Space>
 	);
 }
