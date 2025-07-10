@@ -41,13 +41,17 @@ export const StudentTable = () => {
 			dataIndex: 'majorId',
 			key: 'major',
 			width: 180,
-			render: (majorId: string) =>
-				majorId === 'SE'
-					? 'Software Engineering'
-					: majorId === 'AI'
-						? 'Artificial Intelligence'
-						: majorId,
+			render: (majorId: string) => {
+				let majorName = majorId;
+				if (majorId === 'SE') {
+					majorName = 'Software Engineering';
+				} else if (majorId === 'AI') {
+					majorName = 'Artificial Intelligence';
+				}
+				return majorName;
+			},
 		},
+
 		{
 			title: 'Skills',
 			dataIndex: 'studentSkills',

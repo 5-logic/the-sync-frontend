@@ -20,6 +20,14 @@ export const StudentSuggestionCard: React.FC<{ student: Student }> = ({
 		}[];
 	};
 
+	// ✅ Tách logic majorId ra thành biến độc lập
+	let majorName = s.majorId;
+	if (s.majorId === 'SE') {
+		majorName = 'Software Engineering';
+	} else if (s.majorId === 'AI') {
+		majorName = 'Artificial Intelligence';
+	}
+
 	return (
 		<Card
 			hoverable
@@ -33,11 +41,7 @@ export const StudentSuggestionCard: React.FC<{ student: Student }> = ({
 			</Typography.Title>
 
 			<Paragraph type="secondary" style={{ marginBottom: 8 }}>
-				{s.majorId === 'SE'
-					? 'Software Engineering'
-					: s.majorId === 'AI'
-						? 'Artificial Intelligence'
-						: s.majorId}
+				{majorName}
 			</Paragraph>
 
 			<Paragraph style={{ marginBottom: 8 }}>
