@@ -1,6 +1,6 @@
 'use client';
 
-import { Row, Typography } from 'antd';
+import { Col, Row, Typography } from 'antd';
 
 import StudentProfileLayout from './StudentProfileLayout';
 import StudentProfileSections from './StudentProfileSections';
