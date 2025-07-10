@@ -1,6 +1,7 @@
 'use client';
 
-import { Button, Input, Select, Space, Table, Tag } from 'antd';
+import { BookOutlined, SearchOutlined } from '@ant-design/icons';
+import { Button, Col, Input, Row, Select, Space, Table, Tag } from 'antd';
 import { useState } from 'react';
 
 import { TablePagination } from '@/components/common/TablePagination';
@@ -27,16 +28,25 @@ export const StudentTable = () => {
 			title: 'Name',
 			dataIndex: 'fullName',
 			key: 'name',
+			width: 180,
 		},
 		{
 			title: 'Email',
 			dataIndex: 'email',
 			key: 'email',
+			width: 220,
 		},
 		{
 			title: 'Major',
 			dataIndex: 'majorId',
 			key: 'major',
+			width: 180,
+			render: (majorId: string) =>
+				majorId === 'SE'
+					? 'Software Engineering'
+					: majorId === 'AI'
+						? 'Artificial Intelligence'
+						: majorId,
 		},
 		{
 			title: 'Skills',
@@ -66,37 +76,52 @@ export const StudentTable = () => {
 				</Space>
 			),
 		},
-
 		{
 			title: 'Action',
 			key: 'action',
+			width: 100,
 			render: () => <Button type="primary">Invite</Button>,
 		},
 	];
 
 	return (
 		<>
-			<Space style={{ marginBottom: 16 }}>
-				<Input.Search
-					placeholder="Search by name"
-					onSearch={(value) => setSearchText(value)}
-					style={{ width: 200 }}
-				/>
-				<Select
-					placeholder="Filter by Major"
-					style={{ width: 200 }}
-					allowClear
-					onChange={(value) => setSelectedMajor(value)}
-				>
-					<Option value="SE">Software Engineering</Option>
-					<Option value="AI">Artificial Intelligence</Option>
-				</Select>
-			</Space>
+			<Row gutter={16} style={{ marginBottom: 16 }}>
+				<Col flex="auto">
+					<Input
+						placeholder="Search by name"
+						prefix={<SearchOutlined />}
+						onPressEnter={(e) =>
+							setSearchText((e.target as HTMLInputElement).value)
+						}
+						allowClear
+					/>
+				</Col>
+
+				<Col style={{ flex: '0 0 250px' }}>
+					<Select
+						placeholder={
+							<span>
+								<BookOutlined style={{ marginRight: 8 }} />
+								Filter by Major
+							</span>
+						}
+						style={{ width: '100%' }}
+						allowClear
+						onChange={(value) => setSelectedMajor(value)}
+					>
+						<Option value="SE">Software Engineering</Option>
+						<Option value="AI">Artificial Intelligence</Option>
+					</Select>
+				</Col>
+			</Row>
+
 			<Table
 				columns={columns}
 				dataSource={filteredStudents}
 				rowKey="id"
 				pagination={TablePagination}
+				scroll={{ x: 'max-content' }}
 			/>
 		</>
 	);
