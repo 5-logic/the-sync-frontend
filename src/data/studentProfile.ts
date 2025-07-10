@@ -3,7 +3,7 @@ const studentProfileData = {
 	studentCode: 'ST2023001',
 	email: 'alexander.t@university.edu',
 	gender: 'Male',
-	phoneNumber: '+1 (555) 123-4567',
+	phoneNumber: '+84 123-456-555',
 	major: 'Computer Science',
 	roles: ['Researcher', 'Developer'],
 	skills: [
