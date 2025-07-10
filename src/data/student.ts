@@ -20,15 +20,15 @@ const MAJORS = {
 
 // Mock skill và role ID đơn giản
 const SKILLS = {
-	JS: { skillId: '1', level: 'Intermediate' },
-	PYTHON: { skillId: '2', level: 'Advanced' },
-	REACT: { skillId: '3', level: 'Beginner' },
+	JS: { skillId: '1', name: 'JavaScript', level: 'Intermediate' },
+	PYTHON: { skillId: '2', name: 'Python', level: 'Advanced' },
+	REACT: { skillId: '3', name: 'React', level: 'Beginner' },
 };
 
 const RESPONSIBILITIES = {
-	FRONTEND: { responsibilityId: '1' },
-	BACKEND: { responsibilityId: '2' },
-	FULLSTACK: { responsibilityId: '3' },
+	FRONTEND: { responsibilityId: '1', name: 'Frontend Developer' },
+	BACKEND: { responsibilityId: '2', name: 'Backend Developer' },
+	FULLSTACK: { responsibilityId: '3', name: 'Fullstack Developer' },
 };
 
 export const mockStudents = [

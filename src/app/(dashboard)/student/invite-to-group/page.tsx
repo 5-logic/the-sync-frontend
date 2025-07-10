@@ -1,11 +1,12 @@
 import { createMetadata } from '@/app/metadata';
+import InviteToGroup from '@/components/features/student/InviteToGroup';
 
 export const metadata = createMetadata({
-	title: 'Invite to Group',
+	title: 'Student Invite To Group',
 	description:
-		'Invite other students to join your group - Group Formation and Capstone Thesis Development',
+		'Student Invite other students to join your group - Group Formation and Capstone Thesis Development',
 });
 
 export default function StudentInviteToGroupPage() {
-	// return <InviteToGroup />;
+	return <InviteToGroup />;
 }
