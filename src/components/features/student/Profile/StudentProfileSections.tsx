@@ -33,16 +33,18 @@ export default function StudentProfileSections() {
 				/>
 			</Card>
 
-			{/* Group Info */}
-			<Card title="Group Membership">
-				<Space direction="vertical">
-					<Title level={5} style={{ margin: 0 }}>
-						{data.group.name}
-					</Title>
-					<Text type="secondary">Role: {data.group.role}</Text>
-					<Link href="#">View Group Details</Link>
-				</Space>
-			</Card>
+			{/* Group Membership (only if exists) */}
+			{data.group && (
+				<Card title="Group Membership">
+					<Space direction="vertical">
+						<Title level={5} style={{ margin: 0 }}>
+							{data.group.name}
+						</Title>
+						<Text type="secondary">Role: {data.group.role}</Text>
+						<Link href="#">View Group Details</Link>
+					</Space>
+				</Card>
+			)}
 		</Space>
 	);
 }
