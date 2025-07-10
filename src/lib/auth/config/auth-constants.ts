@@ -18,6 +18,7 @@ export const DASHBOARD_PATHS = {
 	LECTURER_ASSIGN_SUPERVISOR: '/lecturer/assign-supervisor',
 	LECTURER_ASSIGN_LIST_PUBLISH_THESIS: '/lecturer/assign-list-publish-thesis',
 	LECTURER_ASSIGN_LECTURER_REVIEW: '/lecturer/assign-lecturer-review',
+	LECTURER_CHECKLIST_MANAGEMENT: '/lecturer/checklist-management',
 } as const;
 
 // Auth messages

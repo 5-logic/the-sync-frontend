@@ -39,6 +39,11 @@ export const ROUTE_CONFIGS: RouteConfig[] = [
 		requiredRole: USER_ROLES.LECTURER,
 		requiresModerator: true,
 	},
+	{
+		path: DASHBOARD_PATHS.LECTURER_CHECKLIST_MANAGEMENT,
+		requiredRole: USER_ROLES.LECTURER,
+		requiresModerator: true,
+	},
 	{ path: DASHBOARD_PATHS.ADMIN, requiredRole: USER_ROLES.ADMIN },
 ];
 

@@ -41,7 +41,7 @@ export default function LecturerManagement() {
 	};
 
 	const handleRefresh = () => {
-		fetchLecturers();
+		fetchLecturers(true); // Force refresh to bypass cache
 	};
 
 	const { Title, Paragraph } = Typography;
