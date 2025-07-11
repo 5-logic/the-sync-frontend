@@ -49,8 +49,8 @@ export default function GroupInformationCard({ group }: Readonly<Props>) {
 
 					<Typography.Text type="secondary">Members:</Typography.Text>
 					<Row gutter={[8, 4]}>
-						{group.members.map((member, index) => (
-							<Col span={12} key={index}>
+						{group.members.map((member) => (
+							<Col span={12} key={member}>
 								<Typography.Text strong>• {member}</Typography.Text>
 							</Col>
 						))}
