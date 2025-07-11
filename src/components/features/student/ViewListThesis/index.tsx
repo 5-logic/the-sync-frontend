@@ -1,8 +1,9 @@
 'use client';
 
-import { Button, Col, Empty, Row, Space, Tabs, Typography } from 'antd';
+import { Button, Col, Empty, Row, Space, Tabs } from 'antd';
 import { useState } from 'react';
 
+import { Header } from '@/components/common/Header';
 import { ListPagination } from '@/components/common/ListPagination';
 import ThesisCard from '@/components/features/student/ViewListThesis/ThesisCard';
 import { mockTheses } from '@/data/thesis';
@@ -17,23 +18,14 @@ export default function ViewListThesis() {
 		currentPage * pageSize,
 	);
 
-	const { Title, Paragraph } = Typography;
-
 	return (
 		<Space direction="vertical" size="middle" style={{ width: '100%' }}>
 			<div className="flex justify-between items-start">
-				<div>
-					<Title level={2} style={{ marginBottom: 4 }}>
-						List Thesis
-					</Title>
-					<Paragraph
-						type="secondary"
-						style={{ marginBottom: 0, maxWidth: 'auto' }}
-					>
-						Browse available thesis topics proposed and published by lecturers.
-						You can view details and register once your group is ready.
-					</Paragraph>
-				</div>
+				<Header
+					title="List Thesis"
+					description="Browse available thesis topics proposed and published by lecturers.
+						You can view details and register once your group is ready."
+				/>
 				<Button type="primary">AI Suggest</Button>
 			</div>
 
