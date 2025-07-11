@@ -18,6 +18,7 @@ export default function StudentAccountSettingContainer() {
 			<Row gutter={[24, 24]}>
 				<Col xs={24} md={16}>
 					<Card
+						title="Personal Information"
 						style={{
 							borderRadius: 12,
 							height: '100%',
@@ -29,6 +30,7 @@ export default function StudentAccountSettingContainer() {
 				</Col>
 				<Col xs={24} md={8}>
 					<Card
+						title="Change Password"
 						style={{
 							borderRadius: 12,
 							height: '100%',

@@ -1,9 +1,9 @@
 import { Button, Col, Form, Row, Select, TreeSelect } from 'antd';
-import { useCallback } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 
 import { FormLabel } from '@/components/common/FormLabel';
-import mockSkills from '@/data/skill';
-import mockSkillSets from '@/data/skillSet';
+import { useResponsibilityStore } from '@/store/useResponsibilityStore';
+import { useSkillSetStore } from '@/store/useSkillSetStore';
 
 const FORM_CONFIG = {
 	TREE_SELECT_MAX_HEIGHT: 400,
@@ -23,32 +23,45 @@ const BUTTON_STYLES = {
 	textOverflow: 'ellipsis',
 } as const;
 
-const responsibilityOptions = [
-	{ value: 'Researcher', label: 'Researcher' },
-	{ value: 'Developer', label: 'Developer' },
-];
-
-const buildSkillTreeData = () =>
-	mockSkillSets.map((set) => ({
-		value: set.id,
-		title: set.name,
-		selectable: false,
-		children: mockSkills
-			.filter((skill) => skill.skillSetId === set.id)
-			.map((skill) => ({
-				value: skill.id,
-				title: skill.name,
-			})),
-	}));
-
-const skillTreeData = buildSkillTreeData();
-
 interface FormValues {
 	readonly skills: string[];
 	readonly responsibility?: string[];
 }
 
 export default function JoinGroupForm() {
+	// Fetch data from stores
+	const { skillSets, fetchSkillSets } = useSkillSetStore();
+	const { responsibilities, fetchResponsibilities } = useResponsibilityStore();
+
+	// Fetch data on component mount
+	useEffect(() => {
+		fetchSkillSets();
+		fetchResponsibilities();
+	}, [fetchSkillSets, fetchResponsibilities]);
+
+	// Build responsibility options from API data
+	const responsibilityOptions = useMemo(
+		() =>
+			responsibilities.map((responsibility) => ({
+				value: responsibility.id,
+				label: responsibility.name,
+			})),
+		[responsibilities],
+	);
+
+	// Build skill tree data from API data
+	const skillTreeData = useMemo(() => {
+		return skillSets.map((skillSet) => ({
+			value: skillSet.id,
+			title: skillSet.name,
+			selectable: false,
+			children: skillSet.skills.map((skill) => ({
+				value: skill.id,
+				title: skill.name,
+			})),
+		}));
+	}, [skillSets]);
+
 	const handleFinish = useCallback((values: FormValues) => {
 		console.log('Suggest group values:', values);
 	}, []);
@@ -60,14 +73,7 @@ export default function JoinGroupForm() {
 					<Form.Item
 						name="skills"
 						label={<FormLabel text="Skills" isBold />}
-						required
 						style={{ marginBottom: 0 }}
-						rules={[
-							{
-								required: true,
-								message: 'Please select at least one skill',
-							},
-						]}
 					>
 						<TreeSelect
 							treeData={skillTreeData}

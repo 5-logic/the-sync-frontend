@@ -11,6 +11,7 @@ export interface ConfirmationModalProps {
 	okType?: 'default' | 'primary' | 'danger';
 	loading?: boolean;
 	centered?: boolean;
+	closeOnMaskClick?: boolean;
 	onOk: () => void | Promise<void>;
 	onCancel?: () => void;
 }
@@ -28,6 +29,7 @@ export const ConfirmationModal = {
 			okType = 'primary',
 			loading = false,
 			centered = true,
+			closeOnMaskClick = true,
 			onOk,
 			onCancel,
 		} = props;
@@ -77,6 +79,7 @@ export const ConfirmationModal = {
 			cancelText,
 			okType,
 			centered,
+			maskClosable: closeOnMaskClick,
 			...(loading && { okButtonProps: { loading } }),
 			onOk: onOk,
 			onCancel,
@@ -215,5 +218,78 @@ export const ThesisConfirmationModals = {
 	},
 
 	// Generic show method for custom modals (backwards compatibility)
+	show: ConfirmationModal.show,
+};
+
+// Group-related confirmation modals
+export const GroupConfirmationModals = {
+	requestToJoin: (
+		groupName: string,
+		onConfirm: () => void | Promise<void>,
+		loading = false,
+	) =>
+		ConfirmationModal.show({
+			title: 'Request to Join Group',
+			message: 'Are you sure you want to request to join this group?',
+			details: groupName,
+			note: 'The group leader will review your request and decide whether to accept or reject it.',
+			noteType: 'info',
+			okText: 'Send Request',
+			loading,
+			onOk: onConfirm,
+		}),
+
+	cancelJoinRequest: (
+		groupName: string,
+		onConfirm: () => void | Promise<void>,
+		loading = false,
+	) =>
+		ConfirmationModal.show({
+			title: 'Cancel Join Request',
+			message: 'Are you sure you want to cancel your join request?',
+			details: groupName,
+			note: 'You can send another request later if you change your mind.',
+			noteType: 'warning',
+			okText: 'Yes, Cancel Request',
+			okType: 'danger',
+			loading,
+			onOk: onConfirm,
+		}),
+
+	removeMember: (
+		memberName: string,
+		onConfirm: () => void | Promise<void>,
+		loading = false,
+	) =>
+		ConfirmationModal.show({
+			title: 'Remove Member',
+			message: 'Are you sure you want to remove this member from the group?',
+			details: memberName,
+			note: 'This action cannot be undone. The student will need to request to join again if they want to be part of this group.',
+			noteType: 'danger',
+			okText: 'Remove',
+			okType: 'danger',
+			loading,
+			onOk: onConfirm,
+		}),
+
+	assignLeader: (
+		memberName: string,
+		onConfirm: () => void | Promise<void>,
+		loading = false,
+	) =>
+		ConfirmationModal.show({
+			title: 'Assign New Leader',
+			message:
+				'Are you sure you want to make this member the leader of the group?',
+			details: memberName,
+			note: 'You will no longer be the leader of this group and will not have access to leader-only functions.',
+			noteType: 'warning',
+			okText: 'Confirm',
+			loading,
+			onOk: onConfirm,
+		}),
+
+	// Generic show method for custom modals
 	show: ConfirmationModal.show,
 };
