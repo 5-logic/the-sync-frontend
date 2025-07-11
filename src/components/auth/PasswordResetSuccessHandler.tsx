@@ -348,27 +348,6 @@ export class PasswordResetSuccessHandler {
 			5,
 		);
 	}
-
-	/**
-	 * Handle bulk operation success (for admin features)
-	 */
-	static handleBulkOperationSuccess(
-		operation: 'password-reset' | 'account-unlock' | 'email-verification',
-		count: number,
-		details?: string,
-	) {
-		const operationNames = {
-			'password-reset': 'password resets',
-			'account-unlock': 'account unlocks',
-			'email-verification': 'email verifications',
-		};
-
-		const message = details
-			? `${count} ${operationNames[operation]} completed successfully. ${details}`
-			: `${count} ${operationNames[operation]} completed successfully.`;
-
-		showNotification.success('Bulk Operation Complete', `✅ ${message}`, 4);
-	}
 }
 
 // Legacy export for backward compatibility (temporary)
