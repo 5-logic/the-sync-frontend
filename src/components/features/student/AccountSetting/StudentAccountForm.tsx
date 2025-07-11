@@ -10,16 +10,26 @@ import {
 	Row,
 	Select,
 	Slider,
-	Space,
+	Spin,
 	TreeSelect,
 	Typography,
 } from 'antd';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { FormLabel } from '@/components/common/FormLabel';
-import mockSkills from '@/data/skill';
-import mockSkillSets from '@/data/skillSet';
-import { mockStudents } from '@/data/student';
+import { useOptimizedSession } from '@/hooks/auth/useAuth';
+import {
+	isValidVietnamesePhone,
+	normalizeVietnamesePhone,
+} from '@/lib/utils/validations';
+import { SkillSet } from '@/schemas/skill';
+import { StudentProfile, StudentSelfUpdate } from '@/schemas/student';
+import {
+	useMajorStore,
+	useResponsibilityStore,
+	useSkillSetStore,
+	useStudentStore,
+} from '@/store';
 
 // TypeScript interfaces
 interface FormValues {
@@ -39,23 +49,13 @@ interface FormValues {
 const { Title } = Typography;
 
 // Constants moved outside component to prevent re-creation on each render
-const MAJOR_OPTIONS = [
-	{ value: 'SE', label: 'Software Engineering' },
-	{ value: 'AI', label: 'Artificial Intelligence' },
-];
-
-const RESPONSIBILITY_OPTIONS = [
-	{ value: 'Researcher', label: 'Researcher' },
-	{ value: 'Developer', label: 'Developer' },
-];
-
 const LEVEL_TOOLTIPS = [
 	'Beginner',
 	'Intermediate',
 	'Proficient',
 	'Advanced',
 	'Expert',
-];
+] as const;
 
 const LEVEL_COLORS = [
 	'#1890ff', // Blue - Beginner
@@ -63,64 +63,296 @@ const LEVEL_COLORS = [
 	'#fadb14', // Yellow - Proficient
 	'#fa8c16', // Orange - Advanced
 	'#ff4d4f', // Red - Expert
-];
+] as const;
 
-const buildSkillTreeData = () =>
-	mockSkillSets.map((set) => ({
+// Memoized skill tree data to prevent unnecessary re-computation
+const buildSkillTreeData = (skillSets: SkillSet[]) =>
+	skillSets.map((set) => ({
 		value: set.id,
 		title: set.name,
 		selectable: false,
-		children: mockSkills
-			.filter((sk) => sk.skillSetId === set.id)
-			.map((sk) => ({
-				value: sk.id,
-				title: sk.name,
-			})),
+		children:
+			set.skills?.map((skill) => ({
+				value: skill.id,
+				title: skill.name,
+			})) ?? [],
 	}));
-
-const skillTreeData = buildSkillTreeData();
 
 const StudentAccountForm: React.FC = () => {
 	const [form] = Form.useForm();
-	const [skillLevels, setSkillLevels] = React.useState<{
-		[key: number]: number;
-	}>({});
+	const [profileData, setProfileData] = useState<StudentProfile | null>(null);
+	const [loadingProfile, setLoadingProfile] = useState(true);
+	const [skillLevels, setSkillLevels] = useState<{ [key: string]: number }>({});
 
-	const memoizedSkillTreeData = React.useMemo(() => skillTreeData, []);
+	// Use Student Store for update profile and fetch profile
+	const { updateProfile, updatingProfile, clearError, fetchProfile } =
+		useStudentStore();
 
-	const student = React.useMemo(() => mockStudents[0], []);
+	// Use Major Store to get major names
+	const { majors, loading: majorsLoading, fetchMajors } = useMajorStore();
 
-	const initialValues = React.useMemo(
-		() => ({
-			fullName: student.fullName,
-			email: student.email,
-			studentId: student.studentCode,
-			major: student.majorId,
-			phoneNumber: student.phoneNumber,
-			gender: student.gender,
-			responsibility: ['Researcher'],
-		}),
-		[student],
+	// Use Skill Set Store to get skill sets data
+	const {
+		skillSets,
+		loading: skillSetsLoading,
+		fetchSkillSets,
+	} = useSkillSetStore();
+
+	// Use Responsibility Store to get responsibilities data
+	const {
+		responsibilities,
+		loading: responsibilitiesLoading,
+		fetchResponsibilities,
+	} = useResponsibilityStore();
+
+	// Get current user session
+	const {
+		session,
+		isAuthenticated,
+		isLoading: sessionLoading,
+	} = useOptimizedSession();
+
+	// Clear errors when component mounts
+	useEffect(() => {
+		clearError();
+	}, [clearError]);
+
+	// Fetch majors for display
+	useEffect(() => {
+		fetchMajors();
+	}, [fetchMajors]);
+
+	// Fetch skill sets for display
+	useEffect(() => {
+		fetchSkillSets();
+	}, [fetchSkillSets]);
+
+	// Fetch responsibilities for display
+	useEffect(() => {
+		fetchResponsibilities();
+	}, [fetchResponsibilities]);
+
+	// Fetch user profile data
+	useEffect(() => {
+		const loadProfile = async () => {
+			const hasValidSession = isAuthenticated && session?.user;
+			if (!hasValidSession) {
+				setLoadingProfile(false);
+				return;
+			}
+
+			try {
+				setLoadingProfile(true);
+				const profile = await fetchProfile(session.user.id, true);
+
+				if (profile) {
+					setProfileData(profile);
+
+					// Initialize skill levels state for real-time color updates
+					const initialSkillLevels: { [key: string]: number } = {};
+					profile.studentSkills.forEach((skill, index) => {
+						initialSkillLevels[index.toString()] =
+							LEVEL_TOOLTIPS.indexOf(skill.level) + 1 || 1;
+					});
+					setSkillLevels(initialSkillLevels);
+
+					// Initialize form with profile data
+					form.setFieldsValue({
+						fullName: profile.fullName,
+						email: profile.email,
+						studentId: profile.studentCode,
+						major: profile.majorId,
+						phoneNumber: profile.phoneNumber,
+						gender: profile.gender,
+						responsibility: profile.studentExpectedResponsibilities.map(
+							(r) => r.responsibilityId,
+						),
+						skills: profile.studentSkills.map((skill) => ({
+							skillId: skill.skillId,
+							level: LEVEL_TOOLTIPS.indexOf(skill.level) + 1 || 1,
+						})),
+					});
+				}
+			} catch (error) {
+				console.error('Error loading profile:', error);
+			} finally {
+				setLoadingProfile(false);
+			}
+		};
+
+		if (!sessionLoading) {
+			loadProfile();
+		}
+	}, [session, isAuthenticated, sessionLoading, form, fetchProfile]);
+
+	// Get major name from ID
+	const getMajorName = React.useCallback(
+		(majorId: string) => {
+			const major = majors.find((m) => m.id === majorId);
+			return major?.name ?? majorId; // Fallback to ID if name not found
+		},
+		[majors],
 	);
 
-	const handleFinish = React.useCallback((values: FormValues) => {
-		console.log('Profile values:', values);
+	// Build skill tree data from skill sets
+	const skillTreeData = React.useMemo(() => {
+		return buildSkillTreeData(skillSets);
+	}, [skillSets]);
+
+	// Build responsibility options from responsibilities data
+	const responsibilityOptions = React.useMemo(() => {
+		return responsibilities.map((responsibility) => ({
+			value: responsibility.id,
+			label: responsibility.name,
+		}));
+	}, [responsibilities]);
+
+	// Get the display value for major field
+	const majorDisplayValue = React.useMemo(() => {
+		if (!profileData?.majorId) return '';
+		return getMajorName(profileData.majorId);
+	}, [profileData?.majorId, getMajorName]);
+
+	const handleFinish = React.useCallback(
+		async (values: FormValues) => {
+			// Clear any previous errors
+			clearError();
+			// Get selected skills and their levels from form
+			const formSkills = values.skills || [];
+			const studentSkills = formSkills.map((skill) => ({
+				skillId: skill.skillId,
+				level: LEVEL_TOOLTIPS[(skill.level || 1) - 1] || 'Beginner',
+			}));
+
+			// Get selected responsibilities
+			const studentExpectedResponsibilities = (values.responsibility || []).map(
+				(responsibilityId) => ({
+					responsibilityId,
+				}),
+			);
+
+			// Prepare update profile data using new API structure
+			const profileUpdateData: StudentSelfUpdate = {
+				fullName: values.fullName.trim(),
+				gender: values.gender as 'Male' | 'Female',
+				phoneNumber: normalizeVietnamesePhone(values.phoneNumber.trim()),
+				studentSkills,
+				studentExpectedResponsibilities,
+			};
+
+			// Use store method to update profile
+			const success = await updateProfile(profileUpdateData);
+
+			if (success) {
+				// Refresh profile data after successful update
+				if (session?.user?.id) {
+					await fetchProfile(session.user.id, true);
+				}
+			}
+		},
+		[updateProfile, clearError, fetchProfile, session],
+	);
+
+	const tooltipFormatter = React.useCallback(
+		(value: number | undefined) =>
+			value ? (LEVEL_TOOLTIPS[value - 1] ?? '') : '',
+		[],
+	);
+
+	const getSliderStyle = React.useCallback((skillLevel: number) => {
+		const color = LEVEL_COLORS[skillLevel - 1] ?? LEVEL_COLORS[0];
+		return {
+			trackStyle: { backgroundColor: color },
+			handleStyle: { borderColor: color, backgroundColor: color },
+		};
 	}, []);
 
+	// Handler for real-time skill level changes
 	const handleSkillLevelChange = React.useCallback(
-		(name: number, value: number) => {
+		(fieldName: number, value: number) => {
 			setSkillLevels((prev) => ({
 				...prev,
-				[name]: value,
+				[fieldName]: value,
 			}));
 		},
 		[],
 	);
 
-	const tooltipFormatter = React.useCallback(
-		(value: number | undefined) => (value ? LEVEL_TOOLTIPS[value - 1] : ''),
+	// Handler for removing a skill
+	const handleRemoveSkill = React.useCallback(
+		(name: number, remove: (index: number) => void) => {
+			remove(name);
+			// Remove from skillLevels state
+			setSkillLevels((prev) => {
+				const newState = { ...prev };
+				delete newState[name];
+				return newState;
+			});
+		},
 		[],
 	);
+
+	// Handler for adding a new skill
+	const handleAddSkill = React.useCallback(
+		(add: () => void, fieldsLength: number) => {
+			add();
+			// Initialize skill level for new skill
+			setSkillLevels((prev) => ({
+				...prev,
+				[fieldsLength]: 1,
+			}));
+		},
+		[],
+	);
+
+	// Check if any loading is in progress
+	const isLoading = React.useMemo(() => {
+		const states = [
+			loadingProfile,
+			sessionLoading,
+			majorsLoading,
+			skillSetsLoading,
+			responsibilitiesLoading,
+		];
+		return states.some(Boolean);
+	}, [
+		loadingProfile,
+		sessionLoading,
+		majorsLoading,
+		skillSetsLoading,
+		responsibilitiesLoading,
+	]);
+
+	// Check if we have all required data to render the form
+	const hasRequiredData = React.useMemo(() => {
+		return (
+			profileData &&
+			!isLoading &&
+			majors.length > 0 &&
+			skillSets.length > 0 &&
+			responsibilities.length > 0
+		);
+	}, [profileData, isLoading, majors, skillSets, responsibilities]);
+
+	// Don't render form until all data is loaded and available
+	if (!hasRequiredData) {
+		return (
+			<div
+				style={{
+					display: 'flex',
+					justifyContent: 'center',
+					alignItems: 'center',
+					minHeight: '500px',
+					flexDirection: 'column',
+				}}
+			>
+				<Spin size="large" />
+				<div style={{ marginTop: 16, color: '#666' }}>
+					Loading student profile...
+				</div>
+			</div>
+		);
+	}
 
 	return (
 		<Form
@@ -128,7 +360,23 @@ const StudentAccountForm: React.FC = () => {
 			form={form}
 			layout="vertical"
 			onFinish={handleFinish}
-			initialValues={initialValues}
+			initialValues={{
+				fullName: profileData?.fullName ?? '',
+				email: profileData?.email ?? '',
+				studentId: profileData?.studentCode ?? '',
+				major: profileData?.majorId ?? '',
+				phoneNumber: profileData?.phoneNumber ?? '',
+				gender: profileData?.gender ?? '',
+				responsibility:
+					profileData?.studentExpectedResponsibilities?.map(
+						(r) => r.responsibilityId,
+					) ?? [],
+				skills:
+					profileData?.studentSkills?.map((skill) => ({
+						skillId: skill.skillId,
+						level: LEVEL_TOOLTIPS.indexOf(skill.level) + 1 || 1,
+					})) ?? [],
+			}}
 		>
 			<Title level={5} style={{ marginBottom: 24 }}>
 				Personal Information
@@ -142,7 +390,7 @@ const StudentAccountForm: React.FC = () => {
 							{ required: true, message: 'Please enter your student ID' },
 						]}
 					>
-						<Input disabled placeholder="SE150123" />
+						<Input disabled placeholder="Student ID" />
 					</Form.Item>
 				</Col>
 				<Col xs={24} md={12}>
@@ -166,18 +414,25 @@ const StudentAccountForm: React.FC = () => {
 					<Form.Item
 						name="fullName"
 						label={<FormLabel text="Full Name" isBold />}
-						rules={[{ required: true, message: 'Please enter your full name' }]}
+						rules={[
+							{ required: true, message: 'Please enter your full name' },
+							{ min: 2, message: 'Full name must be at least 2 characters' },
+							{
+								max: 100,
+								message: 'Full name must be less than 100 characters',
+							},
+						]}
 					>
-						<Input placeholder="John Smith" />
+						<Input placeholder="John Smith" disabled={updatingProfile} />
 					</Form.Item>
 				</Col>
 				<Col xs={24} md={12}>
-					<Form.Item
-						name="major"
-						label={<FormLabel text="Major" isBold />}
-						rules={[{ required: true, message: 'Please select your major' }]}
-					>
-						<Select options={MAJOR_OPTIONS} placeholder="Select major" />
+					<Form.Item label={<FormLabel text="Major" isBold />}>
+						<Input
+							disabled
+							value={majorDisplayValue}
+							placeholder="No major assigned"
+						/>
 					</Form.Item>
 				</Col>
 			</Row>
@@ -188,9 +443,24 @@ const StudentAccountForm: React.FC = () => {
 						label={<FormLabel text="Phone Number" isBold />}
 						rules={[
 							{ required: true, message: 'Please enter your phone number' },
+							{
+								validator: (_, value) => {
+									if (!value) return Promise.resolve();
+									const normalized = normalizeVietnamesePhone(value);
+									if (isValidVietnamesePhone(normalized)) {
+										return Promise.resolve();
+									}
+									return Promise.reject(
+										new Error('Please enter a valid Vietnamese phone number'),
+									);
+								},
+							},
 						]}
 					>
-						<Input placeholder="Enter phone number" />
+						<Input
+							placeholder="Enter phone number"
+							disabled={updatingProfile}
+						/>
 					</Form.Item>
 				</Col>
 				<Col xs={24} md={12}>
@@ -199,7 +469,7 @@ const StudentAccountForm: React.FC = () => {
 						label={<FormLabel text="Gender" isBold />}
 						rules={[{ required: true, message: 'Please select gender' }]}
 					>
-						<Radio.Group>
+						<Radio.Group disabled={updatingProfile}>
 							<Radio value="Male">Male</Radio>
 							<Radio value="Female">Female</Radio>
 						</Radio.Group>
@@ -212,8 +482,9 @@ const StudentAccountForm: React.FC = () => {
 			>
 				<Select
 					mode="multiple"
-					options={RESPONSIBILITY_OPTIONS}
+					options={responsibilityOptions}
 					placeholder="Select responsibility"
+					disabled={updatingProfile}
 				/>
 			</Form.Item>
 
@@ -247,9 +518,10 @@ const StudentAccountForm: React.FC = () => {
 												showSearch
 												style={{ width: '100%' }}
 												placeholder="Select skill"
-												treeData={memoizedSkillTreeData}
+												treeData={skillTreeData}
 												treeDefaultExpandAll={false}
 												allowClear
+												disabled={updatingProfile}
 												filterTreeNode={(input, treeNode) =>
 													String(treeNode.title)
 														.toLowerCase()
@@ -265,7 +537,45 @@ const StudentAccountForm: React.FC = () => {
 												<Form.Item
 													{...restField}
 													name={[name, 'level']}
-													label={<FormLabel text="Skill Level" isBold />}
+													label={
+														<div
+															style={{
+																display: 'flex',
+																alignItems: 'center',
+																gap: 8,
+															}}
+														>
+															<FormLabel text="Skill Level" isBold />
+															<span
+																style={{
+																	color:
+																		LEVEL_COLORS[
+																			(skillLevels[name] ||
+																				form.getFieldValue([
+																					'skills',
+																					name,
+																					'level',
+																				]) ||
+																				1) - 1
+																		],
+																	fontWeight: 'bold',
+																	fontSize: '12px',
+																}}
+															>
+																{
+																	LEVEL_TOOLTIPS[
+																		(skillLevels[name] ||
+																			form.getFieldValue([
+																				'skills',
+																				name,
+																				'level',
+																			]) ||
+																			1) - 1
+																	]
+																}
+															</span>
+														</div>
+													}
 													rules={[
 														{ required: true, message: 'Select skill level' },
 													]}
@@ -275,25 +585,18 @@ const StudentAccountForm: React.FC = () => {
 														min={1}
 														max={5}
 														step={1}
+														disabled={updatingProfile}
 														tooltip={{
 															formatter: tooltipFormatter,
 														}}
 														onChange={(value) =>
 															handleSkillLevelChange(name, value)
 														}
-														trackStyle={{
-															backgroundColor: skillLevels[name]
-																? LEVEL_COLORS[skillLevels[name] - 1]
-																: LEVEL_COLORS[0],
-														}}
-														handleStyle={{
-															borderColor: skillLevels[name]
-																? LEVEL_COLORS[skillLevels[name] - 1]
-																: LEVEL_COLORS[0],
-															backgroundColor: skillLevels[name]
-																? LEVEL_COLORS[skillLevels[name] - 1]
-																: LEVEL_COLORS[0],
-														}}
+														{...getSliderStyle(
+															skillLevels[name] ||
+																form.getFieldValue(['skills', name, 'level']) ||
+																1,
+														)}
 													/>
 												</Form.Item>
 											</Col>
@@ -301,8 +604,9 @@ const StudentAccountForm: React.FC = () => {
 												<Button
 													type="text"
 													icon={<MinusCircleOutlined />}
-													onClick={() => remove(name)}
+													onClick={() => handleRemoveSkill(name, remove)}
 													danger
+													disabled={updatingProfile}
 													aria-label="Remove skill"
 												/>
 											</Col>
@@ -313,9 +617,10 @@ const StudentAccountForm: React.FC = () => {
 							<Form.Item style={{ marginBottom: 0 }}>
 								<Button
 									type="dashed"
-									onClick={() => add()}
+									onClick={() => handleAddSkill(add, fields.length)}
 									icon={<PlusOutlined />}
 									block
+									disabled={updatingProfile}
 									aria-label="Add new skill"
 								>
 									Add Skill
@@ -328,18 +633,14 @@ const StudentAccountForm: React.FC = () => {
 
 			<Form.Item>
 				<Row justify="end" style={{ marginTop: 24 }}>
-					<Space>
-						<Button htmlType="button" aria-label="Cancel form changes">
-							Cancel
-						</Button>
-						<Button
-							type="primary"
-							htmlType="submit"
-							aria-label="Save profile changes"
-						>
-							Save Changes
-						</Button>
-					</Space>
+					<Button
+						type="primary"
+						htmlType="submit"
+						aria-label="Save profile changes"
+						loading={updatingProfile}
+					>
+						Save Changes
+					</Button>
 				</Row>
 			</Form.Item>
 		</Form>

@@ -3,6 +3,8 @@ import { z } from 'zod';
 export const ResponsibilitySchema = z.object({
 	id: z.string().uuid(),
 	name: z.string().min(1).max(100),
+	createdAt: z.string().transform((val) => new Date(val)),
+	updatedAt: z.string().transform((val) => new Date(val)),
 });
 
 export const StudentExpectedResponsibilitySchema = z.object({
@@ -17,9 +19,13 @@ export const GroupExpectedResponsibilitySchema = z.object({
 
 export const ResponsibilityCreateSchema = ResponsibilitySchema.omit({
 	id: true,
+	createdAt: true,
+	updatedAt: true,
 });
 export const ResponsibilityUpdateSchema = ResponsibilitySchema.omit({
 	id: true,
+	createdAt: true,
+	updatedAt: true,
 }).partial();
 
 // Export inferred types

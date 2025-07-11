@@ -5,9 +5,9 @@ import { useParams, useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 
 import { ThesisConfirmationModals } from '@/components/common/ConfirmModal';
+import { Header } from '@/components/common/Header';
 import ContentLoader from '@/components/common/loading/ContentLoader';
 import ActionButtons from '@/components/features/lecturer/ViewThesisDetail/ActionButtons';
-import ThesisHeader from '@/components/features/lecturer/ViewThesisDetail/ThesisHeader';
 import ThesisInfoCard from '@/components/features/lecturer/ViewThesisDetail/ThesisInfoCard';
 import { useSessionData } from '@/hooks/auth/useAuth';
 import { usePermissions } from '@/hooks/auth/usePermissions';
@@ -164,8 +164,11 @@ export default function ViewThesisDetail({
 
 	return (
 		<div>
-			<ThesisHeader />
-
+			<Header
+				title="Thesis Detail"
+				description="View comprehensive thesis information, supervisor details, and manage
+				approval status."
+			/>
 			<div style={{ display: 'grid', gap: '24px' }}>
 				<ThesisInfoCard thesis={thesis} />
 

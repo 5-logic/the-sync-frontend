@@ -1,15 +1,14 @@
 'use client';
 
-import { Alert, Button, Card, Col, Row, Space, Spin, Typography } from 'antd';
+import { Alert, Button, Card, Col, Row, Space, Spin } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
 
 import { ThesisConfirmationModals } from '@/components/common/ConfirmModal';
+import { Header } from '@/components/common/Header';
 import ThesisFilterBar from '@/components/features/lecturer/AssignListPublishThesis/ThesisFilterBar';
 import ThesisTable from '@/components/features/lecturer/AssignListPublishThesis/ThesisTable';
 import { showNotification } from '@/lib/utils/notification';
 import { usePublishThesesStore } from '@/store';
-
-const { Title, Paragraph } = Typography;
 
 export default function AssignListPublishThesisPage() {
 	const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -134,13 +133,12 @@ export default function AssignListPublishThesisPage() {
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
 			<Row justify="space-between" align="middle">
 				<Col>
-					<Title level={2} style={{ marginBottom: 4 }}>
-						Assign List Publish Thesis
-					</Title>
-					<Paragraph type="secondary" style={{ marginBottom: 0 }}>
-						Manage the list of published thesis topics available for student
-						selection. Only approved theses are shown here.
-					</Paragraph>
+					<Header
+						title="Assign List Publish Thesis"
+						description="Manage the list of published thesis topics available for student
+						selection. Only approved theses are shown here."
+						badgeText="Moderator Only"
+					/>
 				</Col>
 				<Col>
 					<Button

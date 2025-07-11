@@ -1,7 +1,9 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 
+import { AuthService } from '@/lib/services/auth';
 import lecturerService from '@/lib/services/lecturers.service';
+import { PasswordChange } from '@/schemas/_common';
 import { Lecturer, LecturerCreate, LecturerUpdate } from '@/schemas/lecturer';
 import {
 	cacheInvalidation,
@@ -30,11 +32,13 @@ interface LecturerState {
 	loading: boolean;
 	creating: boolean;
 	updating: boolean;
+	updatingProfile: boolean;
 	deleting: boolean;
 	creatingMany: boolean; // Legacy field for backward compatibility
 	creatingManyLecturers: boolean; // New field for consistency
 	togglingStatus: boolean;
 	togglingModerator: boolean;
+	changingPassword: boolean;
 
 	// Error states
 	lastError: {
@@ -74,7 +78,9 @@ interface LecturerState {
 		lecturers: LecturerCreate[];
 	}) => Promise<boolean>;
 	updateLecturer: (id: string, data: LecturerUpdate) => Promise<boolean>;
+	updateProfile: (data: LecturerUpdate) => Promise<boolean>;
 	deleteLecturer: (id: string) => Promise<boolean>;
+	changePassword: (data: PasswordChange) => Promise<boolean>;
 
 	// Separate toggle methods for better type safety and state management
 	toggleLecturerStatus: (
@@ -121,11 +127,13 @@ export const useLecturerStore = create<LecturerState>()(
 			loading: false,
 			creating: false,
 			updating: false,
+			updatingProfile: false,
 			deleting: false,
 			creatingMany: false,
 			creatingManyLecturers: false,
 			togglingStatus: false,
 			togglingModerator: false,
+			changingPassword: false,
 			lastError: null,
 			selectedStatus: 'All',
 			selectedModerator: 'All',
@@ -179,6 +187,68 @@ export const useLecturerStore = create<LecturerState>()(
 					cacheInvalidation.invalidateEntity('lecturer');
 				}
 				return result;
+			},
+
+			// Update profile action (for lecturer self-update)
+			updateProfile: async (data: LecturerUpdate) => {
+				set({ updatingProfile: true, lastError: null });
+				try {
+					const response = await lecturerService.updateProfile(data);
+
+					if (response.success) {
+						// Show success notification
+						const { showNotification } = await import(
+							'@/lib/utils/notification'
+						);
+						showNotification.success('Success', 'Profile updated successfully');
+
+						// Invalidate cache for future fetches
+						cacheInvalidation.invalidateEntity('lecturer');
+
+						return true;
+					} else {
+						// Handle error response
+						const errorMessage = response.error ?? 'Failed to update profile';
+						set({
+							lastError: {
+								message: errorMessage,
+								statusCode: response.statusCode,
+								timestamp: new Date(),
+							},
+						});
+
+						// Show error notification
+						const { showNotification } = await import(
+							'@/lib/utils/notification'
+						);
+						showNotification.error('Error', errorMessage);
+
+						return false;
+					}
+				} catch (error) {
+					// Handle network/unexpected errors
+					const errorMessage =
+						error instanceof Error ? error.message : 'Failed to update profile';
+					const statusCode =
+						(error as { response?: { status?: number } })?.response?.status ??
+						500;
+
+					set({
+						lastError: {
+							message: errorMessage,
+							statusCode,
+							timestamp: new Date(),
+						},
+					});
+
+					// Show error notification
+					const { showNotification } = await import('@/lib/utils/notification');
+					showNotification.error('Error', errorMessage);
+
+					return false;
+				} finally {
+					set({ updatingProfile: false });
+				}
 			},
 
 			createManyLecturers: async (data: { lecturers: LecturerCreate[] }) => {
@@ -285,6 +355,61 @@ export const useLecturerStore = create<LecturerState>()(
 			// Check if a specific lecturer is currently being toggled (moderator)
 			isLecturerModeratorLoading: (id: string) => {
 				return get()._lecturerModeratorLoadingStates.get(id) ?? false;
+			},
+
+			// Change password action
+			changePassword: async (data: PasswordChange) => {
+				set({ changingPassword: true, lastError: null });
+				try {
+					const response = await AuthService.changePassword(data);
+
+					if (response.success) {
+						// Auto logout after successful password change for security
+						try {
+							await AuthService.logout({ redirect: false });
+							// Redirect to login page after logout
+							window.location.href = '/login';
+						} catch (logoutError) {
+							console.error('Logout error after password change:', logoutError);
+							// Force redirect even if logout fails
+							window.location.href = '/login';
+						}
+						return true;
+					} else {
+						const errorMessage = response.error ?? 'Failed to change password';
+						set({
+							lastError: {
+								message: errorMessage,
+								statusCode: response.statusCode,
+								timestamp: new Date(),
+							},
+						});
+						return false;
+					}
+				} catch (error: unknown) {
+					const errorMessage =
+						error instanceof Error
+							? error.message
+							: 'Failed to change password';
+					const statusCode =
+						error &&
+						typeof error === 'object' &&
+						'response' in error &&
+						error.response
+							? ((error.response as { status?: number }).status ?? 500)
+							: 500;
+
+					set({
+						lastError: {
+							message: errorMessage,
+							statusCode,
+							timestamp: new Date(),
+						},
+					});
+					return false;
+				} finally {
+					set({ changingPassword: false });
+				}
 			},
 
 			deleteLecturer: async (id: string) => {

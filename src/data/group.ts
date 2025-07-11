@@ -273,7 +273,6 @@ export const createFullMockGroup = (
 
 // ===== Dữ liệu chia theo đợt review =====
 export const mockReviewGroups: Record<string, FullMockGroup[]> = {
-	Start: [],
 	'Review 1': [
 		createFullMockGroup('g1', 'Review 1'),
 		createFullMockGroup('g2', 'Review 1'),

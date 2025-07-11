@@ -4,6 +4,8 @@ import {
 	ImportStudent,
 	Student,
 	StudentCreate,
+	StudentProfile,
+	StudentSelfUpdate,
 	StudentToggleStatus,
 	StudentUpdate,
 } from '@/schemas/student';
@@ -16,8 +18,8 @@ class StudentService {
 		return response.data;
 	}
 
-	async findOne(id: string): Promise<ApiResponse<Student>> {
-		const response = await httpClient.get<ApiResponse<Student>>(
+	async findOne(id: string): Promise<ApiResponse<StudentProfile>> {
+		const response = await httpClient.get<ApiResponse<StudentProfile>>(
 			`${this.baseUrl}/${id}`,
 		);
 		return response.data;
@@ -59,6 +61,15 @@ class StudentService {
 		return response.data;
 	}
 
+	async findStudentsWithoutGroup(
+		semesterId: string,
+	): Promise<ApiResponse<Student[]>> {
+		const response = await httpClient.get<ApiResponse<Student[]>>(
+			`${this.baseUrl}/semester/${semesterId}/without-group`,
+		);
+		return response.data;
+	}
+
 	async toggleStatus(
 		id: string,
 		toggleStatusDto: StudentToggleStatus,
@@ -83,6 +94,16 @@ class StudentService {
 	): Promise<ApiResponse<void>> {
 		const response = await httpClient.delete<ApiResponse<void>>(
 			`${this.baseUrl}/${id}/semester/${semesterId}`,
+		);
+		return response.data;
+	}
+
+	async updateProfile(
+		updateProfileDto: StudentSelfUpdate,
+	): Promise<ApiResponse<Student>> {
+		const response = await httpClient.put<ApiResponse<Student>>(
+			this.baseUrl,
+			updateProfileDto,
 		);
 		return response.data;
 	}
