@@ -1,10 +1,6 @@
 'use client';
 
-import {
-	ExclamationCircleOutlined,
-	TeamOutlined,
-	UserOutlined,
-} from '@ant-design/icons';
+import { TeamOutlined, UserOutlined } from '@ant-design/icons';
 import {
 	Avatar,
 	Button,
@@ -12,27 +8,34 @@ import {
 	Col,
 	Descriptions,
 	Divider,
-	Modal,
 	Row,
 	Space,
 	Tag,
 	Typography,
 } from 'antd';
 import Link from 'next/link';
-import { useState } from 'react';
 
+import { ConfirmationModal } from '@/components/common/ConfirmModal';
 import { GroupDashboard } from '@/schemas/group';
 import { StudentProfile } from '@/schemas/student';
 
 const { Title, Text } = Typography;
-const { confirm } = Modal;
 
 interface StudentInfoCardProps {
 	student: StudentProfile | null;
 	studentGroup?: GroupDashboard;
 	isCurrentUserGroupLeader?: boolean;
-	onInviteToGroup?: () => void;
 	loading?: boolean;
+	// New props for request management
+	hasInvite?: boolean;
+	hasJoinRequest?: boolean;
+	requestLoading?: boolean;
+	onSendInvite?: () => void;
+	onCancelInvite?: () => void;
+	onApproveJoinRequest?: () => void;
+	onRejectJoinRequest?: () => void;
+	onGoBackToGroup?: () => void;
+	showGroupActions?: boolean;
 }
 
 const getLevelColor = (level: string) => {
@@ -54,28 +57,64 @@ export default function StudentInfoCard({
 	student,
 	studentGroup,
 	isCurrentUserGroupLeader = false,
-	onInviteToGroup,
 	loading = false,
+	hasInvite,
+	hasJoinRequest,
+	requestLoading,
+	onSendInvite,
+	onCancelInvite,
+	onApproveJoinRequest,
+	onRejectJoinRequest,
+	onGoBackToGroup,
+	showGroupActions,
 }: StudentInfoCardProps) {
-	const [inviteLoading, setInviteLoading] = useState(false);
-
-	const handleInviteClick = () => {
+	const handleSendInvite = () => {
 		if (!student) return;
 
-		confirm({
-			title: 'Invite Student to Group',
-			icon: <ExclamationCircleOutlined />,
-			content: `Are you sure you want to invite ${student.fullName} to join your group?`,
-			okText: 'Yes, Invite',
+		ConfirmationModal.show({
+			title: 'Send Invitation',
+			message: `Are you sure you want to send an invitation to ${student.fullName}?`,
+			okText: 'Yes, Send',
 			cancelText: 'Cancel',
-			onOk: async () => {
-				setInviteLoading(true);
-				try {
-					await onInviteToGroup?.();
-				} finally {
-					setInviteLoading(false);
-				}
-			},
+			onOk: onSendInvite || (() => {}),
+		});
+	};
+
+	const handleCancelInvite = () => {
+		if (!student) return;
+
+		ConfirmationModal.show({
+			title: 'Cancel Invitation',
+			message: `Are you sure you want to cancel the invitation to ${student.fullName}?`,
+			okText: 'Yes, Cancel',
+			cancelText: 'No',
+			okType: 'danger',
+			onOk: onCancelInvite || (() => {}),
+		});
+	};
+
+	const handleApproveJoinRequest = () => {
+		if (!student) return;
+
+		ConfirmationModal.show({
+			title: 'Approve Join Request',
+			message: `Are you sure you want to approve ${student.fullName}'s request to join your group?`,
+			okText: 'Yes, Approve',
+			cancelText: 'Cancel',
+			onOk: onApproveJoinRequest || (() => {}),
+		});
+	};
+
+	const handleRejectJoinRequest = () => {
+		if (!student) return;
+
+		ConfirmationModal.show({
+			title: 'Reject Join Request',
+			message: `Are you sure you want to reject ${student.fullName}'s request to join your group?`,
+			okText: 'Yes, Reject',
+			cancelText: 'Cancel',
+			okType: 'danger',
+			onOk: onRejectJoinRequest || (() => {}),
 		});
 	};
 
@@ -105,19 +144,6 @@ export default function StudentInfoCard({
 							<Text type="secondary">{student.studentCode}</Text>
 						</div>
 					</div>
-				}
-				extra={
-					isCurrentUserGroupLeader &&
-					!studentGroup && (
-						<Button
-							type="primary"
-							icon={<TeamOutlined />}
-							onClick={handleInviteClick}
-							loading={inviteLoading}
-						>
-							Invite to Group
-						</Button>
-					)
 				}
 				loading={loading}
 			>
@@ -260,6 +286,67 @@ export default function StudentInfoCard({
 						</Space>
 					</div>
 				</Card>
+			)}
+
+			{/* Action Buttons - Show if user has group */}
+			{showGroupActions && (
+				<div
+					style={{
+						display: 'flex',
+						justifyContent: 'flex-end',
+						gap: '12px',
+						marginTop: '24px',
+					}}
+				>
+					{/* Go Back to Group button - Always show when showGroupActions is true */}
+					<Button
+						type="default"
+						icon={<TeamOutlined />}
+						onClick={onGoBackToGroup}
+					>
+						Go Back to Group
+					</Button>
+
+					{/* Only show request action buttons if user is leader and student has no group */}
+					{isCurrentUserGroupLeader && !studentGroup && (
+						<>
+							{hasJoinRequest ? (
+								<>
+									<Button
+										danger
+										onClick={handleRejectJoinRequest}
+										loading={requestLoading}
+									>
+										Reject Join Request
+									</Button>
+									<Button
+										type="primary"
+										onClick={handleApproveJoinRequest}
+										loading={requestLoading}
+									>
+										Approve Join Request
+									</Button>
+								</>
+							) : hasInvite ? (
+								<Button
+									danger
+									onClick={handleCancelInvite}
+									loading={requestLoading}
+								>
+									Cancel Invite
+								</Button>
+							) : (
+								<Button
+									type="primary"
+									onClick={handleSendInvite}
+									loading={requestLoading}
+								>
+									Send Invite
+								</Button>
+							)}
+						</>
+					)}
+				</div>
 			)}
 		</div>
 	);
