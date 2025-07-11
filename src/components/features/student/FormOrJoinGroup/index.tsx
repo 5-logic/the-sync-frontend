@@ -1,9 +1,10 @@
 'use client';
 
-import { Card, Col, Row, Space, Typography } from 'antd';
+import { Card, Col, Row, Space } from 'antd';
 import { useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
+import { Header } from '@/components/common/Header';
 import { RequestsButton } from '@/components/common/RequestsManagement';
 import CreateGroupForm from '@/components/features/student/FormOrJoinGroup/CreateGroup/CreateGroupForm';
 import FormOrJoinTabs from '@/components/features/student/FormOrJoinGroup/FormOrJoinTabs';
