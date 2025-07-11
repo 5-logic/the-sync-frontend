@@ -4,7 +4,7 @@ import { Spin } from 'antd';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
-import { useStudentGroupStatus } from '@/hooks/useStudentGroupStatus';
+import { useStudentGroupStatus } from '@/hooks/student/useStudentGroupStatus';
 
 interface GroupStatusGuardProps {
 	readonly children: React.ReactNode;

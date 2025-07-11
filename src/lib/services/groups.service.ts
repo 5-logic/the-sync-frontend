@@ -68,6 +68,15 @@ class GroupService {
 		return response.data;
 	}
 
+	async getStudentGroupById(
+		studentId: string,
+	): Promise<ApiResponse<GroupDashboard[]>> {
+		const response = await httpClient.get<ApiResponse<GroupDashboard[]>>(
+			`${this.baseUrl}/student/${studentId}`,
+		);
+		return response.data;
+	}
+
 	async getPublicGroupDetail(
 		groupId: string,
 	): Promise<ApiResponse<GroupDashboard>> {

@@ -95,6 +95,18 @@ export default function StudentDashboard() {
 						<br />
 						<Text type="secondary">Access course materials</Text>
 					</Card>
+					<Card size="small" className="cursor-pointer hover:shadow-md">
+						<Text strong>👤 Student Profile (Demo)</Text>
+						<br />
+						<Text type="secondary">
+							<a
+								href="/student/profile/0c1ba461-751a-4369-a035-e94a1c07a1ce"
+								className="text-blue-600"
+							>
+								View Sample Profile
+							</a>
+						</Text>
+					</Card>
 				</div>
 			</Card>
 		</div>
