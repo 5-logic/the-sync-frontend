@@ -1,9 +1,7 @@
 'use client';
 
-import { ArrowLeftOutlined } from '@ant-design/icons';
 import { Alert, Button, Spin } from 'antd';
-import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 
 import StudentInfoCard from '@/components/features/student/StudentInfoCard';
 import { useStudentInvite } from '@/hooks/student/useStudentInvite';
@@ -11,9 +9,12 @@ import {
 	useStudentGroup,
 	useStudentProfile,
 } from '@/hooks/student/useStudentProfile';
+import { useStudentRequestStatus } from '@/hooks/student/useStudentRequestStatus';
+import { useGroupDashboardStore } from '@/store/useGroupDashboardStore';
 
 export default function StudentProfilePage() {
 	const params = useParams();
+	const router = useRouter();
 	const studentId = params.id as string;
 
 	const {
@@ -29,18 +30,30 @@ export default function StudentProfilePage() {
 	} = useStudentGroup(studentId);
 
 	const {
-		inviteStudentToGroup,
+		// inviteStudentToGroup, // No longer needed
 		isCurrentUserGroupLeader,
-		loading: inviteLoading,
+		// loading: inviteLoading, // Will use requestLoading instead
 	} = useStudentInvite();
 
-	// Check if current user is a group leader
-	const isLeader = isCurrentUserGroupLeader(studentGroup || undefined);
+	// Get current user's group
+	const { group: currentUserGroup } = useGroupDashboardStore();
 
-	const handleInviteToGroup = async () => {
-		if (studentGroup) {
-			await inviteStudentToGroup(studentId, studentGroup.id);
-		}
+	// Use the new hook to manage request status
+	const {
+		hasInvite,
+		hasJoinRequest,
+		loading: requestLoading,
+		sendInvite,
+		cancelInvite,
+		approveJoinRequest,
+		rejectJoinRequest,
+	} = useStudentRequestStatus(studentId);
+
+	// Check if current user is a group leader of their own group
+	const isLeader = isCurrentUserGroupLeader(currentUserGroup || undefined);
+
+	const handleGoBackToGroup = () => {
+		router.push('/student/group-dashboard');
 	};
 
 	if (studentLoading) {
@@ -83,14 +96,9 @@ export default function StudentProfilePage() {
 	}
 
 	return (
-		<div className="container mx-auto px-4 py-8">
+		<div className="container mx-auto">
 			{/* Header */}
 			<div className="mb-6">
-				<Link href="/student">
-					<Button type="text" icon={<ArrowLeftOutlined />} className="mb-4">
-						Back to Dashboard
-					</Button>
-				</Link>
 				<h1 className="text-3xl font-bold text-gray-900">Student Profile</h1>
 				<p className="text-gray-600 mt-2">
 					Detailed information about {student.fullName}
@@ -102,8 +110,17 @@ export default function StudentProfilePage() {
 				student={student}
 				studentGroup={studentGroup || undefined}
 				isCurrentUserGroupLeader={isLeader}
-				onInviteToGroup={handleInviteToGroup}
-				loading={groupLoading || inviteLoading}
+				loading={groupLoading}
+				// New props for request management
+				hasInvite={hasInvite}
+				hasJoinRequest={hasJoinRequest}
+				requestLoading={requestLoading}
+				onSendInvite={sendInvite}
+				onCancelInvite={cancelInvite}
+				onApproveJoinRequest={approveJoinRequest}
+				onRejectJoinRequest={rejectJoinRequest}
+				onGoBackToGroup={handleGoBackToGroup}
+				showGroupActions={!!currentUserGroup} // Show actions if current user has a group
 			/>
 
 			{/* Group Error (if any) */}
