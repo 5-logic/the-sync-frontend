@@ -1,7 +1,7 @@
 'use client';
 
 import { UserOutlined } from '@ant-design/icons';
-import { Avatar, Button, Card, Space, Tag, Typography } from 'antd';
+import { Avatar, Button, Card, Col, Row, Space, Tag, Typography } from 'antd';
 
 import { ExtendedThesis } from '@/data/thesis';
 
@@ -60,14 +60,18 @@ export default function ThesisCard({ thesis, studentRole }: Props) {
 				</Space>
 			</Space>
 
-			<div style={{ display: 'flex', gap: 8, marginTop: 24 }}>
-				<Button type="primary" block>
-					View Details
-				</Button>
-				<Button block disabled={studentRole !== 'leader'}>
-					Register
-				</Button>
-			</div>
+			<Row gutter={8} style={{ marginTop: 24 }}>
+				<Col span={12}>
+					<Button type="primary" block>
+						View Details
+					</Button>
+				</Col>
+				<Col span={12}>
+					<Button block disabled={studentRole !== 'leader'}>
+						Register
+					</Button>
+				</Col>
+			</Row>
 		</Card>
 	);
 }

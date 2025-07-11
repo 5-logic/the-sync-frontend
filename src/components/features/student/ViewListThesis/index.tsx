@@ -68,14 +68,18 @@ export default function ViewListThesis() {
 
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
-			<div className="flex justify-between items-start">
-				<Header
-					title="List Thesis"
-					description="Browse available thesis topics proposed and published by lecturers.
-						You can view details and register once your group is ready."
-				/>
-				<Button type="primary">AI Suggest</Button>
-			</div>
+			<Row justify="space-between" align="top" gutter={[16, 16]}>
+				<Col flex="auto">
+					<Header
+						title="List Thesis"
+						description="Browse available thesis topics proposed and published by lecturers.
+				You can view details and register once your group is ready."
+					/>
+				</Col>
+				<Col>
+					<Button type="primary">AI Suggest</Button>
+				</Col>
+			</Row>
 
 			{/* Search & Filters */}
 			<Row gutter={[16, 16]}>
