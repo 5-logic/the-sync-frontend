@@ -29,11 +29,7 @@ export default function StudentProfilePage() {
 		error: groupError,
 	} = useStudentGroup(studentId);
 
-	const {
-		// inviteStudentToGroup, // No longer needed
-		isCurrentUserGroupLeader,
-		// loading: inviteLoading, // Will use requestLoading instead
-	} = useStudentInvite();
+	const { isCurrentUserGroupLeader } = useStudentInvite();
 
 	// Get current user's group
 	const { group: currentUserGroup } = useGroupDashboardStore();
