@@ -265,6 +265,14 @@ export default function RequestsDialog({
 					okType: 'danger' as const,
 					onConfirm: () => handleRejectInvite(requestId),
 				},
+				viewDetailAction: request
+					? {
+							onViewDetail: () => {
+								// Navigate to student profile page
+								router.push(`/student/profile/${request.studentId}`);
+							},
+						}
+					: undefined,
 			};
 		} else {
 			// Group leader perspective - Join
@@ -285,6 +293,14 @@ export default function RequestsDialog({
 					okType: 'danger' as const,
 					onConfirm: () => handleRejectJoinRequest(requestId),
 				},
+				viewDetailAction: request
+					? {
+							onViewDetail: () => {
+								// Navigate to student profile page
+								router.push(`/student/profile/${request.studentId}`);
+							},
+						}
+					: undefined,
 			};
 		}
 	};
