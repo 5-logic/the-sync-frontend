@@ -1,8 +1,9 @@
 'use client';
 
-import { Button, Card, Col, Input, Row, Space, Typography } from 'antd';
+import { Button, Card, Col, Input, Row, Space } from 'antd';
 import { useState } from 'react';
 
+import { Header } from '@/components/common/Header';
 import StudentFilterBar from '@/components/features/lecturer/AssignStudent/StudentFilterBar';
 import StudentTable from '@/components/features/lecturer/AssignStudent/StudentTable';
 import AssignConfirmModal from '@/components/features/lecturer/AssignStudentDetail/AssignConfirmModal';
@@ -11,7 +12,6 @@ import TeamMembers from '@/components/features/lecturer/ViewThesisDetail/TeamMem
 import { mockStudents } from '@/data/student';
 import { mockTheses } from '@/data/thesis';
 
-const { Title, Paragraph } = Typography;
 const { TextArea } = Input;
 
 export default function AssignStudentsDetailPage() {
@@ -53,15 +53,12 @@ export default function AssignStudentsDetailPage() {
 			size={24}
 			style={{ width: '100%', padding: 24 }}
 		>
-			<div>
-				<Title level={2} style={{ marginBottom: '4px' }}>
-					Assign Students Detail
-				</Title>
-				<Paragraph type="secondary" style={{ marginBottom: 24 }}>
-					Facilitate the grouping process by assigning ungrouped students to
-					available project groups.
-				</Paragraph>
-			</div>
+			<Header
+				title="Assign Students Detail"
+				description="Facilitate the grouping process by assigning ungrouped students to
+					available project groups."
+				badgeText="Moderator Only"
+			/>
 
 			<GroupInfoCard thesis={thesis} />
 

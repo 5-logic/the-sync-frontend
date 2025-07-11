@@ -14,6 +14,8 @@ export default function AdminLayout({
 	readonly children: React.ReactNode;
 }) {
 	return (
-		<CollapsibleLayout sidebar={<AdminSidebar />}>{children}</CollapsibleLayout>
+		<CollapsibleLayout sidebar={<AdminSidebar />} showBreadcrumb={true}>
+			{children}
+		</CollapsibleLayout>
 	);
 }

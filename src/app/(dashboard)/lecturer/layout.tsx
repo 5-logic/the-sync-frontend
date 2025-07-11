@@ -7,7 +7,7 @@ export default function LecturerLayout({
 	readonly children: React.ReactNode;
 }) {
 	return (
-		<CollapsibleLayout sidebar={<LecturerSidebar />}>
+		<CollapsibleLayout sidebar={<LecturerSidebar />} showBreadcrumb={true}>
 			{children}
 		</CollapsibleLayout>
 	);

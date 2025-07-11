@@ -2,7 +2,9 @@
 
 import {
 	BookOutlined,
+	CheckSquareOutlined,
 	ClockCircleOutlined,
+	CommentOutlined,
 	CrownOutlined,
 	DashboardOutlined,
 	LoadingOutlined,
@@ -73,6 +75,14 @@ const createBasicMenuItems = (
 		targetPath,
 	),
 	createMenuItem(
+		LECTURER_MENU_KEYS.GROUP_REVIEW,
+		<CommentOutlined />,
+		'Group Review',
+		navigateWithLoading,
+		isNavigating,
+		targetPath,
+	),
+	createMenuItem(
 		LECTURER_MENU_KEYS.TIMELINE_REVIEW,
 		<ClockCircleOutlined />,
 		'Timeline Review',
@@ -133,6 +143,14 @@ const createModeratorMenuItems = (
 				DASHBOARD_PATHS.LECTURER_ASSIGN_LECTURER_REVIEW,
 				<ScheduleOutlined />,
 				'Assign Lecturer Review',
+				navigateWithLoading,
+				isNavigating,
+				targetPath,
+			),
+			createMenuItem(
+				LECTURER_MENU_KEYS.CHECKLIST_MANAGEMENT,
+				<CheckSquareOutlined />,
+				'Checklist Management',
 				navigateWithLoading,
 				isNavigating,
 				targetPath,

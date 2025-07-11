@@ -3,14 +3,13 @@
 import { Alert, Button, Flex, Space, Spin, Typography } from 'antd';
 import { useEffect, useState } from 'react';
 
+import { Header } from '@/components/common/Header';
 import ThesisForm from '@/components/features/lecturer/CreateThesis/ThesisForm';
 import { useThesisForm } from '@/hooks/thesis';
 import thesisService from '@/lib/services/theses.service';
 import { handleApiResponse } from '@/lib/utils/handleApi';
 import { ThesisWithRelations } from '@/schemas/thesis';
 import { useSkillSetStore } from '@/store';
-
-const { Title, Paragraph } = Typography;
 
 interface Props {
 	readonly thesisId?: string;
@@ -144,12 +143,10 @@ export default function EditThesis({ thesisId }: Props) {
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
 			<Space direction="vertical" size="small">
-				<Title level={2} style={{ margin: 0 }}>
-					Edit Thesis
-				</Title>
-				<Paragraph type="secondary" style={{ margin: 0 }}>
-					Modify and resubmit your thesis proposal for review.
-				</Paragraph>
+				<Header
+					title="Edit Thesis"
+					description="Modify and resubmit your thesis proposal for review."
+				/>
 			</Space>
 
 			<ThesisForm
