@@ -12,7 +12,7 @@ export default function StudentHomePage() {
 	const { Text } = Typography;
 
 	return (
-		<Space direction="vertical" size="large" style={{ width: '100%' }}>
+		<Space direction="vertical" size="middle" style={{ width: '100%' }}>
 			<Row justify="start">
 				<Header
 					title="Student Dashboard"
@@ -23,7 +23,7 @@ export default function StudentHomePage() {
 
 			<Row justify="end" align="middle" style={{ marginBottom: 0 }}>
 				<Col>
-					<Text type="secondary">Spring Semester 2024</Text>
+					<Text type="secondary">Semester Spring 2024</Text>
 				</Col>
 			</Row>
 
