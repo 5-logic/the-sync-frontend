@@ -2,7 +2,7 @@
 
 import { ReactNode, createContext, useContext } from 'react';
 
-import { useStudentGroupStatus } from '@/hooks/useStudentGroupStatus';
+import { useStudentGroupStatus } from '@/hooks/student/useStudentGroupStatus';
 import { GroupDashboard } from '@/schemas/group';
 
 interface GroupStatusContextType {

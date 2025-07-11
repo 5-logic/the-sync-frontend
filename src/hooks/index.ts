@@ -14,5 +14,5 @@ export * from '@/hooks/ux';
 export * from '@/hooks/thesis';
 
 // Student-specific hooks
-export { useStudentGroupStatus } from '@/hooks/useStudentGroupStatus';
+export { useStudentGroupStatus } from '@/hooks/student/useStudentGroupStatus';
 export * from '@/hooks/student';
