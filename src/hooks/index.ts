@@ -15,3 +15,4 @@ export * from '@/hooks/thesis';
 
 // Student-specific hooks
 export { useStudentGroupStatus } from '@/hooks/useStudentGroupStatus';
+export * from '@/hooks/student';
