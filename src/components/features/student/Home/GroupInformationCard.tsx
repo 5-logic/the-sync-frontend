@@ -1,7 +1,7 @@
 'use client';
 
 import { TeamOutlined } from '@ant-design/icons';
-import { Button, Card, Space, Typography } from 'antd';
+import { Button, Card, Col, Row, Space, Typography } from 'antd';
 
 import { FullMockGroup } from '@/data/group';
 
@@ -28,7 +28,13 @@ export default function GroupInformationCard({ group }: Readonly<Props>) {
 					<Typography.Text>{group.leader}</Typography.Text>
 
 					<Typography.Text strong>Members:</Typography.Text>
-					<Typography.Text>{group.members.length} members</Typography.Text>
+					<Row gutter={[8, 4]}>
+						{group.members.map((member, index) => (
+							<Col span={12} key={index}>
+								<Typography.Text>• {member}</Typography.Text>
+							</Col>
+						))}
+					</Row>
 				</Space>
 			) : (
 				<Button type="primary" block>
