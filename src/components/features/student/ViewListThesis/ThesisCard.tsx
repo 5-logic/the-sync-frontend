@@ -7,9 +7,10 @@ import { ExtendedThesis } from '@/data/thesis';
 
 interface Props {
 	readonly thesis: ExtendedThesis;
+	readonly studentRole?: 'leader' | 'member' | 'guest';
 }
 
-export default function ThesisCard({ thesis }: Props) {
+export default function ThesisCard({ thesis, studentRole }: Props) {
 	return (
 		<Card
 			title={null}
@@ -63,7 +64,7 @@ export default function ThesisCard({ thesis }: Props) {
 				<Button type="primary" block>
 					View Details
 				</Button>
-				<Button disabled block>
+				<Button block disabled={studentRole !== 'leader'}>
 					Register
 				</Button>
 			</div>
