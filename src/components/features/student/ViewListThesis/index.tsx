@@ -1,5 +1,6 @@
 'use client';
 
+import { SearchOutlined } from '@ant-design/icons';
 import { Button, Col, Empty, Input, Row, Select, Space } from 'antd';
 import { useMemo, useState } from 'react';
 
@@ -8,7 +9,6 @@ import { ListPagination } from '@/components/common/ListPagination';
 import ThesisCard from '@/components/features/student/ViewListThesis/ThesisCard';
 import { mockTheses } from '@/data/thesis';
 
-const { Search } = Input;
 const { Option } = Select;
 
 export default function ViewListThesis() {
@@ -79,15 +79,17 @@ export default function ViewListThesis() {
 
 			{/* Search & Filters */}
 			<Row gutter={[16, 16]}>
-				<Col xs={24} md={12}>
-					<Search
+				<Col flex="auto">
+					<Input
 						placeholder="Search by name or description"
 						allowClear
-						onSearch={(value) => setSearchText(value)}
+						value={searchText}
 						onChange={(e) => setSearchText(e.target.value)}
+						prefix={<SearchOutlined />}
 					/>
 				</Col>
-				<Col xs={12} md={6}>
+
+				<Col style={{ minWidth: 200 }}>
 					<Select
 						placeholder="Filter by Domain"
 						allowClear
@@ -101,7 +103,7 @@ export default function ViewListThesis() {
 						))}
 					</Select>
 				</Col>
-				<Col xs={12} md={6}>
+				<Col style={{ minWidth: 200 }}>
 					<Select
 						placeholder="Filter by Supervisor"
 						allowClear
@@ -122,6 +124,9 @@ export default function ViewListThesis() {
 				{paginatedTheses.length > 0 ? (
 					paginatedTheses.map((thesis) => (
 						<Col xs={24} sm={12} md={8} key={thesis.id}>
+							{/* Trường hợp role student <> leader */}
+							{/* <ThesisCard thesis={thesis} /> */}
+							{/* Trường hợp role student:= leader */}
 							<ThesisCard thesis={thesis} studentRole="leader" />
 						</Col>
 					))
