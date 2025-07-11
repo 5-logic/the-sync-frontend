@@ -2,26 +2,23 @@
 
 import { Col, Row, Space, Typography } from 'antd';
 
+import { Header } from '@/components/common/Header';
 import GroupInformationCard from '@/components/features/student/Home/GroupInformationCard';
 import ProjectMilestonesCard from '@/components/features/student/Home/ProjectMilestonesCard';
 import ThesisStatusCard from '@/components/features/student/Home/ThesisStatusCard';
 import { studentGroup } from '@/data/studentGroup';
 
 export default function StudentHomePage() {
-	const { Title, Paragraph, Text } = Typography;
+	const { Text } = Typography;
 
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
 			<Row justify="start">
-				<Col span={24}>
-					<Title level={2} style={{ marginBottom: 4 }}>
-						Student Dashboard
-					</Title>
-					<Paragraph type="secondary" style={{ marginBottom: 0 }}>
-						This is your personal dashboard. Here you can track your group
-						status, project milestones, and thesis progress.
-					</Paragraph>
-				</Col>
+				<Header
+					title="Student Dashboard"
+					description="This is your personal dashboard. Here you can track your group
+						status, project milestones, and thesis progress."
+				/>
 			</Row>
 
 			<Row justify="end" align="middle" style={{ marginBottom: 0 }}>
