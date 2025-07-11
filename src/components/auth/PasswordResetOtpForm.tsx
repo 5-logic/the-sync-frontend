@@ -75,7 +75,7 @@ export const PasswordResetOtpForm = ({
 	// Handle OTP input change - simplified validation based on schema requirements
 	const handleOtpChange = (value: string) => {
 		// Remove non-digit characters and limit to 8 digits
-		const numericValue = value.replace(/[^0-9]/g, '').slice(0, 8);
+		const numericValue = value.replace(/\D/g, '').slice(0, 8);
 
 		// Update the form field with the sanitized value
 		form.setFieldValue('otpCode', numericValue);
