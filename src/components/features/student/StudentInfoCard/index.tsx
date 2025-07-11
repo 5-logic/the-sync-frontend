@@ -22,20 +22,20 @@ import { StudentProfile } from '@/schemas/student';
 const { Title, Text } = Typography;
 
 interface StudentInfoCardProps {
-	student: StudentProfile | null;
-	studentGroup?: GroupDashboard;
-	isCurrentUserGroupLeader?: boolean;
-	loading?: boolean;
+	readonly student: StudentProfile | null;
+	readonly studentGroup?: GroupDashboard;
+	readonly isCurrentUserGroupLeader?: boolean;
+	readonly loading?: boolean;
 	// New props for request management
-	hasInvite?: boolean;
-	hasJoinRequest?: boolean;
-	requestLoading?: boolean;
-	onSendInvite?: () => void;
-	onCancelInvite?: () => void;
-	onApproveJoinRequest?: () => void;
-	onRejectJoinRequest?: () => void;
-	onGoBackToGroup?: () => void;
-	showGroupActions?: boolean;
+	readonly hasInvite?: boolean;
+	readonly hasJoinRequest?: boolean;
+	readonly requestLoading?: boolean;
+	readonly onSendInvite?: () => void;
+	readonly onCancelInvite?: () => void;
+	readonly onApproveJoinRequest?: () => void;
+	readonly onRejectJoinRequest?: () => void;
+	readonly onGoBackToGroup?: () => void;
+	readonly showGroupActions?: boolean;
 }
 
 const getLevelColor = (level: string) => {
@@ -118,6 +118,48 @@ export default function StudentInfoCard({
 		});
 	};
 
+	// Helper function to render action buttons based on request status
+	const renderActionButtons = () => {
+		if (hasJoinRequest) {
+			return (
+				<>
+					<Button
+						danger
+						onClick={handleRejectJoinRequest}
+						loading={requestLoading}
+					>
+						Reject Join Request
+					</Button>
+					<Button
+						type="primary"
+						onClick={handleApproveJoinRequest}
+						loading={requestLoading}
+					>
+						Approve Join Request
+					</Button>
+				</>
+			);
+		}
+
+		if (hasInvite) {
+			return (
+				<Button danger onClick={handleCancelInvite} loading={requestLoading}>
+					Cancel Invite
+				</Button>
+			);
+		}
+
+		return (
+			<Button
+				type="primary"
+				onClick={handleSendInvite}
+				loading={requestLoading}
+			>
+				Send Invite
+			</Button>
+		);
+	};
+
 	// Show loading state
 	if (loading || !student) {
 		return (
@@ -172,8 +214,8 @@ export default function StudentInfoCard({
 			{/* Enrollments */}
 			<Card title="Semester Enrollments" loading={loading}>
 				<Row gutter={[16, 16]}>
-					{student.enrollments.map((enrollment, index) => (
-						<Col xs={24} sm={12} md={8} key={index}>
+					{student.enrollments.map((enrollment) => (
+						<Col xs={24} sm={12} md={8} key={enrollment.semester.name}>
 							<Tag color="blue">{enrollment.semester.name}</Tag>
 						</Col>
 					))}
@@ -183,9 +225,9 @@ export default function StudentInfoCard({
 			{/* Skills */}
 			<Card title="Skills & Expertise" loading={loading}>
 				<Space size={[8, 8]} wrap>
-					{student.studentSkills.map((skill, index) => (
+					{student.studentSkills.map((skill) => (
 						<div
-							key={index}
+							key={`${skill.skillName}-${skill.level}`}
 							className="inline-flex items-center gap-2 p-2 border rounded-lg bg-gray-50 border-gray-300"
 						>
 							<Text strong className="text-sm">
@@ -207,13 +249,11 @@ export default function StudentInfoCard({
 			{/* Expected Responsibilities */}
 			<Card title="Expected Responsibilities" loading={loading}>
 				<Space wrap>
-					{student.studentExpectedResponsibilities.map(
-						(responsibility, index) => (
-							<Tag key={index} color="purple">
-								{responsibility.responsibilityName}
-							</Tag>
-						),
-					)}
+					{student.studentExpectedResponsibilities.map((responsibility) => (
+						<Tag key={responsibility.responsibilityName} color="purple">
+							{responsibility.responsibilityName}
+						</Tag>
+					))}
 				</Space>
 				{student.studentExpectedResponsibilities.length === 0 && (
 					<div className="text-center py-4">
@@ -309,42 +349,7 @@ export default function StudentInfoCard({
 
 					{/* Only show request action buttons if user is leader and student has no group */}
 					{isCurrentUserGroupLeader && !studentGroup && (
-						<>
-							{hasJoinRequest ? (
-								<>
-									<Button
-										danger
-										onClick={handleRejectJoinRequest}
-										loading={requestLoading}
-									>
-										Reject Join Request
-									</Button>
-									<Button
-										type="primary"
-										onClick={handleApproveJoinRequest}
-										loading={requestLoading}
-									>
-										Approve Join Request
-									</Button>
-								</>
-							) : hasInvite ? (
-								<Button
-									danger
-									onClick={handleCancelInvite}
-									loading={requestLoading}
-								>
-									Cancel Invite
-								</Button>
-							) : (
-								<Button
-									type="primary"
-									onClick={handleSendInvite}
-									loading={requestLoading}
-								>
-									Send Invite
-								</Button>
-							)}
-						</>
+						<>{renderActionButtons()}</>
 					)}
 				</div>
 			)}
