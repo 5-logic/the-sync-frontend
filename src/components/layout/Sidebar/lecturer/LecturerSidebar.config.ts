@@ -9,12 +9,14 @@ export const LECTURER_MENU_KEYS = {
 	DASHBOARD: DASHBOARD_PATHS.LECTURER,
 	THESIS_MANAGEMENT: '/lecturer/thesis-management',
 	GROUP_PROGRESS: '/lecturer/group-progress',
+	GROUP_REVIEW: '/lecturer/group-review',
 	TIMELINE_REVIEW: '/lecturer/timeline-review',
 	// Moderator features
 	PUBLISH_THESIS: DASHBOARD_PATHS.LECTURER_ASSIGN_LIST_PUBLISH_THESIS,
 	ASSIGN_STUDENT: DASHBOARD_PATHS.LECTURER_ASSIGN_STUDENT_LIST,
 	ASSIGN_SUPERVISOR: DASHBOARD_PATHS.LECTURER_ASSIGN_SUPERVISOR,
 	ASSIGN_LECTURER_REVIEW: DASHBOARD_PATHS.LECTURER_ASSIGN_LECTURER_REVIEW,
+	CHECKLIST_MANAGEMENT: DASHBOARD_PATHS.LECTURER_CHECKLIST_MANAGEMENT,
 } as const;
 
 /**
@@ -31,6 +33,10 @@ export const LECTURER_PATH_MAPPING = {
 	[LECTURER_MENU_KEYS.GROUP_PROGRESS]: [
 		'/lecturer/group-progress',
 		'/lecturer/group-details',
+	],
+	[LECTURER_MENU_KEYS.GROUP_REVIEW]: [
+		'/lecturer/group-review',
+		'/lecturer/group-review/[groupId]',
 	],
 	[LECTURER_MENU_KEYS.TIMELINE_REVIEW]: [
 		'/lecturer/timeline-review',
@@ -50,6 +56,12 @@ export const LECTURER_PATH_MAPPING = {
 	[LECTURER_MENU_KEYS.ASSIGN_LECTURER_REVIEW]: [
 		DASHBOARD_PATHS.LECTURER_ASSIGN_LECTURER_REVIEW,
 		'/lecturer/lecturer-review-assignment',
+	],
+	[LECTURER_MENU_KEYS.CHECKLIST_MANAGEMENT]: [
+		DASHBOARD_PATHS.LECTURER_CHECKLIST_MANAGEMENT,
+		'/lecturer/checklist-detail',
+		'/lecturer/checklist-edit',
+		'/lecturer/create-checklist',
 	],
 } as const;
 

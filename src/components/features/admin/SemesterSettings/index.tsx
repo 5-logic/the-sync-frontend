@@ -1,16 +1,15 @@
 'use client';
 
-import { Divider, Form, Space, Typography } from 'antd';
+import { Divider, Form, Space } from 'antd';
 import { useCallback, useRef, useState } from 'react';
 
+import { Header } from '@/components/common/Header';
 import SearchFilterBar from '@/components/features/admin/SemesterSettings/SearchFilterBar';
 import SemesterForm from '@/components/features/admin/SemesterSettings/SemesterForm';
 import SemesterTable, {
 	SemesterTableRef,
 } from '@/components/features/admin/SemesterSettings/SemesterTable';
 import { SemesterStatus } from '@/schemas/_enums';
-
-const { Title, Paragraph } = Typography;
 
 export default function SemesterSettings() {
 	const [form] = Form.useForm();
@@ -38,15 +37,11 @@ export default function SemesterSettings() {
 
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
-			<div>
-				<Title level={2} style={{ marginBottom: '4px' }}>
-					Semester Settings
-				</Title>
-				<Paragraph type="secondary" style={{ marginBottom: 0 }}>
-					Create and manage semesters, registration windows, and
-					capstone-specific rules
-				</Paragraph>
-			</div>
+			<Header
+				title="Semester Settings"
+				description="Create and manage semesters, registration windows, and
+					capstone-specific rules"
+			/>
 
 			<SemesterForm form={form} onSuccess={handleSemesterCreated} />
 

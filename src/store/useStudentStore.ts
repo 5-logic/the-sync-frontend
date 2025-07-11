@@ -78,6 +78,7 @@ interface StudentState {
 	selectedMajorId: string | null;
 	selectedStatus: string;
 	searchText: string;
+	lastSemesterId: string | null; // Track which semester data is currently loaded
 
 	// Cache utilities
 	cache: {
@@ -88,7 +89,10 @@ interface StudentState {
 
 	// Actions
 	fetchStudents: (force?: boolean) => Promise<void>;
-	fetchStudentsBySemester: (semesterId: string) => Promise<void>;
+	fetchStudentsBySemester: (
+		semesterId: string,
+		force?: boolean,
+	) => Promise<void>;
 	fetchStudentsWithoutGroup: (semesterId: string) => Promise<void>;
 	fetchStudentsWithoutGroupAuto: () => Promise<void>;
 	fetchProfile: (id: string, force?: boolean) => Promise<StudentProfile | null>;
@@ -180,6 +184,7 @@ export const useStudentStore = create<StudentState>()(
 			selectedMajorId: null,
 			selectedStatus: 'All',
 			searchText: '',
+			lastSemesterId: null,
 
 			// Internal spam protection state
 			_toggleOperations: new Map(),

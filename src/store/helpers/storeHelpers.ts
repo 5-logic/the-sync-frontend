@@ -440,13 +440,30 @@ export function createFetchBySemesterAction<T extends { id: string }>(
 			set: StoreApi<Record<string, unknown>>['setState'],
 			get: StoreApi<Record<string, unknown>>['getState'],
 		) =>
-		async (semesterId: string) => {
+		async (semesterId: string, force = false) => {
+			// If not forcing, check if we already have cached data for this semester
+			if (!force) {
+				const currentState = get() as {
+					students?: T[];
+					lastSemesterId?: string;
+				};
+				if (
+					currentState.students &&
+					currentState.lastSemesterId === semesterId
+				) {
+					// We already have data for this semester, no need to fetch again
+					return;
+				}
+			}
+
 			set({ loading: true, lastError: null });
 			try {
 				const response = await service.findAllBySemester(semesterId);
 				const result = handleApiResponse(response);
 				if (result.success && result.data) {
 					handleFetchSuccess(result.data, entityName, set, get);
+					// Store which semester this data is for
+					set({ lastSemesterId: semesterId });
 					return;
 				}
 
@@ -464,6 +481,7 @@ export function createFetchBySemesterAction<T extends { id: string }>(
 					) {
 						// Semester is in NotYet or End status, show empty data instead of error
 						handleFetchSuccess([], entityName, set, get);
+						set({ lastSemesterId: semesterId });
 						return;
 					}
 					// For other errors (like network issues, etc.), show the actual error
