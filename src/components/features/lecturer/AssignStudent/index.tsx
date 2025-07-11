@@ -4,11 +4,11 @@ import { EyeOutlined } from '@ant-design/icons';
 import { Button, Card, Space, Tooltip } from 'antd';
 import { useMemo, useState } from 'react';
 
+import { Header } from '@/components/common/Header';
 import StudentFilterBar from '@/components/features/lecturer/AssignStudent/StudentFilterBar';
 import StudentTable from '@/components/features/lecturer/AssignStudent/StudentTable';
 import GroupOverviewTable from '@/components/features/lecturer/AssignSupervisor/GroupOverviewTable';
 import GroupSearchBar from '@/components/features/lecturer/AssignSupervisor/GroupSearchBar';
-import Header from '@/components/features/lecturer/AssignSupervisor/Header';
 import { baseColumns as supervisorBaseColumns } from '@/components/features/lecturer/AssignSupervisor/SupervisorColumns';
 import { ExtendedGroup, extendedGroups } from '@/data/group';
 import { mockStudents } from '@/data/student';

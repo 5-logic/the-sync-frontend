@@ -1,11 +1,10 @@
 'use client';
 
-import { Card, Col, Row, Space, Typography } from 'antd';
+import { Card, Col, Row, Space } from 'antd';
 
+import { Header } from '@/components/common/Header';
 import ChangePasswordForm from '@/components/features/lecturer/ProfileSetting/ChangePasswordForm';
 import PersonalInfoForm from '@/components/features/lecturer/ProfileSetting/PersonalInfoForm';
-
-const { Title, Paragraph } = Typography;
 
 export default function ProfileSettingsPage() {
 	return (
@@ -14,14 +13,11 @@ export default function ProfileSettingsPage() {
 			style={{ padding: 24, width: '100%' }}
 			size="large"
 		>
-			<div>
-				<Title level={2} style={{ marginBottom: 4 }}>
-					Profile Settings
-				</Title>
-				<Paragraph type="secondary" style={{ marginBottom: 0 }}>
-					Manage personal information and change the password for your account.
-				</Paragraph>
-			</div>
+			<Header
+				title="Profile Settings"
+				description="Manage personal information and change the password for the
+					lecturer account."
+			/>
 
 			<Row gutter={24} align="stretch">
 				<Col xs={24} md={14} style={{ display: 'flex' }}>
