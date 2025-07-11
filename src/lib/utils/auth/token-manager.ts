@@ -1,6 +1,8 @@
 import { getSession } from 'next-auth/react';
 
-import { AuthService } from '@/lib/services/auth';
+import { AdminAuthService } from '@/lib/services/auth/admin-auth.service';
+import { TokenUtilsService } from '@/lib/services/auth/token-utils.service';
+import { UserAuthService } from '@/lib/services/auth/user-auth.service';
 
 /**
  * Handles conditional storage based on remember me preference
@@ -181,7 +183,7 @@ export class TokenManager {
 		if (!accessToken) return null;
 
 		// Token is still valid
-		if (!AuthService.isTokenExpired(accessToken)) {
+		if (!TokenUtilsService.isTokenExpired(accessToken)) {
 			return accessToken;
 		}
 
@@ -234,7 +236,7 @@ export class TokenManager {
 			}
 
 			// Check if refresh token is expired
-			if (AuthService.isTokenExpired(refreshToken)) {
+			if (TokenUtilsService.isTokenExpired(refreshToken)) {
 				throw new Error('Refresh token expired');
 			}
 
@@ -248,8 +250,8 @@ export class TokenManager {
 
 				// Call appropriate refresh endpoint
 				const tokenData = isAdmin
-					? await AuthService.adminRefresh({ refreshToken })
-					: await AuthService.userRefresh({ refreshToken });
+					? await AdminAuthService.refresh({ refreshToken })
+					: await UserAuthService.refresh({ refreshToken });
 
 				// Update only access token, keep existing refresh token and remember preference
 				this.setTokens(tokenData.accessToken, refreshToken, rememberMe);
