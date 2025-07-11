@@ -76,7 +76,7 @@ export default function ViewListThesis() {
 				You can view details and register once your group is ready."
 					/>
 				</Col>
-				<Col>
+				<Col style={{ marginTop: 20 }}>
 					<Button type="primary">AI Suggest</Button>
 				</Col>
 			</Row>
