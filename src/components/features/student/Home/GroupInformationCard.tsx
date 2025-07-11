@@ -1,7 +1,7 @@
 'use client';
 
-import { TeamOutlined, UserOutlined } from '@ant-design/icons';
-import { Avatar, Button, Card, Space, Typography } from 'antd';
+import { TeamOutlined } from '@ant-design/icons';
+import { Button, Card, Space, Typography } from 'antd';
 
 import { FullMockGroup } from '@/data/group';
 
@@ -20,27 +20,15 @@ export default function GroupInformationCard({ group }: Readonly<Props>) {
 			}
 		>
 			{group ? (
-				<Space direction="vertical">
+				<Space direction="vertical" size="small">
 					<Typography.Text strong>Group Name:</Typography.Text>
 					<Typography.Text>{group.name}</Typography.Text>
 
-					<Typography.Text strong>Thesis:</Typography.Text>
-					<Typography.Text>{group.title}</Typography.Text>
-
-					<Typography.Text strong>Supervisor:</Typography.Text>
-					<Typography.Text>
-						{group.supervisors.join(', ') ?? 'Unassigned'}
-					</Typography.Text>
+					<Typography.Text strong>Group Leader:</Typography.Text>
+					<Typography.Text>{group.leader}</Typography.Text>
 
 					<Typography.Text strong>Members:</Typography.Text>
-					<Avatar.Group>
-						{group.members.slice(0, 4).map((member) => (
-							<Avatar key={member} icon={<UserOutlined />} alt={member} />
-						))}
-						{group.members.length > 4 && (
-							<Avatar>+{group.members.length - 4}</Avatar>
-						)}
-					</Avatar.Group>
+					<Typography.Text>{group.members.length} members</Typography.Text>
 				</Space>
 			) : (
 				<Button type="primary" block>

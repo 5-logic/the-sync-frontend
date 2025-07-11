@@ -15,6 +15,7 @@ export type FullMockGroup = Group & {
 	title: string;
 	supervisors: string[];
 	members: string[]; // Array of member names
+	leader: string; // ✅ thêm leader
 	status: 'Finalized' | 'Incomplete' | 'Unassigned';
 	phase?: string;
 	submissionFile?: string;
@@ -121,7 +122,8 @@ const metaData: Record<string, GroupMeta> = {
 type FullGroupMeta = {
 	title: string;
 	supervisors: string[];
-	members: string[]; // Array of member names
+	members: string[];
+	leader: string;
 	status: 'Finalized' | 'Incomplete' | 'Unassigned';
 	milestoneAlert?: string;
 	progress: number;
@@ -133,6 +135,7 @@ const fullGroupMetaData: Record<string, FullGroupMeta> = {
 		title: 'AI-powered Healthcare System',
 		supervisors: ['Dr. Sarah Johnson', 'Dr. Davis'],
 		members: ['John Doe', 'Alice Wang', 'Bob Chen', 'Emily Zhang'],
+		leader: 'John Doe',
 		status: 'Finalized',
 		milestoneAlert: 'All milestones completed on time',
 		progress: 95,
@@ -147,6 +150,7 @@ const fullGroupMetaData: Record<string, FullGroupMeta> = {
 		title: 'Blockchain Supply Chain',
 		supervisors: ['Dr. Michael Chen', 'Dr. Martinez'],
 		members: ['Jane Smith', 'David Kim', 'Lisa Park', 'Tom Wilson'],
+		leader: 'Lisa Park',
 		status: 'Finalized',
 		milestoneAlert: 'Minor delay in final documentation',
 		progress: 85,
@@ -167,6 +171,7 @@ const fullGroupMetaData: Record<string, FullGroupMeta> = {
 			'Amy Liu',
 			'Kevin Chen',
 		],
+		leader: 'Mile Johnson',
 		status: 'Incomplete',
 		milestoneAlert: 'Behind schedule - requires attention',
 		progress: 60,
@@ -188,6 +193,7 @@ const fullGroupMetaData: Record<string, FullGroupMeta> = {
 			'Jason Taylor',
 			'Maria Rodriguez',
 		],
+		leader: 'Sarah Wilson',
 		status: 'Unassigned',
 		milestoneAlert: 'Awaiting supervisor assignment',
 		progress: 30,
@@ -260,6 +266,7 @@ export const createFullMockGroup = (
 		title: fullMeta.title,
 		supervisors: fullMeta.supervisors,
 		members: fullMeta.members,
+		leader: fullMeta.leader,
 		status: fullMeta.status,
 		phase,
 		submissionFile: submissionMeta?.submissionFile,
