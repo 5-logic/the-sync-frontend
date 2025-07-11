@@ -1,7 +1,8 @@
 'use client';
 
 import { TeamOutlined } from '@ant-design/icons';
-import { Button, Card, Col, Row, Space, Typography } from 'antd';
+import { Button, Card, Col, Row, Space, Tooltip, Typography } from 'antd';
+import { useRouter } from 'next/navigation';
 
 import { FullMockGroup } from '@/data/group';
 
@@ -10,14 +11,28 @@ interface Props {
 }
 
 export default function GroupInformationCard({ group }: Readonly<Props>) {
+	const router = useRouter();
+
+	const handleClick = () => {
+		if (group) {
+			router.push('/student/group-detail');
+		}
+	};
+
 	return (
 		<Card
-			style={{ height: '100%' }}
 			hoverable
+			style={{ height: '100%', cursor: group ? 'pointer' : 'default' }}
+			onClick={handleClick}
 			title={
-				<>
-					<TeamOutlined /> Group Information
-				</>
+				<Tooltip title={group ? 'Click to view details' : ''}>
+					<Space align="center">
+						<TeamOutlined style={{ color: '#1890ff' }} />
+						<Typography.Text strong style={{ fontSize: 16, color: '#1890ff' }}>
+							Group Information
+						</Typography.Text>
+					</Space>
+				</Tooltip>
 			}
 		>
 			{group ? (

@@ -1,7 +1,8 @@
 'use client';
 
 import { FileTextOutlined } from '@ant-design/icons';
-import { Button, Card, Space, Tag, Typography } from 'antd';
+import { Button, Card, Space, Tag, Tooltip, Typography } from 'antd';
+import { useRouter } from 'next/navigation';
 
 import { FullMockGroup } from '@/data/group';
 
@@ -10,15 +11,28 @@ interface Props {
 }
 
 export default function ThesisStatusCard({ group }: Readonly<Props>) {
+	const router = useRouter();
+
+	const handleClick = () => {
+		if (group) {
+			router.push('/student/thesis-detail');
+		}
+	};
+
 	return (
 		<Card
-			style={{ height: '100%' }}
 			hoverable
+			onClick={handleClick}
+			style={{ height: '100%', cursor: group ? 'pointer' : 'default' }}
 			title={
-				<Space align="center">
-					<FileTextOutlined />
-					<Typography.Text strong>Thesis Status</Typography.Text>
-				</Space>
+				<Tooltip title={group ? 'Click to view details' : ''}>
+					<Space align="center">
+						<FileTextOutlined style={{ color: '#1890ff' }} />
+						<Typography.Text strong style={{ fontSize: 16, color: '#1890ff' }}>
+							Thesis Status
+						</Typography.Text>
+					</Space>
+				</Tooltip>
 			}
 		>
 			{group ? (
