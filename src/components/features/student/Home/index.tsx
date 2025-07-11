@@ -25,25 +25,19 @@ export default function StudentHomePage() {
 				</Col>
 			</Row>
 
-			<Row gutter={[16, 16]} style={{ display: 'flex' }}>
-				<Col xs={24} md={8} style={{ display: 'flex' }}>
-					<div style={{ flex: 1 }}>
-						<GroupInformationCard group={studentGroup} />
-						{/* test with no group */}
-						{/* <GroupInformationCard group={null} /> */}
-					</div>
+			<Row gutter={[16, 16]}>
+				<Col xs={24} md={8} style={{ flex: 1 }}>
+					<GroupInformationCard group={studentGroup} />
+					{/* test with no group */}
+					{/* <ThesisStatusCard group={null} /> */}
 				</Col>
-				<Col xs={24} md={8} style={{ display: 'flex' }}>
-					<div style={{ flex: 1 }}>
-						<ProjectMilestonesCard group={studentGroup} />
-					</div>
+				<Col xs={24} md={8} style={{ flex: 1 }}>
+					<ProjectMilestonesCard group={studentGroup} />
 				</Col>
-				<Col xs={24} md={8} style={{ display: 'flex' }}>
-					<div style={{ flex: 1 }}>
-						<ThesisStatusCard group={studentGroup} />
-						{/* test with no group */}
-						{/* <ThesisStatusCard group={null} /> */}
-					</div>
+				<Col xs={24} md={8} style={{ flex: 1 }}>
+					<ThesisStatusCard group={studentGroup} />
+					{/* test with no group */}
+					{/* <ThesisStatusCard group={null} /> */}
 				</Col>
 			</Row>
 		</Space>

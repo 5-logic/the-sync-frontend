@@ -1,7 +1,7 @@
 'use client';
 
 import { FileTextOutlined } from '@ant-design/icons';
-import { Button, Card, Progress, Space, Tag, Typography } from 'antd';
+import { Button, Card, Space, Tag, Typography } from 'antd';
 
 import { FullMockGroup } from '@/data/group';
 
@@ -13,6 +13,7 @@ export default function ThesisStatusCard({ group }: Readonly<Props>) {
 	return (
 		<Card
 			style={{ height: '100%' }}
+			hoverable
 			title={
 				<Space align="center">
 					<FileTextOutlined />
@@ -26,40 +27,28 @@ export default function ThesisStatusCard({ group }: Readonly<Props>) {
 						Approved
 					</Tag>
 
-					<div>
-						<Typography.Text type="secondary" style={{ fontSize: 14 }}>
-							Title
-						</Typography.Text>
-						<br />
+					<Space direction="vertical" size={4}>
+						<Typography.Text type="secondary">Title</Typography.Text>
 						<Typography.Text strong style={{ fontSize: 15 }}>
 							{group.title}
 						</Typography.Text>
-					</div>
+					</Space>
 
-					<div>
-						<Typography.Text type="secondary" style={{ fontSize: 14 }}>
-							Submitted on
-						</Typography.Text>
-						<br />
+					<Space direction="vertical" size={4}>
+						<Typography.Text type="secondary">Submitted on</Typography.Text>
 						<Typography.Text strong style={{ fontSize: 15 }}>
 							{group.submissionDate ?? 'N/A'}
 						</Typography.Text>
-					</div>
+					</Space>
 
-					<div>
-						<Typography.Text type="secondary" style={{ fontSize: 14 }}>
-							Progress
+					<Space direction="vertical" size={4}>
+						<Typography.Text type="secondary">Supervisor</Typography.Text>
+						<Typography.Text strong style={{ fontSize: 15 }}>
+							{group.supervisors.length > 0
+								? group.supervisors.join(', ')
+								: 'Unassigned'}
 						</Typography.Text>
-						<Progress
-							percent={group.progress}
-							showInfo={false}
-							strokeColor="#1890ff"
-							style={{ marginTop: 4 }}
-						/>
-						<Typography.Text type="secondary">
-							{group.progress}% completed
-						</Typography.Text>
-					</div>
+					</Space>
 				</Space>
 			) : (
 				<Button type="primary" block>

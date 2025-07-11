@@ -15,6 +15,7 @@ export default function ProjectMilestonesCard({ group }: Readonly<Props>) {
 	return (
 		<Card
 			style={{ height: '100%' }}
+			hoverable
 			title={
 				<>
 					<CheckSquareOutlined /> Project Milestones
