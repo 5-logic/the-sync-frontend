@@ -300,35 +300,6 @@ export class OtpVerificationSuccessHandler {
 	}
 
 	/**
-	 * Handle bulk verification success (for admin features)
-	 *
-	 * @param operation - Type of bulk operation
-	 * @param count - Number of successful operations
-	 * @param details - Additional details
-	 */
-	static handleBulkVerificationSuccess(
-		operation: 'otp-verified' | 'password-reset' | 'account-unlock',
-		count: number,
-		details?: string,
-	): void {
-		const operationNames = {
-			'otp-verified': 'OTP verifications',
-			'password-reset': 'password resets',
-			'account-unlock': 'account unlocks',
-		};
-
-		const message = details
-			? `${count} ${operationNames[operation]} completed successfully. ${details}`
-			: `${count} ${operationNames[operation]} completed successfully.`;
-
-		showNotification.success(
-			'Bulk Operation Complete',
-			`✅ ${message}`,
-			NOTIFICATION_DURATION.MEDIUM,
-		);
-	}
-
-	/**
 	 * Handle verification success with next steps guidance
 	 *
 	 * @param currentStep - Current step in the flow
