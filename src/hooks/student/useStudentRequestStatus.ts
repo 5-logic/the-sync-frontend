@@ -95,79 +95,63 @@ export function useStudentRequestStatus(
 		}
 	}, [currentGroup?.id, studentId, checkRequestStatus]);
 
+	// Helper function to update request status
+	const updateRequestStatusHelper = useCallback(
+		async (
+			status: 'Approved' | 'Rejected' | 'Cancelled',
+			successMessage: string,
+			errorMessage: string,
+		) => {
+			if (!requestId) return;
+
+			setLoading(true);
+			try {
+				const response = await requestService.updateRequestStatus(requestId, {
+					status,
+				});
+
+				if (response.success) {
+					showNotification.success(successMessage);
+					await checkRequestStatus();
+				} else {
+					showNotification.error(errorMessage);
+				}
+			} catch (error) {
+				console.error(`Error updating request status to ${status}:`, error);
+				showNotification.error(errorMessage);
+			} finally {
+				setLoading(false);
+			}
+		},
+		[requestId, checkRequestStatus],
+	);
+
 	// Cancel invite
 	const cancelInvite = useCallback(async () => {
-		if (!requestId) return;
-
-		setLoading(true);
-		try {
-			const response = await requestService.updateRequestStatus(requestId, {
-				status: 'Cancelled',
-			});
-
-			if (response.success) {
-				showNotification.success('Invitation cancelled successfully!');
-				await checkRequestStatus();
-			} else {
-				showNotification.error(
-					'Failed to cancel invitation. Please try again.',
-				);
-			}
-		} catch (error) {
-			console.error('Error cancelling invitation:', error);
-			showNotification.error('Failed to cancel invitation. Please try again.');
-		} finally {
-			setLoading(false);
-		}
-	}, [requestId, checkRequestStatus]);
+		await updateRequestStatusHelper(
+			'Cancelled',
+			'Invitation cancelled successfully!',
+			'Failed to cancel invitation. Please try again.',
+		);
+	}, [updateRequestStatusHelper]);
 
 	// Approve join request
 	const approveJoinRequest = useCallback(async () => {
-		if (!requestId) return;
-
-		setLoading(true);
-		try {
-			const response = await requestService.updateRequestStatus(requestId, {
-				status: 'Approved',
-			});
-
-			if (response.success) {
-				showNotification.success('Join request approved successfully!');
-				await checkRequestStatus();
-			} else {
-				showNotification.error('Failed to approve request. Please try again.');
-			}
-		} catch (error) {
-			console.error('Error approving request:', error);
-			showNotification.error('Failed to approve request. Please try again.');
-		} finally {
-			setLoading(false);
-		}
-	}, [requestId, checkRequestStatus]);
+		await updateRequestStatusHelper(
+			'Approved',
+			'Join request approved successfully!',
+			'Failed to approve request. Please try again.',
+		);
+	}, [updateRequestStatusHelper]);
 
 	// Reject join request
 	const rejectJoinRequest = useCallback(async () => {
-		if (!requestId) return;
-
-		setLoading(true);
-		try {
-			const response = await requestService.updateRequestStatus(requestId, {
-				status: 'Rejected',
-			});
-
-			if (response.success) {
-				showNotification.success('Join request rejected successfully!');
-				await checkRequestStatus();
-			} else {
-				showNotification.error('Failed to reject request. Please try again.');
-			}
-		} catch (error) {
-			console.error('Error rejecting request:', error);
-			showNotification.error('Failed to reject request. Please try again.');
-		} finally {
-			setLoading(false);
-		}
-	}, [requestId, checkRequestStatus]);
+		await updateRequestStatusHelper(
+			'Rejected',
+			'Join request rejected successfully!',
+			'Failed to reject request. Please try again.',
+		);
+	}, [updateRequestStatusHelper]);
 
 	// Refresh status
 	const refreshStatus = useCallback(async () => {
