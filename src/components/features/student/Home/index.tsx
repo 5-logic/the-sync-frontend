@@ -13,13 +13,11 @@ export default function StudentHomePage() {
 
 	return (
 		<Space direction="vertical" size="middle" style={{ width: '100%' }}>
-			<Row justify="start">
-				<Header
-					title="Student Dashboard"
-					description="This is your personal dashboard. Here you can track your group
+			<Header
+				title="Student Dashboard"
+				description="This is your personal dashboard. Here you can track your group
 						status, project milestones, and thesis progress."
-				/>
-			</Row>
+			/>
 
 			<Row justify="end" align="middle" style={{ marginBottom: 0 }}>
 				<Col>
