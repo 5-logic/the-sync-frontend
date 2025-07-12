@@ -11,17 +11,25 @@ interface Props {
 	readonly columns: ColumnsType<ExtendedGroup>;
 	readonly rowKey?: keyof ExtendedGroup;
 	readonly onChange?: TableProps<ExtendedGroup>['onChange'];
+	readonly hideStatusColumn?: boolean; // New prop to hide the status column
 }
+
 export default function GroupOverviewTable({
 	data,
 	columns,
 	rowKey = 'id',
 	onChange,
+	hideStatusColumn = false, // Default to false
 }: Props) {
+	// Filter out the status column if hideStatusColumn is true
+	const filteredColumns = hideStatusColumn
+		? columns.filter((col) => col.key !== 'status')
+		: columns;
+
 	return (
 		<Table
 			rowKey={rowKey as string}
-			columns={columns}
+			columns={filteredColumns}
 			dataSource={data}
 			pagination={TablePagination}
 			scroll={{ x: 'max-content' }}
