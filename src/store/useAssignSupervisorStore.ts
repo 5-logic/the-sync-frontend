@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 
-import groupService, { type Group } from '@/lib/services/groups.service';
+import groupService from '@/lib/services/groups.service';
 import lecturerService from '@/lib/services/lecturers.service';
 import supervisionService, {
 	type Supervision,
@@ -9,6 +9,7 @@ import supervisionService, {
 import thesesService from '@/lib/services/theses.service';
 import { handleApiError, handleApiResponse } from '@/lib/utils/handleApi';
 import { showNotification } from '@/lib/utils/notification';
+import { GroupService as Group } from '@/schemas/group';
 import { type Lecturer } from '@/schemas/lecturer';
 import { useSupervisionStore } from '@/store/useSupervisionStore';
 
