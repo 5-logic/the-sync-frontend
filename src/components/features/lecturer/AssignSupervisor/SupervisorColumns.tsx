@@ -1,7 +1,7 @@
 import { Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 
-import { ExtendedGroup } from '@/data/group';
+import { type SupervisorAssignmentData } from '@/hooks/lecturer/useAssignSupervisor';
 
 export const statusColorMap: Record<string, string> = {
 	Finalized: 'green',
@@ -12,19 +12,19 @@ export const statusColorMap: Record<string, string> = {
 export const renderSupervisors = (supervisors: string[]) =>
 	supervisors.length > 0 ? (
 		<div>
-			{supervisors.map((sup) => (
-				<div key={sup}>{sup}</div>
+			{supervisors.map((sup, index) => (
+				<div key={index}>{sup}</div>
 			))}
 		</div>
 	) : (
 		'-'
 	);
 
-export const baseColumns: ColumnsType<ExtendedGroup> = [
+export const baseColumns: ColumnsType<SupervisorAssignmentData> = [
 	{
 		title: 'Group Name',
-		dataIndex: 'name',
-		key: 'name',
+		dataIndex: 'groupName',
+		key: 'groupName',
 	},
 	{
 		title: 'Thesis Title',
@@ -33,11 +33,14 @@ export const baseColumns: ColumnsType<ExtendedGroup> = [
 	},
 	{
 		title: 'Members',
-		dataIndex: 'members',
-		key: 'members',
-		render: (members: number) => (
-			<span style={{ color: 'inherit' }}>{members}</span>
-		),
+		dataIndex: 'memberCount',
+		key: 'memberCount',
+		render: (memberCount: number, record: SupervisorAssignmentData) => {
+			if (record.groupName === 'No Group') {
+				return '-';
+			}
+			return memberCount || 0;
+		},
 	},
 	{
 		title: 'Supervisor',
