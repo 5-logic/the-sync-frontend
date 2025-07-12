@@ -40,7 +40,7 @@ const STORE_NAME = 'student-store';
 
 interface StudentState {
 	// Data
-	students: Student[];
+	students: Student[]; // Students data
 	filteredStudents: Student[];
 	currentProfile: StudentProfile | null;
 
