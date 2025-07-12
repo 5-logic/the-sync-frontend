@@ -4,13 +4,13 @@ import { Table } from 'antd';
 import type { ColumnsType, TableProps } from 'antd/es/table';
 
 import { TablePagination } from '@/components/common/TablePagination';
-import { ExtendedGroup } from '@/data/group';
+import { type SupervisorAssignmentData } from '@/hooks/lecturer/useAssignSupervisor';
 
 interface Props {
-	readonly data: ExtendedGroup[];
-	readonly columns: ColumnsType<ExtendedGroup>;
-	readonly rowKey?: keyof ExtendedGroup;
-	readonly onChange?: TableProps<ExtendedGroup>['onChange'];
+	readonly data: SupervisorAssignmentData[];
+	readonly columns: ColumnsType<SupervisorAssignmentData>;
+	readonly rowKey?: keyof SupervisorAssignmentData;
+	readonly onChange?: TableProps<SupervisorAssignmentData>['onChange'];
 }
 export default function GroupOverviewTable({
 	data,
