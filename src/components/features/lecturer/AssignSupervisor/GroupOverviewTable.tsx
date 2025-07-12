@@ -9,12 +9,14 @@ import { type SupervisorAssignmentData } from '@/hooks/lecturer/useAssignSupervi
 interface Props {
 	readonly data: SupervisorAssignmentData[];
 	readonly columns: ColumnsType<SupervisorAssignmentData>;
+	readonly loading?: boolean;
 	readonly rowKey?: keyof SupervisorAssignmentData;
 	readonly onChange?: TableProps<SupervisorAssignmentData>['onChange'];
 }
 export default function GroupOverviewTable({
 	data,
 	columns,
+	loading = false,
 	rowKey = 'id',
 	onChange,
 }: Props) {
@@ -23,6 +25,7 @@ export default function GroupOverviewTable({
 			rowKey={rowKey as string}
 			columns={columns}
 			dataSource={data}
+			loading={loading}
 			pagination={TablePagination}
 			scroll={{ x: 'max-content' }}
 			onChange={onChange}
