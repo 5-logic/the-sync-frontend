@@ -78,7 +78,11 @@ export default function AssignStudentPage() {
 				<div style={{ marginBottom: 16 }}>
 					<GroupSearchBar value={groupSearch} onChange={setGroupSearch} />
 				</div>
-				<GroupOverviewTable data={filteredGroups} columns={groupColumns} />
+				<GroupOverviewTable
+					data={filteredGroups}
+					columns={groupColumns}
+					hideStatusColumn={true}
+				/>
 			</Card>
 
 			<Card title="Ungrouped Students">
