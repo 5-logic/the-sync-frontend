@@ -1,10 +1,9 @@
 'use client';
 
-import { Table } from 'antd';
+import { Spin, Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 
 import { TablePagination } from '@/components/common/TablePagination';
-import { majorMap } from '@/data/major';
 import { Student } from '@/schemas/student';
 
 interface Props {
@@ -12,6 +11,8 @@ interface Props {
 	onSelectionChange?: (selectedRowKeys: string[]) => void;
 	selectedRowKeys?: string[];
 	showOnlyUngrouped?: boolean;
+	majorNamesMap?: Record<string, string>;
+	loading?: boolean;
 }
 
 export default function StudentTable({
@@ -19,9 +20,11 @@ export default function StudentTable({
 	onSelectionChange,
 	selectedRowKeys,
 	showOnlyUngrouped = true,
+	majorNamesMap = {},
+	loading = false,
 }: Readonly<Props>) {
 	const filteredData = showOnlyUngrouped
-		? data.filter((student) => !student.isActive)
+		? data.filter((student) => student.isActive) // Filter active students for ungrouped
 		: data;
 
 	const columns: ColumnsType<Student> = [
@@ -40,26 +43,35 @@ export default function StudentTable({
 		{
 			title: 'Major',
 			dataIndex: 'majorId',
-			render: (majorId: string) => majorMap[majorId] ?? majorId,
+			render: (majorId: string) => {
+				const majorName = majorNamesMap[majorId];
+				if (majorName) {
+					return majorName;
+				}
+				// Fallback: if major name not found, show majorId
+				return majorId || 'N/A';
+			},
 		},
 	];
 
 	return (
-		<Table
-			rowKey="id"
-			columns={columns}
-			dataSource={filteredData}
-			rowSelection={
-				onSelectionChange
-					? {
-							selectedRowKeys,
-							onChange: (selectedKeys) =>
-								onSelectionChange(selectedKeys as string[]),
-						}
-					: undefined
-			}
-			pagination={TablePagination}
-			scroll={{ x: 'max-content' }}
-		/>
+		<Spin spinning={loading} tip="Loading students...">
+			<Table
+				rowKey="id"
+				columns={columns}
+				dataSource={filteredData}
+				rowSelection={
+					onSelectionChange
+						? {
+								selectedRowKeys,
+								onChange: (selectedKeys) =>
+									onSelectionChange(selectedKeys as string[]),
+							}
+						: undefined
+				}
+				pagination={TablePagination}
+				scroll={{ x: 'max-content' }}
+			/>
+		</Spin>
 	);
 }
