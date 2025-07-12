@@ -261,9 +261,6 @@ export default function AssignSupervisors() {
 				onSubmit={handleAssignSubmit}
 				lecturerOptions={lecturerOptions}
 				isChangeMode={selectedGroup?.status === 'Finalized'}
-				currentSupervisorIds={
-					selectedGroup?.supervisorDetails.map((s) => s.id) || []
-				}
 			/>
 		</Space>
 	);
