@@ -5,8 +5,8 @@ import { TablePagination } from '@/components/common/TablePagination';
 import { Group } from '@/lib/services/groups.service';
 
 interface CustomGroupTableProps {
-	data: Group[];
-	columns: ColumnsType<Group>;
+	readonly data: Group[];
+	readonly columns: ColumnsType<Group>;
 }
 
 export default function CustomGroupTable({
