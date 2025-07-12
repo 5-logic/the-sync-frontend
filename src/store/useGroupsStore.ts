@@ -14,7 +14,8 @@ interface GroupsState {
 	groups: Group[];
 	loading: boolean;
 	error: string | null;
-	fetchGroups: () => Promise<void>;
+	fetchGroups: (force?: boolean) => Promise<void>;
+	refetch: () => Promise<void>;
 	clearGroups: () => void;
 }
 
@@ -23,14 +24,14 @@ export const useGroupsStore = create<GroupsState>((set, get) => ({
 	loading: false,
 	error: null,
 
-	fetchGroups: async () => {
+	fetchGroups: async (force = false) => {
 		const { loading } = get();
 
-		// Prevent multiple simultaneous fetches
-		if (loading) return;
+		// Prevent multiple simultaneous fetches unless forced
+		if (loading && !force) return;
 
 		const cachedGroups = cacheUtils.get<Group[]>('groups', 'all');
-		if (cachedGroups) {
+		if (!force && cachedGroups) {
 			// Use cached data
 			set({ groups: cachedGroups });
 			return;
@@ -58,6 +59,10 @@ export const useGroupsStore = create<GroupsState>((set, get) => ({
 		} finally {
 			set({ loading: false });
 		}
+	},
+
+	refetch: async () => {
+		await get().fetchGroups(true);
 	},
 
 	clearGroups: () => {
