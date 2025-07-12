@@ -1,15 +1,15 @@
-import { EyeOutlined } from '@ant-design/icons';
-import { Button, Card, Spin } from 'antd';
+import { EyeOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
+import { Button, Card, Col, Input, Row, Spin } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
 
-import GroupOverviewTable from '@/components/features/lecturer/AssignSupervisor/GroupOverviewTable';
-import GroupSearchBar from '@/components/features/lecturer/AssignSupervisor/GroupSearchBar';
-import { ExtendedGroup } from '@/data/group';
 import { Group } from '@/lib/services/groups.service';
+import { isTextMatch } from '@/lib/utils/textNormalization';
 import { useGroupsStore } from '@/store/useGroupsStore';
 
+import CustomGroupTable from './GroupTable';
+
 interface Props {
-	readonly onView?: (group: ExtendedGroup) => void;
+	readonly onView?: (group: Group) => void;
 }
 
 export default function GroupAssignTable({ onView }: Props) {
@@ -20,36 +20,19 @@ export default function GroupAssignTable({ onView }: Props) {
 		fetchGroups();
 	}, [fetchGroups]);
 
-	const mapGroupToExtendedGroup = (group: Group): ExtendedGroup => ({
-		id: group.id,
-		code: group.code,
-		name: group.name,
-		semesterId: group.semester.id,
-		createdAt: new Date(group.createdAt),
-		updatedAt: new Date(group.updatedAt),
-		projectDirection: group.projectDirection || null,
-		thesisId: null,
-		thesisTitle: group.projectDirection || 'Untitled Thesis',
-		supervisors: group.leader ? [group.leader.student.user.fullName] : [],
-		members: group.memberCount,
-		status:
-			group.leader && group.leader.student.user.fullName
-				? group.leader.student.user.fullName.length === 2
-					? 'Finalized'
-					: group.leader.student.user.fullName.length === 1
-						? 'Incomplete'
-						: 'Unassigned'
-				: 'Unassigned',
-	});
+	const handleRefresh = () => {
+		useGroupsStore.getState().refetch(); // Use refetch method for forced refresh
+	};
 
 	const filteredGroups = useMemo(() => {
-		const searchText = groupSearch.toLowerCase();
 		return groups
-			.map(mapGroupToExtendedGroup)
-			.filter((item) =>
-				[item.name, item.thesisTitle].some((field) =>
-					field.toLowerCase().includes(searchText),
-				),
+			.sort((a, b) => a.memberCount - b.memberCount) // Sort by members ascending
+			.filter((group) =>
+				isTextMatch(groupSearch, [
+					group.code,
+					group.name,
+					group.leader?.student?.user?.fullName,
+				]),
 			);
 	}, [groupSearch, groups]);
 
@@ -69,20 +52,20 @@ export default function GroupAssignTable({ onView }: Props) {
 			},
 			{
 				title: 'Members',
-				dataIndex: 'members',
+				dataIndex: 'memberCount',
 				key: 'members',
 				width: '20%',
 			},
 			{
 				title: 'Leader',
-				render: (_: unknown, record: ExtendedGroup) =>
-					record.supervisors[0] || 'No leader',
+				render: (_: unknown, record: Group) =>
+					record.leader?.student?.user?.fullName || 'No leader',
 				key: 'leader',
 				width: '20%',
 			},
 			{
 				title: 'Actions',
-				render: (_: unknown, record: ExtendedGroup) => (
+				render: (_: unknown, record: Group) => (
 					<Button
 						type="link"
 						icon={<EyeOutlined />}
@@ -99,16 +82,35 @@ export default function GroupAssignTable({ onView }: Props) {
 	}, [onView]);
 
 	return (
-		<Card title="Thesis Groups">
-			<div style={{ marginBottom: 16 }}>
-				<GroupSearchBar value={groupSearch} onChange={setGroupSearch} />
-			</div>
-			<Spin spinning={loading}>
-				<GroupOverviewTable
-					data={filteredGroups}
-					columns={groupColumns}
-					hideStatusColumn={true}
-				/>
+		<Card title="Active Groups">
+			<Row
+				gutter={[16, 16]}
+				align="middle"
+				justify="space-between"
+				style={{ marginBottom: 16 }}
+			>
+				<Col flex="auto">
+					<Input
+						allowClear
+						prefix={<SearchOutlined />}
+						placeholder="Search groups"
+						value={groupSearch}
+						onChange={(e) => setGroupSearch(e.target.value)}
+					/>
+				</Col>
+				<Col flex="none">
+					<Button
+						icon={<ReloadOutlined />}
+						onClick={handleRefresh}
+						type="default"
+						loading={loading} // Match loading state
+					>
+						Refresh
+					</Button>
+				</Col>
+			</Row>
+			<Spin spinning={loading} tip="Loading groups...">
+				<CustomGroupTable data={filteredGroups} columns={groupColumns} />
 			</Spin>
 		</Card>
 	);
