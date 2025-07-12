@@ -1,14 +1,34 @@
 'use client';
 
-import AssignStudent from '@/components/features/lecturer/AssignStudent';
+import { Suspense, lazy } from 'react';
+
+import {
+	AuthLoadingSkeleton,
+	PageContentSkeleton,
+} from '@/components/common/loading';
 import { useModeratorAuth } from '@/hooks/auth';
 
-export default function LecturerAssignStudentClient() {
-	const { isAuthorized } = useModeratorAuth();
+const AssignStudent = lazy(
+	() => import('@/components/features/lecturer/AssignStudent'),
+);
 
-	if (!isAuthorized) {
-		return null; // Will redirect to unauthorized page
+export default function LecturerAssignStudentClient() {
+	const { isAuthorized, loading } = useModeratorAuth();
+
+	// Show loading skeleton while checking authorization
+	if (loading) {
+		return <AuthLoadingSkeleton />;
 	}
 
-	return <AssignStudent />;
+	// If not authorized, return null (will redirect to unauthorized page)
+	if (!isAuthorized) {
+		return null;
+	}
+
+	// Use Suspense for lazy loading the main component
+	return (
+		<Suspense fallback={<PageContentSkeleton />}>
+			<AssignStudent />
+		</Suspense>
+	);
 }
