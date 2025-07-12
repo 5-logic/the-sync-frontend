@@ -158,22 +158,21 @@ export const useAssignSupervisorStore = create<AssignSupervisorState>()(
 							let memberCount = 0;
 							let groupId: string | null = null;
 
-							if (
-								groupResult.status === 'fulfilled' &&
-								groupResult.value &&
-								groupResult.value.success
-							) {
-								const group = groupResult.value.data as Group & {
-									members?: Array<{
-										userId: string;
-										user: { fullName: string };
-										isLeader: boolean;
-									}>;
-								};
+							const group =
+								groupResult.status === 'fulfilled' && groupResult.value?.success
+									? (groupResult.value.data as Group & {
+											members?: Array<{
+												userId: string;
+												user: { fullName: string };
+												isLeader: boolean;
+											}>;
+										})
+									: undefined;
+
+							if (group) {
 								groupName = group.name;
 								groupId = group.id;
-
-								if (group.members && Array.isArray(group.members)) {
+								if (Array.isArray(group.members)) {
 									memberCount = group.members.length;
 								}
 							}

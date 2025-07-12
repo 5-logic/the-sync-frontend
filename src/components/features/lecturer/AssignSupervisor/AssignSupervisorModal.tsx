@@ -35,19 +35,35 @@ export default function AssignSupervisorModal({
 	const [renderKey, setRenderKey] = useState(0);
 	const [isInitialized, setIsInitialized] = useState(false);
 
+	// Helper methods for form initialization
+	const shouldInitializeForm = (
+		isOpen: boolean,
+		initialized: boolean,
+	): boolean => isOpen && !initialized;
+
+	const shouldResetForm = (isOpen: boolean): boolean => !isOpen;
+
+	const initializeForm = () => {
+		form.setFieldsValue({
+			supervisor1: initialValues?.[0],
+			supervisor2: initialValues?.[1],
+		});
+		setIsInitialized(true);
+		setRenderKey((prev) => prev + 1);
+	};
+
+	const resetFormInitialization = () => {
+		setIsInitialized(false);
+	};
+
 	// Initialize form values only once when modal opens
 	useEffect(() => {
-		if (open && !isInitialized) {
-			form.setFieldsValue({
-				supervisor1: initialValues?.[0],
-				supervisor2: initialValues?.[1],
-			});
-			setIsInitialized(true);
-			setRenderKey((prev) => prev + 1);
-		} else if (!open) {
-			// Reset initialization flag when modal closes
-			setIsInitialized(false);
+		if (shouldInitializeForm(open, isInitialized)) {
+			initializeForm();
+		} else if (shouldResetForm(open)) {
+			resetFormInitialization();
 		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [open, initialValues, form, isInitialized]);
 
 	// Handle render key updates only when not loading

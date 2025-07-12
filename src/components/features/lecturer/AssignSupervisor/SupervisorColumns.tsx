@@ -19,8 +19,8 @@ export const statusColorMap: Record<string, string> = {
 export const renderSupervisors = (supervisors: string[]) =>
 	supervisors.length > 0 ? (
 		<div>
-			{supervisors.map((sup, index) => (
-				<div key={index}>{sup}</div>
+			{supervisors.map((sup) => (
+				<div key={sup}>{sup}</div>
 			))}
 		</div>
 	) : (

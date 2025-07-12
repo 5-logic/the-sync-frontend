@@ -59,29 +59,32 @@ export default function AssignSupervisorSkeleton() {
 					</Row>
 
 					{/* Table rows */}
-					{Array.from({ length: 5 }).map((_, index) => (
-						<Row key={index} gutter={16} style={{ marginTop: '16px' }}>
-							<Col span={4}>
-								<Skeleton active paragraph={{ rows: 1 }} title={false} />
-							</Col>
-							<Col span={6}>
-								<Skeleton active paragraph={{ rows: 2 }} title={false} />
-							</Col>
-							<Col span={4}>
-								<Skeleton active paragraph={{ rows: 1 }} title={false} />
-							</Col>
-							<Col span={6}>
-								<Skeleton active paragraph={{ rows: 1 }} title={false} />
-							</Col>
-							<Col span={4}>
-								<Skeleton.Button
-									active
-									size="default"
-									style={{ width: '80px' }}
-								/>
-							</Col>
-						</Row>
-					))}
+					{Array.from({ length: 5 }).map(() => {
+						const rowId = crypto.randomUUID();
+						return (
+							<Row key={rowId} gutter={16} style={{ marginTop: '16px' }}>
+								<Col span={4}>
+									<Skeleton active paragraph={{ rows: 1 }} title={false} />
+								</Col>
+								<Col span={6}>
+									<Skeleton active paragraph={{ rows: 2 }} title={false} />
+								</Col>
+								<Col span={4}>
+									<Skeleton active paragraph={{ rows: 1 }} title={false} />
+								</Col>
+								<Col span={6}>
+									<Skeleton active paragraph={{ rows: 1 }} title={false} />
+								</Col>
+								<Col span={4}>
+									<Skeleton.Button
+										active
+										size="default"
+										style={{ width: '80px' }}
+									/>
+								</Col>
+							</Row>
+						);
+					})}
 				</Space>
 			</Card>
 		</Space>
