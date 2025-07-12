@@ -1,6 +1,6 @@
 'use client';
 
-import { Alert, Button, Space, Spin } from 'antd';
+import { Alert, Button, Space } from 'antd';
 import { useState } from 'react';
 
 import { Header } from '@/components/common/Header';
@@ -153,14 +153,6 @@ export default function AssignSupervisors() {
 		value: lecturer.id,
 	}));
 
-	if (loading) {
-		return (
-			<div className="flex justify-center items-center min-h-[400px]">
-				<Spin size="large" />
-			</div>
-		);
-	}
-
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
 			<Header
@@ -191,7 +183,11 @@ export default function AssignSupervisors() {
 				onStatusChange={setStatusFilter}
 			/>
 
-			<GroupOverviewTable data={filteredData} columns={columns} />
+			<GroupOverviewTable
+				data={filteredData}
+				columns={columns}
+				loading={loading}
+			/>
 
 			<AssignSupervisorModal
 				open={modalOpen}
