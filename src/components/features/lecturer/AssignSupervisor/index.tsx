@@ -48,6 +48,99 @@ export default function AssignSupervisors() {
 	});
 
 	/**
+	 * Process a single supervisor operation in change mode
+	 */
+	const processSupervisorOperation = async (
+		currentId: string | undefined,
+		newId: string | undefined,
+		position: number,
+		thesisId: string,
+	): Promise<{ type: string; success: boolean }> => {
+		if (currentId && newId && currentId !== newId) {
+			// Change supervisor at position
+			const result = await changeSupervisor(thesisId, currentId, newId);
+			return { type: `change position ${position + 1}`, success: result };
+		}
+
+		if (!currentId && newId) {
+			// Add new supervisor at position
+			const result = await assignSupervisor(thesisId, newId);
+			return { type: `add position ${position + 1}`, success: result };
+		}
+
+		if (currentId && !newId) {
+			// Remove supervisor at position (placeholder for future implementation)
+			return { type: `remove position ${position + 1}`, success: true };
+		}
+
+		// No operation needed
+		return { type: `no change position ${position + 1}`, success: true };
+	};
+
+	/**
+	 * Handle supervisor changes in change mode
+	 */
+	const handleChangeModeOperations = async (
+		currentSupervisorIds: string[],
+		newSupervisorIds: string[],
+		thesisId: string,
+	): Promise<boolean> => {
+		try {
+			const maxLength = Math.max(
+				currentSupervisorIds.length,
+				newSupervisorIds.length,
+			);
+			const operations = [];
+
+			for (let i = 0; i < maxLength; i++) {
+				const operation = await processSupervisorOperation(
+					currentSupervisorIds[i],
+					newSupervisorIds[i],
+					i,
+					thesisId,
+				);
+				operations.push(operation);
+			}
+
+			return operations.length === 0 || operations.every((op) => op.success);
+		} catch (error) {
+			console.error('Error in change mode operations:', error);
+			return false;
+		}
+	};
+
+	/**
+	 * Handle supervisor assignments in assign mode
+	 */
+	const handleAssignModeOperations = async (
+		supervisorIds: string[],
+		currentSupervisorIds: string[],
+		thesisId: string,
+	): Promise<boolean> => {
+		try {
+			const supervisorsToAssign = supervisorIds.filter(
+				(id) => id && !currentSupervisorIds.includes(id),
+			);
+
+			if (supervisorsToAssign.length === 0) {
+				return true; // All selected supervisors are already assigned
+			}
+
+			const results = await Promise.all(
+				supervisorsToAssign.map(async (supervisorId) => {
+					const result = await assignSupervisor(thesisId, supervisorId);
+					return { supervisor: supervisorId, success: result };
+				}),
+			);
+
+			return results.every((result) => result.success);
+		} catch (error) {
+			console.error('Error in assign mode operations:', error);
+			return false;
+		}
+	};
+
+	/**
 	 * Handle supervisor assignment/change submission
 	 *
 	 * CHANGE MODE Logic:
@@ -78,109 +171,30 @@ export default function AssignSupervisors() {
 		setModalLoading(true);
 
 		const isChangeMode = selectedGroup.status === 'Finalized';
+		const currentSupervisorIds = selectedGroup.supervisorDetails.map(
+			(s) => s.id,
+		);
+
 		let success = false;
+
 		if (isChangeMode) {
-			const currentSupervisorIds = selectedGroup.supervisorDetails.map(
-				(s) => s.id,
-			);
 			const newSupervisorIds = supervisorIds.filter(Boolean);
-
-			try {
-				let allOperationsSuccess = true;
-				const operations: Array<{ type: string; success: boolean }> = [];
-
-				// Strategy: Compare each position and determine the needed operation
-				const maxLength = Math.max(
-					currentSupervisorIds.length,
-					newSupervisorIds.length,
-				);
-
-				for (let i = 0; i < maxLength; i++) {
-					const currentId = currentSupervisorIds[i];
-					const newId = newSupervisorIds[i];
-
-					if (currentId && newId && currentId !== newId) {
-						// Change supervisor at position i
-						const result = await changeSupervisor(
-							selectedGroup.thesisId,
-							currentId,
-							newId,
-						);
-						operations.push({
-							type: `change position ${i + 1}`,
-							success: result,
-						});
-						if (!result) allOperationsSuccess = false;
-					} else if (!currentId && newId) {
-						// Add new supervisor at position i
-						const result = await assignSupervisor(
-							selectedGroup.thesisId,
-							newId,
-						);
-						operations.push({ type: `add position ${i + 1}`, success: result });
-						if (!result) allOperationsSuccess = false;
-					} else if (currentId && !newId) {
-						// Remove supervisor at position i
-						// Note: Currently no remove API, so we skip this
-						// Future: implement removeSupervisor API
-						operations.push({
-							type: `remove position ${i + 1}`,
-							success: true,
-						});
-					}
-					// If currentId === newId, no operation needed (same supervisor)
-				}
-
-				// Success if all operations succeeded or if no operations were needed
-				success = operations.length === 0 || allOperationsSuccess;
-			} catch (error) {
-				console.error('Error in change mode operations:', error);
-				success = false;
-			}
-		} else {
-			// Assign mode: assign supervisors in order
-			const currentSupervisorIds = selectedGroup.supervisorDetails.map(
-				(s) => s.id,
+			success = await handleChangeModeOperations(
+				currentSupervisorIds,
+				newSupervisorIds,
+				selectedGroup.thesisId,
 			);
-
-			try {
-				let allAssignmentsSuccess = true;
-				const assignments: Array<{ supervisor: string; success: boolean }> = [];
-
-				// Filter out supervisors that are already assigned to avoid duplicates
-				const supervisorsToAssign = supervisorIds.filter(
-					(id) => id && !currentSupervisorIds.includes(id),
-				);
-
-				if (supervisorsToAssign.length > 0) {
-					// Assign each supervisor sequentially
-					for (const supervisorId of supervisorsToAssign) {
-						const result = await assignSupervisor(
-							selectedGroup.thesisId,
-							supervisorId,
-						);
-						assignments.push({ supervisor: supervisorId, success: result });
-						if (!result) {
-							allAssignmentsSuccess = false;
-							// Continue with other assignments even if one fails
-						}
-					}
-
-					success = allAssignmentsSuccess;
-				} else {
-					// All selected supervisors are already assigned
-					success = true;
-				}
-			} catch (error) {
-				console.error('Error in assign mode operations:', error);
-				success = false;
-			}
+		} else {
+			success = await handleAssignModeOperations(
+				supervisorIds,
+				currentSupervisorIds,
+				selectedGroup.thesisId,
+			);
 		}
 
 		if (success) {
 			setModalOpen(false);
 			setSelectedGroup(null);
-			// Notification is handled by the store, no need to show here
 		}
 
 		setModalLoading(false);
