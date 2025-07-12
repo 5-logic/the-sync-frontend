@@ -1,4 +1,4 @@
-import { Alert, Button, Form, Modal, Select, Spin } from 'antd';
+import { Button, Form, Modal, Select } from 'antd';
 import React, { useEffect, useState } from 'react';
 
 import { FormLabel } from '@/components/common/FormLabel';
@@ -16,7 +16,6 @@ interface Props {
 	readonly initialValues?: string[];
 	readonly lecturerOptions: LecturerOption[];
 	readonly isChangeMode?: boolean;
-	readonly currentSupervisorIds?: string[]; // Add this to track current supervisors
 }
 
 export default function AssignSupervisorModal({
@@ -27,7 +26,6 @@ export default function AssignSupervisorModal({
 	initialValues = [],
 	lecturerOptions,
 	isChangeMode = false,
-	currentSupervisorIds = [],
 }: Props) {
 	const [form] = Form.useForm();
 	const [renderKey, setRenderKey] = useState(0);
@@ -75,16 +73,9 @@ export default function AssignSupervisorModal({
 
 	// Filter lecturer options based on mode
 	const getAvailableOptions = () => {
-		if (isChangeMode) {
-			// In change mode, allow all lecturers except the currently selected ones in the form
-			// This prevents selecting the same lecturer for both positions
-			return lecturerOptions;
-		} else {
-			// In assign mode, filter out supervisors already assigned to this thesis
-			return lecturerOptions.filter(
-				(option) => !currentSupervisorIds.includes(option.value),
-			);
-		}
+		// Both modes now show all lecturers for consistency
+		// This provides flexibility and better UX
+		return lecturerOptions;
 	};
 
 	// Get options for supervisor 1 (exclude supervisor 2 if selected)
@@ -121,108 +112,114 @@ export default function AssignSupervisorModal({
 			footer={null}
 			centered
 		>
-			<Spin spinning={loading && !isChangeMode}>
-				<Form form={form} layout="vertical" onFinish={handleFinish}>
-					{!isChangeMode && currentSupervisorIds.length > 0 && (
-						<Alert
-							message="Information"
-							description={`This thesis already has ${currentSupervisorIds.length} supervisor(s) assigned. Only available lecturers are shown.`}
-							type="info"
-							style={{ marginBottom: 16 }}
-							showIcon
+			<Form form={form} layout="vertical" onFinish={handleFinish}>
+				<Form.Item
+					label={
+						<FormLabel
+							text={`${isChangeMode ? 'Change' : 'Select'} Supervisor 1`}
+							isRequired
+							isBold
 						/>
-					)}
-					<Form.Item
-						label={<FormLabel text="Select Supervisor 1" isRequired isBold />}
-						name="supervisor1"
-						required={false}
-						rules={[
-							{
-								required: true,
-								message: 'Please select at least one supervisor',
+					}
+					name="supervisor1"
+					required={false}
+					rules={[
+						{
+							required: true,
+							message: 'Please select at least one supervisor',
+						},
+					]}
+				>
+					<Select
+						key={
+							loading
+								? 'supervisor1-loading'
+								: `supervisor1-${form.getFieldValue('supervisor2') || initialValues?.[1] || 'none'}-${renderKey}`
+						}
+						placeholder={
+							isChangeMode ? 'Change to new supervisor' : 'Select supervisor'
+						}
+						options={getSupervisor1Options()}
+						allowClear
+						showSearch
+						disabled={loading}
+						filterOption={(input, option) =>
+							(option?.label?.toString() ?? '')
+								.toLowerCase()
+								.includes(input.toLowerCase())
+						}
+						onChange={() => {
+							form.validateFields(['supervisor2']);
+						}} // Re-validate supervisor2 when supervisor1 changes
+					/>
+				</Form.Item>
+
+				<Form.Item
+					label={
+						<FormLabel
+							text={`${isChangeMode ? 'Change' : 'Select'} Supervisor 2`}
+							isBold
+						/>
+					}
+					name="supervisor2"
+					required={false}
+					rules={[
+						{
+							validator(_, value) {
+								const sup1 = form.getFieldValue('supervisor1');
+
+								if (value && value === sup1) {
+									return Promise.reject(
+										new Error(
+											'Supervisor 2 must be different from Supervisor 1',
+										),
+									);
+								}
+
+								return Promise.resolve();
 							},
-						]}
+						},
+					]}
+				>
+					<Select
+						key={
+							loading
+								? 'supervisor2-loading'
+								: `supervisor2-${form.getFieldValue('supervisor1') || initialValues?.[0] || 'none'}-${renderKey}`
+						}
+						placeholder={
+							isChangeMode
+								? 'Change to new supervisor (optional)'
+								: 'Select supervisor (optional)'
+						}
+						options={getSupervisor2Options()}
+						allowClear
+						showSearch
+						disabled={loading}
+						filterOption={(input, option) =>
+							(option?.label?.toString() ?? '')
+								.toLowerCase()
+								.includes(input.toLowerCase())
+						}
+						onChange={() => {
+							form.validateFields(['supervisor1']);
+						}} // Re-validate supervisor1 when supervisor2 changes
+					/>
+				</Form.Item>
+
+				<Form.Item className="text-right">
+					<Button
+						onClick={handleCancel}
+						style={{ marginRight: 8 }}
+						disabled={loading}
 					>
-						<Select
-							key={
-								loading
-									? 'supervisor1-loading'
-									: `supervisor1-${form.getFieldValue('supervisor2') || initialValues?.[1] || 'none'}-${renderKey}`
-							}
-							placeholder="Select supervisor"
-							options={getSupervisor1Options()}
-							allowClear
-							showSearch
-							disabled={isChangeMode && loading}
-							filterOption={(input, option) =>
-								(option?.label?.toString() ?? '')
-									.toLowerCase()
-									.includes(input.toLowerCase())
-							}
-							onChange={() => {
-								form.validateFields(['supervisor2']);
-							}} // Re-validate supervisor2 when supervisor1 changes
-						/>
-					</Form.Item>
-
-					<Form.Item
-						label={<FormLabel text="Select Supervisor 2" isBold />}
-						name="supervisor2"
-						required={false}
-						rules={[
-							{
-								validator(_, value) {
-									const sup1 = form.getFieldValue('supervisor1');
-
-									if (value && value === sup1) {
-										return Promise.reject(
-											new Error(
-												'Supervisor 2 must be different from Supervisor 1',
-											),
-										);
-									}
-
-									return Promise.resolve();
-								},
-							},
-						]}
-					>
-						<Select
-							key={
-								loading
-									? 'supervisor2-loading'
-									: `supervisor2-${form.getFieldValue('supervisor1') || initialValues?.[0] || 'none'}-${renderKey}`
-							}
-							placeholder="Select supervisor (optional)"
-							options={getSupervisor2Options()}
-							allowClear
-							showSearch
-							disabled={isChangeMode && loading}
-							filterOption={(input, option) =>
-								(option?.label?.toString() ?? '')
-									.toLowerCase()
-									.includes(input.toLowerCase())
-							}
-							onChange={() => {
-								form.validateFields(['supervisor1']);
-							}} // Re-validate supervisor1 when supervisor2 changes
-						/>
-					</Form.Item>
-
-					<Form.Item className="text-right">
-						<Button
-							onClick={handleCancel}
-							style={{ marginRight: 8 }}
-							disabled={loading}
-						>
-							Cancel
-						</Button>
-						<Button type="primary" htmlType="submit" loading={loading}>
-							{isChangeMode ? 'Change' : 'Assign'}
-						</Button>
-					</Form.Item>
-				</Form>
-			</Spin>
+						Cancel
+					</Button>
+					<Button type="primary" htmlType="submit" loading={loading}>
+						{isChangeMode ? 'Change' : 'Assign'}
+					</Button>
+				</Form.Item>
+			</Form>
 		</Modal>
 	);
 }
