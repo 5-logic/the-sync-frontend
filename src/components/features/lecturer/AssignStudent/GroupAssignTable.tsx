@@ -1,10 +1,9 @@
 import { EyeOutlined } from '@ant-design/icons';
-import { Button, Card } from 'antd';
+import { Button, Card, Spin } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
 
 import GroupOverviewTable from '@/components/features/lecturer/AssignSupervisor/GroupOverviewTable';
 import GroupSearchBar from '@/components/features/lecturer/AssignSupervisor/GroupSearchBar';
-import { baseColumns } from '@/components/features/lecturer/AssignSupervisor/SupervisorColumns';
 import { ExtendedGroup } from '@/data/group';
 import { Group } from '@/lib/services/groups.service';
 import { useGroupsStore } from '@/store/useGroupsStore';
@@ -56,7 +55,31 @@ export default function GroupAssignTable({ onView }: Props) {
 
 	const groupColumns = useMemo(() => {
 		return [
-			...baseColumns,
+			{
+				title: 'Group code',
+				dataIndex: 'code',
+				key: 'code',
+				width: '15%',
+			},
+			{
+				title: 'Group name',
+				dataIndex: 'name',
+				key: 'name',
+				width: '35%',
+			},
+			{
+				title: 'Members',
+				dataIndex: 'members',
+				key: 'members',
+				width: '20%',
+			},
+			{
+				title: 'Leader',
+				render: (_: unknown, record: ExtendedGroup) =>
+					record.supervisors[0] || 'No leader',
+				key: 'leader',
+				width: '20%',
+			},
 			{
 				title: 'Actions',
 				render: (_: unknown, record: ExtendedGroup) => (
@@ -68,21 +91,25 @@ export default function GroupAssignTable({ onView }: Props) {
 						}}
 					/>
 				),
+				key: 'actions',
+				align: 'center' as const,
+				width: '10%',
 			},
 		];
 	}, [onView]);
 
 	return (
 		<Card title="Thesis Groups">
-			{loading && <p>Loading...</p>}
 			<div style={{ marginBottom: 16 }}>
 				<GroupSearchBar value={groupSearch} onChange={setGroupSearch} />
 			</div>
-			<GroupOverviewTable
-				data={filteredGroups}
-				columns={groupColumns}
-				hideStatusColumn={true}
-			/>
+			<Spin spinning={loading}>
+				<GroupOverviewTable
+					data={filteredGroups}
+					columns={groupColumns}
+					hideStatusColumn={true}
+				/>
+			</Spin>
 		</Card>
 	);
 }
