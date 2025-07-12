@@ -1,4 +1,4 @@
-import { Button, Form, Modal, Select, Spin } from 'antd';
+import { Alert, Button, Form, Modal, Select, Spin } from 'antd';
 import React, { useEffect } from 'react';
 
 import { FormLabel } from '@/components/common/FormLabel';
@@ -16,6 +16,7 @@ interface Props {
 	readonly initialValues?: string[];
 	readonly lecturerOptions: LecturerOption[];
 	readonly isChangeMode?: boolean;
+	readonly currentSupervisorIds?: string[]; // Add this to track current supervisors
 }
 
 export default function AssignSupervisorModal({
@@ -26,6 +27,7 @@ export default function AssignSupervisorModal({
 	initialValues = [],
 	lecturerOptions,
 	isChangeMode = false,
+	currentSupervisorIds = [],
 }: Props) {
 	const [form] = Form.useForm();
 
@@ -38,6 +40,12 @@ export default function AssignSupervisorModal({
 		}
 	}, [open, initialValues, form]);
 
+	const handleCancel = () => {
+		// Reset form when canceling
+		form.resetFields();
+		onCancel();
+	};
+
 	const handleFinish = (values: {
 		supervisor1?: string;
 		supervisor2?: string;
@@ -49,11 +57,49 @@ export default function AssignSupervisorModal({
 		onSubmit(selected);
 	};
 
+	// Filter lecturer options based on mode
+	const getAvailableOptions = () => {
+		if (isChangeMode) {
+			// In change mode, allow all lecturers except the currently selected ones in the form
+			// This prevents selecting the same lecturer for both positions
+			return lecturerOptions;
+		} else {
+			// In assign mode, filter out supervisors already assigned to this thesis
+			return lecturerOptions.filter(
+				(option) => !currentSupervisorIds.includes(option.value),
+			);
+		}
+	};
+
+	// Get options for supervisor 1 (exclude supervisor 2 if selected)
+	const getSupervisor1Options = () => {
+		const baseOptions = getAvailableOptions();
+		const supervisor2Value = form.getFieldValue('supervisor2');
+
+		// Always exclude the currently selected supervisor2 to prevent duplicates
+		if (supervisor2Value) {
+			return baseOptions.filter((option) => option.value !== supervisor2Value);
+		}
+		return baseOptions;
+	};
+
+	// Get options for supervisor 2 (exclude supervisor 1 if selected)
+	const getSupervisor2Options = () => {
+		const baseOptions = getAvailableOptions();
+		const supervisor1Value = form.getFieldValue('supervisor1');
+
+		// Always exclude the currently selected supervisor1 to prevent duplicates
+		if (supervisor1Value) {
+			return baseOptions.filter((option) => option.value !== supervisor1Value);
+		}
+		return baseOptions;
+	};
+
 	return (
 		<Modal
 			title={isChangeMode ? 'Change Supervisor' : 'Assign Supervisor'}
 			open={open}
-			onCancel={onCancel}
+			onCancel={handleCancel}
 			footer={null}
 			centered
 		>
@@ -67,6 +113,15 @@ export default function AssignSupervisorModal({
 					}}
 					onFinish={handleFinish}
 				>
+					{!isChangeMode && currentSupervisorIds.length > 0 && (
+						<Alert
+							message="Information"
+							description={`This thesis already has ${currentSupervisorIds.length} supervisor(s) assigned. Only available lecturers are shown.`}
+							type="info"
+							style={{ marginBottom: 16 }}
+							showIcon
+						/>
+					)}
 					<Form.Item
 						label={<FormLabel text="Select Supervisor 1" isRequired isBold />}
 						name="supervisor1"
@@ -79,15 +134,19 @@ export default function AssignSupervisorModal({
 						]}
 					>
 						<Select
+							key={`supervisor1-${form.getFieldValue('supervisor2') || 'none'}`}
 							placeholder="Select supervisor"
-							options={lecturerOptions}
+							options={getSupervisor1Options()}
 							allowClear
 							showSearch
 							filterOption={(input, option) =>
-								(option?.label ?? '')
+								(option?.label?.toString() ?? '')
 									.toLowerCase()
 									.includes(input.toLowerCase())
 							}
+							onChange={() => {
+								form.validateFields(['supervisor2']);
+							}} // Re-validate supervisor2 when supervisor1 changes
 						/>
 					</Form.Item>
 
@@ -114,21 +173,25 @@ export default function AssignSupervisorModal({
 						]}
 					>
 						<Select
+							key={`supervisor2-${form.getFieldValue('supervisor1') || 'none'}`}
 							placeholder="Select supervisor (optional)"
-							options={lecturerOptions}
+							options={getSupervisor2Options()}
 							allowClear
 							showSearch
 							filterOption={(input, option) =>
-								(option?.label ?? '')
+								(option?.label?.toString() ?? '')
 									.toLowerCase()
 									.includes(input.toLowerCase())
 							}
+							onChange={() => {
+								form.validateFields(['supervisor1']);
+							}} // Re-validate supervisor1 when supervisor2 changes
 						/>
 					</Form.Item>
 
 					<Form.Item className="text-right">
 						<Button
-							onClick={onCancel}
+							onClick={handleCancel}
 							style={{ marginRight: 8 }}
 							disabled={loading}
 						>

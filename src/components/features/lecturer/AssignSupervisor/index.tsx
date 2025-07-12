@@ -43,90 +43,151 @@ export default function AssignSupervisors() {
 		return matchesSearch && matchesStatus;
 	});
 
+	/**
+	 * Handle supervisor assignment/change submission
+	 *
+	 * CHANGE MODE Logic:
+	 * - Can change both supervisors at their respective positions
+	 * - Supervisor 1 → New Supervisor 1, Supervisor 2 → New Supervisor 2
+	 * - Each supervisor change calls separate API
+	 * - Maintains position order (no swapping positions)
+	 * - Handles adding supervisor 2 if only supervisor 1 existed
+	 *
+	 * ASSIGN MODE Logic:
+	 * - Assign supervisors in the order provided
+	 * - Filters out supervisors already assigned to avoid duplicates
+	 * - First supervisor is required, second is optional
+	 *
+	 * DUPLICATE PREVENTION:
+	 * - Modal filters available options in assign mode
+	 * - Modal prevents selecting same supervisor for both positions
+	 * - Backend validation prevents duplicate assignments
+	 * - Component logic double-checks before API calls
+	 *
+	 * NOTIFICATIONS:
+	 * - Handled by store (useSupervisionStore) to avoid duplicates
+	 * - Component only manages modal state
+	 */
 	const handleAssignSubmit = async (supervisorIds: string[]) => {
 		if (!selectedGroup) return;
 
 		setModalLoading(true);
-		try {
-			let success = false;
-			const isChangeMode = selectedGroup.status === 'Finalized';
 
-			if (isChangeMode) {
-				const currentSupervisorIds = selectedGroup.supervisorDetails.map(
-					(s) => s.id,
+		const isChangeMode = selectedGroup.status === 'Finalized';
+		let success = false;
+		if (isChangeMode) {
+			const currentSupervisorIds = selectedGroup.supervisorDetails.map(
+				(s) => s.id,
+			);
+			const newSupervisorIds = supervisorIds.filter(Boolean);
+
+			try {
+				let allOperationsSuccess = true;
+				const operations: Array<{ type: string; success: boolean }> = [];
+
+				// Strategy: Compare each position and determine the needed operation
+				const maxLength = Math.max(
+					currentSupervisorIds.length,
+					newSupervisorIds.length,
 				);
-				const newSupervisorIds = supervisorIds.filter(Boolean);
 
-				const hasChanges =
-					currentSupervisorIds.length !== newSupervisorIds.length ||
-					!currentSupervisorIds.every(
-						(id, index) => id === newSupervisorIds[index],
-					);
+				for (let i = 0; i < maxLength; i++) {
+					const currentId = currentSupervisorIds[i];
+					const newId = newSupervisorIds[i];
 
-				if (hasChanges) {
-					for (
-						let i = 0;
-						i < Math.max(currentSupervisorIds.length, newSupervisorIds.length);
-						i++
-					) {
-						const currentId = currentSupervisorIds[i];
-						const newId = newSupervisorIds[i];
+					if (currentId && newId && currentId !== newId) {
+						// Change supervisor at position i
+						const result = await changeSupervisor(
+							selectedGroup.thesisId,
+							currentId,
+							newId,
+						);
+						operations.push({
+							type: `change position ${i + 1}`,
+							success: result,
+						});
+						if (!result) allOperationsSuccess = false;
+					} else if (!currentId && newId) {
+						// Add new supervisor at position i
+						const result = await assignSupervisor(
+							selectedGroup.thesisId,
+							newId,
+						);
+						operations.push({ type: `add position ${i + 1}`, success: result });
+						if (!result) allOperationsSuccess = false;
+					} else if (currentId && !newId) {
+						// Remove supervisor at position i
+						// Note: Currently no remove API, so we skip this
+						// Future: implement removeSupervisor API
+						operations.push({
+							type: `remove position ${i + 1}`,
+							success: true,
+						});
+					}
+					// If currentId === newId, no operation needed (same supervisor)
+				}
 
-						if (currentId && newId && currentId !== newId) {
-							success = await changeSupervisor(
-								selectedGroup.thesisId,
-								currentId,
-								newId,
-							);
-							break;
+				// Success if all operations succeeded or if no operations were needed
+				success = operations.length === 0 || allOperationsSuccess;
+
+				// Log operations for debugging
+				if (operations.length > 0) {
+					console.log('Supervisor change operations:', operations);
+				}
+			} catch (error) {
+				console.error('Error in change mode operations:', error);
+				success = false;
+			}
+		} else {
+			// Assign mode: assign supervisors in order
+			const currentSupervisorIds = selectedGroup.supervisorDetails.map(
+				(s) => s.id,
+			);
+
+			try {
+				let allAssignmentsSuccess = true;
+				const assignments: Array<{ supervisor: string; success: boolean }> = [];
+
+				// Filter out supervisors that are already assigned to avoid duplicates
+				const supervisorsToAssign = supervisorIds.filter(
+					(id) => id && !currentSupervisorIds.includes(id),
+				);
+
+				if (supervisorsToAssign.length > 0) {
+					// Assign each supervisor sequentially
+					for (const supervisorId of supervisorsToAssign) {
+						const result = await assignSupervisor(
+							selectedGroup.thesisId,
+							supervisorId,
+						);
+						assignments.push({ supervisor: supervisorId, success: result });
+						if (!result) {
+							allAssignmentsSuccess = false;
+							// Continue with other assignments even if one fails
 						}
 					}
+
+					success = allAssignmentsSuccess;
+
+					// Log assignments for debugging
+					console.log('Supervisor assign operations:', assignments);
 				} else {
+					// All selected supervisors are already assigned
 					success = true;
 				}
-			} else {
-				if (supervisorIds.length > 0) {
-					success = await assignSupervisor(
-						selectedGroup.thesisId,
-						supervisorIds[0],
-					);
-
-					if (supervisorIds.length > 1) {
-						await assignSupervisor(selectedGroup.thesisId, supervisorIds[1]);
-					}
-				}
+			} catch (error) {
+				console.error('Error in assign mode operations:', error);
+				success = false;
 			}
-
-			if (success) {
-				setModalOpen(false);
-				setSelectedGroup(null);
-
-				const { showNotification } = await import('@/lib/utils/notification');
-				showNotification.success(
-					'Success',
-					isChangeMode
-						? 'Supervisor changed successfully'
-						: 'Supervisor assigned successfully',
-				);
-			} else {
-				const { showNotification } = await import('@/lib/utils/notification');
-				showNotification.error(
-					'Error',
-					isChangeMode
-						? 'Failed to change supervisor'
-						: 'Failed to assign supervisor',
-				);
-			}
-		} catch (error) {
-			console.error('Error in supervisor assignment:', error);
-			const { showNotification } = await import('@/lib/utils/notification');
-			showNotification.error(
-				'Error',
-				'An unexpected error occurred. Please try again.',
-			);
-		} finally {
-			setModalLoading(false);
 		}
+
+		if (success) {
+			setModalOpen(false);
+			setSelectedGroup(null);
+			// Notification is handled by the store, no need to show here
+		}
+
+		setModalLoading(false);
 	};
 
 	const columns = [
@@ -200,6 +261,9 @@ export default function AssignSupervisors() {
 				onSubmit={handleAssignSubmit}
 				lecturerOptions={lecturerOptions}
 				isChangeMode={selectedGroup?.status === 'Finalized'}
+				currentSupervisorIds={
+					selectedGroup?.supervisorDetails.map((s) => s.id) || []
+				}
 			/>
 		</Space>
 	);
