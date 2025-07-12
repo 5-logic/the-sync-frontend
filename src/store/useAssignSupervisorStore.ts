@@ -13,6 +13,11 @@ import { GroupService as Group } from '@/schemas/group';
 import { type Lecturer } from '@/schemas/lecturer';
 import { useSupervisionStore } from '@/store/useSupervisionStore';
 
+export type SupervisorAssignmentStatus =
+	| 'Finalized'
+	| 'Incomplete'
+	| 'Unassigned';
+
 export interface SupervisorAssignmentData {
 	id: string;
 	thesisTitle: string;
@@ -24,7 +29,7 @@ export interface SupervisorAssignmentData {
 		fullName: string;
 		email: string;
 	}>;
-	status: 'Finalized' | 'Incomplete' | 'Unassigned';
+	status: SupervisorAssignmentStatus;
 	thesisId: string;
 	groupId: string | null;
 }
@@ -42,9 +47,7 @@ interface AssignSupervisorState {
 	lastError: string | null;
 
 	// Helper functions
-	determineStatus: (
-		supervisions: Supervision[],
-	) => 'Finalized' | 'Incomplete' | 'Unassigned';
+	determineStatus: (supervisions: Supervision[]) => SupervisorAssignmentStatus;
 
 	// Actions
 	fetchData: () => Promise<void>;
@@ -71,7 +74,7 @@ export const useAssignSupervisorStore = create<AssignSupervisorState>()(
 			// Determine status based on supervision count
 			determineStatus: (
 				supervisions: Supervision[],
-			): 'Finalized' | 'Incomplete' | 'Unassigned' => {
+			): SupervisorAssignmentStatus => {
 				const supervisionCount = supervisions.length;
 				if (supervisionCount === 2) return 'Finalized';
 				if (supervisionCount === 1) return 'Incomplete';

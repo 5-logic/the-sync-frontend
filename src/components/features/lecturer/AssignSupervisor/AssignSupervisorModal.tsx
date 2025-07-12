@@ -41,7 +41,27 @@ export default function AssignSupervisorModal({
 		initialized: boolean,
 	): boolean => isOpen && !initialized;
 
-	const shouldResetForm = (isOpen: boolean): boolean => !isOpen;
+	const shouldResetForm = (isOpen: boolean, initialized: boolean): boolean =>
+		!isOpen && initialized;
+
+	const shouldReinitializeForm = (
+		isOpen: boolean,
+		initialized: boolean,
+		initialValues: string[],
+		form: ReturnType<typeof Form.useForm>[0],
+	): boolean => {
+		// Reinitialize if modal is open, already initialized, and initialValues changed
+		const currentValues = [
+			form.getFieldValue('supervisor1'),
+			form.getFieldValue('supervisor2'),
+		];
+		return (
+			isOpen &&
+			initialized &&
+			(initialValues[0] !== currentValues[0] ||
+				initialValues[1] !== currentValues[1])
+		);
+	};
 
 	const initializeForm = () => {
 		form.setFieldsValue({
@@ -56,12 +76,16 @@ export default function AssignSupervisorModal({
 		setIsInitialized(false);
 	};
 
-	// Initialize form values only once when modal opens
+	// Initialize form values using multiple methods
 	useEffect(() => {
 		if (shouldInitializeForm(open, isInitialized)) {
 			initializeForm();
-		} else if (shouldResetForm(open)) {
+		} else if (shouldResetForm(open, isInitialized)) {
 			resetFormInitialization();
+		} else if (
+			shouldReinitializeForm(open, isInitialized, initialValues, form)
+		) {
+			initializeForm();
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [open, initialValues, form, isInitialized]);
