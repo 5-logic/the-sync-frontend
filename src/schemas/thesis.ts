@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { ThesisStatusSchema } from '@/schemas/_enums';
+import { SupervisionSchema, SupervisorInfoSchema } from '@/schemas/supervision';
 
 export const ThesisSchema = z.object({
 	id: z.string().uuid(),
@@ -80,6 +81,8 @@ export const ThesisRequiredSkillCreateSchema = ThesisRequiredSkillSchema;
 // Export inferred types
 export type Thesis = z.infer<typeof ThesisSchema>;
 export type ThesisWithRelations = z.infer<typeof ThesisWithRelationsSchema>;
+export type ThesisWithGroup = z.infer<typeof ThesisWithGroupSchema>;
+export type GroupInfo = z.infer<typeof GroupInfoSchema>;
 export type ThesisCreate = z.infer<typeof ThesisCreateSchema>;
 export type ThesisUpdate = z.infer<typeof ThesisUpdateSchema>;
 export type ThesisPublic = z.infer<typeof ThesisPublicSchema>;
@@ -93,6 +96,22 @@ export type ThesisRequiredSkillCreate = z.infer<
 export type ThesisRequiredSkillForCreate = z.infer<
 	typeof ThesisRequiredSkillForCreateSchema
 >;
+
+// Re-export supervision-related types for convenience
+export type { Supervision, SupervisorInfo } from '@/schemas/supervision';
+
+export const GroupInfoSchema = z.object({
+	id: z.string().uuid(),
+	name: z.string(),
+	memberCount: z.number(),
+});
+
+// Enhanced thesis interface with supervision and group information
+export const ThesisWithGroupSchema = ThesisSchema.extend({
+	supervisor: SupervisorInfoSchema.nullable(),
+	group: GroupInfoSchema.nullable(),
+	supervisions: z.array(SupervisionSchema),
+});
 
 // Extended schema for API responses that include relationships
 export const ThesisWithRelationsSchema = ThesisSchema.extend({
