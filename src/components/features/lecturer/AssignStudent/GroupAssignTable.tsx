@@ -1,31 +1,56 @@
 import { EyeOutlined } from '@ant-design/icons';
-import { Button } from 'antd';
+import { Button, Card } from 'antd';
+import { useMemo, useState } from 'react';
 
 import GroupOverviewTable from '@/components/features/lecturer/AssignSupervisor/GroupOverviewTable';
+import GroupSearchBar from '@/components/features/lecturer/AssignSupervisor/GroupSearchBar';
 import { baseColumns } from '@/components/features/lecturer/AssignSupervisor/SupervisorColumns';
-import type { ExtendedGroup } from '@/data/group';
+import { ExtendedGroup, extendedGroups } from '@/data/group';
 
 interface Props {
-	data: ReadonlyArray<ExtendedGroup>;
 	onView?: (group: ExtendedGroup) => void;
 }
 
-export default function GroupAssignTable({ data, onView }: Readonly<Props>) {
-	const columns = [
-		...baseColumns,
-		{
-			title: 'Actions',
-			render: (_: unknown, record: ExtendedGroup) => (
-				<Button
-					type="link"
-					icon={<EyeOutlined />}
-					onClick={() => {
-						onView?.(record);
-					}}
-				/>
-			),
-		},
-	];
+export default function GroupAssignTable({ onView }: Props) {
+	const [groupSearch, setGroupSearch] = useState('');
 
-	return <GroupOverviewTable data={[...data]} columns={columns} />;
+	const filteredGroups = useMemo(() => {
+		const searchText = groupSearch.toLowerCase();
+		return extendedGroups.filter((item) =>
+			[item.name, item.thesisTitle].some((field) =>
+				field.toLowerCase().includes(searchText),
+			),
+		);
+	}, [groupSearch]);
+
+	const groupColumns = useMemo(() => {
+		return [
+			...baseColumns,
+			{
+				title: 'Actions',
+				render: (_: unknown, record: ExtendedGroup) => (
+					<Button
+						type="link"
+						icon={<EyeOutlined />}
+						onClick={() => {
+							onView?.(record);
+						}}
+					/>
+				),
+			},
+		];
+	}, [onView]);
+
+	return (
+		<Card title="Thesis Groups">
+			<div style={{ marginBottom: 16 }}>
+				<GroupSearchBar value={groupSearch} onChange={setGroupSearch} />
+			</div>
+			<GroupOverviewTable
+				data={filteredGroups}
+				columns={groupColumns}
+				hideStatusColumn={true}
+			/>
+		</Card>
+	);
 }
