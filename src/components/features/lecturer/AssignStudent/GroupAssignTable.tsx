@@ -8,7 +8,7 @@ import { baseColumns } from '@/components/features/lecturer/AssignSupervisor/Sup
 import { ExtendedGroup, extendedGroups } from '@/data/group';
 
 interface Props {
-	onView?: (group: ExtendedGroup) => void;
+	readonly onView?: (group: ExtendedGroup) => void;
 }
 
 export default function GroupAssignTable({ onView }: Props) {
