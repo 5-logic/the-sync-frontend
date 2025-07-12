@@ -49,18 +49,11 @@ export default function AssignSupervisorModal({
 	};
 
 	const shouldReinitializeForm = (): boolean => {
-		// Check if initialValues have changed while modal is open and initialized
-		const hasInitialValuesChanged =
-			initialValues[0] !== previousInitialValues[0] ||
-			initialValues[1] !== previousInitialValues[1];
-
-		return open && isInitialized && hasInitialValuesChanged;
-	};
-
-	const hasInitialValuesChanged = (): boolean => {
 		return (
-			initialValues[0] !== previousInitialValues[0] ||
-			initialValues[1] !== previousInitialValues[1]
+			open &&
+			isInitialized &&
+			(initialValues[0] !== previousInitialValues[0] ||
+				initialValues[1] !== previousInitialValues[1])
 		);
 	};
 
@@ -79,20 +72,32 @@ export default function AssignSupervisorModal({
 
 	// Initialize form values using multiple methods
 	useEffect(() => {
+		let actionTaken = false;
+
 		if (shouldInitializeForm()) {
 			initializeForm();
+			actionTaken = true;
 		} else if (shouldResetForm()) {
 			resetFormInitialization();
+			actionTaken = true;
 		} else if (shouldReinitializeForm()) {
 			initializeForm();
+			actionTaken = true;
 		}
 
-		// Update tracking state
-		setPreviousOpen(open);
-		setPreviousInitialValues([...initialValues]);
+		// Update tracking state only if an action was taken or state changed
+		if (
+			actionTaken ||
+			open !== previousOpen ||
+			initialValues[0] !== previousInitialValues[0] ||
+			initialValues[1] !== previousInitialValues[1]
+		) {
+			setPreviousOpen(open);
+			setPreviousInitialValues([...initialValues]);
+		}
 
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [open, initialValues, form, isInitialized]);
+	}, [open, initialValues]);
 
 	// Handle render key updates only when not loading
 	useEffect(() => {
@@ -119,6 +124,21 @@ export default function AssignSupervisorModal({
 		onSubmit(selected);
 	};
 
+	// Generate stable keys for Select components
+	const getSupervisor1Key = (): string => {
+		if (loading) return 'supervisor1-loading';
+		const supervisor2Value =
+			form.getFieldValue('supervisor2') || initialValues?.[1];
+		return `supervisor1-${supervisor2Value || 'none'}-${renderKey}`;
+	};
+
+	const getSupervisor2Key = (): string => {
+		if (loading) return 'supervisor2-loading';
+		const supervisor1Value =
+			form.getFieldValue('supervisor1') || initialValues?.[0];
+		return `supervisor2-${supervisor1Value || 'none'}-${renderKey}`;
+	};
+
 	// Filter lecturer options based on mode
 	const getAvailableOptions = () => {
 		// Both modes now show all lecturers for consistency
@@ -127,30 +147,40 @@ export default function AssignSupervisorModal({
 	};
 
 	// Get options for supervisor 1 (exclude supervisor 2 if selected)
-	const getSupervisor1Options = () => {
+	const getSupervisor1Options = (): LecturerOption[] => {
 		const baseOptions = getAvailableOptions();
 		const supervisor2Value =
 			form.getFieldValue('supervisor2') || initialValues?.[1];
 
 		// Always exclude the currently selected supervisor2 to prevent duplicates
 		if (supervisor2Value) {
-			return baseOptions.filter((option) => option.value !== supervisor2Value);
+			return baseOptions.filter(
+				(option: LecturerOption) => option.value !== supervisor2Value,
+			);
 		}
 		return baseOptions;
 	};
 
 	// Get options for supervisor 2 (exclude supervisor 1 if selected)
-	const getSupervisor2Options = () => {
+	const getSupervisor2Options = (): LecturerOption[] => {
 		const baseOptions = getAvailableOptions();
 		const supervisor1Value =
 			form.getFieldValue('supervisor1') || initialValues?.[0];
 
 		// Always exclude the currently selected supervisor1 to prevent duplicates
 		if (supervisor1Value) {
-			return baseOptions.filter((option) => option.value !== supervisor1Value);
+			return baseOptions.filter(
+				(option: LecturerOption) => option.value !== supervisor1Value,
+			);
 		}
 		return baseOptions;
 	};
+
+	// Common filter function for search functionality
+	const filterOption = (
+		input: string,
+		option?: { label: string; value: string },
+	) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase());
 
 	return (
 		<Modal
@@ -179,11 +209,7 @@ export default function AssignSupervisorModal({
 					]}
 				>
 					<Select
-						key={
-							loading
-								? 'supervisor1-loading'
-								: `supervisor1-${form.getFieldValue('supervisor2') || initialValues?.[1] || 'none'}-${renderKey}`
-						}
+						key={getSupervisor1Key()}
 						placeholder={
 							isChangeMode ? 'Change to new supervisor' : 'Select supervisor'
 						}
@@ -191,11 +217,7 @@ export default function AssignSupervisorModal({
 						allowClear
 						showSearch
 						disabled={loading}
-						filterOption={(input, option) =>
-							(option?.label?.toString() ?? '')
-								.toLowerCase()
-								.includes(input.toLowerCase())
-						}
+						filterOption={filterOption}
 						onChange={() => {
 							form.validateFields(['supervisor2']);
 						}}
@@ -230,11 +252,7 @@ export default function AssignSupervisorModal({
 					]}
 				>
 					<Select
-						key={
-							loading
-								? 'supervisor2-loading'
-								: `supervisor2-${form.getFieldValue('supervisor1') || initialValues?.[0] || 'none'}-${renderKey}`
-						}
+						key={getSupervisor2Key()}
 						placeholder={
 							isChangeMode
 								? 'Change to new supervisor (optional)'
@@ -244,11 +262,7 @@ export default function AssignSupervisorModal({
 						allowClear
 						showSearch
 						disabled={loading}
-						filterOption={(input, option) =>
-							(option?.label?.toString() ?? '')
-								.toLowerCase()
-								.includes(input.toLowerCase())
-						}
+						filterOption={filterOption}
 						onChange={() => {
 							form.validateFields(['supervisor1']);
 						}}
