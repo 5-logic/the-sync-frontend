@@ -31,12 +31,14 @@ export class HttpInterceptors {
 	 */
 	static createRequestInterceptor() {
 		return async (config: InternalAxiosRequestConfig) => {
-			// Skip auth for login/refresh endpoints
+			// Skip auth for login/refresh endpoints and password reset endpoints
 			const authEndpoints = [
 				'/auth/admin/login',
 				'/auth/user/login',
 				'/auth/admin/refresh',
 				'/auth/user/refresh',
+				'/auth/password-reset/request',
+				'/auth/password-reset/verify',
 			];
 			const isAuthEndpoint = authEndpoints.some((endpoint) =>
 				config.url?.includes(endpoint),
@@ -115,6 +117,8 @@ export class HttpInterceptors {
 			'/auth/user/login',
 			'/auth/admin/refresh',
 			'/auth/user/refresh',
+			'/auth/password-reset/request',
+			'/auth/password-reset/verify',
 		];
 
 		return authEndpoints.some((endpoint) => url.includes(endpoint));
