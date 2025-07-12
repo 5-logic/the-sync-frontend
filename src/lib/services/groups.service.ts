@@ -23,19 +23,52 @@ export interface Group {
 		code: string;
 		status: string;
 	};
-	memberCount: number;
-	skillCount: number;
-	responsibilityCount: number;
-	leader: {
-		student: {
-			userId: string;
-			studentCode: string;
-			user: {
-				id: string;
-				fullName: string;
-			};
+	memberCount?: number; // Keep for backward compatibility
+	skillCount?: number;
+	responsibilityCount?: number;
+	// Add actual API response fields
+	members?: Array<{
+		userId: string;
+		studentCode: string;
+		user: {
+			id: string;
+			fullName: string;
+			email: string;
+		};
+		major: {
+			id: string;
+			name: string;
+			code: string;
+		};
+		isLeader: boolean;
+	}>;
+	leader?: {
+		userId: string;
+		studentCode: string;
+		user: {
+			id: string;
+			fullName: string;
+			email: string;
+		};
+		major: {
+			id: string;
+			name: string;
+			code: string;
 		};
 	};
+	skills?: Array<{
+		id: string;
+		name: string;
+		skillSet: {
+			id: string;
+			name: string;
+		};
+	}>;
+	responsibilities?: Array<{
+		id: string;
+		name: string;
+	}>;
+	thesis?: unknown; // Can be null or thesis object
 }
 
 class GroupService {
