@@ -1,5 +1,5 @@
 import { Alert, Button, Form, Modal, Select, Spin } from 'antd';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { FormLabel } from '@/components/common/FormLabel';
 
@@ -30,19 +30,35 @@ export default function AssignSupervisorModal({
 	currentSupervisorIds = [],
 }: Props) {
 	const [form] = Form.useForm();
+	const [renderKey, setRenderKey] = useState(0);
+	const [isInitialized, setIsInitialized] = useState(false);
 
+	// Initialize form values only once when modal opens
 	useEffect(() => {
-		if (open) {
+		if (open && !isInitialized) {
 			form.setFieldsValue({
 				supervisor1: initialValues?.[0],
 				supervisor2: initialValues?.[1],
 			});
+			setIsInitialized(true);
+			setRenderKey((prev) => prev + 1);
+		} else if (!open) {
+			// Reset initialization flag when modal closes
+			setIsInitialized(false);
 		}
-	}, [open, initialValues, form]);
+	}, [open, initialValues, form, isInitialized]);
+
+	// Handle render key updates only when not loading
+	useEffect(() => {
+		if (open && !loading && isInitialized) {
+			setRenderKey((prev) => prev + 1);
+		}
+	}, [open, loading, isInitialized]);
 
 	const handleCancel = () => {
-		// Reset form when canceling
+		// Reset form and initialization flag when canceling
 		form.resetFields();
+		setIsInitialized(false);
 		onCancel();
 	};
 
@@ -74,7 +90,8 @@ export default function AssignSupervisorModal({
 	// Get options for supervisor 1 (exclude supervisor 2 if selected)
 	const getSupervisor1Options = () => {
 		const baseOptions = getAvailableOptions();
-		const supervisor2Value = form.getFieldValue('supervisor2');
+		const supervisor2Value =
+			form.getFieldValue('supervisor2') || initialValues?.[1];
 
 		// Always exclude the currently selected supervisor2 to prevent duplicates
 		if (supervisor2Value) {
@@ -86,7 +103,8 @@ export default function AssignSupervisorModal({
 	// Get options for supervisor 2 (exclude supervisor 1 if selected)
 	const getSupervisor2Options = () => {
 		const baseOptions = getAvailableOptions();
-		const supervisor1Value = form.getFieldValue('supervisor1');
+		const supervisor1Value =
+			form.getFieldValue('supervisor1') || initialValues?.[0];
 
 		// Always exclude the currently selected supervisor1 to prevent duplicates
 		if (supervisor1Value) {
@@ -103,16 +121,8 @@ export default function AssignSupervisorModal({
 			footer={null}
 			centered
 		>
-			<Spin spinning={loading}>
-				<Form
-					form={form}
-					layout="vertical"
-					initialValues={{
-						supervisor1: initialValues[0],
-						supervisor2: initialValues[1],
-					}}
-					onFinish={handleFinish}
-				>
+			<Spin spinning={loading && !isChangeMode}>
+				<Form form={form} layout="vertical" onFinish={handleFinish}>
 					{!isChangeMode && currentSupervisorIds.length > 0 && (
 						<Alert
 							message="Information"
@@ -134,11 +144,16 @@ export default function AssignSupervisorModal({
 						]}
 					>
 						<Select
-							key={`supervisor1-${form.getFieldValue('supervisor2') || 'none'}`}
+							key={
+								loading
+									? 'supervisor1-loading'
+									: `supervisor1-${form.getFieldValue('supervisor2') || initialValues?.[1] || 'none'}-${renderKey}`
+							}
 							placeholder="Select supervisor"
 							options={getSupervisor1Options()}
 							allowClear
 							showSearch
+							disabled={isChangeMode && loading}
 							filterOption={(input, option) =>
 								(option?.label?.toString() ?? '')
 									.toLowerCase()
@@ -173,11 +188,16 @@ export default function AssignSupervisorModal({
 						]}
 					>
 						<Select
-							key={`supervisor2-${form.getFieldValue('supervisor1') || 'none'}`}
+							key={
+								loading
+									? 'supervisor2-loading'
+									: `supervisor2-${form.getFieldValue('supervisor1') || initialValues?.[0] || 'none'}-${renderKey}`
+							}
 							placeholder="Select supervisor (optional)"
 							options={getSupervisor2Options()}
 							allowClear
 							showSearch
+							disabled={isChangeMode && loading}
 							filterOption={(input, option) =>
 								(option?.label?.toString() ?? '')
 									.toLowerCase()
