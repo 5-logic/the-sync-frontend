@@ -14,6 +14,7 @@ import { ThesisWithLecturer } from '@/store/usePublishThesesStore';
 
 interface Props {
 	readonly theses: ThesisWithLecturer[];
+	readonly loading?: boolean;
 	readonly selectedKeys?: React.Key[];
 	readonly onSelectionChange?: (selectedIds: string[]) => void;
 	readonly onTogglePublish?: (thesisId: string) => Promise<boolean>;
@@ -21,6 +22,7 @@ interface Props {
 
 export default function ThesisTable({
 	theses,
+	loading = false,
 	selectedKeys,
 	onSelectionChange,
 	onTogglePublish,
@@ -230,6 +232,7 @@ export default function ThesisTable({
 			rowKey="id"
 			columns={columns}
 			dataSource={data}
+			loading={loading}
 			rowSelection={rowSelection}
 			pagination={TablePagination}
 			scroll={{ x: '100%' }}
