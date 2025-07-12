@@ -34,32 +34,33 @@ export default function AssignSupervisorModal({
 	const [form] = Form.useForm();
 	const [renderKey, setRenderKey] = useState(0);
 	const [isInitialized, setIsInitialized] = useState(false);
+	const [previousOpen, setPreviousOpen] = useState(false);
+	const [previousInitialValues, setPreviousInitialValues] = useState<string[]>(
+		[],
+	);
 
 	// Helper methods for form initialization
-	const shouldInitializeForm = (
-		isOpen: boolean,
-		initialized: boolean,
-	): boolean => isOpen && !initialized;
+	const shouldInitializeForm = (): boolean => {
+		return open && !isInitialized;
+	};
 
-	const shouldResetForm = (isOpen: boolean, initialized: boolean): boolean =>
-		!isOpen && initialized;
+	const shouldResetForm = (): boolean => {
+		return !open && previousOpen && isInitialized;
+	};
 
-	const shouldReinitializeForm = (
-		isOpen: boolean,
-		initialized: boolean,
-		initialValues: string[],
-		form: ReturnType<typeof Form.useForm>[0],
-	): boolean => {
-		// Reinitialize if modal is open, already initialized, and initialValues changed
-		const currentValues = [
-			form.getFieldValue('supervisor1'),
-			form.getFieldValue('supervisor2'),
-		];
+	const shouldReinitializeForm = (): boolean => {
+		// Check if initialValues have changed while modal is open and initialized
+		const hasInitialValuesChanged =
+			initialValues[0] !== previousInitialValues[0] ||
+			initialValues[1] !== previousInitialValues[1];
+
+		return open && isInitialized && hasInitialValuesChanged;
+	};
+
+	const hasInitialValuesChanged = (): boolean => {
 		return (
-			isOpen &&
-			initialized &&
-			(initialValues[0] !== currentValues[0] ||
-				initialValues[1] !== currentValues[1])
+			initialValues[0] !== previousInitialValues[0] ||
+			initialValues[1] !== previousInitialValues[1]
 		);
 	};
 
@@ -78,15 +79,18 @@ export default function AssignSupervisorModal({
 
 	// Initialize form values using multiple methods
 	useEffect(() => {
-		if (shouldInitializeForm(open, isInitialized)) {
+		if (shouldInitializeForm()) {
 			initializeForm();
-		} else if (shouldResetForm(open, isInitialized)) {
+		} else if (shouldResetForm()) {
 			resetFormInitialization();
-		} else if (
-			shouldReinitializeForm(open, isInitialized, initialValues, form)
-		) {
+		} else if (shouldReinitializeForm()) {
 			initializeForm();
 		}
+
+		// Update tracking state
+		setPreviousOpen(open);
+		setPreviousInitialValues([...initialValues]);
+
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [open, initialValues, form, isInitialized]);
 
