@@ -13,6 +13,10 @@ interface Props {
 	readonly rowKey?: keyof SupervisorAssignmentData;
 	readonly onChange?: TableProps<SupervisorAssignmentData>['onChange'];
 }
+
+/**
+ * Table component for displaying supervisor assignment data
+ */
 export default function GroupOverviewTable({
 	data,
 	columns,

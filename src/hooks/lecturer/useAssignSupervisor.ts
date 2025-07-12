@@ -1,8 +1,16 @@
 import { useEffect } from 'react';
 
-import { type SupervisorAssignmentData } from '@/schemas/supervision';
-import { useAssignSupervisorStore } from '@/store/useAssignSupervisorStore';
+import {
+	type SupervisorAssignmentData,
+	useAssignSupervisorStore,
+} from '@/store/useAssignSupervisorStore';
 
+// Re-export types for external use
+export type { SupervisorAssignmentData };
+
+/**
+ * Return type for useAssignSupervisor hook
+ */
 export interface UseAssignSupervisorReturn {
 	data: SupervisorAssignmentData[];
 	lecturers: Array<{ id: string; fullName: string; email: string }>;
@@ -17,6 +25,9 @@ export interface UseAssignSupervisorReturn {
 	refreshData: () => Promise<void>;
 }
 
+/**
+ * Custom hook for supervisor assignment logic
+ */
 export function useAssignSupervisor(): UseAssignSupervisorReturn {
 	const {
 		data,

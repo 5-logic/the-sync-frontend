@@ -3,12 +3,19 @@ import type { ColumnsType } from 'antd/es/table';
 
 import { type SupervisorAssignmentData } from '@/hooks/lecturer/useAssignSupervisor';
 
+/**
+ * Color mapping for supervisor assignment status
+ */
+
 export const statusColorMap: Record<string, string> = {
 	Finalized: 'green',
 	Incomplete: 'orange',
 	Unassigned: 'red',
 };
 
+/**
+ * Renders supervisor names in a vertical list
+ */
 export const renderSupervisors = (supervisors: string[]) =>
 	supervisors.length > 0 ? (
 		<div>
@@ -19,6 +26,10 @@ export const renderSupervisors = (supervisors: string[]) =>
 	) : (
 		'-'
 	);
+
+/**
+ * Base column definitions for supervisor assignment table
+ */
 
 export const baseColumns: ColumnsType<SupervisorAssignmentData> = [
 	{

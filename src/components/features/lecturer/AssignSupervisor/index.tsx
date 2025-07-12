@@ -13,6 +13,10 @@ import {
 	useAssignSupervisor,
 } from '@/hooks/lecturer/useAssignSupervisor';
 
+/**
+ * Main component for assigning supervisors to thesis groups
+ */
+
 export default function AssignSupervisors() {
 	const [search, setSearch] = useState('');
 	const [selectedGroup, setSelectedGroup] =
@@ -129,11 +133,6 @@ export default function AssignSupervisors() {
 
 				// Success if all operations succeeded or if no operations were needed
 				success = operations.length === 0 || allOperationsSuccess;
-
-				// Log operations for debugging
-				if (operations.length > 0) {
-					console.log('Supervisor change operations:', operations);
-				}
 			} catch (error) {
 				console.error('Error in change mode operations:', error);
 				success = false;
@@ -168,9 +167,6 @@ export default function AssignSupervisors() {
 					}
 
 					success = allAssignmentsSuccess;
-
-					// Log assignments for debugging
-					console.log('Supervisor assign operations:', assignments);
 				} else {
 					// All selected supervisors are already assigned
 					success = true;

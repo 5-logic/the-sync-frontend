@@ -1,5 +1,5 @@
 import { Button, Form, Modal, Select } from 'antd';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { FormLabel } from '@/components/common/FormLabel';
 
@@ -17,6 +17,10 @@ interface Props {
 	readonly lecturerOptions: LecturerOption[];
 	readonly isChangeMode?: boolean;
 }
+
+/**
+ * Modal component for assigning or changing supervisors
+ */
 
 export default function AssignSupervisorModal({
 	open,
@@ -150,7 +154,7 @@ export default function AssignSupervisorModal({
 						}
 						onChange={() => {
 							form.validateFields(['supervisor2']);
-						}} // Re-validate supervisor2 when supervisor1 changes
+						}}
 					/>
 				</Form.Item>
 
@@ -203,7 +207,7 @@ export default function AssignSupervisorModal({
 						}
 						onChange={() => {
 							form.validateFields(['supervisor1']);
-						}} // Re-validate supervisor1 when supervisor2 changes
+						}}
 					/>
 				</Form.Item>
 

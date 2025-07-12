@@ -9,6 +9,10 @@ interface Props {
 	placeholder?: string;
 }
 
+/**
+ * Search bar component for filtering groups or thesis titles
+ */
+
 export default function GroupSearchBar({
 	value,
 	onChange,

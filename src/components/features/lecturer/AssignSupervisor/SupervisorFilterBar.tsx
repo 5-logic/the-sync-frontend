@@ -15,6 +15,10 @@ interface Props {
 	onStatusChange: (val: StatusType) => void;
 }
 
+/**
+ * Filter bar component for supervisor assignment page
+ */
+
 export default function SupervisorFilterBar({
 	search,
 	onSearchChange,
