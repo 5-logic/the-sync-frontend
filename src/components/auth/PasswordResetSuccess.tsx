@@ -32,9 +32,8 @@ export const PasswordResetSuccessPage = ({
 
 	const handleCheckEmail = () => {
 		// Open default email client
-		window.location.href = 'mailto:';
+		window.location.href = 'https://mail.google.com/mail';
 	};
-
 	return (
 		<LoginFormLayout title="Password Reset Successful!">
 			<Result
