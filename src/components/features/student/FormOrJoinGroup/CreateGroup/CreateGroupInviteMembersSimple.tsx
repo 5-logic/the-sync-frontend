@@ -3,7 +3,7 @@ import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { FormLabel } from '@/components/common/FormLabel';
 import { useSessionData } from '@/hooks/auth/useAuth';
-import { useStudentInviteHandlers } from '@/hooks/useStudentInviteHandlers';
+import { useStudentInviteHandlers } from '@/hooks/student/useStudentInviteHandlers';
 import { TEAM_CONFIG, TEAM_STYLES } from '@/lib/constants';
 import { MemberManagementUtils } from '@/lib/utils/memberManagement';
 import { showNotification } from '@/lib/utils/notification';

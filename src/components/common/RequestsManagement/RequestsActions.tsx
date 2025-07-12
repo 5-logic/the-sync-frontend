@@ -17,7 +17,6 @@ interface RequestsActionsProps {
 	readonly targetName: string;
 	readonly mode: RequestsMode;
 	readonly status: string;
-	readonly studentId?: string; // Optional student ID for group leader mode
 	readonly getActionProps: (
 		requestId: string,
 		requestType: 'Invite' | 'Join',
@@ -31,7 +30,6 @@ export default function RequestsActions({
 	targetName,
 	mode,
 	status,
-	studentId,
 	getActionProps,
 }: RequestsActionsProps) {
 	const { primaryAction, secondaryAction, viewDetailAction } = getActionProps(
@@ -152,18 +150,17 @@ export default function RequestsActions({
 		return (
 			<Space size="small" className="flex justify-center">
 				{/* View Profile button for all requests */}
-				<Tooltip title="View Student Profile" placement="bottom">
-					<Button
-						type="text"
-						icon={<EyeOutlined />}
-						size="small"
-						className="text-blue-600 hover:text-blue-700"
-						onClick={() => {
-							// This is a group leader view, so we're looking at students
-							console.log('View student profile with studentId:', studentId);
-						}}
-					/>
-				</Tooltip>
+				{viewDetailAction && (
+					<Tooltip title="View Student Profile" placement="bottom">
+						<Button
+							type="text"
+							icon={<EyeOutlined />}
+							size="small"
+							className="text-blue-600 hover:text-blue-700"
+							onClick={viewDetailAction.onViewDetail}
+						/>
+					</Tooltip>
+				)}
 
 				{/* Cancel button - only show for pending requests */}
 				{isPendingStatus && (
@@ -188,18 +185,17 @@ export default function RequestsActions({
 	return (
 		<Space size="small">
 			{/* View Profile button for all requests */}
-			<Tooltip title="View Student Profile" placement="bottom">
-				<Button
-					type="text"
-					icon={<EyeOutlined />}
-					size="small"
-					className="text-blue-600 hover:text-blue-700"
-					onClick={() => {
-						// This is a group leader view, so we're looking at students
-						console.log('View student profile with studentId:', studentId);
-					}}
-				/>
-			</Tooltip>
+			{viewDetailAction && (
+				<Tooltip title="View Student Profile" placement="bottom">
+					<Button
+						type="text"
+						icon={<EyeOutlined />}
+						size="small"
+						className="text-blue-600 hover:text-blue-700"
+						onClick={viewDetailAction.onViewDetail}
+					/>
+				</Tooltip>
+			)}
 
 			{/* Only show approve/reject buttons for pending requests */}
 			{isPendingStatus && (
