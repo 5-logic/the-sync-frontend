@@ -63,6 +63,7 @@ export default function StudentTable({
 				rowSelection={
 					onSelectionChange
 						? {
+								type: 'radio',
 								selectedRowKeys,
 								onChange: (selectedKeys) =>
 									onSelectionChange(selectedKeys as string[]),
