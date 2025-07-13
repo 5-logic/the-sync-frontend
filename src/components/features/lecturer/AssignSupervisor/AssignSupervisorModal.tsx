@@ -74,14 +74,11 @@ export default function AssignSupervisorModal({
 	useEffect(() => {
 		let actionTaken = false;
 
-		if (shouldInitializeForm()) {
+		if (shouldInitializeForm() || shouldReinitializeForm()) {
 			initializeForm();
 			actionTaken = true;
 		} else if (shouldResetForm()) {
 			resetFormInitialization();
-			actionTaken = true;
-		} else if (shouldReinitializeForm()) {
-			initializeForm();
 			actionTaken = true;
 		}
 
