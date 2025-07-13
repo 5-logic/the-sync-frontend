@@ -1,20 +1,28 @@
 'use client';
 
 import { Card, Space } from 'antd';
+import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 
 import { Header } from '@/components/common/Header';
 import GroupAssignTable from '@/components/features/lecturer/AssignStudent/GroupAssignTable';
 import StudentFilterBar from '@/components/features/lecturer/AssignStudent/StudentFilterBar';
 import StudentTable from '@/components/features/lecturer/AssignStudent/StudentTable';
+import { useGroupsStore } from '@/store/useGroupsStore';
 import { useMajorStore } from '@/store/useMajorStore';
 import { useSemesterStore } from '@/store/useSemesterStore';
 import { useStudentStore } from '@/store/useStudentStore';
 
 export default function AssignStudentPage() {
+	const router = useRouter();
 	const { students, fetchStudentsWithoutGroup, loading } = useStudentStore();
 	const { majors, fetchMajors, loading: majorLoading } = useMajorStore();
 	const { semesters, fetchSemesters } = useSemesterStore();
+	const { refetch: refetchGroups } = useGroupsStore();
+
+	// Debug loading states
+	console.log('Student loading:', loading);
+	console.log('Major loading:', majorLoading);
 
 	const [studentSearch, setStudentSearch] = useState('');
 	const [studentMajor, setStudentMajor] = useState('All');
@@ -43,10 +51,32 @@ export default function AssignStudentPage() {
 		}
 	}, [preparingSemester, fetchStudentsWithoutGroup]);
 
+	// Refresh data when page becomes visible (when user navigates back from detail page)
+	useEffect(() => {
+		const handleVisibilityChange = () => {
+			if (!document.hidden) {
+				// Page became visible, refresh groups to get updated member counts
+				refetchGroups();
+			}
+		};
+
+		document.addEventListener('visibilitychange', handleVisibilityChange);
+
+		return () => {
+			document.removeEventListener('visibilitychange', handleVisibilityChange);
+		};
+	}, [refetchGroups]);
+
+	// Refresh data when component mounts (handles browser back button)
+	useEffect(() => {
+		// Refresh groups data when component mounts to ensure fresh data
+		refetchGroups();
+	}, [refetchGroups]);
+
 	// Handle refresh
 	const handleRefresh = () => {
 		if (preparingSemester) {
-			fetchStudentsWithoutGroup(preparingSemester.id);
+			fetchStudentsWithoutGroup(preparingSemester.id, true); // Force refresh
 		}
 	};
 
@@ -92,7 +122,11 @@ export default function AssignStudentPage() {
 				badgeText="Moderator Only"
 			/>
 
-			<GroupAssignTable onView={(group) => console.log('View group:', group)} />
+			<GroupAssignTable
+				onView={(group) => {
+					router.push(`/lecturer/assign-student/${group.id}`);
+				}}
+			/>
 
 			<Card title="Ungrouped Students">
 				<div style={{ marginBottom: 16 }}>
