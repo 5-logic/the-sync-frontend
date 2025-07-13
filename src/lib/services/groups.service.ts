@@ -54,8 +54,8 @@ class GroupService {
 		return response.data;
 	}
 
-	async findOne(id: string): Promise<ApiResponse<Group>> {
-		const response = await httpClient.get<ApiResponse<Group>>(
+	async findOne(id: string): Promise<ApiResponse<GroupDashboard>> {
+		const response = await httpClient.get<ApiResponse<GroupDashboard>>(
 			`${this.baseUrl}/${id}`,
 		);
 		return response.data;
@@ -118,6 +118,17 @@ class GroupService {
 		const response = await httpClient.put<ApiResponse<void>>(
 			`${this.baseUrl}/${groupId}/change-leader`,
 			{ newLeaderId },
+		);
+		return response.data;
+	}
+
+	async assignStudent(
+		groupId: string,
+		studentId: string,
+	): Promise<ApiResponse<void>> {
+		const response = await httpClient.put<ApiResponse<void>>(
+			`${this.baseUrl}/${groupId}/assign-student`,
+			{ studentId },
 		);
 		return response.data;
 	}
