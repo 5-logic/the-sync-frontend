@@ -26,6 +26,7 @@ export default function GroupAssignTable({ onView }: Props) {
 
 	const filteredGroups = useMemo(() => {
 		return groups
+			.filter((group) => group.semester.status === 'Preparing') // Only show groups from Preparing semester
 			.sort((a, b) => a.memberCount - b.memberCount) // Sort by members ascending
 			.filter((group) =>
 				isTextMatch(groupSearch, [
