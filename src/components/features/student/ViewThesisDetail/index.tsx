@@ -2,7 +2,7 @@
 
 import { Empty, Space } from 'antd';
 
-import ThesisHeader from '@/components/features/lecturer/ViewThesisDetail/ThesisHeader';
+import { Header } from '@/components/common/Header';
 import { mockTheses } from '@/data/thesis';
 
 import ActionButtons from './ActionButtons';
@@ -17,7 +17,11 @@ export default function StudentThesisDetailPage() {
 
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
-			<ThesisHeader />
+			<Header
+				title="Thesis Detail"
+				description="View comprehensive thesis information, supervisor details, and manage
+							approval status."
+			/>
 			<ThesisInfoCard thesis={thesis} />
 			<ActionButtons />
 		</Space>

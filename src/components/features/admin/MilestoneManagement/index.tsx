@@ -1,18 +1,10 @@
 'use client';
 
 import { ReloadOutlined, SearchOutlined } from '@ant-design/icons';
-import {
-	Button,
-	Col,
-	Divider,
-	Input,
-	Row,
-	Select,
-	Space,
-	Typography,
-} from 'antd';
+import { Button, Col, Divider, Input, Row, Select, Space } from 'antd';
 import { useEffect, useState } from 'react';
 
+import { Header } from '@/components/common/Header';
 import CreateMilestoneForm from '@/components/features/admin/MilestoneManagement/CreateMilestoneForm';
 import MilestoneTable from '@/components/features/admin/MilestoneManagement/MilestoneTable';
 import semesterService from '@/lib/services/semesters.service';
@@ -20,8 +12,6 @@ import { showNotification } from '@/lib/utils/notification';
 import { MilestoneCreate } from '@/schemas/milestone';
 import { Semester } from '@/schemas/semester';
 import { useMilestoneStore } from '@/store';
-
-const { Title, Paragraph } = Typography;
 
 export default function MilestoneManagement() {
 	const [semesters, setSemesters] = useState<Semester[]>([]);
@@ -96,14 +86,10 @@ export default function MilestoneManagement() {
 	};
 	return (
 		<Space direction="vertical" size="middle" style={{ width: '100%' }}>
-			<Space direction="vertical" size="small">
-				<Title level={2} style={{ marginBottom: 0 }}>
-					Milestones Management
-				</Title>
-				<Paragraph type="secondary" style={{ marginBottom: 0 }}>
-					Create and manage milestones for each semester.
-				</Paragraph>
-			</Space>
+			<Header
+				title="Milestones Management"
+				description="Create and manage milestones for each semester."
+			/>
 			<CreateMilestoneForm
 				semesters={semesters}
 				loadingSemesters={loadingSemesters}

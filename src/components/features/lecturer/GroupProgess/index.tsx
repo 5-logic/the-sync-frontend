@@ -3,12 +3,13 @@
 import { Card, Col, Row, Space, Steps, Typography } from 'antd';
 import { useMemo, useState } from 'react';
 
+import { Header } from '@/components/common/Header';
 import GroupSearchTable from '@/components/features/lecturer/GroupProgess/GroupSearchTable';
 import MilestoneDetailCard from '@/components/features/lecturer/GroupProgess/MilestoneDetailCard';
 import ProgressOverviewCard from '@/components/features/lecturer/GroupProgess/ProgressOverviewCard';
 import { FullMockGroup, allMockGroups, mockReviewGroups } from '@/data/group';
 
-const { Title, Text, Paragraph } = Typography;
+const { Text } = Typography;
 const { Step } = Steps;
 
 export default function GroupProgressPage() {
@@ -56,15 +57,11 @@ export default function GroupProgressPage() {
 				size="large"
 				style={{ width: '100%', flex: 1 }}
 			>
-				<div>
-					<Title level={2} style={{ marginBottom: '4px' }}>
-						Group Progress
-					</Title>
-					<Paragraph type="secondary" style={{ marginBottom: 0 }}>
-						The instructor monitors the groups progress, closely following
-						important milestones to evaluate the groups performance.
-					</Paragraph>
-				</div>
+				<Header
+					title="Group Progress"
+					description="The instructor monitors the groups progress, closely following
+						important milestones to evaluate the groups performance."
+				/>
 
 				<GroupSearchTable
 					data={groupList}

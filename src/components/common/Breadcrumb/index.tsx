@@ -87,6 +87,11 @@ const DYNAMIC_ROUTE_PATTERNS: Array<{
 		getTitle: () => 'Group Detail',
 		getParentPath: () => '/student',
 	},
+	{
+		pattern: /^\/student\/profile\/(.+)$/,
+		getTitle: () => 'Student Profile',
+		getParentPath: () => '/student',
+	},
 
 	// Admin dynamic routes (if any)
 	{

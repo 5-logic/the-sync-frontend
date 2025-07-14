@@ -5,20 +5,16 @@ import React from 'react';
 
 const { Title, Paragraph } = Typography;
 
-type Props = {
+type Props = Readonly<{
 	title: string;
 	description?: string;
 	badgeText?: string;
-};
+}>;
 
-export default function Header({
-	title,
-	description,
-	badgeText,
-}: Readonly<Props>) {
+export default function Header({ title, description, badgeText }: Props) {
 	return (
 		<div>
-			<Title level={2} style={{ marginBottom: '4px' }}>
+			<Title level={2} style={{ marginBottom: 4 }}>
 				{title}
 				{badgeText && (
 					<Badge
