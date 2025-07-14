@@ -78,6 +78,7 @@ interface ThesisState {
 	// Actions
 	fetchTheses: (force?: boolean) => Promise<void>;
 	fetchThesesByLecturer: (lecturerId: string, force?: boolean) => Promise<void>;
+	fetchThesesBySemester: (semesterId: string, force?: boolean) => Promise<void>;
 	createThesis: (data: ThesisCreate) => Promise<boolean>;
 	updateThesis: (id: string, data: ThesisUpdate) => Promise<boolean>;
 	deleteThesis: (id: string) => Promise<boolean>;
