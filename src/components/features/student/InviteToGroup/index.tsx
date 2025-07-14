@@ -2,6 +2,7 @@
 
 import { Card, Col, Divider, Row, Space, Typography } from 'antd';
 
+import { Header } from '@/components/common/Header';
 import { StudentSearch } from '@/components/features/student/InviteToGroup/StudentSearch';
 import { StudentSuggestionCard } from '@/components/features/student/InviteToGroup/StudentSuggestionCard';
 import { StudentTable } from '@/components/features/student/InviteToGroup/StudentTable';
@@ -16,8 +17,10 @@ export default function FormJoinGroupPage() {
 			size="large"
 			style={{ padding: 24, width: '100%' }}
 		>
-			{/* thay bằng title common */}
-			<Title level={3}>Invite Students to Group</Title>
+			<Header
+				title="Invite Students to Group"
+				description="Invite students to join the group by selecting from the student list or entering their information manually."
+			/>
 
 			<StudentSearch />
 
