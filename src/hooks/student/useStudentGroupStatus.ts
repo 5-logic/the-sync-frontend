@@ -12,16 +12,6 @@ export const useStudentGroupStatus = () => {
 
 	useEffect(() => {
 		if (!isInitialized) {
-			console.log('useStudentGroupStatus: fetching group status...');
-
-			// Debug: Check localStorage
-			try {
-				const storedData = localStorage.getItem('group-dashboard-storage');
-				console.log('Stored group data:', storedData);
-			} catch (e) {
-				console.log('Error reading localStorage:', e);
-			}
-
 			// Force refresh to bypass any cache issues
 			fetchStudentGroup(true);
 			setIsInitialized(true);
@@ -34,18 +24,6 @@ export const useStudentGroupStatus = () => {
 	// Check if current user is the leader by comparing user IDs
 	const currentUserId = session?.user?.id;
 	const isLeader = hasGroup && group?.leader?.user?.id === currentUserId;
-
-	console.log('useStudentGroupStatus state:', {
-		hasGroup,
-		group: group?.id,
-		isLeader,
-		currentUserId,
-		leaderId: group?.leader?.user?.id,
-		groupData: group,
-		leaderData: group?.leader,
-		loading,
-		isInitialized,
-	});
 
 	const redirectToAppropriateScreen = () => {
 		if (hasGroup) {
