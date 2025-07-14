@@ -1,74 +1,158 @@
 'use client';
 
-import { UserOutlined } from '@ant-design/icons';
-import { Avatar, Card, Descriptions, Space, Tag, Typography } from 'antd';
+import { DownloadOutlined, UserOutlined } from '@ant-design/icons';
+import {
+	Avatar,
+	Button,
+	Card,
+	Col,
+	Divider,
+	Row,
+	Space,
+	Tag,
+	Typography,
+} from 'antd';
 
-import { ExtendedThesis } from '@/data/thesis';
+import { StorageService } from '@/lib/services/storage.service';
+import { showNotification } from '@/lib/utils/notification';
+import { ThesisWithRelations } from '@/schemas/thesis';
+
+const { Title, Text, Paragraph } = Typography;
 
 interface Props {
-	readonly thesis: ExtendedThesis;
+	readonly thesis: ThesisWithRelations;
+}
+
+function getStatusColor(status: string): string {
+	switch (status) {
+		case 'Approved':
+			return 'green';
+		case 'Pending':
+			return 'orange';
+		case 'Rejected':
+			return 'red';
+		default:
+			return 'default';
+	}
 }
 
 export default function ThesisInfoCard({ thesis }: Props) {
+	// Helper function to handle empty values consistently
+	const getDisplayValue = (
+		value: string | undefined,
+		fallback: string,
+	): string => {
+		return (value ?? '') === '' ? fallback : value!;
+	};
+
+	const handleDownloadSupportingDocument = async () => {
+		try {
+			// Get the latest version's supporting document
+			const latestVersion = thesis.thesisVersions?.[0];
+			const supportingDocumentUrl = latestVersion?.supportingDocument;
+
+			if (!supportingDocumentUrl) {
+				showNotification.error(
+					'Download Failed',
+					'No supporting document available for download',
+				);
+				return;
+			}
+
+			// Get download URL from storage service
+			const downloadUrl = await StorageService.getDownloadUrl(
+				supportingDocumentUrl,
+			);
+
+			// Open download in new tab
+			window.open(downloadUrl, '_blank');
+
+			showNotification.success(
+				'Download Started',
+				'Supporting document download has started',
+			);
+		} catch {
+			showNotification.error(
+				'Download Failed',
+				'Could not download supporting document',
+			);
+		}
+	};
+
 	return (
-		<Space direction="vertical" style={{ width: '100%' }} size="large">
-			<Card
-				title={
-					<Space direction="vertical" size={0}>
-						<Typography.Title level={4} style={{ marginBottom: 0 }}>
-							{thesis.englishName}
-						</Typography.Title>
-						<Typography.Text type="secondary">
-							{thesis.vietnameseName}
-						</Typography.Text>
-					</Space>
-				}
-				bordered
+		<Card>
+			<Title level={4}>{thesis.englishName}</Title>
+			<Space wrap size={[8, 8]} style={{ marginBottom: 16 }}>
+				<Tag color="blue">{thesis.domain}</Tag>
+				<Tag color={getStatusColor(thesis.status)}>{thesis.status}</Tag>
+				<Tag color="gold">
+					Version {thesis.thesisVersions?.[0]?.version || '1.0'}
+				</Tag>
+			</Space>
+
+			<Row gutter={32} style={{ marginBottom: 16 }}>
+				<Col span={12}>
+					<Text strong>Vietnamese name</Text>
+					<Paragraph>{thesis.vietnameseName}</Paragraph>
+				</Col>
+				<Col span={12}>
+					<Text strong>Abbreviation</Text>
+					<Paragraph>{thesis.abbreviation}</Paragraph>
+				</Col>
+			</Row>
+
+			<div style={{ marginBottom: 16 }}>
+				<Text strong>Description</Text>
+				<Paragraph>{thesis.description}</Paragraph>
+			</div>
+
+			<div style={{ marginBottom: 24 }}>
+				<Title level={5} style={{ marginBottom: 8 }}>
+					Required Skills
+				</Title>
+				<Space wrap size={[8, 12]}>
+					{thesis.thesisRequiredSkills?.map((trs) => (
+						<Tag key={trs.skill.id}>{trs.skill.name}</Tag>
+					)) || <Text type="secondary">No skills specified</Text>}
+				</Space>
+			</div>
+
+			<Button
+				icon={<DownloadOutlined />}
+				style={{ marginBottom: 24 }}
+				onClick={handleDownloadSupportingDocument}
+				disabled={!thesis.thesisVersions?.length}
 			>
-				<Descriptions
-					column={1}
-					colon={false}
-					labelStyle={{ fontWeight: 600, width: 160 }}
-					contentStyle={{ maxWidth: 800 }}
-				>
-					<Descriptions.Item label="Abbreviation">
-						{thesis.abbreviation}
-					</Descriptions.Item>
+				Download Supporting Document
+			</Button>
 
-					<Descriptions.Item label="Description">
-						{thesis.description}
-					</Descriptions.Item>
+			<Divider size="small" />
 
-					<Descriptions.Item label="Domain">
-						<Tag color="blue">{thesis.domain}</Tag>
-					</Descriptions.Item>
-
-					<Descriptions.Item label="Skills">
-						<Space wrap>
-							{thesis.skills.map((skill) => (
-								<Tag key={skill} color="processing">
-									{skill}
-								</Tag>
-							))}
-						</Space>
-					</Descriptions.Item>
-
-					<Descriptions.Item label="Version">
-						{thesis.version}
-					</Descriptions.Item>
-
-					<Descriptions.Item label="Semester">
-						{thesis.semester}
-					</Descriptions.Item>
-
-					<Descriptions.Item label="Supervisor">
-						<Space>
-							<Avatar icon={<UserOutlined />} size="small" />
-							<span>{thesis.supervisor?.name}</span>
-						</Space>
-					</Descriptions.Item>
-				</Descriptions>
-			</Card>
-		</Space>
+			<div style={{ marginBottom: 24 }}>
+				<Title level={5} style={{ marginBottom: 12 }}>
+					Supervisor Information
+				</Title>
+				<Space size={16}>
+					<Avatar size={48} icon={<UserOutlined />} />
+					<div>
+						<Text strong>
+							{getDisplayValue(
+								thesis.lecturer.user.fullName,
+								'Unknown Supervisor',
+							)}
+						</Text>
+						<Paragraph style={{ marginBottom: 0 }}>
+							{getDisplayValue(thesis.lecturer.user.email, 'No email provided')}
+						</Paragraph>
+						<Paragraph style={{ marginBottom: 0 }} type="secondary">
+							{getDisplayValue(
+								(thesis.lecturer.user as { phoneNumber?: string }).phoneNumber,
+								'No phone provided',
+							)}
+						</Paragraph>
+					</div>
+				</Space>
+			</div>
+		</Card>
 	);
 }
