@@ -30,13 +30,6 @@ export default function ActionButtons({ thesis, disabled = false }: Props) {
 	// Show register button only if user has group, is leader, and thesis is not assigned
 	const showRegisterButton = hasGroup && isLeader && !thesis.groupId;
 
-	console.log('ActionButtons conditions:', {
-		hasGroup,
-		isLeader,
-		thesisGroupId: thesis.groupId,
-		showRegisterButton,
-	});
-
 	return (
 		<Row justify="end">
 			<Space>
