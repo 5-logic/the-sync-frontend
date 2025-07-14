@@ -11,15 +11,36 @@ import {
 	Typography,
 } from 'antd';
 
-import TeamMembers from '@/components/features/lecturer/ViewThesisDetail/TeamMembers';
-import { ExtendedThesis } from '@/data/thesis';
+// import TeamMembers from '@/components/features/lecturer/ViewThesisDetail/TeamMembers';
 import { StorageService } from '@/lib/services/storage.service';
 import { showNotification } from '@/lib/utils/notification';
+import { Thesis } from '@/schemas/thesis';
 
 const { Title, Text, Paragraph } = Typography;
 
+// Enhanced thesis type cho UI display
+type EnhancedThesis = Thesis & {
+	skills?: string[];
+	version?: string;
+	supervisor?: {
+		name: string;
+		phone: string;
+		email: string;
+	};
+	thesisRequiredSkills?: Array<{
+		thesisId: string;
+		skillId: string;
+		skill: { id: string; name: string };
+	}>;
+	thesisVersions?: Array<{
+		id: string;
+		version: number;
+		supportingDocument: string;
+	}>;
+};
+
 type Props = {
-	readonly thesis: ExtendedThesis;
+	readonly thesis: EnhancedThesis;
 };
 
 function getStatusColor(status: string): string {
@@ -84,7 +105,9 @@ export default function ThesisInfoCard({ thesis }: Props) {
 			<Space wrap size={[8, 8]} style={{ marginBottom: 16 }}>
 				<Tag color="blue">{thesis.domain}</Tag>
 				<Tag color={getStatusColor(thesis.status)}>{thesis.status}</Tag>
-				<Tag color="gold">Version {thesis.version}</Tag>
+				<Tag color="gold">
+					Version {thesis.thesisVersions?.[0]?.version || '1.0'}
+				</Tag>
 			</Space>
 
 			<Row gutter={32} style={{ marginBottom: 16 }}>
@@ -108,9 +131,9 @@ export default function ThesisInfoCard({ thesis }: Props) {
 					Required Skills
 				</Title>
 				<Space wrap size={[8, 12]}>
-					{thesis.skills.map((skill) => (
-						<Tag key={skill}>{skill}</Tag>
-					))}
+					{thesis.thesisRequiredSkills?.map((trs) => (
+						<Tag key={trs.skill.id}>{trs.skill.name}</Tag>
+					)) || <Text type="secondary">No skills specified</Text>}
 				</Space>
 			</div>
 
@@ -136,16 +159,17 @@ export default function ThesisInfoCard({ thesis }: Props) {
 							{getDisplayValue(thesis.supervisor?.name, 'Unknown Supervisor')}
 						</Text>
 						<Paragraph style={{ marginBottom: 0 }}>
-							{getDisplayValue(thesis.supervisor?.phone, 'No phone provided')}
+							{getDisplayValue(thesis.supervisor?.email, 'No email provided')}
 						</Paragraph>
 						<Paragraph style={{ marginBottom: 0 }} type="secondary">
-							{getDisplayValue(thesis.supervisor?.email, 'No email provided')}
+							{getDisplayValue(thesis.supervisor?.phone, 'No phone provided')}
 						</Paragraph>
 					</div>
 				</Space>
 			</div>
 
-			<TeamMembers thesis={thesis} />
+			{/* Update TeamMembers component to work with ThesisWithRelations */}
+			{/* <TeamMembers thesis={thesis} /> */}
 		</Card>
 	);
 }
