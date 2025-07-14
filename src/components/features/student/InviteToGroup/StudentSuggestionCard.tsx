@@ -20,7 +20,6 @@ export const StudentSuggestionCard: React.FC<{ student: Student }> = ({
 		}[];
 	};
 
-	// ✅ Tách logic majorId ra thành biến độc lập
 	let majorName = s.majorId;
 	if (s.majorId === 'SE') {
 		majorName = 'Software Engineering';
