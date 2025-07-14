@@ -84,7 +84,25 @@ export const useThesisDetail = (thesisId: string) => {
 			const thesisResponse = await thesisService.findOne(thesisId);
 
 			if ('data' in thesisResponse && thesisResponse.data) {
-				const thesisData = thesisResponse.data as ThesisApiResponse;
+				// Type guard to ensure thesis data structure
+				const isThesisApiResponse = (
+					data: unknown,
+				): data is ThesisApiResponse => {
+					if (data === null || typeof data !== 'object') return false;
+					const obj = data as Record<string, unknown>;
+					return (
+						'id' in obj &&
+						typeof obj.id === 'string' &&
+						'lecturerId' in obj &&
+						typeof obj.lecturerId === 'string'
+					);
+				};
+
+				if (!isThesisApiResponse(thesisResponse.data)) {
+					throw new Error('Invalid thesis data structure');
+				}
+
+				const thesisData = thesisResponse.data;
 
 				// Update loading stage
 				setLoadingStage('lecturer');
