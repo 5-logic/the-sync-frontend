@@ -12,11 +12,7 @@ const { Title } = Typography;
 
 export default function FormJoinGroupPage() {
 	return (
-		<Space
-			direction="vertical"
-			size="large"
-			style={{ padding: 24, width: '100%' }}
-		>
+		<Space direction="vertical" size="large" style={{ width: '100%' }}>
 			<Header
 				title="Invite Students to Group"
 				description="Invite students to join the group by selecting from the student list or entering their information manually."
@@ -30,7 +26,6 @@ export default function FormJoinGroupPage() {
 					boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
 					border: '1px solid #f0f0f0',
 				}}
-				bodyStyle={{ padding: 24 }}
 			>
 				<Title level={5} style={{ margin: 0 }}>
 					Suggested by AI
@@ -59,7 +54,6 @@ export default function FormJoinGroupPage() {
 					boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
 					border: '1px solid #f0f0f0',
 				}}
-				bodyStyle={{ padding: 24 }}
 			>
 				<Typography.Title level={5} style={{ margin: 0 }}>
 					All Students
