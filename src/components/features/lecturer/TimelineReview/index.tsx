@@ -4,13 +4,14 @@ import { CheckCircleFilled, ClockCircleOutlined } from '@ant-design/icons';
 import { Card, Col, Row, Select, Space, Typography } from 'antd';
 import { useState } from 'react';
 
+import { Header } from '@/components/common/Header';
 import ProjectMilestone from '@/components/features/lecturer/TimelineReview/ProjectMilestone';
 import ReviewGroupTable from '@/components/features/lecturer/TimelineReview/ReviewGroupTable';
 import TimelineStats from '@/components/features/lecturer/TimelineReview/TimelineStats';
 import { mockReviewGroups } from '@/data/group';
 import { timeline } from '@/data/timeline';
 
-const { Title, Text, Paragraph } = Typography;
+const { Text } = Typography;
 const { Option } = Select;
 
 export default function TimelineReview() {
@@ -19,14 +20,10 @@ export default function TimelineReview() {
 	return (
 		<div style={{ padding: 24 }}>
 			<Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
-				<div>
-					<Title level={2} style={{ marginBottom: '4px' }}>
-						Timeline Review
-					</Title>
-					<Paragraph type="secondary" style={{ marginBottom: 0 }}>
-						Review timeline, track specific capstone review timelines
-					</Paragraph>
-				</div>
+				<Header
+					title="Timeline Review"
+					description="Review timeline, track specific capstone review timelines."
+				/>
 				<Select defaultValue="Summer 2022" style={{ width: 160 }}>
 					<Option value="summer2022">Summer 2022</Option>
 					<Option value="spring2022">Spring 2022</Option>

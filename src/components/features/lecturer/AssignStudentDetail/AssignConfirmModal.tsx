@@ -12,6 +12,7 @@ interface Props {
 	onConfirm: () => void;
 	students: Student[];
 	groupName: string;
+	loading?: boolean;
 }
 
 export default function AssignConfirmModal({
@@ -20,6 +21,7 @@ export default function AssignConfirmModal({
 	onConfirm,
 	students,
 	groupName,
+	loading = false,
 }: Readonly<Props>) {
 	return (
 		<Modal
@@ -28,6 +30,8 @@ export default function AssignConfirmModal({
 			onCancel={onCancel}
 			footer={null}
 			destroyOnClose
+			closable={!loading}
+			maskClosable={!loading}
 			title={
 				<Title level={4} style={{ marginBottom: 20 }}>
 					Confirm Assignment
@@ -38,7 +42,7 @@ export default function AssignConfirmModal({
 				<Text strong>Group Name:</Text> {groupName}
 			</Paragraph>
 
-			<Paragraph>Students list:</Paragraph>
+			<Paragraph>Students chosen:</Paragraph>
 
 			<List
 				size="small"
@@ -50,10 +54,14 @@ export default function AssignConfirmModal({
 			/>
 
 			<div style={{ textAlign: 'right', marginTop: 24 }}>
-				<Button onClick={onCancel} style={{ marginRight: 8 }}>
+				<Button
+					onClick={onCancel}
+					style={{ marginRight: 8 }}
+					disabled={loading}
+				>
 					Cancel
 				</Button>
-				<Button type="primary" onClick={onConfirm}>
+				<Button type="primary" onClick={onConfirm} loading={loading}>
 					Assign
 				</Button>
 			</div>

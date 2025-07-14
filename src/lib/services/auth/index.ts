@@ -40,7 +40,8 @@ export class AuthService {
 	// Password methods
 	static readonly changePassword = PasswordService.changePassword;
 	static readonly requestPasswordReset = PasswordService.requestPasswordReset;
-	static readonly resetPassword = PasswordService.resetPassword;
+	static readonly verifyOtpAndResetPassword =
+		PasswordService.verifyOtpAndResetPassword;
 
 	/**
 	 * Logout: Clear tokens and NextAuth session with remember me support
