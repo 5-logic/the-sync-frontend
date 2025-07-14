@@ -1,6 +1,9 @@
+import ProgressOverviewCard from '../../lecturer/GroupProgess/ProgressOverviewCard';
+
 import MilestoneDetailCard from './MilestoneDetailCard';
 import MilestoneStep from './MilestoneStep';
-import ProgressOverviewCard from './ProgressOverviewCard';
+
+// import ProgressOverviewCard from './ProgressOverviewCard';
 
 export default function ProjectProgressPage() {
 	return (
