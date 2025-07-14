@@ -38,19 +38,38 @@ export default function StudentThesisDetailPage() {
 
 				if (thesisResult.success && thesisResult.data) {
 					const thesisData = thesisResult.data;
-					// Cast to handle API response with additional fields
-					const apiThesis = thesisData as typeof thesisData & {
-						semesterId?: string;
-						thesisRequiredSkills?: Array<{
-							thesisId: string;
-							skillId: string;
-							skill: { id: string; name: string };
-						}>;
+
+					// Type guard for extended thesis data
+					const hasThesisVersions = (
+						data: unknown,
+					): data is {
 						thesisVersions?: Array<{
 							id: string;
 							version: number;
 							supportingDocument: string;
 						}>;
+					} => {
+						return (
+							typeof data === 'object' &&
+							data !== null &&
+							'thesisVersions' in data
+						);
+					};
+
+					const hasThesisSkills = (
+						data: unknown,
+					): data is {
+						thesisRequiredSkills?: Array<{
+							thesisId: string;
+							skillId: string;
+							skill: { id: string; name: string };
+						}>;
+					} => {
+						return (
+							typeof data === 'object' &&
+							data !== null &&
+							'thesisRequiredSkills' in data
+						);
 					};
 
 					// Fetch lecturer info
@@ -62,7 +81,7 @@ export default function StudentThesisDetailPage() {
 					// Create ThesisWithRelations object with real data
 					const thesisWithRelations: ThesisWithRelations = {
 						...thesisData,
-						semesterId: apiThesis.semesterId || thesisData.id, // Use ID as fallback for now
+						semesterId: thesisData.lecturerId, // Use lecturerId as temporary semesterId
 						lecturer: {
 							userId: lecturerResult.data?.id || thesisData.lecturerId,
 							isModerator: lecturerResult.data?.isModerator || false,
@@ -79,9 +98,13 @@ export default function StudentThesisDetailPage() {
 								phoneNumber?: string;
 							},
 						},
-						// Use real data from API response
-						thesisRequiredSkills: apiThesis.thesisRequiredSkills || [],
-						thesisVersions: apiThesis.thesisVersions || [],
+						// Use actual data from API response if available with type guards
+						thesisRequiredSkills: hasThesisSkills(thesisData)
+							? thesisData.thesisRequiredSkills || []
+							: [],
+						thesisVersions: hasThesisVersions(thesisData)
+							? thesisData.thesisVersions || []
+							: [],
 					};
 
 					setThesis(thesisWithRelations);
