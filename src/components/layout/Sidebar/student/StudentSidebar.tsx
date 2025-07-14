@@ -17,7 +17,7 @@ import {
 	getSelectedMenuKey,
 } from '@/components/layout/Sidebar/student/StudentSidebar.config';
 import { useNavigationLoader } from '@/hooks';
-import { useStudentGroupStatus } from '@/hooks/useStudentGroupStatus';
+import { useStudentGroupStatus } from '@/hooks/student/useStudentGroupStatus';
 import { DASHBOARD_PATHS } from '@/lib/auth/config/auth-constants';
 
 export default function StudentSidebar() {

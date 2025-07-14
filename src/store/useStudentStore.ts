@@ -40,7 +40,7 @@ const STORE_NAME = 'student-store';
 
 interface StudentState {
 	// Data
-	students: Student[];
+	students: Student[]; // Students data
 	filteredStudents: Student[];
 	currentProfile: StudentProfile | null;
 
@@ -93,7 +93,10 @@ interface StudentState {
 		semesterId: string,
 		force?: boolean,
 	) => Promise<void>;
-	fetchStudentsWithoutGroup: (semesterId: string) => Promise<void>;
+	fetchStudentsWithoutGroup: (
+		semesterId: string,
+		force?: boolean,
+	) => Promise<void>;
 	fetchStudentsWithoutGroupAuto: () => Promise<void>;
 	fetchProfile: (id: string, force?: boolean) => Promise<StudentProfile | null>;
 	createStudent: (data: StudentCreate) => Promise<boolean>;
@@ -149,7 +152,6 @@ const processStudentsWithoutGroupResponse = (
 
 		set({
 			students: activeStudents,
-			loading: false,
 		});
 
 		// Apply current filters
@@ -211,16 +213,27 @@ export const useStudentStore = create<StudentState>()(
 				ENTITY_NAME,
 			)(set, get),
 
-			fetchStudentsWithoutGroup: async (semesterId: string) => {
+			fetchStudentsWithoutGroup: async (semesterId: string, force = false) => {
+				console.log('fetchStudentsWithoutGroup called with force:', force);
 				set({ loading: true, lastError: null });
+				console.log('Loading set to true');
 				try {
+					// Clear cache if force refresh
+					if (force) {
+						console.log('Clearing cache...');
+						cacheUtils.clear(ENTITY_NAME);
+					}
+
 					const response =
 						await studentService.findStudentsWithoutGroup(semesterId);
 
+					console.log('API response received');
 					processStudentsWithoutGroupResponse(response, set, get);
 				} catch (error) {
+					console.log('Error occurred:', error);
 					handleActionError(error, ENTITY_NAME, 'fetch without group', set);
 				} finally {
+					console.log('Setting loading to false');
 					set({ loading: false });
 				}
 			},

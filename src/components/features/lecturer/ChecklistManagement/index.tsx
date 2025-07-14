@@ -4,7 +4,7 @@ import { Space } from 'antd';
 import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 
-import Header from '@/components/features/lecturer/AssignSupervisor/Header';
+import { Header } from '@/components/common/Header';
 import ChecklistTable from '@/components/features/lecturer/ChecklistManagement/ChecklistTable';
 import ChecklistToolbar from '@/components/features/lecturer/ChecklistManagement/ChecklistToolbar';
 import { mockChecklistItems } from '@/data/ChecklistItems';
