@@ -1,6 +1,7 @@
 export interface CollapsibleLayoutProps {
 	children: React.ReactNode;
 	sidebar: React.ReactNode;
+	showBreadcrumb?: boolean;
 }
 
 export interface SidebarSectionProps {

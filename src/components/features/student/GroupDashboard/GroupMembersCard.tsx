@@ -6,11 +6,23 @@ import {
 	TeamOutlined,
 	UserOutlined,
 } from '@ant-design/icons';
-import { Avatar, Button, Card, Dropdown, Tag, Typography } from 'antd';
+import {
+	Avatar,
+	Button,
+	Card,
+	Dropdown,
+	Modal,
+	Popconfirm,
+	Tag,
+	Typography,
+} from 'antd';
 import type { MenuProps } from 'antd';
+import { useState } from 'react';
 
 import { GroupConfirmationModals } from '@/components/common/ConfirmModal';
+import StudentInfoCard from '@/components/features/student/StudentInfoCard';
 import { useSessionData } from '@/hooks/auth/useAuth';
+import { useStudentProfile } from '@/hooks/student/useStudentProfile';
 import groupService from '@/lib/services/groups.service';
 import { showNotification } from '@/lib/utils/notification';
 import { GroupDashboard, GroupMember } from '@/schemas/group';
@@ -30,13 +42,25 @@ export default function GroupMembersCard({
 	const { session } = useSessionData();
 	const { refreshGroup } = useGroupDashboardStore();
 
+	// State for member profile dialog
+	const [selectedMember, setSelectedMember] = useState<GroupMember | null>(
+		null,
+	);
+	const [profileDialogOpen, setProfileDialogOpen] = useState(false);
+
+	// Fetch selected member's profile data
+	const { data: memberProfile, loading: profileLoading } = useStudentProfile(
+		selectedMember?.userId || '',
+	);
+
 	// Handle member actions (remove member, assign as leader)
 	const handleMemberAction = async (key: string, member: GroupMember) => {
 		if (!group || !member) return;
 
 		if (key === 'view-profile') {
-			// Log student ID as placeholder for viewing profile
-			console.log('View profile of student:', member.userId);
+			// Open profile dialog for the selected member
+			setSelectedMember(member);
+			setProfileDialogOpen(true);
 			return;
 		}
 
@@ -172,24 +196,88 @@ export default function GroupMembersCard({
 									{member.studentCode} • {member.major.name}
 								</Text>
 							</div>
-							<Dropdown
-								menu={{
-									items: menuItems,
-								}}
-								placement="bottomRight"
-								trigger={['click']}
-							>
-								<Button
-									type="text"
-									size="small"
-									icon={<MoreOutlined />}
-									className="flex-shrink-0"
-								/>
-							</Dropdown>
+							{/* Only show dropdown if it's not the current user */}
+							{session?.user?.id !== member.userId && (
+								<Dropdown
+									menu={{
+										items: menuItems,
+									}}
+									placement="bottomRight"
+									trigger={['click']}
+								>
+									<Button
+										type="text"
+										size="small"
+										icon={<MoreOutlined />}
+										className="flex-shrink-0"
+									/>
+								</Dropdown>
+							)}
 						</div>
 					);
 				})}
 			</div>
+			{/* Member Profile Dialog */}
+			<Modal
+				title="Student Information"
+				open={profileDialogOpen}
+				onCancel={() => {
+					setProfileDialogOpen(false);
+					setSelectedMember(null);
+				}}
+				footer={null}
+				width={800}
+				style={{ top: 20 }}
+			>
+				{memberProfile ? (
+					<div className="mt-4">
+						<StudentInfoCard student={memberProfile} loading={profileLoading} />
+
+						{/* Action buttons for leaders */}
+						{!viewOnly &&
+							session?.user?.id === group.leader.userId &&
+							selectedMember &&
+							!selectedMember.isLeader && (
+								<div className="mt-6 flex gap-3 justify-end border-t pt-4">
+									<Popconfirm
+										title="Remove Member"
+										description={`Are you sure you want to remove ${selectedMember.user.fullName} from the group?`}
+										onConfirm={() => {
+											handleMemberAction('remove-member', selectedMember);
+											setProfileDialogOpen(false);
+										}}
+										okText="Yes, Remove"
+										cancelText="Cancel"
+										okButtonProps={{ danger: true }}
+									>
+										<Button danger icon={<DeleteOutlined />}>
+											Remove from Group
+										</Button>
+									</Popconfirm>
+
+									<Popconfirm
+										title="Assign as Leader"
+										description={`Are you sure you want to make ${selectedMember.user.fullName} the leader of this group?`}
+										onConfirm={() => {
+											handleMemberAction('assign-leader', selectedMember);
+											setProfileDialogOpen(false);
+										}}
+										okText="Yes, Assign"
+										cancelText="Cancel"
+									>
+										<Button type="primary" icon={<CrownOutlined />}>
+											Assign as Leader
+										</Button>
+									</Popconfirm>
+								</div>
+							)}
+					</div>
+				) : (
+					<div className="mt-4">
+						<StudentInfoCard student={null} loading={profileLoading} />
+					</div>
+				)}
+			</Modal>
 		</Card>
 	);
 }

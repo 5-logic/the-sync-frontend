@@ -3,8 +3,8 @@
 import { Layout, Space } from 'antd';
 import { useState } from 'react';
 
+import { Header } from '@/components/common/Header';
 import TabNavigation from '@/components/features/admin/CreateNewUser/TabNavigation';
-import Header from '@/components/features/lecturer/AssignSupervisor/Header';
 import UnifiedChecklistForm from '@/components/features/lecturer/CreateChecklist/ChecklistForm';
 
 export default function CreateChecklist() {

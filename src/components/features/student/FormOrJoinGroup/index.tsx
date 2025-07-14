@@ -1,9 +1,10 @@
 'use client';
 
-import { Card, Col, Row, Space, Typography } from 'antd';
+import { Card, Col, Row, Space } from 'antd';
 import { useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
+import { Header } from '@/components/common/Header';
 import { RequestsButton } from '@/components/common/RequestsManagement';
 import CreateGroupForm from '@/components/features/student/FormOrJoinGroup/CreateGroup/CreateGroupForm';
 import FormOrJoinTabs from '@/components/features/student/FormOrJoinGroup/FormOrJoinTabs';
@@ -15,8 +16,6 @@ import { type Group } from '@/lib/services/groups.service';
 import { Thesis } from '@/schemas/thesis';
 import { useRequestsStore } from '@/store';
 import { useGroupsStore } from '@/store/useGroupsStore';
-
-const { Title, Paragraph } = Typography;
 
 const SUGGESTED_GROUPS_COUNT = 3;
 const TAB_KEYS = {
@@ -162,15 +161,11 @@ export default function FormOrJoinGroup() {
 			{/* Header Section */}
 			<Row align="middle" justify="space-between" wrap>
 				<Col xs={24} sm={18} md={18} lg={20}>
-					<Space direction="vertical" size="small">
-						<Title level={2} style={{ marginBottom: 0 }}>
-							Form or Join a Group
-						</Title>
-						<Paragraph type="secondary" style={{ marginBottom: 0 }}>
-							Find a group that matches your interests or create a new one to
-							collaborate with others.
-						</Paragraph>
-					</Space>
+					<Header
+						title="Form or Join a Group"
+						description="Find a group that matches your interests or create a new one to
+							collaborate with others."
+					/>
 				</Col>
 				<Col xs={24} sm={6} md={6} lg={4}>
 					<div

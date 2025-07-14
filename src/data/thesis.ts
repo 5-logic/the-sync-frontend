@@ -83,7 +83,8 @@ export const mockTheses: ExtendedThesis[] = [
 		englishName: 'Blockchain Supply Chain',
 		vietnameseName: 'Chuỗi cung ứng Blockchain',
 		abbreviation: 'BLSC',
-		description: 'Blockchain for supply chain transparency.',
+		description:
+			'Blockchain technology enhances supply chain transparency by creating a secure, tamper-proof, learning and transparent record of transactions and product information ',
 		domain: 'Blockchain',
 		status: 'Pending',
 		isPublish: true,
@@ -105,10 +106,11 @@ export const mockTheses: ExtendedThesis[] = [
 		englishName: 'Smart City IoT Platform',
 		vietnameseName: 'Nền tảng IoT cho thành phố thông minh',
 		abbreviation: 'SCIOT',
-		description: 'Building a scalable IoT platform.',
+		description:
+			'Learn the fundamental concepts, key components, and best practices for designing and developing a robust IOT platform. Learning and building a scalable IoT platform.',
 		domain: 'IoT',
 		status: 'Rejected',
-		isPublish: false,
+		isPublish: true,
 		groupId: 'g3',
 		lecturerId: 'lect3',
 		createdAt: new Date('2024-01-05'),

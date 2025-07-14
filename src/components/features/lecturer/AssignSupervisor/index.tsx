@@ -3,9 +3,9 @@
 import { Button, Space } from 'antd';
 import { useState } from 'react';
 
+import { Header } from '@/components/common/Header';
 import AssignSupervisorModal from '@/components/features/lecturer/AssignSupervisor/AssignSupervisorModal';
 import GroupOverviewTable from '@/components/features/lecturer/AssignSupervisor/GroupOverviewTable';
-import Header from '@/components/features/lecturer/AssignSupervisor/Header';
 import { baseColumns } from '@/components/features/lecturer/AssignSupervisor/SupervisorColumns';
 import SupervisorFilterBar from '@/components/features/lecturer/AssignSupervisor/SupervisorFilterBar';
 import { ExtendedGroup, extendedGroups } from '@/data/group';
