@@ -28,15 +28,6 @@ export const useGroupDashboardStore = create<GroupDashboardState>()(
 				const state = get();
 				const now = Date.now();
 
-				console.log('fetchStudentGroup called:', {
-					forceRefresh,
-					currentGroup: state.group?.id,
-					lastFetched: state.lastFetched
-						? new Date(state.lastFetched).toLocaleString()
-						: 'never',
-					loading: state.loading,
-				});
-
 				// Check if we have cached data (either group or null) and it's still fresh
 				const isCacheValid =
 					state.lastFetched && now - state.lastFetched < CACHE_DURATION;
@@ -49,29 +40,21 @@ export const useGroupDashboardStore = create<GroupDashboardState>()(
 
 				// Prevent multiple simultaneous fetches
 				if (state.loading) {
-					console.log('Already loading, skipping fetch');
 					return;
 				}
 
 				try {
 					set({ loading: true, error: null });
-					console.log('Fetching student group from API...');
 					const response = await groupService.getStudentGroup();
-					console.log('API Response:', response);
 
 					if (response.success && response.data.length > 0) {
 						// Student should only have one group, take the first one
-						console.log('Setting group:', response.data[0]);
 						set({
 							group: response.data[0],
 							loading: false,
 							lastFetched: now,
 						});
 					} else {
-						console.log(
-							'No group found, setting group to null. Response:',
-							response.success ? response.data : response.error,
-						);
 						set({
 							group: null,
 							loading: false,
