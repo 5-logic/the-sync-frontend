@@ -14,7 +14,6 @@ export default function StudentProfileSections() {
 			size={24}
 			style={{ width: '100%', marginTop: 4 }}
 		>
-			{/* Skills */}
 			<Card title="Skills">
 				<Space wrap>
 					{data.skills.map((skill) => (
@@ -25,7 +24,6 @@ export default function StudentProfileSections() {
 				</Space>
 			</Card>
 
-			{/* Academic Interests */}
 			<Card title="Academic Interests">
 				<List
 					dataSource={data.academicInterests}

@@ -11,7 +11,6 @@ export default function StudentProfileLayout() {
 	return (
 		<Card bordered bodyStyle={{ padding: 24 }}>
 			<Row gutter={[24, 24]} align="middle">
-				{/* Avatar + Basic Info */}
 				<Col span={24}>
 					<Row gutter={[16, 16]} align="middle">
 						<Col>
@@ -29,7 +28,6 @@ export default function StudentProfileLayout() {
 					</Row>
 				</Col>
 
-				{/* Email + Phone */}
 				<Col span={24}>
 					<Row gutter={[16, 16]}>
 						<Col xs={24} sm={12}>
@@ -49,7 +47,6 @@ export default function StudentProfileLayout() {
 					</Row>
 				</Col>
 
-				{/* Gender + Roles */}
 				<Col span={24}>
 					<Row gutter={[16, 16]}>
 						<Col xs={24} sm={12}>
