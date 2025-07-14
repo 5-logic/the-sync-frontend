@@ -40,6 +40,20 @@ export default function ThesisCard({ thesis, studentRole }: Props) {
 		router.push(`/student/list-thesis/${thesis.id}`);
 	};
 
+	// Get button tooltip message based on current state
+	const getButtonTooltip = (): string => {
+		if (isThesisTaken) {
+			return 'This thesis is already taken by another group';
+		}
+		if (!hasGroup) {
+			return 'You need to be in a group to register';
+		}
+		if (studentRole !== 'leader') {
+			return 'Only group leaders can register for thesis';
+		}
+		return 'Register for this thesis';
+	};
+
 	return (
 		<Card
 			title={null}
@@ -143,19 +157,7 @@ export default function ThesisCard({ thesis, studentRole }: Props) {
 					</Button>
 				</Col>
 				<Col span={12}>
-					<Button
-						block
-						disabled={!canRegister}
-						title={
-							isThesisTaken
-								? 'This thesis is already taken by another group'
-								: !hasGroup
-									? 'You need to be in a group to register'
-									: studentRole !== 'leader'
-										? 'Only group leaders can register for thesis'
-										: 'Register for this thesis'
-						}
-					>
+					<Button block disabled={!canRegister} title={getButtonTooltip()}>
 						{isThesisTaken ? 'Taken' : 'Register'}
 					</Button>
 				</Col>
