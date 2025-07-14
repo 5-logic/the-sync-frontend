@@ -10,12 +10,49 @@ import { ListPagination } from '@/components/common/ListPagination';
 import ThesisCard from '@/components/features/student/ViewListThesis/ThesisCard';
 import { useStudentGroupStatus } from '@/hooks/student/useStudentGroupStatus';
 import { getSortedDomains } from '@/lib/constants/domains';
+import lecturersService from '@/lib/services/lecturers.service';
 import studentsService from '@/lib/services/students.service';
 import thesesService from '@/lib/services/theses.service';
 import { handleApiResponse } from '@/lib/utils/handleApi';
-import { ThesisWithRelations } from '@/schemas/thesis';
+import { Thesis, ThesisWithRelations } from '@/schemas/thesis';
 
 const { Option } = Select;
+
+// Convert Thesis to ThesisWithRelations format
+const convertToThesisWithRelations = async (
+	thesis: Thesis,
+): Promise<ThesisWithRelations | null> => {
+	try {
+		// Fetch lecturer info for this thesis
+		const lecturerResponse = await lecturersService.findOne(thesis.lecturerId);
+		const lecturerResult = handleApiResponse(lecturerResponse, 'Success');
+
+		if (!lecturerResult.success || !lecturerResult.data) {
+			return null;
+		}
+
+		const lecturer = lecturerResult.data;
+
+		// Convert to ThesisWithRelations format
+		return {
+			...thesis,
+			lecturer: {
+				userId: lecturer.id,
+				isModerator: lecturer.isModerator,
+				user: {
+					id: lecturer.id,
+					fullName: lecturer.fullName,
+					email: lecturer.email,
+				},
+			},
+			thesisRequiredSkills: [], // Will be populated by API if available
+			thesisVersions: [], // Will be populated by API if available
+		};
+	} catch (error) {
+		console.error('Error converting thesis:', error);
+		return null;
+	}
+};
 
 export default function ViewListThesis() {
 	const { data: session } = useSession();
@@ -72,11 +109,21 @@ export default function ViewListThesis() {
 				const thesesResult = handleApiResponse(thesesResponse, 'Success');
 
 				if (thesesResult.success && thesesResult.data) {
-					// Filter only published theses and cast to proper type
+					// Filter only published theses
 					const publishedTheses = thesesResult.data.filter(
 						(thesis) => thesis.isPublish && thesis.status === 'Approved',
-					) as ThesisWithRelations[];
-					setTheses(publishedTheses);
+					);
+
+					// Convert each thesis to ThesisWithRelations format
+					const thesesWithRelations = await Promise.all(
+						publishedTheses.map(convertToThesisWithRelations),
+					);
+
+					// Filter out any null results and set state
+					const validTheses = thesesWithRelations.filter(
+						(thesis): thesis is ThesisWithRelations => thesis !== null,
+					);
+					setTheses(validTheses);
 				}
 			} catch (error) {
 				console.error('Error fetching theses:', error);
