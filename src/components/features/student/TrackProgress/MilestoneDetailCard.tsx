@@ -68,7 +68,16 @@ export default function MilestoneDetailCard() {
 	};
 
 	return (
-		<Card title="Project Milestones" style={{ marginBottom: 16 }}>
+		<Card
+			title="Project Milestones"
+			style={{
+				height: '100%',
+				display: 'flex',
+				flexDirection: 'column',
+				justifyContent: 'space-between',
+				marginBottom: 16,
+			}}
+		>
 			<Collapse
 				accordion
 				defaultActiveKey={[mockMilestoneDetails[0]?.id.toString()]}
@@ -121,6 +130,7 @@ export default function MilestoneDetailCard() {
 											backgroundColor: '#fafafa',
 											border: '1px solid #f0f0f0',
 											padding: 12,
+											marginTop: 12,
 											borderRadius: 8,
 										}}
 									>
@@ -138,25 +148,52 @@ export default function MilestoneDetailCard() {
 							</Space>
 						) : (
 							<Space direction="vertical" size={8} style={{ width: '100%' }}>
-								<Row align="middle" style={{ marginTop: 8 }}>
-									<Col flex="auto">
-										<Upload
-											beforeUpload={(file) => handleUpload(file, milestone.id)}
-											showUploadList={false}
-										>
-											<Button icon={<UploadOutlined />}>Choose File</Button>
-										</Upload>
-									</Col>
-									<Col>
-										<Button
-											type="primary"
-											onClick={() => handleSubmit(milestone.id)}
-										>
-											Submit
-										</Button>
-									</Col>
-								</Row>
+								<Card
+									size="small"
+									style={{
+										backgroundColor: '#fffbe6',
+										border: '1px solid #ffe58f',
+										padding: 12,
+									}}
+								>
+									<Typography.Text type="warning">
+										⚠️ Please make sure to submit your report before the
+										deadline.
+									</Typography.Text>
+								</Card>
 
+								{/* Card chứa 2 nút */}
+								<Card
+									size="small"
+									style={{
+										backgroundColor: '#fafafa',
+										border: '1px solid #d9d9d9',
+										marginTop: 12,
+									}}
+								>
+									<Row align="middle">
+										<Col flex="auto">
+											<Upload
+												beforeUpload={(file) =>
+													handleUpload(file, milestone.id)
+												}
+												showUploadList={false}
+											>
+												<Button icon={<UploadOutlined />}>Choose File</Button>
+											</Upload>
+										</Col>
+										<Col>
+											<Button
+												type="primary"
+												onClick={() => handleSubmit(milestone.id)}
+											>
+												Submit
+											</Button>
+										</Col>
+									</Row>
+								</Card>
+
+								{/* Hiển thị tên file đã chọn */}
 								{fileList[milestone.id] && (
 									<Flex align="center" gap={8}>
 										<FileTextOutlined />
