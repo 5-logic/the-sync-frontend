@@ -1,7 +1,7 @@
 'use client';
 
 import { Alert, Button, Space } from 'antd';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { ConfirmationModal } from '@/components/common/ConfirmModal';
 import { Header } from '@/components/common/Header';
@@ -47,20 +47,41 @@ export default function AssignSupervisors() {
 		clearAllDrafts,
 	} = useDraftAssignmentStore();
 
-	const filteredData = data.filter((item) => {
-		const searchText = search.toLowerCase();
-		const matchesSearch = [item.groupName, item.thesisTitle].some((field) =>
-			field.toLowerCase().includes(searchText),
-		);
-		const matchesStatus =
-			statusFilter === 'All' || item.status === statusFilter;
-		return matchesSearch && matchesStatus;
-	});
+	// Clear drafts on page reload or navigation
+	useEffect(() => {
+		const handleBeforeUnload = () => {
+			clearAllDrafts();
+		};
+
+		const handlePageHide = () => {
+			clearAllDrafts();
+		};
+
+		window.addEventListener('beforeunload', handleBeforeUnload);
+		window.addEventListener('pagehide', handlePageHide);
+
+		return () => {
+			window.removeEventListener('beforeunload', handleBeforeUnload);
+			window.removeEventListener('pagehide', handlePageHide);
+		};
+	}, [clearAllDrafts]);
+
+	const filteredData = useMemo(() => {
+		return data.filter((item) => {
+			const searchText = search.toLowerCase();
+			const matchesSearch = [item.groupName, item.thesisTitle].some((field) =>
+				field.toLowerCase().includes(searchText),
+			);
+			const matchesStatus =
+				statusFilter === 'All' || item.status === statusFilter;
+			return matchesSearch && matchesStatus;
+		});
+	}, [data, search, statusFilter]);
 
 	/**
 	 * Handle bulk assignment of all draft assignments
 	 */
-	const handleBulkAssignment = async () => {
+	const handleBulkAssignment = async (): Promise<void> => {
 		const drafts = getDraftAssignmentsList();
 
 		if (drafts.length === 0) {
@@ -72,23 +93,19 @@ export default function AssignSupervisors() {
 			lecturerIds: draft.lecturerIds,
 		}));
 
-		console.log('Sending bulk assignment:', { assignments });
 		const result = await bulkAssignSupervisors(assignments);
-		console.log('Bulk assignment result:', result);
 
 		if (result) {
 			// Clear all drafts after successful assignment
 			clearAllDrafts();
 			// No need to refresh data - optimistic updates already applied
-		} else {
-			console.error('Bulk assignment failed');
 		}
 	};
 
 	/**
 	 * Handle supervisor assignment/change submission for individual thesis
 	 */
-	const handleAssignSubmit = async (supervisorIds: string[]) => {
+	const handleAssignSubmit = async (supervisorIds: string[]): Promise<void> => {
 		if (!selectedGroup) return;
 
 		setModalLoading(true);
@@ -133,8 +150,8 @@ export default function AssignSupervisors() {
 					setSelectedGroup(null);
 					// No need to refresh data - optimistic updates already applied
 				}
-			} catch (error) {
-				console.error('Error in change mode operations:', error);
+			} catch {
+				// Error in change mode operations - handled by the hook
 			}
 		} else {
 			// Handle assign mode - add to draft
@@ -160,7 +177,7 @@ export default function AssignSupervisors() {
 	/**
 	 * Handle bulk assignment confirmation
 	 */
-	const handleBulkAssignmentConfirm = () => {
+	const handleBulkAssignmentConfirm = (): void => {
 		const drafts = getDraftAssignmentsList();
 
 		ConfirmationModal.show({
@@ -168,7 +185,7 @@ export default function AssignSupervisors() {
 			message: `Are you sure you want to assign supervisors for ${drafts.length} thesis assignments?`,
 			details: `This will assign all pending draft assignments to their respective theses.`,
 			note: 'This action cannot be undone. All draft assignments will be processed immediately.',
-			noteType: 'info',
+			noteType: 'danger',
 			okText: 'Yes, Assign All',
 			cancelText: 'Cancel',
 			loading: updating,
@@ -178,35 +195,40 @@ export default function AssignSupervisors() {
 
 	const draftCount = getDraftCount();
 
-	// Updated columns for actions only
-	const columns = [
-		...baseColumns,
-		{
-			title: 'Action',
-			key: 'action',
-			render: (_: unknown, record: SupervisorAssignmentData) => {
-				const isFinalized = record.status === 'Finalized';
+	// Memoized columns to prevent unnecessary re-renders
+	const columns = useMemo(
+		() => [
+			...baseColumns,
+			{
+				title: 'Action',
+				key: 'action',
+				render: (_: unknown, record: SupervisorAssignmentData) => {
+					const isFinalized = record.status === 'Finalized';
 
-				return (
-					<Button
-						type="primary"
-						size="small"
-						onClick={() => {
-							setSelectedGroup(record);
-							setModalOpen(true);
-						}}
-					>
-						{isFinalized ? 'Change' : 'Assign'}
-					</Button>
-				);
+					return (
+						<Button
+							type="primary"
+							size="small"
+							onClick={() => {
+								setSelectedGroup(record);
+								setModalOpen(true);
+							}}
+						>
+							{isFinalized ? 'Change' : 'Assign'}
+						</Button>
+					);
+				},
 			},
-		},
-	];
+		],
+		[],
+	);
 
-	const lecturerOptions = lecturers.map((lecturer) => ({
-		label: lecturer.fullName,
-		value: lecturer.id,
-	}));
+	const lecturerOptions = useMemo(() => {
+		return lecturers.map((lecturer) => ({
+			label: lecturer.fullName,
+			value: lecturer.id,
+		}));
+	}, [lecturers]);
 
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
