@@ -294,6 +294,7 @@ export default function ViewListThesis() {
 							<ThesisCard
 								thesis={thesis}
 								studentRole={isLeader ? 'leader' : 'member'}
+								onThesisUpdate={handleRefresh}
 							/>
 						</Col>
 					))
