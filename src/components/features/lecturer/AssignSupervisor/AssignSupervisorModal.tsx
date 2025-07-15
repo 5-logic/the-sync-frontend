@@ -1,5 +1,5 @@
 import { Button, Form, Modal, Select } from 'antd';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { FormLabel } from '@/components/common/FormLabel';
 
@@ -121,57 +121,46 @@ export default function AssignSupervisorModal({
 		onSubmit(selected);
 	};
 
-	// Generate stable keys for Select components
+	// Generate stable keys for Select components using watched values
 	const getSupervisor1Key = (): string => {
 		if (loading) return 'supervisor1-loading';
-		const supervisor2Value =
-			form.getFieldValue('supervisor2') || initialValues?.[1];
 		return `supervisor1-${supervisor2Value || 'none'}-${renderKey}`;
 	};
 
 	const getSupervisor2Key = (): string => {
 		if (loading) return 'supervisor2-loading';
-		const supervisor1Value =
-			form.getFieldValue('supervisor1') || initialValues?.[0];
 		return `supervisor2-${supervisor1Value || 'none'}-${renderKey}`;
 	};
 
-	// Filter lecturer options based on mode
-	const getAvailableOptions = () => {
-		// Both modes now show all lecturers for consistency
-		// This provides flexibility and better UX
-		return lecturerOptions;
-	};
+	// Filter lecturer options based on mode	// Watch form values to compute options reactively
+	const supervisor1Value = Form.useWatch('supervisor1', form);
+	const supervisor2Value = Form.useWatch('supervisor2', form);
 
-	// Get options for supervisor 1 (exclude supervisor 2 if selected)
-	const getSupervisor1Options = (): LecturerOption[] => {
-		const baseOptions = getAvailableOptions();
-		const supervisor2Value =
-			form.getFieldValue('supervisor2') || initialValues?.[1];
+	// Compute supervisor 1 options (exclude supervisor 2 if selected)
+	const supervisor1Options = useMemo((): LecturerOption[] => {
+		const currentSupervisor2 = supervisor2Value || initialValues?.[1];
 
 		// Always exclude the currently selected supervisor2 to prevent duplicates
-		if (supervisor2Value) {
-			return baseOptions.filter(
-				(option: LecturerOption) => option.value !== supervisor2Value,
+		if (currentSupervisor2) {
+			return lecturerOptions.filter(
+				(option: LecturerOption) => option.value !== currentSupervisor2,
 			);
 		}
-		return baseOptions;
-	};
+		return lecturerOptions;
+	}, [supervisor2Value, initialValues, lecturerOptions]);
 
-	// Get options for supervisor 2 (exclude supervisor 1 if selected)
-	const getSupervisor2Options = (): LecturerOption[] => {
-		const baseOptions = getAvailableOptions();
-		const supervisor1Value =
-			form.getFieldValue('supervisor1') || initialValues?.[0];
+	// Compute supervisor 2 options (exclude supervisor 1 if selected)
+	const supervisor2Options = useMemo((): LecturerOption[] => {
+		const currentSupervisor1 = supervisor1Value || initialValues?.[0];
 
 		// Always exclude the currently selected supervisor1 to prevent duplicates
-		if (supervisor1Value) {
-			return baseOptions.filter(
-				(option: LecturerOption) => option.value !== supervisor1Value,
+		if (currentSupervisor1) {
+			return lecturerOptions.filter(
+				(option: LecturerOption) => option.value !== currentSupervisor1,
 			);
 		}
-		return baseOptions;
-	};
+		return lecturerOptions;
+	}, [supervisor1Value, initialValues, lecturerOptions]);
 
 	// Common filter function for search functionality
 	const filterOption = (
@@ -181,7 +170,7 @@ export default function AssignSupervisorModal({
 
 	return (
 		<Modal
-			title={isChangeMode ? 'Change Supervisor' : 'Assign Supervisor'}
+			title={isChangeMode ? 'Change Supervisor' : 'Assign Supervisor (Draft)'}
 			open={open}
 			onCancel={handleCancel}
 			footer={null}
@@ -210,7 +199,7 @@ export default function AssignSupervisorModal({
 						placeholder={
 							isChangeMode ? 'Change to new supervisor' : 'Select supervisor'
 						}
-						options={getSupervisor1Options()}
+						options={supervisor1Options}
 						allowClear
 						showSearch
 						disabled={loading}
@@ -233,7 +222,8 @@ export default function AssignSupervisorModal({
 					rules={[
 						{
 							validator(_, value) {
-								const sup1 = form.getFieldValue('supervisor1');
+								const sup1 =
+									supervisor1Value || form.getFieldValue('supervisor1');
 
 								if (value && value === sup1) {
 									return Promise.reject(
@@ -255,7 +245,7 @@ export default function AssignSupervisorModal({
 								? 'Change to new supervisor (optional)'
 								: 'Select supervisor (optional)'
 						}
-						options={getSupervisor2Options()}
+						options={supervisor2Options}
 						allowClear
 						showSearch
 						disabled={loading}
@@ -275,7 +265,7 @@ export default function AssignSupervisorModal({
 						Cancel
 					</Button>
 					<Button type="primary" htmlType="submit" loading={loading}>
-						{isChangeMode ? 'Change' : 'Assign'}
+						{isChangeMode ? 'Change' : 'Save as Draft'}
 					</Button>
 				</Form.Item>
 			</Form>
