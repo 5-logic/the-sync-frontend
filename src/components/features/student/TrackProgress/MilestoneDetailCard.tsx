@@ -1,186 +1,88 @@
 'use client';
 
-import {
-	CheckCircleTwoTone,
-	FileTextOutlined,
-	UploadOutlined,
-	UserOutlined,
-} from '@ant-design/icons';
-import {
-	Avatar,
-	Button,
-	Card,
-	Collapse,
-	Tag,
-	Typography,
-	Upload,
-	message,
-} from 'antd';
+import { FileTextOutlined } from '@ant-design/icons';
+import { UploadOutlined } from '@ant-design/icons';
+import { Button, Card, Collapse, Tag, Upload } from 'antd';
+import type { UploadFile } from 'antd/es/upload/interface';
 import { useState } from 'react';
 
+import { Milestone, mockMilestoneDetails } from '@/data/milestone';
+
 const { Panel } = Collapse;
-const { Text } = Typography;
-
-interface Milestone {
-	id: number;
-	title: string;
-	date: string;
-	status: 'Ended' | 'In Progress' | 'Upcoming';
-	submitted?: boolean;
-	fileName?: string;
-	feedback?: string;
-	supervisor?: string;
-}
-
-const mockMilestones: Milestone[] = [
-	{
-		id: 1,
-		title: 'Submit Thesis',
-		date: '2023-10-15',
-		status: 'Ended',
-		submitted: true,
-		fileName: 'proposal_final.pdf',
-		feedback: 'Well done. Your structure is clear and logic flows nicely.',
-		supervisor: 'Dr. Nguyen Van A',
-	},
-	{
-		id: 2,
-		title: 'Review 1',
-		date: '2023-11-15',
-		status: 'Ended',
-		submitted: true,
-		fileName: 'review1_report.pdf',
-		feedback: 'Please revise the introduction section. Too generic.',
-		supervisor: 'Prof. Le Thi B',
-	},
-	{
-		id: 3,
-		title: 'Review 2',
-		date: '2023-12-15',
-		status: 'In Progress',
-	},
-	{
-		id: 4,
-		title: 'Review 3',
-		date: '2024-03-15',
-		status: 'Upcoming',
-	},
-	{
-		id: 5,
-		title: 'Final Report',
-		date: '2024-05-15',
-		status: 'Upcoming',
-	},
-];
-
 export default function MilestoneDetailCard() {
-	const [fileList, setFileList] = useState<Record<number, string>>({});
+	const [fileList, setFileList] = useState<
+		Record<number, UploadFile<unknown>[]>
+	>({});
 
-	const handleUpload = (file: File, milestoneId: number) => {
-		setFileList((prev) => ({ ...prev, [milestoneId]: file.name }));
-		message.success(`File ${file.name} selected`);
-		return false; // Prevent auto upload
-	};
-
-	const handleSubmit = (milestoneId: number) => {
-		const file = fileList[milestoneId];
-		if (file) {
-			message.success(`Submitted "${file}" for milestone ${milestoneId}`);
-		} else {
-			message.warning('Please upload a file before submitting');
-		}
-	};
-
-	const getStatusTag = (status: Milestone['status']) => {
-		switch (status) {
-			case 'Ended':
-				return <Tag color="green">Ended</Tag>;
-			case 'In Progress':
-				return <Tag color="blue">In Progress</Tag>;
-			case 'Upcoming':
-				return <Tag>Upcoming</Tag>;
-		}
+	const handleUploadChange = (milestoneId: number, info: unknown) => {
+		const uploadInfo = info as { fileList: UploadFile<unknown>[] };
+		const newFileList = { ...fileList, [milestoneId]: uploadInfo.fileList };
+		setFileList(newFileList);
 	};
 
 	return (
-		<Card className="mb-4" title="Project Milestones">
-			<Collapse accordion defaultActiveKey={['1']}>
-				{mockMilestones.map((milestone) => (
+		<Card
+			className="mb-4"
+			title={`Milestone 1: ${mockMilestoneDetails[0].title}`}
+			extra={<span>{mockMilestoneDetails[0].date}</span>}
+		>
+			<p>
+				<strong>Submitted Files:</strong>
+			</p>
+			<div className="flex items-center justify-between bg-gray-100 p-2 rounded">
+				<span>
+					<FileTextOutlined /> {mockMilestoneDetails[0].fileName}
+				</span>
+				<Button type="primary">Submit</Button>
+			</div>
+
+			{mockMilestoneDetails[0].feedback && (
+				<div className="mt-3">
+					<div className="font-semibold">
+						{mockMilestoneDetails[0].supervisor}
+					</div>
+					<div className="text-gray-600">
+						{mockMilestoneDetails[0].feedback}
+					</div>
+				</div>
+			)}
+
+			<Collapse className="mt-4">
+				{mockMilestoneDetails.slice(1).map((milestone: Milestone) => (
 					<Panel
+						header={`Milestone ${milestone.id}: ${milestone.title}`}
 						key={milestone.id}
-						header={milestone.title}
-						extra={getStatusTag(milestone.status)}
+						extra={
+							<Tag
+								color={
+									milestone.status === 'Ended'
+										? 'green'
+										: milestone.status === 'In Progress'
+											? 'blue'
+											: 'default'
+								}
+							>
+								{milestone.status}
+							</Tag>
+						}
 					>
-						<p>
-							<strong>Due date:</strong> {milestone.date}
-						</p>
+						<p>Due date: {milestone.date}</p>
+						<Upload
+							fileList={fileList[milestone.id] || []}
+							beforeUpload={() => false}
+							onChange={(info) => handleUploadChange(milestone.id, info)}
+						>
+							<Button icon={<UploadOutlined />}>Choose File</Button>
+						</Upload>
+						<Button type="primary" className="mt-2">
+							Submit
+						</Button>
 
-						{/* Đã nộp */}
-						{milestone.submitted ? (
-							<>
-								<div
-									style={{
-										backgroundColor: '#f6ffed',
-										border: '1px solid #b7eb8f',
-										padding: '12px',
-										borderRadius: 8,
-										marginBottom: 12,
-										display: 'flex',
-										alignItems: 'center',
-										justifyContent: 'space-between',
-									}}
-								>
-									<div>
-										<FileTextOutlined style={{ marginRight: 8 }} />
-										{milestone.fileName}
-									</div>
-									<CheckCircleTwoTone twoToneColor="#52c41a" />
-								</div>
-
-								{milestone.feedback && (
-									<div
-										style={{
-											backgroundColor: '#fafafa',
-											border: '1px solid #f0f0f0',
-											padding: '12px',
-											borderRadius: 8,
-											display: 'flex',
-											alignItems: 'flex-start',
-											gap: 12,
-										}}
-									>
-										<Avatar icon={<UserOutlined />} />
-										<div>
-											<Text strong>{milestone.supervisor}</Text>
-											<p style={{ marginTop: 4 }}>{milestone.feedback}</p>
-										</div>
-									</div>
-								)}
-							</>
-						) : (
-							// Chưa nộp
-							<>
-								<Upload
-									beforeUpload={(file) => handleUpload(file, milestone.id)}
-									showUploadList={false}
-								>
-									<Button icon={<UploadOutlined />}>Choose File</Button>
-								</Upload>
-
-								{fileList[milestone.id] && (
-									<div className="mt-2 flex items-center gap-2">
-										<FileTextOutlined /> {fileList[milestone.id]}
-									</div>
-								)}
-
-								<Button
-									type="primary"
-									className="mt-2"
-									onClick={() => handleSubmit(milestone.id)}
-								>
-									Submit
-								</Button>
-							</>
+						{milestone.feedback && (
+							<div className="mt-3">
+								<div className="font-semibold">{milestone.supervisor}</div>
+								<div className="text-gray-600">{milestone.feedback}</div>
+							</div>
 						)}
 					</Panel>
 				))}
