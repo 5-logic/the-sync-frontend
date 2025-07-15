@@ -3,12 +3,13 @@
 import { Card, Divider, Space, Typography } from 'antd';
 import { useMemo, useState } from 'react';
 
+import { Header } from '@/components/common/Header';
 import GroupSearchTable from '@/components/features/lecturer/GroupProgess/GroupSearchTable';
 import ReviewChecklistTable from '@/components/features/lecturer/GroupReview/ReviewChecklistTable';
 import ReviewHeader from '@/components/features/lecturer/GroupReview/ReviewHeader';
 import { FullMockGroup, allMockGroups } from '@/data/group';
 
-const { Title, Text, Paragraph } = Typography;
+const { Text } = Typography;
 
 export default function GroupReviewPage() {
 	const [selectedGroup, setSelectedGroup] = useState<FullMockGroup>();
@@ -58,16 +59,12 @@ export default function GroupReviewPage() {
 
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
-			<div>
-				<Title level={2} style={{ marginBottom: 4 }}>
-					Group Review
-				</Title>
-				<Paragraph type="secondary" style={{ marginBottom: 10 }}>
-					This section allows instructors to review each groups progress through
+			<Header
+				title="Group Review"
+				description="This section allows instructors to review each groups progress through
 					different phases of their thesis development using a structured
-					checklist for evaluation.
-				</Paragraph>
-			</div>
+					checklist for evaluation."
+			/>
 
 			<GroupSearchTable
 				data={groupList}

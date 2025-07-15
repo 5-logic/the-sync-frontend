@@ -3,10 +3,10 @@
 import { Space } from 'antd';
 import { useState } from 'react';
 
+import { Header } from '@/components/common/Header';
 import AssignReviewerModal from '@/components/features/lecturer/AssignLecturerReview/AssignReviewerModal';
 import GroupTable from '@/components/features/lecturer/AssignLecturerReview/GroupTable';
 import SearchFilterBar from '@/components/features/lecturer/AssignLecturerReview/SearchFilterBar';
-import Header from '@/components/features/lecturer/AssignSupervisor/Header';
 import mockGroups, { FullMockGroup, createFullMockGroup } from '@/data/group';
 import { mockLecturers } from '@/data/lecturers';
 import { mockReviews } from '@/data/review';

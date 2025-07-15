@@ -4,7 +4,7 @@ import { ApiResponseSchema } from '@/schemas/_common';
 
 // Password validation regex pattern
 const PASSWORD_REGEX =
-	/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+	/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~])[A-Za-z\d!"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~]{12,}$/;
 
 // Auth Login Requests
 export const AdminLoginSchema = z.object({
@@ -20,7 +20,7 @@ export const AdminLoginSchema = z.object({
 	password: z
 		.string()
 		.min(1, 'Password is required')
-		.min(8, 'Password must be at least 8 characters')
+		.min(12, 'Password must be at least 12 characters')
 		.regex(
 			PASSWORD_REGEX,
 			'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
@@ -36,7 +36,7 @@ export const UserLoginSchema = z.object({
 	password: z
 		.string()
 		.min(1, 'Password is required')
-		.min(8, 'Password must be at least 8 characters')
+		.min(12, 'Password must be at least 12 characters')
 		.regex(
 			PASSWORD_REGEX,
 			'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
