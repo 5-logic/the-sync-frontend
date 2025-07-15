@@ -33,7 +33,7 @@ function getNextMilestoneIndex(): number {
 			return i;
 		}
 	}
-	return milestoneSchedule.length - 1; // fallback
+	return milestoneSchedule.length - 1;
 }
 
 export default function ProgressOverviewCard() {
