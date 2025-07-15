@@ -3,6 +3,7 @@
 import {
 	CalendarOutlined,
 	CheckCircleTwoTone,
+	ExclamationCircleOutlined,
 	FileTextOutlined,
 	UploadOutlined,
 	UserOutlined,
@@ -153,12 +154,11 @@ export default function MilestoneDetailCard() {
 									style={{
 										backgroundColor: '#fffbe6',
 										border: '1px solid #ffe58f',
-										padding: 12,
 									}}
 								>
 									<Typography.Text type="warning">
-										⚠️ Please make sure to submit your report before the
-										deadline.
+										<ExclamationCircleOutlined style={{ marginRight: 6 }} />
+										Please make sure to submit your report before the deadline.
 									</Typography.Text>
 								</Card>
 
@@ -169,6 +169,7 @@ export default function MilestoneDetailCard() {
 										backgroundColor: '#fafafa',
 										border: '1px solid #d9d9d9',
 										marginTop: 12,
+										padding: 12,
 									}}
 								>
 									<Row align="middle">
