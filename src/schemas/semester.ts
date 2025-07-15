@@ -6,9 +6,11 @@ export const SemesterSchema = z.object({
 	id: z.string().uuid(),
 	name: z.string().min(1),
 	code: z.string().min(1),
-	maxGroup: z.number().int().positive().nullable().optional(),
+	maxGroup: z.number().int().positive().default(5),
 	status: SemesterStatusSchema.default('NotYet'),
 	ongoingPhase: OngoingPhaseSchema.nullable().optional(),
+	defaultThesesPerLecturer: z.number().int().positive().default(4),
+	maxThesesPerLecturer: z.number().int().positive().default(6),
 	createdAt: z.date(),
 	updatedAt: z.date(),
 });
@@ -17,10 +19,6 @@ export const SemesterCreateSchema = SemesterSchema.omit({
 	id: true,
 	createdAt: true,
 	updatedAt: true,
-}).extend({
-	status: SemesterStatusSchema.default('NotYet'),
-	maxGroup: z.number().int().positive().optional(),
-	ongoingPhase: OngoingPhaseSchema.optional(),
 });
 
 export const SemesterUpdateSchema = SemesterSchema.omit({
