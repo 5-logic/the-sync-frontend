@@ -12,3 +12,5 @@ export { useSkillSetStore } from '@/store/useSkillSetStore';
 export { useGroupDashboardStore } from '@/store/useGroupDashboardStore';
 export { useGroupsStore } from '@/store/useGroupsStore';
 export { useRequestsStore } from '@/store/useRequestsStore';
+export { useSupervisionStore } from '@/store/useSupervisionStore';
+export { useAssignSupervisorStore } from '@/store/useAssignSupervisorStore';

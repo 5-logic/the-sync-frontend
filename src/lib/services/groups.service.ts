@@ -1,42 +1,10 @@
 import httpClient from '@/lib/services/_httpClient';
 import { ApiResponse } from '@/schemas/_common';
-import { GroupDashboard } from '@/schemas/group';
-
-// Group interfaces
-export interface GroupCreate {
-	name: string;
-	projectDirection?: string;
-	skillIds?: string[];
-	responsibilityIds?: string[];
-}
-
-export interface Group {
-	id: string;
-	code: string;
-	name: string;
-	projectDirection?: string;
-	createdAt: string;
-	updatedAt: string;
-	semester: {
-		id: string;
-		name: string;
-		code: string;
-		status: string;
-	};
-	memberCount: number;
-	skillCount: number;
-	responsibilityCount: number;
-	leader: {
-		student: {
-			userId: string;
-			studentCode: string;
-			user: {
-				id: string;
-				fullName: string;
-			};
-		};
-	};
-}
+import {
+	GroupService as Group,
+	GroupCreateService as GroupCreate,
+	GroupDashboard,
+} from '@/schemas/group';
 
 class GroupService {
 	private readonly baseUrl = '/groups';

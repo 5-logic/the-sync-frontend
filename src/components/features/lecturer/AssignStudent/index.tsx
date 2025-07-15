@@ -1,16 +1,14 @@
 'use client';
 
-import { EyeOutlined } from '@ant-design/icons';
-import { Button, Card, Space, Tooltip } from 'antd';
+import { Card, Space } from 'antd';
 import { useMemo, useState } from 'react';
 
 import { Header } from '@/components/common/Header';
+import GroupAssignTable from '@/components/features/lecturer/AssignStudent/GroupAssignTable';
 import StudentFilterBar from '@/components/features/lecturer/AssignStudent/StudentFilterBar';
 import StudentTable from '@/components/features/lecturer/AssignStudent/StudentTable';
-import GroupOverviewTable from '@/components/features/lecturer/AssignSupervisor/GroupOverviewTable';
 import GroupSearchBar from '@/components/features/lecturer/AssignSupervisor/GroupSearchBar';
-import { baseColumns as supervisorBaseColumns } from '@/components/features/lecturer/AssignSupervisor/SupervisorColumns';
-import { ExtendedGroup, extendedGroups } from '@/data/group';
+import { extendedGroups } from '@/data/group';
 import { mockStudents } from '@/data/student';
 
 export default function AssignStudentPage() {
@@ -47,25 +45,6 @@ export default function AssignStudentPage() {
 		});
 	}, [studentSearch, studentMajor]);
 
-	const groupColumns = useMemo(() => {
-		return [
-			...supervisorBaseColumns,
-			{
-				title: 'Action',
-				key: 'action',
-				render: (_: unknown, record: ExtendedGroup) => (
-					<Tooltip title="View detail">
-						<Button
-							type="link"
-							icon={<EyeOutlined />}
-							onClick={() => console.log('View group:', record)}
-						/>
-					</Tooltip>
-				),
-			},
-		];
-	}, []);
-
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
 			<Header
@@ -78,7 +57,10 @@ export default function AssignStudentPage() {
 				<div style={{ marginBottom: 16 }}>
 					<GroupSearchBar value={groupSearch} onChange={setGroupSearch} />
 				</div>
-				<GroupOverviewTable data={filteredGroups} columns={groupColumns} />
+				<GroupAssignTable
+					data={filteredGroups}
+					onView={(group) => console.log('View group:', group)}
+				/>
 			</Card>
 
 			<Card title="Ungrouped Students">

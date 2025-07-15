@@ -1,6 +1,7 @@
 'use client';
 
 import { Col, Row, Select } from 'antd';
+import { memo, useCallback } from 'react';
 
 import GroupSearchBar from '@/components/features/lecturer/AssignSupervisor/GroupSearchBar';
 
@@ -15,37 +16,60 @@ interface Props {
 	onStatusChange: (val: StatusType) => void;
 }
 
-export default function SupervisorFilterBar({
-	search,
-	onSearchChange,
-	status,
-	onStatusChange,
-}: Readonly<Props>) {
-	return (
-		<Row
-			gutter={[12, 12]}
-			wrap
-			align="middle"
-			justify="start"
-			style={{ marginBottom: 10 }}
-		>
-			<Col flex="auto">
-				<div style={{ height: 35 }}>
-					<GroupSearchBar value={search} onChange={onSearchChange} />
-				</div>
-			</Col>
-			<Col style={{ width: 160 }}>
-				<Select
-					value={status}
-					onChange={onStatusChange}
-					style={{ width: '100%', height: 35 }}
-				>
-					<Option value="All">All Status</Option>
-					<Option value="Finalized">Finalized</Option>
-					<Option value="Incomplete">Incomplete</Option>
-					<Option value="Unassigned">Unassigned</Option>
-				</Select>
-			</Col>
-		</Row>
-	);
-}
+const STATUS_OPTIONS = [
+	{ value: 'All' as const, label: 'All Status' },
+	{ value: 'Finalized' as const, label: 'Finalized' },
+	{ value: 'Incomplete' as const, label: 'Incomplete' },
+	{ value: 'Unassigned' as const, label: 'Unassigned' },
+];
+
+/**
+ * Optimized Filter bar component for supervisor assignment page
+ * Uses React.memo and useCallback to prevent unnecessary re-renders
+ */
+const SupervisorFilterBar = memo<Props>(
+	({ search, onSearchChange, status, onStatusChange }) => {
+		const handleStatusChange = useCallback(
+			(value: StatusType) => {
+				onStatusChange(value);
+			},
+			[onStatusChange],
+		);
+
+		return (
+			<Row
+				gutter={[12, 12]}
+				wrap
+				align="middle"
+				justify="start"
+				style={{ marginBottom: 16 }}
+			>
+				<Col flex="auto">
+					<GroupSearchBar
+						value={search}
+						onChange={onSearchChange}
+						placeholder="Search by abbreviation, thesis title..."
+					/>
+				</Col>
+				<Col style={{ width: 160 }}>
+					<Select
+						value={status}
+						onChange={handleStatusChange}
+						style={{ width: '100%' }}
+						placeholder="Filter by status"
+					>
+						{STATUS_OPTIONS.map((option) => (
+							<Option key={option.value} value={option.value}>
+								{option.label}
+							</Option>
+						))}
+					</Select>
+				</Col>
+			</Row>
+		);
+	},
+);
+
+SupervisorFilterBar.displayName = 'SupervisorFilterBar';
+
+export default SupervisorFilterBar;

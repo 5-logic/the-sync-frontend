@@ -1,28 +1,55 @@
 'use client';
 
-import { Button, Space } from 'antd';
+import { Alert, Button, Space } from 'antd';
 import { useState } from 'react';
 
+import { ConfirmationModal } from '@/components/common/ConfirmModal';
 import { Header } from '@/components/common/Header';
 import AssignSupervisorModal from '@/components/features/lecturer/AssignSupervisor/AssignSupervisorModal';
+import DraftAssignmentsList from '@/components/features/lecturer/AssignSupervisor/DraftAssignmentsList';
 import GroupOverviewTable from '@/components/features/lecturer/AssignSupervisor/GroupOverviewTable';
 import { baseColumns } from '@/components/features/lecturer/AssignSupervisor/SupervisorColumns';
 import SupervisorFilterBar from '@/components/features/lecturer/AssignSupervisor/SupervisorFilterBar';
-import { ExtendedGroup, extendedGroups } from '@/data/group';
+import { useAssignSupervisor } from '@/hooks/lecturer/useAssignSupervisor';
+import { type SupervisorAssignmentData } from '@/store/useAssignSupervisorStore';
+import { useDraftAssignmentStore } from '@/store/useDraftAssignmentStore';
+
+/**
+ * Main component for assigning supervisors to thesis groups
+ */
 
 export default function AssignSupervisors() {
 	const [search, setSearch] = useState('');
-	const [selectedGroup, setSelectedGroup] = useState<ExtendedGroup | null>(
-		null,
-	);
+	const [selectedGroup, setSelectedGroup] =
+		useState<SupervisorAssignmentData | null>(null);
 	const [modalOpen, setModalOpen] = useState(false);
+	const [modalLoading, setModalLoading] = useState(false);
 	const [statusFilter, setStatusFilter] = useState<
 		'All' | 'Finalized' | 'Incomplete' | 'Unassigned'
 	>('All');
 
-	const filteredData = extendedGroups.filter((item) => {
+	const {
+		data,
+		lecturers,
+		loading,
+		updating,
+		error,
+		changeSupervisor,
+		refreshData,
+		bulkAssignSupervisors,
+	} = useAssignSupervisor();
+
+	// Draft and bulk assignment stores
+	const {
+		addDraftAssignment,
+		getDraftAssignmentsList,
+		getDraftCount,
+		clearAllDrafts,
+	} = useDraftAssignmentStore();
+
+	const filteredData = data.filter((item) => {
 		const searchText = search.toLowerCase();
-		const matchesSearch = [item.name, item.thesisTitle].some((field) =>
+		const matchesSearch = [item.groupName, item.thesisTitle].some((field) =>
 			field.toLowerCase().includes(searchText),
 		);
 		const matchesStatus =
@@ -30,38 +57,199 @@ export default function AssignSupervisors() {
 		return matchesSearch && matchesStatus;
 	});
 
+	/**
+	 * Handle bulk assignment of all draft assignments
+	 */
+	const handleBulkAssignment = async () => {
+		const drafts = getDraftAssignmentsList();
+
+		if (drafts.length === 0) {
+			return;
+		}
+
+		const assignments = drafts.map((draft) => ({
+			thesisId: draft.thesisId,
+			lecturerIds: draft.lecturerIds,
+		}));
+
+		console.log('Sending bulk assignment:', { assignments });
+		const result = await bulkAssignSupervisors(assignments);
+		console.log('Bulk assignment result:', result);
+
+		if (result) {
+			// Clear all drafts after successful assignment
+			clearAllDrafts();
+			// No need to refresh data - optimistic updates already applied
+		} else {
+			console.error('Bulk assignment failed');
+		}
+	};
+
+	/**
+	 * Handle supervisor assignment/change submission for individual thesis
+	 */
+	const handleAssignSubmit = async (supervisorIds: string[]) => {
+		if (!selectedGroup) return;
+
+		setModalLoading(true);
+
+		const isChangeMode = selectedGroup.status === 'Finalized';
+
+		if (isChangeMode) {
+			// Handle change mode - use existing change supervisor logic
+			const currentSupervisorIds = selectedGroup.supervisorDetails.map(
+				(s) => s.id,
+			);
+			const newSupervisorIds = supervisorIds.filter(Boolean);
+
+			let success = false;
+			try {
+				const maxLength = Math.max(
+					currentSupervisorIds.length,
+					newSupervisorIds.length,
+				);
+
+				for (let i = 0; i < maxLength; i++) {
+					const currentId = currentSupervisorIds[i];
+					const newId = newSupervisorIds[i];
+
+					if (currentId && newId && currentId !== newId) {
+						// Change supervisor at position
+						const result = await changeSupervisor(
+							selectedGroup.thesisId,
+							currentId,
+							newId,
+						);
+						if (!result) {
+							success = false;
+							break;
+						}
+						success = true;
+					}
+				}
+
+				if (success) {
+					setModalOpen(false);
+					setSelectedGroup(null);
+					// No need to refresh data - optimistic updates already applied
+				}
+			} catch (error) {
+				console.error('Error in change mode operations:', error);
+			}
+		} else {
+			// Handle assign mode - add to draft
+			const lecturerNames = supervisorIds
+				.map((id) => lecturers.find((l) => l.id === id)?.fullName)
+				.filter(Boolean) as string[];
+
+			addDraftAssignment({
+				thesisId: selectedGroup.thesisId,
+				thesisTitle: selectedGroup.thesisTitle,
+				groupName: selectedGroup.groupName,
+				lecturerIds: supervisorIds,
+				lecturerNames,
+			});
+
+			setModalOpen(false);
+			setSelectedGroup(null);
+		}
+
+		setModalLoading(false);
+	};
+
+	/**
+	 * Handle bulk assignment confirmation
+	 */
+	const handleBulkAssignmentConfirm = () => {
+		const drafts = getDraftAssignmentsList();
+
+		ConfirmationModal.show({
+			title: 'Assign Supervisors',
+			message: `Are you sure you want to assign supervisors for ${drafts.length} thesis assignments?`,
+			details: `This will assign all pending draft assignments to their respective theses.`,
+			note: 'This action cannot be undone. All draft assignments will be processed immediately.',
+			noteType: 'info',
+			okText: 'Yes, Assign All',
+			cancelText: 'Cancel',
+			loading: updating,
+			onOk: handleBulkAssignment,
+		});
+	};
+
+	const draftCount = getDraftCount();
+
+	// Updated columns for actions only
 	const columns = [
 		...baseColumns,
 		{
 			title: 'Action',
-			render: (_: unknown, record: ExtendedGroup) => (
-				<Button
-					type="primary"
-					className="w-[80px]"
-					onClick={() => {
-						setSelectedGroup(record);
-						setModalOpen(true);
-					}}
-				>
-					{record?.status === 'Finalized' ? 'Change' : 'Assign'}
-				</Button>
-			),
+			key: 'action',
+			render: (_: unknown, record: SupervisorAssignmentData) => {
+				const isFinalized = record.status === 'Finalized';
+
+				return (
+					<Button
+						type="primary"
+						size="small"
+						onClick={() => {
+							setSelectedGroup(record);
+							setModalOpen(true);
+						}}
+					>
+						{isFinalized ? 'Change' : 'Assign'}
+					</Button>
+				);
+			},
 		},
 	];
 
-	const supervisorOptions = Array.from(
-		new Set(
-			extendedGroups.flatMap((group) => group.supervisors).filter(Boolean),
-		),
-	);
+	const lecturerOptions = lecturers.map((lecturer) => ({
+		label: lecturer.fullName,
+		value: lecturer.id,
+	}));
 
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
-			<Header
-				title="Assign Supervisor"
-				description="Manage supervisor assignments for thesis groups"
-				badgeText="Moderator Only"
-			/>
+			<div
+				style={{
+					display: 'flex',
+					justifyContent: 'space-between',
+					alignItems: 'center',
+				}}
+			>
+				<Header
+					title="Assign Supervisor"
+					description="Manage supervisor assignments for thesis groups"
+					badgeText="Moderator Only"
+				/>
+
+				{draftCount > 0 && (
+					<Button
+						type="primary"
+						loading={updating}
+						disabled={updating}
+						onClick={handleBulkAssignmentConfirm}
+						style={{ color: 'white' }}
+					>
+						Assign All Drafts ({draftCount})
+					</Button>
+				)}
+			</div>
+
+			{error && (
+				<Alert
+					message="Error"
+					description={error}
+					type="error"
+					closable
+					onClose={() => window.location.reload()}
+					action={
+						<Button size="small" onClick={refreshData}>
+							Retry
+						</Button>
+					}
+				/>
+			)}
 
 			<SupervisorFilterBar
 				search={search}
@@ -70,21 +258,25 @@ export default function AssignSupervisors() {
 				onStatusChange={setStatusFilter}
 			/>
 
-			<GroupOverviewTable data={filteredData} columns={columns} />
+			<DraftAssignmentsList visible={draftCount > 0} />
+
+			<GroupOverviewTable
+				data={filteredData}
+				columns={columns}
+				loading={loading}
+			/>
 
 			<AssignSupervisorModal
 				open={modalOpen}
+				loading={modalLoading}
 				onCancel={() => {
 					setModalOpen(false);
 					setSelectedGroup(null);
 				}}
-				initialValues={selectedGroup?.supervisors}
-				onSubmit={() => {
-					// xử lý cập nhật tại đây
-					setModalOpen(false);
-					setSelectedGroup(null);
-				}}
-				supervisorOptions={supervisorOptions}
+				initialValues={selectedGroup?.supervisorDetails.map((s) => s.id) || []}
+				onSubmit={handleAssignSubmit}
+				lecturerOptions={lecturerOptions}
+				isChangeMode={selectedGroup?.status === 'Finalized'}
 			/>
 		</Space>
 	);

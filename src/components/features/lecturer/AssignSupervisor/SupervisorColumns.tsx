@@ -1,7 +1,11 @@
 import { Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 
-import { ExtendedGroup } from '@/data/group';
+import { type SupervisorAssignmentData } from '@/store/useAssignSupervisorStore';
+
+/**
+ * Color mapping for supervisor assignment status
+ */
 
 export const statusColorMap: Record<string, string> = {
 	Finalized: 'green',
@@ -9,6 +13,9 @@ export const statusColorMap: Record<string, string> = {
 	Unassigned: 'red',
 };
 
+/**
+ * Renders supervisor names in a vertical list
+ */
 export const renderSupervisors = (supervisors: string[]) =>
 	supervisors.length > 0 ? (
 		<div>
@@ -20,11 +27,15 @@ export const renderSupervisors = (supervisors: string[]) =>
 		'-'
 	);
 
-export const baseColumns: ColumnsType<ExtendedGroup> = [
+/**
+ * Base column definitions for supervisor assignment table
+ */
+
+export const baseColumns: ColumnsType<SupervisorAssignmentData> = [
 	{
-		title: 'Group Name',
-		dataIndex: 'name',
-		key: 'name',
+		title: 'Abbreviation',
+		dataIndex: 'groupName',
+		key: 'groupName',
 	},
 	{
 		title: 'Thesis Title',
@@ -32,12 +43,15 @@ export const baseColumns: ColumnsType<ExtendedGroup> = [
 		key: 'thesisTitle',
 	},
 	{
-		title: 'Members',
-		dataIndex: 'members',
-		key: 'members',
-		render: (members: number) => (
-			<span style={{ color: 'inherit' }}>{members}</span>
-		),
+		title: 'Domain',
+		dataIndex: 'memberCount',
+		key: 'memberCount',
+		render: (domain: string, record: SupervisorAssignmentData) => {
+			if (record.groupName === 'No Abbreviation') {
+				return <span style={{ color: '#999' }}>No Domain</span>;
+			}
+			return domain;
+		},
 	},
 	{
 		title: 'Supervisor',

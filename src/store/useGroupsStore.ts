@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 
-import groupService, { type Group } from '@/lib/services/groups.service';
+import groupService from '@/lib/services/groups.service';
+import { GroupService as Group } from '@/schemas/group';
 
 interface GroupsState {
 	groups: Group[];
