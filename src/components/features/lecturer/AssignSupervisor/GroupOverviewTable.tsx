@@ -2,9 +2,10 @@
 
 import { Table } from 'antd';
 import type { ColumnsType, TableProps } from 'antd/es/table';
+import { memo } from 'react';
 
 import { TablePagination } from '@/components/common/TablePagination';
-import { type SupervisorAssignmentData } from '@/hooks/lecturer/useAssignSupervisor';
+import { type SupervisorAssignmentData } from '@/store/useAssignSupervisorStore';
 
 interface Props {
 	readonly data: SupervisorAssignmentData[];
@@ -15,24 +16,26 @@ interface Props {
 }
 
 /**
- * Table component for displaying supervisor assignment data
+ * Optimized Table component for displaying supervisor assignment data
+ * Uses React.memo to prevent unnecessary re-renders
  */
-export default function GroupOverviewTable({
-	data,
-	columns,
-	loading = false,
-	rowKey = 'id',
-	onChange,
-}: Props) {
-	return (
-		<Table
-			rowKey={rowKey as string}
-			columns={columns}
-			dataSource={data}
-			loading={loading}
-			pagination={TablePagination}
-			scroll={{ x: 'max-content' }}
-			onChange={onChange}
-		/>
-	);
-}
+const GroupOverviewTable = memo<Props>(
+	({ data, columns, loading = false, rowKey = 'id', onChange }) => {
+		return (
+			<Table
+				rowKey={rowKey as string}
+				columns={columns}
+				dataSource={data}
+				loading={loading}
+				pagination={TablePagination}
+				scroll={{ x: 'max-content' }}
+				onChange={onChange}
+				size="middle"
+			/>
+		);
+	},
+);
+
+GroupOverviewTable.displayName = 'GroupOverviewTable';
+
+export default GroupOverviewTable;
