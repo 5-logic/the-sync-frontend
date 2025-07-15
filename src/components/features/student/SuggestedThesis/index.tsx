@@ -3,10 +3,9 @@
 import { Col, Row, Typography } from 'antd';
 import { useState } from 'react';
 
+import ChatBox from '@/components/features/student/SuggestedThesis/ChatBox';
+import TopicCard from '@/components/features/student/SuggestedThesis/TopicCard';
 import { mockTopics } from '@/data/mockTopics';
-
-import ChatBox from './ChatBox';
-import TopicCard from './TopicCard';
 
 const { Title } = Typography;
 

@@ -1,4 +1,3 @@
-// components/TopicCard.tsx
 import { CheckCircleOutlined } from '@ant-design/icons';
 import { Card, Progress, Tag } from 'antd';
 import React from 'react';
