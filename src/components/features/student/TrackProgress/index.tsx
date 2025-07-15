@@ -1,25 +1,27 @@
 'use client';
 
-import { useState } from 'react';
-
-import ProgressOverviewCard from '@/components/features/lecturer/GroupProgess/ProgressOverviewCard';
-import { FullMockGroup } from '@/data/group';
+import ProgressOverviewCard from '../../lecturer/GroupProgess/ProgressOverviewCard';
+import { Col, Row, Space } from 'antd';
 
 import MilestoneDetailCard from './MilestoneDetailCard';
 import MilestoneStep from './MilestoneStep';
 
 export default function ProjectProgressPage() {
-	const [selectedGroup] = useState<FullMockGroup | undefined>(undefined);
-
 	return (
-		<div className="p-4 md:p-6 grid grid-cols-1 lg:grid-cols-3 gap-4">
-			<div className="lg:col-span-2">
-				<MilestoneStep />
-				<MilestoneDetailCard />
-			</div>
-			<div>
-				{selectedGroup && <ProgressOverviewCard group={selectedGroup} />}
-			</div>
-		</div>
+		<Space
+			direction="vertical"
+			size="large"
+			style={{ width: '100%', padding: '16px 24px' }}
+		>
+			<Row gutter={16}>
+				<Col xs={24} lg={16}>
+					<MilestoneStep />
+					<MilestoneDetailCard />
+				</Col>
+				<Col xs={24} lg={8}>
+					<ProgressOverviewCard />
+				</Col>
+			</Row>
+		</Space>
 	);
 }
