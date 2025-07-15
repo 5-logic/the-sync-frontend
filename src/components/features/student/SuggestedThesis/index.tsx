@@ -17,6 +17,7 @@ export default function ThesisPage() {
 	return (
 		<div style={{ padding: 24 }}>
 			<Title level={3}>AI-Suggested Thesis Topics</Title>
+
 			<Row gutter={[16, 16]}>
 				{mockTopics.map((topic) => (
 					<Col xs={24} md={12} lg={8} key={topic.id}>
