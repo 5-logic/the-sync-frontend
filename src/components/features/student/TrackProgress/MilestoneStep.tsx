@@ -1,11 +1,9 @@
 'use client';
 
 import { ClockCircleOutlined } from '@ant-design/icons';
-import { Card, Space, Steps, Typography } from 'antd';
+import { Card, Space, Steps } from 'antd';
 
 import { mockMilestoneDetails } from '@/data/milestone';
-
-const { Text } = Typography;
 
 export default function MilestoneStep() {
 	// Duyệt qua danh sách milestone để tạo bước step
@@ -32,12 +30,24 @@ export default function MilestoneStep() {
 				<Steps size="small" current={currentStep} items={stepsData} />
 
 				{currentMilestone && (
-					<Text type="secondary">
-						<ClockCircleOutlined style={{ marginRight: 8, opacity: 0.6 }} />
+					<div
+						style={{
+							border: '1px solid #91d5ff',
+							backgroundColor: '#e6f7ff',
+							borderRadius: 8,
+							padding: '8px 12px',
+							display: 'flex', // full width container
+							alignItems: 'center',
+							width: '100%', // stretch full width
+						}}
+					>
+						<ClockCircleOutlined
+							style={{ marginRight: 8, color: '#1890ff', opacity: 0.8 }}
+						/>
 						<span style={{ color: '#1890ff' }}>
 							{currentMilestone.title} submission due on {currentMilestone.date}
 						</span>
-					</Text>
+					</div>
 				)}
 			</Space>
 		</Card>

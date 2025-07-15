@@ -3,16 +3,18 @@
 import ProgressOverviewCard from '../../lecturer/GroupProgess/ProgressOverviewCard';
 import { Col, Row, Space } from 'antd';
 
+import { Header } from '@/components/common/Header';
+
 import MilestoneDetailCard from './MilestoneDetailCard';
 import MilestoneStep from './MilestoneStep';
 
 export default function ProjectProgressPage() {
 	return (
-		<Space
-			direction="vertical"
-			size="large"
-			style={{ width: '100%', padding: '16px 24px' }}
-		>
+		<Space direction="vertical" size="large" style={{ width: '100%' }}>
+			<Header
+				title="Track Progress"
+				description="Track your thesis progress through each milestone. Upload files on time and view feedback from supervisors."
+			/>
 			<Row gutter={16}>
 				<Col span={24}>
 					<MilestoneStep />
