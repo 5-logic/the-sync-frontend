@@ -6,7 +6,6 @@ import { Card, Space, Steps } from 'antd';
 import { mockMilestoneDetails } from '@/data/milestone';
 
 export default function MilestoneStep() {
-	// Duyệt qua danh sách milestone để tạo bước step
 	const currentStep = mockMilestoneDetails.findIndex(
 		(m) => m.status === 'In Progress',
 	);
@@ -24,7 +23,6 @@ export default function MilestoneStep() {
 		};
 	});
 
-	// Lấy milestone đang in progress để hiển thị thông báo deadline
 	const currentMilestone = mockMilestoneDetails[currentStep];
 
 	return (
@@ -39,15 +37,15 @@ export default function MilestoneStep() {
 							backgroundColor: '#e6f7ff',
 							borderRadius: 8,
 							padding: '8px 12px',
-							display: 'flex', // full width container
+							display: 'flex',
 							alignItems: 'center',
-							width: '100%', // stretch full width
+							width: '100%',
 						}}
 					>
 						<ClockCircleOutlined
-							style={{ marginRight: 8, color: '#1890ff', opacity: 0.8 }}
+							style={{ marginRight: 8, color: 'black', opacity: 0.8 }}
 						/>
-						<span style={{ color: '#1890ff' }}>
+						<span style={{ color: 'black' }}>
 							{currentMilestone.title} submission due on {currentMilestone.date}
 						</span>
 					</div>
