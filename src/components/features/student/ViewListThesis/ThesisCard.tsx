@@ -107,6 +107,17 @@ export default function ThesisCard({
 		return 'Register for this thesis';
 	};
 
+	// Get register button text based on current state
+	const getRegisterButtonText = (): string => {
+		if (isRegistering) {
+			return 'Registering...';
+		}
+		if (isThesisTaken) {
+			return 'Taken';
+		}
+		return 'Register';
+	};
+
 	return (
 		<Card
 			title={null}
@@ -228,11 +239,7 @@ export default function ThesisCard({
 							onClick={handleRegisterThesis}
 							loading={isRegistering || semesterLoading}
 						>
-							{isRegistering
-								? 'Registering...'
-								: isThesisTaken
-									? 'Taken'
-									: 'Register'}
+							{getRegisterButtonText()}
 						</Button>
 					)}
 				</Col>
