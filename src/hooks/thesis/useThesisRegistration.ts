@@ -12,6 +12,28 @@ export const useThesisRegistration = () => {
 	const { group } = useStudentGroupStatus();
 	const { refreshStatus } = useSemesterStatus();
 
+	// Common success handler for both register and unregister
+	const handleSuccessResponse = useCallback(
+		(
+			result: { success: boolean; error?: { message?: string } },
+			successTitle: string,
+			successMessage: string,
+			errorMessage: string,
+			onSuccess?: () => void,
+		) => {
+			if (result.success) {
+				showNotification.success(successTitle, successMessage);
+				// Refresh semester status and group data
+				refreshStatus();
+				// Call success callback to refresh UI
+				onSuccess?.();
+			} else {
+				throw new Error(result.error?.message || errorMessage);
+			}
+		},
+		[refreshStatus],
+	);
+
 	const registerThesis = useCallback(
 		async (thesisId: string, thesisTitle?: string, onSuccess?: () => void) => {
 			// Check if user has group and is leader
@@ -43,18 +65,13 @@ export const useThesisRegistration = () => {
 						const response = await groupService.pickThesis(group.id, thesisId);
 						const result = handleApiResponse(response, 'Success');
 
-						if (result.success) {
-							showNotification.success(
-								'Registration Successful',
-								'Your group has been registered for this thesis successfully!',
-							);
-							// Refresh semester status and group data
-							refreshStatus();
-							// Call success callback to refresh UI
-							onSuccess?.();
-						} else {
-							throw new Error(result.error?.message || 'Registration failed');
-						}
+						handleSuccessResponse(
+							result,
+							'Registration Successful',
+							'Your group has been registered for this thesis successfully!',
+							'Registration failed',
+							onSuccess,
+						);
 					} catch (error) {
 						console.error('Error registering thesis:', error);
 						showNotification.error(
@@ -67,7 +84,7 @@ export const useThesisRegistration = () => {
 				},
 			});
 		},
-		[group, isRegistering, refreshStatus],
+		[group, isRegistering, handleSuccessResponse],
 	);
 
 	const unregisterThesis = useCallback(
@@ -101,18 +118,13 @@ export const useThesisRegistration = () => {
 						const response = await groupService.unpickThesis(group.id);
 						const result = handleApiResponse(response, 'Success');
 
-						if (result.success) {
-							showNotification.success(
-								'Unregistration Successful',
-								'Your group has been unregistered from the thesis successfully!',
-							);
-							// Refresh semester status and group data
-							refreshStatus();
-							// Call success callback to refresh UI
-							onSuccess?.();
-						} else {
-							throw new Error(result.error?.message || 'Unregistration failed');
-						}
+						handleSuccessResponse(
+							result,
+							'Unregistration Successful',
+							'Your group has been unregistered from the thesis successfully!',
+							'Unregistration failed',
+							onSuccess,
+						);
 					} catch (error) {
 						console.error('Error unregistering thesis:', error);
 						showNotification.error(
@@ -125,7 +137,7 @@ export const useThesisRegistration = () => {
 				},
 			});
 		},
-		[group, isRegistering, refreshStatus],
+		[group, isRegistering, handleSuccessResponse],
 	);
 
 	return {
