@@ -1,6 +1,6 @@
 'use client';
 
-import { Col, Row, Typography } from 'antd';
+import { Col, Row, Space } from 'antd';
 import { useState } from 'react';
 
 import { Header } from '@/components/common/Header';
@@ -8,16 +8,17 @@ import ChatBox from '@/components/features/student/SuggestedThesis/ChatBox';
 import TopicCard from '@/components/features/student/SuggestedThesis/TopicCard';
 import { mockTopics } from '@/data/mockTopics';
 
-const { Title } = Typography;
-
 export default function ThesisPage() {
 	const [selectedTopic, setSelectedTopic] = useState<
 		(typeof mockTopics)[number] | null
 	>(null);
 
 	return (
-		<div style={{ padding: 24 }}>
-			<Title level={3}>AI-Suggested Thesis Topics</Title>
+		<Space
+			direction="vertical"
+			style={{ padding: 24, width: '100%' }}
+			size="large"
+		>
 			<Header
 				title="AI-Suggested Thesis Topics"
 				description="AI-recommended thesis topics based on your profile."
@@ -37,6 +38,6 @@ export default function ThesisPage() {
 			<div style={{ marginTop: 48 }}>
 				<ChatBox selectedTopic={selectedTopic} />
 			</div>
-		</div>
+		</Space>
 	);
 }
