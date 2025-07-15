@@ -12,12 +12,13 @@ export interface Milestone {
 	supervisor?: string;
 }
 
-// Danh sách label milestone, dùng cho dropdown, step
-export const mockMilestonesLabel: { value: string; label: string }[] =
-	Object.keys(mockReviewGroups).map((phase) => ({
-		value: phase,
-		label: `Milestone ${phase}`,
-	}));
+// Lấy danh sách milestone từ các key phase
+export const mockMilestones: { value: string; label: string }[] = Object.keys(
+	mockReviewGroups,
+).map((phase) => ({
+	value: phase,
+	label: `Milestone ${phase}`,
+}));
 
 /**
  * Kết quả ví dụ:
