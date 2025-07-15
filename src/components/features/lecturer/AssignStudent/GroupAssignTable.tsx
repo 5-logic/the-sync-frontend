@@ -42,7 +42,7 @@ export default function GroupAssignTable({ data, onView }: Readonly<Props>) {
 			title: 'Status',
 			dataIndex: 'status',
 			key: 'status',
-			render: (status: string) => (
+			render: (status: ExtendedGroup['status']) => (
 				<Tag color={statusColorMap[status] ?? 'default'}>{status}</Tag>
 			),
 		},
