@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 
 import ProgressOverviewCard from '@/components/features/lecturer/GroupProgess/ProgressOverviewCard';

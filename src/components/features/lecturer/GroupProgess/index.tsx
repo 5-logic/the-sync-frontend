@@ -34,7 +34,7 @@ export default function GroupProgressPage() {
 
 			const nameMatch = name.toLowerCase().includes(keyword);
 			const titleMatch = title.toLowerCase().includes(keyword);
-			return Boolean(nameMatch ? true : titleMatch);
+			return nameMatch || titleMatch;
 		});
 	}, [searchText]);
 
@@ -59,8 +59,7 @@ export default function GroupProgressPage() {
 			>
 				<Header
 					title="Group Progress"
-					description="The instructor monitors the groups progress, closely following
-						important milestones to evaluate the groups performance."
+					description="The instructor monitors the groups progress, closely following important milestones to evaluate the group's performance."
 				/>
 
 				<GroupSearchTable
@@ -110,7 +109,8 @@ export default function GroupProgressPage() {
 								/>
 							</Col>
 							<Col xs={24} md={8}>
-								<ProgressOverviewCard group={selectedGroup} />
+								{/* Không cần truyền group nữa */}
+								<ProgressOverviewCard />
 							</Col>
 						</Row>
 					</>
