@@ -1,4 +1,5 @@
 import { createMetadata } from '@/app/metadata';
+import SuggestedThesis from '@/components/features/student/SuggestedThesis';
 
 export const metadata = createMetadata({
 	title: 'Suggested Thesis By AI',
@@ -6,5 +7,5 @@ export const metadata = createMetadata({
 });
 
 export default function StudentSuggestedThesisPage() {
-	// return <SuggestedThesis />;
+	return <SuggestedThesis />;
 }
