@@ -1,6 +1,9 @@
 'use client';
 
-import { Steps } from 'antd';
+import { ClockCircleOutlined } from '@ant-design/icons';
+import { Card, Space, Steps, Typography } from 'antd';
+
+const { Text } = Typography;
 
 const items: {
 	title: string;
@@ -30,18 +33,23 @@ const items: {
 
 export default function MilestoneStep() {
 	return (
-		<div className="bg-white p-4 rounded-xl shadow mb-4">
-			<Steps
-				size="small"
-				current={2}
-				items={items.map((item) => ({
-					title: item.title,
-					status: item.status,
-				}))}
-			/>
-			<div className="mt-2 text-blue-600">
-				Milestone 3 submission due in 7 days
-			</div>
-		</div>
+		<Card style={{ marginBottom: 16 }}>
+			<Space direction="vertical" size="middle" style={{ width: '100%' }}>
+				<Steps
+					size="small"
+					current={2}
+					items={items.map((item) => ({
+						title: item.title,
+						status: item.status,
+					}))}
+				/>
+				<Text type="secondary">
+					<ClockCircleOutlined style={{ marginRight: 8, color: '#1890ff' }} />
+					<span style={{ color: '#1890ff' }}>
+						Milestone 3 submission due in 7 days
+					</span>
+				</Text>
+			</Space>
+		</Card>
 	);
 }
