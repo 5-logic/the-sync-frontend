@@ -3,10 +3,9 @@
 import { Empty, Space } from 'antd';
 
 import { Header } from '@/components/common/Header';
+import ActionButtons from '@/components/features/student/ViewThesisDetail/ActionButtons';
+import ThesisInfoCard from '@/components/features/student/ViewThesisDetail/ThesisInfoCard';
 import { mockTheses } from '@/data/thesis';
-
-import ActionButtons from './ActionButtons';
-import ThesisInfoCard from './ThesisInfoCard';
 
 export default function StudentThesisDetailPage() {
 	const thesis = mockTheses?.[0];
