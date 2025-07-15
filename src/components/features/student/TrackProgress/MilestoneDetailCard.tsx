@@ -1,6 +1,7 @@
 'use client';
 
 import {
+	CalendarOutlined,
 	CheckCircleTwoTone,
 	FileTextOutlined,
 	UploadOutlined,
@@ -10,7 +11,11 @@ import {
 	Avatar,
 	Button,
 	Card,
+	Col,
 	Collapse,
+	Flex,
+	Row,
+	Space,
 	Tag,
 	Typography,
 	Upload,
@@ -21,7 +26,6 @@ import { useState } from 'react';
 import { mockMilestoneDetails } from '@/data/milestone';
 
 const { Panel } = Collapse;
-const { Text } = Typography;
 
 interface Milestone {
 	id: number;
@@ -64,90 +68,104 @@ export default function MilestoneDetailCard() {
 	};
 
 	return (
-		<Card className="mb-4" title="Project Milestones">
-			<Collapse accordion defaultActiveKey={['1']}>
+		<Card title="Project Milestones" style={{ marginBottom: 16 }}>
+			<Collapse
+				accordion
+				defaultActiveKey={[mockMilestoneDetails[0]?.id.toString()]}
+			>
 				{mockMilestoneDetails.map((milestone) => (
 					<Panel
 						key={milestone.id}
 						header={
-							<div className="flex justify-between items-center">
-								<div className="flex items-center">
-									<div className="min-w-[120px]">{milestone.title}</div>
-
-									<div className="ml">{getStatusTag(milestone.status)}</div>
-								</div>
-								<span className="text-gray-500 text-xs">
-									Due date: {milestone.date}
-								</span>
-							</div>
+							<Flex justify="space-between" align="center">
+								<Flex align="center" gap={8}>
+									<Typography.Text style={{ minWidth: 120 }}>
+										{milestone.title}
+									</Typography.Text>
+									{getStatusTag(milestone.status)}
+								</Flex>
+								<Space size={4}>
+									<CalendarOutlined className="text-gray-200 text-sm" />
+									<Typography.Text type="secondary" style={{ fontSize: 12 }}>
+										{milestone.date}
+									</Typography.Text>
+								</Space>
+							</Flex>
 						}
 					>
 						{/* Đã nộp */}
 						{milestone.submitted ? (
-							<>
-								<div
+							<Space direction="vertical" size={12} style={{ width: '100%' }}>
+								<Flex
+									justify="space-between"
+									align="center"
 									style={{
 										backgroundColor: '#f5f5f5',
 										border: '1px solid #cec7c7ff',
-										padding: '12px',
+										padding: 12,
 										borderRadius: 8,
-										marginTop: 12,
-										marginBottom: 12,
-										display: 'flex',
-										alignItems: 'center',
-										justifyContent: 'space-between',
 									}}
 								>
-									<div>
-										<FileTextOutlined style={{ marginRight: 8 }} />
-										{milestone.fileName}
-									</div>
+									<Flex align="center" gap={8}>
+										<FileTextOutlined />
+										<Typography.Text>{milestone.fileName}</Typography.Text>
+									</Flex>
 									<CheckCircleTwoTone twoToneColor="#52c41a" />
-								</div>
+								</Flex>
 
 								{milestone.feedback && (
-									<div
+									<Flex
+										align="flex-start"
+										gap={12}
 										style={{
 											backgroundColor: '#fafafa',
 											border: '1px solid #f0f0f0',
-											padding: '12px',
+											padding: 12,
 											borderRadius: 8,
-											display: 'flex',
-											alignItems: 'flex-start',
-											gap: 12,
 										}}
 									>
 										<Avatar icon={<UserOutlined />} />
-										<div>
-											<Text strong>{milestone.supervisor}</Text>
-											<p style={{ marginTop: 4 }}>{milestone.feedback}</p>
-										</div>
-									</div>
+										<Space direction="vertical" size={4}>
+											<Typography.Text strong>
+												{milestone.supervisor}
+											</Typography.Text>
+											<Typography.Paragraph style={{ margin: 0 }}>
+												{milestone.feedback}
+											</Typography.Paragraph>
+										</Space>
+									</Flex>
 								)}
-							</>
+							</Space>
 						) : (
-							<>
-								<Upload
-									beforeUpload={(file) => handleUpload(file, milestone.id)}
-									showUploadList={false}
-								>
-									<Button icon={<UploadOutlined />}>Choose File</Button>
-								</Upload>
+							<Space direction="vertical" size={8} style={{ width: '100%' }}>
+								<Row align="middle" style={{ marginTop: 8 }}>
+									<Col flex="auto">
+										<Upload
+											beforeUpload={(file) => handleUpload(file, milestone.id)}
+											showUploadList={false}
+										>
+											<Button icon={<UploadOutlined />}>Choose File</Button>
+										</Upload>
+									</Col>
+									<Col>
+										<Button
+											type="primary"
+											onClick={() => handleSubmit(milestone.id)}
+										>
+											Submit
+										</Button>
+									</Col>
+								</Row>
 
 								{fileList[milestone.id] && (
-									<div className="mt-2 flex items-center gap-2">
-										<FileTextOutlined /> {fileList[milestone.id]}
-									</div>
+									<Flex align="center" gap={8}>
+										<FileTextOutlined />
+										<Typography.Text type="secondary" style={{ fontSize: 12 }}>
+											{fileList[milestone.id]}
+										</Typography.Text>
+									</Flex>
 								)}
-
-								<Button
-									type="primary"
-									className="mt-2"
-									onClick={() => handleSubmit(milestone.id)}
-								>
-									Submit
-								</Button>
-							</>
+							</Space>
 						)}
 					</Panel>
 				))}
