@@ -193,15 +193,12 @@ export default function AssignSupervisorModal({
 		return isChangeMode ? 'Change to new supervisor' : 'Select supervisor';
 	};
 
-	// Extract button text logic to avoid nested ternary
-	const getSubmitButtonText = (): string => {
-		return isChangeMode ? 'Change' : 'Save as Draft';
-	};
+	// Provide separate methods for modal title and button text for each mode
+	const getChangeModalTitle = (): string => 'Change Supervisor';
+	const getAssignModalTitle = (): string => 'Assign Supervisor (Draft)';
 
-	// Extract modal title logic to avoid nested ternary
-	const getModalTitle = (): string => {
-		return isChangeMode ? 'Change Supervisor' : 'Assign Supervisor (Draft)';
-	};
+	const getChangeSubmitButtonText = (): string => 'Change';
+	const getAssignSubmitButtonText = (): string => 'Save as Draft';
 
 	// Extract label text logic to avoid nested ternary
 	const getSupervisor1LabelText = (): string => {
@@ -214,7 +211,7 @@ export default function AssignSupervisorModal({
 
 	return (
 		<Modal
-			title={getModalTitle()}
+			title={isChangeMode ? getChangeModalTitle() : getAssignModalTitle()}
 			open={open}
 			onCancel={handleCancel}
 			footer={null}
@@ -294,7 +291,9 @@ export default function AssignSupervisorModal({
 						Cancel
 					</Button>
 					<Button type="primary" htmlType="submit" loading={loading}>
-						{getSubmitButtonText()}
+						{isChangeMode
+							? getChangeSubmitButtonText()
+							: getAssignSubmitButtonText()}
 					</Button>
 				</Form.Item>
 			</Form>

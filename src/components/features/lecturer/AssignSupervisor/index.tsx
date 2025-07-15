@@ -103,6 +103,52 @@ export default function AssignSupervisors() {
 	};
 
 	/**
+	 * Handle supervisor changes for finalized assignments
+	 */
+	const handleSupervisorChange = async (
+		currentSupervisorIds: string[],
+		newSupervisorIds: string[],
+		thesisId: string,
+	): Promise<boolean> => {
+		const maxLength = Math.max(
+			currentSupervisorIds.length,
+			newSupervisorIds.length,
+		);
+
+		for (let i = 0; i < maxLength; i++) {
+			const currentId = currentSupervisorIds[i];
+			const newId = newSupervisorIds[i];
+
+			if (currentId && newId && currentId !== newId) {
+				const result = await changeSupervisor(thesisId, currentId, newId);
+				if (!result) {
+					return false;
+				}
+			}
+		}
+		return true;
+	};
+
+	/**
+	 * Handle assignment mode - add to draft
+	 */
+	const handleAssignmentMode = (supervisorIds: string[]): void => {
+		if (!selectedGroup) return;
+
+		const lecturerNames = supervisorIds
+			.map((id) => lecturers.find((l) => l.id === id)?.fullName)
+			.filter(Boolean) as string[];
+
+		addDraftAssignment({
+			thesisId: selectedGroup.thesisId,
+			thesisTitle: selectedGroup.thesisTitle,
+			groupName: selectedGroup.groupName,
+			lecturerIds: supervisorIds,
+			lecturerNames,
+		});
+	};
+
+	/**
 	 * Handle supervisor assignment/change submission for individual thesis
 	 */
 	const handleAssignSubmit = async (supervisorIds: string[]): Promise<void> => {
@@ -113,60 +159,27 @@ export default function AssignSupervisors() {
 		const isChangeMode = selectedGroup.status === 'Finalized';
 
 		if (isChangeMode) {
-			// Handle change mode - use existing change supervisor logic
-			const currentSupervisorIds = selectedGroup.supervisorDetails.map(
-				(s) => s.id,
-			);
-			const newSupervisorIds = supervisorIds.filter(Boolean);
-
-			let success = false;
 			try {
-				const maxLength = Math.max(
-					currentSupervisorIds.length,
-					newSupervisorIds.length,
+				const currentSupervisorIds = selectedGroup.supervisorDetails.map(
+					(s) => s.id,
 				);
+				const newSupervisorIds = supervisorIds.filter(Boolean);
 
-				for (let i = 0; i < maxLength; i++) {
-					const currentId = currentSupervisorIds[i];
-					const newId = newSupervisorIds[i];
-
-					if (currentId && newId && currentId !== newId) {
-						// Change supervisor at position
-						const result = await changeSupervisor(
-							selectedGroup.thesisId,
-							currentId,
-							newId,
-						);
-						if (!result) {
-							success = false;
-							break;
-						}
-						success = true;
-					}
-				}
+				const success = await handleSupervisorChange(
+					currentSupervisorIds,
+					newSupervisorIds,
+					selectedGroup.thesisId,
+				);
 
 				if (success) {
 					setModalOpen(false);
 					setSelectedGroup(null);
-					// No need to refresh data - optimistic updates already applied
 				}
 			} catch {
 				// Error in change mode operations - handled by the hook
 			}
 		} else {
-			// Handle assign mode - add to draft
-			const lecturerNames = supervisorIds
-				.map((id) => lecturers.find((l) => l.id === id)?.fullName)
-				.filter(Boolean) as string[];
-
-			addDraftAssignment({
-				thesisId: selectedGroup.thesisId,
-				thesisTitle: selectedGroup.thesisTitle,
-				groupName: selectedGroup.groupName,
-				lecturerIds: supervisorIds,
-				lecturerNames,
-			});
-
+			handleAssignmentMode(supervisorIds);
 			setModalOpen(false);
 			setSelectedGroup(null);
 		}
