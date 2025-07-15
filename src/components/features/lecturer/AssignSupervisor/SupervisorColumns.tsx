@@ -6,12 +6,14 @@ import { type SupervisorAssignmentData } from '@/store/useAssignSupervisorStore'
 /**
  * Color mapping for supervisor assignment status
  */
-
-export const statusColorMap: Record<string, string> = {
+export const statusColorMap: Record<
+	SupervisorAssignmentData['status'],
+	string
+> = {
 	Finalized: 'green',
 	Incomplete: 'orange',
 	Unassigned: 'red',
-};
+} as const;
 
 /**
  * Renders supervisor names in a vertical list
@@ -63,7 +65,7 @@ export const baseColumns: ColumnsType<SupervisorAssignmentData> = [
 		title: 'Status',
 		dataIndex: 'status',
 		key: 'status',
-		render: (status: string) => (
+		render: (status: SupervisorAssignmentData['status']) => (
 			<Tag color={statusColorMap[status] ?? 'default'}>{status}</Tag>
 		),
 	},

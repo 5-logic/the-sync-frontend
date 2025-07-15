@@ -168,9 +168,50 @@ export default function AssignSupervisorModal({
 		option?: { label: string; value: string },
 	) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase());
 
+	// Check if supervisors are already assigned (for locking logic)
+	// Lock supervisor 1 only if it's assigned and supervisor 2 is not assigned (allow assigning supervisor 2)
+	// Lock supervisor 2 if it's already assigned
+	const isSupervisor1Assigned = Boolean(initialValues?.[0]) && !isChangeMode;
+	const isSupervisor2Assigned = Boolean(initialValues?.[1]) && !isChangeMode;
+	const shouldLockSupervisor1 = isSupervisor1Assigned && !isSupervisor2Assigned;
+
+	// Extract placeholder logic for supervisor 2 to avoid nested ternary
+	const getSupervisor2Placeholder = (): string => {
+		if (isSupervisor2Assigned) {
+			return 'Already assigned';
+		}
+		return isChangeMode
+			? 'Change to new supervisor (optional)'
+			: 'Select supervisor (optional)';
+	};
+
+	// Extract placeholder logic for supervisor 1 to avoid nested ternary
+	const getSupervisor1Placeholder = (): string => {
+		if (shouldLockSupervisor1) {
+			return 'Already assigned';
+		}
+		return isChangeMode ? 'Change to new supervisor' : 'Select supervisor';
+	};
+
+	// Provide separate methods for modal title and button text for each mode
+	const getChangeModalTitle = (): string => 'Change Supervisor';
+	const getAssignModalTitle = (): string => 'Assign Supervisor (Draft)';
+
+	const getChangeSubmitButtonText = (): string => 'Change';
+	const getAssignSubmitButtonText = (): string => 'Save as Draft';
+
+	// Extract label text logic to avoid nested ternary
+	const getSupervisor1LabelText = (): string => {
+		return `${isChangeMode ? 'Change' : 'Select'} Supervisor 1`;
+	};
+
+	const getSupervisor2LabelText = (): string => {
+		return `${isChangeMode ? 'Change' : 'Select'} Supervisor 2`;
+	};
+
 	return (
 		<Modal
-			title={isChangeMode ? 'Change Supervisor' : 'Assign Supervisor (Draft)'}
+			title={isChangeMode ? getChangeModalTitle() : getAssignModalTitle()}
 			open={open}
 			onCancel={handleCancel}
 			footer={null}
@@ -179,11 +220,7 @@ export default function AssignSupervisorModal({
 			<Form form={form} layout="vertical" onFinish={handleFinish}>
 				<Form.Item
 					label={
-						<FormLabel
-							text={`${isChangeMode ? 'Change' : 'Select'} Supervisor 1`}
-							isRequired
-							isBold
-						/>
+						<FormLabel text={getSupervisor1LabelText()} isRequired isBold />
 					}
 					name="supervisor1"
 					required={false}
@@ -196,13 +233,11 @@ export default function AssignSupervisorModal({
 				>
 					<Select
 						key={getSupervisor1Key()}
-						placeholder={
-							isChangeMode ? 'Change to new supervisor' : 'Select supervisor'
-						}
+						placeholder={getSupervisor1Placeholder()}
 						options={supervisor1Options}
 						allowClear
 						showSearch
-						disabled={loading}
+						disabled={loading || shouldLockSupervisor1}
 						filterOption={filterOption}
 						onChange={() => {
 							form.validateFields(['supervisor2']);
@@ -211,12 +246,7 @@ export default function AssignSupervisorModal({
 				</Form.Item>
 
 				<Form.Item
-					label={
-						<FormLabel
-							text={`${isChangeMode ? 'Change' : 'Select'} Supervisor 2`}
-							isBold
-						/>
-					}
+					label={<FormLabel text={getSupervisor2LabelText()} isBold />}
 					name="supervisor2"
 					required={false}
 					rules={[
@@ -240,15 +270,11 @@ export default function AssignSupervisorModal({
 				>
 					<Select
 						key={getSupervisor2Key()}
-						placeholder={
-							isChangeMode
-								? 'Change to new supervisor (optional)'
-								: 'Select supervisor (optional)'
-						}
+						placeholder={getSupervisor2Placeholder()}
 						options={supervisor2Options}
 						allowClear
 						showSearch
-						disabled={loading}
+						disabled={loading || isSupervisor2Assigned}
 						filterOption={filterOption}
 						onChange={() => {
 							form.validateFields(['supervisor1']);
@@ -265,7 +291,9 @@ export default function AssignSupervisorModal({
 						Cancel
 					</Button>
 					<Button type="primary" htmlType="submit" loading={loading}>
-						{isChangeMode ? 'Change' : 'Save as Draft'}
+						{isChangeMode
+							? getChangeSubmitButtonText()
+							: getAssignSubmitButtonText()}
 					</Button>
 				</Form.Item>
 			</Form>
