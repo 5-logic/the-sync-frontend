@@ -1,7 +1,7 @@
 import { Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 
-import { type SupervisorAssignmentData } from '@/hooks/lecturer/useAssignSupervisor';
+import { type SupervisorAssignmentData } from '@/store/useAssignSupervisorStore';
 
 /**
  * Color mapping for supervisor assignment status
@@ -33,7 +33,7 @@ export const renderSupervisors = (supervisors: string[]) =>
 
 export const baseColumns: ColumnsType<SupervisorAssignmentData> = [
 	{
-		title: 'Group Name',
+		title: 'Abbreviation',
 		dataIndex: 'groupName',
 		key: 'groupName',
 	},
@@ -43,14 +43,14 @@ export const baseColumns: ColumnsType<SupervisorAssignmentData> = [
 		key: 'thesisTitle',
 	},
 	{
-		title: 'Members',
+		title: 'Domain',
 		dataIndex: 'memberCount',
 		key: 'memberCount',
-		render: (memberCount: number, record: SupervisorAssignmentData) => {
-			if (record.groupName === 'No Group') {
-				return '-';
+		render: (domain: string, record: SupervisorAssignmentData) => {
+			if (record.groupName === 'No Abbreviation') {
+				return <span style={{ color: '#999' }}>No Domain</span>;
 			}
-			return memberCount || 0;
+			return domain;
 		},
 	},
 	{
