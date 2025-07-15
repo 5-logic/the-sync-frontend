@@ -15,14 +15,20 @@ export interface UseAssignSupervisorReturn {
 	data: SupervisorAssignmentData[];
 	lecturers: Array<{ id: string; fullName: string; email: string }>;
 	loading: boolean;
+	updating: boolean;
 	error: string | null;
-	assignSupervisor: (thesisId: string, lecturerId: string) => Promise<boolean>;
 	changeSupervisor: (
 		thesisId: string,
 		currentSupervisorId: string,
 		newSupervisorId: string,
 	) => Promise<boolean>;
 	refreshData: () => Promise<void>;
+	bulkAssignSupervisors: (
+		assignments: Array<{
+			thesisId: string;
+			lecturerIds: string[];
+		}>,
+	) => Promise<boolean>;
 }
 
 /**
@@ -33,11 +39,12 @@ export function useAssignSupervisor(): UseAssignSupervisorReturn {
 		data,
 		lecturers,
 		loading,
+		updating,
 		lastError,
 		fetchData,
-		assignSupervisor,
 		changeSupervisor,
 		refreshData,
+		bulkAssignSupervisors,
 	} = useAssignSupervisorStore();
 
 	useEffect(() => {
@@ -48,9 +55,10 @@ export function useAssignSupervisor(): UseAssignSupervisorReturn {
 		data,
 		lecturers,
 		loading,
+		updating,
 		error: lastError,
-		assignSupervisor,
 		changeSupervisor,
 		refreshData,
+		bulkAssignSupervisors,
 	};
 }
