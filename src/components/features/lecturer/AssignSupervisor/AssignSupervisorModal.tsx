@@ -168,6 +168,13 @@ export default function AssignSupervisorModal({
 		option?: { label: string; value: string },
 	) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase());
 
+	// Check if supervisors are already assigned (for locking logic)
+	// Lock supervisor 1 only if it's assigned and supervisor 2 is not assigned (allow assigning supervisor 2)
+	// Lock supervisor 2 if it's already assigned
+	const isSupervisor1Assigned = Boolean(initialValues?.[0]) && !isChangeMode;
+	const isSupervisor2Assigned = Boolean(initialValues?.[1]) && !isChangeMode;
+	const shouldLockSupervisor1 = isSupervisor1Assigned && !isSupervisor2Assigned;
+
 	return (
 		<Modal
 			title={isChangeMode ? 'Change Supervisor' : 'Assign Supervisor (Draft)'}
@@ -197,12 +204,16 @@ export default function AssignSupervisorModal({
 					<Select
 						key={getSupervisor1Key()}
 						placeholder={
-							isChangeMode ? 'Change to new supervisor' : 'Select supervisor'
+							shouldLockSupervisor1
+								? 'Already assigned'
+								: isChangeMode
+									? 'Change to new supervisor'
+									: 'Select supervisor'
 						}
 						options={supervisor1Options}
 						allowClear
 						showSearch
-						disabled={loading}
+						disabled={loading || shouldLockSupervisor1}
 						filterOption={filterOption}
 						onChange={() => {
 							form.validateFields(['supervisor2']);
@@ -241,14 +252,16 @@ export default function AssignSupervisorModal({
 					<Select
 						key={getSupervisor2Key()}
 						placeholder={
-							isChangeMode
-								? 'Change to new supervisor (optional)'
-								: 'Select supervisor (optional)'
+							isSupervisor2Assigned
+								? 'Already assigned'
+								: isChangeMode
+									? 'Change to new supervisor (optional)'
+									: 'Select supervisor (optional)'
 						}
 						options={supervisor2Options}
 						allowClear
 						showSearch
-						disabled={loading}
+						disabled={loading || isSupervisor2Assigned}
 						filterOption={filterOption}
 						onChange={() => {
 							form.validateFields(['supervisor1']);
