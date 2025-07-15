@@ -3,6 +3,7 @@
 import { Col, Row, Typography } from 'antd';
 import { useState } from 'react';
 
+import { Header } from '@/components/common/Header';
 import ChatBox from '@/components/features/student/SuggestedThesis/ChatBox';
 import TopicCard from '@/components/features/student/SuggestedThesis/TopicCard';
 import { mockTopics } from '@/data/mockTopics';
@@ -17,7 +18,10 @@ export default function ThesisPage() {
 	return (
 		<div style={{ padding: 24 }}>
 			<Title level={3}>AI-Suggested Thesis Topics</Title>
-
+			<Header
+				title="AI-Suggested Thesis Topics"
+				description="AI-recommended thesis topics based on your profile."
+			/>
 			<Row gutter={[16, 16]}>
 				{mockTopics.map((topic) => (
 					<Col xs={24} md={12} lg={8} key={topic.id}>
