@@ -1,19 +1,12 @@
 import httpClient from '@/lib/services/_httpClient';
 import { ApiResponse } from '@/schemas/_common';
-
-// Supervision interfaces
-export interface Supervision {
-	lecturerId: string;
-}
-
-export interface AssignSupervisorRequest {
-	lecturerId: string;
-}
-
-export interface ChangeSupervisorRequest {
-	currentSupervisorId: string;
-	newSupervisorId: string;
-}
+import {
+	type AssignSupervisorRequest,
+	type BulkAssignmentApiResponse,
+	type BulkAssignmentRequest,
+	type ChangeSupervisorRequest,
+	type Supervision,
+} from '@/schemas/supervision';
 
 class SupervisionService {
 	private readonly baseUrl = '/supervisions';
@@ -53,6 +46,18 @@ class SupervisionService {
 			`${this.baseUrl}/change/${thesisId}`,
 			data,
 		);
+		return response.data;
+	}
+
+	/**
+	 * Bulk assign supervisors to multiple theses
+	 */
+	async bulkAssignSupervisors(
+		data: BulkAssignmentRequest,
+	): Promise<ApiResponse<BulkAssignmentApiResponse>> {
+		const response = await httpClient.post<
+			ApiResponse<BulkAssignmentApiResponse>
+		>(`${this.baseUrl}/assign-supervisors`, data);
 		return response.data;
 	}
 }
