@@ -12,20 +12,23 @@ export interface Milestone {
 	supervisor?: string;
 }
 
-// Lấy danh sách milestone từ các key phase
+// Danh sách label milestone, dùng cho dropdown, step
 export const mockMilestonesLabel: { value: string; label: string }[] =
 	Object.keys(mockReviewGroups).map((phase) => ({
 		value: phase,
 		label: `Milestone ${phase}`,
 	}));
 
-// Ví dụ kết quả:[
-// 	{ value: 'Start', label: 'Milestone Start' },
-// 	{ value: 'Review 1', label: 'Milestone Review 1' },
-// 	{ value: 'Review 2', label: 'Milestone Review 2' },
-// ]
+/**
+ * Kết quả ví dụ:
+ * [
+ *   { value: 'Start', label: 'Milestone Start' },
+ *   { value: 'Review 1', label: 'Milestone Review 1' },
+ *   ...
+ * ]
+ */
 
-// Danh sách dữ liệu chi tiết các mốc thời gian của sinh viên (có thể dùng cho UI hiển thị)
+// Danh sách dữ liệu chi tiết các mốc thời gian (dùng cho UI chi tiết)
 export const mockMilestoneDetails: Milestone[] = [
 	{
 		id: 1,
