@@ -2,14 +2,9 @@
 
 import { Button, Card, Progress, Timeline, Typography } from 'antd';
 
-const { Text } = Typography;
+import { milestoneSchedule } from '@/data/milestoneSchedule';
 
-const milestoneSchedule = [
-	{ label: 'Review 1', date: '2025-05-31' },
-	{ label: 'Review 2', date: '2025-07-02' },
-	{ label: 'Review 3', date: '2025-08-01' },
-	{ label: 'Final Review', date: '2025-08-30' },
-];
+const { Text } = Typography;
 
 type MilestoneStatus = 'Completed' | 'In Progress' | 'Upcoming';
 
@@ -54,7 +49,6 @@ export default function ProgressOverviewCard() {
 		(m) => m.status === 'In Progress' || m.status === 'Upcoming',
 	);
 
-	// Map status -> color
 	const getTimelineColor = (status: MilestoneStatus): string => {
 		switch (status) {
 			case 'Completed':
@@ -62,7 +56,7 @@ export default function ProgressOverviewCard() {
 			case 'In Progress':
 				return 'gold';
 			case 'Upcoming':
-				return '#d9d9d9'; // light gray
+				return '#d9d9d9';
 			default:
 				return 'gray';
 		}
