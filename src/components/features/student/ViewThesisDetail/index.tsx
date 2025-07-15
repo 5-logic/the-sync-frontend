@@ -2,7 +2,7 @@
 
 import { Empty, Space, Spin } from 'antd';
 import { useParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { Header } from '@/components/common/Header';
 import ActionButtons from '@/components/features/student/ViewThesisDetail/ActionButtons';
@@ -25,111 +25,121 @@ export default function StudentThesisDetailPage() {
 	const [loading, setLoading] = useState(true);
 
 	// Fetch thesis details and lecturer info
-	useEffect(() => {
-		const fetchThesisDetails = async () => {
-			if (!thesisId) return;
+	const fetchThesisDetails = useCallback(async () => {
+		if (!thesisId) return;
 
-			try {
-				setLoading(true);
+		try {
+			// Only set loading if not already loading (to avoid double loading state)
+			setLoading((prevLoading) => prevLoading || true);
 
-				// Fetch thesis data
-				const thesisResponse = await thesesService.findOne(thesisId);
-				const thesisResult = handleApiResponse(thesisResponse, 'Success');
+			// Fetch thesis data
+			const thesisResponse = await thesesService.findOne(thesisId);
+			const thesisResult = handleApiResponse(thesisResponse, 'Success');
 
-				if (thesisResult.success && thesisResult.data) {
-					const thesisData = thesisResult.data;
+			if (thesisResult.success && thesisResult.data) {
+				const thesisData = thesisResult.data;
 
-					// Type guard for extended thesis data
-					const hasThesisVersions = (
-						data: unknown,
-					): data is {
-						thesisVersions?: Array<{
-							id: string;
-							version: number;
-							supportingDocument: string;
-						}>;
-					} => {
-						return (
-							typeof data === 'object' &&
-							data !== null &&
-							'thesisVersions' in data
-						);
-					};
-
-					const hasThesisSkills = (
-						data: unknown,
-					): data is {
-						thesisRequiredSkills?: Array<{
-							thesisId: string;
-							skillId: string;
-							skill: { id: string; name: string };
-						}>;
-					} => {
-						return (
-							typeof data === 'object' &&
-							data !== null &&
-							'thesisRequiredSkills' in data
-						);
-					};
-
-					// Fetch lecturer info
-					const lecturerResponse = await lecturersService.findOne(
-						thesisData.lecturerId,
+				// Type guard for extended thesis data
+				const hasThesisVersions = (
+					data: unknown,
+				): data is {
+					thesisVersions?: Array<{
+						id: string;
+						version: number;
+						supportingDocument: string;
+					}>;
+				} => {
+					return (
+						typeof data === 'object' &&
+						data !== null &&
+						'thesisVersions' in data
 					);
-					const lecturerResult = handleApiResponse(lecturerResponse, 'Success');
+				};
 
-					// Create ThesisWithRelations object with real data
-					const thesisWithRelations: ThesisWithRelations = {
-						...thesisData,
-						semesterId: thesisData.lecturerId, // Use lecturerId as temporary semesterId
-						lecturer: {
-							userId: lecturerResult.data?.id || thesisData.lecturerId,
-							isModerator: lecturerResult.data?.isModerator || false,
-							user: {
-								id: lecturerResult.data?.id || thesisData.lecturerId,
-								fullName: lecturerResult.data?.fullName || 'Unknown',
-								email: lecturerResult.data?.email || 'No email',
-								// Add phone number from lecturer API
-								phoneNumber: lecturerResult.data?.phoneNumber,
-							} as {
-								id: string;
-								fullName: string;
-								email: string;
-								phoneNumber?: string;
-							},
+				const hasThesisSkills = (
+					data: unknown,
+				): data is {
+					thesisRequiredSkills?: Array<{
+						thesisId: string;
+						skillId: string;
+						skill: { id: string; name: string };
+					}>;
+				} => {
+					return (
+						typeof data === 'object' &&
+						data !== null &&
+						'thesisRequiredSkills' in data
+					);
+				};
+
+				// Fetch lecturer info
+				const lecturerResponse = await lecturersService.findOne(
+					thesisData.lecturerId,
+				);
+				const lecturerResult = handleApiResponse(lecturerResponse, 'Success');
+
+				// Create ThesisWithRelations object with real data
+				const thesisWithRelations: ThesisWithRelations = {
+					...thesisData,
+					semesterId: thesisData.lecturerId, // Use lecturerId as temporary semesterId
+					lecturer: {
+						userId: lecturerResult.data?.id || thesisData.lecturerId,
+						isModerator: lecturerResult.data?.isModerator || false,
+						user: {
+							id: lecturerResult.data?.id || thesisData.lecturerId,
+							fullName: lecturerResult.data?.fullName || 'Unknown',
+							email: lecturerResult.data?.email || 'No email',
+							// Add phone number from lecturer API
+							phoneNumber: lecturerResult.data?.phoneNumber,
+						} as {
+							id: string;
+							fullName: string;
+							email: string;
+							phoneNumber?: string;
 						},
-						// Use actual data from API response if available with type guards
-						thesisRequiredSkills: hasThesisSkills(thesisData)
-							? thesisData.thesisRequiredSkills || []
-							: [],
-						thesisVersions: hasThesisVersions(thesisData)
-							? thesisData.thesisVersions || []
-							: [],
-					};
+					},
+					// Use actual data from API response if available with type guards
+					thesisRequiredSkills: hasThesisSkills(thesisData)
+						? thesisData.thesisRequiredSkills || []
+						: [],
+					thesisVersions: hasThesisVersions(thesisData)
+						? thesisData.thesisVersions || []
+						: [],
+				};
 
-					setThesis(thesisWithRelations);
+				setThesis(thesisWithRelations);
 
-					// If thesis has a group assigned, fetch group details
-					if (thesisData.groupId) {
-						const groupResponse = await groupsService.findOne(
-							thesisData.groupId,
-						);
-						const groupResult = handleApiResponse(groupResponse, 'Success');
+				// If thesis has a group assigned, fetch group details
+				if (thesisData.groupId) {
+					const groupResponse = await groupsService.findOne(thesisData.groupId);
+					const groupResult = handleApiResponse(groupResponse, 'Success');
 
-						if (groupResult.success && groupResult.data) {
-							setAssignedGroup(groupResult.data);
-						}
+					if (groupResult.success && groupResult.data) {
+						setAssignedGroup(groupResult.data);
 					}
+				} else {
+					// Clear assigned group if thesis no longer has one
+					setAssignedGroup(null);
 				}
-			} catch (error) {
-				console.error('Error fetching thesis details:', error);
-			} finally {
-				setLoading(false);
 			}
-		};
-
-		fetchThesisDetails();
+		} catch (error) {
+			console.error('Error fetching thesis details:', error);
+		} finally {
+			setLoading(false);
+		}
 	}, [thesisId]);
+
+	useEffect(() => {
+		fetchThesisDetails();
+	}, [fetchThesisDetails]);
+
+	// Handle refresh with cache clearing
+	const handleRefreshThesis = useCallback(async () => {
+		setLoading(true); // Show loading immediately
+		setThesis(null);
+		setAssignedGroup(null);
+		await fetchThesisDetails();
+	}, [fetchThesisDetails]);
 
 	if (loading) {
 		return (
@@ -158,7 +168,7 @@ export default function StudentThesisDetailPage() {
 			{assignedGroup && <AssignedGroupCard assignedGroup={assignedGroup} />}
 
 			{/* Action Buttons */}
-			<ActionButtons thesis={thesis} />
+			<ActionButtons thesis={thesis} onThesisUpdate={handleRefreshThesis} />
 		</Space>
 	);
 }
