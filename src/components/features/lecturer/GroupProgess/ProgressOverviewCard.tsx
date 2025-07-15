@@ -95,9 +95,9 @@ export default function ProgressOverviewCard() {
 				/>
 
 				<Timeline>
-					{milestonesWithStatus.map((milestone, index) => (
+					{milestonesWithStatus.map((milestone) => (
 						<Timeline.Item
-							key={index}
+							key={`${milestone.label}-${milestone.date}`}
 							color={getTimelineColor(milestone.status)}
 						>
 							<div>

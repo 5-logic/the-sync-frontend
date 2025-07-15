@@ -11,15 +11,18 @@ export default function MilestoneStep() {
 		(m) => m.status === 'In Progress',
 	);
 
-	const stepsData = mockMilestoneDetails.map((milestone) => ({
-		title: milestone.title,
-		status:
-			milestone.status === 'Ended'
-				? 'finish'
-				: milestone.status === 'In Progress'
-					? 'process'
-					: 'wait',
-	})) as { title: string; status: 'finish' | 'process' | 'wait' }[];
+	const stepsData = mockMilestoneDetails.map((milestone) => {
+		let stepStatus: 'finish' | 'process' | 'wait';
+
+		if (milestone.status === 'Ended') stepStatus = 'finish';
+		else if (milestone.status === 'In Progress') stepStatus = 'process';
+		else stepStatus = 'wait';
+
+		return {
+			title: milestone.title,
+			status: stepStatus,
+		};
+	});
 
 	// Lấy milestone đang in progress để hiển thị thông báo deadline
 	const currentMilestone = mockMilestoneDetails[currentStep];
