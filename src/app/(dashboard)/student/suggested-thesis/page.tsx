@@ -1,10 +1,10 @@
+import { createMetadata } from '@/app/metadata';
+
+export const metadata = createMetadata({
+	title: 'Suggested Thesis By AI',
+	description: 'AI-recommended thesis topics based on your profile',
+});
+
 export default function StudentSuggestedThesisPage() {
-	return (
-		<div className="p-6">
-			<h1 className="text-2xl font-bold mb-4">Suggested Thesis</h1>
-			<p className="text-gray-600">
-				AI-recommended thesis topics based on your profile
-			</p>
-		</div>
-	);
+	// return <SuggestedThesis />;
 }
