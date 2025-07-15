@@ -4,17 +4,28 @@ import { UserOutlined } from '@ant-design/icons';
 import { Avatar, Button, Card, Col, Row, Space, Tag, Typography } from 'antd';
 import { useRouter } from 'next/navigation';
 
+import { useSemesterStatus } from '@/hooks/student/useSemesterStatus';
 import { useStudentGroupStatus } from '@/hooks/student/useStudentGroupStatus';
+import { useThesisRegistration } from '@/hooks/thesis';
 import { DOMAIN_COLOR_MAP } from '@/lib/constants/domains';
 import { ThesisWithRelations } from '@/schemas/thesis';
+import { cacheUtils } from '@/store/helpers/cacheHelpers';
 
 interface Props {
 	readonly thesis: ThesisWithRelations;
 	readonly studentRole?: 'leader' | 'member' | 'guest';
+	readonly onThesisUpdate?: () => void | Promise<void>;
 }
 
-export default function ThesisCard({ thesis, studentRole }: Props) {
-	const { hasGroup } = useStudentGroupStatus();
+export default function ThesisCard({
+	thesis,
+	studentRole,
+	onThesisUpdate,
+}: Props) {
+	const { hasGroup, group, resetInitialization } = useStudentGroupStatus();
+	const { isPicking, loading: semesterLoading } = useSemesterStatus();
+	const { registerThesis, unregisterThesis, isRegistering } =
+		useThesisRegistration();
 	const router = useRouter();
 
 	// Get domain color
@@ -32,12 +43,51 @@ export default function ThesisCard({ thesis, studentRole }: Props) {
 	// Check if thesis is already taken by another group
 	const isThesisTaken = thesis.groupId !== null;
 
+	// Check if current group has this thesis assigned
+	const isThesisAssignedToGroup = group?.id === thesis.groupId;
+
 	// Determine if register button should be enabled
 	const canRegister = studentRole === 'leader' && hasGroup && !isThesisTaken;
+
+	// Determine if unregister button should be shown
+	const canUnregister =
+		studentRole === 'leader' && hasGroup && isThesisAssignedToGroup;
+
+	// Disable register button if semester is not in picking phase
+	const isRegisterDisabled =
+		!canRegister || !isPicking || isRegistering || semesterLoading;
 
 	// Handle view details navigation
 	const handleViewDetails = () => {
 		router.push(`/student/list-thesis/${thesis.id}`);
+	};
+
+	// Handle register thesis
+	const handleRegisterThesis = () => {
+		registerThesis(thesis.id, thesis.englishName, () => {
+			// Clear relevant caches
+			cacheUtils.clear('semesterStatus');
+
+			// Refresh group data to update UI
+			resetInitialization();
+
+			// Refresh thesis list immediately to show updated assignment
+			onThesisUpdate?.();
+		});
+	};
+
+	// Handle unregister thesis
+	const handleUnregisterThesis = () => {
+		unregisterThesis(thesis.englishName, () => {
+			// Clear relevant caches
+			cacheUtils.clear('semesterStatus');
+
+			// Refresh group data to update UI
+			resetInitialization();
+
+			// Refresh thesis list immediately to show updated assignment
+			onThesisUpdate?.();
+		});
 	};
 
 	// Get button tooltip message based on current state
@@ -50,6 +100,9 @@ export default function ThesisCard({ thesis, studentRole }: Props) {
 		}
 		if (studentRole !== 'leader') {
 			return 'Only group leaders can register for thesis';
+		}
+		if (!isPicking) {
+			return 'Registration is only available during the "Picking" phase';
 		}
 		return 'Register for this thesis';
 	};
@@ -157,9 +210,31 @@ export default function ThesisCard({ thesis, studentRole }: Props) {
 					</Button>
 				</Col>
 				<Col span={12}>
-					<Button block disabled={!canRegister} title={getButtonTooltip()}>
-						{isThesisTaken ? 'Taken' : 'Register'}
-					</Button>
+					{canUnregister ? (
+						<Button
+							block
+							danger
+							onClick={handleUnregisterThesis}
+							loading={isRegistering || semesterLoading}
+							title="Unregister from this thesis"
+						>
+							{isRegistering ? 'Unregistering...' : 'Unregister'}
+						</Button>
+					) : (
+						<Button
+							block
+							disabled={isRegisterDisabled}
+							title={getButtonTooltip()}
+							onClick={handleRegisterThesis}
+							loading={isRegistering || semesterLoading}
+						>
+							{isRegistering
+								? 'Registering...'
+								: isThesisTaken
+									? 'Taken'
+									: 'Register'}
+						</Button>
+					)}
 				</Col>
 			</Row>
 		</Card>
