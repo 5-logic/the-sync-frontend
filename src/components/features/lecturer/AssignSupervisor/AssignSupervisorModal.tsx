@@ -175,9 +175,46 @@ export default function AssignSupervisorModal({
 	const isSupervisor2Assigned = Boolean(initialValues?.[1]) && !isChangeMode;
 	const shouldLockSupervisor1 = isSupervisor1Assigned && !isSupervisor2Assigned;
 
+	// Extract placeholder logic for supervisor 2 to avoid nested ternary
+	const getSupervisor2Placeholder = (): string => {
+		if (isSupervisor2Assigned) {
+			return 'Already assigned';
+		}
+		return isChangeMode
+			? 'Change to new supervisor (optional)'
+			: 'Select supervisor (optional)';
+	};
+
+	// Extract placeholder logic for supervisor 1 to avoid nested ternary
+	const getSupervisor1Placeholder = (): string => {
+		if (shouldLockSupervisor1) {
+			return 'Already assigned';
+		}
+		return isChangeMode ? 'Change to new supervisor' : 'Select supervisor';
+	};
+
+	// Extract button text logic to avoid nested ternary
+	const getSubmitButtonText = (): string => {
+		return isChangeMode ? 'Change' : 'Save as Draft';
+	};
+
+	// Extract modal title logic to avoid nested ternary
+	const getModalTitle = (): string => {
+		return isChangeMode ? 'Change Supervisor' : 'Assign Supervisor (Draft)';
+	};
+
+	// Extract label text logic to avoid nested ternary
+	const getSupervisor1LabelText = (): string => {
+		return `${isChangeMode ? 'Change' : 'Select'} Supervisor 1`;
+	};
+
+	const getSupervisor2LabelText = (): string => {
+		return `${isChangeMode ? 'Change' : 'Select'} Supervisor 2`;
+	};
+
 	return (
 		<Modal
-			title={isChangeMode ? 'Change Supervisor' : 'Assign Supervisor (Draft)'}
+			title={getModalTitle()}
 			open={open}
 			onCancel={handleCancel}
 			footer={null}
@@ -186,11 +223,7 @@ export default function AssignSupervisorModal({
 			<Form form={form} layout="vertical" onFinish={handleFinish}>
 				<Form.Item
 					label={
-						<FormLabel
-							text={`${isChangeMode ? 'Change' : 'Select'} Supervisor 1`}
-							isRequired
-							isBold
-						/>
+						<FormLabel text={getSupervisor1LabelText()} isRequired isBold />
 					}
 					name="supervisor1"
 					required={false}
@@ -203,13 +236,7 @@ export default function AssignSupervisorModal({
 				>
 					<Select
 						key={getSupervisor1Key()}
-						placeholder={
-							shouldLockSupervisor1
-								? 'Already assigned'
-								: isChangeMode
-									? 'Change to new supervisor'
-									: 'Select supervisor'
-						}
+						placeholder={getSupervisor1Placeholder()}
 						options={supervisor1Options}
 						allowClear
 						showSearch
@@ -222,12 +249,7 @@ export default function AssignSupervisorModal({
 				</Form.Item>
 
 				<Form.Item
-					label={
-						<FormLabel
-							text={`${isChangeMode ? 'Change' : 'Select'} Supervisor 2`}
-							isBold
-						/>
-					}
+					label={<FormLabel text={getSupervisor2LabelText()} isBold />}
 					name="supervisor2"
 					required={false}
 					rules={[
@@ -251,13 +273,7 @@ export default function AssignSupervisorModal({
 				>
 					<Select
 						key={getSupervisor2Key()}
-						placeholder={
-							isSupervisor2Assigned
-								? 'Already assigned'
-								: isChangeMode
-									? 'Change to new supervisor (optional)'
-									: 'Select supervisor (optional)'
-						}
+						placeholder={getSupervisor2Placeholder()}
 						options={supervisor2Options}
 						allowClear
 						showSearch
@@ -278,7 +294,7 @@ export default function AssignSupervisorModal({
 						Cancel
 					</Button>
 					<Button type="primary" htmlType="submit" loading={loading}>
-						{isChangeMode ? 'Change' : 'Save as Draft'}
+						{getSubmitButtonText()}
 					</Button>
 				</Form.Item>
 			</Form>
