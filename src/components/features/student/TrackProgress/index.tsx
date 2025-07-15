@@ -1,12 +1,11 @@
 'use client';
 
-import ProgressOverviewCard from '../../lecturer/GroupProgess/ProgressOverviewCard';
 import { Col, Row, Space } from 'antd';
 
 import { Header } from '@/components/common/Header';
-
-import MilestoneDetailCard from './MilestoneDetailCard';
-import MilestoneStep from './MilestoneStep';
+import ProgressOverviewCard from '@/components/features/lecturer/GroupProgess/ProgressOverviewCard';
+import MilestoneDetailCard from '@/components/features/student/TrackProgress/MilestoneDetailCard';
+import MilestoneStep from '@/components/features/student/TrackProgress/MilestoneStep';
 
 export default function ProjectProgressPage() {
 	return (
