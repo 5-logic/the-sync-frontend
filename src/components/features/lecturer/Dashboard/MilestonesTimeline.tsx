@@ -1,4 +1,3 @@
-// components/MilestonesTimeline.tsx
 import { Card, Timeline } from 'antd';
 import React from 'react';
 

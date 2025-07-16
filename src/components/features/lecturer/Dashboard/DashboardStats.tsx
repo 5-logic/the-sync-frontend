@@ -1,4 +1,3 @@
-// components/DashboardStats.tsx
 import {
 	ClockCircleOutlined,
 	FileTextOutlined,

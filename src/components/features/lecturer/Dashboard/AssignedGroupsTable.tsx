@@ -1,4 +1,3 @@
-// components/AssignedGroupsTable.tsx
 import { Input, Select, Table } from 'antd';
 import React, { useState } from 'react';
 
