@@ -1,6 +1,6 @@
 'use client';
 
-import { Alert, Button, Space } from 'antd';
+import { Alert, Button, Space, notification } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
 
 import { ConfirmationModal } from '@/components/common/ConfirmModal';
@@ -38,10 +38,10 @@ export default function AssignSupervisors() {
 		refreshing,
 		updating,
 		error,
-		changeSupervisor,
 		refreshData,
 		fetchData,
 		bulkAssignSupervisors,
+		changeSupervisor,
 	} = useAssignSupervisor();
 
 	// Manual fetch on component mount
@@ -94,7 +94,7 @@ export default function AssignSupervisors() {
 	}, [data, search, statusFilter]);
 
 	/**
-	 * Handle bulk assignment of all draft assignments
+	 * Handle bulk assignment of all draft assignments using intelligent assignment
 	 */
 	const handleBulkAssignment = async (): Promise<void> => {
 		const drafts = getDraftsList();
@@ -109,19 +109,129 @@ export default function AssignSupervisors() {
 			return;
 		}
 
-		const assignments = validDrafts.map((draft) => ({
-			thesisId: draft.thesisId,
-			lecturerIds: draft.lecturerIds,
-		}));
+		// Process each draft using intelligent assignment
+		let allSuccessful = true;
+		const successfulDrafts: typeof validDrafts = [];
 
-		const result = await bulkAssignSupervisors(assignments);
+		for (const draft of validDrafts) {
+			const thesis = data.find((item) => item.thesisId === draft.thesisId);
+			if (!thesis) continue;
 
-		if (result) {
-			// Clear only the valid drafts after successful assignment
-			validDrafts.forEach((draft) => {
-				removeDraftAssignment(draft.thesisId);
+			const currentSupervisorIds = thesis.supervisorDetails.map((s) => s.id);
+			const newSupervisorIds = draft.lecturerIds;
+
+			const success = await handleIntelligentAssignment(
+				currentSupervisorIds,
+				newSupervisorIds,
+				draft.thesisId,
+			);
+
+			if (success) {
+				successfulDrafts.push(draft);
+			} else {
+				allSuccessful = false;
+			}
+		}
+
+		// Clear only the successful drafts
+		successfulDrafts.forEach((draft) => {
+			removeDraftAssignment(draft.thesisId);
+		});
+
+		// Show notification about results
+		if (allSuccessful) {
+			notification.success({
+				message: 'Success',
+				description: `All ${validDrafts.length} assignments completed successfully`,
 			});
-			// No need to refresh data - optimistic updates already applied
+		} else {
+			notification.warning({
+				message: 'Partial Success',
+				description: `${successfulDrafts.length}/${validDrafts.length} assignments completed successfully`,
+			});
+		}
+	};
+
+	/**
+	 * Intelligent supervisor assignment handler
+	 * Automatically determines whether to use change or assign API based on the differences
+	 */
+	const handleIntelligentAssignment = async (
+		currentSupervisorIds: string[],
+		newSupervisorIds: string[],
+		thesisId: string,
+	): Promise<boolean> => {
+		// If no current supervisors, just use bulk assign
+		if (currentSupervisorIds.length === 0) {
+			if (newSupervisorIds.length === 0) return true; // No change needed
+
+			const assignments = [{ thesisId, lecturerIds: newSupervisorIds }];
+			return await bulkAssignSupervisors(assignments);
+		}
+
+		// If no new supervisors, remove all using bulk assign with empty array
+		if (newSupervisorIds.length === 0) {
+			const assignments = [{ thesisId, lecturerIds: [] }];
+			return await bulkAssignSupervisors(assignments);
+		}
+
+		// Analyze changes
+		const supervisorsToAdd = newSupervisorIds.filter(
+			(id) => !currentSupervisorIds.includes(id),
+		);
+		const supervisorsToRemove = currentSupervisorIds.filter(
+			(id) => !newSupervisorIds.includes(id),
+		);
+
+		// If no changes needed
+		if (supervisorsToAdd.length === 0 && supervisorsToRemove.length === 0) {
+			return true;
+		}
+
+		try {
+			let allSuccessful = true;
+
+			// Handle 1-to-1 supervisor changes first (more efficient)
+			const changePairs = Math.min(
+				supervisorsToRemove.length,
+				supervisorsToAdd.length,
+			);
+
+			for (let i = 0; i < changePairs; i++) {
+				const currentSupervisorId = supervisorsToRemove[i];
+				const newSupervisorId = supervisorsToAdd[i];
+
+				const changeSuccess = await changeSupervisor(
+					thesisId,
+					currentSupervisorId,
+					newSupervisorId,
+				);
+
+				if (!changeSuccess) {
+					allSuccessful = false;
+					break;
+				}
+			}
+
+			// If all changes were successful and there are remaining additions/removals
+			if (
+				allSuccessful &&
+				(supervisorsToAdd.length !== changePairs ||
+					supervisorsToRemove.length !== changePairs)
+			) {
+				// Use bulk assign to handle remaining changes
+				const assignments = [{ thesisId, lecturerIds: newSupervisorIds }];
+				const bulkSuccess = await bulkAssignSupervisors(assignments);
+
+				if (!bulkSuccess) {
+					allSuccessful = false;
+				}
+			}
+
+			return allSuccessful;
+		} catch (error) {
+			console.error('Error in intelligent assignment:', error);
+			return false;
 		}
 	};
 
@@ -133,46 +243,24 @@ export default function AssignSupervisors() {
 		newSupervisorIds: string[],
 		thesisId: string,
 	): Promise<boolean> => {
-		const maxLength = Math.max(
-			currentSupervisorIds.length,
-			newSupervisorIds.length,
+		// Use intelligent assignment for finalized theses
+		return await handleIntelligentAssignment(
+			currentSupervisorIds,
+			newSupervisorIds,
+			thesisId,
 		);
-
-		for (let i = 0; i < maxLength; i++) {
-			const currentId = currentSupervisorIds[i];
-			const newId = newSupervisorIds[i];
-
-			if (currentId && newId && currentId !== newId) {
-				const result = await changeSupervisor(thesisId, currentId, newId);
-				if (!result) {
-					return false;
-				}
-			}
-		}
-		return true;
 	};
 
 	/**
 	 * Handle assignment mode - add to draft
 	 */
 	const handleAssignmentMode = (supervisorIds: string[]): void => {
-		console.log('🔥 handleAssignmentMode called with:', supervisorIds);
-		console.log('🔥 selectedGroup in handleAssignmentMode:', selectedGroup);
-
 		if (!selectedGroup) return;
 
 		const lecturerNames = supervisorIds
 			.map((id) => lecturers.find((l) => l.id === id)?.fullName)
 			.filter(Boolean) as string[];
 
-		console.log('🔥 lecturerNames mapped:', lecturerNames);
-		console.log('🔥 About to call addDraftAssignment with:', {
-			thesisId: selectedGroup.thesisId,
-			thesisTitle: selectedGroup.thesisTitle,
-			groupName: selectedGroup.groupName,
-			lecturerIds: supervisorIds,
-			lecturerNames,
-		});
 		addDraftAssignment({
 			thesisId: selectedGroup.thesisId,
 			thesisTitle: selectedGroup.thesisTitle,
@@ -180,36 +268,26 @@ export default function AssignSupervisors() {
 			lecturerIds: supervisorIds,
 			lecturerNames,
 		});
-
-		console.log('🔥 addDraftAssignment called successfully');
-		console.log('🔥 Current draftAssignments after save:', draftAssignments);
-		console.log('🔥 Current validDraftCount after save:', validDraftCount);
 	};
 
 	/**
 	 * Handle save draft action from modal
 	 */
 	const handleSaveDraft = (supervisorIds: string[]): void => {
-		console.log('🔥 handleSaveDraft called with:', supervisorIds);
-		console.log('🔥 selectedGroup:', selectedGroup);
-
 		if (!selectedGroup) return;
 
 		// Don't allow drafts for finalized assignments
 		if (selectedGroup.status === 'Finalized') {
-			console.warn('Cannot create draft for finalized assignment');
 			return;
 		}
 
 		// Don't save empty drafts
 		if (supervisorIds.length === 0) {
-			console.warn('Cannot save empty draft');
 			setModalOpen(false);
 			setSelectedGroup(null);
 			return;
 		}
 
-		console.log('🔥 About to call handleAssignmentMode');
 		// Always save as draft
 		handleAssignmentMode(supervisorIds);
 		setModalOpen(false);
@@ -238,6 +316,44 @@ export default function AssignSupervisors() {
 			);
 
 			if (success) {
+				// Remove draft if it exists after successful assignment
+				removeDraftAssignment(selectedGroup.thesisId);
+				setModalOpen(false);
+				setSelectedGroup(null);
+			}
+		} catch {
+			// Error handling is done in individual functions
+		}
+
+		setModalLoading(false);
+	};
+
+	/**
+	 * Handle single assignment (for non-finalized theses)
+	 */
+	const handleSingleAssignment = async (
+		supervisorIds: string[],
+	): Promise<void> => {
+		if (!selectedGroup) return;
+
+		setModalLoading(true);
+
+		try {
+			const currentSupervisorIds = selectedGroup.supervisorDetails.map(
+				(s) => s.id,
+			);
+			const newSupervisorIds = supervisorIds.filter(Boolean);
+
+			// Use intelligent assignment for all cases
+			const success = await handleIntelligentAssignment(
+				currentSupervisorIds,
+				newSupervisorIds,
+				selectedGroup.thesisId,
+			);
+
+			if (success) {
+				// Remove draft after successful assignment
+				removeDraftAssignment(selectedGroup.thesisId);
 				setModalOpen(false);
 				setSelectedGroup(null);
 			}
@@ -276,11 +392,15 @@ export default function AssignSupervisors() {
 	// Calculate valid draft count (exclude finalized theses)
 	const validDraftCount = useMemo(() => {
 		const drafts = Object.values(draftAssignments);
-		return drafts.filter((draft) => {
+		const validCount = drafts.filter((draft) => {
 			const thesis = data.find((item) => item.thesisId === draft.thesisId);
 			return thesis?.status !== 'Finalized';
 		}).length;
-	}, [data, draftAssignments]); // Include draftAssignments to trigger re-render
+		return validCount;
+	}, [data, draftAssignments]);
+
+	// Calculate draft count for force re-render
+	const draftCount = Object.keys(draftAssignments).length;
 
 	// Memoized columns to prevent unnecessary re-renders
 	// Include draftCount to force re-render when drafts change
@@ -318,7 +438,7 @@ export default function AssignSupervisors() {
 			},
 		];
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [getDraftAssignment, removeDraftAssignment, validDraftCount]);
+	}, [getDraftAssignment, removeDraftAssignment, validDraftCount, draftCount]);
 
 	const lecturerOptions = useMemo(() => {
 		return lecturers.map((lecturer) => ({
@@ -366,7 +486,7 @@ export default function AssignSupervisors() {
 				data={filteredData}
 				columns={columns}
 				loading={loading}
-				key={`table-${validDraftCount}`}
+				key={`table-${validDraftCount}-${draftCount}`}
 			/>
 
 			<AssignSupervisorModal
@@ -378,12 +498,13 @@ export default function AssignSupervisors() {
 				}}
 				initialValues={selectedGroup?.supervisorDetails.map((s) => s.id) || []}
 				onSaveDraft={handleSaveDraft}
-				onAssignNow={handleAssignNow}
-				lecturerOptions={lecturerOptions}
-				showAssignNow={
-					selectedGroup?.supervisorDetails &&
-					selectedGroup.supervisorDetails.length > 0
+				onAssignNow={
+					selectedGroup?.status === 'Finalized'
+						? handleAssignNow
+						: handleSingleAssignment
 				}
+				lecturerOptions={lecturerOptions}
+				showAssignNow={true} // Always show assign now button
 				isChangeMode={selectedGroup?.status === 'Finalized'}
 			/>
 		</Space>
