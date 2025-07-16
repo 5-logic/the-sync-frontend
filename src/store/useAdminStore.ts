@@ -74,11 +74,10 @@ export const useAdminStore = create<AdminState>()(
 					const state = get();
 					const now = Date.now();
 
-					let adminId = state.admin?.id;
+					const adminId = state.admin?.id;
 					if (!adminId) {
 						const cachedResult = get().getAdminIdFromCache();
 						if (cachedResult) {
-							adminId = cachedResult.id;
 							set({ admin: cachedResult.data });
 							return cachedResult.data;
 						}
