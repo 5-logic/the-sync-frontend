@@ -1,10 +1,9 @@
 import { create } from 'zustand';
 
 import lecturersService from '@/lib/services/lecturers.service';
-import supervisionsService, {
-	SupervisionData,
-} from '@/lib/services/supervisions.service';
+import supervisionsService from '@/lib/services/supervisions.service';
 import { handleApiResponse } from '@/lib/utils/handleApi';
+import { Supervision } from '@/schemas/supervision';
 
 export interface LecturerInfo {
 	id: string;
@@ -44,9 +43,9 @@ export const useSupervisionsStore = create<SupervisionsState>((set) => ({
 			if (supervisionsResult.success && supervisionsResult.data) {
 				// Fetch lecturer details for each supervision
 				const lecturerPromises = supervisionsResult.data.map(
-					async (supervision: SupervisionData) => {
+					async (supervision: Supervision) => {
 						const lecturerResponse = await lecturersService.findOne(
-							supervision.lecturerId,
+							supervision.lecturer.id,
 						);
 						const lecturerResult = handleApiResponse(
 							lecturerResponse,
