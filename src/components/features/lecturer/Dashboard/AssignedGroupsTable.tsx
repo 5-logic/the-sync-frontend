@@ -1,6 +1,7 @@
 import { Card, Input, Select, Table } from 'antd';
 import React, { useState } from 'react';
 
+import { TablePagination } from '@/components/common/TablePagination';
 import { allMockGroups } from '@/data/group';
 
 const { Search } = Input;
@@ -74,7 +75,7 @@ const AssignedGroupsTable: React.FC = () => {
 				columns={columns}
 				dataSource={filteredData}
 				rowKey="id"
-				pagination={{ pageSize: 5 }}
+				pagination={TablePagination}
 				scroll={{ x: 'max-content' }}
 			/>
 		</Card>
