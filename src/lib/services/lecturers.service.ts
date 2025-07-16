@@ -66,7 +66,7 @@ class LecturerService {
 		id: string,
 		toggleStatusDto: LecturerToggleStatus,
 	): Promise<ApiResponse<Lecturer>> {
-		const response = await httpClient.put<ApiResponse<Lecturer>>(
+		const response = await httpClient.post<ApiResponse<Lecturer>>(
 			`${this.baseUrl}/${id}/toggle-status`,
 			toggleStatusDto,
 		);

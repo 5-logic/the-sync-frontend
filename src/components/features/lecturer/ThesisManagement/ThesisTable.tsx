@@ -189,6 +189,12 @@ export default function ThesisTable({ data, loading }: Readonly<Props>) {
 						title: BUTTON_STATES.REGISTER_SUBMIT,
 						type: 'primary' as const,
 					};
+				case THESIS_STATUS.REJECTED:
+					return {
+						disabled: false,
+						title: 'Resubmit for Review',
+						type: 'primary' as const,
+					};
 				case THESIS_STATUS.PENDING:
 					return {
 						disabled: true,

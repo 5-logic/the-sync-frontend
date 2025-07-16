@@ -86,11 +86,6 @@ const UserProfile: React.FC = () => {
 
 	const menuItems: MenuProps['items'] = [
 		{
-			key: 'profile',
-			icon: <UserOutlined />,
-			label: <Link href="/profile">Profile</Link>,
-		},
-		{
 			key: 'settings',
 			icon: <SettingOutlined />,
 			label:

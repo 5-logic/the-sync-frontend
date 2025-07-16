@@ -1,3 +1,4 @@
+import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -5,21 +6,12 @@ import { useGroupDashboardStore } from '@/store/useGroupDashboardStore';
 
 export const useStudentGroupStatus = () => {
 	const { group, loading, fetchStudentGroup } = useGroupDashboardStore();
+	const { data: session } = useSession();
 	const [isInitialized, setIsInitialized] = useState(false);
 	const router = useRouter();
 
 	useEffect(() => {
 		if (!isInitialized) {
-			console.log('useStudentGroupStatus: fetching group status...');
-
-			// Debug: Check localStorage
-			try {
-				const storedData = localStorage.getItem('group-dashboard-storage');
-				console.log('Stored group data:', storedData);
-			} catch (e) {
-				console.log('Error reading localStorage:', e);
-			}
-
 			// Force refresh to bypass any cache issues
 			fetchStudentGroup(true);
 			setIsInitialized(true);
@@ -29,13 +21,9 @@ export const useStudentGroupStatus = () => {
 	}, [isInitialized]); // Only depend on isInitialized
 
 	const hasGroup = group !== null;
-
-	console.log('useStudentGroupStatus state:', {
-		hasGroup,
-		group: group?.id,
-		loading,
-		isInitialized,
-	});
+	// Check if current user is the leader by comparing user IDs
+	const currentUserId = session?.user?.id;
+	const isLeader = hasGroup && group?.leader?.user?.id === currentUserId;
 
 	const redirectToAppropriateScreen = () => {
 		if (hasGroup) {
@@ -52,6 +40,7 @@ export const useStudentGroupStatus = () => {
 	return {
 		hasGroup,
 		group,
+		isLeader,
 		// Using || instead of ?? is intentional here - we want to show loading
 		// when either the store is loading OR when not yet initialized
 		// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing

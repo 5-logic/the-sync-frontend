@@ -234,6 +234,8 @@ const SemesterTable = forwardRef<
 				maxGroup: record.maxGroup,
 				status: record.status,
 				ongoingPhase: record.ongoingPhase ?? undefined,
+				defaultThesesPerLecturer: record.defaultThesesPerLecturer,
+				maxThesesPerLecturer: record.maxThesesPerLecturer,
 			});
 			setIsFormChanged(false);
 			setIsEditModalOpen(true);
@@ -840,6 +842,65 @@ const SemesterTable = forwardRef<
 							min={1}
 							step={1}
 							disabled={updating}
+						/>
+					</Form.Item>
+
+					<Form.Item
+						name="defaultThesesPerLecturer"
+						label={FormLabel({
+							text: 'Default Theses Per Lecturer',
+							isBold: true,
+						})}
+						rules={[
+							{
+								required: selectedStatus === 'Preparing',
+								message:
+									'Default theses per lecturer is required when status is Preparing',
+							},
+							{
+								type: 'number',
+								min: 4,
+								message:
+									'Default theses per lecturer must be a positive integer',
+								transform: (value) => (value ? Number(value) : undefined),
+							},
+						]}
+					>
+						<Input
+							placeholder="Enter default theses per lecturer"
+							type="number"
+							min={4}
+							step={1}
+							disabled={updating}
+						/>
+					</Form.Item>
+
+					<Form.Item
+						name="maxThesesPerLecturer"
+						label={FormLabel({
+							text: 'Max Theses Per Lecturer',
+							isBold: true,
+						})}
+						rules={[
+							{
+								required: selectedStatus === 'Preparing',
+								message:
+									'Max theses per lecturer is required when status is Preparing',
+							},
+							{
+								type: 'number',
+								min: 4,
+								message: 'Max theses per lecturer must be a positive integer',
+								transform: (value) => (value ? Number(value) : undefined),
+							},
+						]}
+					>
+						<Input
+							placeholder="Enter max theses per lecturer"
+							type="number"
+							min={4}
+							step={1}
+							disabled={updating} // Use updating from store
 						/>
 					</Form.Item>
 

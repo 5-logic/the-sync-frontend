@@ -2,27 +2,80 @@
 
 import { Button, Card, Progress, Timeline, Typography } from 'antd';
 
-import type { FullMockGroup } from '@/data/group';
+import { milestoneSchedule } from '@/data/milestoneSchedule';
 
 const { Text } = Typography;
 
-interface Props {
-	group: FullMockGroup;
+type MilestoneStatus = 'Completed' | 'In Progress' | 'Upcoming';
+
+function getMilestoneStatus(
+	dateString: string,
+	index: number,
+): MilestoneStatus {
+	const now = new Date();
+	const milestoneDate = new Date(dateString);
+
+	if (milestoneDate < now) return 'Completed';
+	if (index === getNextMilestoneIndex()) return 'In Progress';
+	return 'Upcoming';
 }
 
-export default function ProgressOverviewCard({ group }: Readonly<Props>) {
+function getNextMilestoneIndex(): number {
+	const now = new Date();
+	for (let i = 0; i < milestoneSchedule.length; i++) {
+		const milestoneDate = new Date(milestoneSchedule[i].date);
+		if (milestoneDate > now) {
+			return i;
+		}
+	}
+	return milestoneSchedule.length - 1;
+}
+
+export default function ProgressOverviewCard() {
+	const milestonesWithStatus = milestoneSchedule.map((m, index) => ({
+		...m,
+		status: getMilestoneStatus(m.date, index),
+	}));
+
+	const completedCount = milestonesWithStatus.filter(
+		(m) => m.status === 'Completed',
+	).length;
+
+	const progressPercent = Math.round(
+		(completedCount / milestoneSchedule.length) * 100,
+	);
+
+	const nextMilestone = milestonesWithStatus.find(
+		(m) => m.status === 'In Progress' || m.status === 'Upcoming',
+	);
+
+	const getTimelineColor = (status: MilestoneStatus): string => {
+		switch (status) {
+			case 'Completed':
+				return 'green';
+			case 'In Progress':
+				return 'gold';
+			case 'Upcoming':
+				return '#d9d9d9';
+			default:
+				return 'gray';
+		}
+	};
+
 	return (
 		<Card
 			title="Progress Overview"
 			style={{
-				height: '100%',
 				display: 'flex',
 				flexDirection: 'column',
 				justifyContent: 'space-between',
 			}}
 		>
 			<div>
-				<Text type="warning">{group.milestoneAlert}</Text>
+				<Text type="warning">
+					Upcoming milestone: {nextMilestone?.label} ({nextMilestone?.date})
+				</Text>
+
 				<div
 					style={{
 						display: 'flex',
@@ -31,27 +84,31 @@ export default function ProgressOverviewCard({ group }: Readonly<Props>) {
 					}}
 				>
 					<Text strong>Overall Progress</Text>
-					<Text type="secondary">{group.progress}%</Text>
+					<Text type="secondary">{progressPercent}%</Text>
 				</div>
+
 				<Progress
-					percent={group.progress}
+					percent={progressPercent}
 					showInfo={false}
 					style={{ marginBottom: 16 }}
 				/>
 
 				<Timeline>
-					{group.milestones.map((m, index) => {
-						let color = 'gray';
-						if (m.includes('Completed')) color = 'green';
-						else if (m.includes('In Progress')) color = 'blue';
-						return (
-							<Timeline.Item key={`${group.id}-${m}-${index}`} color={color}>
-								{m}
-							</Timeline.Item>
-						);
-					})}
+					{milestonesWithStatus.map((milestone) => (
+						<Timeline.Item
+							key={`${milestone.label}-${milestone.date}`}
+							color={getTimelineColor(milestone.status)}
+						>
+							<div>
+								<Text strong>{milestone.label}</Text> –{' '}
+								<Text type="secondary">{milestone.date}</Text>
+							</div>
+							<Text>Status: {milestone.status}</Text>
+						</Timeline.Item>
+					))}
 				</Timeline>
 			</div>
+
 			<Button type="primary" block style={{ marginTop: 16 }}>
 				View Thesis Details
 			</Button>
