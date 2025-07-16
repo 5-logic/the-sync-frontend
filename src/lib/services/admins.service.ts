@@ -5,19 +5,14 @@ import { Admin } from '@/schemas/admin';
 class AdminService {
 	private readonly baseUrl = '/admins';
 
-	async findOne(id: string): Promise<ApiResponse<Admin>> {
-		const response = await httpClient.get<ApiResponse<Admin>>(
-			`${this.baseUrl}/${id}`,
-		);
+	async findOne(): Promise<ApiResponse<Admin>> {
+		const response = await httpClient.get<ApiResponse<Admin>>(this.baseUrl);
 		return response.data;
 	}
 
-	async update(
-		id: string,
-		updateAdminDto: Partial<Admin>,
-	): Promise<ApiResponse<Admin>> {
+	async update(updateAdminDto: Partial<Admin>): Promise<ApiResponse<Admin>> {
 		const response = await httpClient.put<ApiResponse<Admin>>(
-			`${this.baseUrl}/${id}`,
+			this.baseUrl,
 			updateAdminDto,
 		);
 		return response.data;
