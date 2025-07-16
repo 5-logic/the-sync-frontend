@@ -110,7 +110,7 @@ const AccountSettingModal: React.FC<AccountSettingModalProps> = ({
 				className="space-y-4"
 			>
 				<Form.Item label={<FormLabel text="Username" isBold />} name="username">
-					<Input disabled value={adminData.username} />
+					<Input readOnly value={adminData.username} />
 				</Form.Item>
 				<Form.Item
 					label={<FormLabel text="Email" isBold />}
