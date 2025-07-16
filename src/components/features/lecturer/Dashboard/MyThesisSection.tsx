@@ -97,6 +97,7 @@ const MyThesisSection: React.FC = () => {
 				{mockTheses.map((item) => (
 					<Col xs={24} md={12} lg={8} key={item.id}>
 						<Card
+							hoverable
 							title={
 								<Row justify="space-between" align="middle">
 									<Col>

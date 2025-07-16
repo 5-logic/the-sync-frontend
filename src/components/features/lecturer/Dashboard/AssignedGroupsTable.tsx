@@ -1,4 +1,5 @@
-import { Card, Input, Select, Table } from 'antd';
+import { EyeOutlined, SearchOutlined } from '@ant-design/icons';
+import { Card, Col, Input, Row, Select, Table, Tooltip } from 'antd';
 import React, { useState } from 'react';
 
 import { TablePagination } from '@/components/common/TablePagination';
@@ -11,14 +12,19 @@ const AssignedGroupsTable: React.FC = () => {
 	const [searchText, setSearchText] = useState('');
 	const [semester, setSemester] = useState('All');
 
-	const filteredData = allMockGroups.filter((group) => {
+	// Remove duplicate groups by id
+	const uniqueGroups = Array.from(
+		new Map(allMockGroups.map((group) => [group.id, group])).values(),
+	);
+
+	const filteredData = uniqueGroups.filter((group) => {
 		const matchSemester = semester === 'All' || group.semesterId === semester;
-		const searchLower = searchText.toLowerCase();
+		const lowerSearch = searchText.toLowerCase();
 		return (
 			matchSemester &&
-			(group.name.toLowerCase().includes(searchLower) ||
-				group.leader.toLowerCase().includes(searchLower) ||
-				group.title.toLowerCase().includes(searchLower))
+			(group.name?.toLowerCase().includes(lowerSearch) ||
+				group.leader?.toLowerCase().includes(lowerSearch) ||
+				group.title?.toLowerCase().includes(lowerSearch))
 		);
 	});
 
@@ -46,31 +52,41 @@ const AssignedGroupsTable: React.FC = () => {
 		{
 			title: 'Actions',
 			key: 'actions',
-			render: () => <span style={{ cursor: 'pointer' }}>👁️</span>,
+			render: () => (
+				<Tooltip title="View Details">
+					<EyeOutlined
+						style={{ fontSize: 18, cursor: 'pointer', color: '#1890ff' }}
+					/>
+				</Tooltip>
+			),
 		},
 	];
 
 	return (
 		<Card title="Assigned Groups">
-			<div
-				style={{
-					display: 'flex',
-					justifyContent: 'space-between',
-					marginBottom: 16,
-				}}
-			>
-				<Search
-					placeholder="Search thesis, group, leader"
-					value={searchText}
-					onChange={(e) => setSearchText(e.target.value)}
-					style={{ width: '60%' }}
-				/>
-				<Select value={semester} onChange={setSemester} style={{ width: 150 }}>
-					<Option value="All">All Semester</Option>
-					<Option value="2023">2023</Option>
-					<Option value="2024">2024</Option>
-				</Select>
-			</div>
+			<Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
+				<Col xs={24} md={16}>
+					<Search
+						allowClear
+						prefix={<SearchOutlined />}
+						placeholder="Search thesis, group, leader"
+						value={searchText}
+						onChange={(e) => setSearchText(e.target.value)}
+					/>
+				</Col>
+				<Col xs={24} md={8}>
+					<Select
+						value={semester}
+						onChange={setSemester}
+						style={{ width: '100%' }}
+					>
+						<Option value="All">All Semesters</Option>
+						<Option value="2023">2023</Option>
+						<Option value="2024">2024</Option>
+					</Select>
+				</Col>
+			</Row>
+
 			<Table
 				columns={columns}
 				dataSource={filteredData}
