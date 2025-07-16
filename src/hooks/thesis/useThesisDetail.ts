@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { ExtendedThesis } from '@/data/thesis';
 import { lecturerService } from '@/lib/services/lecturers.service';
 import { thesisService } from '@/lib/services/theses.service';
 import {
@@ -8,24 +7,49 @@ import {
 	handleThesisError,
 } from '@/lib/utils/thesis-handlers';
 import { Lecturer } from '@/schemas/lecturer';
-import { ThesisWithRelations } from '@/schemas/thesis';
+import { Thesis } from '@/schemas/thesis';
 
-// Memoized transformation function to prevent unnecessary recalculations
+// API response type for thesis data với thêm fields từ API
+type ThesisApiResponse = Thesis & {
+	thesisRequiredSkills?: Array<{
+		thesisId: string;
+		skillId: string;
+		skill: { id: string; name: string };
+	}>;
+	thesisVersions?: Array<{
+		id: string;
+		version: number;
+		supportingDocument: string;
+	}>;
+};
+
+// Enhanced thesis type cho UI display
+type EnhancedThesis = ThesisApiResponse & {
+	skills: string[];
+	version: string;
+	supervisor?: {
+		name: string;
+		phone: string;
+		email: string;
+	};
+};
+
+// Memoized transformation function để transform thesis data với lecturer info
 const transformThesisData = (
-	apiThesis: ThesisWithRelations,
+	apiThesis: ThesisApiResponse,
 	lecturer?: Lecturer,
-): ExtendedThesis => {
-	// Extract skills from thesisRequiredSkills relationship
+): EnhancedThesis => {
+	// Extract skills từ thesisRequiredSkills relationship
 	const skills =
 		apiThesis.thesisRequiredSkills?.map((trs) => trs.skill?.name ?? '') ?? [];
 
-	// Get the highest version from thesisVersions array
+	// Get highest version từ thesisVersions array
 	const highestVersion = apiThesis.thesisVersions?.length
 		? Math.max(...apiThesis.thesisVersions.map((tv) => tv.version))
 		: 1;
 	const version = `${highestVersion}.0`;
 
-	// Add lecturer info if available
+	// Add lecturer info nếu có
 	const supervisor = lecturer
 		? {
 				name: lecturer.fullName,
@@ -39,13 +63,11 @@ const transformThesisData = (
 		skills,
 		version,
 		supervisor,
-		// Pass through thesisVersions for download functionality
-		thesisVersions: apiThesis.thesisVersions,
 	};
 };
 
 export const useThesisDetail = (thesisId: string) => {
-	const [thesis, setThesis] = useState<ExtendedThesis | null>(null);
+	const [thesis, setThesis] = useState<EnhancedThesis | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [loadingStage, setLoadingStage] = useState<
 		'thesis' | 'lecturer' | 'preparing'
@@ -58,11 +80,28 @@ export const useThesisDetail = (thesisId: string) => {
 			setLoading(true);
 			setError(null);
 			setLoadingStage('thesis');
-
 			// Fetch thesis data first
 			const thesisResponse = await thesisService.findOne(thesisId);
 
 			if ('data' in thesisResponse && thesisResponse.data) {
+				// Type guard to ensure thesis data structure
+				const isThesisApiResponse = (
+					data: unknown,
+				): data is ThesisApiResponse => {
+					if (data === null || typeof data !== 'object') return false;
+					const obj = data as Record<string, unknown>;
+					return (
+						'id' in obj &&
+						typeof obj.id === 'string' &&
+						'lecturerId' in obj &&
+						typeof obj.lecturerId === 'string'
+					);
+				};
+
+				if (!isThesisApiResponse(thesisResponse.data)) {
+					throw new Error('Invalid thesis data structure');
+				}
+
 				const thesisData = thesisResponse.data;
 
 				// Update loading stage

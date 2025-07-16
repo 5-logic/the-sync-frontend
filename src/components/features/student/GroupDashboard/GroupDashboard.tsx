@@ -1,12 +1,13 @@
-import { Alert, Empty, Space, Spin, Typography } from 'antd';
+import { Alert, Col, Empty, Row, Space, Spin } from 'antd';
 import { useEffect } from 'react';
 
 import GroupDashboardHeader from '@/components/features/student/GroupDashboard/GroupDashboardHeader';
 import GroupInfoCard from '@/components/features/student/GroupDashboard/GroupInfoCard';
 import NoThesisCard from '@/components/features/student/GroupDashboard/NoThesisCard';
+import ProgressOverviewCard from '@/components/features/student/GroupDashboard/ProgressOverviewCard';
+import SupervisorInfoCard from '@/components/features/student/GroupDashboard/SupervisorInfoCard';
+import ThesisStatusCard from '@/components/features/student/GroupDashboard/ThesisStatusCard';
 import { useGroupDashboardStore } from '@/store/useGroupDashboardStore';
-
-const { Title, Text } = Typography;
 
 export default function GroupDashboard() {
 	const { group, loading, error, fetchStudentGroup } = useGroupDashboardStore();
@@ -50,13 +51,32 @@ export default function GroupDashboard() {
 	// Check if group has thesis
 	const hasThesis = group.thesis !== null;
 
-	if (hasThesis) {
-		// Implement thesis view
+	if (hasThesis && group.thesis) {
+		// Thesis view - show group info and thesis-related cards
 		return (
-			<div className="p-6">
-				<Title level={2}>Group Dashboard - With Thesis</Title>
-				<Text type="secondary">This view will be implemented later</Text>
-			</div>
+			<Space direction="vertical" size="large" style={{ width: '100%' }}>
+				{/* Header */}
+				<GroupDashboardHeader group={group} />
+
+				{/* 4 cards layout with responsive columns */}
+				<Row gutter={[16, 16]}>
+					{/* Left column - 60% desktop, 50% tablet, 100% mobile */}
+					<Col xs={24} md={12} xl={14}>
+						<Space direction="vertical" size="large" style={{ width: '100%' }}>
+							<GroupInfoCard group={group} />
+							<SupervisorInfoCard thesisId={group.thesis.id} />
+						</Space>
+					</Col>
+
+					{/* Right column - 40% desktop, 50% tablet, 100% mobile */}
+					<Col xs={24} md={12} xl={10}>
+						<Space direction="vertical" size="large" style={{ width: '100%' }}>
+							<ThesisStatusCard thesisId={group.thesis.id} />
+							<ProgressOverviewCard thesisId={group.thesis.id} />
+						</Space>
+					</Col>
+				</Row>
+			</Space>
 		);
 	}
 

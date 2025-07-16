@@ -56,6 +56,11 @@ const DYNAMIC_ROUTE_PATTERNS: Array<{
 }> = [
 	// Lecturer dynamic routes
 	{
+		pattern: /^\/lecturer\/thesis-management\/(.+)\/edit-thesis$/,
+		getTitle: () => 'Edit Thesis',
+		getParentPath: () => '/lecturer/thesis-management',
+	},
+	{
 		pattern: /^\/lecturer\/thesis-management\/(.+)$/,
 		getTitle: () => 'Thesis Detail',
 		getParentPath: () => '/lecturer/thesis-management',
