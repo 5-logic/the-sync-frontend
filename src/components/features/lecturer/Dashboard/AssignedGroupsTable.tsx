@@ -1,5 +1,5 @@
 import { EyeOutlined, SearchOutlined } from '@ant-design/icons';
-import { Card, Col, Input, Row, Select, Table, Tooltip } from 'antd';
+import { Button, Card, Col, Input, Row, Select, Table, Tooltip } from 'antd';
 import React, { useState } from 'react';
 
 import { TablePagination } from '@/components/common/TablePagination';
@@ -53,13 +53,14 @@ const AssignedGroupsTable: React.FC = () => {
 		{
 			title: 'Actions',
 			key: 'actions',
-			render: () => (
+			render: (_: unknown, record: unknown) => (
 				<Tooltip title="View Details">
-					<EyeOutlined
-						style={{
-							fontSize: 18,
-							cursor: 'pointer',
-							color: '#1890ff',
+					<Button
+						type="link"
+						icon={<EyeOutlined />}
+						onClick={() => {
+							// Gọi logic khi click nếu cần
+							console.log('View', record);
 						}}
 					/>
 				</Tooltip>
