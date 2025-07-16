@@ -1,28 +1,14 @@
 'use client';
 
-import { Typography } from 'antd';
-
-import { AuthLoadingSkeleton } from '@/components/common/loading';
+import AssignLecturerReview from '@/components/features/lecturer/AssignLecturerReview';
 import { useModeratorAuth } from '@/hooks/auth';
 
-const { Title } = Typography;
-
 export default function LecturerAssignLecturerReviewClient() {
-	const { isAuthorized, loading } = useModeratorAuth();
+	const { isAuthorized } = useModeratorAuth();
 
-	// Show loading skeleton while checking authorization
-	if (loading) {
-		return <AuthLoadingSkeleton />;
-	}
-
-	// If not authorized, return null (will redirect to unauthorized page)
 	if (!isAuthorized) {
-		return null;
+		return null; // Will redirect to unauthorized page
 	}
 
-	return (
-		<div className="p-6">
-			<Title level={2}>👨‍🏫 Assign Lecturer Review</Title>
-		</div>
-	);
+	return <AssignLecturerReview />;
 }
