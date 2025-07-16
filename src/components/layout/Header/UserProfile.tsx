@@ -6,14 +6,20 @@ import {
 	UserOutlined,
 } from '@ant-design/icons';
 import { Avatar, Dropdown, MenuProps, Modal } from 'antd';
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import React from 'react';
+import React, { useState } from 'react';
 
 import { useSessionData } from '@/hooks/auth/useAuth';
 import { useResponsiveLayout } from '@/hooks/ui';
 import { AuthService } from '@/lib/services/auth';
+
+const AccountSettingModal = dynamic(
+	() => import('@/components/features/admin/AccountSetting'),
+	{ ssr: false },
+);
 
 const UserProfile: React.FC = () => {
 	const { session } = useSessionData();
@@ -22,6 +28,9 @@ const UserProfile: React.FC = () => {
 
 	const userName = session?.user?.fullName ?? session?.user?.name ?? 'User';
 	const avatarSrc = session?.user?.image ?? '/images/user_avatar.png';
+
+	// State for admin modal
+	const [adminModalOpen, setAdminModalOpen] = useState(false);
 
 	const handleLogoutClick = () => {
 		Modal.confirm({
@@ -61,9 +70,17 @@ const UserProfile: React.FC = () => {
 			case 'moderator':
 				return '/lecturer/account-setting';
 			case 'admin':
-				return '/admin/account-setting';
+				return null; // use modal
 			default:
 				return '/account-setting'; // fallback
+		}
+	};
+
+	// Handle settings click
+	const handleSettingsClick = (e: React.MouseEvent) => {
+		if (session?.user?.role === 'admin') {
+			e.preventDefault();
+			setAdminModalOpen(true);
 		}
 	};
 
@@ -76,7 +93,14 @@ const UserProfile: React.FC = () => {
 		{
 			key: 'settings',
 			icon: <SettingOutlined />,
-			label: <Link href={getSettingsUrl()}>Settings</Link>,
+			label:
+				session?.user?.role === 'admin' ? (
+					<span onClick={handleSettingsClick} style={{ cursor: 'pointer' }}>
+						Settings
+					</span>
+				) : (
+					<Link href={getSettingsUrl() || '#'}>Settings</Link>
+				),
 		},
 		{
 			type: 'divider',
@@ -90,31 +114,41 @@ const UserProfile: React.FC = () => {
 	];
 
 	return (
-		<Dropdown
-			menu={{ items: menuItems }}
-			placement="bottomRight"
-			trigger={['click']}
-			arrow
-		>
-			<div className="flex items-center cursor-pointer hover:bg-gray-50 rounded-lg px-2 py-1 transition-colors">
-				{session?.user?.image ? (
-					<Image
-						src={avatarSrc}
-						alt={`${userName} Avatar`}
-						width={32}
-						height={32}
-						className="w-8 h-8 rounded-full object-cover"
-					/>
-				) : (
-					<Avatar icon={<UserOutlined />} size={32} />
-				)}
-				{!isMobile && (
-					<div className="text-sm text-gray-700 ml-3">
-						<p className="font-medium">{userName}</p>
-					</div>
-				)}
-			</div>
-		</Dropdown>
+		<>
+			<Dropdown
+				menu={{ items: menuItems }}
+				placement="bottomRight"
+				trigger={['click']}
+				arrow
+			>
+				<div className="flex items-center cursor-pointer hover:bg-gray-50 rounded-lg px-2 py-1 transition-colors">
+					{session?.user?.image ? (
+						<Image
+							src={avatarSrc}
+							alt={`${userName} Avatar`}
+							width={32}
+							height={32}
+							className="w-8 h-8 rounded-full object-cover"
+						/>
+					) : (
+						<Avatar icon={<UserOutlined />} size={32} />
+					)}
+					{!isMobile && (
+						<div className="text-sm text-gray-700 ml-3">
+							<p className="font-medium">{userName}</p>
+						</div>
+					)}
+				</div>
+			</Dropdown>
+			{/* Admin Account Setting Modal */}
+			{session?.user?.role === 'admin' && (
+				<AccountSettingModal
+					open={adminModalOpen}
+					onClose={() => setAdminModalOpen(false)}
+					defaultEmail={session?.user?.email}
+				/>
+			)}
+		</>
 	);
 };
 

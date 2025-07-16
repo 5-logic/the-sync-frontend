@@ -16,10 +16,11 @@ export const AdminCreateSchema = AdminSchema.pick({
 	email: z.string().email().optional(),
 });
 
-export const AdminUpdateSchema = AdminSchema.pick({
-	username: true,
-	email: true,
-}).partial();
+export const AdminUpdateSchema = z.object({
+	email: z.string().email().optional(),
+	oldPassword: z.string().min(12).optional(),
+	newPassword: z.string().min(12).optional(),
+});
 
 export const AdminProfileSchema = AdminSchema.omit({ password: true });
 
