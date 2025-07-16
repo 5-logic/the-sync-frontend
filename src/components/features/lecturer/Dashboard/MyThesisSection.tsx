@@ -1,10 +1,75 @@
 import { EditOutlined, EyeOutlined, PlusOutlined } from '@ant-design/icons';
-import { Button, Card, Col, Flex, Row, Space, Tag, Typography } from 'antd';
-import React from 'react';
+import { Button, Card, Col, Flex, Row, Tag, Typography } from 'antd';
+import React, { useEffect, useState } from 'react';
 
 import { mockTheses } from '@/data/thesis';
 
 const { Paragraph } = Typography;
+
+// Component to handle skills display with 2-row limit
+const SkillsDisplay: React.FC<{ skills: string[] }> = ({ skills }) => {
+	const [visibleSkills, setVisibleSkills] = useState<string[]>([]);
+	const [hiddenCount, setHiddenCount] = useState(0);
+
+	useEffect(() => {
+		// Simple approach: estimate 6-8 tags per row based on typical tag width
+		const maxTagsPerRow = 6;
+		const maxRows = 2;
+		const maxVisibleTags = maxTagsPerRow * maxRows;
+
+		if (skills.length <= maxVisibleTags) {
+			setVisibleSkills(skills);
+			setHiddenCount(0);
+		} else {
+			const visible = maxVisibleTags - 1;
+			setVisibleSkills(skills.slice(0, visible));
+			setHiddenCount(skills.length - visible);
+		}
+	}, [skills]);
+
+	return (
+		<div
+			style={{
+				minHeight: '70px', // 2 rows minimum height
+				display: 'flex',
+				flexWrap: 'wrap',
+				gap: '8px',
+				alignItems: 'flex-start',
+				overflow: 'hidden',
+				maxHeight: '64px', // Limit to 2 rows
+			}}
+		>
+			{visibleSkills.map((skill) => (
+				<Tag
+					key={skill}
+					style={{
+						padding: '4px 8px',
+						borderRadius: '6px',
+						fontSize: '12px',
+						margin: 0,
+					}}
+				>
+					{skill}
+				</Tag>
+			))}
+			{hiddenCount > 0 && (
+				<Tag
+					style={{
+						padding: '4px 8px',
+						borderRadius: '6px',
+						fontSize: '12px',
+						margin: 0,
+						backgroundColor: '#f0f0f0',
+						borderColor: '#d9d9d9',
+						color: '#666',
+					}}
+				>
+					+{hiddenCount} more
+				</Tag>
+			)}
+		</div>
+	);
+};
 
 const statusColor = {
 	Approved: 'green',
@@ -72,43 +137,28 @@ const MyThesisSection: React.FC = () => {
 								<Typography.Title
 									level={4}
 									style={{
-										margin: '0 0 16px 0',
 										fontSize: '16px',
 										fontWeight: 600,
 										color: '#1f2937',
-										lineHeight: '1.4',
-										minHeight: '44.8px',
+										minHeight: '45px',
 									}}
 								>
 									{item.englishName}
 								</Typography.Title>
 
 								<Paragraph
-									ellipsis={{ rows: 3 }}
+									ellipsis={{ rows: 4 }}
 									style={{
-										margin: '0 0 16px 0',
 										color: '#6b7280',
-										fontSize: '14px',
 										lineHeight: '1.5',
 									}}
 								>
 									{item.description}
 								</Paragraph>
 
-								<Space size={[8, 8]} wrap style={{ marginTop: 'auto' }}>
-									{item.skills.map((skill) => (
-										<Tag
-											key={skill}
-											style={{
-												padding: '4px 8px',
-												borderRadius: '6px',
-												fontSize: '12px',
-											}}
-										>
-											{skill}
-										</Tag>
-									))}
-								</Space>
+								<div style={{ marginTop: 'auto' }}>
+									<SkillsDisplay skills={item.skills} />
+								</div>
 							</Flex>
 						</Card>
 					</Col>
