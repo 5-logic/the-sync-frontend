@@ -38,7 +38,7 @@ const MyThesisSection: React.FC = () => {
 	};
 
 	return (
-		<>
+		<Card title="My Thesis Topics">
 			<div
 				style={{
 					display: 'flex',
@@ -46,7 +46,6 @@ const MyThesisSection: React.FC = () => {
 					marginBottom: 16,
 				}}
 			>
-				<h3>My Thesis Topics</h3>
 				<Button type="primary">+ New Thesis Topic</Button>
 			</div>
 			<Row gutter={[16, 16]}>
@@ -87,7 +86,7 @@ const MyThesisSection: React.FC = () => {
 					</Col>
 				))}
 			</Row>
-		</>
+		</Card>
 	);
 };
 

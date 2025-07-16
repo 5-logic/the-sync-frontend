@@ -1,4 +1,4 @@
-import { Input, Select, Table } from 'antd';
+import { Card, Input, Select, Table } from 'antd';
 import React, { useState } from 'react';
 
 const { Search } = Input;
@@ -69,7 +69,7 @@ const AssignedGroupsTable: React.FC = () => {
 	];
 
 	return (
-		<div>
+		<Card title="Assigned Groups">
 			<div
 				style={{
 					display: 'flex',
@@ -95,7 +95,7 @@ const AssignedGroupsTable: React.FC = () => {
 				pagination={{ pageSize: 5 }}
 				scroll={{ x: 'max-content' }}
 			/>
-		</div>
+		</Card>
 	);
 };
 
