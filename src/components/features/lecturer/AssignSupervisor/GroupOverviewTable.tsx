@@ -13,18 +13,32 @@ interface Props {
 	readonly loading?: boolean;
 	readonly rowKey?: keyof SupervisorAssignmentData;
 	readonly onChange?: TableProps<SupervisorAssignmentData>['onChange'];
+	readonly hideStatusColumn?: boolean; // New prop to hide the status column
 }
 
 /**
  * Optimized Table component for displaying supervisor assignment data
  * Uses React.memo to prevent unnecessary re-renders
+ * Supports conditional column hiding for flexible display
  */
 const GroupOverviewTable = memo<Props>(
-	({ data, columns, loading = false, rowKey = 'id', onChange }) => {
+	({
+		data,
+		columns,
+		loading = false,
+		rowKey = 'id',
+		onChange,
+		hideStatusColumn = false,
+	}) => {
+		// Filter out the status column if hideStatusColumn is true
+		const filteredColumns = hideStatusColumn
+			? columns.filter((col) => col.key !== 'status')
+			: columns;
+
 		return (
 			<Table
 				rowKey={rowKey as string}
-				columns={columns}
+				columns={filteredColumns}
 				dataSource={data}
 				loading={loading}
 				pagination={TablePagination}

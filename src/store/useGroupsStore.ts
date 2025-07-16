@@ -8,6 +8,7 @@ interface GroupsState {
 	loading: boolean;
 	error: string | null;
 	fetchGroups: () => Promise<void>;
+	refetch: () => Promise<void>;
 	clearGroups: () => void;
 }
 
@@ -47,5 +48,12 @@ export const useGroupsStore = create<GroupsState>((set, get) => ({
 
 	clearGroups: () => {
 		set({ groups: [], error: null });
+	},
+
+	refetch: async () => {
+		// Force refresh by clearing and fetching again
+		const { fetchGroups } = get();
+		set({ loading: true, error: null });
+		await fetchGroups();
 	},
 }));
