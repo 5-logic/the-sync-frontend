@@ -4,7 +4,7 @@ import { Space } from 'antd';
 
 import { Header } from '@/components/common/Header';
 
-export default function DashboardMorderatorPage() {
+export default function MorderatorDashboardPage() {
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
 			<Header

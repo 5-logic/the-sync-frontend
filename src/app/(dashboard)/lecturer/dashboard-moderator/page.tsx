@@ -2,11 +2,11 @@ import { createMetadata } from '@/app/metadata';
 import DashboardModerator from '@/components/features/lecturer/DashboardModerator';
 
 export const metadata = createMetadata({
-	title: 'Morderator Dashboard',
+	title: 'Moderator Dashboard',
 	description:
-		'Morderator Dashboard for TheSync - Group Formation and Capstone Thesis Development',
+		'Moderator Dashboard for TheSync - Group Formation and Capstone Thesis Development',
 });
 
-export default function LecturerDashboardPage() {
+export default function ModeratorDashboardPage() {
 	return <DashboardModerator />;
 }
