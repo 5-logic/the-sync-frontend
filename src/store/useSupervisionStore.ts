@@ -1,7 +1,9 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 
-import supervisionService from '@/lib/services/supervisions.service';
+import supervisionService, {
+	type SupervisionData,
+} from '@/lib/services/supervisions.service';
 import { handleApiError, handleApiResponse } from '@/lib/utils/handleApi';
 import { showNotification } from '@/lib/utils/notification';
 import {
@@ -9,12 +11,11 @@ import {
 	type BulkAssignmentRequest,
 	type BulkAssignmentResponse,
 	type ChangeSupervisorRequest,
-	type Supervision,
 } from '@/schemas/supervision';
 
 interface SupervisionState {
 	// Data
-	supervisions: Supervision[];
+	supervisions: SupervisionData[];
 
 	// Loading states
 	loading: boolean;
@@ -26,7 +27,7 @@ interface SupervisionState {
 	lastError: string | null;
 
 	// Actions
-	getByThesisId: (thesisId: string) => Promise<Supervision[]>;
+	getByThesisId: (thesisId: string) => Promise<SupervisionData[]>;
 	assignSupervisor: (
 		thesisId: string,
 		data: AssignSupervisorRequest,

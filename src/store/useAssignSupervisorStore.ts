@@ -2,7 +2,9 @@ import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 
 import lecturerService from '@/lib/services/lecturers.service';
-import supervisionService from '@/lib/services/supervisions.service';
+import supervisionService, {
+	type SupervisionData,
+} from '@/lib/services/supervisions.service';
 import thesesService from '@/lib/services/theses.service';
 import { handleApiError, handleApiResponse } from '@/lib/utils/handleApi';
 import { showNotification } from '@/lib/utils/notification';
@@ -36,7 +38,7 @@ export interface SupervisorAssignmentData {
 const processSupervisionData = async (
 	thesis: Thesis,
 ): Promise<{
-	supervisions: Supervision[];
+	supervisions: SupervisionData[];
 	supervisorDetails: Array<{
 		id: string;
 		fullName: string;
@@ -46,7 +48,7 @@ const processSupervisionData = async (
 	const supervisionPromise = supervisionService.getByThesisId(thesis.id);
 	const [supervisionResult] = await Promise.allSettled([supervisionPromise]);
 
-	let supervisions: Supervision[] = [];
+	let supervisions: SupervisionData[] = [];
 
 	if (supervisionResult.status === 'fulfilled') {
 		const supervisionApiResponse = handleApiResponse(supervisionResult.value);
@@ -76,7 +78,7 @@ const processSupervisionData = async (
 
 const fetchSupervisorDetails = async (
 	thesisId: string,
-	supervisions: Supervision[],
+	supervisions: SupervisionData[],
 ): Promise<
 	Array<{
 		id: string;
@@ -139,7 +141,7 @@ const fetchSupervisorDetails = async (
 
 const createAssignmentData = (
 	thesis: Thesis,
-	supervisions: Supervision[],
+	supervisions: SupervisionData[],
 	supervisorDetails: Array<{
 		id: string;
 		fullName: string;
