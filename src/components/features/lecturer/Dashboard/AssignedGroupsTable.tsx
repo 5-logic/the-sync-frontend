@@ -19,7 +19,7 @@ const AssignedGroupsTable: React.FC = () => {
 	// Get unique semesters from data
 	const uniqueSemesters = Array.from(
 		new Set(uniqueGroups.map((group) => group.semesterId)),
-	).sort();
+	).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
 
 	// Filter data
 	const filteredData = uniqueGroups.filter((group) => {
