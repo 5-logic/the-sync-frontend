@@ -1,6 +1,6 @@
 'use client';
 
-import { Modal, Spin, Typography } from 'antd';
+import { Modal, Space, Spin, Typography } from 'antd';
 import { useParams, useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 
@@ -163,7 +163,7 @@ export default function ViewThesisDetail({
 	}
 
 	return (
-		<div>
+		<Space direction="vertical" style={{ width: '100%' }}>
 			<Header
 				title="Thesis Detail"
 				description="View comprehensive thesis information, supervisor details, and manage
@@ -242,6 +242,6 @@ export default function ViewThesisDetail({
 					&quot;Rejected&quot; and the author will need to revise it.
 				</Typography.Text>
 			</Modal>
-		</div>
+		</Space>
 	);
 }
