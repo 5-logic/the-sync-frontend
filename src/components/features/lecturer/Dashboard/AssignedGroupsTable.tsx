@@ -1,5 +1,5 @@
 // components/AssignedGroupsTable.tsx
-import { Input, Select, Space, Table } from 'antd';
+import { Input, Select, Table } from 'antd';
 import React, { useState } from 'react';
 
 const { Search } = Input;

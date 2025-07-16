@@ -66,9 +66,11 @@ const MyThesisSection: React.FC = () => {
 								</div>
 							}
 							actions={[
+								// eslint-disable-next-line react/jsx-key
 								<Button type="link" icon={<EyeOutlined />} size="small">
 									View Details
 								</Button>,
+								// eslint-disable-next-line react/jsx-key
 								<Button type="link" icon={<EditOutlined />} size="small">
 									Edit
 								</Button>,
