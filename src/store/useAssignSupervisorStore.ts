@@ -32,6 +32,146 @@ export interface SupervisorAssignmentData {
 	groupId: string | null;
 }
 
+// Helper functions to reduce cognitive complexity
+const processSupervisionData = async (
+	thesis: Thesis,
+): Promise<{
+	supervisions: Supervision[];
+	supervisorDetails: Array<{
+		id: string;
+		fullName: string;
+		email: string;
+	}>;
+}> => {
+	const supervisionPromise = supervisionService.getByThesisId(thesis.id);
+	const [supervisionResult] = await Promise.allSettled([supervisionPromise]);
+
+	let supervisions: Supervision[] = [];
+
+	if (supervisionResult.status === 'fulfilled') {
+		const supervisionApiResponse = handleApiResponse(supervisionResult.value);
+
+		if (supervisionApiResponse.success) {
+			supervisions = supervisionApiResponse.data || [];
+		} else {
+			console.warn(
+				`Failed to fetch supervisions for thesis ${thesis.id}:`,
+				supervisionApiResponse.error,
+			);
+		}
+	} else {
+		console.warn(
+			`Promise rejected when fetching supervisions for thesis ${thesis.id}:`,
+			supervisionResult.reason,
+		);
+	}
+
+	const supervisorDetails = await fetchSupervisorDetails(
+		thesis.id,
+		supervisions,
+	);
+
+	return { supervisions, supervisorDetails };
+};
+
+const fetchSupervisorDetails = async (
+	thesisId: string,
+	supervisions: Supervision[],
+): Promise<
+	Array<{
+		id: string;
+		fullName: string;
+		email: string;
+	}>
+> => {
+	if (supervisions.length === 0) {
+		return [];
+	}
+
+	// Handle SimpleSupervisionSchema format: {lecturerId: 'uuid'}
+	const supervisionsData = supervisions as unknown as { lecturerId: string }[];
+	const validSupervisions = supervisionsData.filter(
+		(supervision) => supervision.lecturerId,
+	);
+
+	const invalidSupervisions = supervisionsData.filter(
+		(supervision) => !supervision.lecturerId,
+	);
+
+	if (invalidSupervisions.length > 0) {
+		console.warn(
+			`Found ${invalidSupervisions.length} invalid supervisions for thesis ${thesisId}:`,
+			invalidSupervisions,
+		);
+	}
+
+	if (validSupervisions.length === 0) {
+		return [];
+	}
+
+	const lecturerPromises = validSupervisions.map((supervision) =>
+		lecturerService.findOne(supervision.lecturerId),
+	);
+
+	const lecturerResults = await Promise.allSettled(lecturerPromises);
+	const supervisorDetails: Array<{
+		id: string;
+		fullName: string;
+		email: string;
+	}> = [];
+
+	for (const result of lecturerResults) {
+		if (result.status === 'fulfilled') {
+			const lecturerApiResponse = handleApiResponse(result.value);
+
+			if (lecturerApiResponse.success && lecturerApiResponse.data) {
+				supervisorDetails.push({
+					id: lecturerApiResponse.data.id,
+					fullName: lecturerApiResponse.data.fullName,
+					email: lecturerApiResponse.data.email,
+				});
+			}
+		}
+	}
+
+	return supervisorDetails;
+};
+
+const createAssignmentData = (
+	thesis: Thesis,
+	supervisions: Supervision[],
+	supervisorDetails: Array<{
+		id: string;
+		fullName: string;
+		email: string;
+	}>,
+): SupervisorAssignmentData => {
+	const abbreviation = thesis.abbreviation || 'No Abbreviation';
+	const domain = thesis.domain || 'No Domain';
+
+	const supervisionCount = supervisions.length;
+	const status: SupervisorAssignmentStatus =
+		supervisionCount === 2
+			? 'Finalized'
+			: supervisionCount === 1
+				? 'Incomplete'
+				: 'Unassigned';
+
+	const supervisorNames = supervisorDetails.map((s) => s.fullName);
+
+	return {
+		id: thesis.id,
+		thesisTitle: thesis.englishName,
+		groupName: abbreviation,
+		memberCount: domain,
+		supervisors: supervisorNames,
+		supervisorDetails,
+		status,
+		thesisId: thesis.id,
+		groupId: thesis.groupId || null,
+	};
+};
+
 interface AssignSupervisorState {
 	// Data
 	data: SupervisorAssignmentData[];
@@ -155,124 +295,14 @@ export const useAssignSupervisorStore = create<AssignSupervisorState>()(
 					// Process each thesis
 					const thesesWithData = await Promise.all(
 						filteredTheses.map(async (thesis) => {
-							const supervisionPromise = supervisionService.getByThesisId(
-								thesis.id,
-							);
+							const { supervisions, supervisorDetails } =
+								await processSupervisionData(thesis);
 
-							const [supervisionResult] = await Promise.allSettled([
-								supervisionPromise,
-							]);
-
-							// Process supervision data
-							let supervisions: Supervision[] = [];
-							let supervisorDetails: Array<{
-								id: string;
-								fullName: string;
-								email: string;
-							}> = [];
-
-							if (supervisionResult.status === 'fulfilled') {
-								const supervisionApiResponse = handleApiResponse(
-									supervisionResult.value,
-								);
-
-								if (supervisionApiResponse.success) {
-									supervisions = supervisionApiResponse.data || [];
-								} else {
-									console.warn(
-										`Failed to fetch supervisions for thesis ${thesis.id}:`,
-										supervisionApiResponse.error,
-									);
-								}
-							} else {
-								console.warn(
-									`Promise rejected when fetching supervisions for thesis ${thesis.id}:`,
-									supervisionResult.reason,
-								);
-							}
-
-							// Fetch lecturer details if we have supervisions
-							if (supervisions.length > 0) {
-								// Filter out supervisions with invalid lecturer data
-								// Handle SimpleSupervisionSchema format: {lecturerId: 'uuid'}
-								// The API returns simple supervision objects with lecturerId directly
-								// Note: Runtime data differs from TypeScript definition
-								const supervisionsData = supervisions as unknown as {
-									lecturerId: string;
-								}[];
-								const validSupervisions = supervisionsData.filter(
-									(supervision) => supervision.lecturerId,
-								);
-
-								const invalidSupervisions = supervisionsData.filter(
-									(supervision) => !supervision.lecturerId,
-								);
-
-								if (invalidSupervisions.length > 0) {
-									console.warn(
-										`Found ${invalidSupervisions.length} invalid supervisions for thesis ${thesis.id}:`,
-										invalidSupervisions,
-									);
-								}
-
-								if (validSupervisions.length === 0) {
-									supervisorDetails = [];
-								} else {
-									const lecturerPromises = validSupervisions.map(
-										(supervision) =>
-											lecturerService.findOne(supervision.lecturerId),
-									);
-
-									const lecturerResults =
-										await Promise.allSettled(lecturerPromises);
-
-									supervisorDetails = [];
-									for (const result of lecturerResults) {
-										if (result.status === 'fulfilled') {
-											const lecturerApiResponse = handleApiResponse(
-												result.value,
-											);
-											if (
-												lecturerApiResponse.success &&
-												lecturerApiResponse.data
-											) {
-												supervisorDetails.push({
-													id: lecturerApiResponse.data.id,
-													fullName: lecturerApiResponse.data.fullName,
-													email: lecturerApiResponse.data.email,
-												});
-											}
-										}
-									}
-								}
-							}
-
-							// Use thesis data directly - no need to fetch group
-							const abbreviation = thesis.abbreviation || 'No Abbreviation';
-							const domain = thesis.domain || 'No Domain';
-
-							// Calculate status based on actual supervision count
-							const supervisionCount = supervisions.length;
-							const status: SupervisorAssignmentStatus =
-								supervisionCount === 2
-									? 'Finalized'
-									: supervisionCount === 1
-										? 'Incomplete'
-										: 'Unassigned';
-							const supervisorNames = supervisorDetails.map((s) => s.fullName);
-
-							const finalResult = {
-								id: thesis.id,
-								thesisTitle: thesis.englishName,
-								groupName: abbreviation, // Now represents abbreviation
-								memberCount: domain, // Now represents domain (should be string but keeping number for compatibility)
-								supervisors: supervisorNames,
+							return createAssignmentData(
+								thesis,
+								supervisions,
 								supervisorDetails,
-								status,
-								thesisId: thesis.id,
-								groupId: thesis.groupId || null,
-							};
-							return finalResult;
+							);
 						}),
 					);
 
