@@ -12,7 +12,7 @@ const MilestonesTimeline: React.FC = () => {
 	// Get unique semesters from milestone data
 	const uniqueSemesters = Array.from(
 		new Set(mockMilestoneDetails.map((milestone) => milestone.semesterId)),
-	).sort();
+	).sort((a, b) => a.localeCompare(b));
 
 	// Filter milestones based on semester and sort by date
 	const filteredMilestones = mockMilestoneDetails
