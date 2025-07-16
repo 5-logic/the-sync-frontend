@@ -6,7 +6,7 @@ export interface Milestone {
 	title: string;
 	date: string;
 	status: 'Ended' | 'In Progress' | 'Upcoming';
-	semesterId: string; // Add semesterId field
+	semesterId: string;
 	submitted?: boolean;
 	fileName?: string;
 	feedback?: string;
