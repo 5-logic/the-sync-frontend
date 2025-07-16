@@ -175,6 +175,33 @@ const createAssignmentData = (
 	};
 };
 
+// Helper function to create updated assignment data
+const createUpdatedAssignment = (
+	item: SupervisorAssignmentData,
+	newSupervisors: Array<{ id: string; fullName: string; email: string }>,
+	determineStatus: (supervisions: Supervision[]) => SupervisorAssignmentStatus,
+): SupervisorAssignmentData => {
+	const tempSupervisions = newSupervisors.map(
+		(s) =>
+			({
+				id: `temp-${s.id}`,
+				status: 'Active' as const,
+				lecturer: {
+					id: s.id,
+					fullName: s.fullName,
+					email: s.email,
+				},
+			}) as Supervision,
+	);
+
+	return {
+		...item,
+		supervisorDetails: newSupervisors,
+		supervisors: newSupervisors.map((s) => s.fullName),
+		status: determineStatus(tempSupervisions),
+	};
+};
+
 // Helper functions to reduce cognitive complexity in bulkAssignSupervisors
 const performOptimisticUpdates = (
 	assignments: Array<{ thesisId: string; lecturerIds: string[] }>,
@@ -552,30 +579,19 @@ export const useAssignSupervisorStore = create<AssignSupervisorState>()(
 				thesisId: string,
 				newSupervisors: Array<{ id: string; fullName: string; email: string }>,
 			): void => {
+				const mapAssignmentData = (item: SupervisorAssignmentData) => {
+					if (item.thesisId !== thesisId) {
+						return item;
+					}
+					return createUpdatedAssignment(
+						item,
+						newSupervisors,
+						get().determineStatus,
+					);
+				};
+
 				set((state) => ({
-					data: state.data.map((item) =>
-						item.thesisId === thesisId
-							? {
-									...item,
-									supervisorDetails: newSupervisors,
-									supervisors: newSupervisors.map((s) => s.fullName),
-									status: get().determineStatus(
-										newSupervisors.map(
-											(s) =>
-												({
-													id: `temp-${s.id}`,
-													status: 'Active' as const,
-													lecturer: {
-														id: s.id,
-														fullName: s.fullName,
-														email: s.email,
-													},
-												}) as Supervision,
-										),
-									),
-								}
-							: item,
-					),
+					data: state.data.map(mapAssignmentData),
 				}));
 			},
 
