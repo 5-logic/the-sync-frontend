@@ -48,8 +48,8 @@ export const createSupervisorRenderer = (
 			// Show draft supervisors as plain text, similar to current supervisors
 			return (
 				<div>
-					{draft.lecturerNames.map((name: string, index: number) => (
-						<div key={index}>{name} (Draft)</div>
+					{draft.lecturerNames.map((name: string) => (
+						<div key={name}>{name} (Draft)</div>
 					))}
 					{/* Show current supervisors if any exist */}
 					{supervisors.length > 0 && (

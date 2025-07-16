@@ -221,9 +221,37 @@ export default function AssignSupervisorModal({
 		return 'Select supervisor';
 	};
 
-	// Modal title - updated to reflect mode
+	// Modal title methods - multiple approaches for determining title
+	const getChangeModeTitle = (): string => 'Change Supervisor';
+
+	const getAssignModeTitle = (): string => 'Assign Supervisor';
+
+	const getTitleByStatus = (hasExistingSupervisors: boolean): string => {
+		return hasExistingSupervisors ? getChangeModeTitle() : getAssignModeTitle();
+	};
+
+	const getTitleByInitialValues = (): string => {
+		const hasExistingSupervisors =
+			initialValues &&
+			initialValues.length > 0 &&
+			initialValues.some((value) => Boolean(value));
+		return getTitleByStatus(hasExistingSupervisors);
+	};
+
+	const getTitleByModeFlag = (): string => {
+		return isChangeMode ? getChangeModeTitle() : getAssignModeTitle();
+	};
+
 	const getModalTitle = (): string => {
-		return isChangeMode ? 'Change Supervisor' : 'Assign Supervisor';
+		// Multiple methods available for determining title:
+
+		// Method 1: Use the existing isChangeMode flag (primary method for backward compatibility)
+		if (isChangeMode) {
+			return getTitleByModeFlag();
+		}
+
+		// Method 2: Determine by checking if there are existing supervisor assignments
+		return getTitleByInitialValues();
 	};
 
 	// Extract label text logic - simplified

@@ -150,12 +150,15 @@ const createAssignmentData = (
 	const domain = thesis.domain || 'No Domain';
 
 	const supervisionCount = supervisions.length;
-	const status: SupervisorAssignmentStatus =
-		supervisionCount === 2
-			? 'Finalized'
-			: supervisionCount === 1
-				? 'Incomplete'
-				: 'Unassigned';
+
+	let status: SupervisorAssignmentStatus;
+	if (supervisionCount === 2) {
+		status = 'Finalized';
+	} else if (supervisionCount === 1) {
+		status = 'Incomplete';
+	} else {
+		status = 'Unassigned';
+	}
 
 	const supervisorNames = supervisorDetails.map((s) => s.fullName);
 
@@ -170,6 +173,137 @@ const createAssignmentData = (
 		thesisId: thesis.id,
 		groupId: thesis.groupId || null,
 	};
+};
+
+// Helper functions to reduce cognitive complexity in bulkAssignSupervisors
+const performOptimisticUpdates = (
+	assignments: Array<{ thesisId: string; lecturerIds: string[] }>,
+	lecturers: Lecturer[],
+	updateAssignmentOptimistically: (
+		thesisId: string,
+		newSupervisors: Array<{ id: string; fullName: string; email: string }>,
+	) => void,
+) => {
+	assignments.forEach((assignment) => {
+		const supervisors = assignment.lecturerIds
+			.map((id) => lecturers.find((l) => l.id === id))
+			.filter(Boolean) as Array<{
+			id: string;
+			fullName: string;
+			email: string;
+		}>;
+
+		if (supervisors.length > 0) {
+			updateAssignmentOptimistically(assignment.thesisId, supervisors);
+		}
+	});
+};
+
+const handleCompleteFailure = (
+	setData: (data: SupervisorAssignmentData[]) => void,
+	originalData: SupervisorAssignmentData[],
+	warningCount: number,
+	silent: boolean,
+) => {
+	setData(originalData);
+
+	if (!silent) {
+		if (warningCount > 0) {
+			showNotification.warning(
+				'Assignment Skipped',
+				`${warningCount} assignments were skipped (already assigned or max supervisors reached)`,
+			);
+		} else {
+			showNotification.error('Assignment Failed', 'All assignments failed');
+		}
+	}
+	return false;
+};
+
+const handleCompleteSuccess = (
+	successful: number,
+	warningCount: number,
+	silent: boolean,
+) => {
+	if (!silent) {
+		if (warningCount > 0) {
+			showNotification.success(
+				'Assignment Complete',
+				`${successful} supervisors assigned successfully, ${warningCount} were already assigned`,
+			);
+		} else {
+			showNotification.success(
+				'Assignment Complete',
+				`All ${successful} supervisors assigned successfully`,
+			);
+		}
+	}
+	return true;
+};
+
+const handlePartialSuccess = (
+	detailedResults: Array<{
+		status: string;
+		thesisId?: string;
+		lecturerId?: string;
+	}>,
+	warningStatuses: string[],
+	currentData: SupervisorAssignmentData[],
+	setData: (data: SupervisorAssignmentData[]) => void,
+	determineStatus: (supervisions: Supervision[]) => SupervisorAssignmentStatus,
+	successful: number,
+	failed: number,
+	silent: boolean,
+) => {
+	const failedResults = detailedResults.filter((r) => r.status === 'error');
+	const warningResults = detailedResults.filter((r) =>
+		warningStatuses.includes(r.status),
+	);
+
+	// Revert only the truly failed assignments (not warnings)
+	failedResults.forEach((failedResult) => {
+		if (failedResult.thesisId && failedResult.lecturerId) {
+			const updatedData = currentData.map((assignment) => {
+				if (assignment.thesisId === failedResult.thesisId) {
+					return {
+						...assignment,
+						supervisors: assignment.supervisors.filter(
+							(supervisorId: string) =>
+								supervisorId !== failedResult.lecturerId,
+						),
+						supervisorDetails: assignment.supervisorDetails.filter(
+							(detail: { id: string }) => detail.id !== failedResult.lecturerId,
+						),
+						status: determineStatus([]),
+					};
+				}
+				return assignment;
+			});
+			setData(updatedData);
+		}
+	});
+
+	const actualSuccesses = successful;
+	const actualWarnings = warningResults.length;
+	const actualFailures = failed - actualWarnings;
+
+	if (actualFailures > 0) {
+		if (!silent) {
+			showNotification.warning(
+				'Partial Success',
+				`${actualSuccesses} assignments succeeded, ${actualWarnings} were already assigned, ${actualFailures} failed`,
+			);
+		}
+		return false;
+	} else {
+		if (!silent) {
+			showNotification.success(
+				'Assignment Complete',
+				`${actualSuccesses} supervisors assigned successfully, ${actualWarnings} were already assigned`,
+			);
+		}
+		return true;
+	}
 };
 
 interface AssignSupervisorState {
@@ -460,22 +594,11 @@ export const useAssignSupervisorStore = create<AssignSupervisorState>()(
 
 				try {
 					// Optimistic updates for all assignments
-					assignments.forEach((assignment) => {
-						const supervisors = assignment.lecturerIds
-							.map((id) => get().lecturers.find((l) => l.id === id))
-							.filter(Boolean) as Array<{
-							id: string;
-							fullName: string;
-							email: string;
-						}>;
-
-						if (supervisors.length > 0) {
-							get().updateAssignmentOptimistically(
-								assignment.thesisId,
-								supervisors,
-							);
-						}
-					});
+					performOptimisticUpdates(
+						assignments,
+						get().lecturers,
+						get().updateAssignmentOptimistically,
+					);
 
 					// Call API
 					const supervisionStore = useSupervisionStore.getState();
@@ -485,125 +608,46 @@ export const useAssignSupervisorStore = create<AssignSupervisorState>()(
 
 					if (!result) {
 						// No result returned - API error
-						set({ data: originalData });
-
-						// Get error from supervision store if available
 						const supervisionError = useSupervisionStore.getState().lastError;
 						const errorMessage = supervisionError || 'No response from server';
 
+						set({ data: originalData });
 						showNotification.error('Assignment Failed', errorMessage);
 						return false;
 					}
 
 					// Analyze results based on backend response
 					const { successful, failed } = result.summary;
-
-					// Analyze detailed results to provide better feedback
 					const warningStatuses = ['already_exists', 'max_supervisors_reached'];
-
 					const detailedResults = result.results || [];
 					const warningCount = detailedResults.filter((r: { status: string }) =>
 						warningStatuses.includes(r.status),
 					).length;
 
 					if (successful === 0) {
-						// Complete failure - revert all optimistic updates
-						set({ data: originalData });
-
-						if (!silent) {
-							if (warningCount > 0) {
-								showNotification.warning(
-									'Assignment Skipped',
-									`${warningCount} assignments were skipped (already assigned or max supervisors reached)`,
-								);
-							} else {
-								showNotification.error(
-									'Assignment Failed',
-									'All assignments failed',
-								);
-							}
-						}
-						return false;
+						return handleCompleteFailure(
+							(data) => set({ data }),
+							originalData,
+							warningCount,
+							silent,
+						);
 					}
 
 					if (failed === 0) {
-						// Complete success - all assignments succeeded
-						if (!silent) {
-							if (warningCount > 0) {
-								showNotification.success(
-									'Assignment Complete',
-									`${successful} supervisors assigned successfully, ${warningCount} were already assigned`,
-								);
-							} else {
-								showNotification.success(
-									'Assignment Complete',
-									`All ${successful} supervisors assigned successfully`,
-								);
-							}
-						}
-						return true;
+						return handleCompleteSuccess(successful, warningCount, silent);
 					}
 
 					// Partial success - some succeeded, some failed
-					// Only revert the assignments that actually failed
-					const failedResults = detailedResults.filter(
-						(r: { status: string }) => r.status === 'error',
+					return handlePartialSuccess(
+						detailedResults,
+						warningStatuses,
+						get().data,
+						(data) => set({ data }),
+						get().determineStatus,
+						successful,
+						failed,
+						silent,
 					);
-					const warningResults = detailedResults.filter(
-						(r: { status: string }) => warningStatuses.includes(r.status),
-					);
-
-					// Revert only the truly failed assignments (not warnings)
-					failedResults.forEach(
-						(failedResult: { thesisId?: string; lecturerId?: string }) => {
-							if (failedResult.thesisId && failedResult.lecturerId) {
-								// Find and revert this specific assignment
-								const currentData = get().data;
-								const updatedData = currentData.map((assignment) => {
-									if (assignment.thesisId === failedResult.thesisId) {
-										// Remove the lecturer that failed to be assigned
-										return {
-											...assignment,
-											supervisors: assignment.supervisors.filter(
-												(supervisorId) =>
-													supervisorId !== failedResult.lecturerId,
-											),
-											supervisorDetails: assignment.supervisorDetails.filter(
-												(detail) => detail.id !== failedResult.lecturerId,
-											),
-											status: get().determineStatus([]), // Recalculate status
-										};
-									}
-									return assignment;
-								});
-								set({ data: updatedData });
-							}
-						},
-					);
-
-					// Show appropriate notification based on results
-					const actualSuccesses = successful;
-					const actualWarnings = warningResults.length;
-					const actualFailures = failed - actualWarnings; // True failures (not warnings)
-
-					if (actualFailures > 0) {
-						if (!silent) {
-							showNotification.warning(
-								'Partial Success',
-								`${actualSuccesses} assignments succeeded, ${actualWarnings} were already assigned, ${actualFailures} failed`,
-							);
-						}
-						return false; // Return false if there are actual failures
-					} else {
-						// Only warnings, no real failures
-						if (!silent) {
-							showNotification.success(
-								'Assignment Complete',
-								`${actualSuccesses} supervisors assigned successfully, ${actualWarnings} were already assigned`,
-							);
-						}
-						return true; // Return true for complete success
-					}
 				} catch (error) {
 					// Revert all optimistic updates on error
 					set({ data: originalData });
