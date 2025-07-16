@@ -2,6 +2,7 @@
 
 import { Typography } from 'antd';
 
+import { Header } from '@/components/common/Header';
 import AssignedGroupsTable from '@/components/features/lecturer/Dashboard/AssignedGroupsTable';
 import DashboardStats from '@/components/features/lecturer/Dashboard/DashboardStats';
 import MilestonesTimeline from '@/components/features/lecturer/Dashboard/MilestonesTimeline';
@@ -12,7 +13,10 @@ const { Title } = Typography;
 export default function DashboardPage() {
 	return (
 		<div style={{ padding: 24 }}>
-			<Title level={3}>Dashboard</Title>
+			<Header
+				title="Lecturer Dashboard"
+				description="Welcome to your dashboard. Here you can track student progress, manage milestones, and provide timely feedback to guide thesis development."
+			/>
 			<DashboardStats />
 
 			<div style={{ marginTop: 32 }}>
