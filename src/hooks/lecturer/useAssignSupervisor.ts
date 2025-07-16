@@ -20,6 +20,7 @@ export interface UseAssignSupervisorReturn {
 		thesisId: string,
 		currentSupervisorId: string,
 		newSupervisorId: string,
+		silent?: boolean,
 	) => Promise<boolean>;
 	refreshData: () => Promise<void>;
 	fetchData: (forceRefresh?: boolean) => Promise<void>;
@@ -28,6 +29,7 @@ export interface UseAssignSupervisorReturn {
 			thesisId: string;
 			lecturerIds: string[];
 		}>,
+		silent?: boolean,
 	) => Promise<boolean>;
 }
 

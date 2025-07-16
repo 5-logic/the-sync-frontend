@@ -297,6 +297,7 @@ export const useAssignSupervisorStore = create<AssignSupervisorState>()(
 				thesisId: string,
 				currentSupervisorId: string,
 				newSupervisorId: string,
+				silent = false,
 			) => {
 				// Find original data for potential rollback
 				const originalAssignment = get().data.find(
@@ -343,14 +344,18 @@ export const useAssignSupervisorStore = create<AssignSupervisorState>()(
 						const errorMessage =
 							supervisionError || 'Failed to change supervisor';
 
-						showNotification.error('Error', errorMessage);
+						if (!silent) {
+							showNotification.error('Error', errorMessage);
+						}
 						return false;
 					}
 
-					showNotification.success(
-						'Success',
-						'Supervisor changed successfully',
-					);
+					if (!silent) {
+						showNotification.success(
+							'Success',
+							'Supervisor changed successfully',
+						);
+					}
 					return true;
 				} catch (error) {
 					// Revert optimistic update on error
@@ -359,7 +364,9 @@ export const useAssignSupervisorStore = create<AssignSupervisorState>()(
 						error,
 						'Failed to change supervisor',
 					);
-					showNotification.error('Error', message);
+					if (!silent) {
+						showNotification.error('Error', message);
+					}
 					return false;
 				}
 			},
@@ -414,6 +421,7 @@ export const useAssignSupervisorStore = create<AssignSupervisorState>()(
 					thesisId: string;
 					lecturerIds: string[];
 				}>,
+				silent = false,
 			) => {
 				set({ updating: true });
 
@@ -472,32 +480,36 @@ export const useAssignSupervisorStore = create<AssignSupervisorState>()(
 						// Complete failure - revert all optimistic updates
 						set({ data: originalData });
 
-						if (warningCount > 0) {
-							showNotification.warning(
-								'Assignment Skipped',
-								`${warningCount} assignments were skipped (already assigned or max supervisors reached)`,
-							);
-						} else {
-							showNotification.error(
-								'Assignment Failed',
-								'All assignments failed',
-							);
+						if (!silent) {
+							if (warningCount > 0) {
+								showNotification.warning(
+									'Assignment Skipped',
+									`${warningCount} assignments were skipped (already assigned or max supervisors reached)`,
+								);
+							} else {
+								showNotification.error(
+									'Assignment Failed',
+									'All assignments failed',
+								);
+							}
 						}
 						return false;
 					}
 
 					if (failed === 0) {
 						// Complete success - all assignments succeeded
-						if (warningCount > 0) {
-							showNotification.success(
-								'Assignment Complete',
-								`${successful} supervisors assigned successfully, ${warningCount} were already assigned`,
-							);
-						} else {
-							showNotification.success(
-								'Assignment Complete',
-								`All ${successful} supervisors assigned successfully`,
-							);
+						if (!silent) {
+							if (warningCount > 0) {
+								showNotification.success(
+									'Assignment Complete',
+									`${successful} supervisors assigned successfully, ${warningCount} were already assigned`,
+								);
+							} else {
+								showNotification.success(
+									'Assignment Complete',
+									`All ${successful} supervisors assigned successfully`,
+								);
+							}
 						}
 						return true;
 					}
@@ -545,17 +557,21 @@ export const useAssignSupervisorStore = create<AssignSupervisorState>()(
 					const actualFailures = failed - actualWarnings; // True failures (not warnings)
 
 					if (actualFailures > 0) {
-						showNotification.warning(
-							'Partial Success',
-							`${actualSuccesses} assignments succeeded, ${actualWarnings} were already assigned, ${actualFailures} failed`,
-						);
+						if (!silent) {
+							showNotification.warning(
+								'Partial Success',
+								`${actualSuccesses} assignments succeeded, ${actualWarnings} were already assigned, ${actualFailures} failed`,
+							);
+						}
 						return false; // Return false if there are actual failures
 					} else {
 						// Only warnings, no real failures
-						showNotification.success(
-							'Assignment Complete',
-							`${actualSuccesses} supervisors assigned successfully, ${actualWarnings} were already assigned`,
-						);
+						if (!silent) {
+							showNotification.success(
+								'Assignment Complete',
+								`${actualSuccesses} supervisors assigned successfully, ${actualWarnings} were already assigned`,
+							);
+						}
 						return true; // Return true for complete success
 					}
 				} catch (error) {
@@ -565,7 +581,9 @@ export const useAssignSupervisorStore = create<AssignSupervisorState>()(
 						error,
 						'Failed to bulk assign supervisors',
 					);
-					showNotification.error('Error', message);
+					if (!silent) {
+						showNotification.error('Error', message);
+					}
 					return false;
 				} finally {
 					set({ updating: false });
