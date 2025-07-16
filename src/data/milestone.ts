@@ -66,13 +66,13 @@ export const mockMilestoneDetails: Milestone[] = [
 		title: 'Review 3',
 		date: '2025-08-30',
 		status: 'Upcoming',
-		semesterId: 'Fall 2025',
+		semesterId: 'Spring 2025',
 	},
 	{
 		id: 5,
 		title: 'Final Report',
 		date: '2025-09-15',
 		status: 'Upcoming',
-		semesterId: 'Fall 2025',
+		semesterId: 'Spring 2025',
 	},
 ];
