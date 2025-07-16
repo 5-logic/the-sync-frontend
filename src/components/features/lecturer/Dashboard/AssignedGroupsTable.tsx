@@ -1,4 +1,4 @@
-import { EyeOutlined, SearchOutlined } from '@ant-design/icons';
+import { EyeOutlined } from '@ant-design/icons';
 import { Card, Col, Input, Row, Select, Table, Tooltip } from 'antd';
 import React, { useState } from 'react';
 
@@ -68,7 +68,6 @@ const AssignedGroupsTable: React.FC = () => {
 				<Col xs={24} md={16}>
 					<Search
 						allowClear
-						prefix={<SearchOutlined />}
 						placeholder="Search thesis, group, leader"
 						value={searchText}
 						onChange={(e) => setSearchText(e.target.value)}

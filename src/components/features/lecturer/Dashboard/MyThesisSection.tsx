@@ -6,13 +6,17 @@ import { mockTheses } from '@/data/thesis';
 
 const { Paragraph } = Typography;
 
-// Component to handle skills display with 2-row limit
+const statusColor = {
+	Approved: 'green',
+	Pending: 'orange',
+	Rejected: 'red',
+};
+
 const SkillsDisplay: React.FC<{ skills: string[] }> = ({ skills }) => {
 	const [visibleSkills, setVisibleSkills] = useState<string[]>([]);
 	const [hiddenCount, setHiddenCount] = useState(0);
 
 	useEffect(() => {
-		// Simple approach: estimate 6-8 tags per row based on typical tag width
 		const maxTagsPerRow = 6;
 		const maxRows = 2;
 		const maxVisibleTags = maxTagsPerRow * maxRows;
@@ -30,13 +34,13 @@ const SkillsDisplay: React.FC<{ skills: string[] }> = ({ skills }) => {
 	return (
 		<div
 			style={{
-				minHeight: '70px', // 2 rows minimum height
+				minHeight: '70px',
 				display: 'flex',
 				flexWrap: 'wrap',
 				gap: '8px',
 				alignItems: 'flex-start',
 				overflow: 'hidden',
-				maxHeight: '64px', // Limit to 2 rows
+				maxHeight: '64px',
 			}}
 		>
 			{visibleSkills.map((skill) => (
@@ -69,12 +73,6 @@ const SkillsDisplay: React.FC<{ skills: string[] }> = ({ skills }) => {
 			)}
 		</div>
 	);
-};
-
-const statusColor = {
-	Approved: 'green',
-	Pending: 'orange',
-	Rejected: 'red',
 };
 
 const MyThesisSection: React.FC = () => {
@@ -115,22 +113,40 @@ const MyThesisSection: React.FC = () => {
 								</Row>
 							}
 							actions={[
-								<Button
+								<span
 									key="view"
-									type="link"
-									icon={<EyeOutlined />}
-									size="small"
+									style={{
+										color: '#000',
+										cursor: 'pointer',
+										transition: 'color 0.3s',
+									}}
+									onMouseEnter={(e) =>
+										((e.currentTarget as HTMLElement).style.color = '#1890ff')
+									}
+									onMouseLeave={(e) =>
+										((e.currentTarget as HTMLElement).style.color = '#000')
+									}
 								>
+									<EyeOutlined style={{ marginRight: 4 }} />
 									View Details
-								</Button>,
-								<Button
+								</span>,
+								<span
 									key="edit"
-									type="link"
-									icon={<EditOutlined />}
-									size="small"
+									style={{
+										color: '#000',
+										cursor: 'pointer',
+										transition: 'color 0.3s',
+									}}
+									onMouseEnter={(e) =>
+										((e.currentTarget as HTMLElement).style.color = '#1890ff')
+									}
+									onMouseLeave={(e) =>
+										((e.currentTarget as HTMLElement).style.color = '#000')
+									}
 								>
+									<EditOutlined style={{ marginRight: 4 }} />
 									Edit
-								</Button>,
+								</span>,
 							]}
 							style={{ height: '100%' }}
 						>
@@ -142,6 +158,7 @@ const MyThesisSection: React.FC = () => {
 										fontWeight: 600,
 										color: '#1f2937',
 										minHeight: '45px',
+										marginBottom: 12,
 									}}
 								>
 									{item.englishName}
@@ -152,6 +169,7 @@ const MyThesisSection: React.FC = () => {
 									style={{
 										color: '#6b7280',
 										lineHeight: '1.5',
+										marginBottom: 12,
 									}}
 								>
 									{item.description}
