@@ -1,5 +1,7 @@
 'use client';
 
+import { Space } from 'antd';
+
 import { Header } from '@/components/common/Header';
 import AssignedGroupsTable from '@/components/features/lecturer/Dashboard/AssignedGroupsTable';
 import DashboardStats from '@/components/features/lecturer/Dashboard/DashboardStats';
@@ -8,7 +10,7 @@ import MyThesisSection from '@/components/features/lecturer/Dashboard/MyThesisSe
 
 export default function DashboardPage() {
 	return (
-		<div style={{ padding: 24 }}>
+		<Space direction="vertical" size="large" style={{ width: '100%' }}>
 			<Header
 				title="Lecturer Dashboard"
 				description="Welcome to your dashboard. Here you can track student progress, manage milestones, and provide timely feedback to guide thesis development."
@@ -26,6 +28,6 @@ export default function DashboardPage() {
 			<div style={{ marginTop: 32 }}>
 				<MilestonesTimeline />
 			</div>
-		</div>
+		</Space>
 	);
 }
