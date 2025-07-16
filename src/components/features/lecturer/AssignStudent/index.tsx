@@ -15,10 +15,14 @@ import { useStudentStore } from '@/store/useStudentStore';
 
 export default function AssignStudentPage() {
 	const router = useRouter();
-	const { students, fetchStudentsWithoutGroup } = useStudentStore();
-	const { majors, fetchMajors } = useMajorStore();
+	const { students, fetchStudentsWithoutGroup, loading } = useStudentStore();
+	const { majors, fetchMajors, loading: majorLoading } = useMajorStore();
 	const { semesters, fetchSemesters } = useSemesterStore();
 	const { refetch: refetchGroups } = useGroupsStore();
+
+	// Debug loading states
+	console.log('Student loading:', loading);
+	console.log('Major loading:', majorLoading);
 
 	const [studentSearch, setStudentSearch] = useState('');
 	const [studentMajor, setStudentMajor] = useState('All');
@@ -69,6 +73,13 @@ export default function AssignStudentPage() {
 		refetchGroups();
 	}, [refetchGroups]);
 
+	// Handle refresh
+	const handleRefresh = () => {
+		if (preparingSemester) {
+			fetchStudentsWithoutGroup(preparingSemester.id, true); // Force refresh
+		}
+	};
+
 	// Major options for filter (with names displayed)
 	const majorOptions = useMemo(() => {
 		const options = ['All'];
@@ -76,6 +87,15 @@ export default function AssignStudentPage() {
 			options.push(major.id);
 		});
 		return options;
+	}, [majors]);
+
+	// Create a mapping for major names
+	const majorNamesMap = useMemo(() => {
+		const map: Record<string, string> = { All: 'All' };
+		majors.forEach((major) => {
+			map[major.id] = major.name;
+		});
+		return map;
 	}, [majors]);
 
 	// Filtered students
@@ -116,9 +136,16 @@ export default function AssignStudentPage() {
 						major={studentMajor}
 						onMajorChange={setStudentMajor}
 						majorOptions={majorOptions}
+						majorNamesMap={majorNamesMap}
+						onRefresh={handleRefresh}
+						loading={loading}
 					/>
 				</div>
-				<StudentTable data={filteredStudents} />
+				<StudentTable
+					data={filteredStudents}
+					majorNamesMap={majorNamesMap}
+					loading={loading || majorLoading}
+				/>
 			</Card>
 		</Space>
 	);
