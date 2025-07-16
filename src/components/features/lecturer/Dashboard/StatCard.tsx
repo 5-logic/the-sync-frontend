@@ -1,6 +1,7 @@
-// components/common/StatCard.tsx
-import { Card } from 'antd';
+import { Card, Space, Typography } from 'antd';
 import React from 'react';
+
+const { Title, Text } = Typography;
 
 interface StatCardProps {
 	value: number;
@@ -11,19 +12,18 @@ interface StatCardProps {
 const StatCard: React.FC<StatCardProps> = ({ value, title, icon }) => {
 	return (
 		<Card>
-			<div
-				style={{
-					display: 'flex',
-					alignItems: 'center',
-					justifyContent: 'space-between',
-				}}
+			<Space
+				style={{ width: '100%', justifyContent: 'space-between' }}
+				align="center"
 			>
-				<div>
-					<div style={{ fontSize: 24, fontWeight: 600 }}>{value}</div>
-					<div style={{ color: '#888' }}>{title}</div>
-				</div>
+				<Space direction="vertical" size={0}>
+					<Title level={3} style={{ margin: 0 }}>
+						{value}
+					</Title>
+					<Text type="secondary">{title}</Text>
+				</Space>
 				{icon}
-			</div>
+			</Space>
 		</Card>
 	);
 };

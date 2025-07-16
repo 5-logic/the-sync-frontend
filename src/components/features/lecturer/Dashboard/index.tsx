@@ -17,15 +17,15 @@ export default function DashboardPage() {
 			/>
 			<DashboardStats />
 
-			<div style={{ marginTop: 32 }}>
+			<div style={{ marginTop: 12 }}>
 				<MyThesisSection />
 			</div>
 
-			<div style={{ marginTop: 32 }}>
+			<div style={{ marginTop: 12 }}>
 				<AssignedGroupsTable />
 			</div>
 
-			<div style={{ marginTop: 32 }}>
+			<div style={{ marginTop: 12 }}>
 				<MilestonesTimeline />
 			</div>
 		</Space>
