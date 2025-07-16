@@ -148,7 +148,7 @@ const createModeratorMenuItems = (
 				targetPath,
 			),
 			createMenuItem(
-				LECTURER_MENU_KEYS.CHECKLIST_MANAGEMENT,
+				DASHBOARD_PATHS.LECTURER_CHECKLIST_MANAGEMENT,
 				<CheckSquareOutlined />,
 				'Checklist Management',
 				navigateWithLoading,
