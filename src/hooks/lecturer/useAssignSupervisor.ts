@@ -1,5 +1,3 @@
-import { useEffect } from 'react';
-
 import {
 	type SupervisorAssignmentData,
 	useAssignSupervisorStore,
@@ -15,6 +13,7 @@ export interface UseAssignSupervisorReturn {
 	data: SupervisorAssignmentData[];
 	lecturers: Array<{ id: string; fullName: string; email: string }>;
 	loading: boolean;
+	refreshing: boolean;
 	updating: boolean;
 	error: string | null;
 	changeSupervisor: (
@@ -23,6 +22,7 @@ export interface UseAssignSupervisorReturn {
 		newSupervisorId: string,
 	) => Promise<boolean>;
 	refreshData: () => Promise<void>;
+	fetchData: (forceRefresh?: boolean) => Promise<void>;
 	bulkAssignSupervisors: (
 		assignments: Array<{
 			thesisId: string;
@@ -33,12 +33,14 @@ export interface UseAssignSupervisorReturn {
 
 /**
  * Custom hook for supervisor assignment logic
+ * No auto-fetch to prevent loading issues when navigating between pages
  */
 export function useAssignSupervisor(): UseAssignSupervisorReturn {
 	const {
 		data,
 		lecturers,
 		loading,
+		refreshing,
 		updating,
 		lastError,
 		fetchData,
@@ -47,18 +49,19 @@ export function useAssignSupervisor(): UseAssignSupervisorReturn {
 		bulkAssignSupervisors,
 	} = useAssignSupervisorStore();
 
-	useEffect(() => {
-		fetchData();
-	}, [fetchData]);
+	// No auto-fetch to prevent loading issues when navigating between pages
+	// Manual fetch will be triggered by components
 
 	return {
 		data,
 		lecturers,
 		loading,
+		refreshing,
 		updating,
 		error: lastError,
 		changeSupervisor,
 		refreshData,
+		fetchData,
 		bulkAssignSupervisors,
 	};
 }
