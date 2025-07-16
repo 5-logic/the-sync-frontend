@@ -23,7 +23,7 @@ const MyThesisSection: React.FC = () => {
 				</Col>
 				<Col>
 					<Button type="primary" icon={<PlusOutlined />}>
-						New Thesis Topic
+						Create New Thesis
 					</Button>
 				</Col>
 			</Row>
