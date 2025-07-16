@@ -17,6 +17,8 @@ interface AdminState {
 	clearAdmin: () => void;
 	fetchAdmin: (forceRefresh?: boolean) => Promise<Admin | null>;
 	updateAdmin: (updateAdminDto: Partial<Admin>) => Promise<Admin | null>;
+	getAdminIdFromCache: () => { id: string; data: Admin } | null;
+	setErrorState: (errorMsg: string) => null;
 	cache: {
 		clear: () => void;
 		stats: () => any;
@@ -42,6 +44,21 @@ export const useAdminStore = create<AdminState>()(
 				error: null,
 				lastFetched: null,
 
+				// Helper to get adminId from cache
+				getAdminIdFromCache: () => {
+					const cached = cacheUtils.getCache<Admin>(ADMIN_CACHE_KEY);
+					if (cached && cached.entries.size > 0) {
+						const firstEntry = Array.from(cached.entries.values())[0];
+						return { id: firstEntry.key, data: firstEntry.data };
+					}
+					return null;
+				},
+
+				// Helper to handle error state
+				setErrorState: (errorMsg: string) => {
+					set({ loading: false, error: errorMsg, lastFetched: null });
+					return null;
+				},
 				setAdmin: (admin) => {
 					set({ admin });
 					if (admin) {
@@ -57,19 +74,16 @@ export const useAdminStore = create<AdminState>()(
 					const state = get();
 					const now = Date.now();
 
-					// Try to get id from localStorage
 					let adminId = state.admin?.id;
 					if (!adminId) {
-						const cached = cacheUtils.getCache<Admin>(ADMIN_CACHE_KEY);
-						if (cached && cached.entries.size > 0) {
-							const firstEntry = Array.from(cached.entries.values())[0];
-							adminId = firstEntry.key;
-							set({ admin: firstEntry.data });
-							return firstEntry.data;
+						const cachedResult = get().getAdminIdFromCache();
+						if (cachedResult) {
+							adminId = cachedResult.id;
+							set({ admin: cachedResult.data });
+							return cachedResult.data;
 						}
 					}
 
-					// Check cache validity
 					if (adminId) {
 						const cachedAdmin = cacheUtils.get<Admin>(ADMIN_CACHE_KEY, adminId);
 						if (!forceRefresh && cachedAdmin) {
@@ -78,9 +92,7 @@ export const useAdminStore = create<AdminState>()(
 						}
 					}
 
-					if (state.loading) {
-						return null; // Already loading
-					}
+					if (state.loading) return null;
 
 					try {
 						set({ loading: true, error: null });
@@ -90,31 +102,17 @@ export const useAdminStore = create<AdminState>()(
 							set({ admin: response.data, loading: false, lastFetched: now });
 							cacheUtils.set(ADMIN_CACHE_KEY, response.data.id, response.data);
 							return response.data;
-						} else if (!response.success) {
-							set({
-								loading: false,
-								error: (response as any).error || 'Failed to fetch admin',
-								lastFetched: null,
-							});
-							return null;
-						} else {
-							set({
-								loading: false,
-								error: 'Failed to fetch admin',
-								lastFetched: null,
-							});
-							return null;
 						}
+						if (!response.success) {
+							return get().setErrorState(
+								(response as any).error || 'Failed to fetch admin',
+							);
+						}
+						return get().setErrorState('Failed to fetch admin');
 					} catch (error) {
-						set({
-							loading: false,
-							error:
-								error instanceof Error
-									? error.message
-									: 'Failed to fetch admin',
-							lastFetched: null,
-						});
-						return null;
+						return get().setErrorState(
+							error instanceof Error ? error.message : 'Failed to fetch admin',
+						);
 					}
 				},
 
