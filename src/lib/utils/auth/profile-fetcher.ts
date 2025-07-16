@@ -61,7 +61,8 @@ export async function fetchUserProfile(user: {
 function getProfileEndpoint(role: string, userId: string): string | null {
 	switch (role) {
 		case 'admin':
-			return `/admins/${userId}`;
+			// Admin endpoint changed to GET /admins (no user ID needed)
+			return `/admins`;
 		case 'lecturer':
 			return `/lecturers/${userId}`;
 		case 'moderator':
