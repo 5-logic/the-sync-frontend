@@ -45,17 +45,11 @@ export const createSupervisorRenderer = (
 		const draft = getDraftAssignment(record.thesisId);
 
 		if (draft) {
-			// Show draft supervisors with better styling
+			// Show draft supervisors as plain text, similar to current supervisors
 			return (
 				<div>
 					{draft.lecturerNames.map((name: string, index: number) => (
-						<div key={index} style={{ marginBottom: 4 }}>
-							<Tag color="orange" style={{ margin: 0, fontSize: '12px' }}>
-								<Text style={{ color: '#fff', fontWeight: 500 }}>
-									{name} (Draft)
-								</Text>
-							</Tag>
-						</div>
+						<div key={index}>{name} (Draft)</div>
 					))}
 					{/* Show current supervisors if any exist */}
 					{supervisors.length > 0 && (
@@ -133,7 +127,7 @@ export const baseColumns: ColumnsType<SupervisorAssignmentData> = [
 		key: 'groupName',
 	},
 	{
-		title: 'Thesis Title',
+		title: 'English Name',
 		dataIndex: 'thesisTitle',
 		key: 'thesisTitle',
 	},
