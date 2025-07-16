@@ -3,8 +3,10 @@ import {
 	FileTextOutlined,
 	TeamOutlined,
 } from '@ant-design/icons';
-import { Card, Col, Row } from 'antd';
+import { Col, Row } from 'antd';
 import React from 'react';
+
+import StatCard from './StatCard';
 
 const DashboardStats: React.FC = () => {
 	const stats = [
@@ -29,17 +31,7 @@ const DashboardStats: React.FC = () => {
 		<Row gutter={[16, 16]}>
 			{stats.map((stat, index) => (
 				<Col xs={24} sm={12} md={8} key={index}>
-					<Card>
-						<div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-							{stat.icon}
-							<div>
-								<div style={{ fontSize: 24, fontWeight: 600 }}>
-									{stat.value}
-								</div>
-								<div style={{ color: '#888' }}>{stat.title}</div>
-							</div>
-						</div>
-					</Card>
+					<StatCard value={stat.value} title={stat.title} icon={stat.icon} />
 				</Col>
 			))}
 		</Row>
