@@ -8,6 +8,7 @@ import { handleApiError, handleApiResponse } from '@/lib/utils/handleApi';
 import { showNotification } from '@/lib/utils/notification';
 import { type Lecturer } from '@/schemas/lecturer';
 import { type Supervision } from '@/schemas/supervision';
+import { type Thesis } from '@/schemas/thesis';
 import { useSupervisionStore } from '@/store/useSupervisionStore';
 
 export type SupervisorAssignmentStatus =
@@ -44,11 +45,15 @@ interface AssignSupervisorState {
 	// Error states
 	lastError: string | null;
 
+	// Cache state
+	lastFetchTime: number | null;
+	cacheExpiry: number; // Cache expiry time in milliseconds (5 minutes)
+
 	// Helper functions
 	determineStatus: (supervisions: Supervision[]) => SupervisorAssignmentStatus;
 
 	// Actions
-	fetchData: () => Promise<void>;
+	fetchData: (forceRefresh?: boolean) => Promise<void>;
 	changeSupervisor: (
 		thesisId: string,
 		currentSupervisorId: string,
@@ -56,6 +61,7 @@ interface AssignSupervisorState {
 	) => Promise<boolean>;
 	refreshData: () => Promise<void>;
 	clearError: () => void;
+	isCacheValid: () => boolean;
 
 	// Optimistic update methods
 	updateAssignmentOptimistically: (
@@ -86,6 +92,15 @@ export const useAssignSupervisorStore = create<AssignSupervisorState>()(
 			refreshing: false,
 			updating: false,
 			lastError: null,
+			lastFetchTime: null,
+			cacheExpiry: 5 * 60 * 1000, // 5 minutes
+
+			// Check if cache is valid
+			isCacheValid: (): boolean => {
+				const { lastFetchTime, cacheExpiry } = get();
+				if (!lastFetchTime) return false;
+				return Date.now() - lastFetchTime < cacheExpiry;
+			},
 
 			// Determine status based on supervision count
 			determineStatus: (
@@ -98,7 +113,13 @@ export const useAssignSupervisorStore = create<AssignSupervisorState>()(
 			},
 
 			// Fetch all data
-			fetchData: async (): Promise<void> => {
+			fetchData: async (forceRefresh = false): Promise<void> => {
+				// Skip fetch if cache is valid and not forcing refresh
+				if (!forceRefresh && get().isCacheValid() && get().data.length > 0) {
+					console.log('Using cached data, skipping fetch');
+					return;
+				}
+
 				set({ loading: true, lastError: null });
 
 				try {
@@ -140,13 +161,37 @@ export const useAssignSupervisorStore = create<AssignSupervisorState>()(
 
 					set({ lecturers: lecturersResult.data || [] });
 
-					// Process each thesis
+					// Debug: Log all theses with their status and isPublish
 					console.log(
-						'Processing theses, count:',
-						(thesesResult.data || []).length,
+						'All theses status and publish info:',
+						(thesesResult.data || []).map((thesis: Thesis) => ({
+							id: thesis.id,
+							englishName: thesis.englishName,
+							status: thesis.status,
+							isPublish: thesis.isPublish,
+						})),
 					);
+
+					// Filter only approved and published theses
+					const filteredTheses = (thesesResult.data || []).filter(
+						(thesis: Thesis) =>
+							thesis.status === 'Approved' && thesis.isPublish === true,
+					);
+
+					console.log(
+						'Filtered theses (Approved + Published):',
+						filteredTheses.map((thesis: Thesis) => ({
+							id: thesis.id,
+							englishName: thesis.englishName,
+							status: thesis.status,
+							isPublish: thesis.isPublish,
+						})),
+					);
+
+					// Process each thesis
+					console.log('Processing theses, count:', filteredTheses.length);
 					const thesesWithData = await Promise.all(
-						(thesesResult.data || []).map(async (thesis, index) => {
+						filteredTheses.map(async (thesis, index) => {
 							console.log(`Processing thesis ${index + 1}:`, thesis);
 							const supervisionPromise = supervisionService.getByThesisId(
 								thesis.id,
@@ -302,7 +347,11 @@ export const useAssignSupervisorStore = create<AssignSupervisorState>()(
 
 					console.log('All processed theses:', thesesWithData);
 					console.log('Setting data with', thesesWithData.length, 'items');
-					set({ data: thesesWithData, loading: false });
+					set({
+						data: thesesWithData,
+						loading: false,
+						lastFetchTime: Date.now(),
+					});
 				} catch (err) {
 					console.error('Error in fetchData:', err);
 					const { message } = handleApiError(
@@ -607,7 +656,7 @@ export const useAssignSupervisorStore = create<AssignSupervisorState>()(
 			// Refresh data
 			refreshData: async (): Promise<void> => {
 				set({ refreshing: true });
-				await get().fetchData();
+				await get().fetchData(true); // Force refresh
 				set({ refreshing: false });
 			},
 
