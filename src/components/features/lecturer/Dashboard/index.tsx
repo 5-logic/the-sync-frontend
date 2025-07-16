@@ -12,7 +12,7 @@ export default function DashboardPage() {
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
 			<Header
-				title="Lecturer Dashboard"
+				title="Dashboard"
 				description="Welcome to your dashboard. Here you can track student progress, manage milestones, and provide timely feedback to guide thesis development."
 			/>
 			<DashboardStats />
