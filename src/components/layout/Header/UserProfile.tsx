@@ -90,9 +90,19 @@ const UserProfile: React.FC = () => {
 			icon: <SettingOutlined />,
 			label:
 				session?.user?.role === 'admin' ? (
-					<span onClick={handleSettingsClick} style={{ cursor: 'pointer' }}>
+					<button
+						onClick={handleSettingsClick}
+						type="button"
+						style={{
+							cursor: 'pointer',
+							background: 'none',
+							border: 'none',
+							padding: 0,
+							font: 'inherit',
+						}}
+					>
 						Settings
-					</span>
+					</button>
 				) : (
 					<Link href={getSettingsUrl() || '#'}>Settings</Link>
 				),
