@@ -75,9 +75,9 @@ const fetchApprovedThesesWithLecturer = async (): Promise<
 	const allTheses = thesisResult.data ?? [];
 	const allLecturers = lecturerResult.data ?? [];
 
-	// Filter only approved theses
-	const approvedTheses = allTheses.filter(
-		(thesis) => thesis.status === 'Approved',
+	// Filter only approved and published theses
+	const approvedAndPublishedTheses = allTheses.filter(
+		(thesis) => thesis.status === 'Approved' && thesis.isPublish === true,
 	);
 
 	// Create lecturer lookup map for efficient matching
@@ -86,8 +86,8 @@ const fetchApprovedThesesWithLecturer = async (): Promise<
 	);
 
 	// Enrich thesis data with lecturer information
-	const thesesWithLecturer: ThesisWithLecturer[] = approvedTheses.map(
-		(thesis) => {
+	const thesesWithLecturer: ThesisWithLecturer[] =
+		approvedAndPublishedTheses.map((thesis) => {
 			const lecturer = lecturerMap.get(thesis.lecturerId);
 			return {
 				...thesis,
@@ -97,8 +97,7 @@ const fetchApprovedThesesWithLecturer = async (): Promise<
 				})(),
 				lecturerEmail: lecturer?.email,
 			};
-		},
-	);
+		});
 
 	return thesesWithLecturer;
 };
