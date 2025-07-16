@@ -29,8 +29,8 @@ const DashboardStats: React.FC = () => {
 
 	return (
 		<Row gutter={[16, 16]}>
-			{stats.map((stat, index) => (
-				<Col xs={24} sm={12} md={8} key={index}>
+			{stats.map((stat) => (
+				<Col xs={24} sm={12} md={8} key={stat.title}>
 					<StatCard value={stat.value} title={stat.title} icon={stat.icon} />
 				</Col>
 			))}
