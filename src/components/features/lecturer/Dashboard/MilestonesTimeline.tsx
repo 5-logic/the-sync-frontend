@@ -9,12 +9,18 @@ const { Option } = Select;
 const MilestonesTimeline: React.FC = () => {
 	const [semester, setSemester] = useState('All');
 
-	// Filter milestones based on semester (for demo purposes, we'll use year from date)
-	const filteredMilestones = mockMilestoneDetails.filter((milestone) => {
-		if (semester === 'All') return true;
-		const year = dayjs(milestone.date).year().toString();
-		return year === semester;
-	});
+	// Get unique semesters from milestone data
+	const uniqueSemesters = Array.from(
+		new Set(mockMilestoneDetails.map((milestone) => milestone.semesterId)),
+	).sort();
+
+	// Filter milestones based on semester and sort by date
+	const filteredMilestones = mockMilestoneDetails
+		.filter((milestone) => {
+			if (semester === 'All') return true;
+			return milestone.semesterId === semester;
+		})
+		.sort((a, b) => dayjs(a.date).valueOf() - dayjs(b.date).valueOf());
 	const getColor = (status: string) => {
 		switch (status) {
 			case 'Ended':
@@ -66,36 +72,47 @@ const MilestonesTimeline: React.FC = () => {
 		<Card
 			title="Milestones Timeline"
 			extra={
-				<Select value={semester} onChange={setSemester} style={{ width: 150 }}>
-					<Option value="All">All Semester</Option>
-					<Option value="2024">2024</Option>
-					<Option value="2025">2025</Option>
+				<Select value={semester} onChange={setSemester} style={{ width: 180 }}>
+					<Option value="All">All Semesters</Option>
+					{uniqueSemesters.map((sem) => (
+						<Option key={sem} value={sem}>
+							{sem}
+						</Option>
+					))}
 				</Select>
 			}
 		>
 			<Timeline>
-				{filteredMilestones.map((item) => (
-					<Timeline.Item color={getColor(item.status)} key={item.id}>
-						<div>
-							<strong>{item.title}</strong> — {item.date}
-						</div>
-						<div style={{ marginTop: 4, fontSize: '12px', color: '#666' }}>
-							Status: {item.status}{' '}
-						</div>
-						{getDueText(item.date, item.status) && (
-							<div
-								style={{
-									marginTop: 4,
-									fontSize: '12px',
-									color: getDueColor(item.date, item.status),
-									fontWeight: 500,
-								}}
-							>
-								{getDueText(item.date, item.status)}
+				{filteredMilestones.length > 0 ? (
+					filteredMilestones.map((item) => (
+						<Timeline.Item color={getColor(item.status)} key={item.id}>
+							<div>
+								<strong>{item.title}</strong> —{' '}
+								{dayjs(item.date).format('MMM DD, YYYY')}
 							</div>
-						)}
-					</Timeline.Item>
-				))}
+							<div style={{ marginTop: 4, fontSize: '12px', color: '#666' }}>
+								Status: {item.status}{' '}
+							</div>
+							{getDueText(item.date, item.status) && (
+								<div
+									style={{
+										marginTop: 4,
+										fontSize: '12px',
+										color: getDueColor(item.date, item.status),
+										fontWeight: 500,
+									}}
+								>
+									{getDueText(item.date, item.status)}
+								</div>
+							)}
+						</Timeline.Item>
+					))
+				) : (
+					<div style={{ textAlign: 'center', color: '#999', padding: '20px' }}>
+						No milestones found for{' '}
+						{semester === 'All' ? 'any semester' : semester}
+					</div>
+				)}
 			</Timeline>
 		</Card>
 	);
