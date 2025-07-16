@@ -121,7 +121,7 @@ export default function AssignSupervisors() {
 			const currentSupervisorIds = thesis.supervisorDetails.map((s) => s.id);
 			const newSupervisorIds = draft.lecturerIds;
 
-			// Use intelligent assignment for bulk operations
+			// Use intelligent assignment with silent mode for bulk operations
 			const success = await handleIntelligentAssignment(
 				currentSupervisorIds,
 				newSupervisorIds,
@@ -168,14 +168,14 @@ export default function AssignSupervisors() {
 			if (newSupervisorIds.length === 0) return true; // No change needed
 
 			const assignments = [{ thesisId, lecturerIds: newSupervisorIds }];
-			// For silent mode, we'll let the calling function handle notifications
-			return await bulkAssignSupervisors(assignments);
+			// Use silent mode to prevent duplicate notifications
+			return await bulkAssignSupervisors(assignments, true);
 		}
 
 		// If no new supervisors, remove all using bulk assign with empty array
 		if (newSupervisorIds.length === 0) {
 			const assignments = [{ thesisId, lecturerIds: [] }];
-			return await bulkAssignSupervisors(assignments);
+			return await bulkAssignSupervisors(assignments, true);
 		}
 
 		// Analyze changes
@@ -204,12 +204,12 @@ export default function AssignSupervisors() {
 				const currentSupervisorId = supervisorsToRemove[i];
 				const newSupervisorId = supervisorsToAdd[i];
 
-				// changeSupervisor will show its own notifications
-				// For silent mode, we'll handle notifications at the component level
+				// Use silent mode to prevent duplicate notifications
 				const changeSuccess = await changeSupervisor(
 					thesisId,
 					currentSupervisorId,
 					newSupervisorId,
+					true, // silent mode
 				);
 
 				if (!changeSuccess) {
@@ -226,7 +226,7 @@ export default function AssignSupervisors() {
 			) {
 				// Use bulk assign to handle remaining changes
 				const assignments = [{ thesisId, lecturerIds: newSupervisorIds }];
-				const bulkSuccess = await bulkAssignSupervisors(assignments);
+				const bulkSuccess = await bulkAssignSupervisors(assignments, true); // silent mode
 
 				if (!bulkSuccess) {
 					allSuccessful = false;
@@ -337,10 +337,16 @@ export default function AssignSupervisors() {
 				setModalOpen(false);
 				setSelectedGroup(null);
 
-				// Show success notification
+				// Show success notification for change operations
 				notification.success({
 					message: 'Success',
 					description: 'Supervisor assignment completed successfully',
+				});
+			} else {
+				// Show error notification for failed assignments
+				notification.error({
+					message: 'Error',
+					description: 'Failed to change supervisor assignment',
 				});
 			}
 		} catch {
@@ -379,10 +385,16 @@ export default function AssignSupervisors() {
 				setModalOpen(false);
 				setSelectedGroup(null);
 
-				// Show success notification
+				// Show success notification for assignments
 				notification.success({
 					message: 'Success',
 					description: 'Supervisor assignment completed successfully',
+				});
+			} else {
+				// Show error notification for failed assignments
+				notification.error({
+					message: 'Error',
+					description: 'Failed to assign supervisors',
 				});
 			}
 		} catch {
