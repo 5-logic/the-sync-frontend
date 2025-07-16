@@ -12,7 +12,7 @@ import GroupListSection from '@/components/features/student/FormOrJoinGroup/Join
 import JoinGroupForm from '@/components/features/student/FormOrJoinGroup/JoinGroup/JoinGroupForm';
 import { type ExtendedGroup, extendedGroups } from '@/data/group';
 import { mockTheses } from '@/data/thesis';
-import { GroupService as Group } from '@/schemas/group';
+import { type Group } from '@/lib/services/groups.service';
 import { Thesis } from '@/schemas/thesis';
 import { useRequestsStore } from '@/store';
 import { useGroupsStore } from '@/store/useGroupsStore';
@@ -40,7 +40,7 @@ const mapApiGroupsToUI = (apiGroups: Group[]): GroupUI[] =>
 	apiGroups.map((group) => ({
 		id: group.id,
 		name: group.name,
-		leader: group.leader?.user?.fullName || 'No leader assigned', // Map leader name
+		leader: group.leader?.student?.user?.fullName || 'No leader assigned', // Map leader name from nested structure
 		domain: group.projectDirection || 'General',
 		members: group.memberCount || 0, // Use memberCount from API
 	}));
