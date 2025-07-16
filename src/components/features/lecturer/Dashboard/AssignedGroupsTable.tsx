@@ -23,7 +23,6 @@ const AssignedGroupsTable: React.FC = () => {
 
 	// Filter data
 	const filteredData = uniqueGroups.filter((group) => {
-		// Exact match for semester or "All"
 		const matchSemester = semester === 'All' || group.semesterId === semester;
 		const lowerSearch = searchText.toLowerCase();
 		return (

@@ -39,7 +39,6 @@ const SkillsDisplay: React.FC<{ skills: string[] }> = ({ skills }) => {
 				flexWrap: 'wrap',
 				gap: '8px',
 				alignItems: 'flex-start',
-				overflow: 'hidden',
 				maxHeight: '64px',
 			}}
 		>
@@ -143,9 +142,7 @@ const MyThesisSection: React.FC = () => {
 										color: '#000',
 										cursor: 'pointer',
 										transition: 'color 0.3s',
-										background: 'none',
-										border: 'none',
-										padding: 0,
+
 										font: 'inherit',
 									}}
 									onMouseEnter={(e) =>
