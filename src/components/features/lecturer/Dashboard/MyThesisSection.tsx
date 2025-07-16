@@ -113,12 +113,16 @@ const MyThesisSection: React.FC = () => {
 								</Row>
 							}
 							actions={[
-								<span
+								<button
 									key="view"
 									style={{
 										color: '#000',
 										cursor: 'pointer',
 										transition: 'color 0.3s',
+										background: 'none',
+										border: 'none',
+										padding: 0,
+										font: 'inherit',
 									}}
 									onMouseEnter={(e) =>
 										((e.currentTarget as HTMLElement).style.color = '#1890ff')
@@ -126,16 +130,23 @@ const MyThesisSection: React.FC = () => {
 									onMouseLeave={(e) =>
 										((e.currentTarget as HTMLElement).style.color = '#000')
 									}
+									onClick={() => {
+										// Handle view details action
+									}}
 								>
 									<EyeOutlined style={{ marginRight: 4 }} />
 									View Details
-								</span>,
-								<span
+								</button>,
+								<button
 									key="edit"
 									style={{
 										color: '#000',
 										cursor: 'pointer',
 										transition: 'color 0.3s',
+										background: 'none',
+										border: 'none',
+										padding: 0,
+										font: 'inherit',
 									}}
 									onMouseEnter={(e) =>
 										((e.currentTarget as HTMLElement).style.color = '#1890ff')
@@ -143,10 +154,13 @@ const MyThesisSection: React.FC = () => {
 									onMouseLeave={(e) =>
 										((e.currentTarget as HTMLElement).style.color = '#000')
 									}
+									onClick={() => {
+										// Handle edit action
+									}}
 								>
 									<EditOutlined style={{ marginRight: 4 }} />
 									Edit
-								</span>,
+								</button>,
 							]}
 							style={{ height: '100%' }}
 						>
