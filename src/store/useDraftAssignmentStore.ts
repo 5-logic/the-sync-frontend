@@ -37,12 +37,15 @@ export const useDraftAssignmentStore = create<DraftAssignmentState>()(
 
 				// Add or update draft assignment
 				addDraftAssignment: (assignment: DraftAssignment): void => {
-					set((state) => ({
-						draftAssignments: {
+					set((state) => {
+						const newState = {
 							...state.draftAssignments,
 							[assignment.thesisId]: assignment,
-						},
-					}));
+						};
+						return {
+							draftAssignments: newState,
+						};
+					});
 				},
 
 				// Remove draft assignment

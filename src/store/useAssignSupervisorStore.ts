@@ -8,6 +8,7 @@ import { handleApiError, handleApiResponse } from '@/lib/utils/handleApi';
 import { showNotification } from '@/lib/utils/notification';
 import { type Lecturer } from '@/schemas/lecturer';
 import { type Supervision } from '@/schemas/supervision';
+import { type Thesis } from '@/schemas/thesis';
 import { useSupervisionStore } from '@/store/useSupervisionStore';
 
 export type SupervisorAssignmentStatus =
@@ -31,6 +32,292 @@ export interface SupervisorAssignmentData {
 	groupId: string | null;
 }
 
+// Helper functions to reduce cognitive complexity
+const processSupervisionData = async (
+	thesis: Thesis,
+): Promise<{
+	supervisions: Supervision[];
+	supervisorDetails: Array<{
+		id: string;
+		fullName: string;
+		email: string;
+	}>;
+}> => {
+	const supervisionPromise = supervisionService.getByThesisId(thesis.id);
+	const [supervisionResult] = await Promise.allSettled([supervisionPromise]);
+
+	let supervisions: Supervision[] = [];
+
+	if (supervisionResult.status === 'fulfilled') {
+		const supervisionApiResponse = handleApiResponse(supervisionResult.value);
+
+		if (supervisionApiResponse.success) {
+			supervisions = supervisionApiResponse.data || [];
+		} else {
+			console.warn(
+				`Failed to fetch supervisions for thesis ${thesis.id}:`,
+				supervisionApiResponse.error,
+			);
+		}
+	} else {
+		console.warn(
+			`Promise rejected when fetching supervisions for thesis ${thesis.id}:`,
+			supervisionResult.reason,
+		);
+	}
+
+	const supervisorDetails = await fetchSupervisorDetails(
+		thesis.id,
+		supervisions,
+	);
+
+	return { supervisions, supervisorDetails };
+};
+
+const fetchSupervisorDetails = async (
+	thesisId: string,
+	supervisions: Supervision[],
+): Promise<
+	Array<{
+		id: string;
+		fullName: string;
+		email: string;
+	}>
+> => {
+	if (supervisions.length === 0) {
+		return [];
+	}
+
+	// Handle SimpleSupervisionSchema format: {lecturerId: 'uuid'}
+	const supervisionsData = supervisions as unknown as { lecturerId: string }[];
+	const validSupervisions = supervisionsData.filter(
+		(supervision) => supervision.lecturerId,
+	);
+
+	const invalidSupervisions = supervisionsData.filter(
+		(supervision) => !supervision.lecturerId,
+	);
+
+	if (invalidSupervisions.length > 0) {
+		console.warn(
+			`Found ${invalidSupervisions.length} invalid supervisions for thesis ${thesisId}:`,
+			invalidSupervisions,
+		);
+	}
+
+	if (validSupervisions.length === 0) {
+		return [];
+	}
+
+	const lecturerPromises = validSupervisions.map((supervision) =>
+		lecturerService.findOne(supervision.lecturerId),
+	);
+
+	const lecturerResults = await Promise.allSettled(lecturerPromises);
+	const supervisorDetails: Array<{
+		id: string;
+		fullName: string;
+		email: string;
+	}> = [];
+
+	for (const result of lecturerResults) {
+		if (result.status === 'fulfilled') {
+			const lecturerApiResponse = handleApiResponse(result.value);
+
+			if (lecturerApiResponse.success && lecturerApiResponse.data) {
+				supervisorDetails.push({
+					id: lecturerApiResponse.data.id,
+					fullName: lecturerApiResponse.data.fullName,
+					email: lecturerApiResponse.data.email,
+				});
+			}
+		}
+	}
+
+	return supervisorDetails;
+};
+
+const createAssignmentData = (
+	thesis: Thesis,
+	supervisions: Supervision[],
+	supervisorDetails: Array<{
+		id: string;
+		fullName: string;
+		email: string;
+	}>,
+): SupervisorAssignmentData => {
+	const abbreviation = thesis.abbreviation || 'No Abbreviation';
+	const domain = thesis.domain || 'No Domain';
+
+	const supervisionCount = supervisions.length;
+
+	let status: SupervisorAssignmentStatus;
+	if (supervisionCount === 2) {
+		status = 'Finalized';
+	} else if (supervisionCount === 1) {
+		status = 'Incomplete';
+	} else {
+		status = 'Unassigned';
+	}
+
+	const supervisorNames = supervisorDetails.map((s) => s.fullName);
+
+	return {
+		id: thesis.id,
+		thesisTitle: thesis.englishName,
+		groupName: abbreviation,
+		memberCount: domain,
+		supervisors: supervisorNames,
+		supervisorDetails,
+		status,
+		thesisId: thesis.id,
+		groupId: thesis.groupId || null,
+	};
+};
+
+// Helper functions to reduce cognitive complexity in bulkAssignSupervisors
+const performOptimisticUpdates = (
+	assignments: Array<{ thesisId: string; lecturerIds: string[] }>,
+	lecturers: Lecturer[],
+	updateAssignmentOptimistically: (
+		thesisId: string,
+		newSupervisors: Array<{ id: string; fullName: string; email: string }>,
+	) => void,
+) => {
+	assignments.forEach((assignment) => {
+		const supervisors = assignment.lecturerIds
+			.map((id) => lecturers.find((l) => l.id === id))
+			.filter(Boolean) as Array<{
+			id: string;
+			fullName: string;
+			email: string;
+		}>;
+
+		if (supervisors.length > 0) {
+			updateAssignmentOptimistically(assignment.thesisId, supervisors);
+		}
+	});
+};
+
+const handleCompleteFailure = (
+	setData: (data: SupervisorAssignmentData[]) => void,
+	originalData: SupervisorAssignmentData[],
+	warningCount: number,
+	silent: boolean,
+) => {
+	setData(originalData);
+
+	if (!silent) {
+		if (warningCount > 0) {
+			showNotification.warning(
+				'Assignment Skipped',
+				`${warningCount} assignments were skipped (already assigned or max supervisors reached)`,
+			);
+		} else {
+			showNotification.error('Assignment Failed', 'All assignments failed');
+		}
+	}
+	return false;
+};
+
+const handleCompleteSuccess = (
+	successful: number,
+	warningCount: number,
+	silent: boolean,
+) => {
+	if (!silent) {
+		if (warningCount > 0) {
+			showNotification.success(
+				'Assignment Complete',
+				`${successful} supervisors assigned successfully, ${warningCount} were already assigned`,
+			);
+		} else {
+			showNotification.success(
+				'Assignment Complete',
+				`All ${successful} supervisors assigned successfully`,
+			);
+		}
+	}
+	return true;
+};
+
+interface PartialSuccessOptions {
+	detailedResults: Array<{
+		status: string;
+		thesisId?: string;
+		lecturerId?: string;
+	}>;
+	warningStatuses: string[];
+	currentData: SupervisorAssignmentData[];
+	setData: (data: SupervisorAssignmentData[]) => void;
+	determineStatus: (supervisions: Supervision[]) => SupervisorAssignmentStatus;
+	successful: number;
+	failed: number;
+	silent: boolean;
+}
+
+const handlePartialSuccess = (options: PartialSuccessOptions) => {
+	const {
+		detailedResults,
+		warningStatuses,
+		currentData,
+		setData,
+		determineStatus,
+		successful,
+		failed,
+		silent,
+	} = options;
+	const failedResults = detailedResults.filter((r) => r.status === 'error');
+	const warningResults = detailedResults.filter((r) =>
+		warningStatuses.includes(r.status),
+	);
+
+	// Revert only the truly failed assignments (not warnings)
+	failedResults.forEach((failedResult) => {
+		if (failedResult.thesisId && failedResult.lecturerId) {
+			const updatedData = currentData.map((assignment) => {
+				if (assignment.thesisId === failedResult.thesisId) {
+					return {
+						...assignment,
+						supervisors: assignment.supervisors.filter(
+							(supervisorId: string) =>
+								supervisorId !== failedResult.lecturerId,
+						),
+						supervisorDetails: assignment.supervisorDetails.filter(
+							(detail: { id: string }) => detail.id !== failedResult.lecturerId,
+						),
+						status: determineStatus([]),
+					};
+				}
+				return assignment;
+			});
+			setData(updatedData);
+		}
+	});
+
+	const actualSuccesses = successful;
+	const actualWarnings = warningResults.length;
+	const actualFailures = failed - actualWarnings;
+
+	if (actualFailures > 0) {
+		if (!silent) {
+			showNotification.warning(
+				'Partial Success',
+				`${actualSuccesses} assignments succeeded, ${actualWarnings} were already assigned, ${actualFailures} failed`,
+			);
+		}
+		return false;
+	} else {
+		if (!silent) {
+			showNotification.success(
+				'Assignment Complete',
+				`${actualSuccesses} supervisors assigned successfully, ${actualWarnings} were already assigned`,
+			);
+		}
+		return true;
+	}
+};
+
 interface AssignSupervisorState {
 	// Data
 	data: SupervisorAssignmentData[];
@@ -44,11 +331,15 @@ interface AssignSupervisorState {
 	// Error states
 	lastError: string | null;
 
+	// Cache state
+	lastFetchTime: number | null;
+	cacheExpiry: number; // Cache expiry time in milliseconds (5 minutes)
+
 	// Helper functions
 	determineStatus: (supervisions: Supervision[]) => SupervisorAssignmentStatus;
 
 	// Actions
-	fetchData: () => Promise<void>;
+	fetchData: (forceRefresh?: boolean) => Promise<void>;
 	changeSupervisor: (
 		thesisId: string,
 		currentSupervisorId: string,
@@ -56,6 +347,7 @@ interface AssignSupervisorState {
 	) => Promise<boolean>;
 	refreshData: () => Promise<void>;
 	clearError: () => void;
+	isCacheValid: () => boolean;
 
 	// Optimistic update methods
 	updateAssignmentOptimistically: (
@@ -86,6 +378,15 @@ export const useAssignSupervisorStore = create<AssignSupervisorState>()(
 			refreshing: false,
 			updating: false,
 			lastError: null,
+			lastFetchTime: null,
+			cacheExpiry: 5 * 60 * 1000, // 5 minutes
+
+			// Check if cache is valid
+			isCacheValid: (): boolean => {
+				const { lastFetchTime, cacheExpiry } = get();
+				if (!lastFetchTime) return false;
+				return Date.now() - lastFetchTime < cacheExpiry;
+			},
 
 			// Determine status based on supervision count
 			determineStatus: (
@@ -98,28 +399,22 @@ export const useAssignSupervisorStore = create<AssignSupervisorState>()(
 			},
 
 			// Fetch all data
-			fetchData: async (): Promise<void> => {
+			fetchData: async (forceRefresh = false): Promise<void> => {
+				// Skip fetch if cache is valid and not forcing refresh
+				if (!forceRefresh && get().isCacheValid() && get().data.length > 0) {
+					return;
+				}
+
 				set({ loading: true, lastError: null });
 
 				try {
-					console.log('Starting fetchData...');
 					const [thesesResponse, lecturersResponse] = await Promise.all([
 						thesesService.findAll(),
 						lecturerService.findAll(),
 					]);
 
-					console.log('Raw API responses:', {
-						thesesResponse,
-						lecturersResponse,
-					});
-
 					const thesesResult = handleApiResponse(thesesResponse);
 					const lecturersResult = handleApiResponse(lecturersResponse);
-
-					console.log('Processed API responses:', {
-						thesesResult,
-						lecturersResult,
-					});
 
 					if (!thesesResult.success) {
 						console.error('Theses fetch failed:', thesesResult.error);
@@ -135,181 +430,39 @@ export const useAssignSupervisorStore = create<AssignSupervisorState>()(
 						);
 					}
 
-					console.log('Theses data:', thesesResult.data);
-					console.log('Lecturers data:', lecturersResult.data);
-
 					set({ lecturers: lecturersResult.data || [] });
 
-					// Process each thesis
-					console.log(
-						'Processing theses, count:',
-						(thesesResult.data || []).length,
+					// Filter only approved and published theses
+					const filteredTheses = (thesesResult.data || []).filter(
+						(thesis: Thesis) =>
+							thesis.status === 'Approved' && thesis.isPublish === true,
 					);
+
+					// Process each thesis
 					const thesesWithData = await Promise.all(
-						(thesesResult.data || []).map(async (thesis, index) => {
-							console.log(`Processing thesis ${index + 1}:`, thesis);
-							const supervisionPromise = supervisionService.getByThesisId(
-								thesis.id,
-							);
+						filteredTheses.map(async (thesis) => {
+							const { supervisions, supervisorDetails } =
+								await processSupervisionData(thesis);
 
-							const [supervisionResult] = await Promise.allSettled([
-								supervisionPromise,
-							]);
-
-							console.log(
-								`Supervision result for thesis ${thesis.id}:`,
-								supervisionResult,
-							);
-
-							// Process supervision data
-							let supervisions: Supervision[] = [];
-							let supervisorDetails: Array<{
-								id: string;
-								fullName: string;
-								email: string;
-							}> = [];
-
-							if (supervisionResult.status === 'fulfilled') {
-								const supervisionApiResponse = handleApiResponse(
-									supervisionResult.value,
-								);
-								console.log(
-									`Supervision API response for thesis ${thesis.id}:`,
-									supervisionApiResponse,
-								);
-
-								if (supervisionApiResponse.success) {
-									supervisions = supervisionApiResponse.data || [];
-									console.log(
-										`Found ${supervisions.length} supervisions for thesis ${thesis.id}`,
-									);
-									if (supervisions.length > 0) {
-										console.log(
-											'Supervision data structure for thesis',
-											thesis.id,
-											':',
-											supervisions,
-										);
-									}
-								} else {
-									console.warn(
-										`Failed to fetch supervisions for thesis ${thesis.id}:`,
-										supervisionApiResponse.error,
-									);
-								}
-							} else {
-								console.warn(
-									`Promise rejected when fetching supervisions for thesis ${thesis.id}:`,
-									supervisionResult.reason,
-								);
-							}
-
-							// Fetch lecturer details if we have supervisions
-							if (supervisions.length > 0) {
-								// Filter out supervisions with invalid lecturer data
-								// Handle SimpleSupervisionSchema format: {lecturerId: 'uuid'}
-								// The API returns simple supervision objects with lecturerId directly
-								// Note: Runtime data differs from TypeScript definition
-								const supervisionsData = supervisions as unknown as {
-									lecturerId: string;
-								}[];
-								const validSupervisions = supervisionsData.filter(
-									(supervision) => supervision.lecturerId,
-								);
-
-								const invalidSupervisions = supervisionsData.filter(
-									(supervision) => !supervision.lecturerId,
-								);
-
-								if (invalidSupervisions.length > 0) {
-									console.warn(
-										`Found ${invalidSupervisions.length} invalid supervisions for thesis ${thesis.id}:`,
-										invalidSupervisions,
-									);
-								}
-
-								console.log(
-									`Valid supervisions for thesis ${thesis.id}:`,
-									validSupervisions.length,
-									'/',
-									supervisions.length,
-								);
-
-								if (validSupervisions.length === 0) {
-									console.log(
-										`No valid supervisions found for thesis ${thesis.id}`,
-									);
-									supervisorDetails = [];
-								} else {
-									const lecturerPromises = validSupervisions.map(
-										(supervision) =>
-											lecturerService.findOne(supervision.lecturerId),
-									);
-
-									const lecturerResults =
-										await Promise.allSettled(lecturerPromises);
-
-									supervisorDetails = [];
-									for (const result of lecturerResults) {
-										if (result.status === 'fulfilled') {
-											const lecturerApiResponse = handleApiResponse(
-												result.value,
-											);
-											if (
-												lecturerApiResponse.success &&
-												lecturerApiResponse.data
-											) {
-												supervisorDetails.push({
-													id: lecturerApiResponse.data.id,
-													fullName: lecturerApiResponse.data.fullName,
-													email: lecturerApiResponse.data.email,
-												});
-											}
-										}
-									}
-								}
-							}
-
-							// Use thesis data directly - no need to fetch group
-							const abbreviation = thesis.abbreviation || 'No Abbreviation';
-							const domain = thesis.domain || 'No Domain';
-
-							// Calculate status based on actual supervision count
-							const supervisionCount = supervisions.length;
-							const status: SupervisorAssignmentStatus =
-								supervisionCount === 2
-									? 'Finalized'
-									: supervisionCount === 1
-										? 'Incomplete'
-										: 'Unassigned';
-							const supervisorNames = supervisorDetails.map((s) => s.fullName);
-
-							const finalResult = {
-								id: thesis.id,
-								thesisTitle: thesis.englishName,
-								groupName: abbreviation, // Now represents abbreviation
-								memberCount: domain, // Now represents domain (should be string but keeping number for compatibility)
-								supervisors: supervisorNames,
+							return createAssignmentData(
+								thesis,
+								supervisions,
 								supervisorDetails,
-								status,
-								thesisId: thesis.id,
-								groupId: thesis.groupId || null,
-							};
-							console.log(`Final result for thesis ${thesis.id}:`, finalResult);
-							return finalResult;
+							);
 						}),
 					);
 
-					console.log('All processed theses:', thesesWithData);
-					console.log('Setting data with', thesesWithData.length, 'items');
-					set({ data: thesesWithData, loading: false });
+					set({
+						data: thesesWithData,
+						loading: false,
+						lastFetchTime: Date.now(),
+					});
 				} catch (err) {
 					console.error('Error in fetchData:', err);
 					const { message } = handleApiError(
 						err,
 						'Failed to fetch assign supervisor data',
 					);
-					console.error('Error message:', message);
 					set({ lastError: message, loading: false });
 					showNotification.error('Error', message);
 				}
@@ -320,6 +473,7 @@ export const useAssignSupervisorStore = create<AssignSupervisorState>()(
 				thesisId: string,
 				currentSupervisorId: string,
 				newSupervisorId: string,
+				silent = false,
 			) => {
 				// Find original data for potential rollback
 				const originalAssignment = get().data.find(
@@ -366,14 +520,18 @@ export const useAssignSupervisorStore = create<AssignSupervisorState>()(
 						const errorMessage =
 							supervisionError || 'Failed to change supervisor';
 
-						showNotification.error('Error', errorMessage);
+						if (!silent) {
+							showNotification.error('Error', errorMessage);
+						}
 						return false;
 					}
 
-					showNotification.success(
-						'Success',
-						'Supervisor changed successfully',
-					);
+					if (!silent) {
+						showNotification.success(
+							'Success',
+							'Supervisor changed successfully',
+						);
+					}
 					return true;
 				} catch (error) {
 					// Revert optimistic update on error
@@ -382,7 +540,9 @@ export const useAssignSupervisorStore = create<AssignSupervisorState>()(
 						error,
 						'Failed to change supervisor',
 					);
-					showNotification.error('Error', message);
+					if (!silent) {
+						showNotification.error('Error', message);
+					}
 					return false;
 				}
 			},
@@ -437,6 +597,7 @@ export const useAssignSupervisorStore = create<AssignSupervisorState>()(
 					thesisId: string;
 					lecturerIds: string[];
 				}>,
+				silent = false,
 			) => {
 				set({ updating: true });
 
@@ -445,22 +606,11 @@ export const useAssignSupervisorStore = create<AssignSupervisorState>()(
 
 				try {
 					// Optimistic updates for all assignments
-					assignments.forEach((assignment) => {
-						const supervisors = assignment.lecturerIds
-							.map((id) => get().lecturers.find((l) => l.id === id))
-							.filter(Boolean) as Array<{
-							id: string;
-							fullName: string;
-							email: string;
-						}>;
-
-						if (supervisors.length > 0) {
-							get().updateAssignmentOptimistically(
-								assignment.thesisId,
-								supervisors,
-							);
-						}
-					});
+					performOptimisticUpdates(
+						assignments,
+						get().lecturers,
+						get().updateAssignmentOptimistically,
+					);
 
 					// Call API
 					const supervisionStore = useSupervisionStore.getState();
@@ -468,128 +618,48 @@ export const useAssignSupervisorStore = create<AssignSupervisorState>()(
 						assignments,
 					});
 
-					console.log('Bulk assignment API result:', result);
-
 					if (!result) {
 						// No result returned - API error
-						set({ data: originalData });
-
-						// Get error from supervision store if available
 						const supervisionError = useSupervisionStore.getState().lastError;
 						const errorMessage = supervisionError || 'No response from server';
 
+						set({ data: originalData });
 						showNotification.error('Assignment Failed', errorMessage);
 						return false;
 					}
 
 					// Analyze results based on backend response
 					const { successful, failed } = result.summary;
-					const totalAttempted = successful + failed;
-
-					console.log(
-						`Assignment results: ${successful} succeeded, ${failed} failed out of ${totalAttempted} total`,
-					);
-
-					// Analyze detailed results to provide better feedback
 					const warningStatuses = ['already_exists', 'max_supervisors_reached'];
-
 					const detailedResults = result.results || [];
 					const warningCount = detailedResults.filter((r: { status: string }) =>
 						warningStatuses.includes(r.status),
 					).length;
 
 					if (successful === 0) {
-						// Complete failure - revert all optimistic updates
-						set({ data: originalData });
-
-						if (warningCount > 0) {
-							showNotification.warning(
-								'Assignment Skipped',
-								`${warningCount} assignments were skipped (already assigned or max supervisors reached)`,
-							);
-						} else {
-							showNotification.error(
-								'Assignment Failed',
-								'All assignments failed',
-							);
-						}
-						return false;
+						return handleCompleteFailure(
+							(data) => set({ data }),
+							originalData,
+							warningCount,
+							silent,
+						);
 					}
 
 					if (failed === 0) {
-						// Complete success - all assignments succeeded
-						if (warningCount > 0) {
-							showNotification.success(
-								'Assignment Complete',
-								`${successful} supervisors assigned successfully, ${warningCount} were already assigned`,
-							);
-						} else {
-							showNotification.success(
-								'Assignment Complete',
-								`All ${successful} supervisors assigned successfully`,
-							);
-						}
-						return true;
+						return handleCompleteSuccess(successful, warningCount, silent);
 					}
 
 					// Partial success - some succeeded, some failed
-					// Only revert the assignments that actually failed
-					const failedResults = detailedResults.filter(
-						(r: { status: string }) => r.status === 'error',
-					);
-					const warningResults = detailedResults.filter(
-						(r: { status: string }) => warningStatuses.includes(r.status),
-					);
-
-					console.log('Failed assignments:', failedResults);
-					console.log('Warning assignments:', warningResults);
-
-					// Revert only the truly failed assignments (not warnings)
-					failedResults.forEach(
-						(failedResult: { thesisId?: string; lecturerId?: string }) => {
-							if (failedResult.thesisId && failedResult.lecturerId) {
-								// Find and revert this specific assignment
-								const currentData = get().data;
-								const updatedData = currentData.map((assignment) => {
-									if (assignment.thesisId === failedResult.thesisId) {
-										// Remove the lecturer that failed to be assigned
-										return {
-											...assignment,
-											supervisors: assignment.supervisors.filter(
-												(supervisorId) =>
-													supervisorId !== failedResult.lecturerId,
-											),
-											supervisorDetails: assignment.supervisorDetails.filter(
-												(detail) => detail.id !== failedResult.lecturerId,
-											),
-											status: get().determineStatus([]), // Recalculate status
-										};
-									}
-									return assignment;
-								});
-								set({ data: updatedData });
-							}
-						},
-					);
-
-					// Show appropriate notification based on results
-					const actualSuccesses = successful;
-					const actualWarnings = warningResults.length;
-					const actualFailures = failed - actualWarnings; // True failures (not warnings)
-
-					if (actualFailures > 0) {
-						showNotification.warning(
-							'Partial Success',
-							`${actualSuccesses} assignments succeeded, ${actualWarnings} were already assigned, ${actualFailures} failed`,
-						);
-					} else {
-						// Only warnings, no real failures
-						showNotification.success(
-							'Assignment Complete',
-							`${actualSuccesses} supervisors assigned successfully, ${actualWarnings} were already assigned`,
-						);
-					}
-					return true; // Still return true because some succeeded
+					return handlePartialSuccess({
+						detailedResults,
+						warningStatuses,
+						currentData: get().data,
+						setData: (data: SupervisorAssignmentData[]) => set({ data }),
+						determineStatus: get().determineStatus,
+						successful,
+						failed,
+						silent,
+					});
 				} catch (error) {
 					// Revert all optimistic updates on error
 					set({ data: originalData });
@@ -597,7 +667,9 @@ export const useAssignSupervisorStore = create<AssignSupervisorState>()(
 						error,
 						'Failed to bulk assign supervisors',
 					);
-					showNotification.error('Error', message);
+					if (!silent) {
+						showNotification.error('Error', message);
+					}
 					return false;
 				} finally {
 					set({ updating: false });
@@ -607,7 +679,7 @@ export const useAssignSupervisorStore = create<AssignSupervisorState>()(
 			// Refresh data
 			refreshData: async (): Promise<void> => {
 				set({ refreshing: true });
-				await get().fetchData();
+				await get().fetchData(true); // Force refresh
 				set({ refreshing: false });
 			},
 
