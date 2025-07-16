@@ -2,6 +2,7 @@ import { Button, Card, Divider, Space, Tag, Typography } from 'antd';
 import { useRouter } from 'next/navigation';
 import { memo, useState } from 'react';
 
+import EditGroupInfoDialog from '@/components/features/student/GroupDashboard/EditGroupInfoDialog';
 import { GroupConfirmationModals } from '@/components/features/student/GroupDashboard/GroupConfirmationModals';
 import GroupMembersCard from '@/components/features/student/GroupDashboard/GroupMembersCard';
 import InviteMembersDialog from '@/components/features/student/GroupDashboard/InviteMembersDialog';
@@ -24,6 +25,7 @@ export default memo(function GroupInfoCard({
 	viewOnly = false,
 }: GroupInfoCardProps) {
 	const [isInviteDialogVisible, setIsInviteDialogVisible] = useState(false);
+	const [isEditDialogVisible, setIsEditDialogVisible] = useState(false);
 	const [isLeaving, setIsLeaving] = useState(false);
 	const [isDeleting, setIsDeleting] = useState(false);
 	const { session } = useSessionData();
@@ -177,9 +179,21 @@ export default memo(function GroupInfoCard({
 	return (
 		<Card className="bg-white border border-gray-200 rounded-md">
 			<div className="pb-4">
-				<Title level={4} className="text-base font-bold text-gray-600 mb-3">
-					Group Information
-				</Title>
+				<div className="flex justify-between items-center">
+					<Title level={4} className="text-base font-bold text-gray-600 mb-3">
+						Group Information
+					</Title>
+					{/* Edit Group Info Button - only visible to leader and when can modify */}
+					{!viewOnly && isCurrentUserLeader && canModifyGroup && (
+						<Button
+							type="primary"
+							onClick={() => setIsEditDialogVisible(true)}
+							title="Edit group information"
+						>
+							Edit Group Info
+						</Button>
+					)}
+				</div>
 				<Divider className="bg-gray-100 my-3" size="small" />
 			</div>
 
@@ -211,58 +225,59 @@ export default memo(function GroupInfoCard({
 					</div>
 
 					{/* Project Direction */}
-					{group.projectDirection && (
-						<div>
-							<Text className="text-sm text-gray-400 block font-semibold">
-								Project Direction
-							</Text>
-							<Text className="text-sm text-gray-600">
-								{group.projectDirection}
-							</Text>
-						</div>
-					)}
+					<div>
+						<Text className="text-sm text-gray-400 block font-semibold">
+							Project Direction
+						</Text>
+						<Text className="text-sm text-gray-600">
+							{group.projectDirection || (
+								<span className="text-gray-400 italic">Not specified</span>
+							)}
+						</Text>
+					</div>
 
 					{/* Skills and Responsibilities - 2 columns */}
-					{((group.skills && group.skills.length > 0) ||
-						(group.responsibilities && group.responsibilities.length > 0)) && (
-						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-							{/* Required Skills */}
-							{group.skills && group.skills.length > 0 && (
-								<div>
-									<Text className="text-sm text-gray-400 block font-semibold">
-										Required Skills
-									</Text>
-									<div className="flex flex-wrap gap-2 mt-1">
-										{group.skills.map((skill) => (
-											<Tag key={skill.id} color="blue" className="text-xs">
-												{skill.name}
-											</Tag>
-										))}
-									</div>
+					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+						{' '}
+						{/* Required Skills */}
+						<div>
+							<Text className="text-sm text-gray-400 block font-semibold">
+								Required Skills
+							</Text>
+							{group.skills && group.skills.length > 0 ? (
+								<div className="flex flex-wrap gap-2 mt-1">
+									{group.skills.map((skill) => (
+										<Tag key={skill.id} color="blue" className="text-xs">
+											{skill.name}
+										</Tag>
+									))}
 								</div>
-							)}
-
-							{/* Responsibilities */}
-							{group.responsibilities && group.responsibilities.length > 0 && (
-								<div>
-									<Text className="text-sm text-gray-400 block font-semibold">
-										Responsibilities
-									</Text>
-									<div className="flex flex-wrap gap-2 mt-1">
-										{group.responsibilities.map((responsibility) => (
-											<Tag
-												key={responsibility.id}
-												color="green"
-												className="text-xs"
-											>
-												{responsibility.name}
-											</Tag>
-										))}
-									</div>
-								</div>
+							) : (
+								<Text className="text-gray-400 italic">Not specified</Text>
 							)}
 						</div>
-					)}
+						{/* Responsibilities */}
+						<div>
+							<Text className="text-sm text-gray-400 block font-semibold">
+								Responsibilities
+							</Text>
+							{group.responsibilities && group.responsibilities.length > 0 ? (
+								<div className="flex flex-wrap gap-2 mt-1">
+									{group.responsibilities.map((responsibility) => (
+										<Tag
+											key={responsibility.id}
+											color="green"
+											className="text-xs"
+										>
+											{responsibility.name}
+										</Tag>
+									))}
+								</div>
+							) : (
+								<Text className="text-gray-400 italic">Not specified</Text>
+							)}
+						</div>
+					</div>
 
 					{/* Members Section */}
 					<div>
@@ -346,6 +361,19 @@ export default memo(function GroupInfoCard({
 					onCancel={() => setIsInviteDialogVisible(false)}
 					onSuccess={handleInviteSuccess}
 					groupId={group.id}
+					group={group}
+				/>
+			)}
+
+			{/* Edit Group Info dialog only shown when not in viewOnly mode */}
+			{!viewOnly && (
+				<EditGroupInfoDialog
+					visible={isEditDialogVisible}
+					onCancel={() => setIsEditDialogVisible(false)}
+					onSuccess={() => {
+						setIsEditDialogVisible(false);
+						refreshGroup();
+					}}
 					group={group}
 				/>
 			)}
