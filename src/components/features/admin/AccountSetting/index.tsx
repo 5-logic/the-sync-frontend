@@ -4,7 +4,6 @@ import { Alert, Button, Form, Input, Modal } from 'antd';
 import React, { useEffect, useState } from 'react';
 
 import { FormLabel } from '@/components/common/FormLabel';
-import adminService from '@/lib/services/admins.service';
 import { AdminUpdate } from '@/schemas/admin';
 import { useAdminStore } from '@/store/useAdminStore';
 
@@ -58,36 +57,27 @@ const AccountSettingModal: React.FC<AccountSettingModalProps> = ({
 			]);
 			return;
 		}
-		if (!admin?.id) {
-			form.setFields([
-				{
-					name: 'email',
-					errors: ['Admin not found'],
-				},
-			]);
-			return;
-		}
 		try {
+			const emailChanged = values.email !== email;
+			const passwordChanged = values.oldPassword || values.newPassword;
+			if (!emailChanged && !passwordChanged) {
+				onClose();
+				return;
+			}
 			const updateDto: AdminUpdate = { email: values.email };
 			if (values.oldPassword && values.newPassword) {
 				updateDto.oldPassword = values.oldPassword;
 				updateDto.newPassword = values.newPassword;
 			}
-			window.alert(
-				'[AccountSettingModal] Calling adminService.update with: ' +
-					JSON.stringify(updateDto),
-			);
-			const updated = await adminService.update(updateDto);
-
+			const updated = await updateAdmin(updateDto);
 			if (updated) {
-				console.log('Profile updated successfully:', updated);
-				// setAdmin(updated);
-				// setSuccess('Profile updated successfully!');
-				// form.setFieldsValue({
-				// 	oldPassword: '',
-				// 	newPassword: '',
-				// 	confirmPassword: '',
-				// });
+				setAdmin(updated);
+				setSuccess('Profile updated successfully!');
+				form.setFieldsValue({
+					oldPassword: '',
+					newPassword: '',
+					confirmPassword: '',
+				});
 			}
 		} catch (err: unknown) {
 			form.setFields([
@@ -105,7 +95,7 @@ const AccountSettingModal: React.FC<AccountSettingModalProps> = ({
 			title="Account Settings"
 			onCancel={onClose}
 			footer={null}
-			destroyOnClose
+			destroyOnHidden
 		>
 			<Form
 				form={form}
@@ -120,12 +110,9 @@ const AccountSettingModal: React.FC<AccountSettingModalProps> = ({
 				<Form.Item
 					label={<FormLabel text="Email" isBold />}
 					name="email"
-					rules={[
-						{ required: true, message: 'Please enter your email' },
-						{ type: 'email', message: 'Invalid email format' },
-					]}
+					rules={[{ type: 'email', message: 'Invalid email format' }]}
 				>
-					<Input type="email" placeholder="Enter your email" value={email} />
+					<Input type="email" value={email} />
 				</Form.Item>
 				<Form.Item
 					label={<FormLabel text="Current Password" isBold />}
@@ -189,12 +176,6 @@ const AccountSettingModal: React.FC<AccountSettingModalProps> = ({
 						placeholder="Confirm new password"
 					/>
 				</Form.Item>
-				{error && (
-					<Alert type="error" message={error} showIcon className="mb-2" />
-				)}
-				{success && (
-					<Alert type="success" message={success} showIcon className="mb-2" />
-				)}
 				<div className="flex justify-end gap-2">
 					<Button onClick={onClose} disabled={loading} style={{ minWidth: 90 }}>
 						Cancel
