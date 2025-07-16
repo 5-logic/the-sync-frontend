@@ -1,6 +1,8 @@
 import { Card, Input, Select, Table } from 'antd';
 import React, { useState } from 'react';
 
+import { allMockGroups } from '@/data/group';
+
 const { Search } = Input;
 const { Option } = Select;
 
@@ -8,58 +10,37 @@ const AssignedGroupsTable: React.FC = () => {
 	const [searchText, setSearchText] = useState('');
 	const [semester, setSemester] = useState('All');
 
-	const dataSource = [
-		{
-			key: '1',
-			groupName: 'Team Innovation',
-			groupLeader: 'John Anderson',
-			thesisTitle: 'AI-Powered Smart Campus Navigation System',
-			semester: 'Spring 2024',
-		},
-		{
-			key: '2',
-			groupName: 'BlockChain Masters',
-			groupLeader: 'Emily Chen',
-			thesisTitle: 'Blockchain-based Academic Credential Verification',
-			semester: 'Spring 2024',
-		},
-		{
-			key: '3',
-			groupName: 'IoT Pioneers',
-			groupLeader: 'Michael Brown',
-			thesisTitle: 'IoT Environmental Monitoring System',
-			semester: 'Fall 2023',
-		},
-	];
-
-	const filteredData = dataSource.filter(
-		(item) =>
-			(semester === 'All' || item.semester === semester) &&
-			(item.groupName.toLowerCase().includes(searchText.toLowerCase()) ||
-				item.groupLeader.toLowerCase().includes(searchText.toLowerCase()) ||
-				item.thesisTitle.toLowerCase().includes(searchText.toLowerCase())),
-	);
+	const filteredData = allMockGroups.filter((group) => {
+		const matchSemester = semester === 'All' || group.semesterId === semester;
+		const searchLower = searchText.toLowerCase();
+		return (
+			matchSemester &&
+			(group.name.toLowerCase().includes(searchLower) ||
+				group.leader.toLowerCase().includes(searchLower) ||
+				group.title.toLowerCase().includes(searchLower))
+		);
+	});
 
 	const columns = [
 		{
 			title: 'Group Name',
-			dataIndex: 'groupName',
-			key: 'groupName',
+			dataIndex: 'name',
+			key: 'name',
 		},
 		{
 			title: 'Group Leader',
-			dataIndex: 'groupLeader',
-			key: 'groupLeader',
+			dataIndex: 'leader',
+			key: 'leader',
 		},
 		{
 			title: 'Thesis Title',
-			dataIndex: 'thesisTitle',
-			key: 'thesisTitle',
+			dataIndex: 'title',
+			key: 'title',
 		},
 		{
 			title: 'Semester',
-			dataIndex: 'semester',
-			key: 'semester',
+			dataIndex: 'semesterId',
+			key: 'semesterId',
 		},
 		{
 			title: 'Actions',
@@ -85,13 +66,14 @@ const AssignedGroupsTable: React.FC = () => {
 				/>
 				<Select value={semester} onChange={setSemester} style={{ width: 150 }}>
 					<Option value="All">All Semester</Option>
-					<Option value="Spring 2024">Spring 2024</Option>
-					<Option value="Fall 2023">Fall 2023</Option>
+					<Option value="2023">2023</Option>
+					<Option value="2024">2024</Option>
 				</Select>
 			</div>
 			<Table
 				columns={columns}
 				dataSource={filteredData}
+				rowKey="id"
 				pagination={{ pageSize: 5 }}
 				scroll={{ x: 'max-content' }}
 			/>
