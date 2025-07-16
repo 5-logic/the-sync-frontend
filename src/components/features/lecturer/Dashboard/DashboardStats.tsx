@@ -6,7 +6,7 @@ import {
 import { Col, Row } from 'antd';
 import React from 'react';
 
-import StatCard from './StatCard';
+import StatCard from '@/components/features/lecturer/Dashboard/StatCard';
 
 const DashboardStats: React.FC = () => {
 	const stats = [
