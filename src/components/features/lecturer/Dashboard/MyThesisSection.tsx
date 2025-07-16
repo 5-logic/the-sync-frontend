@@ -1,4 +1,4 @@
-import { EditOutlined, EyeOutlined } from '@ant-design/icons';
+import { EditOutlined, EyeOutlined, PlusOutlined } from '@ant-design/icons';
 import { Button, Card, Col, Row, Tag, Typography } from 'antd';
 import React from 'react';
 
@@ -14,10 +14,17 @@ const statusColor = {
 
 const MyThesisSection: React.FC = () => {
 	return (
-		<Card title="My Thesis Topics">
-			<Row justify="space-between" style={{ marginBottom: 16 }}>
+		<Card>
+			<Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
 				<Col>
-					<Button type="primary">+ New Thesis Topic</Button>
+					<Typography.Title level={5} style={{ margin: 0 }}>
+						My Thesis Topics
+					</Typography.Title>
+				</Col>
+				<Col>
+					<Button type="primary" icon={<PlusOutlined />}>
+						New Thesis Topic
+					</Button>
 				</Col>
 			</Row>
 
