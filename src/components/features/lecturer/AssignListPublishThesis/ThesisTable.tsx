@@ -35,6 +35,22 @@ export default function ThesisTable({
 		setData(theses);
 	}, [theses]);
 
+	// Separate effect to handle auto-deselection of disabled items
+	useEffect(() => {
+		if (selectedRowKeys.length > 0 && theses.length > 0) {
+			const validSelectedKeys = selectedRowKeys.filter((key) => {
+				const thesis = theses.find((t) => t.id === key);
+				return thesis && !thesis.isPublish && !thesis.groupId;
+			});
+
+			if (validSelectedKeys.length !== selectedRowKeys.length) {
+				setSelectedRowKeys(validSelectedKeys);
+				onSelectionChange?.(validSelectedKeys.map(String));
+			}
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [theses]); // Intentionally only depend on theses to avoid infinite loops
+
 	// Sync selectedRowKeys with parent component's selectedKeys
 	useEffect(() => {
 		if (selectedKeys !== undefined) {
@@ -82,6 +98,16 @@ export default function ThesisTable({
 							'Publish Status Updated',
 							`Thesis ${statusText} successfully`,
 						);
+
+						// Auto-deselect the item if it becomes disabled after toggle
+						// (when published or has group assigned)
+						if (newValue || thesis.groupId) {
+							const newSelectedKeys = selectedRowKeys.filter(
+								(key) => key !== id,
+							);
+							setSelectedRowKeys(newSelectedKeys);
+							onSelectionChange?.(newSelectedKeys.map(String));
+						}
 					} else {
 						showNotification.error(
 							'Update Failed',
