@@ -1,6 +1,6 @@
 'use client';
 
-import { Space } from 'antd';
+import { Col, Row, Space } from 'antd';
 
 import { Header } from '@/components/common/Header';
 import AssignedGroupsTable from '@/components/features/lecturer/Dashboard/AssignedGroupsTable';
@@ -15,19 +15,28 @@ export default function DashboardPage() {
 				title="Dashboard"
 				description="Welcome to your dashboard. Here you can track student progress, manage milestones, and provide timely feedback to guide thesis development."
 			/>
+
 			<DashboardStats />
 
-			<div style={{ marginTop: 12 }}>
-				<MyThesisSection />
-			</div>
+			<Space direction="vertical" size="large" style={{ width: '100%' }}>
+				<Row>
+					<Col span={24}>
+						<MyThesisSection />
+					</Col>
+				</Row>
 
-			<div style={{ marginTop: 12 }}>
-				<AssignedGroupsTable />
-			</div>
+				<Row>
+					<Col span={24}>
+						<AssignedGroupsTable />
+					</Col>
+				</Row>
 
-			<div style={{ marginTop: 12 }}>
-				<MilestonesTimeline />
-			</div>
+				<Row>
+					<Col span={24}>
+						<MilestonesTimeline />
+					</Col>
+				</Row>
+			</Space>
 		</Space>
 	);
 }
