@@ -10,7 +10,8 @@ interface LecturerOption {
 
 interface Props {
 	readonly open: boolean;
-	readonly loading?: boolean;
+	readonly loading?: boolean; // For assign now button
+	readonly saveDraftLoading?: boolean; // For save draft button
 	readonly onCancel: () => void;
 	readonly onSaveDraft: (values: string[]) => void;
 	readonly onAssignNow: (values: string[]) => void;
@@ -28,6 +29,7 @@ interface Props {
 export default function AssignSupervisorModal({
 	open,
 	loading = false,
+	saveDraftLoading = false,
 	onCancel,
 	onSaveDraft,
 	onAssignNow,
@@ -239,7 +241,11 @@ export default function AssignSupervisorModal({
 			open={open}
 			onCancel={handleCancel}
 			footer={[
-				<Button key="cancel" onClick={handleCancel} disabled={loading}>
+				<Button
+					key="cancel"
+					onClick={handleCancel}
+					disabled={loading || saveDraftLoading}
+				>
 					Cancel
 				</Button>,
 				// For change mode (Finalized status), only show "Change" button
@@ -250,7 +256,7 @@ export default function AssignSupervisorModal({
 								type="primary"
 								onClick={handleAssignNow}
 								loading={loading}
-								disabled={loading}
+								disabled={loading || saveDraftLoading}
 							>
 								Change
 							</Button>,
@@ -260,8 +266,8 @@ export default function AssignSupervisorModal({
 							<Button
 								key="draft"
 								onClick={handleSaveDraft}
-								loading={loading}
-								disabled={loading}
+								loading={saveDraftLoading}
+								disabled={loading || saveDraftLoading}
 							>
 								Save Draft
 							</Button>,
@@ -272,7 +278,7 @@ export default function AssignSupervisorModal({
 											type="primary"
 											onClick={handleAssignNow}
 											loading={loading}
-											disabled={loading}
+											disabled={loading || saveDraftLoading}
 										>
 											Assign Now
 										</Button>,
