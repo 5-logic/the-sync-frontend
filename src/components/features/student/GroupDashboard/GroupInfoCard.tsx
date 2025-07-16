@@ -39,11 +39,15 @@ export default memo(function GroupInfoCard({
 	// Check if current user is the leader
 	const isCurrentUserLeader = session?.user?.id === group.leader.userId;
 
-	// Check if semester is in PREPARING status
-	const canModifyGroup = group.semester.status === 'Preparing';
-
 	// Check if group has thesis or submissions (cannot delete)
 	const hasThesisOrSubmissions = group.thesis !== null;
+
+	// Check if semester is in PREPARING status and group doesn't have thesis
+	const canModifyGroup =
+		group.semester.status === 'Preparing' && !hasThesisOrSubmissions;
+
+	// Check if semester is NOT in PREPARING status - hide action buttons
+	const shouldHideActionButtons = group.semester.status !== 'Preparing';
 
 	// Check if user is the only member (cannot leave - must delete instead)
 	const isOnlyMember = group.members.length === 1;
@@ -273,19 +277,19 @@ export default memo(function GroupInfoCard({
 
 				{/* Created Date and Action Buttons */}
 				<div
-					className={`flex items-end ${viewOnly ? 'justify-start' : 'justify-between'} pt-4`}
+					className={`flex flex-col sm:flex-row sm:items-end ${viewOnly ? 'sm:justify-start' : 'sm:justify-between'} gap-4 pt-4`}
 				>
-					<div>
+					<div className="flex-shrink-0">
 						<Text className="text-sm text-gray-400 block font-semibold">
 							Created Date
 						</Text>
-						<Text className="text-sm text-gray-600">
+						<Text className="text-sm text-gray-600 whitespace-nowrap">
 							{formatDate(group.createdAt)}
 						</Text>
 					</div>
 
-					{/* Action buttons only shown when not in viewOnly mode */}
-					{!viewOnly && (
+					{/* Action buttons only shown when not in viewOnly mode and semester is Preparing */}
+					{!viewOnly && !shouldHideActionButtons && (
 						<Space>
 							{/* Leave Group Button - visible to all members */}
 							<Button
