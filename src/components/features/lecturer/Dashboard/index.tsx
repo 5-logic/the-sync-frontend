@@ -1,14 +1,10 @@
 'use client';
 
-import { Typography } from 'antd';
-
 import { Header } from '@/components/common/Header';
 import AssignedGroupsTable from '@/components/features/lecturer/Dashboard/AssignedGroupsTable';
 import DashboardStats from '@/components/features/lecturer/Dashboard/DashboardStats';
 import MilestonesTimeline from '@/components/features/lecturer/Dashboard/MilestonesTimeline';
 import MyThesisSection from '@/components/features/lecturer/Dashboard/MyThesisSection';
-
-const { Title } = Typography;
 
 export default function DashboardPage() {
 	return (
