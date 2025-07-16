@@ -1,11 +1,10 @@
-import { EyeOutlined } from '@ant-design/icons';
+import { EyeOutlined, SearchOutlined } from '@ant-design/icons';
 import { Card, Col, Input, Row, Select, Table, Tooltip } from 'antd';
 import React, { useState } from 'react';
 
 import { TablePagination } from '@/components/common/TablePagination';
 import { allMockGroups } from '@/data/group';
 
-const { Search } = Input;
 const { Option } = Select;
 
 const AssignedGroupsTable: React.FC = () => {
@@ -17,6 +16,7 @@ const AssignedGroupsTable: React.FC = () => {
 		new Map(allMockGroups.map((group) => [group.id, group])).values(),
 	);
 
+	// Filter data
 	const filteredData = uniqueGroups.filter((group) => {
 		const matchSemester = semester === 'All' || group.semesterId === semester;
 		const lowerSearch = searchText.toLowerCase();
@@ -28,6 +28,7 @@ const AssignedGroupsTable: React.FC = () => {
 		);
 	});
 
+	// Table columns
 	const columns = [
 		{
 			title: 'Group Name',
@@ -55,7 +56,11 @@ const AssignedGroupsTable: React.FC = () => {
 			render: () => (
 				<Tooltip title="View Details">
 					<EyeOutlined
-						style={{ fontSize: 18, cursor: 'pointer', color: '#1890ff' }}
+						style={{
+							fontSize: 18,
+							cursor: 'pointer',
+							color: '#1890ff',
+						}}
 					/>
 				</Tooltip>
 			),
@@ -65,15 +70,16 @@ const AssignedGroupsTable: React.FC = () => {
 	return (
 		<Card title="Assigned Groups">
 			<Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
-				<Col xs={24} md={16}>
-					<Search
+				<Col flex="auto">
+					<Input
 						allowClear
+						prefix={<SearchOutlined />}
 						placeholder="Search thesis, group, leader"
 						value={searchText}
 						onChange={(e) => setSearchText(e.target.value)}
 					/>
 				</Col>
-				<Col xs={24} md={8}>
+				<Col flex="200px">
 					<Select
 						value={semester}
 						onChange={setSemester}
