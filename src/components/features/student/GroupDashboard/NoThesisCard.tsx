@@ -1,5 +1,6 @@
 import { BulbOutlined, FileTextOutlined } from '@ant-design/icons';
 import { Button, Card, Col, Divider, Row, Typography } from 'antd';
+import { useRouter } from 'next/navigation';
 
 const { Title, Text } = Typography;
 
@@ -10,6 +11,7 @@ interface ThesisOptionCardProps {
 	readonly buttonText: string;
 	readonly icon: React.ReactNode;
 	readonly buttonType?: 'primary' | 'default';
+	readonly onClick?: () => void;
 }
 
 function ThesisOptionCard({
@@ -18,6 +20,7 @@ function ThesisOptionCard({
 	buttonText,
 	icon,
 	buttonType = 'primary',
+	onClick,
 }: ThesisOptionCardProps) {
 	return (
 		<Card className="border border-gray-200 rounded-md h-full">
@@ -36,6 +39,7 @@ function ThesisOptionCard({
 					type={buttonType}
 					className="px-4 md:px-6 py-2 text-sm rounded w-full sm:w-auto"
 					block
+					onClick={onClick}
 				>
 					{buttonText}
 				</Button>
@@ -45,6 +49,12 @@ function ThesisOptionCard({
 }
 
 export default function NoThesisCard() {
+	const router = useRouter();
+
+	const handleViewAvailableThesis = () => {
+		router.push('/student/list-thesis');
+	};
+
 	return (
 		<div className="space-y-4">
 			<Title level={4} className="text-base font-bold text-gray-600">
@@ -60,6 +70,7 @@ export default function NoThesisCard() {
 						buttonText="View Available Thesis"
 						icon={<FileTextOutlined />}
 						buttonType="primary"
+						onClick={handleViewAvailableThesis}
 					/>
 				</Col>
 				<Col xs={24} md={12}>
