@@ -8,14 +8,20 @@ import {
 	type Supervision,
 } from '@/schemas/supervision';
 
+export interface SupervisionData {
+	lecturerId: string;
+}
+
 class SupervisionService {
 	private readonly baseUrl = '/supervisions';
 
 	/**
-	 * Get supervisions by thesis ID
+	 * Get supervisions for a specific thesis
 	 */
-	async getByThesisId(thesisId: string): Promise<ApiResponse<Supervision[]>> {
-		const response = await httpClient.get<ApiResponse<Supervision[]>>(
+	async getByThesisId(
+		thesisId: string,
+	): Promise<ApiResponse<SupervisionData[]>> {
+		const response = await httpClient.get<ApiResponse<SupervisionData[]>>(
 			`${this.baseUrl}/thesis/${thesisId}`,
 		);
 		return response.data;
