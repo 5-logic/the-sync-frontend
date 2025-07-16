@@ -111,7 +111,8 @@ async function validateUserAccount(user: {
 		let profileEndpoint;
 		switch (user.role) {
 			case 'admin':
-				profileEndpoint = `/admins/${user.id}`;
+				// Admin endpoint changed to GET /admins (no user ID needed)
+				profileEndpoint = `/admins`;
 				break;
 			case 'lecturer':
 				profileEndpoint = `/lecturers/${user.id}`;

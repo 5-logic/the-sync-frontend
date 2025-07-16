@@ -165,7 +165,17 @@ export const GroupDashboardSchema = GroupSchema.omit({
 		maxGroup: true,
 		ongoingPhase: true,
 	}),
-	thesis: z.null().or(z.object({})), // null or thesis object (to be defined later)
+	thesis: z.null().or(
+		z.object({
+			id: z.string().uuid(),
+			englishName: z.string(),
+			vietnameseName: z.string(),
+			abbreviation: z.string(),
+			description: z.string(),
+			status: z.string(),
+			domain: z.string(),
+		}),
+	), // null or thesis object with actual properties
 	skills: z.array(GroupSkillSchema),
 	responsibilities: z.array(ResponsibilitySchema), // Use existing ResponsibilitySchema
 	members: z.array(GroupMemberSchema),

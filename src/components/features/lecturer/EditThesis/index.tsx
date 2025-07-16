@@ -8,7 +8,12 @@ import ThesisForm from '@/components/features/lecturer/CreateThesis/ThesisForm';
 import { useThesisForm } from '@/hooks/thesis';
 import thesisService from '@/lib/services/theses.service';
 import { handleApiResponse } from '@/lib/utils/handleApi';
-import { ThesisWithRelations } from '@/schemas/thesis';
+import {
+	Thesis,
+	ThesisRequiredSkill,
+	ThesisVersion,
+	ThesisWithRelations,
+} from '@/schemas/thesis';
 import { useSkillSetStore } from '@/store';
 
 interface Props {
@@ -35,6 +40,35 @@ export default function EditThesis({ thesisId }: Props) {
 		fetchSkillSets,
 	} = useSkillSetStore();
 
+	// Convert Thesis to ThesisWithRelations với semesterId từ API
+	const convertToThesisWithRelations = (
+		thesisData: Thesis & {
+			semesterId?: string;
+			thesisRequiredSkills?: ThesisRequiredSkill[];
+			thesisVersions?: ThesisVersion[];
+		},
+	): ThesisWithRelations => {
+		return {
+			...thesisData,
+			semesterId: thesisData.semesterId || thesisData.id, // Fallback to id if semesterId not available
+			lecturer: {
+				userId: thesisData.lecturerId,
+				isModerator: false,
+				user: {
+					id: thesisData.lecturerId,
+					fullName: '',
+					email: '',
+				},
+			},
+			thesisRequiredSkills:
+				(thesisData.thesisRequiredSkills as ThesisWithRelations['thesisRequiredSkills']) ||
+				[],
+			thesisVersions:
+				(thesisData.thesisVersions as ThesisWithRelations['thesisVersions']) ||
+				[],
+		};
+	};
+
 	// Check if all required data is loaded
 	const isDataReady =
 		!loading && !skillSetsLoading && thesis && skillSets.length > 0;
@@ -54,7 +88,7 @@ export default function EditThesis({ thesisId }: Props) {
 				const result = handleApiResponse(response);
 
 				if (result.success && result.data) {
-					setThesis(result.data);
+					setThesis(convertToThesisWithRelations(result.data));
 					setError(null);
 				} else if (result.error) {
 					setError(result.error.message || 'Failed to fetch thesis');

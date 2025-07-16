@@ -8,11 +8,7 @@ import PersonalInfoForm from '@/components/features/lecturer/ProfileSetting/Pers
 
 export default function ProfileSettingsPage() {
 	return (
-		<Space
-			direction="vertical"
-			style={{ padding: 24, width: '100%' }}
-			size="large"
-		>
+		<Space direction="vertical" style={{ width: '100%' }} size="large">
 			<Header
 				title="Profile Settings"
 				description="Manage personal information and change the password for the

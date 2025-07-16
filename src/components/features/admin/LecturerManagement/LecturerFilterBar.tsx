@@ -55,9 +55,8 @@ export default function LecturerFilterBar({
 							placeholder="Select Role"
 							size="middle"
 						>
-							<Option value="All">All Roles</Option>
+							<Option value="All">All Lecturers</Option>
 							<Option value="Moderator">Moderator</Option>
-							<Option value="Lecturer">Lecturer</Option>
 						</Select>
 					</Col>
 					<Col flex="auto">
