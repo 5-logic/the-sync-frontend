@@ -2,10 +2,10 @@
 
 import { Typography } from 'antd';
 
-import AssignedGroupsTable from './AssignedGroupsTable';
-import DashboardStats from './DashboardStats';
-import MilestonesTimeline from './MilestonesTimeline';
-import MyThesisSection from './MyThesisSection';
+import AssignedGroupsTable from '@/components/features/lecturer/Dashboard/AssignedGroupsTable';
+import DashboardStats from '@/components/features/lecturer/Dashboard/DashboardStats';
+import MilestonesTimeline from '@/components/features/lecturer/Dashboard/MilestonesTimeline';
+import MyThesisSection from '@/components/features/lecturer/Dashboard/MyThesisSection';
 
 const { Title } = Typography;
 
