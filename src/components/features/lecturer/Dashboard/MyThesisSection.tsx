@@ -68,7 +68,7 @@ const MyThesisSection: React.FC = () => {
 							]}
 						>
 							<h4>{item.englishName}</h4>
-							<Paragraph ellipsis={{ rows: 2 }}>{item.description}</Paragraph>
+							{/* <Paragraph ellipsis={{ rows: 2 }}>{item.description}</Paragraph> */}
 							<Row gutter={[4, 4]}>
 								{item.skills.map((skill) => (
 									<Col key={skill}>
@@ -76,6 +76,7 @@ const MyThesisSection: React.FC = () => {
 									</Col>
 								))}
 							</Row>
+							<Paragraph ellipsis={{ rows: 2 }}>{item.description}</Paragraph>
 						</Card>
 					</Col>
 				))}
