@@ -3,7 +3,7 @@
 import { Button, Card, Row, Space, Typography } from 'antd';
 import { useState } from 'react';
 
-import Header from '@/components/features/lecturer/AssignSupervisor/Header';
+import { Header } from '@/components/common/Header';
 import ChecklistInfoCard from '@/components/features/lecturer/ChecklistDetail/ChecklistInfoCard';
 import ChecklistItemsTable from '@/components/features/lecturer/ChecklistDetail/ChecklistItemTable';
 import { mockChecklistItems } from '@/data/ChecklistItems';

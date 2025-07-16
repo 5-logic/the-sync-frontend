@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import RequestsTab from '@/components/common/RequestsManagement/RequestsTab';
 import { type RequestsDialogProps } from '@/components/common/RequestsManagement/types';
+import { type GroupRequest } from '@/lib/services/requests.service';
 import { showNotification } from '@/lib/utils/notification';
 import { isTextMatch } from '@/lib/utils/textNormalization';
 import { useRequestsStore } from '@/store';
@@ -141,21 +142,33 @@ export default function RequestsDialog({
 	};
 
 	const handleRejectInvite = async (requestId: string) => {
-		// Use 'Cancelled' for student rejecting invite, 'Rejected' for group leader cancelling invite
-		const status = config.mode === 'student' ? 'Cancelled' : 'Rejected';
+		// Student rejecting invitation - use 'Rejected'
+		console.log('handleRejectInvite called - config.mode:', config.mode); // Debug
+		const status = 'Rejected';
+		console.log('Status to send:', status); // Debug
 		const success = await updateRequestStatus(requestId, status);
 		if (success) {
-			const message =
-				config.mode === 'student'
-					? 'Invitation rejected successfully!'
-					: 'Invitation cancelled successfully!';
+			const message = 'Invitation rejected successfully!';
 			showNotification.success(message);
 			onRequestsUpdate?.();
 		} else {
-			const message =
-				config.mode === 'student'
-					? 'Failed to reject invitation. Please try again.'
-					: 'Failed to cancel invitation. Please try again.';
+			const message = 'Failed to reject invitation. Please try again.';
+			showNotification.error(message);
+		}
+	};
+
+	const handleCancelInvite = async (requestId: string) => {
+		// Group leader cancelling invitation - use 'Cancelled'
+		console.log('handleCancelInvite called - config.mode:', config.mode); // Debug
+		const status = 'Cancelled';
+		console.log('Status to send:', status); // Debug
+		const success = await updateRequestStatus(requestId, status);
+		if (success) {
+			const message = 'Invitation cancelled successfully!';
+			showNotification.success(message);
+			onRequestsUpdate?.();
+		} else {
+			const message = 'Failed to cancel invitation. Please try again.';
 			showNotification.error(message);
 		}
 	};
@@ -196,97 +209,135 @@ export default function RequestsDialog({
 		}
 	};
 
-	// Helper function to get action props based on mode and request type
+	// Helper function to create view detail action
+	const createViewDetailAction = (request: GroupRequest | undefined) => {
+		if (!request) return undefined;
+
+		const isStudentMode = config.mode === 'student';
+		const targetUrl = isStudentMode
+			? `/student/form-or-join-group/${request.groupId}`
+			: `/student/profile/${request.studentId}`;
+
+		return {
+			onViewDetail: () => router.push(targetUrl),
+		};
+	};
+
+	// Helper function for student invite actions
+	const getStudentInviteActions = (
+		requestId: string,
+		targetName: string,
+		request: GroupRequest | undefined,
+	) => {
+		return {
+			primaryAction: {
+				text: 'Accept',
+				title: 'Accept invitation?',
+				description: `Group: ${targetName}`,
+				okText: 'Yes, Accept',
+				okType: 'primary' as const,
+				onConfirm: () => handleAcceptInvite(requestId),
+			},
+			secondaryAction: {
+				text: 'Reject',
+				title: 'Reject invitation?',
+				description: `Group: ${targetName}`,
+				okText: 'Yes, Reject',
+				okType: 'danger' as const,
+				onConfirm: () => handleRejectInvite(requestId),
+			},
+			viewDetailAction: createViewDetailAction(request),
+		};
+	};
+
+	// Helper function for student join actions
+	const getStudentJoinActions = (
+		requestId: string,
+		targetName: string,
+		request: GroupRequest | undefined,
+	) => {
+		return {
+			primaryAction: {
+				text: 'Cancel',
+				title: 'Cancel join request?',
+				description: `Group: ${targetName}`,
+				okText: 'Yes, Cancel',
+				okType: 'danger' as const,
+				onConfirm: () => handleCancelJoinRequest(requestId),
+			},
+			viewDetailAction: createViewDetailAction(request),
+		};
+	};
+
+	// Helper function for group leader invite actions
+	const getGroupLeaderInviteActions = (
+		requestId: string,
+		targetName: string,
+		request: GroupRequest | undefined,
+	) => {
+		return {
+			primaryAction: {
+				text: 'Cancel',
+				title: 'Cancel invitation?',
+				description: `Student: ${targetName}`,
+				okText: 'Yes, Cancel',
+				okType: 'danger' as const,
+				onConfirm: () => handleCancelInvite(requestId), // Use handleCancelInvite instead
+			},
+			viewDetailAction: createViewDetailAction(request),
+		};
+	};
+
+	// Helper function for group leader join actions
+	const getGroupLeaderJoinActions = (
+		requestId: string,
+		targetName: string,
+		request: GroupRequest | undefined,
+	) => {
+		return {
+			primaryAction: {
+				text: 'Approve',
+				title: 'Approve join request?',
+				description: `Student: ${targetName}`,
+				okText: 'Yes, Approve',
+				okType: 'primary' as const,
+				onConfirm: () => handleApproveJoinRequest(requestId),
+			},
+			secondaryAction: {
+				text: 'Reject',
+				title: 'Reject join request?',
+				description: `Student: ${targetName}`,
+				okText: 'Yes, Reject',
+				okType: 'danger' as const,
+				onConfirm: () => handleRejectJoinRequest(requestId),
+			},
+			viewDetailAction: createViewDetailAction(request),
+		};
+	};
+
+	// Main function with reduced cognitive complexity
 	const getActionProps = (
 		requestId: string,
 		requestType: 'Invite' | 'Join',
 		targetName: string,
 	) => {
-		// Find the request to get groupId for view detail action
 		const request = requests.find((r) => r.id === requestId);
+		const isStudentMode = config.mode === 'student';
+		const isInviteType = requestType === 'Invite';
 
-		if (config.mode === 'student') {
-			// Student perspective
-			if (requestType === 'Invite') {
-				return {
-					primaryAction: {
-						text: 'Accept',
-						title: 'Accept invitation?',
-						description: `Group: ${targetName}`,
-						okText: 'Yes, Accept',
-						okType: 'primary' as const,
-						onConfirm: () => handleAcceptInvite(requestId),
-					},
-					secondaryAction: {
-						text: 'Reject',
-						title: 'Reject invitation?',
-						description: `Group: ${targetName}`,
-						okText: 'Yes, Reject',
-						okType: 'danger' as const,
-						onConfirm: () => handleRejectInvite(requestId),
-					},
-					viewDetailAction: request
-						? {
-								onViewDetail: () => {
-									// Navigate to group detail page in same tab
-									router.push(`/student/form-or-join-group/${request.groupId}`);
-								},
-							}
-						: undefined,
-				};
-			} else {
-				return {
-					primaryAction: {
-						text: 'Cancel',
-						title: 'Cancel join request?',
-						description: `Group: ${targetName}`,
-						okText: 'Yes, Cancel',
-						okType: 'danger' as const,
-						onConfirm: () => handleCancelJoinRequest(requestId),
-					},
-					viewDetailAction: request
-						? {
-								onViewDetail: () => {
-									// Navigate to group detail page in same tab
-									router.push(`/student/form-or-join-group/${request.groupId}`);
-								},
-							}
-						: undefined,
-				};
-			}
-		} else if (requestType === 'Invite') {
-			// Group leader perspective - Invite
-			return {
-				primaryAction: {
-					text: 'Cancel',
-					title: 'Cancel invitation?',
-					description: `Student: ${targetName}`,
-					okText: 'Yes, Cancel',
-					okType: 'danger' as const,
-					onConfirm: () => handleRejectInvite(requestId),
-				},
-			};
-		} else {
-			// Group leader perspective - Join
-			return {
-				primaryAction: {
-					text: 'Approve',
-					title: 'Approve join request?',
-					description: `Student: ${targetName}`,
-					okText: 'Yes, Approve',
-					okType: 'primary' as const,
-					onConfirm: () => handleApproveJoinRequest(requestId),
-				},
-				secondaryAction: {
-					text: 'Reject',
-					title: 'Reject join request?',
-					description: `Student: ${targetName}`,
-					okText: 'Yes, Reject',
-					okType: 'danger' as const,
-					onConfirm: () => handleRejectJoinRequest(requestId),
-				},
-			};
+		if (isStudentMode && isInviteType) {
+			return getStudentInviteActions(requestId, targetName, request);
 		}
+
+		if (isStudentMode && !isInviteType) {
+			return getStudentJoinActions(requestId, targetName, request);
+		}
+
+		if (!isStudentMode && isInviteType) {
+			return getGroupLeaderInviteActions(requestId, targetName, request);
+		}
+
+		return getGroupLeaderJoinActions(requestId, targetName, request);
 	};
 
 	const handleRefresh = () => {

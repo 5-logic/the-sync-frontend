@@ -1,9 +1,10 @@
 'use client';
 
-import { Space, Typography } from 'antd';
+import { Space } from 'antd';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
+import { Header } from '@/components/common/Header';
 import LecturerFilterBar from '@/components/features/admin/LecturerManagement/LecturerFilterBar';
 import LecturerTable from '@/components/features/admin/LecturerManagement/LecturerTable';
 import { useLecturerStore } from '@/store/useLecturerStore';
@@ -41,21 +42,16 @@ export default function LecturerManagement() {
 	};
 
 	const handleRefresh = () => {
-		fetchLecturers();
+		fetchLecturers(true); // Force refresh to bypass cache
 	};
 
-	const { Title, Paragraph } = Typography;
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
-			<div>
-				<Title level={2} style={{ marginBottom: '4px' }}>
-					Lecturer Management
-				</Title>
-				<Paragraph type="secondary" style={{ marginBottom: 0 }}>
-					Create and manage lecturers, registration windows, and
-					capstone-specific rules
-				</Paragraph>
-			</div>
+			<Header
+				title="Lecturer Management"
+				description="Create and manage lecturers, registration windows, and
+					capstone-specific rules."
+			/>
 			<LecturerFilterBar
 				onCreateLecturer={handleCreateLecturer}
 				onRefresh={handleRefresh}

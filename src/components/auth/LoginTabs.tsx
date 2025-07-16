@@ -1,4 +1,4 @@
-import { LockOutlined, UserOutlined } from '@ant-design/icons';
+import { AuditOutlined, UserOutlined } from '@ant-design/icons';
 import { Flex, Tabs, Typography } from 'antd';
 
 import AdminLoginForm from '@/components/auth/AdminLoginForm';
@@ -37,8 +37,8 @@ export default function LoginTabs({
 			key: 'admin',
 			label: (
 				<Flex align="center" gap="small">
-					<LockOutlined />
-					<Text>Admin Login</Text>
+					<AuditOutlined />
+					<Text>Administrator</Text>
 				</Flex>
 			),
 			children: <AdminLoginForm onFinish={onAdminLogin} loading={loading} />,

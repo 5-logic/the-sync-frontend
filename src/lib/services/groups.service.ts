@@ -10,6 +10,13 @@ export interface GroupCreate {
 	responsibilityIds?: string[];
 }
 
+export interface GroupUpdate {
+	name?: string;
+	projectDirection?: string;
+	skillIds?: string[];
+	responsibilityIds?: string[];
+}
+
 export interface Group {
 	id: string;
 	code: string;
@@ -54,9 +61,20 @@ class GroupService {
 		return response.data;
 	}
 
-	async findOne(id: string): Promise<ApiResponse<Group>> {
-		const response = await httpClient.get<ApiResponse<Group>>(
+	async findOne(id: string): Promise<ApiResponse<GroupDashboard>> {
+		const response = await httpClient.get<ApiResponse<GroupDashboard>>(
 			`${this.baseUrl}/${id}`,
+		);
+		return response.data;
+	}
+
+	async update(
+		id: string,
+		updateGroupDto: GroupUpdate,
+	): Promise<ApiResponse<GroupDashboard>> {
+		const response = await httpClient.put<ApiResponse<GroupDashboard>>(
+			`${this.baseUrl}/${id}`,
+			updateGroupDto,
 		);
 		return response.data;
 	}
@@ -64,6 +82,15 @@ class GroupService {
 	async getStudentGroup(): Promise<ApiResponse<GroupDashboard[]>> {
 		const response = await httpClient.get<ApiResponse<GroupDashboard[]>>(
 			`${this.baseUrl}/student`,
+		);
+		return response.data;
+	}
+
+	async getStudentGroupById(
+		studentId: string,
+	): Promise<ApiResponse<GroupDashboard[]>> {
+		const response = await httpClient.get<ApiResponse<GroupDashboard[]>>(
+			`${this.baseUrl}/student/${studentId}`,
 		);
 		return response.data;
 	}
@@ -109,6 +136,35 @@ class GroupService {
 		const response = await httpClient.put<ApiResponse<void>>(
 			`${this.baseUrl}/${groupId}/change-leader`,
 			{ newLeaderId },
+		);
+		return response.data;
+	}
+
+	async assignStudent(
+		groupId: string,
+		studentId: string,
+	): Promise<ApiResponse<void>> {
+		const response = await httpClient.put<ApiResponse<void>>(
+			`${this.baseUrl}/${groupId}/assign-student`,
+			{ studentId },
+		);
+		return response.data;
+	}
+
+	async pickThesis(
+		groupId: string,
+		thesisId: string,
+	): Promise<ApiResponse<void>> {
+		const response = await httpClient.put<ApiResponse<void>>(
+			`${this.baseUrl}/${groupId}/pick-thesis`,
+			{ thesisId },
+		);
+		return response.data;
+	}
+
+	async unpickThesis(groupId: string): Promise<ApiResponse<void>> {
+		const response = await httpClient.put<ApiResponse<void>>(
+			`${this.baseUrl}/${groupId}/unpick-thesis`,
 		);
 		return response.data;
 	}

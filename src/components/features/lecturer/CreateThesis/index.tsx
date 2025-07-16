@@ -1,18 +1,20 @@
 'use client';
 
-import { Card, Col, Row, Typography } from 'antd';
+import { Card, Col, Row } from 'antd';
 
 import ThesisForm from '@//components/features/lecturer/CreateThesis/ThesisForm';
+import { Header } from '@/components/common/Header';
 import { useThesisForm } from '@/hooks/thesis';
-
-const { Title } = Typography;
 
 export default function CreateThesis() {
 	const { loading, handleSubmit } = useThesisForm({ mode: 'create' });
 
 	return (
 		<div>
-			<Title level={3}>Create New Thesis</Title>
+			<Header
+				title="Create New Thesis"
+				description="Create and publish a new thesis topic for students to review and register."
+			/>
 
 			<Card>
 				<Row gutter={[24, 24]}>

@@ -1,8 +1,12 @@
-export default function StudentListThesisPage() {
-	return (
-		<div className="p-6">
-			<h1 className="text-2xl font-bold mb-4">List Thesis</h1>
-			<p className="text-gray-600">Browse all available thesis topics</p>
-		</div>
-	);
+import { createMetadata } from '@/app/metadata';
+import ViewListThesis from '@/components/features/student/ViewListThesis';
+
+export const metadata = createMetadata({
+	title: 'Student View List Thesis',
+	description:
+		'Student View List Thesis for TheSync - Group Formation and Capstone Thesis Development',
+});
+
+export default function AdminThesisManagementPage() {
+	return <ViewListThesis />;
 }
