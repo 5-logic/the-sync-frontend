@@ -3,7 +3,6 @@ import { Button, Layout } from 'antd';
 import React from 'react';
 
 import { HeaderSectionProps } from '@/components/layout/CollapsibleLayout/CollapsibleLayout.types';
-import NotificationIcon from '@/components/layout/Header/NotificationIcon';
 import UserProfile from '@/components/layout/Header/UserProfile';
 
 const { Header } = Layout;
@@ -56,7 +55,6 @@ export const HeaderSection: React.FC<HeaderSectionProps> = ({
 					gap: 2,
 				}}
 			>
-				<NotificationIcon />
 				<UserProfile />
 			</div>
 		</Header>
