@@ -16,15 +16,24 @@ const AssignedGroupsTable: React.FC = () => {
 		new Map(allMockGroups.map((group) => [group.id, group])).values(),
 	);
 
+	// Get unique semesters from data
+	const uniqueSemesters = Array.from(
+		new Set(uniqueGroups.map((group) => group.semesterId)),
+	).sort();
+
 	// Filter data
 	const filteredData = uniqueGroups.filter((group) => {
+		// Exact match for semester or "All"
 		const matchSemester = semester === 'All' || group.semesterId === semester;
 		const lowerSearch = searchText.toLowerCase();
 		return (
 			matchSemester &&
 			(group.name?.toLowerCase().includes(lowerSearch) ||
 				group.leader?.toLowerCase().includes(lowerSearch) ||
-				group.title?.toLowerCase().includes(lowerSearch))
+				group.title?.toLowerCase().includes(lowerSearch) ||
+				group.members?.some((member) =>
+					member.toLowerCase().includes(lowerSearch),
+				))
 		);
 	});
 
@@ -87,8 +96,11 @@ const AssignedGroupsTable: React.FC = () => {
 						style={{ width: '100%' }}
 					>
 						<Option value="All">All Semesters</Option>
-						<Option value="2023">2023</Option>
-						<Option value="2024">2024</Option>
+						{uniqueSemesters.map((sem) => (
+							<Option key={sem} value={sem}>
+								{sem}
+							</Option>
+						))}
 					</Select>
 				</Col>
 			</Row>
