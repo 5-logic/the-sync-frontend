@@ -42,6 +42,12 @@ export default function GroupMembersCard({
 	const { session } = useSessionData();
 	const { refreshGroup } = useGroupDashboardStore();
 
+	// Check if current user is the leader
+	const isCurrentUserLeader = session?.user?.id === group.leader.userId;
+
+	// Check if semester allows modifications (only Preparing status)
+	const canModifyGroup = group.semester.status === 'Preparing';
+
 	// State for member profile dialog
 	const [selectedMember, setSelectedMember] = useState<GroupMember | null>(
 		null,
@@ -147,8 +153,8 @@ export default function GroupMembersCard({
 			return items;
 		}
 
-		// Add leader-only options if current user is leader and target is not the leader
-		if (isCurrentUserLeader && !member.isLeader) {
+		// Add leader-only options if current user is leader and target is not the leader and can modify
+		if (isCurrentUserLeader && !member.isLeader && canModifyGroup) {
 			items.push(
 				{
 					key: 'remove-member',
@@ -180,8 +186,6 @@ export default function GroupMembersCard({
 			{' '}
 			<div className="space-y-3">
 				{group.members.map((member) => {
-					// Check if the current user is the leader by comparing user IDs
-					const isCurrentUserLeader = session?.user?.id === group.leader.userId;
 					const menuItems = getMemberMenuItems(member, isCurrentUserLeader);
 
 					return (
@@ -237,7 +241,8 @@ export default function GroupMembersCard({
 						{!viewOnly &&
 							session?.user?.id === group.leader.userId &&
 							selectedMember &&
-							!selectedMember.isLeader && (
+							!selectedMember.isLeader &&
+							canModifyGroup && (
 								<div className="mt-6 flex gap-3 justify-end border-t pt-4">
 									<Popconfirm
 										title="Remove Member"

@@ -14,6 +14,7 @@ export const ThesisSchema = z.object({
 	isPublish: z.boolean().default(false),
 	groupId: z.string().uuid().nullable().optional(),
 	lecturerId: z.string().uuid(),
+	semesterId: z.string().uuid(),
 	createdAt: z.date(),
 	updatedAt: z.date(),
 });
@@ -136,4 +137,13 @@ export const ThesisWithRelationsSchema = ThesisSchema.extend({
 			}),
 		)
 		.optional(),
+	lecturer: z.object({
+		userId: z.string().uuid(),
+		isModerator: z.boolean(),
+		user: z.object({
+			id: z.string().uuid(),
+			fullName: z.string(),
+			email: z.string().email(),
+		}),
+	}),
 });

@@ -9,6 +9,7 @@ import ThesisDuplicateList from '@/components/features/lecturer/CreateThesis/The
 import SupportingDocumentField from '@/components/features/lecturer/CreateThesis/ThesisFileUpload';
 import { getSortedDomains } from '@/lib/constants/domains';
 import { useSkillSetStore } from '@/store';
+import { useSemesterStore } from '@/store/useSemesterStore';
 
 type Props = Readonly<{
 	mode: 'create' | 'edit';
@@ -50,6 +51,13 @@ export default function ThesisForm({
 		fetchSkillSets,
 	} = useSkillSetStore();
 
+	// Semester store
+	const {
+		semesters,
+		fetchSemesters,
+		loading: semestersLoading,
+	} = useSemesterStore();
+
 	// Build tree data for TreeSelect
 	const skillTreeData = skillSets.map((skillSet) => ({
 		value: skillSet.id,
@@ -64,7 +72,14 @@ export default function ThesisForm({
 	// Fetch skill sets on component mount
 	useEffect(() => {
 		fetchSkillSets();
-	}, [fetchSkillSets]);
+		fetchSemesters(); // Fetch semesters to get the preparing semester
+	}, [fetchSkillSets, fetchSemesters]);
+
+	// Find the preparing semester
+	const preparingSemester = semesters.find(
+		(semester) =>
+			semester.status === 'Preparing' || semester.status === 'Picking',
+	);
 
 	useEffect(() => {
 		// Initialize uploaded file from initialFile prop (for edit mode)
@@ -96,12 +111,24 @@ export default function ThesisForm({
 		// Convert selected skills to string array
 		const selectedSkills = (values.skills as string[]) ?? [];
 
+		// Get the preparing semester ID
+		const semesterId = preparingSemester?.id;
+		if (!semesterId) {
+			console.error(
+				'No preparing semester found. Available semesters:',
+				semesters,
+			);
+			// You might want to show a user-friendly error message here
+			return;
+		}
+
 		// Prepare the final form data to match backend DTO
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		const { supportingDocument, skills, ...restValues } = values;
 		const formData: Record<string, unknown> = {
 			...restValues,
 			skillIds: selectedSkills, // Pass skills as skillIds array for API
+			semesterId, // Add semesterId from preparing semester
 		};
 
 		// Only include supportingDocument if file changed (for edit mode) or always for create mode
@@ -114,6 +141,12 @@ export default function ThesisForm({
 
 	// Helper function to get button text based on mode and loading state
 	const getButtonText = () => {
+		if (semestersLoading) {
+			return 'Loading semesters...';
+		}
+		if (!preparingSemester) {
+			return 'No preparing semester found';
+		}
 		if (loading) {
 			return mode === 'create' ? 'Creating...' : 'Updating...';
 		}
@@ -252,8 +285,8 @@ export default function ThesisForm({
 						type="primary"
 						htmlType="submit"
 						size="large"
-						loading={loading}
-						disabled={loading}
+						loading={loading || semestersLoading}
+						disabled={loading || semestersLoading || !preparingSemester}
 					>
 						{getButtonText()}
 					</Button>

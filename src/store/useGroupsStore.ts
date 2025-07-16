@@ -1,13 +1,20 @@
 import { create } from 'zustand';
 
-import groupService from '@/lib/services/groups.service';
-import { GroupService as Group } from '@/schemas/group';
+import groupService, { type Group } from '@/lib/services/groups.service';
+import { cacheUtils } from '@/store/helpers/cacheHelpers';
+
+// Initialize cache for groups
+cacheUtils.initCache<Group[]>('groups', {
+	ttl: 5 * 60 * 1000, // 5 minutes
+	maxSize: 1000, // Support up to 1000 groups in cache
+	enableLocalStorage: false, // Don't store in localStorage
+});
 
 interface GroupsState {
 	groups: Group[];
 	loading: boolean;
 	error: string | null;
-	fetchGroups: () => Promise<void>;
+	fetchGroups: (force?: boolean) => Promise<void>;
 	refetch: () => Promise<void>;
 	clearGroups: () => void;
 }
@@ -17,11 +24,18 @@ export const useGroupsStore = create<GroupsState>((set, get) => ({
 	loading: false,
 	error: null,
 
-	fetchGroups: async () => {
+	fetchGroups: async (force = false) => {
 		const { loading } = get();
 
-		// Prevent multiple simultaneous fetches
-		if (loading) return;
+		// Prevent multiple simultaneous fetches unless forced
+		if (loading && !force) return;
+
+		const cachedGroups = cacheUtils.get<Group[]>('groups', 'all');
+		if (!force && cachedGroups) {
+			// Use cached data
+			set({ groups: cachedGroups });
+			return;
+		}
 
 		try {
 			set({ loading: true, error: null });
@@ -30,6 +44,7 @@ export const useGroupsStore = create<GroupsState>((set, get) => ({
 
 			if (response.success) {
 				set({ groups: response.data, error: null });
+				cacheUtils.set('groups', 'all', response.data);
 			} else {
 				set({ error: response.error || 'Failed to fetch groups' });
 			}
@@ -46,14 +61,11 @@ export const useGroupsStore = create<GroupsState>((set, get) => ({
 		}
 	},
 
-	clearGroups: () => {
-		set({ groups: [], error: null });
+	refetch: async () => {
+		await get().fetchGroups(true);
 	},
 
-	refetch: async () => {
-		// Force refresh by clearing and fetching again
-		const { fetchGroups } = get();
-		set({ loading: true, error: null });
-		await fetchGroups();
+	clearGroups: () => {
+		set({ groups: [], error: null });
 	},
 }));

@@ -1,10 +1,49 @@
 import httpClient from '@/lib/services/_httpClient';
 import { ApiResponse } from '@/schemas/_common';
-import {
-	GroupService as Group,
-	GroupCreateService as GroupCreate,
-	GroupDashboard,
-} from '@/schemas/group';
+import { GroupDashboard } from '@/schemas/group';
+
+// Group interfaces
+export interface GroupCreate {
+	name: string;
+	projectDirection?: string;
+	skillIds?: string[];
+	responsibilityIds?: string[];
+}
+
+export interface GroupUpdate {
+	name?: string;
+	projectDirection?: string;
+	skillIds?: string[];
+	responsibilityIds?: string[];
+}
+
+export interface Group {
+	id: string;
+	code: string;
+	name: string;
+	projectDirection?: string;
+	createdAt: string;
+	updatedAt: string;
+	semester: {
+		id: string;
+		name: string;
+		code: string;
+		status: string;
+	};
+	memberCount: number;
+	skillCount: number;
+	responsibilityCount: number;
+	leader: {
+		student: {
+			userId: string;
+			studentCode: string;
+			user: {
+				id: string;
+				fullName: string;
+			};
+		};
+	};
+}
 
 class GroupService {
 	private readonly baseUrl = '/groups';
@@ -22,9 +61,20 @@ class GroupService {
 		return response.data;
 	}
 
-	async findOne(id: string): Promise<ApiResponse<Group>> {
-		const response = await httpClient.get<ApiResponse<Group>>(
+	async findOne(id: string): Promise<ApiResponse<GroupDashboard>> {
+		const response = await httpClient.get<ApiResponse<GroupDashboard>>(
 			`${this.baseUrl}/${id}`,
+		);
+		return response.data;
+	}
+
+	async update(
+		id: string,
+		updateGroupDto: GroupUpdate,
+	): Promise<ApiResponse<GroupDashboard>> {
+		const response = await httpClient.put<ApiResponse<GroupDashboard>>(
+			`${this.baseUrl}/${id}`,
+			updateGroupDto,
 		);
 		return response.data;
 	}
@@ -86,6 +136,35 @@ class GroupService {
 		const response = await httpClient.put<ApiResponse<void>>(
 			`${this.baseUrl}/${groupId}/change-leader`,
 			{ newLeaderId },
+		);
+		return response.data;
+	}
+
+	async assignStudent(
+		groupId: string,
+		studentId: string,
+	): Promise<ApiResponse<void>> {
+		const response = await httpClient.put<ApiResponse<void>>(
+			`${this.baseUrl}/${groupId}/assign-student`,
+			{ studentId },
+		);
+		return response.data;
+	}
+
+	async pickThesis(
+		groupId: string,
+		thesisId: string,
+	): Promise<ApiResponse<void>> {
+		const response = await httpClient.put<ApiResponse<void>>(
+			`${this.baseUrl}/${groupId}/pick-thesis`,
+			{ thesisId },
+		);
+		return response.data;
+	}
+
+	async unpickThesis(groupId: string): Promise<ApiResponse<void>> {
+		const response = await httpClient.put<ApiResponse<void>>(
+			`${this.baseUrl}/${groupId}/unpick-thesis`,
 		);
 		return response.data;
 	}

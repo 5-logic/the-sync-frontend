@@ -1,47 +1,58 @@
 'use client';
 
-import { Card, Typography } from 'antd';
+import { Card, Divider, Space, Typography } from 'antd';
 
-import { ExtendedThesis } from '@/data/thesis';
+import { formatDate } from '@/lib/utils/dateFormat';
+import { GroupDashboard } from '@/schemas/group';
 
-const { Title, Paragraph, Text } = Typography;
+const { Title, Text } = Typography;
 
-interface Props {
-	readonly thesis: ExtendedThesis;
+interface GroupInfoCardProps {
+	readonly group: GroupDashboard;
 }
 
-export default function GroupInfoCard({ thesis }: Props) {
-	const groupName = thesis.group?.id ?? 'Unnamed Group';
-	const projectArea = thesis.domain;
-	const description = thesis.description;
-	const selectedThesis = thesis.englishName;
-	const supervisor = thesis.supervisor;
-
+export default function GroupInfoCard({ group }: GroupInfoCardProps) {
 	return (
 		<Card>
-			<Title level={3}>Thesis Topic: {selectedThesis}</Title>
+			<Space direction="vertical" size="small" style={{ width: '100%' }}>
+				<div>
+					<Title level={4} style={{ margin: 0 }}>
+						{group.name}
+					</Title>
+					<Text type="secondary">{group.code}</Text>
+				</div>
 
-			<Paragraph>
-				<Text strong>Group Name:</Text> {groupName}
-			</Paragraph>
+				<Divider style={{ margin: '12px 0' }} />
 
-			<Paragraph>
-				<Text strong>Project Area:</Text> {projectArea}
-			</Paragraph>
-
-			<Paragraph>
-				<Text strong>Selected Thesis Topic:</Text> {selectedThesis}
-			</Paragraph>
-
-			<Paragraph>
-				<Text strong>Thesis Description:</Text> {description}
-			</Paragraph>
-
-			{supervisor && (
-				<Paragraph>
-					<Text strong>Supervisor Name:</Text> {supervisor.name}
-				</Paragraph>
-			)}
+				<Space direction="vertical" size="small">
+					<div>
+						<Text strong>Project Direction: </Text>
+						<Text>{group.projectDirection || 'Not specified'}</Text>
+					</div>{' '}
+					<div>
+						<Text strong>Semester: </Text>
+						<Text>
+							{group.semester?.name} ({group.semester?.code})
+						</Text>
+					</div>
+					<div>
+						<Text strong>Leader: </Text>
+						<Text>{group.leader?.user?.fullName || 'No leader assigned'}</Text>
+					</div>
+					<div>
+						<Text strong>Members: </Text>
+						<Text>{group.members?.length || 0} member(s)</Text>
+					</div>
+					{group.createdAt && (
+						<div>
+							<Text strong>Created: </Text>
+							<Text type="secondary">
+								{formatDate(new Date(group.createdAt))}
+							</Text>
+						</div>
+					)}
+				</Space>
+			</Space>
 		</Card>
 	);
 }

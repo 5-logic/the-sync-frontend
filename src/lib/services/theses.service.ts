@@ -61,6 +61,13 @@ class ThesisService {
 		return response.data;
 	}
 
+	async findBySemester(semesterId: string): Promise<ApiResponse<Thesis[]>> {
+		const response = await httpClient.get<ApiResponse<Thesis[]>>(
+			`${this.baseUrl}/semester/${semesterId}`,
+		);
+		return response.data;
+	}
+
 	async create(createThesisDto: ThesisCreate): Promise<ApiResponse<Thesis>> {
 		const response = await httpClient.post<ApiResponse<Thesis>>(
 			this.baseUrl,
