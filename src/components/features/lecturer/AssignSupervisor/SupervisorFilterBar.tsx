@@ -64,7 +64,7 @@ const SupervisorFilterBar = memo<Props>(
 					<GroupSearchBar
 						value={search}
 						onChange={onSearchChange}
-						placeholder="Search by abbreviation, thesis title..."
+						placeholder="Search by abbreviation, thesis name..."
 					/>
 				</Col>
 				<Col style={{ width: 160 }}>
