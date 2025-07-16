@@ -1,11 +1,11 @@
 'use client';
 
-import { Button, Col, Input, Row, Select, Typography } from 'antd';
+import { Typography } from 'antd';
 
-import AssignedGroupsTable from '@/components/AssignedGroupsTable';
-import DashboardStats from '@/components/DashboardStats';
-import MilestonesTimeline from '@/components/MilestonesTimeline';
-import MyThesisSection from '@/components/MyThesisSection';
+import AssignedGroupsTable from './AssignedGroupsTable';
+import DashboardStats from './DashboardStats';
+import MilestonesTimeline from './MilestonesTimeline';
+import MyThesisSection from './MyThesisSection';
 
 const { Title } = Typography;
 
