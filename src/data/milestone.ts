@@ -34,7 +34,7 @@ export const mockMilestoneDetails: Milestone[] = [
 	{
 		id: 1,
 		title: 'Submit Thesis',
-		date: '2023-10-15',
+		date: '2025-05-31',
 		status: 'Ended',
 		submitted: true,
 		fileName: 'proposal_final.pdf',
@@ -44,7 +44,7 @@ export const mockMilestoneDetails: Milestone[] = [
 	{
 		id: 2,
 		title: 'Review 1',
-		date: '2023-11-15',
+		date: '2025-07-02',
 		status: 'Ended',
 		submitted: true,
 		fileName: 'review1_report.pdf',
@@ -54,19 +54,19 @@ export const mockMilestoneDetails: Milestone[] = [
 	{
 		id: 3,
 		title: 'Review 2',
-		date: '2023-12-15',
+		date: '2025-08-01',
 		status: 'In Progress',
 	},
 	{
 		id: 4,
 		title: 'Review 3',
-		date: '2024-03-15',
+		date: '2025-08-30',
 		status: 'Upcoming',
 	},
 	{
 		id: 5,
 		title: 'Final Report',
-		date: '2024-05-15',
+		date: '2025-09-15',
 		status: 'Upcoming',
 	},
 ];
