@@ -241,20 +241,32 @@ const handleCompleteSuccess = (
 	return true;
 };
 
-const handlePartialSuccess = (
+interface PartialSuccessOptions {
 	detailedResults: Array<{
 		status: string;
 		thesisId?: string;
 		lecturerId?: string;
-	}>,
-	warningStatuses: string[],
-	currentData: SupervisorAssignmentData[],
-	setData: (data: SupervisorAssignmentData[]) => void,
-	determineStatus: (supervisions: Supervision[]) => SupervisorAssignmentStatus,
-	successful: number,
-	failed: number,
-	silent: boolean,
-) => {
+	}>;
+	warningStatuses: string[];
+	currentData: SupervisorAssignmentData[];
+	setData: (data: SupervisorAssignmentData[]) => void;
+	determineStatus: (supervisions: Supervision[]) => SupervisorAssignmentStatus;
+	successful: number;
+	failed: number;
+	silent: boolean;
+}
+
+const handlePartialSuccess = (options: PartialSuccessOptions) => {
+	const {
+		detailedResults,
+		warningStatuses,
+		currentData,
+		setData,
+		determineStatus,
+		successful,
+		failed,
+		silent,
+	} = options;
 	const failedResults = detailedResults.filter((r) => r.status === 'error');
 	const warningResults = detailedResults.filter((r) =>
 		warningStatuses.includes(r.status),
@@ -638,16 +650,16 @@ export const useAssignSupervisorStore = create<AssignSupervisorState>()(
 					}
 
 					// Partial success - some succeeded, some failed
-					return handlePartialSuccess(
+					return handlePartialSuccess({
 						detailedResults,
 						warningStatuses,
-						get().data,
-						(data) => set({ data }),
-						get().determineStatus,
+						currentData: get().data,
+						setData: (data: SupervisorAssignmentData[]) => set({ data }),
+						determineStatus: get().determineStatus,
 						successful,
 						failed,
 						silent,
-					);
+					});
 				} catch (error) {
 					// Revert all optimistic updates on error
 					set({ data: originalData });

@@ -226,8 +226,12 @@ export default function AssignSupervisorModal({
 
 	const getAssignModeTitle = (): string => 'Assign Supervisor';
 
-	const getTitleByStatus = (hasExistingSupervisors: boolean): string => {
-		return hasExistingSupervisors ? getChangeModeTitle() : getAssignModeTitle();
+	const getTitleForExistingSupervisors = (): string => {
+		return getChangeModeTitle();
+	};
+
+	const getTitleForNewAssignment = (): string => {
+		return getAssignModeTitle();
 	};
 
 	const getTitleByInitialValues = (): string => {
@@ -235,11 +239,26 @@ export default function AssignSupervisorModal({
 			initialValues &&
 			initialValues.length > 0 &&
 			initialValues.some((value) => Boolean(value));
-		return getTitleByStatus(hasExistingSupervisors);
+
+		if (hasExistingSupervisors) {
+			return getTitleForExistingSupervisors();
+		}
+		return getTitleForNewAssignment();
+	};
+
+	const getTitleForChangeMode = (): string => {
+		return getChangeModeTitle();
+	};
+
+	const getTitleForAssignMode = (): string => {
+		return getAssignModeTitle();
 	};
 
 	const getTitleByModeFlag = (): string => {
-		return isChangeMode ? getChangeModeTitle() : getAssignModeTitle();
+		if (isChangeMode) {
+			return getTitleForChangeMode();
+		}
+		return getTitleForAssignMode();
 	};
 
 	const getModalTitle = (): string => {
@@ -263,57 +282,101 @@ export default function AssignSupervisorModal({
 		return 'Select Supervisor 2';
 	};
 
+	// Footer button methods
+	const getCancelButton = () => (
+		<Button
+			key="cancel"
+			onClick={handleCancel}
+			disabled={loading || saveDraftLoading}
+		>
+			Cancel
+		</Button>
+	);
+
+	const getChangeButton = () => (
+		<Button
+			key="change"
+			type="primary"
+			onClick={handleAssignNow}
+			loading={loading}
+			disabled={loading || saveDraftLoading}
+		>
+			Change
+		</Button>
+	);
+
+	const getSaveDraftButton = () => (
+		<Button
+			key="draft"
+			onClick={handleSaveDraft}
+			loading={saveDraftLoading}
+			disabled={loading || saveDraftLoading}
+		>
+			Save Draft
+		</Button>
+	);
+
+	const getAssignNowButton = () => (
+		<Button
+			key="assign"
+			type="primary"
+			onClick={handleAssignNow}
+			loading={loading}
+			disabled={loading || saveDraftLoading}
+		>
+			Assign Now
+		</Button>
+	);
+
+	const getChangeModeFooter = () => [getCancelButton(), getChangeButton()];
+
+	const getAssignModeFooterWithAssignNow = () => [
+		getCancelButton(),
+		getSaveDraftButton(),
+		getAssignNowButton(),
+	];
+
+	const getAssignModeFooterWithoutAssignNow = () => [
+		getCancelButton(),
+		getSaveDraftButton(),
+	];
+
+	const getAssignModeFooter = () => {
+		if (showAssignNow) {
+			return getAssignModeFooterWithAssignNow();
+		}
+		return getAssignModeFooterWithoutAssignNow();
+	};
+
+	const getFooterButtons = () => {
+		if (isChangeMode) {
+			return getChangeModeFooter();
+		}
+		return getAssignModeFooter();
+	};
+
+	// Helper methods for determining field requirements
+	const isFieldRequiredInChangeMode = (): boolean => {
+		return false;
+	};
+
+	const isFieldRequiredInAssignMode = (): boolean => {
+		return true;
+	};
+
+	const isSupervisor1Required = (): boolean => {
+		if (isChangeMode) {
+			return isFieldRequiredInChangeMode();
+		}
+		return isFieldRequiredInAssignMode();
+	};
+
 	return (
 		<Modal
 			title={getModalTitle()}
 			open={open}
 			onCancel={handleCancel}
-			footer={[
-				<Button
-					key="cancel"
-					onClick={handleCancel}
-					disabled={loading || saveDraftLoading}
-				>
-					Cancel
-				</Button>,
-				// For change mode (Finalized status), only show "Change" button
-				...(isChangeMode
-					? [
-							<Button
-								key="change"
-								type="primary"
-								onClick={handleAssignNow}
-								loading={loading}
-								disabled={loading || saveDraftLoading}
-							>
-								Change
-							</Button>,
-						]
-					: [
-							// For assign mode, show Save Draft and optionally Assign Now
-							<Button
-								key="draft"
-								onClick={handleSaveDraft}
-								loading={saveDraftLoading}
-								disabled={loading || saveDraftLoading}
-							>
-								Save Draft
-							</Button>,
-							...(showAssignNow
-								? [
-										<Button
-											key="assign"
-											type="primary"
-											onClick={handleAssignNow}
-											loading={loading}
-											disabled={loading || saveDraftLoading}
-										>
-											Assign Now
-										</Button>,
-									]
-								: []),
-						]),
-			]}
+			footer={getFooterButtons()}
 			centered
 		>
 			<Form form={form} layout="vertical" onFinish={handleFinish}>
@@ -321,7 +384,7 @@ export default function AssignSupervisorModal({
 					label={
 						<FormLabel
 							text={getSupervisor1LabelText()}
-							isRequired={!isChangeMode}
+							isRequired={isSupervisor1Required()}
 							isBold
 						/>
 					}
