@@ -11,7 +11,6 @@ import { LoginValues } from '@/components/auth/LoginFormComponents';
 import LoginHeader from '@/components/auth/LoginHeader';
 import { LoginSuccessHandler } from '@/components/auth/LoginSuccessHandler';
 import LoginTabs from '@/components/auth/LoginTabs';
-import { useAdminStore } from '@/store/useAdminStore';
 
 const { Content } = Layout;
 
@@ -42,7 +41,6 @@ export default function SignInPage() {
 			if (result?.error) {
 				LoginErrorHandler.handleLoginError(result.error, isAdmin);
 			} else {
-				await useAdminStore.getState().fetchAdmin(true);
 				// Login successful - handle success with routing
 				const successHandled =
 					await LoginSuccessHandler.handleLoginSuccess(router);

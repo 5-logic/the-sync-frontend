@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Alert, Button, Form, Input, Modal } from 'antd';
+import { Button, Form, Input, Modal } from 'antd';
 import React, { useEffect, useState } from 'react';
 
 import { FormLabel } from '@/components/common/FormLabel';
@@ -19,22 +19,29 @@ const AccountSettingModal: React.FC<AccountSettingModalProps> = ({
 	defaultEmail,
 }) => {
 	const [form] = Form.useForm();
-	const { admin, updateAdmin, loading, error, setAdmin } = useAdminStore();
-	const [success, setSuccess] = useState<string | null>(null);
-
-	const username = admin?.username || '';
-	console.log('Admin username:', username);
-	const email = admin?.email || '';
+	const { updateAdmin, loading, setAdmin, fetchAdmin } = useAdminStore();
+	const [adminData, setAdminData] = useState<{
+		username: string;
+		email: string;
+	}>({ username: '', email: '' });
 
 	useEffect(() => {
-		form.setFieldsValue({
-			email,
-			oldPassword: '',
-			newPassword: '',
-			confirmPassword: '',
-		});
-		setSuccess(null);
-	}, [open, admin, form, username, email]);
+		if (open) {
+			fetchAdmin().then((data) => {
+				const username = data?.username || '';
+				const email = data?.email || '';
+				setAdminData({ username, email });
+				form.setFieldsValue({
+					username,
+					email,
+					oldPassword: '',
+					newPassword: '',
+					confirmPassword: '',
+				});
+			});
+		}
+	}, [open, fetchAdmin, form]);
+	console.log('Fetching admin data...', adminData);
 
 	const handleFinish = async (values: {
 		email: string;
@@ -42,8 +49,6 @@ const AccountSettingModal: React.FC<AccountSettingModalProps> = ({
 		newPassword: string;
 		confirmPassword: string;
 	}) => {
-		setSuccess(null);
-
 		if (
 			values.newPassword &&
 			values.confirmPassword &&
@@ -58,7 +63,7 @@ const AccountSettingModal: React.FC<AccountSettingModalProps> = ({
 			return;
 		}
 		try {
-			const emailChanged = values.email !== email;
+			const emailChanged = values.email !== adminData.email;
 			const passwordChanged = values.oldPassword || values.newPassword;
 			if (!emailChanged && !passwordChanged) {
 				onClose();
@@ -72,12 +77,12 @@ const AccountSettingModal: React.FC<AccountSettingModalProps> = ({
 			const updated = await updateAdmin(updateDto);
 			if (updated) {
 				setAdmin(updated);
-				setSuccess('Profile updated successfully!');
 				form.setFieldsValue({
 					oldPassword: '',
 					newPassword: '',
 					confirmPassword: '',
 				});
+				onClose();
 			}
 		} catch (err: unknown) {
 			form.setFields([
@@ -105,14 +110,14 @@ const AccountSettingModal: React.FC<AccountSettingModalProps> = ({
 				className="space-y-4"
 			>
 				<Form.Item label={<FormLabel text="Username" isBold />} name="username">
-					<Input disabled value={username} />
+					<Input disabled value={adminData.username} />
 				</Form.Item>
 				<Form.Item
 					label={<FormLabel text="Email" isBold />}
 					name="email"
 					rules={[{ type: 'email', message: 'Invalid email format' }]}
 				>
-					<Input type="email" value={email} />
+					<Input type="email" value={adminData.email} />
 				</Form.Item>
 				<Form.Item
 					label={<FormLabel text="Current Password" isBold />}

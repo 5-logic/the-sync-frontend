@@ -3,6 +3,8 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 import adminService from '@/lib/services/admins.service';
+import { AuthService } from '@/lib/services/auth';
+import { showNotification } from '@/lib/utils';
 import { Admin } from '@/schemas/admin';
 import { cacheUtils } from '@/store/helpers/cacheHelpers';
 
@@ -83,6 +85,7 @@ export const useAdminStore = create<AdminState>()(
 					try {
 						set({ loading: true, error: null });
 						const response = await adminService.findOne();
+						console.log('AdminService.findOne response:', response);
 						if (response.success && response.data) {
 							set({ admin: response.data, loading: false, lastFetched: now });
 							cacheUtils.set(ADMIN_CACHE_KEY, response.data.id, response.data);
@@ -125,6 +128,11 @@ export const useAdminStore = create<AdminState>()(
 								loading: false,
 								lastFetched: Date.now(),
 							});
+							showNotification.success(
+								'Success',
+								'Profile updated successfully',
+							);
+							await AuthService.logout({ redirect: true });
 							cacheUtils.set(ADMIN_CACHE_KEY, response.data.id, response.data);
 							return response.data;
 						} else if (!response.success) {
