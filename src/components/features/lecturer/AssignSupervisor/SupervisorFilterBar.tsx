@@ -1,6 +1,7 @@
 'use client';
 
-import { Col, Row, Select } from 'antd';
+import { ReloadOutlined } from '@ant-design/icons';
+import { Button, Col, Row, Select } from 'antd';
 import { memo, useCallback } from 'react';
 
 import GroupSearchBar from '@/components/features/lecturer/AssignSupervisor/GroupSearchBar';
@@ -14,6 +15,11 @@ interface Props {
 	onSearchChange: (val: string) => void;
 	status: StatusType;
 	onStatusChange: (val: StatusType) => void;
+	onRefresh: () => void;
+	refreshing: boolean;
+	onAssignAllDrafts: () => void;
+	draftCount: number;
+	updating: boolean;
 }
 
 const STATUS_OPTIONS = [
@@ -28,7 +34,17 @@ const STATUS_OPTIONS = [
  * Uses React.memo and useCallback to prevent unnecessary re-renders
  */
 const SupervisorFilterBar = memo<Props>(
-	({ search, onSearchChange, status, onStatusChange }) => {
+	({
+		search,
+		onSearchChange,
+		status,
+		onStatusChange,
+		onRefresh,
+		refreshing,
+		onAssignAllDrafts,
+		draftCount,
+		updating,
+	}) => {
 		const handleStatusChange = useCallback(
 			(value: StatusType) => {
 				onStatusChange(value);
@@ -64,6 +80,27 @@ const SupervisorFilterBar = memo<Props>(
 							</Option>
 						))}
 					</Select>
+				</Col>
+				<Col>
+					<Button
+						icon={<ReloadOutlined />}
+						loading={refreshing}
+						onClick={onRefresh}
+						title="Refresh data"
+					>
+						Refresh
+					</Button>
+				</Col>
+				<Col>
+					<Button
+						type="primary"
+						loading={updating}
+						disabled={draftCount === 0}
+						onClick={onAssignAllDrafts}
+						style={{ color: 'white' }}
+					>
+						Assign All Drafts ({draftCount})
+					</Button>
 				</Col>
 			</Row>
 		);

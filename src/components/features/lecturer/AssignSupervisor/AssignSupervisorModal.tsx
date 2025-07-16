@@ -12,23 +12,28 @@ interface Props {
 	readonly open: boolean;
 	readonly loading?: boolean;
 	readonly onCancel: () => void;
-	readonly onSubmit: (values: string[]) => void;
+	readonly onSaveDraft: (values: string[]) => void;
+	readonly onAssignNow: (values: string[]) => void;
 	readonly initialValues?: string[];
 	readonly lecturerOptions: LecturerOption[];
-	readonly isChangeMode?: boolean;
+	readonly showAssignNow?: boolean; // Show assign now button when appropriate
+	readonly isChangeMode?: boolean; // True when editing finalized assignments
 }
 
 /**
- * Modal component for assigning or changing supervisors
+ * Modal component for assigning supervisors
+ * Now supports both Save Draft and Assign Now actions
  */
 
 export default function AssignSupervisorModal({
 	open,
 	loading = false,
 	onCancel,
-	onSubmit,
+	onSaveDraft,
+	onAssignNow,
 	initialValues = [],
 	lecturerOptions,
+	showAssignNow = false,
 	isChangeMode = false,
 }: Props) {
 	const [form] = Form.useForm();
@@ -118,7 +123,40 @@ export default function AssignSupervisorModal({
 			(id): id is string => Boolean(id),
 		);
 
-		onSubmit(selected);
+		// Default to save draft - will be overridden by button clicks
+		onSaveDraft(selected);
+	};
+
+	const handleSaveDraft = () => {
+		// For save draft, we don't need strict validation
+		// Just get current form values without validation
+		const values = form.getFieldsValue();
+		const selected = [values.supervisor1, values.supervisor2].filter(
+			(id): id is string => Boolean(id),
+		);
+
+		// Allow saving draft even with empty selection
+		onSaveDraft(selected);
+	};
+
+	const handleAssignNow = () => {
+		// For assign now, we need at least one supervisor
+		const values = form.getFieldsValue();
+		const selected = [values.supervisor1, values.supervisor2].filter(
+			(id): id is string => Boolean(id),
+		);
+
+		if (selected.length === 0) {
+			form.setFields([
+				{
+					name: 'supervisor1',
+					errors: ['Please select at least one supervisor'],
+				},
+			]);
+			return;
+		}
+
+		onAssignNow(selected);
 	};
 
 	// Generate stable keys for Select components using watched values
@@ -132,7 +170,7 @@ export default function AssignSupervisorModal({
 		return `supervisor2-${supervisor1Value || 'none'}-${renderKey}`;
 	};
 
-	// Filter lecturer options based on mode	// Watch form values to compute options reactively
+	// Watch form values to compute options reactively
 	const supervisor1Value = Form.useWatch('supervisor1', form);
 	const supervisor2Value = Form.useWatch('supervisor2', form);
 
@@ -168,66 +206,103 @@ export default function AssignSupervisorModal({
 		option?: { label: string; value: string },
 	) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase());
 
-	// Check if supervisors are already assigned (for locking logic)
-	// Lock supervisor 1 only if it's assigned and supervisor 2 is not assigned (allow assigning supervisor 2)
-	// Lock supervisor 2 if it's already assigned
-	const isSupervisor1Assigned = Boolean(initialValues?.[0]) && !isChangeMode;
-	const isSupervisor2Assigned = Boolean(initialValues?.[1]) && !isChangeMode;
-	const shouldLockSupervisor1 = isSupervisor1Assigned && !isSupervisor2Assigned;
+	// No more locking logic - always allow assignment
+	// Users can assign to any position, system will handle change vs assign logic
 
-	// Extract placeholder logic for supervisor 2 to avoid nested ternary
+	// Extract placeholder logic for supervisor 2
 	const getSupervisor2Placeholder = (): string => {
-		if (isSupervisor2Assigned) {
-			return 'Already assigned';
-		}
-		return isChangeMode
-			? 'Change to new supervisor (optional)'
-			: 'Select supervisor (optional)';
+		return 'Select supervisor (optional)';
 	};
 
-	// Extract placeholder logic for supervisor 1 to avoid nested ternary
+	// Extract placeholder logic for supervisor 1
 	const getSupervisor1Placeholder = (): string => {
-		if (shouldLockSupervisor1) {
-			return 'Already assigned';
-		}
-		return isChangeMode ? 'Change to new supervisor' : 'Select supervisor';
+		return 'Select supervisor';
 	};
 
-	// Provide separate methods for modal title and button text for each mode
-	const getChangeModalTitle = (): string => 'Change Supervisor';
-	const getAssignModalTitle = (): string => 'Assign Supervisor (Draft)';
+	// Modal title - updated to reflect mode
+	const getModalTitle = (): string => {
+		return isChangeMode ? 'Change Supervisor' : 'Assign Supervisor';
+	};
 
-	const getChangeSubmitButtonText = (): string => 'Change';
-	const getAssignSubmitButtonText = (): string => 'Save as Draft';
-
-	// Extract label text logic to avoid nested ternary
+	// Extract label text logic - simplified
 	const getSupervisor1LabelText = (): string => {
-		return `${isChangeMode ? 'Change' : 'Select'} Supervisor 1`;
+		return 'Select Supervisor 1';
 	};
 
 	const getSupervisor2LabelText = (): string => {
-		return `${isChangeMode ? 'Change' : 'Select'} Supervisor 2`;
+		return 'Select Supervisor 2';
 	};
 
 	return (
 		<Modal
-			title={isChangeMode ? getChangeModalTitle() : getAssignModalTitle()}
+			title={getModalTitle()}
 			open={open}
 			onCancel={handleCancel}
-			footer={null}
+			footer={[
+				<Button key="cancel" onClick={handleCancel} disabled={loading}>
+					Cancel
+				</Button>,
+				// For change mode (Finalized status), only show "Change" button
+				...(isChangeMode
+					? [
+							<Button
+								key="change"
+								type="primary"
+								onClick={handleAssignNow}
+								loading={loading}
+								disabled={loading}
+							>
+								Change
+							</Button>,
+						]
+					: [
+							// For assign mode, show Save Draft and optionally Assign Now
+							<Button
+								key="draft"
+								onClick={handleSaveDraft}
+								loading={loading}
+								disabled={loading}
+							>
+								Save Draft
+							</Button>,
+							...(showAssignNow
+								? [
+										<Button
+											key="assign"
+											type="primary"
+											onClick={handleAssignNow}
+											loading={loading}
+											disabled={loading}
+										>
+											Assign Now
+										</Button>,
+									]
+								: []),
+						]),
+			]}
 			centered
 		>
 			<Form form={form} layout="vertical" onFinish={handleFinish}>
 				<Form.Item
 					label={
-						<FormLabel text={getSupervisor1LabelText()} isRequired isBold />
+						<FormLabel
+							text={getSupervisor1LabelText()}
+							isRequired={!isChangeMode}
+							isBold
+						/>
 					}
 					name="supervisor1"
 					required={false}
 					rules={[
 						{
-							required: true,
-							message: 'Please select at least one supervisor',
+							validator: (_, value) => {
+								// Only require supervisor 1 for assign/change operations
+								// Save draft can be empty
+								if (!value) {
+									return Promise.resolve(); // Allow empty for save draft
+								}
+								return Promise.resolve();
+							},
 						},
 					]}
 				>
@@ -237,7 +312,7 @@ export default function AssignSupervisorModal({
 						options={supervisor1Options}
 						allowClear
 						showSearch
-						disabled={loading || shouldLockSupervisor1}
+						disabled={loading}
 						filterOption={filterOption}
 						onChange={() => {
 							form.validateFields(['supervisor2']);
@@ -274,27 +349,12 @@ export default function AssignSupervisorModal({
 						options={supervisor2Options}
 						allowClear
 						showSearch
-						disabled={loading || isSupervisor2Assigned}
+						disabled={loading}
 						filterOption={filterOption}
 						onChange={() => {
 							form.validateFields(['supervisor1']);
 						}}
 					/>
-				</Form.Item>
-
-				<Form.Item className="text-right">
-					<Button
-						onClick={handleCancel}
-						style={{ marginRight: 8 }}
-						disabled={loading}
-					>
-						Cancel
-					</Button>
-					<Button type="primary" htmlType="submit" loading={loading}>
-						{isChangeMode
-							? getChangeSubmitButtonText()
-							: getAssignSubmitButtonText()}
-					</Button>
 				</Form.Item>
 			</Form>
 		</Modal>

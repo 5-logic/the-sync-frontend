@@ -6,9 +6,12 @@ import { useEffect, useMemo, useState } from 'react';
 import { ConfirmationModal } from '@/components/common/ConfirmModal';
 import { Header } from '@/components/common/Header';
 import AssignSupervisorModal from '@/components/features/lecturer/AssignSupervisor/AssignSupervisorModal';
-import DraftAssignmentsList from '@/components/features/lecturer/AssignSupervisor/DraftAssignmentsList';
 import GroupOverviewTable from '@/components/features/lecturer/AssignSupervisor/GroupOverviewTable';
-import { baseColumns } from '@/components/features/lecturer/AssignSupervisor/SupervisorColumns';
+import {
+	baseColumns,
+	createActionRenderer,
+	createSupervisorRenderer,
+} from '@/components/features/lecturer/AssignSupervisor/SupervisorColumns';
 import SupervisorFilterBar from '@/components/features/lecturer/AssignSupervisor/SupervisorFilterBar';
 import { useAssignSupervisor } from '@/hooks/lecturer/useAssignSupervisor';
 import { type SupervisorAssignmentData } from '@/store/useAssignSupervisorStore';
@@ -32,19 +35,28 @@ export default function AssignSupervisors() {
 		data,
 		lecturers,
 		loading,
+		refreshing,
 		updating,
 		error,
 		changeSupervisor,
 		refreshData,
+		fetchData,
 		bulkAssignSupervisors,
 	} = useAssignSupervisor();
+
+	// Manual fetch on component mount
+	useEffect(() => {
+		// Always try to fetch data, but cache logic in store will determine if API call is needed
+		fetchData();
+	}, [fetchData]);
 
 	// Draft and bulk assignment stores
 	const {
 		addDraftAssignment,
-		getDraftAssignmentsList,
-		getDraftCount,
 		clearAllDrafts,
+		getDraftAssignment,
+		removeDraftAssignment,
+		draftAssignments, // Subscribe to the actual state to trigger re-renders
 	} = useDraftAssignmentStore();
 
 	// Clear drafts on page reload or navigation
@@ -66,6 +78,9 @@ export default function AssignSupervisors() {
 		};
 	}, [clearAllDrafts]);
 
+	// Helper function to get draft assignments list from state
+	const getDraftsList = () => Object.values(draftAssignments);
+
 	const filteredData = useMemo(() => {
 		return data.filter((item) => {
 			const searchText = search.toLowerCase();
@@ -82,13 +97,19 @@ export default function AssignSupervisors() {
 	 * Handle bulk assignment of all draft assignments
 	 */
 	const handleBulkAssignment = async (): Promise<void> => {
-		const drafts = getDraftAssignmentsList();
+		const drafts = getDraftsList();
 
-		if (drafts.length === 0) {
+		// Filter out drafts for finalized theses
+		const validDrafts = drafts.filter((draft) => {
+			const thesis = data.find((item) => item.thesisId === draft.thesisId);
+			return thesis?.status !== 'Finalized';
+		});
+
+		if (validDrafts.length === 0) {
 			return;
 		}
 
-		const assignments = drafts.map((draft) => ({
+		const assignments = validDrafts.map((draft) => ({
 			thesisId: draft.thesisId,
 			lecturerIds: draft.lecturerIds,
 		}));
@@ -96,8 +117,10 @@ export default function AssignSupervisors() {
 		const result = await bulkAssignSupervisors(assignments);
 
 		if (result) {
-			// Clear all drafts after successful assignment
-			clearAllDrafts();
+			// Clear only the valid drafts after successful assignment
+			validDrafts.forEach((draft) => {
+				removeDraftAssignment(draft.thesisId);
+			});
 			// No need to refresh data - optimistic updates already applied
 		}
 	};
@@ -133,12 +156,23 @@ export default function AssignSupervisors() {
 	 * Handle assignment mode - add to draft
 	 */
 	const handleAssignmentMode = (supervisorIds: string[]): void => {
+		console.log('🔥 handleAssignmentMode called with:', supervisorIds);
+		console.log('🔥 selectedGroup in handleAssignmentMode:', selectedGroup);
+
 		if (!selectedGroup) return;
 
 		const lecturerNames = supervisorIds
 			.map((id) => lecturers.find((l) => l.id === id)?.fullName)
 			.filter(Boolean) as string[];
 
+		console.log('🔥 lecturerNames mapped:', lecturerNames);
+		console.log('🔥 About to call addDraftAssignment with:', {
+			thesisId: selectedGroup.thesisId,
+			thesisTitle: selectedGroup.thesisTitle,
+			groupName: selectedGroup.groupName,
+			lecturerIds: supervisorIds,
+			lecturerNames,
+		});
 		addDraftAssignment({
 			thesisId: selectedGroup.thesisId,
 			thesisTitle: selectedGroup.thesisTitle,
@@ -146,42 +180,69 @@ export default function AssignSupervisors() {
 			lecturerIds: supervisorIds,
 			lecturerNames,
 		});
+
+		console.log('🔥 addDraftAssignment called successfully');
+		console.log('🔥 Current draftAssignments after save:', draftAssignments);
+		console.log('🔥 Current validDraftCount after save:', validDraftCount);
 	};
 
 	/**
-	 * Handle supervisor assignment/change submission for individual thesis
+	 * Handle save draft action from modal
 	 */
-	const handleAssignSubmit = async (supervisorIds: string[]): Promise<void> => {
+	const handleSaveDraft = (supervisorIds: string[]): void => {
+		console.log('🔥 handleSaveDraft called with:', supervisorIds);
+		console.log('🔥 selectedGroup:', selectedGroup);
+
+		if (!selectedGroup) return;
+
+		// Don't allow drafts for finalized assignments
+		if (selectedGroup.status === 'Finalized') {
+			console.warn('Cannot create draft for finalized assignment');
+			return;
+		}
+
+		// Don't save empty drafts
+		if (supervisorIds.length === 0) {
+			console.warn('Cannot save empty draft');
+			setModalOpen(false);
+			setSelectedGroup(null);
+			return;
+		}
+
+		console.log('🔥 About to call handleAssignmentMode');
+		// Always save as draft
+		handleAssignmentMode(supervisorIds);
+		setModalOpen(false);
+		setSelectedGroup(null);
+	};
+
+	/**
+	 * Handle assign now action from modal (for change cases)
+	 */
+	const handleAssignNow = async (supervisorIds: string[]): Promise<void> => {
 		if (!selectedGroup) return;
 
 		setModalLoading(true);
 
-		const isChangeMode = selectedGroup.status === 'Finalized';
+		try {
+			const currentSupervisorIds = selectedGroup.supervisorDetails.map(
+				(s) => s.id,
+			);
+			const newSupervisorIds = supervisorIds.filter(Boolean);
 
-		if (isChangeMode) {
-			try {
-				const currentSupervisorIds = selectedGroup.supervisorDetails.map(
-					(s) => s.id,
-				);
-				const newSupervisorIds = supervisorIds.filter(Boolean);
+			// This should only be called for change operations
+			const success = await handleSupervisorChange(
+				currentSupervisorIds,
+				newSupervisorIds,
+				selectedGroup.thesisId,
+			);
 
-				const success = await handleSupervisorChange(
-					currentSupervisorIds,
-					newSupervisorIds,
-					selectedGroup.thesisId,
-				);
-
-				if (success) {
-					setModalOpen(false);
-					setSelectedGroup(null);
-				}
-			} catch {
-				// Error in change mode operations - handled by the hook
+			if (success) {
+				setModalOpen(false);
+				setSelectedGroup(null);
 			}
-		} else {
-			handleAssignmentMode(supervisorIds);
-			setModalOpen(false);
-			setSelectedGroup(null);
+		} catch {
+			// Error handling is done in individual functions
 		}
 
 		setModalLoading(false);
@@ -191,11 +252,17 @@ export default function AssignSupervisors() {
 	 * Handle bulk assignment confirmation
 	 */
 	const handleBulkAssignmentConfirm = (): void => {
-		const drafts = getDraftAssignmentsList();
+		const drafts = getDraftsList();
+
+		// Filter out drafts for finalized theses
+		const validDrafts = drafts.filter((draft) => {
+			const thesis = data.find((item) => item.thesisId === draft.thesisId);
+			return thesis?.status !== 'Finalized';
+		});
 
 		ConfirmationModal.show({
 			title: 'Assign Supervisors',
-			message: `Are you sure you want to assign supervisors for ${drafts.length} thesis assignments?`,
+			message: `Are you sure you want to assign supervisors for ${validDrafts.length} thesis assignments?`,
 			details: `This will assign all pending draft assignments to their respective theses.`,
 			note: 'This action cannot be undone. All draft assignments will be processed immediately.',
 			noteType: 'danger',
@@ -206,35 +273,52 @@ export default function AssignSupervisors() {
 		});
 	};
 
-	const draftCount = getDraftCount();
+	// Calculate valid draft count (exclude finalized theses)
+	const validDraftCount = useMemo(() => {
+		const drafts = Object.values(draftAssignments);
+		return drafts.filter((draft) => {
+			const thesis = data.find((item) => item.thesisId === draft.thesisId);
+			return thesis?.status !== 'Finalized';
+		}).length;
+	}, [data, draftAssignments]); // Include draftAssignments to trigger re-render
 
 	// Memoized columns to prevent unnecessary re-renders
-	const columns = useMemo(
-		() => [
-			...baseColumns,
+	// Include draftCount to force re-render when drafts change
+	const columns = useMemo(() => {
+		// Create custom supervisor renderer with draft support
+		const supervisorRenderer = createSupervisorRenderer(getDraftAssignment);
+
+		// Create custom action renderer with draft delete support
+		const actionRenderer = createActionRenderer(
+			(record) => {
+				setSelectedGroup(record);
+				setModalOpen(true);
+			},
+			getDraftAssignment,
+			removeDraftAssignment,
+		);
+
+		// Filter base columns to replace supervisor column
+		const baseColumnsWithDrafts = baseColumns.map((column) => {
+			if (column.key === 'supervisors') {
+				return {
+					...column,
+					render: supervisorRenderer,
+				};
+			}
+			return column;
+		});
+
+		return [
+			...baseColumnsWithDrafts,
 			{
 				title: 'Action',
 				key: 'action',
-				render: (_: unknown, record: SupervisorAssignmentData) => {
-					const isFinalized = record.status === 'Finalized';
-
-					return (
-						<Button
-							type="primary"
-							size="small"
-							onClick={() => {
-								setSelectedGroup(record);
-								setModalOpen(true);
-							}}
-						>
-							{isFinalized ? 'Change' : 'Assign'}
-						</Button>
-					);
-				},
+				render: actionRenderer,
 			},
-		],
-		[],
-	);
+		];
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [getDraftAssignment, removeDraftAssignment, validDraftCount]);
 
 	const lecturerOptions = useMemo(() => {
 		return lecturers.map((lecturer) => ({
@@ -245,31 +329,11 @@ export default function AssignSupervisors() {
 
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
-			<div
-				style={{
-					display: 'flex',
-					justifyContent: 'space-between',
-					alignItems: 'center',
-				}}
-			>
-				<Header
-					title="Assign Supervisor"
-					description="Manage supervisor assignments for thesis groups"
-					badgeText="Moderator Only"
-				/>
-
-				{draftCount > 0 && (
-					<Button
-						type="primary"
-						loading={updating}
-						disabled={updating}
-						onClick={handleBulkAssignmentConfirm}
-						style={{ color: 'white' }}
-					>
-						Assign All Drafts ({draftCount})
-					</Button>
-				)}
-			</div>
+			<Header
+				title="Assign Supervisor"
+				description="Manage supervisor assignments for thesis groups"
+				badgeText="Moderator Only"
+			/>
 
 			{error && (
 				<Alert
@@ -291,14 +355,18 @@ export default function AssignSupervisors() {
 				onSearchChange={setSearch}
 				status={statusFilter}
 				onStatusChange={setStatusFilter}
+				onRefresh={refreshData}
+				refreshing={refreshing}
+				onAssignAllDrafts={handleBulkAssignmentConfirm}
+				draftCount={validDraftCount}
+				updating={updating}
 			/>
-
-			<DraftAssignmentsList visible={draftCount > 0} />
 
 			<GroupOverviewTable
 				data={filteredData}
 				columns={columns}
 				loading={loading}
+				key={`table-${validDraftCount}`}
 			/>
 
 			<AssignSupervisorModal
@@ -309,8 +377,13 @@ export default function AssignSupervisors() {
 					setSelectedGroup(null);
 				}}
 				initialValues={selectedGroup?.supervisorDetails.map((s) => s.id) || []}
-				onSubmit={handleAssignSubmit}
+				onSaveDraft={handleSaveDraft}
+				onAssignNow={handleAssignNow}
 				lecturerOptions={lecturerOptions}
+				showAssignNow={
+					selectedGroup?.supervisorDetails &&
+					selectedGroup.supervisorDetails.length > 0
+				}
 				isChangeMode={selectedGroup?.status === 'Finalized'}
 			/>
 		</Space>
