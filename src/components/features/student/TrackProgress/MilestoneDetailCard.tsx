@@ -1,38 +1,17 @@
 'use client';
 
-import {
-	CalendarOutlined,
-	CheckCircleTwoTone,
-	DeleteOutlined,
-	ExclamationCircleOutlined,
-	FileTextOutlined,
-	UploadOutlined,
-	UserOutlined,
-} from '@ant-design/icons';
-import {
-	Avatar,
-	Button,
-	Card,
-	Col,
-	Collapse,
-	Flex,
-	Row,
-	Space,
-	Spin,
-	Tag,
-	Typography,
-	Upload,
-	message,
-} from 'antd';
+import { Card, Collapse, Spin, message } from 'antd';
 import dayjs from 'dayjs';
 import { useState } from 'react';
 
 import { ConfirmationModal } from '@/components/common/ConfirmModal';
-import { FormLabel } from '@/components/common/FormLabel';
+import {
+	MilestoneHeader,
+	MilestoneSubmissionForm,
+	SubmittedFilesView,
+} from '@/components/features/student/TrackProgress/MilestoneDetail';
 import { useMilestoneProgress } from '@/hooks/student';
 import { useStudentGroupStatus } from '@/hooks/student/useStudentGroupStatus';
-import { StorageService } from '@/lib/services/storage.service';
-import { formatDateRange, getMilestoneStatus } from '@/lib/utils/dateFormat';
 import { Milestone } from '@/schemas/milestone';
 
 const { Panel } = Collapse;
@@ -83,11 +62,17 @@ export default function MilestoneDetailCard() {
 		updateMilestoneFiles(milestoneId, allFiles);
 	};
 
-	const removeFile = (milestoneId: string, fileIndex: number) => {
+	const removeFile = (
+		milestoneId: string,
+		fileName: string,
+		fileSize: number,
+	) => {
 		const submission = submissions[milestoneId];
 		if (!submission?.files) return;
 
-		const newFiles = submission.files.filter((_, index) => index !== fileIndex);
+		const newFiles = submission.files.filter(
+			(file) => !(file.name === fileName && file.size === fileSize),
+		);
 		updateMilestoneFiles(milestoneId, newFiles);
 	};
 
@@ -139,18 +124,6 @@ export default function MilestoneDetailCard() {
 				}
 			},
 		});
-	};
-
-	const getStatusTag = (milestone: Milestone) => {
-		const status = getMilestoneStatus(milestone.startDate, milestone.endDate);
-		switch (status) {
-			case 'Ended':
-				return <Tag color="green">Ended</Tag>;
-			case 'In Progress':
-				return <Tag color="blue">In Progress</Tag>;
-			case 'Upcoming':
-				return <Tag>Upcoming</Tag>;
-		}
 	};
 
 	const canSubmit = (milestone: Milestone): boolean => {
@@ -245,349 +218,60 @@ export default function MilestoneDetailCard() {
 					return (
 						<Panel
 							key={milestone.id}
-							header={
-								<Flex justify="space-between" align="center">
-									<Flex align="center" gap={8}>
-										<Typography.Text style={{ minWidth: 120 }}>
-											{milestone.name}
-										</Typography.Text>
-										{getStatusTag(milestone)}
-									</Flex>
-									<Space size={4}>
-										<CalendarOutlined className="text-gray-200 text-sm" />
-										<Typography.Text type="secondary" style={{ fontSize: 12 }}>
-											{formatDateRange(milestone.startDate, milestone.endDate)}
-										</Typography.Text>
-									</Space>
-								</Flex>
-							}
+							header={<MilestoneHeader milestone={milestone} />}
 						>
 							{/* Check if milestone has been submitted and not in update mode */}
 							{(submission?.documents?.length ?? 0) > 0 &&
 							!updateMode[milestone.id] ? (
-								// Show submitted files from API
-								<Space direction="vertical" size={12} style={{ width: '100%' }}>
-									<Flex
-										justify="space-between"
-										align="center"
-										style={{
-											backgroundColor: '#f5f5f5',
-											border: '1px solid #cec7c7ff',
-											padding: 12,
-											borderRadius: 8,
-										}}
-									>
-										<Flex align="center" gap={8}>
-											<FileTextOutlined />
-											<Typography.Text>Submitted files</Typography.Text>
-										</Flex>
-										<CheckCircleTwoTone twoToneColor="#52c41a" />
-									</Flex>
-
-									{/* Display submitted files */}
-									{submission.documents?.map((url: string, index: number) => (
-										<div
-											key={index}
-											style={{
-												display: 'flex',
-												alignItems: 'center',
-												justifyContent: 'space-between',
-												padding: '12px 16px',
-												border: '1px solid #d9d9d9',
-												borderRadius: 8,
-												backgroundColor: '#fff',
-												marginBottom: 8,
-											}}
-										>
-											<div
-												style={{
-													display: 'flex',
-													alignItems: 'center',
-													gap: 8,
-												}}
-											>
-												<FileTextOutlined style={{ color: '#52c41a' }} />
-												<div>
-													<div style={{ fontWeight: 500 }}>
-														{StorageService.getFileNameFromUrl(url)}
-													</div>
-													<div style={{ color: '#666', fontSize: 13 }}>
-														Submitted file
-													</div>
-												</div>
-											</div>
-											<Button
-												type="link"
-												onClick={() => window.open(url, '_blank')}
-											>
-												Download
-											</Button>
-										</div>
-									))}
-
-									{/* Option to update submission if allowed */}
-									{submissionCanSubmit && (
-										<Button
-											type="default"
-											onClick={() => {
-												// Enable update mode to show upload interface
-												setUpdateMode((prev) => ({
-													...prev,
-													[milestone.id]: true,
-												}));
-												// Clear current files to allow new upload
-												updateMilestoneFiles(milestone.id, []);
-											}}
-											style={{ marginTop: 12 }}
-										>
-											Update Submission
-										</Button>
-									)}
-
-									{/* Feedback section - will be implemented when API is ready */}
-									<Flex
-										align="flex-start"
-										gap={12}
-										style={{
-											backgroundColor: '#fafafa',
-											border: '1px solid #f0f0f0',
-											padding: 12,
-											marginTop: 12,
-											borderRadius: 8,
-										}}
-									>
-										<Avatar icon={<UserOutlined />} />
-										<Space direction="vertical" size={4}>
-											<Typography.Text strong>Supervisor</Typography.Text>
-											<Typography.Paragraph style={{ margin: 0 }}>
-												Feedback will be displayed here
-											</Typography.Paragraph>
-										</Space>
-									</Flex>
-								</Space>
+								<SubmittedFilesView
+									documents={submission.documents || []}
+									canSubmit={submissionCanSubmit}
+									onUpdateMode={() => {
+										// Enable update mode to show upload interface
+										setUpdateMode((prev) => ({
+											...prev,
+											[milestone.id]: true,
+										}));
+										// Clear current files to allow new upload
+										updateMilestoneFiles(milestone.id, []);
+									}}
+								/>
 							) : (
-								<Space direction="vertical" size={8} style={{ width: '100%' }}>
-									{!submissionCanSubmit && (
-										<Card
-											size="small"
-											style={{
-												backgroundColor: '#fff7e6',
-												border: '1px solid #ffd591',
-											}}
-										>
-											<Typography.Text type="warning">
-												<ExclamationCircleOutlined style={{ marginRight: 6 }} />
-												{getSubmissionMessage(milestone)}
-											</Typography.Text>
-										</Card>
-									)}
-
-									{submissionCanSubmit && (
-										<Card
-											size="small"
-											style={{
-												backgroundColor: '#fffbe6',
-												border: '1px solid #ffe58f',
-											}}
-										>
-											<Typography.Text type="warning">
-												<ExclamationCircleOutlined style={{ marginRight: 6 }} />
-												Please make sure to submit your report before the
-												deadline.
-											</Typography.Text>
-										</Card>
-									)}
-
-									{/* File upload section */}
-									<Card
-										size="small"
-										style={{
-											backgroundColor: '#fafafa',
-											border: '1px solid #d9d9d9',
-											marginTop: 12,
-										}}
-									>
-										<Space
-											direction="vertical"
-											size={12}
-											style={{ width: '100%' }}
-										>
-											<FormLabel text="Upload Files" isRequired isBold />
-
-											{/* Files display area */}
-											{submission?.files?.length > 0 ? (
-												<div>
-													{submission.files.map((file, index) => (
-														<div
-															key={index}
-															style={{
-																display: 'flex',
-																alignItems: 'center',
-																justifyContent: 'space-between',
-																padding: '12px 16px',
-																border: '1px solid #d9d9d9',
-																borderRadius: 8,
-																backgroundColor: '#fff',
-																marginBottom: 8,
-															}}
-														>
-															<div
-																style={{
-																	display: 'flex',
-																	alignItems: 'center',
-																	gap: 8,
-																}}
-															>
-																<FileTextOutlined
-																	style={{ color: '#1890ff' }}
-																/>
-																<div>
-																	<div style={{ fontWeight: 500 }}>
-																		{file.name}
-																	</div>
-																	<div style={{ color: '#666', fontSize: 13 }}>
-																		{(file.size / 1024 / 1024).toFixed(1)} MB
-																	</div>
-																</div>
-															</div>
-															<DeleteOutlined
-																style={{
-																	color: 'red',
-																	cursor: 'pointer',
-																	fontSize: 16,
-																}}
-																onClick={() => removeFile(milestone.id, index)}
-															/>
-														</div>
-													))}
-
-													<div style={{ marginTop: 16 }}>
-														<Upload
-															multiple
-															onChange={(info) =>
-																handleFileChange(info, milestone.id)
-															}
-															showUploadList={false}
-															disabled={!submissionCanSubmit || isSubmitting}
-														>
-															<Button
-																icon={<UploadOutlined />}
-																disabled={!submissionCanSubmit || isSubmitting}
-																loading={isSubmitting}
-															>
-																{isSubmitting
-																	? 'Uploading...'
-																	: 'Upload More Files'}
-															</Button>
-														</Upload>
-
-														<div
-															style={{
-																fontSize: 12,
-																color: '#999',
-																marginTop: 4,
-															}}
-														>
-															Support for all file types (Max: 10MB per file)
-														</div>
-													</div>
-												</div>
-											) : (
-												<Upload.Dragger
-													multiple
-													onChange={(info) =>
-														handleFileChange(info, milestone.id)
-													}
-													showUploadList={false}
-													disabled={!submissionCanSubmit || isSubmitting}
-													style={{
-														border: '2px dashed #d9d9d9',
-														borderRadius: 8,
-														backgroundColor: '#fafafa',
-													}}
-												>
-													<p className="ant-upload-drag-icon">
-														<UploadOutlined
-															style={{ fontSize: 48, color: '#d9d9d9' }}
-														/>
-													</p>
-													<p
-														className="ant-upload-text"
-														style={{ fontSize: 16 }}
-													>
-														Click or drag files to this area to upload
-													</p>
-													<p
-														className="ant-upload-hint"
-														style={{ color: '#999' }}
-													>
-														Support for multiple files. Max 10MB per file.
-													</p>
-												</Upload.Dragger>
-											)}
-										</Space>
-									</Card>
-
-									{/* Submit/Update button outside the upload area */}
-									{(submission?.files?.length > 0 ||
-										updateMode[milestone.id]) && (
-										<Row align="middle" justify="end" style={{ marginTop: 16 }}>
-											<Col>
-												<Space size={8}>
-													{/* Cancel button for update mode */}
-													{updateMode[milestone.id] && (
-														<Button
-															onClick={() => {
-																// Exit update mode and restore original files
-																setUpdateMode((prev) => ({
-																	...prev,
-																	[milestone.id]: false,
-																}));
-																// Clear the temporary files to go back to view mode
-																updateMilestoneFiles(milestone.id, []);
-															}}
-															disabled={isSubmitting}
-														>
-															Cancel Update
-														</Button>
-													)}
-
-													{/* Submit button - only show when there are files */}
-													{submission?.files?.length > 0 && (
-														<Button
-															type="primary"
-															size="large"
-															onClick={() => {
-																// Use updateMilestoneSubmission if already submitted, otherwise submitMilestone
-																const isAlreadySubmitted =
-																	(submission?.documents?.length ?? 0) > 0;
-																if (isAlreadySubmitted) {
-																	// Call update API (will show confirmation modal in handleSubmit)
-																	handleSubmit(milestone.id, true);
-																} else {
-																	// Call submit API
-																	handleSubmit(milestone.id, false);
-																}
-															}}
-															disabled={
-																!submissionCanSubmit ||
-																!submission?.files?.length ||
-																isSubmitting
-															}
-															loading={isSubmitting}
-														>
-															{isSubmitting
-																? 'Processing...'
-																: (submission?.documents?.length ?? 0) > 0
-																	? 'Update Submission'
-																	: 'Submit Milestone'}
-														</Button>
-													)}
-												</Space>
-											</Col>
-										</Row>
-									)}
-								</Space>
+								<MilestoneSubmissionForm
+									files={submission?.files || []}
+									canSubmit={submissionCanSubmit}
+									isSubmitting={isSubmitting}
+									isUpdateMode={updateMode[milestone.id] || false}
+									hasSubmittedDocuments={
+										(submission?.documents?.length ?? 0) > 0
+									}
+									submissionMessage={getSubmissionMessage(milestone)}
+									onFileChange={(info) => handleFileChange(info, milestone.id)}
+									onRemoveFile={(fileName, fileSize) =>
+										removeFile(milestone.id, fileName, fileSize)
+									}
+									onCancelUpdate={() => {
+										// Exit update mode and restore original files
+										setUpdateMode((prev) => ({
+											...prev,
+											[milestone.id]: false,
+										}));
+										// Clear the temporary files to go back to view mode
+										updateMilestoneFiles(milestone.id, []);
+									}}
+									onSubmit={() => {
+										// Use updateMilestoneSubmission if already submitted, otherwise submitMilestone
+										const isAlreadySubmitted =
+											(submission?.documents?.length ?? 0) > 0;
+										if (isAlreadySubmitted) {
+											// Call update API (will show confirmation modal in handleSubmit)
+											handleSubmit(milestone.id, true);
+										} else {
+											// Call submit API
+											handleSubmit(milestone.id, false);
+										}
+									}}
+								/>
 							)}
 						</Panel>
 					);
