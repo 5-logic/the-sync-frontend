@@ -12,6 +12,12 @@ export default function MorderatorDashboardPage() {
 				description="Welcome to your dashboard. Here you can track student progress, manage milestones, and provide timely feedback to guide thesis development."
 				badgeText="Moderator Only"
 			/>
+			<div className="space-y-6">
+				<DashboardStats />
+				<ProgressOverview />
+				<SupervisorLoadChart />
+				<GroupTable />
+			</div>
 		</Space>
 	);
 }
