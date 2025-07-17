@@ -4,6 +4,11 @@ import { Space } from 'antd';
 
 import { Header } from '@/components/common/Header';
 
+import { DashboardStats } from './DashboardStats';
+import { GroupInfo } from './GroupInfo';
+import { ProgressOverview } from './ProgressOverview';
+import { SupervisorLoadChart } from './SupervisorLoadChart';
+
 export default function MorderatorDashboardPage() {
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
@@ -16,7 +21,7 @@ export default function MorderatorDashboardPage() {
 				<DashboardStats />
 				<ProgressOverview />
 				<SupervisorLoadChart />
-				<GroupTable />
+				<GroupInfo />
 			</div>
 		</Space>
 	);
