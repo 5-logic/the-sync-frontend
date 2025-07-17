@@ -1,6 +1,6 @@
+import StatCard from '../Dashboard/StatCard';
 import { Space } from 'antd';
 
-import { StatCard } from '@/components/lecturer/StatCard';
 import { moderatorStats } from '@/data/moderatorStats';
 
 export function DashboardStats() {
