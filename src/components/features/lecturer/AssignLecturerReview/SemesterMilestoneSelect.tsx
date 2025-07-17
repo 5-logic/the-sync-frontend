@@ -1,8 +1,9 @@
 'use client';
 
 import { Col, Row, Select } from 'antd';
+import { useEffect } from 'react';
 
-import { mockSemesters } from '@/data/semester';
+import { useSemesterStore } from '@/store/useSemesterStore';
 
 const { Option } = Select;
 
@@ -23,6 +24,13 @@ export default function SemesterMilestoneSelect({
 	disabledSemester = false,
 	disabledMilestone = false,
 }: Readonly<Props>) {
+	const { semesters, fetchSemesters, loading } = useSemesterStore();
+
+	useEffect(() => {
+		fetchSemesters();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
+
 	return (
 		<Row gutter={[12, 12]} wrap>
 			<Col style={{ width: 160 }}>
@@ -32,12 +40,13 @@ export default function SemesterMilestoneSelect({
 					placeholder="Select Semester"
 					style={{ width: '100%' }}
 					size="middle"
-					disabled={disabledSemester}
+					disabled={disabledSemester || loading}
+					loading={loading}
 				>
 					<Option value="">All Semesters</Option>
-					{mockSemesters.map((s) => (
-						<Option key={s.value} value={s.value}>
-							{s.label}
+					{semesters.map((s) => (
+						<Option key={s.id} value={s.id}>
+							{s.name}
 						</Option>
 					))}
 				</Select>
