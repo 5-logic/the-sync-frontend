@@ -7,12 +7,13 @@ import { Header } from '@/components/common/Header';
 import AssignReviewerModal from '@/components/features/lecturer/AssignLecturerReview/AssignReviewerModal';
 import GroupTable from '@/components/features/lecturer/AssignLecturerReview/GroupTable';
 import SearchFilterBar from '@/components/features/lecturer/AssignLecturerReview/SearchFilterBar';
-import mockGroups, { FullMockGroup, createFullMockGroup } from '@/data/group';
+import { FullMockGroup } from '@/data/group';
 import { mockLecturers } from '@/data/lecturers';
 import { mockReviews } from '@/data/review';
 import { mockSubmissions } from '@/data/submission';
 import { useMilestoneStore } from '@/store/useMilestoneStore';
 import { useSemesterStore } from '@/store/useSemesterStore';
+import { useSubmissionStore } from '@/store/useSubmissionStore';
 
 export default function AssignLecturerReview() {
 	const [selectedGroup, setSelectedGroup] = useState<FullMockGroup | null>(
@@ -21,6 +22,9 @@ export default function AssignLecturerReview() {
 	const [search, setSearch] = useState('');
 	const [semester, setSemester] = useState('');
 	const [milestone, setMilestone] = useState('');
+
+	// Submission store
+	const { submissions, fetchByMilestone } = useSubmissionStore();
 
 	// Semester store
 	const {
@@ -100,10 +104,19 @@ export default function AssignLecturerReview() {
 		}
 	}, [milestones]);
 
-	// Tạo danh sách nhóm theo semester, gán phase = milestone hiện tại
-	const groupsInSemester: FullMockGroup[] = mockGroups
-		.filter((g) => semester === '' || g.semesterId === semester)
-		.map((g) => createFullMockGroup(g.id, milestone));
+	// Fetch submissions khi milestone thay đổi
+	useEffect(() => {
+		if (milestone) {
+			fetchByMilestone(milestone);
+		}
+	}, [fetchByMilestone, milestone]);
+
+	// Lấy group trực tiếp từ submissions trả về từ API
+	const groupsInSemester = submissions.map((s) => ({
+		id: s.group.id,
+		code: s.group.code,
+		name: s.group.name,
+	}));
 
 	// Search theo group name/code
 	const filteredGroups = groupsInSemester.filter((group) => {
