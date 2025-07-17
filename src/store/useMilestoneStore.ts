@@ -57,6 +57,7 @@ interface MilestoneState {
 
 	// Actions
 	fetchMilestones: (force?: boolean) => Promise<void>;
+	fetchMilestonesBySemester: (semesterId: string) => Promise<void>;
 	fetchCurrentMilestone: () => Promise<void>;
 	createMilestone: (data: MilestoneCreate) => Promise<boolean>;
 	updateMilestone: (id: string, data: MilestoneUpdate) => Promise<boolean>;
