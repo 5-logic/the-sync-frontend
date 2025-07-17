@@ -75,12 +75,12 @@ export default function GroupTable({ groups, onAssign }: Readonly<Props>) {
 			key: 'title',
 		},
 		{
-			title: 'Supervisor',
+			title: 'Supervisors',
 			key: 'supervisors',
 			render: (_, record) => renderSupervisors(record.supervisors),
 		},
 		{
-			title: 'Reviewer',
+			title: 'Reviewers',
 			key: 'reviewers',
 			render: (_, record) => renderReviewers(record),
 		},
