@@ -1,5 +1,3 @@
-import { Bar } from '@ant-design/plots';
-
 import { supervisorLoadData } from '@/data/moderatorStats';
 
 export function SupervisorLoadChart() {
@@ -8,7 +6,7 @@ export function SupervisorLoadChart() {
 		xField: 'count',
 		yField: 'name',
 		seriesField: 'category',
-		color: ({ category }) => {
+		color: ({ category }: { category: string }) => {
 			switch (category) {
 				case 'Over Load':
 					return '#f5222d';
