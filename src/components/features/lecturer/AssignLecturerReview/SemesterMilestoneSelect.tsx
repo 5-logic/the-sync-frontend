@@ -1,9 +1,9 @@
 'use client';
 
 import { Col, Row, Select } from 'antd';
-import { useEffect } from 'react';
 
-import { useSemesterStore } from '@/store/useSemesterStore';
+import { Milestone } from '@/schemas/milestone';
+import { Semester } from '@/schemas/semester';
 
 const { Option } = Select;
 
@@ -12,6 +12,10 @@ interface Props {
 	onSemesterChange: (val: string) => void;
 	milestone: string;
 	onMilestoneChange: (val: string) => void;
+	semesters: Semester[];
+	milestones: Milestone[];
+	loadingSemesters?: boolean;
+	loadingMilestones?: boolean;
 	disabledSemester?: boolean;
 	disabledMilestone?: boolean;
 }
@@ -21,16 +25,13 @@ export default function SemesterMilestoneSelect({
 	onSemesterChange,
 	milestone,
 	onMilestoneChange,
+	semesters,
+	milestones,
+	loadingSemesters = false,
+	loadingMilestones = false,
 	disabledSemester = false,
 	disabledMilestone = false,
 }: Readonly<Props>) {
-	const { semesters, fetchSemesters, loading } = useSemesterStore();
-
-	useEffect(() => {
-		fetchSemesters();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
-
 	return (
 		<Row gutter={[12, 12]} wrap>
 			<Col style={{ width: 160 }}>
@@ -40,8 +41,8 @@ export default function SemesterMilestoneSelect({
 					placeholder="Select Semester"
 					style={{ width: '100%' }}
 					size="middle"
-					disabled={disabledSemester || loading}
-					loading={loading}
+					disabled={disabledSemester || loadingSemesters}
+					loading={loadingSemesters}
 				>
 					<Option value="">All Semesters</Option>
 					{semesters.map((s) => (
@@ -59,13 +60,15 @@ export default function SemesterMilestoneSelect({
 					placeholder="Select Milestone"
 					style={{ width: '100%' }}
 					size="middle"
-					disabled={disabledMilestone}
+					disabled={disabledMilestone || loadingMilestones}
+					loading={loadingMilestones}
 				>
 					<Option value="">All Milestones</Option>
-					<Option value="Review 1">Review 1</Option>
-					<Option value="Review 2">Review 2</Option>
-					<Option value="Review 3">Review 3</Option>
-					<Option value="Final Review">Final Review</Option>
+					{milestones.map((m) => (
+						<Option key={m.id} value={m.id}>
+							{m.name}
+						</Option>
+					))}
 				</Select>
 			</Col>
 		</Row>
