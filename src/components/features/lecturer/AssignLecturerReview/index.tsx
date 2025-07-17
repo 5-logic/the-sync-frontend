@@ -1,7 +1,7 @@
 'use client';
 
 import { Space } from 'antd';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Header } from '@/components/common/Header';
 import AssignReviewerModal from '@/components/features/lecturer/AssignLecturerReview/AssignReviewerModal';
@@ -11,6 +11,8 @@ import mockGroups, { FullMockGroup, createFullMockGroup } from '@/data/group';
 import { mockLecturers } from '@/data/lecturers';
 import { mockReviews } from '@/data/review';
 import { mockSubmissions } from '@/data/submission';
+import { useMilestoneStore } from '@/store/useMilestoneStore';
+import { useSemesterStore } from '@/store/useSemesterStore';
 
 export default function AssignLecturerReview() {
 	const [selectedGroup, setSelectedGroup] = useState<FullMockGroup | null>(
@@ -18,7 +20,85 @@ export default function AssignLecturerReview() {
 	);
 	const [search, setSearch] = useState('');
 	const [semester, setSemester] = useState('');
-	const [milestone, setMilestone] = useState('Review 1');
+	const [milestone, setMilestone] = useState('');
+
+	// Semester store
+	const {
+		semesters,
+		fetchSemesters,
+		loading: loadingSemesters,
+	} = useSemesterStore();
+
+	// Milestone store
+	const {
+		milestones,
+		fetchMilestonesBySemester,
+		loading: loadingMilestones,
+	} = useMilestoneStore();
+
+	// Fetch semesters ngay khi mount
+	useEffect(() => {
+		fetchSemesters();
+	}, [fetchSemesters]);
+
+	// Khi semesters đã có, chọn semester đầu tiên hợp lệ và fetch milestones cho nó
+	useEffect(() => {
+		if (semesters && semesters.length > 0) {
+			const filtered = semesters.filter(
+				(s) => s.status !== 'NotYet' && s.status !== 'End',
+			);
+			const defaultSemester = filtered.length > 0 ? filtered[0].id : '';
+			if (defaultSemester) {
+				setSemester(defaultSemester);
+				fetchMilestonesBySemester(defaultSemester);
+			} else {
+				setSemester('');
+			}
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [semesters]);
+
+	// Khi user chọn semester khác (không phải lần đầu), fetch milestones cho semester đó
+	useEffect(() => {
+		if (
+			semester &&
+			semesters.length > 0 &&
+			semester !==
+				(semesters.filter((s) => s.status !== 'NotYet' && s.status !== 'End')[0]
+					?.id || '')
+		) {
+			fetchMilestonesBySemester(semester);
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [semester]);
+
+	// Khi milestones đã có, chọn milestone mặc định (gần ngày hiện tại nhất và ở tương lai)
+	useEffect(() => {
+		if (milestones && milestones.length > 0) {
+			const now = new Date();
+			const futureMilestones = milestones.filter((m) => {
+				if (!m.startDate) return false;
+				return new Date(m.startDate) >= now;
+			});
+			let defaultMilestone = '';
+			if (futureMilestones.length > 0) {
+				futureMilestones.sort(
+					(a, b) =>
+						new Date(a.startDate).getTime() - new Date(b.startDate).getTime(),
+				);
+				defaultMilestone = futureMilestones[0].id;
+			} else {
+				const sorted = [...milestones].sort(
+					(a, b) =>
+						new Date(b.startDate).getTime() - new Date(a.startDate).getTime(),
+				);
+				if (sorted.length > 0) defaultMilestone = sorted[0].id;
+			}
+			setMilestone(defaultMilestone);
+		} else {
+			setMilestone('');
+		}
+	}, [milestones]);
 
 	// Tạo danh sách nhóm theo semester, gán phase = milestone hiện tại
 	const groupsInSemester: FullMockGroup[] = mockGroups
@@ -65,6 +145,10 @@ export default function AssignLecturerReview() {
 				onSemesterChange={setSemester}
 				milestone={milestone}
 				onMilestoneChange={setMilestone}
+				semesters={semesters}
+				milestones={milestones}
+				loadingSemesters={loadingSemesters}
+				loadingMilestones={loadingMilestones}
 			/>
 
 			<GroupTable
