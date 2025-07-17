@@ -4,6 +4,8 @@ import { SearchOutlined } from '@ant-design/icons';
 import { Button, Col, Input, Row } from 'antd';
 
 import SemesterMilestoneSelect from '@/components/features/lecturer/AssignLecturerReview/SemesterMilestoneSelect';
+import { Milestone } from '@/schemas/milestone';
+import { Semester } from '@/schemas/semester';
 
 interface Props {
 	search: string;
@@ -12,16 +14,25 @@ interface Props {
 	onSemesterChange: (val: string) => void;
 	milestone: string;
 	onMilestoneChange: (val: string) => void;
+	semesters: Semester[];
+	milestones: Milestone[];
+	loadingSemesters?: boolean;
+	loadingMilestones?: boolean;
 }
 
-export default function SearchFilterBar({
-	search,
-	onSearchChange,
-	semester,
-	onSemesterChange,
-	milestone,
-	onMilestoneChange,
-}: Readonly<Props>) {
+export default function SearchFilterBar(props: Readonly<Props>) {
+	const {
+		search,
+		onSearchChange,
+		semester,
+		onSemesterChange,
+		milestone,
+		onMilestoneChange,
+		semesters,
+		milestones,
+		loadingSemesters,
+		loadingMilestones,
+	} = props;
 	return (
 		<Row
 			gutter={[12, 12]}
@@ -35,6 +46,10 @@ export default function SearchFilterBar({
 				onSemesterChange={onSemesterChange}
 				milestone={milestone}
 				onMilestoneChange={onMilestoneChange}
+				semesters={semesters}
+				milestones={milestones}
+				loadingSemesters={loadingSemesters}
+				loadingMilestones={loadingMilestones}
 			/>
 
 			<Col flex="auto">
