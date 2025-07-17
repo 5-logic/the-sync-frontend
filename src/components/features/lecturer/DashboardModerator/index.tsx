@@ -4,7 +4,7 @@ import { Space } from 'antd';
 
 import { Header } from '@/components/common/Header';
 
-import { DashboardStats } from './DashboardStats';
+import DashboardStats from './DashboardStats';
 import { GroupInfo } from './GroupInfo';
 import { ProgressOverview } from './ProgressOverview';
 import { SupervisorLoadChart } from './SupervisorLoadChart';
