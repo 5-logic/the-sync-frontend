@@ -25,11 +25,13 @@ import {
 	message,
 } from 'antd';
 import dayjs from 'dayjs';
+import { useState } from 'react';
 
 import { ConfirmationModal } from '@/components/common/ConfirmModal';
 import { FormLabel } from '@/components/common/FormLabel';
 import { useMilestoneProgress } from '@/hooks/student';
 import { useStudentGroupStatus } from '@/hooks/student/useStudentGroupStatus';
+import { StorageService } from '@/lib/services/storage.service';
 import { formatDateRange, getMilestoneStatus } from '@/lib/utils/dateFormat';
 import { Milestone } from '@/schemas/milestone';
 
@@ -44,12 +46,14 @@ interface UploadInfo {
 
 export default function MilestoneDetailCard() {
 	const { isLeader } = useStudentGroupStatus();
+	const [updateMode, setUpdateMode] = useState<Record<string, boolean>>({});
 	const {
 		milestones,
 		loading,
 		submissions,
 		updateMilestoneFiles,
 		submitMilestone,
+		updateMilestoneSubmission,
 	} = useMilestoneProgress();
 
 	const handleFileChange = (info: UploadInfo, milestoneId: string) => {
@@ -87,25 +91,52 @@ export default function MilestoneDetailCard() {
 		updateMilestoneFiles(milestoneId, newFiles);
 	};
 
-	const handleSubmit = async (milestoneId: string) => {
+	const handleSubmit = async (
+		milestoneId: string,
+		isUpdate: boolean = false,
+	) => {
 		const submission = submissions[milestoneId];
 		if (!submission?.files?.length) {
 			message.warning('Please upload files before submitting');
 			return;
 		}
 
+		// Find the milestone to check if submission is still allowed
+		const milestone = milestones.find((m) => m.id.toString() === milestoneId);
+		if (milestone && !canSubmit(milestone)) {
+			message.error(getSubmissionMessage(milestone));
+			return;
+		}
+
 		ConfirmationModal.show({
-			title: 'Confirm Submission',
-			message: 'Are you sure you want to submit these files?',
-			details:
-				'Once submitted, you cannot make changes to this milestone submission.',
+			title: isUpdate ? 'Confirm Update' : 'Confirm Submission',
+			message: isUpdate
+				? 'Are you sure you want to update this submission?'
+				: 'Are you sure you want to submit these files?',
+			details: isUpdate
+				? 'This will replace your previous submission files.'
+				: 'Once submitted, you cannot make changes to this milestone submission.',
 			noteType: 'warning',
-			note: 'Please make sure all files are correct before submitting.',
-			okText: 'Submit',
+			note: 'Please make sure all files are correct before proceeding.',
+			okText: isUpdate ? 'Update' : 'Submit',
 			cancelText: 'Cancel',
 			okType: 'primary',
 			onOk: async () => {
-				await submitMilestone(milestoneId);
+				try {
+					if (isUpdate) {
+						await updateMilestoneSubmission(milestoneId);
+					} else {
+						await submitMilestone(milestoneId);
+					}
+					// Reset update mode after successful submission
+					setUpdateMode((prev) => ({
+						...prev,
+						[milestoneId]: false,
+					}));
+				} catch (error) {
+					// Errors are handled in the hook, just log here
+					console.error('Submission failed:', error);
+				}
 			},
 		});
 	};
@@ -129,6 +160,26 @@ export default function MilestoneDetailCard() {
 
 		// Only group leaders can submit and must be before start date
 		return isLeader && now.isBefore(startDate);
+	};
+
+	const getSubmissionMessage = (milestone: Milestone): string => {
+		const now = dayjs();
+		const startDate = dayjs(milestone.startDate);
+		const endDate = dayjs(milestone.endDate);
+
+		if (!isLeader) {
+			return 'Only group leaders can submit files';
+		}
+
+		if (now.isAfter(endDate)) {
+			return 'This milestone has ended';
+		}
+
+		if (now.isAfter(startDate)) {
+			return 'Submissions are no longer allowed after the milestone start date';
+		}
+
+		return 'Please make sure to submit your report before the deadline.';
 	};
 
 	if (loading) {
@@ -211,9 +262,10 @@ export default function MilestoneDetailCard() {
 								</Flex>
 							}
 						>
-							{/* TODO: Add logic to check if already submitted when API is ready */}
-							{false ? (
-								// This will be updated when we have submission data from API
+							{/* Check if milestone has been submitted and not in update mode */}
+							{(submission?.documents?.length ?? 0) > 0 &&
+							!updateMode[milestone.id] ? (
+								// Show submitted files from API
 								<Space direction="vertical" size={12} style={{ width: '100%' }}>
 									<Flex
 										justify="space-between"
@@ -231,6 +283,66 @@ export default function MilestoneDetailCard() {
 										</Flex>
 										<CheckCircleTwoTone twoToneColor="#52c41a" />
 									</Flex>
+
+									{/* Display submitted files */}
+									{submission.documents?.map((url: string, index: number) => (
+										<div
+											key={index}
+											style={{
+												display: 'flex',
+												alignItems: 'center',
+												justifyContent: 'space-between',
+												padding: '12px 16px',
+												border: '1px solid #d9d9d9',
+												borderRadius: 8,
+												backgroundColor: '#fff',
+												marginBottom: 8,
+											}}
+										>
+											<div
+												style={{
+													display: 'flex',
+													alignItems: 'center',
+													gap: 8,
+												}}
+											>
+												<FileTextOutlined style={{ color: '#52c41a' }} />
+												<div>
+													<div style={{ fontWeight: 500 }}>
+														{StorageService.getFileNameFromUrl(url)}
+													</div>
+													<div style={{ color: '#666', fontSize: 13 }}>
+														Submitted file
+													</div>
+												</div>
+											</div>
+											<Button
+												type="link"
+												onClick={() => window.open(url, '_blank')}
+											>
+												Download
+											</Button>
+										</div>
+									))}
+
+									{/* Option to update submission if allowed */}
+									{submissionCanSubmit && (
+										<Button
+											type="default"
+											onClick={() => {
+												// Enable update mode to show upload interface
+												setUpdateMode((prev) => ({
+													...prev,
+													[milestone.id]: true,
+												}));
+												// Clear current files to allow new upload
+												updateMilestoneFiles(milestone.id, []);
+											}}
+											style={{ marginTop: 12 }}
+										>
+											Update Submission
+										</Button>
+									)}
 
 									{/* Feedback section - will be implemented when API is ready */}
 									<Flex
@@ -265,17 +377,7 @@ export default function MilestoneDetailCard() {
 										>
 											<Typography.Text type="warning">
 												<ExclamationCircleOutlined style={{ marginRight: 6 }} />
-												{getMilestoneStatus(
-													milestone.startDate,
-													milestone.endDate,
-												) === 'Ended'
-													? 'This milestone has ended'
-													: getMilestoneStatus(
-																milestone.startDate,
-																milestone.endDate,
-														  ) === 'In Progress'
-														? 'Submissions are only allowed before the milestone start date'
-														: 'Only group leaders can submit files'}
+												{getSubmissionMessage(milestone)}
 											</Typography.Text>
 										</Card>
 									)}
@@ -426,23 +528,62 @@ export default function MilestoneDetailCard() {
 										</Space>
 									</Card>
 
-									{/* Submit button outside the upload area */}
-									{submission?.files?.length > 0 && (
+									{/* Submit/Update button outside the upload area */}
+									{(submission?.files?.length > 0 ||
+										updateMode[milestone.id]) && (
 										<Row align="middle" justify="end" style={{ marginTop: 16 }}>
 											<Col>
-												<Button
-													type="primary"
-													size="large"
-													onClick={() => handleSubmit(milestone.id)}
-													disabled={
-														!submissionCanSubmit ||
-														!submission?.files?.length ||
-														isSubmitting
-													}
-													loading={isSubmitting}
-												>
-													{isSubmitting ? 'Submitting...' : 'Submit Milestone'}
-												</Button>
+												<Space size={8}>
+													{/* Cancel button for update mode */}
+													{updateMode[milestone.id] && (
+														<Button
+															onClick={() => {
+																// Exit update mode and restore original files
+																setUpdateMode((prev) => ({
+																	...prev,
+																	[milestone.id]: false,
+																}));
+																// Clear the temporary files to go back to view mode
+																updateMilestoneFiles(milestone.id, []);
+															}}
+															disabled={isSubmitting}
+														>
+															Cancel Update
+														</Button>
+													)}
+
+													{/* Submit button - only show when there are files */}
+													{submission?.files?.length > 0 && (
+														<Button
+															type="primary"
+															size="large"
+															onClick={() => {
+																// Use updateMilestoneSubmission if already submitted, otherwise submitMilestone
+																const isAlreadySubmitted =
+																	(submission?.documents?.length ?? 0) > 0;
+																if (isAlreadySubmitted) {
+																	// Call update API (will show confirmation modal in handleSubmit)
+																	handleSubmit(milestone.id, true);
+																} else {
+																	// Call submit API
+																	handleSubmit(milestone.id, false);
+																}
+															}}
+															disabled={
+																!submissionCanSubmit ||
+																!submission?.files?.length ||
+																isSubmitting
+															}
+															loading={isSubmitting}
+														>
+															{isSubmitting
+																? 'Processing...'
+																: (submission?.documents?.length ?? 0) > 0
+																	? 'Update Submission'
+																	: 'Submit Milestone'}
+														</Button>
+													)}
+												</Space>
 											</Col>
 										</Row>
 									)}
