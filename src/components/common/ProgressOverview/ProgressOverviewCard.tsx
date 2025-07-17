@@ -2,6 +2,7 @@
 
 import { Button, Card, Spin, Timeline, Typography } from 'antd';
 import dayjs from 'dayjs';
+import { useRouter } from 'next/navigation';
 
 import { useMilestoneProgress } from '@/hooks/student';
 import {
@@ -14,8 +15,27 @@ const { Text } = Typography;
 
 type MilestoneStatus = 'Ended' | 'In Progress' | 'Upcoming';
 
-export default function ProgressOverviewCard() {
+interface ProgressOverviewCardProps {
+	readonly thesisId?: string;
+	readonly hideTrackMilestones?: boolean;
+}
+
+export default function ProgressOverviewCard({
+	thesisId,
+	hideTrackMilestones = false,
+}: ProgressOverviewCardProps) {
+	const router = useRouter();
 	const { milestones, loading } = useMilestoneProgress();
+
+	const handleTrackMilestones = () => {
+		router.push('/student/track-progress');
+	};
+
+	const handleViewThesisDetails = () => {
+		if (thesisId) {
+			router.push(`/student/list-thesis/${thesisId}`);
+		}
+	};
 
 	const getTimelineColor = (status: MilestoneStatus): string => {
 		switch (status) {
@@ -140,9 +160,21 @@ export default function ProgressOverviewCard() {
 				</Timeline>
 			</div>
 
-			<Button type="primary" block style={{ marginTop: 16 }}>
-				View Thesis Details
-			</Button>
+			<div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+				{!hideTrackMilestones && (
+					<Button type="primary" block onClick={handleTrackMilestones}>
+						Track Milestones
+					</Button>
+				)}
+				<Button
+					type={hideTrackMilestones ? 'primary' : 'default'}
+					block
+					onClick={handleViewThesisDetails}
+					disabled={!thesisId}
+				>
+					View Thesis Details
+				</Button>
+			</div>
 		</Card>
 	);
 }
