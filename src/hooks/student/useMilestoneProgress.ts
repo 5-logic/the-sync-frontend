@@ -8,10 +8,12 @@ import { StorageService } from '@/lib/services/storage.service';
 import { handleApiError } from '@/lib/utils/handleApi';
 import { showNotification } from '@/lib/utils/notification';
 import { Milestone } from '@/schemas/milestone';
+import { Submission } from '@/schemas/submission';
 import { useGroupDashboardStore } from '@/store/useGroupDashboardStore';
 
-export interface MilestoneSubmission {
-	milestoneId: string;
+export interface MilestoneSubmission
+	extends Omit<Submission, 'createdAt' | 'updatedAt'> {
+	// Local state for file management
 	files: File[];
 	isSubmitting: boolean;
 }
@@ -23,10 +25,6 @@ export const useMilestoneProgress = () => {
 	const [submissions, setSubmissions] = useState<
 		Record<string, MilestoneSubmission>
 	>({});
-
-	console.log('🔄 useMilestoneProgress - group:', group);
-	console.log('🔄 useMilestoneProgress - loading:', loading);
-	console.log('🔄 useMilestoneProgress - milestones count:', milestones.length);
 
 	// Fetch milestones for current semester
 	const fetchMilestones = useCallback(async () => {
@@ -64,11 +62,46 @@ export const useMilestoneProgress = () => {
 		}
 	}, [group?.semester?.id]);
 
-	// Initialize milestones on component mount
+	// Fetch submissions for current group
+	const fetchSubmissions = useCallback(async () => {
+		if (!group?.id) return;
+
+		try {
+			const response = await groupService.getSubmissions(group.id);
+			if (response.success && response.data) {
+				// Update local submissions state with API data
+				const updatedSubmissions: Record<string, MilestoneSubmission> = {};
+				response.data.forEach((apiSub) => {
+					updatedSubmissions[apiSub.milestoneId] = {
+						id: apiSub.id,
+						groupId: apiSub.groupId,
+						milestoneId: apiSub.milestoneId,
+						documents: apiSub.documents,
+						status: apiSub.status,
+						files: [], // Files will be managed locally for new uploads
+						isSubmitting: false,
+					};
+				});
+
+				setSubmissions((prev) => ({
+					...prev,
+					...updatedSubmissions,
+				}));
+			}
+		} catch (error) {
+			const apiError = handleApiError(error, 'Failed to fetch submissions');
+			showNotification.error('Error', apiError.message);
+		}
+	}, [group?.id]);
+
+	// Initialize milestones and submissions on component mount
 	useEffect(() => {
-		console.log('🔄 useEffect triggered, calling fetchMilestones');
+		console.log(
+			'🔄 useEffect triggered, calling fetchMilestones and fetchSubmissions',
+		);
 		fetchMilestones();
-	}, [fetchMilestones]);
+		fetchSubmissions();
+	}, [fetchMilestones, fetchSubmissions]);
 
 	// Update files for a specific milestone
 	const updateMilestoneFiles = (milestoneId: string, files: File[]) => {
@@ -116,12 +149,17 @@ export const useMilestoneProgress = () => {
 
 			showNotification.success('Success', 'Milestone submitted successfully');
 
-			// Clear the submission
-			setSubmissions((prev) => {
-				const newSubmissions = { ...prev };
-				delete newSubmissions[milestoneId];
-				return newSubmissions;
-			});
+			// Refresh submissions to get updated data
+			await fetchSubmissions();
+
+			// Clear the local submission files
+			setSubmissions((prev) => ({
+				...prev,
+				[milestoneId]: {
+					...prev[milestoneId],
+					files: [],
+				},
+			}));
 		} catch (error) {
 			const apiError = handleApiError(error, 'Failed to submit milestone');
 			showNotification.error('Submission Failed', apiError.message);
@@ -159,7 +197,15 @@ export const useMilestoneProgress = () => {
 		}));
 
 		try {
-			// Upload files to Supabase
+			// Delete old files from Supabase if they exist
+			if (submission.documents?.length) {
+				const deletePromises = submission.documents.map((url: string) =>
+					StorageService.deleteFile(url),
+				);
+				await Promise.all(deletePromises);
+			}
+
+			// Upload new files to Supabase
 			const uploadPromises = submission.files.map((file) =>
 				StorageService.uploadFile(file, 'milestone-submissions'),
 			);
@@ -178,12 +224,17 @@ export const useMilestoneProgress = () => {
 				'Milestone submission updated successfully',
 			);
 
-			// Clear the submission
-			setSubmissions((prev) => {
-				const newSubmissions = { ...prev };
-				delete newSubmissions[milestoneId];
-				return newSubmissions;
-			});
+			// Refresh submissions to get updated data
+			await fetchSubmissions();
+
+			// Clear the local submission files
+			setSubmissions((prev) => ({
+				...prev,
+				[milestoneId]: {
+					...prev[milestoneId],
+					files: [],
+				},
+			}));
 		} catch (error) {
 			const apiError = handleApiError(
 				error,
@@ -211,5 +262,6 @@ export const useMilestoneProgress = () => {
 		submitMilestone,
 		updateMilestoneSubmission,
 		refetchMilestones: fetchMilestones,
+		refetchSubmissions: fetchSubmissions,
 	};
 };
