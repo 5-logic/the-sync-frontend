@@ -4,6 +4,9 @@
 // Auth-related hooks
 export * from '@/hooks/auth';
 
+// Lecturer-related hooks
+export * from '@/hooks/lecturer/useAssignSupervisor';
+
 // UI/Layout hooks
 export * from '@/hooks/ui';
 
