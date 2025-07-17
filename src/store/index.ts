@@ -13,3 +13,5 @@ export { useSemesterStore } from '@/store/useSemesterStore';
 export { useSkillSetStore } from '@/store/useSkillSetStore';
 export { useStudentStore } from '@/store/useStudentStore';
 export { useThesisStore } from '@/store/useThesisStore';
+export { useSupervisionStore } from '@/store/useSupervisionStore';
+export { useAssignSupervisorStore } from '@/store/useAssignSupervisorStore';

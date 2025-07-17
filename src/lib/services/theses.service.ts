@@ -2,6 +2,28 @@ import httpClient from '@/lib/services/_httpClient';
 import { ApiResponse } from '@/schemas/_common';
 import { Thesis, ThesisCreate, ThesisUpdate } from '@/schemas/thesis';
 
+// Enhanced thesis interface with supervision and group information
+export interface ThesisWithGroup extends Thesis {
+	supervisor: {
+		id: string;
+		fullName: string;
+	} | null;
+	group: {
+		id: string;
+		name: string;
+		memberCount: number;
+	} | null;
+	supervisions: Array<{
+		id: string;
+		lecturer: {
+			id: string;
+			fullName: string;
+			email: string;
+		};
+		status: 'Active' | 'Inactive';
+	}>;
+}
+
 // Review thesis interface
 interface ReviewThesisDto {
 	status: 'Approved' | 'Rejected';
@@ -12,6 +34,16 @@ class ThesisService {
 
 	async findAll(): Promise<ApiResponse<Thesis[]>> {
 		const response = await httpClient.get<ApiResponse<Thesis[]>>(this.baseUrl);
+		return response.data;
+	}
+
+	/**
+	 * Get all theses with supervision and group information for assign supervisor page
+	 */
+	async findAllWithSupervision(): Promise<ApiResponse<ThesisWithGroup[]>> {
+		const response = await httpClient.get<ApiResponse<ThesisWithGroup[]>>(
+			`${this.baseUrl}?include=supervision,group`,
+		);
 		return response.data;
 	}
 

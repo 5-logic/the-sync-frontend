@@ -4,9 +4,10 @@ import { memo, useCallback, useState } from 'react';
 
 import CreateGroupInviteMembersSimple from '@/components/features/student/FormOrJoinGroup/CreateGroup/CreateGroupInviteMembersSimple';
 import GroupFormFields from '@/components/features/student/FormOrJoinGroup/CreateGroup/GroupFormFields';
-import groupService, { type GroupCreate } from '@/lib/services/groups.service';
+import groupService from '@/lib/services/groups.service';
 import requestService from '@/lib/services/requests.service';
 import { showNotification } from '@/lib/utils/notification';
+import { GroupCreateService as GroupCreate } from '@/schemas/group';
 import type { Student } from '@/schemas/student';
 import { useGroupDashboardStore } from '@/store/useGroupDashboardStore';
 

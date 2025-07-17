@@ -1,6 +1,6 @@
 'use client';
 
-import { Alert, Button, Card, Col, Row, Space, Spin } from 'antd';
+import { Alert, Button, Card, Col, Row, Space } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
 
 import { ThesisConfirmationModals } from '@/components/common/ConfirmModal';
@@ -154,27 +154,23 @@ export default function AssignListPublishThesisPage() {
 
 			<Row gutter={[16, 16]}>
 				<Col span={24}>
-					<Spin
-						spinning={Boolean(loading) || Boolean(refreshing)}
-						tip={loading ? 'Loading thesis data...' : 'Refreshing data...'}
-					>
-						<Card>
-							<ThesisFilterBar
-								currentFilters={filters}
-								onFilterChange={handleFilterChange}
-								domainOptions={domainOptions}
-								onRefresh={refetch}
-								loading={refreshing}
-							/>
+					<Card>
+						<ThesisFilterBar
+							currentFilters={filters}
+							onFilterChange={handleFilterChange}
+							domainOptions={domainOptions}
+							onRefresh={refetch}
+							loading={refreshing}
+						/>
 
-							<ThesisTable
-								theses={filteredTheses}
-								selectedKeys={selectedIds}
-								onSelectionChange={setSelectedIds}
-								onTogglePublish={togglePublishStatus}
-							/>
-						</Card>
-					</Spin>
+						<ThesisTable
+							theses={filteredTheses}
+							loading={loading || refreshing}
+							selectedKeys={selectedIds}
+							onSelectionChange={setSelectedIds}
+							onTogglePublish={togglePublishStatus}
+						/>
+					</Card>
 				</Col>
 			</Row>
 		</Space>
