@@ -20,11 +20,6 @@ export function GroupInfo() {
 					prefix={<SearchOutlined />}
 				/>
 				<div className="flex gap-2">
-					<Select defaultValue="All Status" style={{ width: 120 }}>
-						<Select.Option value="All Status">All Status</Select.Option>
-						<Select.Option value="Approved">Approved</Select.Option>
-						<Select.Option value="Rejected">Rejected</Select.Option>
-					</Select>
 					<Select defaultValue="Summer 2025" style={{ width: 130 }}>
 						<Select.Option value="Summer 2025">Summer 2025</Select.Option>
 					</Select>
