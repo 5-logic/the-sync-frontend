@@ -1,19 +1,49 @@
-import StatCard from '../Dashboard/StatCard';
-import { Space } from 'antd';
+'use client';
 
-import { moderatorStats } from '@/data/moderatorStats';
+import {
+	FileTextOutlined,
+	ProfileOutlined,
+	TeamOutlined,
+	UserOutlined,
+} from '@ant-design/icons';
+import { Col, Row } from 'antd';
+import React from 'react';
 
-export function DashboardStats() {
+import StatCard from '@/components/features/lecturer/Dashboard/StatCard';
+
+const DashboardStats: React.FC = () => {
+	const stats = [
+		{
+			title: 'Total Students',
+			value: 248,
+			icon: <UserOutlined style={{ fontSize: 24, color: '#1890ff' }} />,
+		},
+		{
+			title: 'Total Supervisors',
+			value: 32,
+			icon: <TeamOutlined style={{ fontSize: 24, color: '#52c41a' }} />,
+		},
+		{
+			title: 'Registered Topics',
+			value: 156,
+			icon: <FileTextOutlined style={{ fontSize: 24, color: '#fa541c' }} />,
+		},
+		{
+			title: 'Active Groups',
+			value: 45,
+			icon: <ProfileOutlined style={{ fontSize: 24, color: '#722ed1' }} />,
+		},
+	];
+
 	return (
-		<Space direction="horizontal" wrap size="middle">
-			{moderatorStats.map((stat) => (
-				<StatCard
-					key={stat.title}
-					icon={stat.icon}
-					title={stat.title}
-					value={stat.value}
-				/>
+		<Row gutter={[16, 16]}>
+			{stats.map((stat) => (
+				<Col xs={24} sm={12} md={6} key={stat.title}>
+					<StatCard value={stat.value} title={stat.title} icon={stat.icon} />
+				</Col>
 			))}
-		</Space>
+		</Row>
 	);
-}
+};
+
+export default DashboardStats;
