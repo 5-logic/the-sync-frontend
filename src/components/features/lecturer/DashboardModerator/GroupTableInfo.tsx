@@ -1,5 +1,5 @@
 import { DownloadOutlined, SearchOutlined } from '@ant-design/icons';
-import { Button, Input, Select, Table, Tag } from 'antd';
+import { Button, Input, Select, Table } from 'antd';
 
 import { groupTableData } from '@/data/moderatorStats';
 
@@ -7,13 +7,6 @@ const columns = [
 	{ title: 'Group Name', dataIndex: 'groupName' },
 	{ title: 'Topic Title', dataIndex: 'topicTitle' },
 	{ title: 'Supervisor', dataIndex: 'supervisor' },
-	{
-		title: 'Status',
-		dataIndex: 'status',
-		render: (status: string) => (
-			<Tag color={status === 'Approved' ? 'green' : 'red'}>{status}</Tag>
-		),
-	},
 	{ title: 'Semester', dataIndex: 'semester' },
 ];
 
