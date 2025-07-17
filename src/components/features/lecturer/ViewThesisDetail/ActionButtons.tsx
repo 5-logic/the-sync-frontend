@@ -74,8 +74,10 @@ export default function ActionButtons({
 		isThesisOwner &&
 		(status === THESIS_STATUS.NEW || status === THESIS_STATUS.REJECTED);
 
-	// SECURITY FIX: Only allow edit for thesis owner AND rejected status
-	const canEdit = isThesisOwner && status === THESIS_STATUS.REJECTED;
+	// SECURITY FIX: Only allow edit for thesis owner AND (new or rejected status)
+	const canEdit =
+		isThesisOwner &&
+		(status === THESIS_STATUS.NEW || status === THESIS_STATUS.REJECTED);
 
 	// Register submit button text and state
 	const getRegisterSubmitProps = () => {
@@ -84,6 +86,13 @@ export default function ActionButtons({
 				children: 'Already Submitted',
 				disabled: true,
 				loading: false,
+			};
+		}
+		if (status === THESIS_STATUS.REJECTED) {
+			return {
+				children: 'Resubmit for Review',
+				disabled: false,
+				loading: submitLoading,
 			};
 		}
 		return {
@@ -116,6 +125,16 @@ export default function ActionButtons({
 								Edit Thesis
 							</Button>
 						)}
+						{showRegisterSubmit && (
+							<Button
+								type="primary"
+								icon={<SendOutlined />}
+								onClick={onRegisterSubmit}
+								loading={submitLoading}
+							>
+								Resubmit for Review
+							</Button>
+						)}
 					</Space>
 				</Row>
 			) : (
@@ -143,6 +162,12 @@ export default function ActionButtons({
 									loading={deleteLoading}
 								>
 									Delete
+								</Button>
+							)}
+
+							{canEdit && (
+								<Button type="primary" onClick={onEdit}>
+									Edit Thesis
 								</Button>
 							)}
 
