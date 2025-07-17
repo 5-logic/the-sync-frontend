@@ -16,12 +16,12 @@ const DashboardStats: React.FC = () => {
 		{
 			title: 'Total Students',
 			value: 248,
-			icon: <UserOutlined style={{ fontSize: 24, color: '#1890ff' }} />,
+			icon: <TeamOutlined style={{ fontSize: 24, color: '#1890ff' }} />,
 		},
 		{
 			title: 'Total Supervisors',
 			value: 32,
-			icon: <TeamOutlined style={{ fontSize: 24, color: '#52c41a' }} />,
+			icon: <UserOutlined style={{ fontSize: 24, color: '#52c41a' }} />,
 		},
 		{
 			title: 'Registered Topics',
