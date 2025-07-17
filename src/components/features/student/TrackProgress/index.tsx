@@ -8,6 +8,8 @@ import MilestoneDetailCard from '@/components/features/student/TrackProgress/Mil
 import MilestoneStep from '@/components/features/student/TrackProgress/MilestoneStep';
 
 export default function ProjectProgressPage() {
+	console.log('🎯 TrackProgress component rendered');
+
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
 			<Header
