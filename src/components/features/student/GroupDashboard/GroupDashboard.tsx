@@ -1,10 +1,10 @@
 import { Alert, Col, Empty, Row, Space, Spin } from 'antd';
 import { useEffect } from 'react';
 
+import { ProgressOverviewCard } from '@/components/common/ProgressOverview';
 import GroupDashboardHeader from '@/components/features/student/GroupDashboard/GroupDashboardHeader';
 import GroupInfoCard from '@/components/features/student/GroupDashboard/GroupInfoCard';
 import NoThesisCard from '@/components/features/student/GroupDashboard/NoThesisCard';
-import ProgressOverviewCard from '@/components/features/student/GroupDashboard/ProgressOverviewCard';
 import SupervisorInfoCard from '@/components/features/student/GroupDashboard/SupervisorInfoCard';
 import ThesisStatusCard from '@/components/features/student/GroupDashboard/ThesisStatusCard';
 import { useGroupDashboardStore } from '@/store/useGroupDashboardStore';

@@ -1,72 +1,200 @@
 'use client';
 
-import {
-	CalendarOutlined,
-	CheckCircleTwoTone,
-	ExclamationCircleOutlined,
-	FileTextOutlined,
-	UploadOutlined,
-	UserOutlined,
-} from '@ant-design/icons';
-import {
-	Avatar,
-	Button,
-	Card,
-	Col,
-	Collapse,
-	Flex,
-	Row,
-	Space,
-	Tag,
-	Typography,
-	Upload,
-	message,
-} from 'antd';
+import { Card, Collapse, Spin, message } from 'antd';
+import dayjs from 'dayjs';
 import { useState } from 'react';
 
-import { mockMilestoneDetails } from '@/data/milestone';
+import { ConfirmationModal } from '@/components/common/ConfirmModal';
+import {
+	MilestoneHeader,
+	MilestoneSubmissionForm,
+	SubmittedFilesView,
+} from '@/components/features/student/TrackProgress/MilestoneDetail';
+import { useMilestoneProgress } from '@/hooks/student';
+import { useStudentGroupStatus } from '@/hooks/student/useStudentGroupStatus';
+import { Milestone } from '@/schemas/milestone';
 
 const { Panel } = Collapse;
 
-interface Milestone {
-	id: number;
-	title: string;
-	date: string;
-	status: 'Ended' | 'In Progress' | 'Upcoming';
-	submitted?: boolean;
-	fileName?: string;
-	feedback?: string;
-	supervisor?: string;
+interface UploadInfo {
+	fileList: Array<{
+		originFileObj?: File;
+		name: string;
+	}>;
 }
 
 export default function MilestoneDetailCard() {
-	const [fileList, setFileList] = useState<Record<number, string>>({});
+	const { isLeader } = useStudentGroupStatus();
+	const [updateMode, setUpdateMode] = useState<Record<string, boolean>>({});
+	const {
+		milestones,
+		loading,
+		submissions,
+		updateMilestoneFiles,
+		submitMilestone,
+		updateMilestoneSubmission,
+	} = useMilestoneProgress();
 
-	const handleUpload = (file: File, milestoneId: number) => {
-		setFileList((prev) => ({ ...prev, [milestoneId]: file.name }));
-		message.success(`File ${file.name} selected`);
-		return false; // Prevent auto upload
+	const handleFileChange = (info: UploadInfo, milestoneId: string) => {
+		const { fileList } = info;
+		// Convert to File objects from the upload event
+		const newFiles = fileList
+			.map((item) => item.originFileObj)
+			.filter((file): file is File => Boolean(file));
+
+		// Get existing files
+		const existingFiles = submissions[milestoneId]?.files || [];
+
+		// Only get the new files that were just selected (not all files from fileList)
+		// We need to filter out files that are already in existing files
+		const actuallyNewFiles = newFiles.filter(
+			(newFile) =>
+				!existingFiles.some(
+					(existingFile) =>
+						existingFile.name === newFile.name &&
+						existingFile.size === newFile.size,
+				),
+		);
+
+		// Combine existing files with only the actually new files
+		const allFiles = [...existingFiles, ...actuallyNewFiles];
+
+		updateMilestoneFiles(milestoneId, allFiles);
 	};
 
-	const handleSubmit = (milestoneId: number) => {
-		const file = fileList[milestoneId];
-		if (file) {
-			message.success(`Submitted "${file}" for milestone ${milestoneId}`);
-		} else {
-			message.warning('Please upload a file before submitting');
+	const removeFile = (
+		milestoneId: string,
+		fileName: string,
+		fileSize: number,
+	) => {
+		const submission = submissions[milestoneId];
+		if (!submission?.files) return;
+
+		const newFiles = submission.files.filter(
+			(file) => !(file.name === fileName && file.size === fileSize),
+		);
+		updateMilestoneFiles(milestoneId, newFiles);
+	};
+
+	const handleSubmit = async (
+		milestoneId: string,
+		isUpdate: boolean = false,
+	) => {
+		const submission = submissions[milestoneId];
+		if (!submission?.files?.length) {
+			message.warning('Please upload files before submitting');
+			return;
 		}
+
+		// Find the milestone to check if submission is still allowed
+		const milestone = milestones.find((m) => m.id.toString() === milestoneId);
+		if (milestone && !canSubmit(milestone)) {
+			message.error(getSubmissionMessage(milestone));
+			return;
+		}
+
+		ConfirmationModal.show({
+			title: isUpdate ? 'Confirm Update' : 'Confirm Submission',
+			message: isUpdate
+				? 'Are you sure you want to update this submission?'
+				: 'Are you sure you want to submit these files?',
+			details: isUpdate
+				? 'This will replace your previous submission files.'
+				: 'Once submitted, you cannot make changes to this milestone submission.',
+			noteType: 'warning',
+			note: 'Please make sure all files are correct before proceeding.',
+			okText: isUpdate ? 'Update' : 'Submit',
+			cancelText: 'Cancel',
+			okType: 'primary',
+			onOk: async () => {
+				try {
+					if (isUpdate) {
+						await updateMilestoneSubmission(milestoneId);
+					} else {
+						await submitMilestone(milestoneId);
+					}
+					// Reset update mode after successful submission
+					setUpdateMode((prev) => ({
+						...prev,
+						[milestoneId]: false,
+					}));
+				} catch (error) {
+					// Errors are handled in the hook, just log here
+					console.error('Submission failed:', error);
+				}
+			},
+		});
 	};
 
-	const getStatusTag = (status: Milestone['status']) => {
-		switch (status) {
-			case 'Ended':
-				return <Tag color="green">Ended</Tag>;
-			case 'In Progress':
-				return <Tag color="blue">In Progress</Tag>;
-			case 'Upcoming':
-				return <Tag>Upcoming</Tag>;
-		}
+	const canSubmit = (milestone: Milestone): boolean => {
+		// Can only submit before milestone start date (as per API rules)
+		const now = dayjs();
+		const startDate = dayjs(milestone.startDate);
+
+		// Only group leaders can submit and must be before start date
+		return isLeader && now.isBefore(startDate);
 	};
+
+	const getSubmissionMessage = (milestone: Milestone): string => {
+		const now = dayjs();
+		const startDate = dayjs(milestone.startDate);
+		const endDate = dayjs(milestone.endDate);
+
+		if (!isLeader) {
+			return 'Only group leaders can submit files';
+		}
+
+		if (now.isAfter(endDate)) {
+			return 'This milestone has ended';
+		}
+
+		if (now.isAfter(startDate)) {
+			return 'Submissions are no longer allowed after the milestone start date';
+		}
+
+		return 'Please make sure to submit your report before the deadline.';
+	};
+
+	if (loading) {
+		return (
+			<Card
+				title="Project Milestones"
+				style={{
+					display: 'flex',
+					flexDirection: 'column',
+					justifyContent: 'space-between',
+					marginBottom: 16,
+				}}
+			>
+				<div style={{ textAlign: 'center' }}>
+					<Spin size="small" />
+				</div>
+			</Card>
+		);
+	}
+
+	if (!milestones.length) {
+		return (
+			<Card
+				title="Project Milestones"
+				style={{
+					display: 'flex',
+					flexDirection: 'column',
+					justifyContent: 'space-between',
+					marginBottom: 16,
+				}}
+			>
+				<div style={{ textAlign: 'center', color: '#999' }}>
+					No milestones found for current semester
+				</div>
+			</Card>
+		);
+	}
+
+	// Sort milestones by start date
+	const sortedMilestones = [...milestones].sort((a, b) =>
+		dayjs(a.startDate).isBefore(dayjs(b.startDate)) ? -1 : 1,
+	);
 
 	return (
 		<Card
@@ -80,132 +208,74 @@ export default function MilestoneDetailCard() {
 		>
 			<Collapse
 				accordion
-				defaultActiveKey={[mockMilestoneDetails[0]?.id.toString()]}
+				defaultActiveKey={[sortedMilestones[0]?.id.toString()]}
 			>
-				{mockMilestoneDetails.map((milestone) => (
-					<Panel
-						key={milestone.id}
-						header={
-							<Flex justify="space-between" align="center">
-								<Flex align="center" gap={8}>
-									<Typography.Text style={{ minWidth: 120 }}>
-										{milestone.title}
-									</Typography.Text>
-									{getStatusTag(milestone.status)}
-								</Flex>
-								<Space size={4}>
-									<CalendarOutlined className="text-gray-200 text-sm" />
-									<Typography.Text type="secondary" style={{ fontSize: 12 }}>
-										{milestone.date}
-									</Typography.Text>
-								</Space>
-							</Flex>
-						}
-					>
-						{/* Đã nộp */}
-						{milestone.submitted ? (
-							<Space direction="vertical" size={12} style={{ width: '100%' }}>
-								<Flex
-									justify="space-between"
-									align="center"
-									style={{
-										backgroundColor: '#f5f5f5',
-										border: '1px solid #cec7c7ff',
-										padding: 12,
-										borderRadius: 8,
-									}}
-								>
-									<Flex align="center" gap={8}>
-										<FileTextOutlined />
-										<Typography.Text>{milestone.fileName}</Typography.Text>
-									</Flex>
-									<CheckCircleTwoTone twoToneColor="#52c41a" />
-								</Flex>
+				{sortedMilestones.map((milestone) => {
+					const submission = submissions[milestone.id];
+					const isSubmitting = submission?.isSubmitting || false;
+					const submissionCanSubmit = canSubmit(milestone);
 
-								{milestone.feedback && (
-									<Flex
-										align="flex-start"
-										gap={12}
-										style={{
-											backgroundColor: '#fafafa',
-											border: '1px solid #f0f0f0',
-											padding: 12,
-											marginTop: 12,
-											borderRadius: 8,
-										}}
-									>
-										<Avatar icon={<UserOutlined />} />
-										<Space direction="vertical" size={4}>
-											<Typography.Text strong>
-												{milestone.supervisor}
-											</Typography.Text>
-											<Typography.Paragraph style={{ margin: 0 }}>
-												{milestone.feedback}
-											</Typography.Paragraph>
-										</Space>
-									</Flex>
-								)}
-							</Space>
-						) : (
-							<Space direction="vertical" size={8} style={{ width: '100%' }}>
-								<Card
-									size="small"
-									style={{
-										backgroundColor: '#fffbe6',
-										border: '1px solid #ffe58f',
+					return (
+						<Panel
+							key={milestone.id}
+							header={<MilestoneHeader milestone={milestone} />}
+						>
+							{/* Check if milestone has been submitted and not in update mode */}
+							{(submission?.documents?.length ?? 0) > 0 &&
+							!updateMode[milestone.id] ? (
+								<SubmittedFilesView
+									documents={submission.documents || []}
+									canSubmit={submissionCanSubmit}
+									onUpdateMode={() => {
+										// Enable update mode to show upload interface
+										setUpdateMode((prev) => ({
+											...prev,
+											[milestone.id]: true,
+										}));
+										// Clear current files to allow new upload
+										updateMilestoneFiles(milestone.id, []);
 									}}
-								>
-									<Typography.Text type="warning">
-										<ExclamationCircleOutlined style={{ marginRight: 6 }} />
-										Please make sure to submit your report before the deadline.
-									</Typography.Text>
-								</Card>
-
-								{/* Card chứa 2 nút */}
-								<Card
-									size="small"
-									style={{
-										backgroundColor: '#fafafa',
-										border: '1px solid #d9d9d9',
-										marginTop: 12,
-										padding: 12,
+								/>
+							) : (
+								<MilestoneSubmissionForm
+									files={submission?.files || []}
+									canSubmit={submissionCanSubmit}
+									isSubmitting={isSubmitting}
+									isUpdateMode={updateMode[milestone.id] || false}
+									hasSubmittedDocuments={
+										(submission?.documents?.length ?? 0) > 0
+									}
+									submissionMessage={getSubmissionMessage(milestone)}
+									onFileChange={(info) => handleFileChange(info, milestone.id)}
+									onRemoveFile={(fileName, fileSize) =>
+										removeFile(milestone.id, fileName, fileSize)
+									}
+									onCancelUpdate={() => {
+										// Exit update mode and restore original files
+										setUpdateMode((prev) => ({
+											...prev,
+											[milestone.id]: false,
+										}));
+										// Clear the temporary files to go back to view mode
+										updateMilestoneFiles(milestone.id, []);
 									}}
-								>
-									<Row align="middle">
-										<Col flex="auto">
-											<Upload
-												beforeUpload={(file) =>
-													handleUpload(file, milestone.id)
-												}
-												showUploadList={false}
-											>
-												<Button icon={<UploadOutlined />}>Choose File</Button>
-											</Upload>
-										</Col>
-										<Col>
-											<Button
-												type="primary"
-												onClick={() => handleSubmit(milestone.id)}
-											>
-												Submit
-											</Button>
-										</Col>
-									</Row>
-								</Card>
-
-								{/* Hiển thị tên file đã chọn */}
-								{fileList[milestone.id] && (
-									<Flex align="center" gap={8}>
-										<FileTextOutlined />
-										<Typography.Text type="secondary" style={{ fontSize: 12 }}>
-											{fileList[milestone.id]}
-										</Typography.Text>
-									</Flex>
-								)}
-							</Space>
-						)}
-					</Panel>
-				))}
+									onSubmit={() => {
+										// Use updateMilestoneSubmission if already submitted, otherwise submitMilestone
+										const isAlreadySubmitted =
+											(submission?.documents?.length ?? 0) > 0;
+										if (isAlreadySubmitted) {
+											// Call update API (will show confirmation modal in handleSubmit)
+											handleSubmit(milestone.id, true);
+										} else {
+											// Call submit API
+											handleSubmit(milestone.id, false);
+										}
+									}}
+								/>
+							)}
+						</Panel>
+					);
+				})}
 			</Collapse>
 		</Card>
 	);

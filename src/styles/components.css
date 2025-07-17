@@ -1,1 +1,12 @@
-/* NotYet */
+/* Milestone Header Responsive */
+@media (max-width: 768px) {
+	.desktop-milestone-header {
+		display: none !important;
+	}
+}
+
+@media (min-width: 769px) {
+	.mobile-milestone-header {
+		display: none !important;
+	}
+}
