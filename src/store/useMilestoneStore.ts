@@ -57,8 +57,11 @@ interface MilestoneState {
 
 	// Actions
 	fetchMilestones: (force?: boolean) => Promise<void>;
-	fetchMilestonesBySemester: (semesterId: string) => Promise<void>;
 	fetchCurrentMilestone: () => Promise<void>;
+	/**
+	 * Fetch milestones by semesterId and update milestones state
+	 */
+	fetchMilestonesBySemester: (semesterId: string) => Promise<void>;
 	createMilestone: (data: MilestoneCreate) => Promise<boolean>;
 	updateMilestone: (id: string, data: MilestoneUpdate) => Promise<boolean>;
 	deleteMilestone: (id: string) => Promise<boolean>;
@@ -190,6 +193,32 @@ export const useMilestoneStore = create<MilestoneState>()(
 				set({ filteredMilestones: filtered });
 			},
 
+			fetchMilestonesBySemester: async (semesterId: string) => {
+				set({ loading: true });
+				try {
+					// Try to get cached milestones by semester
+					const cacheKey = `milestone-semester-${semesterId}`;
+					const cached = cacheUtils.get('milestone', cacheKey);
+					let filtered: Milestone[];
+
+					if (cached) {
+						filtered = cached as Milestone[];
+					} else {
+						// fetch all milestones (could optimize to fetch only by semesterId if API supports)
+						await get().fetchMilestones(true);
+						const allMilestones = get().milestones;
+						filtered = allMilestones.filter(
+							(m: Milestone) => m.semesterId === semesterId,
+						);
+						cacheUtils.set('milestone', cacheKey, filtered); // cache for 3 minutes
+					}
+
+					set({ milestones: filtered, loading: false });
+				} catch {
+					set({ loading: false });
+					// Optionally set error state
+				}
+			},
 			// Utilities
 			reset: () =>
 				set(
