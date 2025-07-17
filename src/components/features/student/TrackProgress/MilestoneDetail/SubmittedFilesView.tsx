@@ -10,9 +10,9 @@ import { Avatar, Button, Flex, Space, Typography } from 'antd';
 import { StorageService } from '@/lib/services/storage.service';
 
 interface SubmittedFilesViewProps {
-	documents: string[];
-	canSubmit: boolean;
-	onUpdateMode: () => void;
+	readonly documents: string[];
+	readonly canSubmit: boolean;
+	readonly onUpdateMode: () => void;
 }
 
 export function SubmittedFilesView({

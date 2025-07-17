@@ -3,13 +3,13 @@
 import { Button, Col, Row, Space } from 'antd';
 
 interface SubmissionActionsProps {
-	hasFiles: boolean;
-	isUpdateMode: boolean;
-	canSubmit: boolean;
-	isSubmitting: boolean;
-	hasSubmittedDocuments: boolean;
-	onCancel: () => void;
-	onSubmit: () => void;
+	readonly hasFiles: boolean;
+	readonly isUpdateMode: boolean;
+	readonly canSubmit: boolean;
+	readonly isSubmitting: boolean;
+	readonly hasSubmittedDocuments: boolean;
+	readonly onCancel: () => void;
+	readonly onSubmit: () => void;
 }
 
 export function SubmissionActions({

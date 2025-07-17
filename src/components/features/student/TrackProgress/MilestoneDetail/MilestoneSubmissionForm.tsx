@@ -7,23 +7,23 @@ import { SubmissionActions } from '@/components/features/student/TrackProgress/M
 import { SubmissionWarning } from '@/components/features/student/TrackProgress/MilestoneDetail/SubmissionWarning';
 
 interface UploadInfo {
-	fileList: Array<{
-		originFileObj?: File;
-		name: string;
+	readonly fileList: Array<{
+		readonly originFileObj?: File;
+		readonly name: string;
 	}>;
 }
 
 interface MilestoneSubmissionFormProps {
-	files: File[];
-	canSubmit: boolean;
-	isSubmitting: boolean;
-	isUpdateMode: boolean;
-	hasSubmittedDocuments: boolean;
-	submissionMessage: string;
-	onFileChange: (info: UploadInfo) => void;
-	onRemoveFile: (fileName: string, fileSize: number) => void;
-	onCancelUpdate: () => void;
-	onSubmit: () => void;
+	readonly files: File[];
+	readonly canSubmit: boolean;
+	readonly isSubmitting: boolean;
+	readonly isUpdateMode: boolean;
+	readonly hasSubmittedDocuments: boolean;
+	readonly submissionMessage: string;
+	readonly onFileChange: (info: UploadInfo) => void;
+	readonly onRemoveFile: (fileName: string, fileSize: number) => void;
+	readonly onCancelUpdate: () => void;
+	readonly onSubmit: () => void;
 }
 
 export function MilestoneSubmissionForm({

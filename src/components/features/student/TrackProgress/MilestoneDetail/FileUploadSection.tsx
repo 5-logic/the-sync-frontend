@@ -10,18 +10,18 @@ import { Button, Card, Space, Upload } from 'antd';
 import { FormLabel } from '@/components/common/FormLabel';
 
 interface UploadInfo {
-	fileList: Array<{
-		originFileObj?: File;
-		name: string;
+	readonly fileList: Array<{
+		readonly originFileObj?: File;
+		readonly name: string;
 	}>;
 }
 
 interface FileUploadSectionProps {
-	files: File[];
-	canSubmit: boolean;
-	isSubmitting: boolean;
-	onFileChange: (info: UploadInfo) => void;
-	onRemoveFile: (fileName: string, fileSize: number) => void;
+	readonly files: File[];
+	readonly canSubmit: boolean;
+	readonly isSubmitting: boolean;
+	readonly onFileChange: (info: UploadInfo) => void;
+	readonly onRemoveFile: (fileName: string, fileSize: number) => void;
 }
 
 export function FileUploadSection({

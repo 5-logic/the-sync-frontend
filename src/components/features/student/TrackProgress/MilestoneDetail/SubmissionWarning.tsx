@@ -4,8 +4,8 @@ import { ExclamationCircleOutlined } from '@ant-design/icons';
 import { Card, Typography } from 'antd';
 
 interface SubmissionWarningProps {
-	message: string;
-	canSubmit: boolean;
+	readonly message: string;
+	readonly canSubmit: boolean;
 }
 
 export function SubmissionWarning({

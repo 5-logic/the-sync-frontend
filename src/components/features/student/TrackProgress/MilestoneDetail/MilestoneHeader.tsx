@@ -7,7 +7,7 @@ import { formatDateRange, getMilestoneStatus } from '@/lib/utils/dateFormat';
 import { Milestone } from '@/schemas/milestone';
 
 interface MilestoneHeaderProps {
-	milestone: Milestone;
+	readonly milestone: Milestone;
 }
 
 export function MilestoneHeader({ milestone }: MilestoneHeaderProps) {
