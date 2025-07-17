@@ -2,9 +2,9 @@
 
 import { Space } from 'antd';
 
-import { FileUploadSection } from './FileUploadSection';
-import { SubmissionActions } from './SubmissionActions';
-import { SubmissionWarning } from './SubmissionWarning';
+import { FileUploadSection } from '@/components/features/student/TrackProgress/MilestoneDetail/FileUploadSection';
+import { SubmissionActions } from '@/components/features/student/TrackProgress/MilestoneDetail/SubmissionActions';
+import { SubmissionWarning } from '@/components/features/student/TrackProgress/MilestoneDetail/SubmissionWarning';
 
 interface UploadInfo {
 	fileList: Array<{
