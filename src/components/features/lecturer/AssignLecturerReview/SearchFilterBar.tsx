@@ -1,7 +1,7 @@
 'use client';
 
 import { SearchOutlined } from '@ant-design/icons';
-import { Col, Input, Row } from 'antd';
+import { Button, Col, Input, Row } from 'antd';
 
 import SemesterMilestoneSelect from '@/components/features/lecturer/AssignLecturerReview/SemesterMilestoneSelect';
 
@@ -41,11 +41,15 @@ export default function SearchFilterBar({
 				<Input
 					value={search}
 					onChange={(e) => onSearchChange(e.target.value)}
-					placeholder="Search groups"
+					placeholder="Search group or thesis"
 					prefix={<SearchOutlined style={{ color: '#aaa' }} />}
 					style={{ width: '100%' }}
 					size="middle"
 				/>
+			</Col>
+
+			<Col>
+				<Button type="primary">Assign Reviewer</Button>
 			</Col>
 		</Row>
 	);
