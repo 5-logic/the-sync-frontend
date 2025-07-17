@@ -1,11 +1,15 @@
 import { z } from 'zod';
 
+import { SubmissionStatusSchema } from '@/schemas/_enums';
+
 export const SubmissionSchema = z.object({
 	id: z.string().uuid(),
 	groupId: z.string().uuid(),
 	milestoneId: z.string().uuid(),
 	createdAt: z.date(),
 	updatedAt: z.date(),
+	documents: z.array(z.string()),
+	status: SubmissionStatusSchema,
 });
 
 export const AssignmentReviewSchema = z.object({
