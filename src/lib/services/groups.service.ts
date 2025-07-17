@@ -45,6 +45,24 @@ export interface Group {
 	};
 }
 
+export interface MilestoneSubmission {
+	id: string;
+	groupId: string;
+	milestoneId: string;
+	documents: string[];
+	status: 'Submitted' | 'Not Submitted';
+	createdAt: string;
+	updatedAt: string;
+	milestone: {
+		id: string;
+		name: string;
+		startDate: string;
+		endDate: string;
+	};
+	assignmentReviews: unknown[];
+	reviews: unknown[];
+}
+
 class GroupService {
 	private readonly baseUrl = '/groups';
 
@@ -189,6 +207,15 @@ class GroupService {
 		const response = await httpClient.put<ApiResponse<void>>(
 			`${this.baseUrl}/${groupId}/milestones/${milestoneId}`,
 			{ documents },
+		);
+		return response.data;
+	}
+
+	async getSubmissions(
+		groupId: string,
+	): Promise<ApiResponse<MilestoneSubmission[]>> {
+		const response = await httpClient.get<ApiResponse<MilestoneSubmission[]>>(
+			`${this.baseUrl}/${groupId}/submissions`,
 		);
 		return response.data;
 	}
