@@ -1,57 +1,25 @@
 'use client';
 
-import { Button, Card, Progress, Timeline, Typography } from 'antd';
+import { Button, Card, Spin, Timeline, Typography } from 'antd';
+import dayjs from 'dayjs';
 
-import { milestoneSchedule } from '@/data/milestoneSchedule';
+import { useMilestoneProgress } from '@/hooks/student';
+import {
+	formatDate,
+	getMilestoneStatus,
+	getTimeRemaining,
+} from '@/lib/utils/dateFormat';
 
 const { Text } = Typography;
 
-type MilestoneStatus = 'Completed' | 'In Progress' | 'Upcoming';
-
-function getMilestoneStatus(
-	dateString: string,
-	index: number,
-): MilestoneStatus {
-	const now = new Date();
-	const milestoneDate = new Date(dateString);
-
-	if (milestoneDate < now) return 'Completed';
-	if (index === getNextMilestoneIndex()) return 'In Progress';
-	return 'Upcoming';
-}
-
-function getNextMilestoneIndex(): number {
-	const now = new Date();
-	for (let i = 0; i < milestoneSchedule.length; i++) {
-		const milestoneDate = new Date(milestoneSchedule[i].date);
-		if (milestoneDate > now) {
-			return i;
-		}
-	}
-	return milestoneSchedule.length - 1;
-}
+type MilestoneStatus = 'Ended' | 'In Progress' | 'Upcoming';
 
 export default function ProgressOverviewCard() {
-	const milestonesWithStatus = milestoneSchedule.map((m, index) => ({
-		...m,
-		status: getMilestoneStatus(m.date, index),
-	}));
-
-	const completedCount = milestonesWithStatus.filter(
-		(m) => m.status === 'Completed',
-	).length;
-
-	const progressPercent = Math.round(
-		(completedCount / milestoneSchedule.length) * 100,
-	);
-
-	const nextMilestone = milestonesWithStatus.find(
-		(m) => m.status === 'In Progress' || m.status === 'Upcoming',
-	);
+	const { milestones, loading } = useMilestoneProgress();
 
 	const getTimelineColor = (status: MilestoneStatus): string => {
 		switch (status) {
-			case 'Completed':
+			case 'Ended':
 				return 'green';
 			case 'In Progress':
 				return 'gold';
@@ -61,6 +29,57 @@ export default function ProgressOverviewCard() {
 				return 'gray';
 		}
 	};
+
+	if (loading) {
+		return (
+			<Card
+				title="Progress Overview"
+				style={{
+					display: 'flex',
+					flexDirection: 'column',
+					justifyContent: 'space-between',
+				}}
+			>
+				<div style={{ textAlign: 'center', padding: '20px 0' }}>
+					<Spin size="small" />
+				</div>
+			</Card>
+		);
+	}
+
+	if (!milestones.length) {
+		return (
+			<Card
+				title="Progress Overview"
+				style={{
+					display: 'flex',
+					flexDirection: 'column',
+					justifyContent: 'space-between',
+				}}
+			>
+				<div style={{ textAlign: 'center', color: '#999' }}>
+					No milestones found for current semester
+				</div>
+			</Card>
+		);
+	}
+
+	// Sort milestones by start date
+	const sortedMilestones = [...milestones].sort((a, b) =>
+		dayjs(a.startDate).isBefore(dayjs(b.startDate)) ? -1 : 1,
+	);
+
+	// Find next upcoming milestone (not the current in-progress one)
+	const nextMilestone = sortedMilestones.find((milestone) => {
+		const status = getMilestoneStatus(milestone.startDate, milestone.endDate);
+		return status === 'Upcoming';
+	});
+
+	// Find current milestone if any
+	const currentMilestone = sortedMilestones.find((milestone) => {
+		const status = getMilestoneStatus(milestone.startDate, milestone.endDate);
+		return status === 'In Progress';
+	});
 
 	return (
 		<Card
@@ -72,40 +91,52 @@ export default function ProgressOverviewCard() {
 			}}
 		>
 			<div>
-				<Text type="warning">
-					Upcoming milestone: {nextMilestone?.label} ({nextMilestone?.date})
-				</Text>
+				{currentMilestone && (
+					<div style={{ marginBottom: 12 }}>
+						<Text type="success">
+							Current milestone: {currentMilestone.name}
+						</Text>
+						<div style={{ marginTop: 4 }}>
+							<Text type="secondary" style={{ fontSize: 12 }}>
+								{getTimeRemaining(currentMilestone.endDate)} remaining
+							</Text>
+						</div>
+					</div>
+				)}
 
-				<div
-					style={{
-						display: 'flex',
-						justifyContent: 'space-between',
-						marginTop: 8,
-					}}
-				>
-					<Text strong>Overall Progress</Text>
-					<Text type="secondary">{progressPercent}%</Text>
-				</div>
-
-				<Progress
-					percent={progressPercent}
-					showInfo={false}
-					style={{ marginBottom: 16 }}
-				/>
+				{nextMilestone && (
+					<div style={{ marginBottom: 16 }}>
+						<Text type="warning">Next milestone: {nextMilestone.name}</Text>
+						<div style={{ marginTop: 4 }}>
+							<Text type="secondary" style={{ fontSize: 12 }}>
+								{getTimeRemaining(nextMilestone.startDate)} to start
+							</Text>
+						</div>
+					</div>
+				)}
 
 				<Timeline>
-					{milestonesWithStatus.map((milestone) => (
-						<Timeline.Item
-							key={`${milestone.label}-${milestone.date}`}
-							color={getTimelineColor(milestone.status)}
-						>
-							<div>
-								<Text strong>{milestone.label}</Text> –{' '}
-								<Text type="secondary">{milestone.date}</Text>
-							</div>
-							<Text>Status: {milestone.status}</Text>
-						</Timeline.Item>
-					))}
+					{sortedMilestones.map((milestone) => {
+						const status = getMilestoneStatus(
+							milestone.startDate,
+							milestone.endDate,
+						);
+						return (
+							<Timeline.Item
+								key={milestone.id}
+								color={getTimelineColor(status)}
+							>
+								<div>
+									<Text strong>{milestone.name}</Text> –{' '}
+									<Text type="secondary">
+										{formatDate(milestone.startDate)} -{' '}
+										{formatDate(milestone.endDate)}
+									</Text>
+								</div>
+								<Text>Status: {status}</Text>
+							</Timeline.Item>
+						);
+					})}
 				</Timeline>
 			</div>
 
