@@ -168,6 +168,30 @@ class GroupService {
 		);
 		return response.data;
 	}
+
+	async submitMilestone(
+		groupId: string,
+		milestoneId: string,
+		documents: string[],
+	): Promise<ApiResponse<void>> {
+		const response = await httpClient.post<ApiResponse<void>>(
+			`${this.baseUrl}/${groupId}/milestones/${milestoneId}`,
+			{ documents },
+		);
+		return response.data;
+	}
+
+	async updateMilestoneSubmission(
+		groupId: string,
+		milestoneId: string,
+		documents: string[],
+	): Promise<ApiResponse<void>> {
+		const response = await httpClient.put<ApiResponse<void>>(
+			`${this.baseUrl}/${groupId}/milestones/${milestoneId}`,
+			{ documents },
+		);
+		return response.data;
+	}
 }
 
 const groupService = new GroupService();
