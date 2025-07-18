@@ -21,13 +21,6 @@ export default function ChecklistDetailPage() {
 
 	const { checklist, isLoading, error } = useChecklistDetail(checklistId || '');
 
-	console.log('📋 ChecklistDetailPage state:', {
-		checklistId,
-		checklist: checklist?.id,
-		isLoading,
-		error: error?.message,
-	});
-
 	const handleBack = () => {
 		navigateWithLoading('/lecturer/checklist-management');
 	};

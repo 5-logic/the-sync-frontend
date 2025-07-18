@@ -3,7 +3,7 @@
 import { PlusOutlined } from '@ant-design/icons';
 import { Button, Card, Row, Space, Typography } from 'antd';
 import { useParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { ConfirmationModal } from '@/components/common/ConfirmModal';
 import { Header } from '@/components/common/Header';
@@ -43,6 +43,7 @@ export default function ChecklistEditPage() {
 	const [milestoneId, setMilestoneId] = useState('');
 	const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>([]);
 	const [isSaving, setIsSaving] = useState(false);
+	const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 	const isUpdating = updating || creating || deleting || isSaving;
 
 	// Fetch milestones on mount
@@ -75,112 +76,40 @@ export default function ChecklistEditPage() {
 		}
 	}, [currentChecklist]);
 
-	// Validate checklist ID
-	if (!checklistId || checklistId.trim() === '') {
-		return (
-			<div style={{ padding: '20px', textAlign: 'center' }}>
-				<Typography.Text type="danger">
-					Invalid or missing checklist ID
-				</Typography.Text>
-			</div>
-		);
-	}
-
-	const handleAddItem = () => {
-		// Generate a temporary ID for new items (negative to distinguish from real IDs)
-		const tempId = `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-
-		const newItem: ChecklistItem = {
-			id: tempId,
-			name: '',
-			description: '',
-			isRequired: false,
-			acceptance: 'NotAvailable' as const,
-			checklistId: checklistId,
-			createdAt: new Date(),
-			updatedAt: new Date(),
-		};
-
-		setChecklistItems((prev) => [...prev, newItem]);
-	};
-
-	const handleDeleteItem = async (item: ChecklistItem) => {
-		// Check if it's a temporary item (starts with 'temp-')
-		const isTemporaryItem = item.id.startsWith('temp-');
-
-		if (isTemporaryItem) {
-			// For temporary items, just remove from local state
-			setChecklistItems((prev) => prev.filter((i) => i.id !== item.id));
-			showNotification.success('Item removed');
-			return;
-		}
-
-		// Show confirmation modal for real items before deleting
-		ConfirmationModal.show({
-			title: 'Delete Checklist Item',
-			message: 'Are you sure you want to delete this checklist item?',
-			details: item.name || 'Unnamed item',
-			note: 'This action cannot be undone.',
-			noteType: 'danger',
-			okText: 'Yes, Delete',
-			cancelText: 'Cancel',
-			okType: 'danger',
-			onOk: async () => {
-				try {
-					const success = await deleteChecklistItem(item.id);
-					if (!success) {
-						showNotification.error('Failed to delete item');
-						return;
-					}
-
-					// Remove from local state after successful API call
-					setChecklistItems((prev) => prev.filter((i) => i.id !== item.id));
-					showNotification.success('Checklist item deleted successfully');
-				} catch (error) {
-					console.error('Error deleting item:', error);
-					showNotification.error('Failed to delete item');
-				}
-			},
-		});
-	};
-
-	const handleChangeField = (
-		id: string,
-		field: keyof ChecklistItem,
-		value: string | boolean,
-	) => {
-		setChecklistItems((prev) =>
-			prev.map((item) => (item.id === id ? { ...item, [field]: value } : item)),
-		);
-	};
-
-	// Helper function to check if two items are different (only compare relevant fields)
-	const hasItemChanged = (
-		original: {
-			name: string;
-			description?: string | null;
-			isRequired: boolean;
-		},
-		current: { name: string; description?: string | null; isRequired: boolean },
-	) => {
-		return (
-			original.name !== current.name ||
-			(original.description || '') !== (current.description || '') ||
-			original.isRequired !== current.isRequired
-		);
-	};
-
 	// Helper function to check if basic info has changed
-	const hasBasicInfoChanged = () => {
+	const hasBasicInfoChanged = useCallback(() => {
 		return (
 			name !== currentChecklist?.name ||
 			description !== (currentChecklist?.description || '') ||
 			milestoneId !== currentChecklist?.milestoneId
 		);
-	};
+	}, [name, description, milestoneId, currentChecklist]);
+
+	// Helper function to check if two items are different (only compare relevant fields)
+	const hasItemChanged = useCallback(
+		(
+			original: {
+				name: string;
+				description?: string | null;
+				isRequired: boolean;
+			},
+			current: {
+				name: string;
+				description?: string | null;
+				isRequired: boolean;
+			},
+		) => {
+			return (
+				original.name !== current.name ||
+				(original.description || '') !== (current.description || '') ||
+				original.isRequired !== current.isRequired
+			);
+		},
+		[],
+	);
 
 	// Helper function to detect all changes
-	const detectChanges = () => {
+	const detectChanges = useCallback(() => {
 		const originalItems = currentChecklist?.checklistItems || [];
 
 		// Separate temporary and existing items
@@ -223,6 +152,100 @@ export default function ChecklistEditPage() {
 			temporaryItems,
 			originalItems,
 		};
+	}, [checklistItems, currentChecklist, hasBasicInfoChanged, hasItemChanged]);
+
+	// Track changes to enable/disable save button and show warnings
+	useEffect(() => {
+		const changes = detectChanges();
+		setHasUnsavedChanges(changes.hasAnyChanges);
+	}, [detectChanges]);
+
+	// Validate checklist ID
+	if (!checklistId || checklistId.trim() === '') {
+		return (
+			<div style={{ padding: '20px', textAlign: 'center' }}>
+				<Typography.Text type="danger">
+					Invalid or missing checklist ID
+				</Typography.Text>
+			</div>
+		);
+	}
+
+	const handleAddItem = () => {
+		// Generate a temporary ID for new items (negative to distinguish from real IDs)
+		const tempId = `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+		const newItem: ChecklistItem = {
+			id: tempId,
+			name: '',
+			description: '',
+			isRequired: false,
+			acceptance: 'NotAvailable' as const,
+			checklistId: checklistId,
+			createdAt: new Date(),
+			updatedAt: new Date(),
+		};
+
+		setChecklistItems((prev) => [...prev, newItem]);
+	};
+
+	const handleDeleteItem = async (item: ChecklistItem) => {
+		// Check if it's a temporary item (starts with 'temp-')
+		const isTemporaryItem = item.id.startsWith('temp-');
+
+		if (isTemporaryItem) {
+			// For temporary items, just remove from local state
+			setChecklistItems((prev) => prev.filter((i) => i.id !== item.id));
+			showNotification.success('Success', 'Item removed successfully');
+			return;
+		}
+
+		// Show confirmation modal for real items before deleting
+		ConfirmationModal.show({
+			title: 'Delete Checklist Item',
+			message: 'Are you sure you want to delete this checklist item?',
+			details: item.name || 'Unnamed item',
+			note: 'This action cannot be undone.',
+			noteType: 'danger',
+			okText: 'Yes, Delete',
+			cancelText: 'Cancel',
+			okType: 'danger',
+			onOk: async () => {
+				try {
+					const success = await deleteChecklistItem(item.id);
+					if (!success) {
+						showNotification.error(
+							'Delete Failed',
+							'Failed to delete checklist item',
+						);
+						return;
+					}
+
+					// Remove from local state after successful API call
+					setChecklistItems((prev) => prev.filter((i) => i.id !== item.id));
+					showNotification.success(
+						'Success',
+						'Checklist item deleted successfully',
+					);
+				} catch (error) {
+					console.error('Error deleting item:', error);
+					showNotification.error(
+						'Delete Failed',
+						'Failed to delete checklist item',
+					);
+				}
+			},
+		});
+	};
+
+	const handleChangeField = (
+		id: string,
+		field: keyof ChecklistItem,
+		value: string | boolean,
+	) => {
+		setChecklistItems((prev) =>
+			prev.map((item) => (item.id === id ? { ...item, [field]: value } : item)),
+		);
 	};
 
 	const handleSave = async () => {
@@ -232,13 +255,19 @@ export default function ChecklistEditPage() {
 		try {
 			// Validate required fields
 			if (!name.trim()) {
-				showNotification.warning('Please enter a checklist name');
+				showNotification.warning(
+					'Validation Error',
+					'Please enter a checklist name',
+				);
 				setIsSaving(false);
 				return;
 			}
 
 			if (!milestoneId) {
-				showNotification.warning('Please select a milestone');
+				showNotification.warning(
+					'Validation Error',
+					'Please select a milestone',
+				);
 				setIsSaving(false);
 				return;
 			}
@@ -248,7 +277,10 @@ export default function ChecklistEditPage() {
 				(item) => !item.name || item.name.trim() === '',
 			);
 			if (invalidItems.length > 0) {
-				showNotification.warning('Please fill in all item names before saving');
+				showNotification.warning(
+					'Validation Error',
+					'Please fill in all item names before saving',
+				);
 				setIsSaving(false);
 				return;
 			}
@@ -258,12 +290,10 @@ export default function ChecklistEditPage() {
 
 			// Early return if no changes detected
 			if (!changes.hasAnyChanges) {
-				showNotification.info('No changes detected');
+				showNotification.info('No Changes', 'No changes detected to save');
 				setIsSaving(false);
 				return;
-			}
-
-			// 1. Update checklist basic info if changed
+			} // 1. Update checklist basic info if changed
 			if (changes.hasBasicChanges) {
 				const checklistUpdateSuccess = await updateChecklist(checklistId, {
 					name,
@@ -272,7 +302,7 @@ export default function ChecklistEditPage() {
 				});
 
 				if (!checklistUpdateSuccess) {
-					errorMsg = 'Failed to update checklist';
+					errorMsg = 'Failed to update checklist basic information';
 				}
 			}
 
@@ -334,16 +364,16 @@ export default function ChecklistEditPage() {
 			}
 
 			if (!errorMsg) {
-				showNotification.success('Checklist updated successfully!');
+				showNotification.success('Success', 'Checklist updated successfully');
 				// Navigate back to checklist management
 				navigateWithLoading('/lecturer/checklist-management');
 			} else {
-				showNotification.error(errorMsg);
+				showNotification.error('Update Failed', errorMsg);
 			}
 		} catch (error: unknown) {
 			const errorMessage =
 				error instanceof Error ? error.message : 'Update failed';
-			showNotification.error(errorMessage);
+			showNotification.error('Error', errorMessage);
 		} finally {
 			setIsSaving(false);
 		}
@@ -447,9 +477,9 @@ export default function ChecklistEditPage() {
 						type="primary"
 						onClick={handleSave}
 						loading={isSaving}
-						disabled={deleting || updating}
+						disabled={deleting || updating || !hasUnsavedChanges}
 					>
-						Save Checklist
+						{hasUnsavedChanges ? 'Save Changes' : 'Save Checklist'}
 					</Button>
 				</Space>
 			</Row>
