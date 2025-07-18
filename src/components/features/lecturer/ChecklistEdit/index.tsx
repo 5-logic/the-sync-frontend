@@ -22,7 +22,7 @@ export default function ChecklistEditPage() {
 	const {
 		updateChecklist,
 		updateChecklistItems,
-		createChecklistItem,
+		createChecklistItems,
 		deleteChecklistItem,
 		updating,
 		creating,
@@ -44,14 +44,21 @@ export default function ChecklistEditPage() {
 			setName(currentChecklist.name);
 			setDescription(currentChecklist.description ?? '');
 
-			// Add default acceptance for items
+			// Add default acceptance for items and ensure unique IDs
 			const itemsWithAcceptance: ChecklistItem[] = (
 				currentChecklist.checklistItems || []
 			).map((item) => ({
 				...item,
 				acceptance: 'NotAvailable' as const,
 			}));
-			setChecklistItems(itemsWithAcceptance);
+
+			// Remove duplicates based on ID
+			const uniqueItems = itemsWithAcceptance.filter(
+				(item, index, self) =>
+					index === self.findIndex((i) => i.id === item.id),
+			);
+
+			setChecklistItems(uniqueItems);
 		}
 	}, [currentChecklist]);
 
@@ -67,18 +74,28 @@ export default function ChecklistEditPage() {
 	}
 
 	const handleAddItem = async () => {
-		// Create a temporary item with temp_ prefix for immediate UI feedback
-		const newItem: ChecklistItem = {
-			id: `temp_${Date.now()}`,
-			name: '',
-			description: '',
-			isRequired: false,
-			checklistId: checklistId,
-			createdAt: new Date(),
-			updatedAt: new Date(),
-			acceptance: 'NotAvailable' as const,
-		};
-		setChecklistItems((prev) => [...prev, newItem]);
+		try {
+			// Create a real checklist item immediately via API
+			const newItems = await createChecklistItems(checklistId, [
+				{
+					name: ' ',
+					description: '',
+					isRequired: false,
+				},
+			]);
+
+			// The store should automatically update currentChecklist
+			// Let the useEffect handle the sync instead of manually updating
+			if (newItems && newItems.length > 0) {
+				showNotification.success('New checklist item created successfully');
+			} else {
+				console.warn('No items returned from API');
+				showNotification.warning('Item created but response was empty');
+			}
+		} catch (error) {
+			console.error('Error creating checklist item:', error);
+			showNotification.error('Failed to create checklist item');
+		}
 	};
 
 	const handleDeleteItem = async (item: ChecklistItem) => {
@@ -94,24 +111,16 @@ export default function ChecklistEditPage() {
 			okType: 'danger',
 			onOk: async () => {
 				try {
-					// Only call API for real items (not temp ones)
-					if (!item.id.startsWith('temp_')) {
-						const success = await deleteChecklistItem(item.id);
-						if (!success) {
-							showNotification.error('Failed to delete item');
-							return;
-						}
+					// Always call API since all items are real now
+					const success = await deleteChecklistItem(item.id);
+					if (!success) {
+						showNotification.error('Failed to delete item');
+						return;
 					}
 
-					// Remove from local state after successful API call (or for temp items)
+					// Remove from local state after successful API call
 					setChecklistItems((prev) => prev.filter((i) => i.id !== item.id));
-
-					// Show success notification
-					if (item.id.startsWith('temp_')) {
-						showNotification.success('Item removed successfully');
-					} else {
-						showNotification.success('Checklist item deleted successfully');
-					}
+					showNotification.success('Checklist item deleted successfully');
 				} catch (error) {
 					console.error('Error deleting item:', error);
 					showNotification.error('Failed to delete item');
@@ -157,12 +166,8 @@ export default function ChecklistEditPage() {
 	// Helper function to detect all changes
 	const detectChanges = () => {
 		const originalItems = currentChecklist?.checklistItems || [];
-		const existingItems = checklistItems.filter(
-			(item) => !item.id.startsWith('temp_'),
-		);
-		const newItems = checklistItems.filter((item) =>
-			item.id.startsWith('temp_'),
-		);
+		// All items are real now, no temp items
+		const existingItems = checklistItems;
 
 		// Check existing items for changes
 		const hasExistingItemChanges = existingItems.some((item) => {
@@ -173,24 +178,16 @@ export default function ChecklistEditPage() {
 		// Check for deleted items
 		const hasDeletedItems = originalItems.length > existingItems.length;
 
-		// Check for new items
-		const hasNewItems = newItems.length > 0;
-
 		// Check basic info changes
 		const hasBasicChanges = hasBasicInfoChanged();
 
 		return {
 			hasBasicChanges,
 			hasExistingItemChanges,
-			hasNewItems,
 			hasDeletedItems,
 			hasAnyChanges:
-				hasBasicChanges ||
-				hasExistingItemChanges ||
-				hasNewItems ||
-				hasDeletedItems,
+				hasBasicChanges || hasExistingItemChanges || hasDeletedItems,
 			existingItems,
-			newItems,
 			originalItems,
 		};
 	};
@@ -200,8 +197,10 @@ export default function ChecklistEditPage() {
 		setIsSaving(true);
 
 		try {
-			// Validate all items have names
-			const invalidItems = checklistItems.filter((item) => !item.name.trim());
+			// Validate all items have meaningful names (not just whitespace)
+			const invalidItems = checklistItems.filter(
+				(item) => !item.name || item.name.trim() === '',
+			);
 			if (invalidItems.length > 0) {
 				showNotification.warning('Please fill in all item names before saving');
 				setIsSaving(false);
@@ -217,13 +216,6 @@ export default function ChecklistEditPage() {
 				setIsSaving(false);
 				return;
 			}
-
-			console.log('Changes detected:', {
-				basicChanges: changes.hasBasicChanges,
-				existingItemChanges: changes.hasExistingItemChanges,
-				newItems: changes.newItems.length,
-				deletedItems: changes.hasDeletedItems,
-			});
 
 			// 1. Update checklist basic info if changed
 			if (changes.hasBasicChanges) {
@@ -260,46 +252,6 @@ export default function ChecklistEditPage() {
 
 					if (!existingItemsUpdateSuccess) {
 						errorMsg = 'Failed to update existing checklist items';
-					}
-				}
-
-				// 3. Handle new items creation
-				if (!errorMsg && changes.hasNewItems) {
-					console.log(
-						'Attempting to create new items:',
-						changes.newItems.length,
-					);
-
-					let newItemsCreated = 0;
-					for (const item of changes.newItems) {
-						const newItemData = {
-							name: item.name,
-							description: item.description || '',
-							isRequired: item.isRequired,
-							checklistId: checklistId,
-						};
-
-						try {
-							const success = await createChecklistItem(newItemData);
-							if (success) {
-								newItemsCreated++;
-							}
-						} catch (error) {
-							console.warn('Failed to create item:', item.name, error);
-							// Continue with other items, don't break the entire operation
-						}
-					}
-
-					if (newItemsCreated > 0) {
-						console.log(`Successfully created ${newItemsCreated} new items`);
-					}
-
-					if (newItemsCreated < changes.newItems.length) {
-						// Some items failed to create
-						const failedCount = changes.newItems.length - newItemsCreated;
-						showNotification.warning(
-							`${failedCount} new items could not be created. This might be due to missing backend endpoints.`,
-						);
 					}
 				}
 			}
@@ -355,9 +307,15 @@ export default function ChecklistEditPage() {
 				onDescriptionChange={setDescription}
 			/>
 
-			<Card
-				title="Checklist Items"
-				extra={
+			<Card title="Checklist Items">
+				<ChecklistItemsTable
+					items={checklistItems}
+					editable
+					onDelete={handleDeleteItem}
+					onChangeField={handleChangeField}
+				/>
+
+				<Row justify="space-between" style={{ marginTop: 16 }}>
 					<Button
 						type="primary"
 						icon={<PlusOutlined />}
@@ -367,14 +325,7 @@ export default function ChecklistEditPage() {
 					>
 						Add New Item
 					</Button>
-				}
-			>
-				<ChecklistItemsTable
-					items={checklistItems}
-					editable
-					onDelete={handleDeleteItem}
-					onChangeField={handleChangeField}
-				/>
+				</Row>
 			</Card>
 
 			<Row justify="end">
@@ -382,7 +333,12 @@ export default function ChecklistEditPage() {
 					<Button onClick={handleBack} disabled={isUpdating}>
 						Back
 					</Button>
-					<Button type="primary" onClick={handleSave} loading={isUpdating}>
+					<Button
+						type="primary"
+						onClick={handleSave}
+						loading={isSaving}
+						disabled={creating || deleting || updating}
+					>
 						Save Checklist
 					</Button>
 				</Space>
