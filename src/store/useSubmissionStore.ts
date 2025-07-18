@@ -95,5 +95,5 @@ export const useSubmissionStore = create<SubmissionState>((set, get) => ({
 cacheUtils.initCache('submission', {
 	ttl: 2 * 60 * 1000, // 2 minutes cache for submissions
 	maxSize: 50,
-	enableLocalStorage: false, // Don't persist submissions to localStorage
+	enableLocalStorage: true, // ✅ Lưu vào localStorage để debug
 });
