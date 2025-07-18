@@ -6,7 +6,7 @@ import { Header } from '@/components/common/Header';
 import DashboardStats from '@/components/features/lecturer/DashboardModerator/DashboardStats';
 import { GroupInfo } from '@/components/features/lecturer/DashboardModerator/GroupTableInfo';
 import { ProgressOverview } from '@/components/features/lecturer/DashboardModerator/ProgressOverview';
-import { SupervisorLoadChart } from '@/components/features/lecturer/DashboardModerator/SupervisorLoadChart';
+import SupervisorLoadChart from '@/components/features/lecturer/DashboardModerator/SupervisorLoadChart';
 
 export default function MorderatorDashboardPage() {
 	return (
