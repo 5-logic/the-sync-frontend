@@ -15,7 +15,7 @@ export default function MorderatorDashboardPage() {
 			<Header
 				title="Dashboard"
 				description="Welcome to your dashboard. Here you can track student progress, manage milestones, and provide timely feedback to guide thesis development."
-				badgeText="Moderator"
+				badgeText="Moderator Only"
 			/>
 			<Row gutter={[16, 16]}>
 				<Col span={24}>
