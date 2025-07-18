@@ -30,10 +30,10 @@ const SupervisorLoadChart: React.FC = () => {
 					<div
 						style={{
 							position: 'relative',
-							backgroundColor: '#fafafa',
+							// backgroundColor: '#fafafa',
 							borderRadius: '8px',
 							padding: '20px',
-							border: '1px solid #f0f0f0',
+							// border: '1px solid #f0f0f0',
 							overflow: 'visible',
 							minHeight: `${supervisorLoadData.length * 60 + 80}px`, // tăng height để chứa trục X
 						}}
@@ -45,7 +45,7 @@ const SupervisorLoadChart: React.FC = () => {
 								top: 0,
 								left: 100,
 								right: 0,
-								bottom: 0,
+								bottom: 30, // Dừng lại trước trục X
 							}}
 						>
 							{[0, 2, 4, 6, 8].map((i) => (
@@ -116,7 +116,7 @@ const SupervisorLoadChart: React.FC = () => {
 								position: 'absolute',
 								left: 100, // Đồng bộ với Grid line tại mốc 0
 								top: 0,
-								bottom: 0,
+								bottom: 40, // Đồng bộ với vùng grid lines
 								right: 0,
 								zIndex: 2,
 							}}
