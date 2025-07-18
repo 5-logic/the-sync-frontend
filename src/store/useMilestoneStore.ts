@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 
 import milestoneService from '@/lib/services/milestones.service';
+import { handleApiError } from '@/lib/utils/handleApi';
 import {
 	Milestone,
 	MilestoneCreate,
@@ -194,29 +195,67 @@ export const useMilestoneStore = create<MilestoneState>()(
 			},
 
 			fetchMilestonesBySemester: async (semesterId: string) => {
-				set({ loading: true });
+				const state = get();
+
+				// Skip if already loading the same semester
+				if (state.loading && state.selectedSemesterId === semesterId) {
+					return;
+				}
+
+				set({ loading: true, selectedSemesterId: semesterId });
+
 				try {
-					// Try to get cached milestones by semester
+					// Generate specific cache key for this semester
 					const cacheKey = `milestone-semester-${semesterId}`;
 					const cached = cacheUtils.get('milestone', cacheKey);
-					let filtered: Milestone[];
 
-					if (cached) {
-						filtered = cached as Milestone[];
-					} else {
-						// fetch all milestones (could optimize to fetch only by semesterId if API supports)
-						await get().fetchMilestones(true);
-						const allMilestones = get().milestones;
-						filtered = allMilestones.filter(
-							(m: Milestone) => m.semesterId === semesterId,
-						);
-						cacheUtils.set('milestone', cacheKey, filtered); // cache for 3 minutes
+					if (cached && Array.isArray(cached)) {
+						// Use cached data and update store
+						set({
+							milestones: cached as Milestone[],
+							loading: false,
+							lastError: null,
+						});
+
+						// Apply filters
+						get().filterMilestones();
+						return;
 					}
 
-					set({ milestones: filtered, loading: false });
-				} catch {
-					set({ loading: false });
-					// Optionally set error state
+					// Fetch from API if not cached
+					const response = await milestoneService.findBySemester(semesterId);
+
+					if (response.success) {
+						const milestonesData = response.data;
+
+						// Cache the specific semester data
+						cacheUtils.set('milestone', cacheKey, milestonesData);
+
+						// Update store
+						set({
+							milestones: milestonesData,
+							loading: false,
+							lastError: null,
+						});
+
+						// Apply filters
+						get().filterMilestones();
+					} else {
+						throw new Error(response.error);
+					}
+				} catch (error: unknown) {
+					const apiError = handleApiError(
+						error,
+						'Failed to fetch milestones by semester',
+					);
+					set({
+						loading: false,
+						lastError: {
+							message: apiError.message,
+							statusCode: apiError.statusCode || 500,
+							timestamp: new Date(),
+						},
+					});
 				}
 			},
 			// Utilities
