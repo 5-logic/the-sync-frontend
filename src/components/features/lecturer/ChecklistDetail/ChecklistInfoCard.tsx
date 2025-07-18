@@ -7,8 +7,7 @@ import { FormLabel } from '@/components/common/FormLabel';
 interface Props {
 	name: string;
 	description?: string;
-	semester: string;
-	milestone: string;
+	milestone?: string;
 	editable?: boolean;
 	onNameChange?: (val: string) => void;
 	onDescriptionChange?: (val: string) => void;
@@ -18,7 +17,6 @@ interface Props {
 export default function ChecklistInfoCard({
 	name,
 	description,
-	semester,
 	milestone,
 	editable = false,
 	onNameChange,
@@ -75,8 +73,7 @@ export default function ChecklistInfoCard({
 			)}
 
 			<Typography.Paragraph type="secondary" style={{ marginBottom: 0 }}>
-				<b>Semester:</b> {semester} &nbsp;&nbsp;|&nbsp;&nbsp;
-				<b>Milestone:</b> {milestone}
+				<b>Milestone:</b> {milestone || 'No milestone assigned'}
 			</Typography.Paragraph>
 		</Card>
 	);
