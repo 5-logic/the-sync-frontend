@@ -2,6 +2,7 @@ import { DownloadOutlined, SearchOutlined } from '@ant-design/icons';
 import { Button, Card, Input, Select, Space, Table, Typography } from 'antd';
 import { useMemo, useState } from 'react';
 
+import { TablePagination } from '@/components/common/TablePagination';
 import { extendedGroups } from '@/data/group';
 
 const columns = [
@@ -98,7 +99,7 @@ export function GroupInfo() {
 			<Table
 				columns={columns}
 				dataSource={filteredData}
-				pagination={{ pageSize: 5 }}
+				pagination={TablePagination}
 				rowKey="groupName"
 			/>
 		</Card>
