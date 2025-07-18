@@ -210,32 +210,34 @@ export default function ChecklistEditPage() {
 			okText: 'Yes, Delete',
 			cancelText: 'Cancel',
 			okType: 'danger',
-			onOk: async () => {
-				try {
-					const success = await deleteChecklistItem(item.id);
-					if (!success) {
-						showNotification.error(
-							'Delete Failed',
-							'Failed to delete checklist item',
-						);
-						return;
-					}
-
-					// Remove from local state after successful API call
-					setChecklistItems((prev) => prev.filter((i) => i.id !== item.id));
-					showNotification.success(
-						'Success',
-						'Checklist item deleted successfully',
-					);
-				} catch (error) {
-					console.error('Error deleting item:', error);
-					showNotification.error(
-						'Delete Failed',
-						'Failed to delete checklist item',
-					);
-				}
-			},
+			onOk: () => handleConfirmedDelete(item.id),
 		});
+	};
+
+	const handleConfirmedDelete = async (itemId: string) => {
+		try {
+			const success = await deleteChecklistItem(itemId);
+			if (!success) {
+				showNotification.error(
+					'Delete Failed',
+					'Failed to delete checklist item',
+				);
+				return;
+			}
+
+			// Remove from local state after successful API call
+			setChecklistItems((prev) => prev.filter((i) => i.id !== itemId));
+			showNotification.success(
+				'Success',
+				'Checklist item deleted successfully',
+			);
+		} catch (error) {
+			console.error('Error deleting item:', error);
+			showNotification.error(
+				'Delete Failed',
+				'Failed to delete checklist item',
+			);
+		}
 	};
 
 	const handleChangeField = (
@@ -248,124 +250,142 @@ export default function ChecklistEditPage() {
 		);
 	};
 
+	const validateFormData = (): boolean => {
+		if (!name.trim()) {
+			showNotification.warning(
+				'Validation Error',
+				'Please enter a checklist name',
+			);
+			return false;
+		}
+
+		if (!milestoneId) {
+			showNotification.warning('Validation Error', 'Please select a milestone');
+			return false;
+		}
+
+		const invalidItems = checklistItems.filter(
+			(item) => !item.name || item.name.trim() === '',
+		);
+		if (invalidItems.length > 0) {
+			showNotification.warning(
+				'Validation Error',
+				'Please fill in all item names before saving',
+			);
+			return false;
+		}
+
+		return true;
+	};
+
+	const updateBasicInfo = async (
+		changes: ReturnType<typeof detectChanges>,
+	): Promise<string> => {
+		if (!changes.hasBasicChanges) return '';
+
+		const checklistUpdateSuccess = await updateChecklist(checklistId, {
+			name,
+			description,
+			milestoneId,
+		});
+
+		return checklistUpdateSuccess
+			? ''
+			: 'Failed to update checklist basic information';
+	};
+
+	const createNewItems = async (
+		changes: ReturnType<typeof detectChanges>,
+	): Promise<string> => {
+		if (!changes.hasNewItems || changes.temporaryItems.length === 0) return '';
+
+		const newItemsPayload = changes.temporaryItems.map(
+			({ name, description, isRequired }) => ({
+				name,
+				description: description || '',
+				isRequired,
+			}),
+		);
+
+		const createdItems = await createChecklistItems(
+			checklistId,
+			newItemsPayload,
+		);
+
+		if (!createdItems || createdItems.length === 0) {
+			return 'Failed to create new checklist items';
+		}
+
+		// Update local state with real IDs from API response
+		setChecklistItems((prev) => {
+			const withoutTempItems = prev.filter(
+				(item) => !item.id.startsWith('temp-'),
+			);
+			return [...withoutTempItems, ...createdItems];
+		});
+
+		return '';
+	};
+
+	const updateExistingItems = async (
+		changes: ReturnType<typeof detectChanges>,
+	): Promise<string> => {
+		if (!changes.hasExistingItemChanges || changes.existingItems.length === 0)
+			return '';
+
+		const existingItemsPayload = changes.existingItems.map(
+			({ id, name, description, isRequired }) => ({
+				id,
+				name,
+				description: description || '',
+				isRequired,
+			}),
+		);
+
+		const existingItemsUpdateSuccess = await updateChecklistItems(
+			checklistId,
+			existingItemsPayload,
+		);
+
+		return existingItemsUpdateSuccess
+			? ''
+			: 'Failed to update existing checklist items';
+	};
+
 	const handleSave = async () => {
-		let errorMsg = '';
 		setIsSaving(true);
 
 		try {
-			// Validate required fields
-			if (!name.trim()) {
-				showNotification.warning(
-					'Validation Error',
-					'Please enter a checklist name',
-				);
+			// Validate form data
+			if (!validateFormData()) {
 				setIsSaving(false);
 				return;
 			}
 
-			if (!milestoneId) {
-				showNotification.warning(
-					'Validation Error',
-					'Please select a milestone',
-				);
-				setIsSaving(false);
-				return;
-			}
-
-			// Validate all items have meaningful names (not just whitespace)
-			const invalidItems = checklistItems.filter(
-				(item) => !item.name || item.name.trim() === '',
-			);
-			if (invalidItems.length > 0) {
-				showNotification.warning(
-					'Validation Error',
-					'Please fill in all item names before saving',
-				);
-				setIsSaving(false);
-				return;
-			}
-
-			// Detect all changes
+			// Check for changes
 			const changes = detectChanges();
-
-			// Early return if no changes detected
 			if (!changes.hasAnyChanges) {
 				showNotification.info('No Changes', 'No changes detected to save');
 				setIsSaving(false);
 				return;
-			} // 1. Update checklist basic info if changed
-			if (changes.hasBasicChanges) {
-				const checklistUpdateSuccess = await updateChecklist(checklistId, {
-					name,
-					description,
-					milestoneId,
-				});
-
-				if (!checklistUpdateSuccess) {
-					errorMsg = 'Failed to update checklist basic information';
-				}
 			}
 
+			// Update basic info
+			let errorMsg = await updateBasicInfo(changes);
+
+			// Create new items if no error so far
 			if (!errorMsg) {
-				// 2. Create new items first (temporary items)
-				if (changes.hasNewItems && changes.temporaryItems.length > 0) {
-					const newItemsPayload = changes.temporaryItems.map(
-						({ name, description, isRequired }) => ({
-							name,
-							description: description || '',
-							isRequired,
-						}),
-					);
-
-					const createdItems = await createChecklistItems(
-						checklistId,
-						newItemsPayload,
-					);
-
-					if (!createdItems || createdItems.length === 0) {
-						errorMsg = 'Failed to create new checklist items';
-					} else {
-						// Update local state with real IDs from API response
-						setChecklistItems((prev) => {
-							// Remove temporary items and add real ones
-							const withoutTempItems = prev.filter(
-								(item) => !item.id.startsWith('temp-'),
-							);
-							return [...withoutTempItems, ...createdItems];
-						});
-					}
-				}
+				errorMsg = await createNewItems(changes);
 			}
 
+			// Update existing items if no error so far
 			if (!errorMsg) {
-				// 3. Update existing items if changed
-				if (
-					changes.hasExistingItemChanges &&
-					changes.existingItems.length > 0
-				) {
-					const existingItemsPayload = changes.existingItems.map(
-						({ id, name, description, isRequired }) => ({
-							id,
-							name,
-							description: description || '',
-							isRequired,
-						}),
-					);
-
-					const existingItemsUpdateSuccess = await updateChecklistItems(
-						checklistId,
-						existingItemsPayload,
-					);
-
-					if (!existingItemsUpdateSuccess) {
-						errorMsg = 'Failed to update existing checklist items';
-					}
-				}
+				errorMsg = await updateExistingItems(changes);
 			}
 
+			// Handle final result
 			if (!errorMsg) {
 				showNotification.success('Success', 'Checklist updated successfully');
-				// Navigate back to checklist management
 				navigateWithLoading('/lecturer/checklist-management');
 			} else {
 				showNotification.error('Update Failed', errorMsg);

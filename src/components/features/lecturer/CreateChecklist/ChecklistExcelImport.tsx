@@ -102,7 +102,12 @@ function validateFieldValue(
 ): string[] {
 	const errors: string[] = [];
 	const stringValue = value
-		? (typeof value === 'object' ? JSON.stringify(value) : String(value)).trim()
+		? (typeof value === 'object' && value !== null
+				? Array.isArray(value)
+					? value.join(', ')
+					: JSON.stringify(value)
+				: String(value)
+			).trim()
 		: '';
 
 	// Check if required field is empty
@@ -382,7 +387,7 @@ export default function ChecklistExcelImport({
 			const { isValid, errorMessage } = validateFile(file);
 
 			if (!isValid) {
-				showNotification.warning('Invalid File', errorMessage!);
+				showNotification.warning('Invalid File', errorMessage);
 				return Upload.LIST_IGNORE;
 			}
 
