@@ -11,9 +11,11 @@ import { FullMockGroup } from '@/data/group';
 import { mockLecturers } from '@/data/lecturers';
 import { mockReviews } from '@/data/review';
 import { mockSubmissions } from '@/data/submission';
-import { useMilestoneStore } from '@/store/useMilestoneStore';
-import { useSemesterStore } from '@/store/useSemesterStore';
-import { useSubmissionStore } from '@/store/useSubmissionStore';
+import {
+	useMilestoneStore,
+	useSemesterStore,
+	useSubmissionStore,
+} from '@/store';
 
 export default function AssignLecturerReview() {
 	const [selectedGroup, setSelectedGroup] = useState<FullMockGroup | null>(
@@ -116,6 +118,9 @@ export default function AssignLecturerReview() {
 					id: s.group.id,
 					code: s.group.code,
 					name: s.group.name,
+					title: s.thesis?.englishName || '',
+					supervisors: s.thesis?.supervisors.map((sup) => sup.fullName),
+					reviewers: s.reviewLecturers.map((rev) => rev.fullName),
 				}));
 
 	// Search theo group name/code
@@ -167,7 +172,7 @@ export default function AssignLecturerReview() {
 
 			<GroupTable
 				groups={filteredGroups}
-				onAssign={(group) => setSelectedGroup(group)}
+				// onAssign={(group) => setSelectedGroup(group)}
 				loading={loadingSubmissions}
 				noMilestone={milestone === 'NO_MILESTONE'}
 			/>
