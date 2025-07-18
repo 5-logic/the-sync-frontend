@@ -225,10 +225,8 @@ export default function ChecklistEditPage() {
 		// Don't add items while saving to prevent UI glitches
 		if (isSaving) return;
 
-		// Generate a unique temporary ID that won't conflict
-		const timestamp = Date.now();
-		const randomSuffix = Math.random().toString(36).substring(2, 8);
-		const tempId = `temp-${timestamp}-${randomSuffix}`;
+		// Generate a unique temporary ID using crypto.randomUUID for better randomness
+		const tempId = `temp-${crypto.randomUUID()}`;
 
 		const newItem: ChecklistItem = {
 			id: tempId,
