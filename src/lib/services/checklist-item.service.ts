@@ -37,6 +37,24 @@ class ChecklistItemService {
 		);
 		return response.data;
 	}
+
+	async createList(
+		checklistId: string,
+		items: {
+			name: string;
+			description: string;
+			isRequired: boolean;
+		}[],
+	): Promise<ApiResponse<ChecklistItem[]>> {
+		const response = await httpClient.post<ApiResponse<ChecklistItem[]>>(
+			`${this.baseUrl}/create-list`,
+			{
+				checklistId,
+				checklistItems: items,
+			},
+		);
+		return response.data;
+	}
 }
 
 export const checklistItemService = new ChecklistItemService();

@@ -7,6 +7,7 @@ import { handleApiResponse } from '@/lib/utils/handleApi';
 import {
 	Checklist,
 	ChecklistCreate,
+	ChecklistItem,
 	ChecklistItemCreate,
 	ChecklistUpdate,
 } from '@/schemas/checklist';
@@ -83,6 +84,14 @@ interface ChecklistState {
 			isRequired: boolean;
 		}[],
 	) => Promise<boolean>;
+	createChecklistItems: (
+		checklistId: string,
+		items: {
+			name: string;
+			description: string;
+			isRequired: boolean;
+		}[],
+	) => Promise<ChecklistItem[]>;
 	createChecklistItem: (data: ChecklistItemCreate) => Promise<boolean>;
 	deleteChecklistItem: (id: string) => Promise<boolean>;
 	deleteChecklist: (id: string) => Promise<boolean>;
@@ -481,6 +490,107 @@ export const useChecklistStore = create<ChecklistState>()(
 					handleActionError(error, 'checklist items', 'update', set);
 					set({ updating: false });
 					return false;
+				}
+			},
+
+			// Create checklist items
+			createChecklistItems: async (
+				checklistId: string,
+				items: {
+					name: string;
+					description: string;
+					isRequired: boolean;
+				}[],
+			) => {
+				set({ creating: true, lastError: null });
+				try {
+					const response = await checklistItemService.createList(
+						checklistId,
+						items,
+					);
+					const result = handleApiResponse(response);
+
+					if (result.success && result.data) {
+						// Handle different response formats
+						let createdItems: ChecklistItem[] = [];
+
+						if (Array.isArray(result.data)) {
+							createdItems = result.data;
+						} else if (result.data && typeof result.data === 'object') {
+							// Check if it has an items property
+							const dataObj = result.data as { items?: ChecklistItem[] };
+							if (dataObj.items && Array.isArray(dataObj.items)) {
+								createdItems = dataObj.items;
+							} else {
+								// Single item response
+								createdItems = [result.data as ChecklistItem];
+							}
+						}
+
+						// Update local state instead of fetching from API
+						const { currentChecklist } = get();
+						if (currentChecklist && currentChecklist.id === checklistId) {
+							// Check for duplicates before adding
+							const existingIds = (currentChecklist.checklistItems || []).map(
+								(item) => item.id,
+							);
+							const duplicateIds = createdItems.filter((item) =>
+								existingIds.includes(item.id),
+							);
+
+							if (duplicateIds.length > 0) {
+								// Filter out duplicates
+								const uniqueNewItems = createdItems.filter(
+									(item) => !existingIds.includes(item.id),
+								);
+								createdItems = uniqueNewItems;
+							}
+
+							// Add the new items to the current checklist
+							const updatedChecklist = {
+								...currentChecklist,
+								checklistItems: [
+									...(currentChecklist.checklistItems || []),
+									...createdItems,
+								],
+							};
+
+							// Update current checklist
+							set({ currentChecklist: updatedChecklist });
+
+							// Update cache
+							cacheUtils.set(
+								'checklist',
+								`detail-${currentChecklist.id}`,
+								updatedChecklist,
+							);
+
+							// Also update in main checklists array if it exists
+							const { checklists } = get();
+							const existingIndex = checklists.findIndex(
+								(c) => c.id === currentChecklist.id,
+							);
+							if (existingIndex !== -1) {
+								const updatedChecklists = [...checklists];
+								updatedChecklists[existingIndex] = updatedChecklist;
+								set({ checklists: updatedChecklists });
+								cacheUtils.set('checklist', 'all', updatedChecklists);
+							}
+						}
+						set({ creating: false });
+						return createdItems;
+					} else {
+						throw new Error(
+							getErrorMessage(
+								result.error?.message,
+								'Failed to create checklist items',
+							),
+						);
+					}
+				} catch (error) {
+					handleActionError(error, 'checklist items', 'create', set);
+					set({ creating: false });
+					throw error;
 				}
 			},
 
