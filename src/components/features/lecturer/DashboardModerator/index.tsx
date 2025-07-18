@@ -3,11 +3,10 @@
 import { Col, Row, Space } from 'antd';
 
 import { Header } from '@/components/common/Header';
-
-import DashboardStats from './DashboardStats';
-import { GroupInfo } from './GroupTableInfo';
-import { ProgressOverview } from './ProgressOverview';
-import { SupervisorLoadChart } from './SupervisorLoadChart';
+import DashboardStats from '@/components/features/lecturer/DashboardModerator/DashboardStats';
+import { GroupInfo } from '@/components/features/lecturer/DashboardModerator/GroupTableInfo';
+import { ProgressOverview } from '@/components/features/lecturer/DashboardModerator/ProgressOverview';
+import { SupervisorLoadChart } from '@/components/features/lecturer/DashboardModerator/SupervisorLoadChart';
 
 export default function MorderatorDashboardPage() {
 	return (
