@@ -2,27 +2,61 @@
 
 import { PlusOutlined } from '@ant-design/icons';
 import { Button, Card, Row, Space, Typography } from 'antd';
-import { useState } from 'react';
+import { useParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 import { Header } from '@/components/common/Header';
 import ChecklistInfoCard from '@/components/features/lecturer/ChecklistDetail/ChecklistInfoCard';
 import ChecklistItemsTable from '@/components/features/lecturer/ChecklistDetail/ChecklistItemTable';
-import { mockChecklistItems } from '@/data/ChecklistItems';
-import { mockChecklists } from '@/data/checklist';
+import { useChecklistDetail } from '@/hooks/checklist/useChecklistDetail';
+import { useNavigationLoader } from '@/hooks/ux/useNavigationLoader';
 import { ChecklistItem } from '@/schemas/checklist';
 
 export default function ChecklistEditPage() {
-	const checklistId = 'c1';
-	const originalChecklist = mockChecklists.find((cl) => cl.id === checklistId);
+	const params = useParams();
+	const checklistId = params?.id as string;
+	const { navigateWithLoading } = useNavigationLoader();
+
+	const {
+		checklist: originalChecklist,
+		isLoading,
+		error,
+	} = useChecklistDetail(checklistId || '');
 
 	const [name, setName] = useState(originalChecklist?.name ?? '');
 	const [description, setDescription] = useState(
 		originalChecklist?.description ?? '',
 	);
 
-	const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>(
-		mockChecklistItems.filter((item) => item.checklistId === checklistId),
-	);
+	const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>([]);
+
+	// Sync state when data loads
+	useEffect(() => {
+		if (originalChecklist) {
+			setName(originalChecklist.name);
+			setDescription(originalChecklist.description ?? '');
+
+			// Add default acceptance for items
+			const itemsWithAcceptance: ChecklistItem[] = (
+				originalChecklist.checklistItems || []
+			).map((item) => ({
+				...item,
+				acceptance: 'NotAvailable' as const,
+			}));
+			setChecklistItems(itemsWithAcceptance);
+		}
+	}, [originalChecklist]);
+
+	// Validate checklist ID
+	if (!checklistId || checklistId.trim() === '') {
+		return (
+			<div style={{ padding: '20px', textAlign: 'center' }}>
+				<Typography.Text type="danger">
+					Invalid or missing checklist ID
+				</Typography.Text>
+			</div>
+		);
+	}
 
 	const handleAddItem = () => {
 		const newItem: ChecklistItem = {
@@ -61,8 +95,22 @@ export default function ChecklistEditPage() {
 	};
 
 	const handleBack = () => {
-		console.log('Back to checklist list or detail');
+		navigateWithLoading('/lecturer/checklist-management');
 	};
+
+	if (isLoading) {
+		return <Typography.Text>Loading checklist...</Typography.Text>;
+	}
+
+	if (error) {
+		return (
+			<Typography.Text type="danger">Error: {error.message}</Typography.Text>
+		);
+	}
+
+	if (!originalChecklist) {
+		return <Typography.Text type="danger">Checklist not found</Typography.Text>;
+	}
 
 	if (!originalChecklist) {
 		return <Typography.Text type="danger">Checklist not found</Typography.Text>;
@@ -79,8 +127,7 @@ export default function ChecklistEditPage() {
 			<ChecklistInfoCard
 				name={name}
 				description={description}
-				semester={originalChecklist.semester}
-				milestone={originalChecklist.milestone}
+				milestone={originalChecklist.milestone?.name}
 				editable
 				onNameChange={setName}
 				onDescriptionChange={setDescription}
@@ -101,7 +148,6 @@ export default function ChecklistEditPage() {
 				<ChecklistItemsTable
 					items={checklistItems}
 					editable
-					allowDelete
 					onDelete={handleDeleteItem}
 					onChangeField={handleChangeField}
 				/>
