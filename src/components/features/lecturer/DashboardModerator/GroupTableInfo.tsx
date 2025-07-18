@@ -32,7 +32,7 @@ export function GroupInfo() {
 				</Text>
 			</Space>
 
-			<div className="flex justify-between items-center mb-4">
+			<div className="flex justify-between items-center mt-5 mb-4">
 				<Input
 					placeholder="Search thesis, group, supervisor"
 					style={{ width: 300 }}
