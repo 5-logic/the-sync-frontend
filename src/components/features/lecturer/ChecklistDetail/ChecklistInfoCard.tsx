@@ -19,15 +19,15 @@ interface Props {
 }
 
 interface EditableFormProps {
-	name: string;
-	description?: string;
-	milestoneId?: string;
-	loading: boolean;
-	availableMilestones: Array<{ id: string; name: string }>;
-	showErrors: boolean;
-	onNameChange?: (val: string) => void;
-	onDescriptionChange?: (val: string) => void;
-	onMilestoneChange?: (val: string) => void;
+	readonly name: string;
+	readonly description?: string;
+	readonly milestoneId?: string;
+	readonly loading: boolean;
+	readonly availableMilestones: ReadonlyArray<{ id: string; name: string }>;
+	readonly showErrors: boolean;
+	readonly onNameChange?: (val: string) => void;
+	readonly onDescriptionChange?: (val: string) => void;
+	readonly onMilestoneChange?: (val: string) => void;
 }
 
 function EditableForm({
@@ -102,8 +102,8 @@ function EditableForm({
 }
 
 interface ReadOnlyViewProps {
-	name: string;
-	description?: string;
+	readonly name: string;
+	readonly description?: string;
 }
 
 function ReadOnlyView({ name, description }: ReadOnlyViewProps) {
