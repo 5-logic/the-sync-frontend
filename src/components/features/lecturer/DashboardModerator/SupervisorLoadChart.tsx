@@ -34,8 +34,8 @@ const SupervisorLoadChart: React.FC = () => {
 							borderRadius: '8px',
 							padding: '20px',
 							border: '1px solid #f0f0f0',
-							overflow: 'hidden',
-							minHeight: `${supervisorLoadData.length * 60 + 40}px`, // auto height theo số dòng
+							overflow: 'visible',
+							minHeight: `${supervisorLoadData.length * 60 + 80}px`, // tăng height để chứa trục X
 						}}
 					>
 						{/* Grid lines */}
@@ -110,33 +110,6 @@ const SupervisorLoadChart: React.FC = () => {
 							))}
 						</div>
 
-						{/* X-axis labels */}
-						<div
-							style={{
-								position: 'absolute',
-								bottom: '-25px',
-								left: 100,
-								right: 0,
-								height: '20px',
-							}}
-						>
-							{[0, 2, 4, 6, 8].map((i) => (
-								<div
-									key={i}
-									style={{
-										position: 'absolute',
-										left: `${(i / 8) * 100}%`,
-										fontSize: '12px',
-										color: '#666',
-										transform: 'translateX(-50%)',
-									}}
-								>
-									{i}
-								</div>
-							))}
-						</div>
-
-						{/* Chart bars */}
 						{/* Chart bars */}
 						<div
 							style={{
@@ -163,6 +136,34 @@ const SupervisorLoadChart: React.FC = () => {
 										boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
 									}}
 								/>
+							))}
+						</div>
+
+						{/* X-axis labels with axis line */}
+						<div
+							style={{
+								position: 'absolute',
+								bottom: '10px',
+								left: 100,
+								right: 0,
+								height: '20px',
+								borderTop: '1px solid #d9d9d9',
+							}}
+						>
+							{[0, 2, 4, 6, 8].map((i) => (
+								<div
+									key={i}
+									style={{
+										position: 'absolute',
+										left: `${(i / 8) * 100}%`,
+										transform: 'translateX(-50%)',
+										fontSize: '12px',
+										color: '#595959',
+										marginTop: '4px',
+									}}
+								>
+									{i}
+								</div>
 							))}
 						</div>
 					</div>
