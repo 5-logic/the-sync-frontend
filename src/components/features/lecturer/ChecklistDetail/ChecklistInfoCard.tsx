@@ -1,6 +1,6 @@
 'use client';
 
-import { Card, Form, Input, Typography } from 'antd';
+import { Card, Form, Input, Select, Typography } from 'antd';
 
 import { FormLabel } from '@/components/common/FormLabel';
 
@@ -8,10 +8,13 @@ interface Props {
 	name: string;
 	description?: string;
 	milestone?: string;
+	milestoneId?: string;
 	editable?: boolean;
 	loading?: boolean;
+	availableMilestones?: Array<{ id: string; name: string }>;
 	onNameChange?: (val: string) => void;
 	onDescriptionChange?: (val: string) => void;
+	onMilestoneChange?: (val: string) => void;
 	showErrors?: boolean;
 }
 
@@ -19,14 +22,18 @@ export default function ChecklistInfoCard({
 	name,
 	description,
 	milestone,
+	milestoneId,
 	editable = false,
 	loading = false,
+	availableMilestones = [],
 	onNameChange,
 	onDescriptionChange,
+	onMilestoneChange,
 	showErrors = false,
 }: Readonly<Props>) {
 	const nameError = showErrors && !name.trim();
 	const descriptionError = showErrors && !description?.trim();
+	const milestoneError = showErrors && !milestoneId;
 
 	return (
 		<Card title="Checklist Information">
@@ -60,6 +67,27 @@ export default function ChecklistInfoCard({
 							style={{ resize: 'none' }}
 							disabled={loading}
 						/>
+					</Form.Item>
+
+					<Form.Item
+						style={{ width: '100%', marginBottom: 16 }}
+						validateStatus={milestoneError ? 'error' : ''}
+						help={milestoneError ? 'Milestone is required' : ''}
+					>
+						<FormLabel text="Milestone" isBold />
+						<Select
+							value={milestoneId}
+							onChange={onMilestoneChange}
+							placeholder="Select milestone"
+							disabled={loading}
+							style={{ width: '100%' }}
+						>
+							{availableMilestones.map((milestone) => (
+								<Select.Option key={milestone.id} value={milestone.id}>
+									{milestone.name}
+								</Select.Option>
+							))}
+						</Select>
 					</Form.Item>
 				</>
 			) : (

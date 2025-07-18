@@ -18,6 +18,7 @@ import { useNavigationLoader } from '@/hooks/ux/useNavigationLoader';
 import { showNotification } from '@/lib/utils/notification';
 import { ChecklistItem } from '@/schemas/checklist';
 import { useChecklistStore } from '@/store';
+import { useMilestoneStore } from '@/store/useMilestoneStore';
 
 export default function ChecklistEditPage() {
 	const params = useParams();
@@ -35,18 +36,26 @@ export default function ChecklistEditPage() {
 	} = useChecklistStore();
 
 	const { isLoading, error } = useChecklistDetail(checklistId || '');
+	const { milestones, fetchMilestones } = useMilestoneStore();
 
 	const [name, setName] = useState('');
 	const [description, setDescription] = useState('');
+	const [milestoneId, setMilestoneId] = useState('');
 	const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>([]);
 	const [isSaving, setIsSaving] = useState(false);
 	const isUpdating = updating || creating || deleting || isSaving;
+
+	// Fetch milestones on mount
+	useEffect(() => {
+		fetchMilestones();
+	}, [fetchMilestones]);
 
 	// Sync state when data loads
 	useEffect(() => {
 		if (currentChecklist) {
 			setName(currentChecklist.name);
 			setDescription(currentChecklist.description ?? '');
+			setMilestoneId(currentChecklist.milestoneId || '');
 
 			// Add default acceptance for items and ensure unique IDs
 			const itemsWithAcceptance: ChecklistItem[] = (
@@ -163,7 +172,8 @@ export default function ChecklistEditPage() {
 	const hasBasicInfoChanged = () => {
 		return (
 			name !== currentChecklist?.name ||
-			description !== (currentChecklist?.description || '')
+			description !== (currentChecklist?.description || '') ||
+			milestoneId !== currentChecklist?.milestoneId
 		);
 	};
 
@@ -201,6 +211,25 @@ export default function ChecklistEditPage() {
 		setIsSaving(true);
 
 		try {
+			// Validate required fields
+			if (!name.trim()) {
+				showNotification.warning('Please enter a checklist name');
+				setIsSaving(false);
+				return;
+			}
+
+			if (!description?.trim()) {
+				showNotification.warning('Please enter a description');
+				setIsSaving(false);
+				return;
+			}
+
+			if (!milestoneId) {
+				showNotification.warning('Please select a milestone');
+				setIsSaving(false);
+				return;
+			}
+
 			// Validate all items have meaningful names (not just whitespace)
 			const invalidItems = checklistItems.filter(
 				(item) => !item.name || item.name.trim() === '',
@@ -226,7 +255,7 @@ export default function ChecklistEditPage() {
 				const checklistUpdateSuccess = await updateChecklist(checklistId, {
 					name,
 					description,
-					milestoneId: currentChecklist?.milestoneId,
+					milestoneId,
 				});
 
 				if (!checklistUpdateSuccess) {
@@ -335,10 +364,13 @@ export default function ChecklistEditPage() {
 				name={name}
 				description={description}
 				milestone={currentChecklist.milestone?.name}
+				milestoneId={milestoneId}
 				editable
 				loading={isSaving}
+				availableMilestones={milestones}
 				onNameChange={setName}
 				onDescriptionChange={setDescription}
+				onMilestoneChange={setMilestoneId}
 			/>
 
 			<Card title="Checklist Items">

@@ -60,6 +60,8 @@ const getEditableColumns = (
 	{
 		title: 'Priority',
 		key: 'priority',
+		align: 'center' as const,
+		width: 120,
 		render: (_, record) => (
 			<Switch
 				checked={record.isRequired}
@@ -75,7 +77,8 @@ const getEditableColumns = (
 	{
 		title: 'Action',
 		key: 'action',
-		width: 100,
+		width: 80,
+		align: 'center' as const,
 		render: (_, record) => (
 			<Tooltip title="Delete">
 				<DeleteOutlined
