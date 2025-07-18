@@ -10,7 +10,7 @@ import ChecklistDeleteButton from '@/components/features/lecturer/CreateChecklis
 import ChecklistDragger from '@/components/features/lecturer/CreateChecklist/ChecklistDragger';
 import { mockMilestones } from '@/data/milestone';
 import { mockSemesters } from '@/data/semester';
-import { showNotification } from '@/lib/utils';
+import { showNotification } from '@/lib/utils/notification';
 
 type Mode = 'import' | 'manual';
 

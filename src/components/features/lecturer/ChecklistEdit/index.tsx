@@ -10,42 +10,46 @@ import ChecklistInfoCard from '@/components/features/lecturer/ChecklistDetail/Ch
 import ChecklistItemsTable from '@/components/features/lecturer/ChecklistDetail/ChecklistItemTable';
 import { useChecklistDetail } from '@/hooks/checklist/useChecklistDetail';
 import { useNavigationLoader } from '@/hooks/ux/useNavigationLoader';
+import { showNotification } from '@/lib/utils/notification';
 import { ChecklistItem } from '@/schemas/checklist';
+import { useChecklistStore } from '@/store';
 
 export default function ChecklistEditPage() {
 	const params = useParams();
 	const checklistId = params?.id as string;
 	const { navigateWithLoading } = useNavigationLoader();
-
 	const {
-		checklist: originalChecklist,
-		isLoading,
-		error,
-	} = useChecklistDetail(checklistId || '');
+		updateChecklist,
+		updateChecklistItems,
+		updating,
+		creating,
+		deleting,
+		currentChecklist,
+	} = useChecklistStore();
 
-	const [name, setName] = useState(originalChecklist?.name ?? '');
-	const [description, setDescription] = useState(
-		originalChecklist?.description ?? '',
-	);
+	const { isLoading, error } = useChecklistDetail(checklistId || '');
 
+	const [name, setName] = useState('');
+	const [description, setDescription] = useState('');
 	const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>([]);
+	const isUpdating = updating || creating || deleting;
 
 	// Sync state when data loads
 	useEffect(() => {
-		if (originalChecklist) {
-			setName(originalChecklist.name);
-			setDescription(originalChecklist.description ?? '');
+		if (currentChecklist) {
+			setName(currentChecklist.name);
+			setDescription(currentChecklist.description ?? '');
 
 			// Add default acceptance for items
 			const itemsWithAcceptance: ChecklistItem[] = (
-				originalChecklist.checklistItems || []
+				currentChecklist.checklistItems || []
 			).map((item) => ({
 				...item,
 				acceptance: 'NotAvailable' as const,
 			}));
 			setChecklistItems(itemsWithAcceptance);
 		}
-	}, [originalChecklist]);
+	}, [currentChecklist]);
 
 	// Validate checklist ID
 	if (!checklistId || checklistId.trim() === '') {
@@ -58,22 +62,45 @@ export default function ChecklistEditPage() {
 		);
 	}
 
-	const handleAddItem = () => {
+	const handleAddItem = async () => {
+		// Temporary disable API call to fix the auto-POST issue
+		// TODO: Re-enable when backend supports POST /checklist-items
 		const newItem: ChecklistItem = {
-			id: Date.now().toString(),
+			id: `temp_${Date.now()}`,
 			name: '',
 			description: '',
 			isRequired: false,
 			checklistId: checklistId,
 			createdAt: new Date(),
 			updatedAt: new Date(),
-			acceptance: 'Yes',
+			acceptance: 'NotAvailable' as const,
 		};
 		setChecklistItems((prev) => [...prev, newItem]);
+
+		// const newItemData = {
+		// 	name: '',
+		// 	description: '',
+		// 	isRequired: false,
+		// 	checklistId: checklistId,
+		// };
+		// const success = await createChecklistItem(newItemData);
+		// if (!success) {
+		// 	showNotification.error('Failed to add item');
+		// }
 	};
 
-	const handleDeleteItem = (item: ChecklistItem) => {
+	const handleDeleteItem = async (item: ChecklistItem) => {
+		// Always remove from local state for now
 		setChecklistItems((prev) => prev.filter((i) => i.id !== item.id));
+
+		// Only call API for real items (not temp ones)
+		if (!item.id.startsWith('temp_')) {
+			// TODO: Re-enable when backend API is stable
+			// const success = await deleteChecklistItem(item.id);
+			// if (!success) {
+			// 	showNotification.error('Failed to delete item');
+			// }
+		}
 	};
 
 	const handleChangeField = (
@@ -86,12 +113,56 @@ export default function ChecklistEditPage() {
 		);
 	};
 
-	const handleSave = () => {
-		console.log('Saving checklist...', {
-			name,
-			description,
-			items: checklistItems,
-		});
+	const handleSave = async () => {
+		let errorMsg = '';
+		try {
+			// 1. Update checklist basic info
+			const checklistUpdateSuccess = await updateChecklist(checklistId, {
+				name,
+				description,
+				milestoneId: currentChecklist?.milestoneId,
+			});
+
+			if (!checklistUpdateSuccess) {
+				errorMsg = 'Failed to update checklist';
+			}
+			if (!errorMsg) {
+				// 2. Update checklist items (only existing items, not temp ones)
+				const existingItems = checklistItems.filter(
+					(item) => !item.id.startsWith('temp_'),
+				);
+				if (existingItems.length > 0) {
+					const itemsPayload = existingItems.map(
+						({ id, name, description, isRequired }) => ({
+							id,
+							name,
+							description: description || '',
+							isRequired,
+						}),
+					);
+
+					const itemsUpdateSuccess = await updateChecklistItems(
+						checklistId,
+						itemsPayload,
+					);
+
+					if (!itemsUpdateSuccess) {
+						errorMsg = 'Failed to update checklist items';
+					}
+				}
+			}
+			if (!errorMsg) {
+				showNotification.success('Checklist updated successfully!');
+				// Navigate back to checklist management
+				navigateWithLoading('/lecturer/checklist-management');
+			} else {
+				showNotification.error(errorMsg);
+			}
+		} catch (error: unknown) {
+			const errorMessage =
+				error instanceof Error ? error.message : 'Update failed';
+			showNotification.error(errorMessage);
+		}
 	};
 
 	const handleBack = () => {
@@ -108,11 +179,7 @@ export default function ChecklistEditPage() {
 		);
 	}
 
-	if (!originalChecklist) {
-		return <Typography.Text type="danger">Checklist not found</Typography.Text>;
-	}
-
-	if (!originalChecklist) {
+	if (!currentChecklist) {
 		return <Typography.Text type="danger">Checklist not found</Typography.Text>;
 	}
 
@@ -127,7 +194,7 @@ export default function ChecklistEditPage() {
 			<ChecklistInfoCard
 				name={name}
 				description={description}
-				milestone={originalChecklist.milestone?.name}
+				milestone={currentChecklist.milestone?.name}
 				editable
 				onNameChange={setName}
 				onDescriptionChange={setDescription}
@@ -140,6 +207,8 @@ export default function ChecklistEditPage() {
 						type="primary"
 						icon={<PlusOutlined />}
 						onClick={handleAddItem}
+						loading={creating}
+						disabled={isUpdating}
 					>
 						Add New Item
 					</Button>
@@ -155,8 +224,10 @@ export default function ChecklistEditPage() {
 
 			<Row justify="end">
 				<Space>
-					<Button onClick={handleBack}>Back</Button>
-					<Button type="primary" onClick={handleSave}>
+					<Button onClick={handleBack} disabled={isUpdating}>
+						Back
+					</Button>
+					<Button type="primary" onClick={handleSave} loading={isUpdating}>
 						Save Checklist
 					</Button>
 				</Space>

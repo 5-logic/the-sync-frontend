@@ -1,11 +1,13 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 
+import checklistItemService from '@/lib/services/checklist-item.service';
 import checklistService from '@/lib/services/checklist.service';
 import { handleApiResponse } from '@/lib/utils/handleApi';
 import {
 	Checklist,
 	ChecklistCreate,
+	ChecklistItemCreate,
 	ChecklistUpdate,
 } from '@/schemas/checklist';
 import { cacheUtils } from '@/store/helpers/cacheHelpers';
@@ -72,6 +74,17 @@ interface ChecklistState {
 	) => Promise<Checklist | null>;
 	createChecklist: (data: ChecklistCreate) => Promise<boolean>;
 	updateChecklist: (id: string, data: ChecklistUpdate) => Promise<boolean>;
+	updateChecklistItems: (
+		checklistId: string,
+		items: {
+			id: string;
+			name: string;
+			description: string;
+			isRequired: boolean;
+		}[],
+	) => Promise<boolean>;
+	createChecklistItem: (data: ChecklistItemCreate) => Promise<boolean>;
+	deleteChecklistItem: (id: string) => Promise<boolean>;
 	deleteChecklist: (id: string) => Promise<boolean>;
 	setSearchText: (text: string) => void;
 	setSelectedMilestoneId: (milestoneId: string | null) => void;
@@ -327,11 +340,7 @@ export const useChecklistStore = create<ChecklistState>()(
 				set({ creating: true, lastError: null });
 				try {
 					const response = await checklistService.create(data);
-					const result = handleApiResponse(
-						response,
-						'Created Successfully',
-						'Checklist has been created successfully.',
-					);
+					const result = handleApiResponse(response);
 					if (result.success && result.data) {
 						// Add to checklists array and sort by createdAt desc (newest first)
 						const { checklists } = get();
@@ -375,11 +384,7 @@ export const useChecklistStore = create<ChecklistState>()(
 				set({ updating: true, lastError: null });
 				try {
 					const response = await checklistService.update(id, data);
-					const result = handleApiResponse(
-						response,
-						'Updated Successfully',
-						'Checklist has been updated successfully.',
-					);
+					const result = handleApiResponse(response);
 					if (result.success && result.data) {
 						// Update local state
 						const { checklists } = get();
@@ -413,16 +418,104 @@ export const useChecklistStore = create<ChecklistState>()(
 				}
 			},
 
+			// Update checklist items
+			updateChecklistItems: async (
+				checklistId: string,
+				items: {
+					id: string;
+					name: string;
+					description: string;
+					isRequired: boolean;
+				}[],
+			) => {
+				set({ updating: true, lastError: null });
+				try {
+					const response = await checklistItemService.updateList(
+						checklistId,
+						items,
+					);
+					const result = handleApiResponse(response);
+					if (result.success && result.data) {
+						// Update local state - refresh the checklist detail
+						await get().fetchChecklistById(checklistId, true);
+						set({ updating: false });
+						return true;
+					} else {
+						throw new Error(
+							getErrorMessage(
+								result.error?.message,
+								'Failed to update checklist items',
+							),
+						);
+					}
+				} catch (error) {
+					handleActionError(error, 'checklist items', 'update', set);
+					set({ updating: false });
+					return false;
+				}
+			},
+
+			// Create checklist item
+			createChecklistItem: async (data: ChecklistItemCreate) => {
+				set({ creating: true, lastError: null });
+				try {
+					const response = await checklistItemService.create(data);
+					const result = handleApiResponse(response);
+					if (result.success && result.data) {
+						// Refresh the checklist detail to get updated items
+						await get().fetchChecklistById(data.checklistId, true);
+						set({ creating: false });
+						return true;
+					} else {
+						throw new Error(
+							getErrorMessage(
+								result.error?.message,
+								'Failed to create checklist item',
+							),
+						);
+					}
+				} catch (error) {
+					handleActionError(error, 'checklist item', 'create', set);
+					set({ creating: false });
+					return false;
+				}
+			},
+
+			// Delete checklist item
+			deleteChecklistItem: async (id: string) => {
+				set({ deleting: true, lastError: null });
+				try {
+					const response = await checklistItemService.delete(id);
+					const result = handleApiResponse(response);
+					if (result.success) {
+						// We need to refresh the current checklist to reflect the changes
+						const { currentChecklist } = get();
+						if (currentChecklist) {
+							await get().fetchChecklistById(currentChecklist.id, true);
+						}
+						set({ deleting: false });
+						return true;
+					} else {
+						throw new Error(
+							getErrorMessage(
+								result.error?.message,
+								'Failed to delete checklist item',
+							),
+						);
+					}
+				} catch (error) {
+					handleActionError(error, 'checklist item', 'delete', set);
+					set({ deleting: false });
+					return false;
+				}
+			},
+
 			// Delete checklist
 			deleteChecklist: async (id: string) => {
 				set({ deleting: true, lastError: null });
 				try {
 					const response = await checklistService.delete(id);
-					const result = handleApiResponse(
-						response,
-						'Deleted Successfully',
-						'Checklist has been deleted successfully.',
-					);
+					const result = handleApiResponse(response);
 					if (result.success) {
 						// Remove from local state
 						const { checklists } = get();

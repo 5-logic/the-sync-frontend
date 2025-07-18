@@ -6,6 +6,7 @@ import type { ColumnsType } from 'antd/es/table';
 
 import { TablePagination } from '@/components/common/TablePagination';
 import { useNavigationLoader } from '@/hooks/ux/useNavigationLoader';
+import { showNotification } from '@/lib/utils/notification';
 import { Checklist } from '@/schemas/checklist';
 import { useChecklistStore } from '@/store';
 
@@ -40,7 +41,12 @@ export default function ChecklistTable({
 			okType: 'danger',
 			cancelText: 'Cancel',
 			onOk: async () => {
-				await deleteChecklist(checklist.id);
+				const success = await deleteChecklist(checklist.id);
+				if (success) {
+					showNotification.success('Checklist deleted successfully');
+				} else {
+					showNotification.error('Failed to delete checklist');
+				}
 			},
 			centered: true,
 		});
