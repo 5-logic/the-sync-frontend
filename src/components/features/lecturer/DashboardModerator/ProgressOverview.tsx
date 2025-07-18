@@ -1,37 +1,49 @@
 'use client';
 
-import { Progress } from 'antd';
+import { Card, Progress, Space, Typography } from 'antd';
 
 import { progressOverview } from '@/data/moderatorStats';
 
+const { Title, Text } = Typography;
+
 export function ProgressOverview() {
 	return (
-		<div className="bg-white p-4 rounded shadow">
-			<h3 className="text-lg font-semibold mb-2">Semester Progress Overview</h3>
-			<p className="text-gray-500 mb-4">
-				Track the overall progress of thesis management this semester.
-			</p>
+		<Card>
+			<Space direction="vertical" size="middle" style={{ width: '100%' }}>
+				<Space direction="vertical" size="small" style={{ width: '100%' }}>
+					<Title level={4} style={{ margin: 0 }}>
+						Semester Progress Overview
+					</Title>
+					<Text type="secondary">
+						Track the overall progress of thesis management this semester.
+					</Text>
+				</Space>
 
-			<div className="space-y-4">
-				{progressOverview.map((item) => (
-					<div key={item.label}>
-						{/* Label + Percentage in one row */}
-						<div className="flex justify-between items-center mb-1">
-							<p className="text-sm font-medium text-gray-700">{item.label}</p>
-							<span className="text-sm font-semibold text-black">
-								{item.percent}%
-							</span>
-						</div>
-
-						{/* Progress bar */}
-						<Progress
-							percent={item.percent}
-							strokeColor={item.color}
-							showInfo={false}
-						/>
-					</div>
-				))}
-			</div>
-		</div>
+				<Space direction="vertical" size="middle" style={{ width: '100%' }}>
+					{progressOverview.map((item) => (
+						<Space
+							key={item.label}
+							direction="vertical"
+							size="small"
+							style={{ width: '100%' }}
+						>
+							<Space style={{ width: '100%', justifyContent: 'space-between' }}>
+								<Text strong style={{ fontSize: '14px' }}>
+									{item.label}
+								</Text>
+								<Text strong style={{ fontSize: '14px' }}>
+									{item.percent}%
+								</Text>
+							</Space>
+							<Progress
+								percent={item.percent}
+								strokeColor={item.color}
+								showInfo={false}
+							/>
+						</Space>
+					))}
+				</Space>
+			</Space>
+		</Card>
 	);
 }
