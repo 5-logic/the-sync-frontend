@@ -118,9 +118,8 @@ export default function MilestoneDetailCard() {
 						...prev,
 						[milestoneId]: false,
 					}));
-				} catch (error) {
-					// Errors are handled in the hook, just log here
-					console.error('Submission failed:', error);
+				} catch {
+					// Errors are handled in the hook
 				}
 			},
 		});
