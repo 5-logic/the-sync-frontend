@@ -33,6 +33,7 @@ export default function ChecklistEditPage() {
 		creating,
 		deleting,
 		currentChecklist,
+		fetchChecklists,
 	} = useChecklistStore();
 
 	const { isLoading, error } = useChecklistDetail(checklistId || '');
@@ -470,6 +471,9 @@ export default function ChecklistEditPage() {
 
 			// Success feedback
 			showNotification.success('Success', 'Checklist updated successfully');
+
+			// Force refresh checklists to ensure data consistency
+			fetchChecklists(true);
 
 			// Navigate immediately after success without cleaning up state
 			// This prevents UI glitches from state updates during navigation

@@ -212,12 +212,21 @@ const addItemsToChecklist = (
 			(item) => !existingIds.includes(item.id),
 		);
 
+		const updatedItems = [
+			...(currentChecklist.checklistItems || []),
+			...uniqueNewItems,
+		];
+
 		const updatedChecklist = {
 			...currentChecklist,
-			checklistItems: [
-				...(currentChecklist.checklistItems || []),
-				...uniqueNewItems,
-			],
+			checklistItems: updatedItems,
+			// Also update _count if it exists
+			...(currentChecklist._count && {
+				_count: {
+					...currentChecklist._count,
+					checklistItems: updatedItems.length,
+				},
+			}),
 		};
 
 		updateCurrentChecklistAndCache(set, get, updatedChecklist);
@@ -226,13 +235,23 @@ const addItemsToChecklist = (
 		const updatedChecklists = updateChecklistInArray(
 			checklists,
 			checklistId,
-			(existingChecklist) => ({
-				...existingChecklist,
-				checklistItems: [
+			(existingChecklist) => {
+				const updatedItems = [
 					...(existingChecklist.checklistItems || []),
 					...newItems,
-				],
-			}),
+				];
+				return {
+					...existingChecklist,
+					checklistItems: updatedItems,
+					// Also update _count if it exists
+					...(existingChecklist._count && {
+						_count: {
+							...existingChecklist._count,
+							checklistItems: updatedItems.length,
+						},
+					}),
+				};
+			},
 		);
 
 		if (updatedChecklists !== checklists) {
@@ -540,6 +559,13 @@ export const useChecklistStore = create<ChecklistState>()(
 							const updatedChecklist = {
 								...currentChecklist,
 								checklistItems: result.data,
+								// Also update _count if it exists
+								...(currentChecklist._count && {
+									_count: {
+										...currentChecklist._count,
+										checklistItems: result.data.length,
+									},
+								}),
 							};
 
 							updateCurrentChecklistAndCache(set, get, updatedChecklist);
@@ -643,12 +669,21 @@ export const useChecklistStore = create<ChecklistState>()(
 						const { currentChecklist } = get();
 						if (currentChecklist) {
 							// Remove the item from the current checklist
+							const filteredItems =
+								currentChecklist.checklistItems?.filter(
+									(item) => item.id !== id,
+								) || [];
+
 							const updatedChecklist = {
 								...currentChecklist,
-								checklistItems:
-									currentChecklist.checklistItems?.filter(
-										(item) => item.id !== id,
-									) || [],
+								checklistItems: filteredItems,
+								// Also update _count if it exists
+								...(currentChecklist._count && {
+									_count: {
+										...currentChecklist._count,
+										checklistItems: filteredItems.length,
+									},
+								}),
 							};
 
 							updateCurrentChecklistAndCache(set, get, updatedChecklist);
@@ -726,11 +761,11 @@ export const useChecklistStore = create<ChecklistState>()(
 
 			getTotalItems: (checklistId: string) => {
 				const checklist = get().checklists.find((c) => c.id === checklistId);
-				return (
-					checklist?.checklistItems?.length ||
-					checklist?._count?.checklistItems ||
-					0
-				);
+				// Prioritize checklistItems array length over _count to reflect real-time changes
+				if (checklist?.checklistItems) {
+					return checklist.checklistItems.length;
+				}
+				return checklist?._count?.checklistItems || 0;
 			},
 
 			// Utility functions
