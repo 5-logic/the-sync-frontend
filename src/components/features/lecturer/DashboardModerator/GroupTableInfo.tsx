@@ -13,6 +13,9 @@ const columns = [
 export function GroupInfo() {
 	return (
 		<div className="bg-white p-4 rounded shadow">
+			<h3 className="text-lg font-semibold mb-2">
+				Groups with Assigned Thesis Topics
+			</h3>
 			<div className="flex justify-between items-center mb-4">
 				<Input
 					placeholder="Search thesis, group, supervisor"

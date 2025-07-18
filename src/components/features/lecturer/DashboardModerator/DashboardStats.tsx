@@ -1,10 +1,10 @@
 'use client';
 
 import {
-	FileTextOutlined,
-	ProfileOutlined,
+	BookOutlined,
 	TeamOutlined,
 	UserOutlined,
+	UsergroupDeleteOutlined,
 } from '@ant-design/icons';
 import { Col, Row } from 'antd';
 import React from 'react';
@@ -26,12 +26,14 @@ const DashboardStats: React.FC = () => {
 		{
 			title: 'Registered Topics',
 			value: 156,
-			icon: <FileTextOutlined style={{ fontSize: 24, color: '#fa541c' }} />,
+			icon: <BookOutlined style={{ fontSize: 24, color: '#fa541c' }} />,
 		},
 		{
 			title: 'Active Groups',
 			value: 45,
-			icon: <ProfileOutlined style={{ fontSize: 24, color: '#722ed1' }} />,
+			icon: (
+				<UsergroupDeleteOutlined style={{ fontSize: 24, color: '#722ed1' }} />
+			),
 		},
 	];
 
