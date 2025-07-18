@@ -2,13 +2,13 @@
 
 import { Col, Row, Space } from 'antd';
 
+import DashboardStats from '@/components/common/Dashboard/DashboardStats';
+import { GroupInfo } from '@/components/common/Dashboard/GroupTableInfo';
+import { ProgressOverview } from '@/components/common/Dashboard/ProgressOverview';
+import SupervisorLoadChart from '@/components/common/Dashboard/SupervisorLoadChart';
 import { Header } from '@/components/common/Header';
-import DashboardStats from '@/components/features/lecturer/DashboardModerator/DashboardStats';
-import { GroupInfo } from '@/components/features/lecturer/DashboardModerator/GroupTableInfo';
-import { ProgressOverview } from '@/components/features/lecturer/DashboardModerator/ProgressOverview';
-import SupervisorLoadChart from '@/components/features/lecturer/DashboardModerator/SupervisorLoadChart';
 
-export default function MorderatorDashboardPage() {
+export default function Dashboard() {
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
 			<Header

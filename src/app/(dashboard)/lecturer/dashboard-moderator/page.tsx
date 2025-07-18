@@ -1,5 +1,5 @@
 import { createMetadata } from '@/app/metadata';
-import DashboardModerator from '@/components/features/lecturer/DashboardModerator';
+import Dashboard from '@/components/common/Dashboard';
 
 export const metadata = createMetadata({
 	title: 'Moderator Dashboard',
@@ -8,5 +8,5 @@ export const metadata = createMetadata({
 });
 
 export default function ModeratorDashboardPage() {
-	return <DashboardModerator />;
+	return <Dashboard />;
 }
