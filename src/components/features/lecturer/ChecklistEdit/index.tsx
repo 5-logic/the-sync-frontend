@@ -86,33 +86,36 @@ export default function ChecklistEditPage() {
 		);
 	}
 
-	const handleAddItem = async () => {
-		try {
-			// Create a real checklist item immediately via API
-			const newItems = await createChecklistItems(checklistId, [
-				{
-					name: ' ',
-					description: '',
-					isRequired: false,
-				},
-			]);
+	const handleAddItem = () => {
+		// Generate a temporary ID for new items (negative to distinguish from real IDs)
+		const tempId = `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-			// The store should automatically update currentChecklist
-			// Let the useEffect handle the sync instead of manually updating
-			if (newItems && newItems.length > 0) {
-				showNotification.success('New checklist item created successfully');
-			} else {
-				console.warn('No items returned from API');
-				showNotification.warning('Item created but response was empty');
-			}
-		} catch (error) {
-			console.error('Error creating checklist item:', error);
-			showNotification.error('Failed to create checklist item');
-		}
+		const newItem: ChecklistItem = {
+			id: tempId,
+			name: '',
+			description: '',
+			isRequired: false,
+			acceptance: 'NotAvailable' as const,
+			checklistId: checklistId,
+			createdAt: new Date(),
+			updatedAt: new Date(),
+		};
+
+		setChecklistItems((prev) => [...prev, newItem]);
 	};
 
 	const handleDeleteItem = async (item: ChecklistItem) => {
-		// Show confirmation modal before deleting
+		// Check if it's a temporary item (starts with 'temp-')
+		const isTemporaryItem = item.id.startsWith('temp-');
+
+		if (isTemporaryItem) {
+			// For temporary items, just remove from local state
+			setChecklistItems((prev) => prev.filter((i) => i.id !== item.id));
+			showNotification.success('Item removed');
+			return;
+		}
+
+		// Show confirmation modal for real items before deleting
 		ConfirmationModal.show({
 			title: 'Delete Checklist Item',
 			message: 'Are you sure you want to delete this checklist item?',
@@ -124,7 +127,6 @@ export default function ChecklistEditPage() {
 			okType: 'danger',
 			onOk: async () => {
 				try {
-					// Always call API since all items are real now
 					const success = await deleteChecklistItem(item.id);
 					if (!success) {
 						showNotification.error('Failed to delete item');
@@ -180,8 +182,14 @@ export default function ChecklistEditPage() {
 	// Helper function to detect all changes
 	const detectChanges = () => {
 		const originalItems = currentChecklist?.checklistItems || [];
-		// All items are real now, no temp items
-		const existingItems = checklistItems;
+
+		// Separate temporary and existing items
+		const temporaryItems = checklistItems.filter((item) =>
+			item.id.startsWith('temp-'),
+		);
+		const existingItems = checklistItems.filter(
+			(item) => !item.id.startsWith('temp-'),
+		);
 
 		// Check existing items for changes
 		const hasExistingItemChanges = existingItems.some((item) => {
@@ -189,8 +197,14 @@ export default function ChecklistEditPage() {
 			return !original || hasItemChanged(original, item);
 		});
 
-		// Check for deleted items
-		const hasDeletedItems = originalItems.length > existingItems.length;
+		// Check for deleted items (original items not in current existing items)
+		const existingItemIds = existingItems.map((item) => item.id);
+		const hasDeletedItems = originalItems.some(
+			(orig) => !existingItemIds.includes(orig.id),
+		);
+
+		// Check if there are new items to create
+		const hasNewItems = temporaryItems.length > 0;
 
 		// Check basic info changes
 		const hasBasicChanges = hasBasicInfoChanged();
@@ -199,9 +213,14 @@ export default function ChecklistEditPage() {
 			hasBasicChanges,
 			hasExistingItemChanges,
 			hasDeletedItems,
+			hasNewItems,
 			hasAnyChanges:
-				hasBasicChanges || hasExistingItemChanges || hasDeletedItems,
+				hasBasicChanges ||
+				hasExistingItemChanges ||
+				hasDeletedItems ||
+				hasNewItems,
 			existingItems,
+			temporaryItems,
 			originalItems,
 		};
 	};
@@ -214,12 +233,6 @@ export default function ChecklistEditPage() {
 			// Validate required fields
 			if (!name.trim()) {
 				showNotification.warning('Please enter a checklist name');
-				setIsSaving(false);
-				return;
-			}
-
-			if (!description?.trim()) {
-				showNotification.warning('Please enter a description');
 				setIsSaving(false);
 				return;
 			}
@@ -264,7 +277,38 @@ export default function ChecklistEditPage() {
 			}
 
 			if (!errorMsg) {
-				// 2. Handle existing items changes
+				// 2. Create new items first (temporary items)
+				if (changes.hasNewItems && changes.temporaryItems.length > 0) {
+					const newItemsPayload = changes.temporaryItems.map(
+						({ name, description, isRequired }) => ({
+							name,
+							description: description || '',
+							isRequired,
+						}),
+					);
+
+					const createdItems = await createChecklistItems(
+						checklistId,
+						newItemsPayload,
+					);
+
+					if (!createdItems || createdItems.length === 0) {
+						errorMsg = 'Failed to create new checklist items';
+					} else {
+						// Update local state with real IDs from API response
+						setChecklistItems((prev) => {
+							// Remove temporary items and add real ones
+							const withoutTempItems = prev.filter(
+								(item) => !item.id.startsWith('temp-'),
+							);
+							return [...withoutTempItems, ...createdItems];
+						});
+					}
+				}
+			}
+
+			if (!errorMsg) {
+				// 3. Update existing items if changed
 				if (
 					changes.hasExistingItemChanges &&
 					changes.existingItems.length > 0
@@ -387,7 +431,6 @@ export default function ChecklistEditPage() {
 						type="primary"
 						icon={<PlusOutlined />}
 						onClick={handleAddItem}
-						loading={creating}
 						disabled={isUpdating}
 					>
 						Add New Item
@@ -404,7 +447,7 @@ export default function ChecklistEditPage() {
 						type="primary"
 						onClick={handleSave}
 						loading={isSaving}
-						disabled={creating || deleting || updating}
+						disabled={deleting || updating}
 					>
 						Save Checklist
 					</Button>
