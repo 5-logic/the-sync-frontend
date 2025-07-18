@@ -10,6 +10,7 @@ import { ChecklistItem } from '@/schemas/checklist';
 interface Props {
 	items: ChecklistItem[];
 	editable?: boolean;
+	loading?: boolean;
 	onChangeField?: (
 		id: string,
 		field: keyof ChecklistItem,
@@ -26,6 +27,7 @@ const priorityColorMap = {
 const getEditableColumns = (
 	onChangeField?: Props['onChangeField'],
 	onDelete?: Props['onDelete'],
+	loading?: boolean,
 ): ColumnType<ChecklistItem>[] => [
 	{
 		title: 'Question',
@@ -36,6 +38,7 @@ const getEditableColumns = (
 				placeholder="Enter item name"
 				value={text?.trim() === '' ? '' : text || ''}
 				onChange={(e) => onChangeField?.(record.id, 'name', e.target.value)}
+				disabled={loading}
 			/>
 		),
 	},
@@ -50,6 +53,7 @@ const getEditableColumns = (
 				onChange={(e) =>
 					onChangeField?.(record.id, 'description', e.target.value)
 				}
+				disabled={loading}
 			/>
 		),
 	},
@@ -64,6 +68,7 @@ const getEditableColumns = (
 				onChange={(checked) =>
 					onChangeField?.(record.id, 'isRequired', checked)
 				}
+				disabled={loading}
 			/>
 		),
 	},
@@ -74,8 +79,11 @@ const getEditableColumns = (
 		render: (_, record) => (
 			<Tooltip title="Delete">
 				<DeleteOutlined
-					style={{ color: '#ff4d4f', cursor: 'pointer' }}
-					onClick={() => onDelete?.(record)}
+					style={{
+						color: loading ? '#d9d9d9' : '#ff4d4f',
+						cursor: loading ? 'not-allowed' : 'pointer',
+					}}
+					onClick={() => !loading && onDelete?.(record)}
 				/>
 			</Tooltip>
 		),
@@ -124,11 +132,12 @@ const getViewColumns = (): ColumnType<ChecklistItem>[] => {
 export default function ChecklistItemsTable({
 	items,
 	editable = false,
+	loading = false,
 	onDelete,
 	onChangeField,
 }: Readonly<Props>) {
 	const columns = editable
-		? getEditableColumns(onChangeField, onDelete)
+		? getEditableColumns(onChangeField, onDelete, loading)
 		: getViewColumns();
 
 	return (
@@ -137,6 +146,7 @@ export default function ChecklistItemsTable({
 			dataSource={items}
 			columns={columns}
 			pagination={false}
+			loading={loading}
 		/>
 	);
 }

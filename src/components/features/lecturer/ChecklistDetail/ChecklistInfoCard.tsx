@@ -9,6 +9,7 @@ interface Props {
 	description?: string;
 	milestone?: string;
 	editable?: boolean;
+	loading?: boolean;
 	onNameChange?: (val: string) => void;
 	onDescriptionChange?: (val: string) => void;
 	showErrors?: boolean;
@@ -19,6 +20,7 @@ export default function ChecklistInfoCard({
 	description,
 	milestone,
 	editable = false,
+	loading = false,
 	onNameChange,
 	onDescriptionChange,
 	showErrors = false,
@@ -40,6 +42,7 @@ export default function ChecklistInfoCard({
 							value={name}
 							onChange={(e) => onNameChange?.(e.target.value)}
 							placeholder="Enter checklist name"
+							disabled={loading}
 						/>
 					</Form.Item>
 
@@ -55,6 +58,7 @@ export default function ChecklistInfoCard({
 							placeholder="Enter checklist description"
 							autoSize={{ minRows: 2 }}
 							style={{ resize: 'none' }}
+							disabled={loading}
 						/>
 					</Form.Item>
 				</>

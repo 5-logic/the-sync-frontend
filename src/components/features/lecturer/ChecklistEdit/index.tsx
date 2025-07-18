@@ -7,6 +7,10 @@ import { useEffect, useState } from 'react';
 
 import { ConfirmationModal } from '@/components/common/ConfirmModal';
 import { Header } from '@/components/common/Header';
+import {
+	CardLoadingSkeleton,
+	TableLoadingSkeleton,
+} from '@/components/common/loading';
 import ChecklistInfoCard from '@/components/features/lecturer/ChecklistDetail/ChecklistInfoCard';
 import ChecklistItemsTable from '@/components/features/lecturer/ChecklistDetail/ChecklistItemTable';
 import { useChecklistDetail } from '@/hooks/checklist/useChecklistDetail';
@@ -277,7 +281,36 @@ export default function ChecklistEditPage() {
 	};
 
 	if (isLoading) {
-		return <Typography.Text>Loading checklist...</Typography.Text>;
+		return (
+			<Space direction="vertical" size="large" style={{ width: '100%' }}>
+				<Header
+					title="Edit Checklist"
+					description="Update checklist content, including name, description, and required evaluation items."
+					badgeText="Moderator Only"
+				/>
+
+				<CardLoadingSkeleton />
+
+				<Card title="Checklist Items">
+					<TableLoadingSkeleton />
+
+					<Row justify="space-between" style={{ marginTop: 16 }}>
+						<Button type="primary" disabled>
+							Add New Item
+						</Button>
+					</Row>
+				</Card>
+
+				<Row justify="end">
+					<Space>
+						<Button disabled>Back</Button>
+						<Button type="primary" disabled>
+							Save Checklist
+						</Button>
+					</Space>
+				</Row>
+			</Space>
+		);
 	}
 
 	if (error) {
@@ -303,6 +336,7 @@ export default function ChecklistEditPage() {
 				description={description}
 				milestone={currentChecklist.milestone?.name}
 				editable
+				loading={isSaving}
 				onNameChange={setName}
 				onDescriptionChange={setDescription}
 			/>
@@ -311,6 +345,7 @@ export default function ChecklistEditPage() {
 				<ChecklistItemsTable
 					items={checklistItems}
 					editable
+					loading={isUpdating}
 					onDelete={handleDeleteItem}
 					onChangeField={handleChangeField}
 				/>

@@ -4,6 +4,10 @@ import { Button, Card, Row, Space, Typography } from 'antd';
 import { useParams } from 'next/navigation';
 
 import { Header } from '@/components/common/Header';
+import {
+	CardLoadingSkeleton,
+	TableLoadingSkeleton,
+} from '@/components/common/loading';
 import ChecklistInfoCard from '@/components/features/lecturer/ChecklistDetail/ChecklistInfoCard';
 import ChecklistItemsTable from '@/components/features/lecturer/ChecklistDetail/ChecklistItemTable';
 import { useChecklistDetail } from '@/hooks/checklist/useChecklistDetail';
@@ -44,7 +48,30 @@ export default function ChecklistDetailPage() {
 	}
 
 	if (isLoading) {
-		return <Typography.Text>Loading checklist...</Typography.Text>;
+		return (
+			<Space direction="vertical" size="large" style={{ width: '100%' }}>
+				<Header
+					title="Checklist Detail"
+					description="Inspect checklist content for a specific milestone and semester, including required fields and criteria."
+					badgeText="Moderator Only"
+				/>
+
+				<CardLoadingSkeleton />
+
+				<Card title="Checklist Items">
+					<TableLoadingSkeleton />
+				</Card>
+
+				<Row justify="end">
+					<Space size="middle">
+						<Button disabled>Back</Button>
+						<Button type="primary" disabled>
+							Edit
+						</Button>
+					</Space>
+				</Row>
+			</Space>
+		);
 	}
 
 	if (error) {
