@@ -41,7 +41,6 @@ const AccountSettingModal: React.FC<AccountSettingModalProps> = ({
 			});
 		}
 	}, [open, fetchAdmin, form]);
-	console.log('Fetching admin data...', adminData);
 
 	const handleFinish = async (values: {
 		email: string;
