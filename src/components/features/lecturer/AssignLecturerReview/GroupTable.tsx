@@ -4,23 +4,28 @@ import { Button, Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 
 import { TablePagination } from '@/components/common/TablePagination';
-import { FullMockGroup } from '@/data/group';
-import { SubmissionGroup } from '@/lib/services/submission.service';
 
+export interface GroupTableProps {
+	code: string;
+	name: string;
+	title: string;
+	supervisors: string[];
+	reviewers: string[];
+}
 interface Props {
-	groups: SubmissionGroup[];
-	onAssign: (group: FullMockGroup) => void;
+	groups: GroupTableProps[];
+	// onAssign: (group: FullMockGroup) => void;
 	loading?: boolean;
 	noMilestone?: boolean;
 }
 
 export default function GroupTable({
 	groups,
-	onAssign,
+	// onAssign,
 	loading,
 	noMilestone,
 }: Readonly<Props>) {
-	const columns: ColumnsType<SubmissionGroup> = [
+	const columns: ColumnsType<GroupTableProps> = [
 		{
 			title: 'Group Code',
 			dataIndex: 'code',
@@ -48,19 +53,12 @@ export default function GroupTable({
 		{
 			title: 'Action',
 			key: 'action',
-			render: (_, record) => (
-				<Button
-					type="primary"
-					onClick={() => onAssign(record as FullMockGroup)}
-				>
-					Assign
-				</Button>
-			),
+			render: () => <Button type="primary">Assign</Button>,
 		},
 	];
 
 	return (
-		<Table<SubmissionGroup>
+		<Table<GroupTableProps>
 			rowKey="id"
 			dataSource={groups}
 			columns={columns}
