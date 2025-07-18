@@ -363,12 +363,13 @@ interface AssignSupervisorState {
 	// Cache state
 	lastFetchTime: number | null;
 	cacheExpiry: number; // Cache expiry time in milliseconds (5 minutes)
+	currentSemester: string | null; // Track current semester filter
 
 	// Helper functions
 	determineStatus: (supervisions: Supervision[]) => SupervisorAssignmentStatus;
 
 	// Actions
-	fetchData: (forceRefresh?: boolean) => Promise<void>;
+	fetchData: (forceRefresh?: boolean, semesterId?: string) => Promise<void>;
 	changeSupervisor: (
 		thesisId: string,
 		currentSupervisorId: string,
@@ -376,7 +377,7 @@ interface AssignSupervisorState {
 	) => Promise<boolean>;
 	refreshData: () => Promise<void>;
 	clearError: () => void;
-	isCacheValid: () => boolean;
+	isCacheValid: (semesterId?: string) => boolean;
 
 	// Optimistic update methods
 	updateAssignmentOptimistically: (
@@ -409,11 +410,16 @@ export const useAssignSupervisorStore = create<AssignSupervisorState>()(
 			lastError: null,
 			lastFetchTime: null,
 			cacheExpiry: 5 * 60 * 1000, // 5 minutes
+			currentSemester: null,
 
 			// Check if cache is valid
-			isCacheValid: (): boolean => {
-				const { lastFetchTime, cacheExpiry } = get();
+			isCacheValid: (semesterId?: string): boolean => {
+				const { lastFetchTime, cacheExpiry, currentSemester } = get();
 				if (!lastFetchTime) return false;
+
+				// Check if semester has changed
+				if (currentSemester !== (semesterId || null)) return false;
+
 				return Date.now() - lastFetchTime < cacheExpiry;
 			},
 
@@ -428,9 +434,16 @@ export const useAssignSupervisorStore = create<AssignSupervisorState>()(
 			},
 
 			// Fetch all data
-			fetchData: async (forceRefresh = false): Promise<void> => {
+			fetchData: async (
+				forceRefresh = false,
+				semesterId?: string,
+			): Promise<void> => {
 				// Skip fetch if cache is valid and not forcing refresh
-				if (!forceRefresh && get().isCacheValid() && get().data.length > 0) {
+				if (
+					!forceRefresh &&
+					get().isCacheValid(semesterId) &&
+					get().data.length > 0
+				) {
 					return;
 				}
 
@@ -438,7 +451,9 @@ export const useAssignSupervisorStore = create<AssignSupervisorState>()(
 
 				try {
 					const [thesesResponse, lecturersResponse] = await Promise.all([
-						thesesService.findAll(),
+						semesterId
+							? thesesService.findBySemester(semesterId)
+							: thesesService.findAll(),
 						lecturerService.findAll(),
 					]);
 
@@ -485,6 +500,7 @@ export const useAssignSupervisorStore = create<AssignSupervisorState>()(
 						data: thesesWithData,
 						loading: false,
 						lastFetchTime: Date.now(),
+						currentSemester: semesterId || null,
 					});
 				} catch (err) {
 					console.error('Error in fetchData:', err);

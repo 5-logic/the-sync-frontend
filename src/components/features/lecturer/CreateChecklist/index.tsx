@@ -11,7 +11,7 @@ export default function CreateChecklist() {
 	const [activeTab, setActiveTab] = useState('manual');
 
 	return (
-		<Layout style={{ minHeight: '100vh', background: '#fff', padding: 24 }}>
+		<Layout style={{ minHeight: '100vh', background: '#fff' }}>
 			<Space direction="vertical" size="large" style={{ width: '100%' }}>
 				<Header
 					title="Create Checklist"
