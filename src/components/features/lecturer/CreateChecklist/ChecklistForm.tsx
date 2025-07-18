@@ -28,7 +28,6 @@ export default function UnifiedChecklistForm({
 	const [checklistName, setChecklistName] = useState('');
 	const [checklistDescription, setChecklistDescription] = useState('');
 	const [showErrors, setShowErrors] = useState(false);
-	const [selectedSemester, setSelectedSemester] = useState<string>('');
 	const [selectedMilestone, setSelectedMilestone] = useState<string>('');
 	const [isCreating, setIsCreating] = useState(false);
 
@@ -46,19 +45,11 @@ export default function UnifiedChecklistForm({
 		value: milestone.id,
 	}));
 
-	// Mock semesters for now (you can replace with real API later)
-	const availableSemesters = [
-		{ label: 'Spring 2024', value: 'spring-2024' },
-		{ label: 'Summer 2024', value: 'summer-2024' },
-		{ label: 'Fall 2024', value: 'fall-2024' },
-		{ label: 'Spring 2025', value: 'spring-2025' },
-	];
-
-	const handleCancel = () => {
+	const handleBack = () => {
 		form.resetFields();
 		setFileList([]);
 		setShowErrors(false);
-		showNotification.info('Checklist action cancelled.');
+		router.push('/lecturer/checklist-management');
 	};
 
 	const handleSaveAll = async () => {
@@ -138,7 +129,6 @@ export default function UnifiedChecklistForm({
 			form.resetFields();
 			setChecklistName('');
 			setChecklistDescription('');
-			setSelectedSemester('');
 			setSelectedMilestone('');
 			setShowErrors(false);
 
@@ -155,15 +145,12 @@ export default function UnifiedChecklistForm({
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
 			<ChecklistCommonHeader
-				semester={selectedSemester}
 				milestone={selectedMilestone}
 				checklistName={checklistName}
 				checklistDescription={checklistDescription}
 				onNameChange={setChecklistName}
 				onDescriptionChange={setChecklistDescription}
-				onSemesterChange={setSelectedSemester}
 				onMilestoneChange={setSelectedMilestone}
-				availableSemesters={availableSemesters}
 				availableMilestones={availableMilestones}
 				showErrors={showErrors}
 				loading={isCreating}
@@ -254,7 +241,7 @@ export default function UnifiedChecklistForm({
 														),
 													},
 													{
-														title: 'Required',
+														title: 'Priority',
 														dataIndex: 'isRequired',
 														key: 'isRequired',
 														align: 'center' as const,
@@ -301,6 +288,7 @@ export default function UnifiedChecklistForm({
 											>
 												{mode === 'manual' && (
 													<Button
+														type="primary"
 														icon={<PlusOutlined />}
 														onClick={() => add()}
 														disabled={isCreating}
@@ -309,20 +297,20 @@ export default function UnifiedChecklistForm({
 													</Button>
 												)}
 
-												<Space>
-													<Button onClick={handleCancel} disabled={isCreating}>
-														Cancel
-													</Button>
-													<Button
-														type="primary"
-														onClick={handleSaveAll}
-														loading={isCreating}
-													>
-														{mode === 'manual'
-															? 'Save All'
-															: 'Import All Checklist'}
-													</Button>
-												</Space>
+												{mode === 'import' && hasItems && (
+													<Space>
+														<Button onClick={handleBack} disabled={isCreating}>
+															Back
+														</Button>
+														<Button
+															type="primary"
+															onClick={handleSaveAll}
+															loading={isCreating}
+														>
+															Import All Checklist
+														</Button>
+													</Space>
+												)}
 											</Row>
 										</>
 									)}
@@ -332,6 +320,19 @@ export default function UnifiedChecklistForm({
 					</Form.List>
 				</Form>
 			</Card>
+
+			{mode === 'manual' && (
+				<Row justify="end">
+					<Space>
+						<Button onClick={handleBack} disabled={isCreating}>
+							Back
+						</Button>
+						<Button type="primary" onClick={handleSaveAll} loading={isCreating}>
+							Save All
+						</Button>
+					</Space>
+				</Row>
+			)}
 		</Space>
 	);
 }

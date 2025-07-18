@@ -101,7 +101,7 @@ const ChecklistDragger = ({
 				<Row align="middle" justify="space-between" gutter={[16, 16]} wrap>
 					<Col xs={24} sm={24} md={16}>
 						<Typography.Text type="secondary" style={{ display: 'block' }}>
-							Please fill the template including Name, Description and Required.
+							Please fill the template including Name, Description and Priority.
 						</Typography.Text>
 					</Col>
 					<Col xs={24} sm={24} md={8} style={{ textAlign: 'right' }}>

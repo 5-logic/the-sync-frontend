@@ -5,30 +5,24 @@ import { Card, Input, Select, Space, Typography } from 'antd';
 import { FormLabel } from '@/components/common/FormLabel';
 
 interface Props {
-	semester: string;
 	milestone: string;
 	checklistName: string;
 	checklistDescription: string;
 	onNameChange: (val: string) => void;
 	onDescriptionChange: (val: string) => void;
-	onSemesterChange: (val: string) => void;
 	onMilestoneChange: (val: string) => void;
-	availableSemesters: { label: string; value: string }[];
 	availableMilestones: { label: string; value: string }[];
 	showErrors: boolean;
 	loading?: boolean;
 }
 
 export default function ChecklistCommonHeader({
-	semester,
 	milestone,
 	checklistName,
 	checklistDescription,
 	onNameChange,
 	onDescriptionChange,
-	onSemesterChange,
 	onMilestoneChange,
-	availableSemesters,
 	availableMilestones,
 	showErrors,
 	loading = false,
@@ -42,18 +36,6 @@ export default function ChecklistCommonHeader({
 				</Typography.Text>
 
 				<Space size="middle" wrap>
-					<Select
-						value={
-							availableSemesters.find((s) => s.value === semester)?.value ??
-							undefined
-						}
-						onChange={onSemesterChange}
-						options={availableSemesters}
-						style={{ minWidth: 160 }}
-						placeholder="Select semester"
-						disabled={loading}
-					/>
-
 					<Select
 						value={
 							availableMilestones.find((m) => m.value === milestone)?.value ??
