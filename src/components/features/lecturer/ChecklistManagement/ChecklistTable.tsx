@@ -28,6 +28,17 @@ export default function ChecklistTable({
 	const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
 
 	const handleDelete = (checklist: Checklist) => {
+		// Check if checklist has items
+		const totalItems = getTotalItems(checklist.id);
+
+		if (totalItems > 0) {
+			showNotification.warning(
+				'Cannot Delete Checklist',
+				`This checklist contains ${totalItems} item${totalItems > 1 ? 's' : ''}. Please remove all checklist items before deleting the checklist.`,
+			);
+			return;
+		}
+
 		ConfirmationModal.show({
 			title: 'Delete Checklist',
 			message: 'Are you sure you want to delete this checklist?',
@@ -149,40 +160,49 @@ export default function ChecklistTable({
 			key: 'actions',
 			width: '15%',
 			align: 'center',
-			render: (_, record) => (
-				<Space size="small">
-					<Tooltip title="View Details">
-						<Button
-							type="text"
-							icon={<EyeOutlined />}
-							size="small"
-							onClick={() => handleView(record)}
-						/>
-					</Tooltip>
-					<Tooltip title="Edit">
-						<Button
-							type="text"
-							icon={<EditOutlined />}
-							size="small"
-							onClick={() => {
-								navigateWithLoading(
-									`/lecturer/checklist-management/${record.id}/edit`,
-								);
-							}}
-						/>
-					</Tooltip>
-					<Tooltip title="Delete">
-						<Button
-							type="text"
-							icon={<DeleteOutlined />}
-							size="small"
-							danger
-							loading={deletingIds.has(record.id)}
-							onClick={() => handleDelete(record)}
-						/>
-					</Tooltip>
-				</Space>
-			),
+			render: (_, record) => {
+				const totalItems = getTotalItems(record.id);
+				const hasItems = totalItems > 0;
+				const deleteTooltip = hasItems
+					? `Cannot delete: contains ${totalItems} item${totalItems > 1 ? 's' : ''}`
+					: 'Delete';
+
+				return (
+					<Space size="small">
+						<Tooltip title="View Details">
+							<Button
+								type="text"
+								icon={<EyeOutlined />}
+								size="small"
+								onClick={() => handleView(record)}
+							/>
+						</Tooltip>
+						<Tooltip title="Edit">
+							<Button
+								type="text"
+								icon={<EditOutlined />}
+								size="small"
+								onClick={() => {
+									navigateWithLoading(
+										`/lecturer/checklist-management/${record.id}/edit`,
+									);
+								}}
+							/>
+						</Tooltip>
+						<Tooltip title={deleteTooltip}>
+							<Button
+								type="text"
+								icon={<DeleteOutlined />}
+								size="small"
+								danger
+								disabled={hasItems}
+								loading={deletingIds.has(record.id)}
+								onClick={() => handleDelete(record)}
+							/>
+						</Tooltip>
+					</Space>
+				);
+			},
 		},
 	];
 
