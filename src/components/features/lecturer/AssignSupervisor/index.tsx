@@ -496,6 +496,7 @@ export default function AssignSupervisors() {
 				key: 'action',
 				width: 120,
 				fixed: 'right' as const,
+				align: 'center' as const,
 				render: actionRenderer,
 			},
 		];

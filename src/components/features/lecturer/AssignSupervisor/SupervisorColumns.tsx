@@ -115,6 +115,8 @@ export const baseColumns: ColumnsType<SupervisorAssignmentData> = [
 		key: 'groupName',
 		width: 140,
 		ellipsis: true,
+		sorter: (a, b) => a.groupName.localeCompare(b.groupName),
+		sortDirections: ['ascend', 'descend'],
 	},
 	{
 		title: 'English Name',
@@ -124,6 +126,8 @@ export const baseColumns: ColumnsType<SupervisorAssignmentData> = [
 		ellipsis: {
 			showTitle: true,
 		},
+		sorter: (a, b) => a.thesisTitle.localeCompare(b.thesisTitle),
+		sortDirections: ['ascend', 'descend'],
 	},
 	{
 		title: 'Domain',
@@ -131,6 +135,15 @@ export const baseColumns: ColumnsType<SupervisorAssignmentData> = [
 		key: 'memberCount',
 		width: 180,
 		ellipsis: true,
+		sorter: (a, b) => {
+			// Handle special case for "No Domain" entries
+			const domainA =
+				a.groupName === 'No Abbreviation' ? 'No Domain' : a.memberCount;
+			const domainB =
+				b.groupName === 'No Abbreviation' ? 'No Domain' : b.memberCount;
+			return domainA.localeCompare(domainB);
+		},
+		sortDirections: ['ascend', 'descend'],
 		render: (domain: string, record: SupervisorAssignmentData) => {
 			if (record.groupName === 'No Abbreviation') {
 				return <span style={{ color: '#999' }}>No Domain</span>;

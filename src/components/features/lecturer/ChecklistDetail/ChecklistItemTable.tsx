@@ -99,6 +99,7 @@ const getViewColumns = (): ColumnType<ChecklistItem>[] => {
 			title: 'Question',
 			dataIndex: 'name',
 			key: 'name',
+			sorter: (a, b) => (a.name || '').localeCompare(b.name || ''),
 		},
 		{
 			title: 'Description',
@@ -120,12 +121,16 @@ const getViewColumns = (): ColumnType<ChecklistItem>[] => {
 			dataIndex: 'createdAt',
 			key: 'createdAt',
 			render: (value: Date) => formatDate(value),
+			sorter: (a, b) =>
+				new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
 		},
 		{
 			title: 'Updated At',
 			dataIndex: 'updatedAt',
 			key: 'updatedAt',
 			render: (value: Date) => formatDate(value),
+			sorter: (a, b) =>
+				new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime(),
 		},
 	];
 
