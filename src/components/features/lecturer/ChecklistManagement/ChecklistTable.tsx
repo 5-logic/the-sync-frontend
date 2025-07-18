@@ -1,17 +1,16 @@
 'use client';
 
 import { DeleteOutlined, EditOutlined, EyeOutlined } from '@ant-design/icons';
-import { Button, Modal, Space, Table, Tooltip, Typography } from 'antd';
+import { Button, Empty, Space, Table, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useState } from 'react';
 
+import { ConfirmationModal } from '@/components/common/ConfirmModal';
 import { TablePagination } from '@/components/common/TablePagination';
 import { useNavigationLoader } from '@/hooks/ux/useNavigationLoader';
 import { showNotification } from '@/lib/utils/notification';
 import { Checklist } from '@/schemas/checklist';
 import { useChecklistStore } from '@/store';
-
-const { Text } = Typography;
 
 interface Props {
 	readonly data: Checklist[];
@@ -29,19 +28,15 @@ export default function ChecklistTable({
 	const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
 
 	const handleDelete = (checklist: Checklist) => {
-		Modal.confirm({
+		ConfirmationModal.show({
 			title: 'Delete Checklist',
-			content: (
-				<div>
-					Are you sure you want to delete the checklist{' '}
-					<Text strong>&quot;{checklist.name}&quot;</Text>?
-					<br />
-					This action cannot be undone.
-				</div>
-			),
-			okText: 'Delete',
-			okType: 'danger',
+			message: 'Are you sure you want to delete this checklist?',
+			details: checklist.name,
+			note: 'This action cannot be undone.',
+			noteType: 'danger',
+			okText: 'Yes, Delete',
 			cancelText: 'Cancel',
+			okType: 'danger',
 			onOk: async () => {
 				setDeletingIds((prev) => new Set(prev).add(checklist.id));
 				const success = await deleteChecklist(checklist.id);
@@ -52,12 +47,11 @@ export default function ChecklistTable({
 				});
 
 				if (success) {
-					showNotification.success('Checklist deleted successfully');
+					showNotification.success('Success', 'Checklist deleted successfully');
 				} else {
-					showNotification.error('Failed to delete checklist');
+					showNotification.error('Delete Failed', 'Failed to delete checklist');
 				}
 			},
-			centered: true,
 		});
 	};
 
@@ -211,7 +205,12 @@ export default function ChecklistTable({
 				showSorterTooltip={false}
 				style={{ background: '#fff' }}
 				locale={{
-					emptyText: 'No checklists found',
+					emptyText: (
+						<Empty
+							image={Empty.PRESENTED_IMAGE_SIMPLE}
+							description="No checklists found"
+						/>
+					),
 				}}
 			/>
 		</>

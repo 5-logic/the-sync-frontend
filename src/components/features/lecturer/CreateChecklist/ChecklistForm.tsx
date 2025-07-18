@@ -15,7 +15,6 @@ import {
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-import ChecklistLoadingSkeleton from '@/components/common/loading/ChecklistLoadingSkeleton';
 import ChecklistCommonHeader from '@/components/features/lecturer/CreateChecklist/ChecklistCommonHeader';
 import ChecklistDeleteButton from '@/components/features/lecturer/CreateChecklist/ChecklistDeleteButton';
 import ChecklistDragger from '@/components/features/lecturer/CreateChecklist/ChecklistDragger';
@@ -59,10 +58,7 @@ export default function UnifiedChecklistForm({
 		value: milestone.id,
 	}));
 
-	// Show loading skeleton while milestones are being fetched
-	if (milestonesLoading) {
-		return <ChecklistLoadingSkeleton />;
-	}
+	// Don't show full skeleton for just milestone loading - let the component render with loading state
 
 	const handleBack = () => {
 		form.resetFields();
@@ -173,6 +169,7 @@ export default function UnifiedChecklistForm({
 				availableMilestones={availableMilestones}
 				showErrors={showErrors}
 				loading={isCreating}
+				milestonesLoading={milestonesLoading}
 			/>
 
 			<Card title="Checklist Items">

@@ -14,6 +14,7 @@ interface Props {
 	availableMilestones: { label: string; value: string }[];
 	showErrors: boolean;
 	loading?: boolean;
+	milestonesLoading?: boolean;
 }
 
 export default function ChecklistCommonHeader({
@@ -26,6 +27,7 @@ export default function ChecklistCommonHeader({
 	availableMilestones,
 	showErrors,
 	loading = false,
+	milestonesLoading = false,
 }: Readonly<Props>) {
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
@@ -46,6 +48,7 @@ export default function ChecklistCommonHeader({
 						style={{ minWidth: 200 }}
 						placeholder="Select milestone"
 						disabled={loading}
+						loading={milestonesLoading}
 					/>
 				</Space>
 			</div>

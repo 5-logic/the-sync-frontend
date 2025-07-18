@@ -5,7 +5,7 @@ import {
 	ReloadOutlined,
 	SearchOutlined,
 } from '@ant-design/icons';
-import { Button, Col, Input, Row, Select, Space } from 'antd';
+import { Button, Col, Input, Row, Select } from 'antd';
 import { useEffect, useState } from 'react';
 
 import { useMilestoneStore } from '@/store';
@@ -55,8 +55,8 @@ export default function ChecklistToolbar({
 	};
 
 	return (
-		<Row gutter={[12, 12]} wrap align="middle" style={{ marginBottom: 16 }}>
-			{/* Search input - flex để lấp đầy */}
+		<Row gutter={16} align="middle" style={{ marginBottom: 16 }}>
+			{/* Search input - chiếm không gian còn lại */}
 			<Col flex="1" style={{ minWidth: 200 }}>
 				<Input
 					allowClear
@@ -69,7 +69,7 @@ export default function ChecklistToolbar({
 			</Col>
 
 			{/* Milestone filter - chiều rộng cố định */}
-			<Col flex="none" style={{ width: 180 }}>
+			<Col style={{ width: 220 }}>
 				<Select
 					placeholder="Filter by milestone"
 					value={selectedMilestone}
@@ -88,33 +88,34 @@ export default function ChecklistToolbar({
 				</Select>
 			</Col>
 
-			{/* Actions - chiều rộng cố định */}
-			<Col flex="none">
-				<Space size="middle">
-					{/* Refresh button */}
-					<Button
-						icon={<ReloadOutlined />}
-						onClick={onRefresh}
-						loading={loading}
-						size="middle"
-						title="Refresh data"
-					>
-						Refresh
-					</Button>
-
-					{/* Create button */}
-					{!hideButton && (
-						<Button
-							type="primary"
-							icon={<PlusOutlined />}
-							onClick={onCreate}
-							size="middle"
-						>
-							{buttonLabel}
-						</Button>
-					)}
-				</Space>
+			{/* Refresh button */}
+			<Col>
+				<Button
+					icon={<ReloadOutlined />}
+					onClick={onRefresh}
+					loading={loading}
+					size="middle"
+					title="Refresh data"
+					style={{ minWidth: 100 }}
+				>
+					Refresh
+				</Button>
 			</Col>
+
+			{/* Create button */}
+			{!hideButton && (
+				<Col>
+					<Button
+						type="primary"
+						icon={<PlusOutlined />}
+						onClick={onCreate}
+						size="middle"
+						style={{ minWidth: 160 }}
+					>
+						{buttonLabel}
+					</Button>
+				</Col>
+			)}
 		</Row>
 	);
 }
