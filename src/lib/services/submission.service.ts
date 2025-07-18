@@ -13,6 +13,23 @@ export interface SubmissionMilestone {
 	name: string;
 }
 
+export interface SubmissionLecturer {
+	id: string;
+	fullName: string;
+	email: string;
+	isModerator: boolean;
+}
+
+export interface SubmissionThesis {
+	id: string;
+	englishName: string;
+	vietnameseName: string;
+	abbreviation: string;
+	description: string;
+	status: string;
+	supervisors: SubmissionLecturer[];
+}
+
 export interface SubmissionItem {
 	id: string;
 	status: 'Submitted' | 'NotSubmitted';
@@ -20,8 +37,8 @@ export interface SubmissionItem {
 	createdAt: string;
 	group: SubmissionGroup;
 	milestone: SubmissionMilestone;
-	assignedReviewers: number;
-	completedReviews: number;
+	thesis: SubmissionThesis;
+	reviewLecturers: SubmissionLecturer[];
 }
 
 class SubmissionService {
