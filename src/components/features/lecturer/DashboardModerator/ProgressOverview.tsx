@@ -1,3 +1,5 @@
+'use client';
+
 import { Progress } from 'antd';
 
 import { progressOverview } from '@/data/moderatorStats';
@@ -9,17 +11,28 @@ export function ProgressOverview() {
 			<p className="text-gray-500 mb-4">
 				Track the overall progress of thesis management this semester.
 			</p>
+
 			<div className="space-y-4">
 				{progressOverview.map((item) => (
 					<div key={item.label}>
 						<p className="text-sm font-medium text-gray-700 mb-1">
 							{item.label}
 						</p>
-						<Progress
-							percent={item.percent}
-							strokeColor={item.color}
-							showInfo={false}
-						/>
+
+						<div className="flex items-center gap-2">
+							{/* Progress Bar */}
+							<Progress
+								percent={item.percent}
+								strokeColor={item.color}
+								showInfo={false}
+								style={{ flex: 1 }}
+							/>
+
+							{/* Percent Number */}
+							<span className="text-sm font-semibold text-black w-[32px] text-right">
+								{item.percent}%
+							</span>
+						</div>
 					</div>
 				))}
 			</div>
