@@ -1,12 +1,6 @@
-import { createMetadata } from '@/app/metadata';
-import ChecklistEdit from '@/components/features/lecturer/ChecklistEdit';
+import { redirect } from 'next/navigation';
 
-export const metadata = createMetadata({
-	title: 'Lecturer Edit Checklist',
-	description:
-		'Lecturer Edit Checklist for TheSync - Group Formation and Capstone Thesis Development',
-});
-
-export default function CreateChecklistPage() {
-	return <ChecklistEdit />;
+export default function ChecklistEditRedirectPage() {
+	// This page is now deprecated - redirect to use the new [id] dynamic route
+	redirect('/lecturer/checklist-management');
 }
