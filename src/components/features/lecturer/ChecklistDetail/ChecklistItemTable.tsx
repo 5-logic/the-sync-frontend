@@ -34,7 +34,7 @@ const getEditableColumns = (
 		render: (text, record) => (
 			<Input
 				placeholder="Enter item name"
-				value={text}
+				value={text?.trim() === '' ? '' : text || ''}
 				onChange={(e) => onChangeField?.(record.id, 'name', e.target.value)}
 			/>
 		),
