@@ -5,6 +5,7 @@ import { Button, Card, Row, Space, Typography } from 'antd';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
+import { ConfirmationModal } from '@/components/common/ConfirmModal';
 import { Header } from '@/components/common/Header';
 import ChecklistInfoCard from '@/components/features/lecturer/ChecklistDetail/ChecklistInfoCard';
 import ChecklistItemsTable from '@/components/features/lecturer/ChecklistDetail/ChecklistItemTable';
@@ -81,18 +82,42 @@ export default function ChecklistEditPage() {
 	};
 
 	const handleDeleteItem = async (item: ChecklistItem) => {
-		// Always remove from local state for now
-		setChecklistItems((prev) => prev.filter((i) => i.id !== item.id));
+		// Show confirmation modal before deleting
+		ConfirmationModal.show({
+			title: 'Delete Checklist Item',
+			message: 'Are you sure you want to delete this checklist item?',
+			details: item.name || 'Unnamed item',
+			note: 'This action cannot be undone.',
+			noteType: 'danger',
+			okText: 'Yes, Delete',
+			cancelText: 'Cancel',
+			okType: 'danger',
+			onOk: async () => {
+				try {
+					// Only call API for real items (not temp ones)
+					if (!item.id.startsWith('temp_')) {
+						const success = await deleteChecklistItem(item.id);
+						if (!success) {
+							showNotification.error('Failed to delete item');
+							return;
+						}
+					}
 
-		// Only call API for real items (not temp ones)
-		if (!item.id.startsWith('temp_')) {
-			const success = await deleteChecklistItem(item.id);
-			if (!success) {
-				showNotification.error('Failed to delete item');
-				// Restore item if API call failed
-				setChecklistItems((prev) => [...prev, item]);
-			}
-		}
+					// Remove from local state after successful API call (or for temp items)
+					setChecklistItems((prev) => prev.filter((i) => i.id !== item.id));
+
+					// Show success notification
+					if (item.id.startsWith('temp_')) {
+						showNotification.success('Item removed successfully');
+					} else {
+						showNotification.success('Checklist item deleted successfully');
+					}
+				} catch (error) {
+					console.error('Error deleting item:', error);
+					showNotification.error('Failed to delete item');
+				}
+			},
+		});
 	};
 
 	const handleChangeField = (
@@ -105,9 +130,73 @@ export default function ChecklistEditPage() {
 		);
 	};
 
+	// Helper function to check if two items are different (only compare relevant fields)
+	const hasItemChanged = (
+		original: {
+			name: string;
+			description?: string | null;
+			isRequired: boolean;
+		},
+		current: { name: string; description?: string | null; isRequired: boolean },
+	) => {
+		return (
+			original.name !== current.name ||
+			(original.description || '') !== (current.description || '') ||
+			original.isRequired !== current.isRequired
+		);
+	};
+
+	// Helper function to check if basic info has changed
+	const hasBasicInfoChanged = () => {
+		return (
+			name !== currentChecklist?.name ||
+			description !== (currentChecklist?.description || '')
+		);
+	};
+
+	// Helper function to detect all changes
+	const detectChanges = () => {
+		const originalItems = currentChecklist?.checklistItems || [];
+		const existingItems = checklistItems.filter(
+			(item) => !item.id.startsWith('temp_'),
+		);
+		const newItems = checklistItems.filter((item) =>
+			item.id.startsWith('temp_'),
+		);
+
+		// Check existing items for changes
+		const hasExistingItemChanges = existingItems.some((item) => {
+			const original = originalItems.find((orig) => orig.id === item.id);
+			return !original || hasItemChanged(original, item);
+		});
+
+		// Check for deleted items
+		const hasDeletedItems = originalItems.length > existingItems.length;
+
+		// Check for new items
+		const hasNewItems = newItems.length > 0;
+
+		// Check basic info changes
+		const hasBasicChanges = hasBasicInfoChanged();
+
+		return {
+			hasBasicChanges,
+			hasExistingItemChanges,
+			hasNewItems,
+			hasDeletedItems,
+			hasAnyChanges:
+				hasBasicChanges ||
+				hasExistingItemChanges ||
+				hasNewItems ||
+				hasDeletedItems,
+			existingItems,
+			newItems,
+			originalItems,
+		};
+	};
+
 	const handleSave = async () => {
 		let errorMsg = '';
-		let hasChanges = false;
 		setIsSaving(true);
 
 		try {
@@ -119,14 +208,25 @@ export default function ChecklistEditPage() {
 				return;
 			}
 
-			// Check if basic info has changed
-			const hasBasicInfoChanged =
-				name !== currentChecklist?.name ||
-				description !== (currentChecklist?.description || '');
+			// Detect all changes
+			const changes = detectChanges();
+
+			// Early return if no changes detected
+			if (!changes.hasAnyChanges) {
+				showNotification.info('No changes detected');
+				setIsSaving(false);
+				return;
+			}
+
+			console.log('Changes detected:', {
+				basicChanges: changes.hasBasicChanges,
+				existingItemChanges: changes.hasExistingItemChanges,
+				newItems: changes.newItems.length,
+				deletedItems: changes.hasDeletedItems,
+			});
 
 			// 1. Update checklist basic info if changed
-			if (hasBasicInfoChanged) {
-				hasChanges = true;
+			if (changes.hasBasicChanges) {
 				const checklistUpdateSuccess = await updateChecklist(checklistId, {
 					name,
 					description,
@@ -139,104 +239,73 @@ export default function ChecklistEditPage() {
 			}
 
 			if (!errorMsg) {
-				// 2. Handle items - separate new items from existing items
-				const originalItems = currentChecklist?.checklistItems || [];
-				const existingItems = checklistItems.filter(
-					(item) => !item.id.startsWith('temp_'),
-				);
-				const newItems = checklistItems.filter((item) =>
-					item.id.startsWith('temp_'),
-				);
-
-				// Check if there are any changes in existing items
-				const hasExistingItemChanges = existingItems.some((item) => {
-					const original = originalItems.find((orig) => orig.id === item.id);
-					return (
-						!original ||
-						original.name !== item.name ||
-						original.description !== item.description ||
-						original.isRequired !== item.isRequired
+				// 2. Handle existing items changes
+				if (
+					changes.hasExistingItemChanges &&
+					changes.existingItems.length > 0
+				) {
+					const existingItemsPayload = changes.existingItems.map(
+						({ id, name, description, isRequired }) => ({
+							id,
+							name,
+							description: description || '',
+							isRequired,
+						}),
 					);
-				});
 
-				const hasNewItems = newItems.length > 0;
-				const hasDeletedItems = originalItems.length > existingItems.length;
+					const existingItemsUpdateSuccess = await updateChecklistItems(
+						checklistId,
+						existingItemsPayload,
+					);
 
-				if (hasExistingItemChanges || hasNewItems || hasDeletedItems) {
-					hasChanges = true;
-					console.log('Items changes detected:', {
-						existingChanges: hasExistingItemChanges,
-						newItems: newItems.length,
-						deletedItems: hasDeletedItems,
-					});
+					if (!existingItemsUpdateSuccess) {
+						errorMsg = 'Failed to update existing checklist items';
+					}
+				}
 
-					// First update existing items if there are changes
-					if (hasExistingItemChanges && existingItems.length > 0) {
-						const existingItemsPayload = existingItems.map(
-							({ id, name, description, isRequired }) => ({
-								id,
-								name,
-								description: description || '',
-								isRequired,
-							}),
-						);
+				// 3. Handle new items creation
+				if (!errorMsg && changes.hasNewItems) {
+					console.log(
+						'Attempting to create new items:',
+						changes.newItems.length,
+					);
 
-						const existingItemsUpdateSuccess = await updateChecklistItems(
-							checklistId,
-							existingItemsPayload,
-						);
+					let newItemsCreated = 0;
+					for (const item of changes.newItems) {
+						const newItemData = {
+							name: item.name,
+							description: item.description || '',
+							isRequired: item.isRequired,
+							checklistId: checklistId,
+						};
 
-						if (!existingItemsUpdateSuccess) {
-							errorMsg = 'Failed to update existing checklist items';
+						try {
+							const success = await createChecklistItem(newItemData);
+							if (success) {
+								newItemsCreated++;
+							}
+						} catch (error) {
+							console.warn('Failed to create item:', item.name, error);
+							// Continue with other items, don't break the entire operation
 						}
 					}
 
-					// For new items, try to create them individually
-					// If the endpoint doesn't exist, we'll show a warning but continue
-					if (!errorMsg && newItems.length > 0) {
-						console.log('Attempting to create new items:', newItems.length);
+					if (newItemsCreated > 0) {
+						console.log(`Successfully created ${newItemsCreated} new items`);
+					}
 
-						let newItemsCreated = 0;
-						for (const item of newItems) {
-							const newItemData = {
-								name: item.name,
-								description: item.description || '',
-								isRequired: item.isRequired,
-								checklistId: checklistId,
-							};
-
-							try {
-								const success = await createChecklistItem(newItemData);
-								if (success) {
-									newItemsCreated++;
-								}
-							} catch (error) {
-								console.warn('Failed to create item:', item.name, error);
-								// Continue with other items, don't break the entire operation
-							}
-						}
-
-						if (newItemsCreated > 0) {
-							console.log(`Successfully created ${newItemsCreated} new items`);
-						}
-
-						if (newItemsCreated < newItems.length) {
-							// Some items failed to create
-							const failedCount = newItems.length - newItemsCreated;
-							showNotification.warning(
-								`${failedCount} new items could not be created. This might be due to missing backend endpoints.`,
-							);
-						}
+					if (newItemsCreated < changes.newItems.length) {
+						// Some items failed to create
+						const failedCount = changes.newItems.length - newItemsCreated;
+						showNotification.warning(
+							`${failedCount} new items could not be created. This might be due to missing backend endpoints.`,
+						);
 					}
 				}
 			}
 
 			if (!errorMsg) {
-				if (hasChanges) {
-					showNotification.success('Checklist updated successfully!');
-				} else {
-					showNotification.info('No changes detected');
-				}
+				showNotification.success('Checklist updated successfully!');
 				// Navigate back to checklist management
 				navigateWithLoading('/lecturer/checklist-management');
 			} else {
