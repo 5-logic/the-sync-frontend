@@ -1,7 +1,7 @@
 import { DownloadOutlined, SearchOutlined } from '@ant-design/icons';
 import { Button, Card, Input, Select, Table } from 'antd';
 
-import { groupTableData } from '@/data/moderatorStats';
+import { extendedGroups } from '@/data/group';
 
 const columns = [
 	{ title: 'Group Name', dataIndex: 'groupName' },
@@ -9,6 +9,14 @@ const columns = [
 	{ title: 'Supervisor', dataIndex: 'supervisor' },
 	{ title: 'Semester', dataIndex: 'semester' },
 ];
+
+// Transform the data from extendedGroups to match table structure
+const groupTableData = extendedGroups.map((group) => ({
+	groupName: group.name,
+	topicTitle: group.thesisTitle,
+	supervisor: group.supervisors.join(', ') || 'Not assigned',
+	semester: group.semesterId,
+}));
 
 export function GroupInfo() {
 	return (
