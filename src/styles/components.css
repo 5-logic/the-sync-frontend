@@ -10,3 +10,63 @@
 		display: none !important;
 	}
 }
+
+/* Version Tag Animations */
+@keyframes rainbow-border {
+	0% {
+		border-color: #ff6b6b !important;
+		box-shadow: 0 0 10px rgba(255, 107, 107, 0.4) !important;
+	}
+
+	16.66% {
+		border-color: #4ecdc4 !important;
+		box-shadow: 0 0 10px rgba(78, 205, 196, 0.4) !important;
+	}
+
+	33.32% {
+		border-color: #45b7d1 !important;
+		box-shadow: 0 0 10px rgba(69, 183, 209, 0.4) !important;
+	}
+
+	49.98% {
+		border-color: #96ceb4 !important;
+		box-shadow: 0 0 10px rgba(150, 206, 180, 0.4) !important;
+	}
+
+	66.64% {
+		border-color: #feca57 !important;
+		box-shadow: 0 0 10px rgba(254, 202, 87, 0.4) !important;
+	}
+
+	83.3% {
+		border-color: #ff9ff3 !important;
+		box-shadow: 0 0 10px rgba(255, 159, 243, 0.4) !important;
+	}
+
+	100% {
+		border-color: #ff6b6b !important;
+		box-shadow: 0 0 10px rgba(255, 107, 107, 0.4) !important;
+	}
+}
+
+@keyframes rainbow-text {
+	0% {
+		background-position: 0% 50%;
+	}
+
+	25% {
+		background-position: 100% 50%;
+	}
+
+	50% {
+		background-position: 200% 50%;
+	}
+
+	75% {
+		background-position: 100% 50%;
+	}
+
+	100% {
+		background-position: 0% 50%;
+	}
+}
