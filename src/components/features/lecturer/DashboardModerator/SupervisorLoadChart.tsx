@@ -65,7 +65,8 @@ const SupervisorLoadChart: React.FC = () => {
 										top: 0,
 										bottom: 0,
 										width: '1px',
-										backgroundColor: i === 0 ? '#d9d9d9' : '#f0f0f0',
+										borderLeft:
+											i === 0 ? '1px solid #d9d9d9' : '1px dashed #dad5d5ff',
 										zIndex: 1,
 									}}
 								/>
@@ -80,7 +81,7 @@ const SupervisorLoadChart: React.FC = () => {
 										right: 0,
 										top: `${50 + index * 60}px`,
 										height: '1px',
-										backgroundColor: '#f0f0f0',
+										borderTop: '1px dashed #dad5d5ff',
 										zIndex: 1,
 									}}
 								/>
