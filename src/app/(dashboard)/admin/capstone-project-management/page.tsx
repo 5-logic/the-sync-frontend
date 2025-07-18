@@ -1,4 +1,5 @@
 import { createMetadata } from '@/app/metadata';
+import CapstoneProjectManagement from '@/components/features/admin/CapstoneProjectManagement';
 
 export const metadata = createMetadata({
 	title: 'Admin Capstone Project Management',
@@ -7,5 +8,5 @@ export const metadata = createMetadata({
 });
 
 export default function CapstoneProjectManagementPage() {
-	// return <MilestoneManagementClient />;
+	return <CapstoneProjectManagement />;
 }
