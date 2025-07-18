@@ -148,6 +148,12 @@ export default function AssignLecturerReview() {
 			.filter(Boolean) as string[];
 	}
 
+	function handleRefresh() {
+		if (milestone) {
+			fetchByMilestone(milestone, true);
+		}
+	}
+
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
 			<Header
@@ -168,6 +174,7 @@ export default function AssignLecturerReview() {
 				loadingSemesters={loadingSemesters}
 				loadingMilestones={loadingMilestones}
 				noMilestone={milestone === 'NO_MILESTONE'}
+				onRefresh={handleRefresh}
 			/>
 
 			<GroupTable

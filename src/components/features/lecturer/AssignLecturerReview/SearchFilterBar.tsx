@@ -1,6 +1,6 @@
 'use client';
 
-import { SearchOutlined } from '@ant-design/icons';
+import { ReloadOutlined, SearchOutlined } from '@ant-design/icons';
 import { Button, Col, Input, Row } from 'antd';
 
 import SemesterMilestoneSelect from '@/components/features/lecturer/AssignLecturerReview/SemesterMilestoneSelect';
@@ -19,6 +19,7 @@ interface Props {
 	loadingSemesters?: boolean;
 	loadingMilestones?: boolean;
 	noMilestone?: boolean;
+	onRefresh?: () => void;
 }
 
 export default function SearchFilterBar(props: Readonly<Props>) {
@@ -63,6 +64,12 @@ export default function SearchFilterBar(props: Readonly<Props>) {
 					style={{ width: '100%' }}
 					size="middle"
 				/>
+			</Col>
+
+			<Col>
+				<Button icon={<ReloadOutlined />} onClick={props.onRefresh}>
+					Refresh
+				</Button>
 			</Col>
 
 			<Col>
