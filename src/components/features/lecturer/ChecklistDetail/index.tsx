@@ -40,7 +40,14 @@ export default function ChecklistDetailPage() {
 		);
 	}
 
-	if (isLoading) {
+	if (error) {
+		return (
+			<Typography.Text type="danger">Error: {error.message}</Typography.Text>
+		);
+	}
+
+	// Show skeleton when first loading (no data yet)
+	if (isLoading && !checklist) {
 		return (
 			<Space direction="vertical" size="large" style={{ width: '100%' }}>
 				<Header
@@ -67,23 +74,13 @@ export default function ChecklistDetailPage() {
 		);
 	}
 
-	if (error) {
-		return (
-			<Typography.Text type="danger">Error: {error.message}</Typography.Text>
-		);
-	}
-
-	if (!checklist) {
-		return <Typography.Text type="danger">Checklist not found</Typography.Text>;
-	}
-
 	// Get checklist items from the API response and add default acceptance
-	const checklistItems: ChecklistItem[] = (checklist.checklistItems || []).map(
-		(item) => ({
-			...item,
-			acceptance: 'NotAvailable' as const,
-		}),
-	);
+	const checklistItems: ChecklistItem[] = checklist
+		? (checklist.checklistItems || []).map((item) => ({
+				...item,
+				acceptance: 'NotAvailable' as const,
+			}))
+		: [];
 
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
@@ -94,19 +91,21 @@ export default function ChecklistDetailPage() {
 			/>
 
 			<ChecklistInfoCard
-				name={checklist.name}
-				description={checklist.description ?? undefined}
-				milestone={checklist.milestone?.name}
+				name={checklist?.name || ''}
+				description={checklist?.description ?? undefined}
+				milestone={checklist?.milestone?.name}
+				loading={isLoading}
 			/>
 
 			<Card title="Checklist Items">
-				<ChecklistItemsTable items={checklistItems} />
+				<ChecklistItemsTable items={checklistItems} loading={isLoading} />
 			</Card>
 			<Row justify="end">
 				<Space size="middle">
-					{' '}
-					<Button onClick={handleBack}>Back</Button>
-					<Button type="primary" onClick={handleEdit}>
+					<Button onClick={handleBack} disabled={isLoading}>
+						Back
+					</Button>
+					<Button type="primary" onClick={handleEdit} disabled={isLoading}>
 						Edit
 					</Button>
 				</Space>

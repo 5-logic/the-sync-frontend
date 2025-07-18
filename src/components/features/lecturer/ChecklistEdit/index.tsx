@@ -383,7 +383,14 @@ export default function ChecklistEditPage() {
 		navigateWithLoading('/lecturer/checklist-management');
 	};
 
-	if (isLoading) {
+	if (error) {
+		return (
+			<Typography.Text type="danger">Error: {error.message}</Typography.Text>
+		);
+	}
+
+	// Show skeleton when first loading (no data yet)
+	if (isLoading && !currentChecklist) {
 		return (
 			<Space direction="vertical" size="large" style={{ width: '100%' }}>
 				<Header
@@ -416,16 +423,6 @@ export default function ChecklistEditPage() {
 		);
 	}
 
-	if (error) {
-		return (
-			<Typography.Text type="danger">Error: {error.message}</Typography.Text>
-		);
-	}
-
-	if (!currentChecklist) {
-		return <Typography.Text type="danger">Checklist not found</Typography.Text>;
-	}
-
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
 			<Header
@@ -437,10 +434,10 @@ export default function ChecklistEditPage() {
 			<ChecklistInfoCard
 				name={name}
 				description={description}
-				milestone={currentChecklist.milestone?.name}
+				milestone={currentChecklist?.milestone?.name}
 				milestoneId={milestoneId}
 				editable
-				loading={isSaving}
+				loading={isLoading || isSaving}
 				availableMilestones={milestones}
 				onNameChange={setName}
 				onDescriptionChange={setDescription}
@@ -451,7 +448,7 @@ export default function ChecklistEditPage() {
 				<ChecklistItemsTable
 					items={checklistItems}
 					editable
-					loading={isUpdating}
+					loading={isLoading || isUpdating}
 					onDelete={handleDeleteItem}
 					onChangeField={handleChangeField}
 				/>
@@ -461,7 +458,7 @@ export default function ChecklistEditPage() {
 						type="primary"
 						icon={<PlusOutlined />}
 						onClick={handleAddItem}
-						disabled={isUpdating}
+						disabled={isLoading || isUpdating}
 					>
 						Add New Item
 					</Button>
@@ -470,14 +467,14 @@ export default function ChecklistEditPage() {
 
 			<Row justify="end">
 				<Space>
-					<Button onClick={handleBack} disabled={isUpdating}>
+					<Button onClick={handleBack} disabled={isLoading || isUpdating}>
 						Back
 					</Button>
 					<Button
 						type="primary"
 						onClick={handleSave}
 						loading={isSaving}
-						disabled={deleting || updating || !hasUnsavedChanges}
+						disabled={isLoading || deleting || updating || !hasUnsavedChanges}
 					>
 						{hasUnsavedChanges ? 'Save Changes' : 'Save Checklist'}
 					</Button>
