@@ -47,10 +47,10 @@ const createGroup = (
 
 // ===== Gốc: Dữ liệu group =====
 const mockGroups: Group[] = [
-	createGroup('g1', 'G1', 'Group A', '2023', 't1'),
-	createGroup('g2', 'G2', 'Group B', '2023', 't2'),
-	createGroup('g3', 'G3', 'Group C', '2023', 't3'),
-	createGroup('g4', 'G4', 'Group D', '2024', 't4'),
+	createGroup('g1', 'G1', 'Group A', 'Spring 2023', 't1'),
+	createGroup('g2', 'G2', 'Group B', 'Spring 2023', 't2'),
+	createGroup('g3', 'G3', 'Group C', 'Spring 2023', 't3'),
+	createGroup('g4', 'G4', 'Group D', 'Spring 2024', 't4'),
 ];
 
 // ===== Metadata bổ sung =====

@@ -9,6 +9,8 @@ export { default as PageLoading } from '@/components/common/loading/PageLoading'
 export { default as PageContentSkeleton } from '@/components/common/loading/PageContentSkeleton';
 export { default as TableLoadingSkeleton } from '@/components/common/loading/TableLoadingSkeleton';
 export { default as CardLoadingSkeleton } from '@/components/common/loading/CardLoadingSkeleton';
+export { default as AssignSupervisorSkeleton } from '@/components/common/loading/AssignSupervisorSkeleton';
+export { default as AuthLoadingSkeleton } from '@/components/common/loading/AuthLoadingSkeleton';
 
 // Navigation loading
 export { default as ContentLoader } from '@/components/common/loading/ContentLoader';

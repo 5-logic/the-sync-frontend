@@ -77,7 +77,8 @@ export default function ThesisForm({
 
 	// Find the preparing semester
 	const preparingSemester = semesters.find(
-		(semester) => semester.status === 'Preparing',
+		(semester) =>
+			semester.status === 'Preparing' || semester.status === 'Picking',
 	);
 
 	useEffect(() => {

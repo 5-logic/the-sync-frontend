@@ -43,6 +43,78 @@ export type GroupCreate = z.infer<typeof GroupCreateSchema>;
 export type GroupUpdate = z.infer<typeof GroupUpdateSchema>;
 export type GroupRequiredSkill = z.infer<typeof GroupRequiredSkillSchema>;
 
+// ===== GROUP SERVICE SCHEMAS =====
+
+// Group member schema for service responses - more detailed than dashboard
+export const GroupMemberServiceSchema = z.object({
+	userId: z.string().uuid(),
+	studentCode: z.string(),
+	user: z.object({
+		id: z.string().uuid(),
+		fullName: z.string(),
+		email: z.string().email(),
+	}),
+	major: z.object({
+		id: z.string().uuid(),
+		name: z.string(),
+		code: z.string(),
+	}),
+	isLeader: z.boolean(),
+});
+
+// Group skill schema for service responses
+export const GroupSkillServiceSchema = z.object({
+	id: z.string().uuid(),
+	name: z.string(),
+	skillSet: z.object({
+		id: z.string().uuid(),
+		name: z.string(),
+	}),
+});
+
+// Group responsibility schema for service responses
+export const GroupResponsibilityServiceSchema = z.object({
+	id: z.string().uuid(),
+	name: z.string(),
+});
+
+// Semester info schema for service responses
+export const SemesterInfoServiceSchema = z.object({
+	id: z.string().uuid(),
+	name: z.string(),
+	code: z.string(),
+	status: z.string(),
+});
+
+// Main Group service schema - comprehensive API response structure
+export const GroupServiceSchema = z.object({
+	id: z.string().uuid(),
+	code: z.string(),
+	name: z.string(),
+	projectDirection: z.string().optional(),
+	createdAt: z.string(),
+	updatedAt: z.string(),
+	semester: SemesterInfoServiceSchema,
+	// Backward compatibility fields
+	memberCount: z.number().optional(),
+	skillCount: z.number().optional(),
+	responsibilityCount: z.number().optional(),
+	// Actual API response fields
+	members: z.array(GroupMemberServiceSchema).optional(),
+	leader: GroupMemberServiceSchema.optional(),
+	skills: z.array(GroupSkillServiceSchema).optional(),
+	responsibilities: z.array(GroupResponsibilityServiceSchema).optional(),
+	thesis: z.unknown().optional(), // Can be null or thesis object
+});
+
+// Group create schema for service requests
+export const GroupCreateServiceSchema = z.object({
+	name: z.string().min(1),
+	projectDirection: z.string().optional(),
+	skillIds: z.array(z.string().uuid()).optional(),
+	responsibilityIds: z.array(z.string().uuid()).optional(),
+});
+
 // ===== GROUP DASHBOARD SCHEMAS =====
 
 // Group member schema - combining User and other info
@@ -121,3 +193,13 @@ export type GroupDashboard = z.infer<typeof GroupDashboardSchema>;
 export type GroupMember = z.infer<typeof GroupMemberSchema>;
 export type GroupSkill = z.infer<typeof GroupSkillSchema>;
 export type Participation = z.infer<typeof ParticipationSchema>;
+
+// Export service types
+export type GroupService = z.infer<typeof GroupServiceSchema>;
+export type GroupMemberService = z.infer<typeof GroupMemberServiceSchema>;
+export type GroupSkillService = z.infer<typeof GroupSkillServiceSchema>;
+export type GroupResponsibilityService = z.infer<
+	typeof GroupResponsibilityServiceSchema
+>;
+export type GroupCreateService = z.infer<typeof GroupCreateServiceSchema>;
+export type SemesterInfoService = z.infer<typeof SemesterInfoServiceSchema>;

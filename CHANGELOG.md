@@ -9,6 +9,48 @@ For more information about this project, see the [README](./README.md).
 
 ---
 
+## [0.5.0] - 2025-07-16
+
+### Added
+
+- Student Dashboard page and improved student group/thesis management ([#166](https://github.com/5-logic/the-sync-frontend/pull/166), [#172](https://github.com/5-logic/the-sync-frontend/pull/172), [#179](https://github.com/5-logic/the-sync-frontend/pull/179), [#204](https://github.com/5-logic/the-sync-frontend/pull/204), [#211](https://github.com/5-logic/the-sync-frontend/pull/211))
+- UI for student to view and register thesis, including AI-suggested topics ([#221](https://github.com/5-logic/the-sync-frontend/pull/221), [#230](https://github.com/5-logic/the-sync-frontend/pull/230), [#234](https://github.com/5-logic/the-sync-frontend/pull/234))
+- Group assignment and invitation features for students ([#166](https://github.com/5-logic/the-sync-frontend/pull/166), [#179](https://github.com/5-logic/the-sync-frontend/pull/179))
+- Breadcrumb navigation and improved layout for all roles ([#205](https://github.com/5-logic/the-sync-frontend/pull/205))
+- Admin account settings modal and admin data management ([#231](https://github.com/5-logic/the-sync-frontend/pull/231))
+- Password reset and OTP verification flows ([#181](https://github.com/5-logic/the-sync-frontend/pull/181), [#201](https://github.com/5-logic/the-sync-frontend/pull/201))
+- Track progress UI for students and groups ([#205](https://github.com/5-logic/the-sync-frontend/pull/205))
+- Enhanced group dashboard with thesis, supervisor, and progress cards ([#230](https://github.com/5-logic/the-sync-frontend/pull/230))
+
+### Changed
+
+- Refactored and improved layout for thesis, group, and student components
+- Enhanced caching and force refresh for students, lecturers, milestones, and groups
+- Improved error handling and notification for password reset and OTP flows
+- Updated breadcrumb and sidebar navigation for all roles
+- Improved performance and UI consistency across pages
+
+### Fixed
+
+- Fixed SonarCloud issues and code quality improvements
+- Fixed UI bugs in student, group, and thesis pages
+- Fixed build and import issues for new components
+- Fixed password validation and OTP input handling
+
+### Technical Details
+
+- Major refactor of student/group/thesis hooks and stores
+- Added new Zod schemas for password reset and OTP
+- Improved modularization of services and hooks
+- Enhanced test cases and removed debug logs
+
+### Migration Notes
+
+- No breaking API changes, but new features require updated UI and store logic
+- Users should refresh browser cache for new UI and navigation
+
+---
+
 ## [0.4.0] - 2025-07-10
 
 ### Added
@@ -484,3 +526,4 @@ Changes that are committed but not yet released.
 - [0.3.0](https://github.com/5-logic/the-sync-frontend/releases/tag/0.3.0)
 - [0.2.0](https://github.com/5-logic/the-sync-frontend/releases/tag/0.2.0)
 - [0.1.0](https://github.com/5-logic/the-sync-frontend/releases/tag/0.1.0)
+
