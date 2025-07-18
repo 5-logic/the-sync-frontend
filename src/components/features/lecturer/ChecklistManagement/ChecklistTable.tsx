@@ -53,7 +53,7 @@ export default function ChecklistTable({
 	};
 
 	const handleView = (checklist: Checklist) => {
-		navigateWithLoading(`/lecturer/checklist-detail/${checklist.id}`);
+		navigateWithLoading(`/lecturer/checklist-management/${checklist.id}`);
 	};
 
 	const columns: ColumnsType<Checklist> = [
@@ -162,7 +162,9 @@ export default function ChecklistTable({
 							icon={<EditOutlined />}
 							size="small"
 							onClick={() => {
-								navigateWithLoading(`/lecturer/checklist-edit/${record.id}`);
+								navigateWithLoading(
+									`/lecturer/checklist-management/${record.id}/edit`,
+								);
 							}}
 						/>
 					</Tooltip>

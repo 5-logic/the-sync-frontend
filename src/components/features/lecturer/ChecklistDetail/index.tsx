@@ -29,7 +29,7 @@ export default function ChecklistDetailPage() {
 	};
 
 	const handleEdit = () => {
-		navigateWithLoading(`/lecturer/checklist-edit/${checklistId}`);
+		navigateWithLoading(`/lecturer/checklist-management/${checklistId}/edit`);
 	};
 
 	// Validate checklist ID
