@@ -1,23 +1,11 @@
 import { DeleteOutlined } from '@ant-design/icons';
-import { Button, Space, Tag, Typography } from 'antd';
+import { Button, Space, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 
 import { type SupervisorAssignmentData } from '@/store/useAssignSupervisorStore';
 import { type DraftAssignment } from '@/store/useDraftAssignmentStore';
 
 const { Text } = Typography;
-
-/**
- * Color mapping for supervisor assignment status
- */
-export const statusColorMap: Record<
-	SupervisorAssignmentData['status'],
-	string
-> = {
-	Finalized: 'green',
-	Incomplete: 'orange',
-	Unassigned: 'red',
-} as const;
 
 /**
  * Renders supervisor names in a vertical list
@@ -87,12 +75,13 @@ export const createActionRenderer = (
 	// eslint-disable-next-line react/display-name
 	return (_: unknown, record: SupervisorAssignmentData) => {
 		const draft = getDraftAssignment(record.thesisId);
-		const isFinalized = record.status === 'Finalized';
+		const supervisorCount = record.supervisors.length;
+		const buttonText = supervisorCount >= 2 ? 'Change' : 'Assign';
 
 		return (
 			<Space size="small">
 				<Button type="primary" size="small" onClick={() => onAssign(record)}>
-					{isFinalized ? 'Change' : 'Assign'}
+					{buttonText}
 				</Button>
 				{draft && (
 					<Button
@@ -119,22 +108,29 @@ export const createActionRenderer = (
 /**
  * Base column definitions for supervisor assignment table
  */
-
 export const baseColumns: ColumnsType<SupervisorAssignmentData> = [
 	{
 		title: 'Abbreviation',
 		dataIndex: 'groupName',
 		key: 'groupName',
+		width: 140,
+		ellipsis: true,
 	},
 	{
 		title: 'English Name',
 		dataIndex: 'thesisTitle',
 		key: 'thesisTitle',
+		width: 400,
+		ellipsis: {
+			showTitle: true,
+		},
 	},
 	{
 		title: 'Domain',
 		dataIndex: 'memberCount',
 		key: 'memberCount',
+		width: 180,
+		ellipsis: true,
 		render: (domain: string, record: SupervisorAssignmentData) => {
 			if (record.groupName === 'No Abbreviation') {
 				return <span style={{ color: '#999' }}>No Domain</span>;
@@ -146,14 +142,7 @@ export const baseColumns: ColumnsType<SupervisorAssignmentData> = [
 		title: 'Supervisor',
 		dataIndex: 'supervisors',
 		key: 'supervisors',
+		width: 280,
 		render: renderSupervisors,
-	},
-	{
-		title: 'Status',
-		dataIndex: 'status',
-		key: 'status',
-		render: (status: SupervisorAssignmentData['status']) => (
-			<Tag color={statusColorMap[status] ?? 'default'}>{status}</Tag>
-		),
 	},
 ];

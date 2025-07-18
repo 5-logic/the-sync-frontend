@@ -16,6 +16,7 @@ import SupervisorFilterBar from '@/components/features/lecturer/AssignSupervisor
 import { useAssignSupervisor } from '@/hooks/lecturer/useAssignSupervisor';
 import { type SupervisorAssignmentData } from '@/store/useAssignSupervisorStore';
 import { useDraftAssignmentStore } from '@/store/useDraftAssignmentStore';
+import { useSemesterStore } from '@/store/useSemesterStore';
 
 /**
  * Main component for assigning supervisors to thesis groups
@@ -28,9 +29,7 @@ export default function AssignSupervisors() {
 	const [modalOpen, setModalOpen] = useState(false);
 	const [saveDraftLoading, setSaveDraftLoading] = useState(false);
 	const [assignNowLoading, setAssignNowLoading] = useState(false);
-	const [statusFilter, setStatusFilter] = useState<
-		'All' | 'Finalized' | 'Incomplete' | 'Unassigned'
-	>('All');
+	const [semesterFilter, setSemesterFilter] = useState<string>('All');
 
 	const {
 		data,
@@ -45,11 +44,24 @@ export default function AssignSupervisors() {
 		changeSupervisor,
 	} = useAssignSupervisor();
 
+	// Semester store for real semester data
+	const { semesters, fetchSemesters } = useSemesterStore();
+
 	// Manual fetch on component mount
 	useEffect(() => {
-		// Always try to fetch data, but cache logic in store will determine if API call is needed
+		// Fetch semesters and initial data
+		fetchSemesters();
 		fetchData();
-	}, [fetchData]);
+	}, [fetchData, fetchSemesters]);
+
+	// Fetch data when semester filter changes
+	useEffect(() => {
+		if (semesterFilter === 'All') {
+			fetchData(true); // Force refresh for all semesters
+		} else {
+			fetchData(true, semesterFilter); // Force refresh for specific semester
+		}
+	}, [semesterFilter, fetchData]);
 
 	// Draft and bulk assignment stores
 	const {
@@ -82,17 +94,25 @@ export default function AssignSupervisors() {
 	// Helper function to get draft assignments list from state
 	const getDraftsList = () => Object.values(draftAssignments);
 
+	// Create semester options with "All" option
+	const semesterOptions = useMemo(() => {
+		const semesterChoices = semesters.map((semester) => ({
+			value: semester.id,
+			label: semester.name,
+		}));
+		return [{ value: 'All', label: 'All Semesters' }, ...semesterChoices];
+	}, [semesters]);
+
 	const filteredData = useMemo(() => {
 		return data.filter((item) => {
 			const searchText = search.toLowerCase();
 			const matchesSearch = [item.groupName, item.thesisTitle].some((field) =>
 				field.toLowerCase().includes(searchText),
 			);
-			const matchesStatus =
-				statusFilter === 'All' || item.status === statusFilter;
-			return matchesSearch && matchesStatus;
+			// Semester filtering is now handled server-side
+			return matchesSearch;
 		});
-	}, [data, search, statusFilter]);
+	}, [data, search]);
 
 	/**
 	 * Handle bulk assignment of all draft assignments using intelligent assignment
@@ -100,10 +120,10 @@ export default function AssignSupervisors() {
 	const handleBulkAssignment = async (): Promise<void> => {
 		const drafts = getDraftsList();
 
-		// Filter out drafts for finalized theses
+		// Filter out drafts for theses with 2 supervisors (finalized)
 		const validDrafts = drafts.filter((draft) => {
 			const thesis = data.find((item) => item.thesisId === draft.thesisId);
-			return thesis?.status !== 'Finalized';
+			return thesis && thesis.supervisors.length < 2;
 		});
 
 		if (validDrafts.length === 0) {
@@ -283,8 +303,8 @@ export default function AssignSupervisors() {
 
 		setSaveDraftLoading(true);
 
-		// Don't allow drafts for finalized assignments
-		if (selectedGroup.status === 'Finalized') {
+		// Don't allow drafts for theses with 2 supervisors (finalized)
+		if (selectedGroup.supervisors.length >= 2) {
 			setSaveDraftLoading(false);
 			return;
 		}
@@ -410,10 +430,10 @@ export default function AssignSupervisors() {
 	const handleBulkAssignmentConfirm = (): void => {
 		const drafts = getDraftsList();
 
-		// Filter out drafts for finalized theses
+		// Filter out drafts for theses with 2 supervisors (finalized)
 		const validDrafts = drafts.filter((draft) => {
 			const thesis = data.find((item) => item.thesisId === draft.thesisId);
-			return thesis?.status !== 'Finalized';
+			return thesis && thesis.supervisors.length < 2;
 		});
 
 		ConfirmationModal.show({
@@ -429,12 +449,12 @@ export default function AssignSupervisors() {
 		});
 	};
 
-	// Calculate valid draft count (exclude finalized theses)
+	// Calculate valid draft count (exclude theses with 2 supervisors)
 	const validDraftCount = useMemo(() => {
 		const drafts = Object.values(draftAssignments);
 		const validCount = drafts.filter((draft) => {
 			const thesis = data.find((item) => item.thesisId === draft.thesisId);
-			return thesis?.status !== 'Finalized';
+			return thesis && thesis.supervisors.length < 2;
 		}).length;
 		return validCount;
 	}, [data, draftAssignments]);
@@ -474,6 +494,8 @@ export default function AssignSupervisors() {
 			{
 				title: 'Action',
 				key: 'action',
+				width: 120,
+				fixed: 'right' as const,
 				render: actionRenderer,
 			},
 		];
@@ -527,13 +549,14 @@ export default function AssignSupervisors() {
 			<SupervisorFilterBar
 				search={search}
 				onSearchChange={setSearch}
-				status={statusFilter}
-				onStatusChange={setStatusFilter}
+				semester={semesterFilter}
+				onSemesterChange={setSemesterFilter}
 				onRefresh={refreshData}
 				refreshing={refreshing}
 				onAssignAllDrafts={handleBulkAssignmentConfirm}
 				draftCount={validDraftCount}
 				updating={updating}
+				semesterOptions={semesterOptions}
 			/>
 
 			<GroupOverviewTable
@@ -554,13 +577,15 @@ export default function AssignSupervisors() {
 				initialValues={getModalInitialValues()}
 				onSaveDraft={handleSaveDraft}
 				onAssignNow={
-					selectedGroup?.status === 'Finalized'
+					selectedGroup && selectedGroup.supervisors.length >= 2
 						? handleAssignNow
 						: handleSingleAssignment
 				}
 				lecturerOptions={lecturerOptions}
 				showAssignNow={true} // Always show assign now button
-				isChangeMode={selectedGroup?.status === 'Finalized'}
+				isChangeMode={
+					selectedGroup ? selectedGroup.supervisors.length >= 2 : false
+				}
 			/>
 		</Space>
 	);
