@@ -250,7 +250,6 @@ export const useChecklistStore = create<ChecklistState>()(
 
 			// Fetch checklist by ID with detailed information
 			fetchChecklistById: async (id: string, force = false) => {
-				console.log('🔍 fetchChecklistById called with:', { id, force });
 				const cacheKey = `detail-${id}`;
 
 				// Set individual loading state
@@ -265,7 +264,6 @@ export const useChecklistStore = create<ChecklistState>()(
 				if (!force) {
 					const cachedData = cacheUtils.get<Checklist>('checklist', cacheKey);
 					if (cachedData) {
-						console.log('✅ Found cached data for:', id);
 						set({ currentChecklist: cachedData });
 
 						// Update loading state
@@ -281,7 +279,6 @@ export const useChecklistStore = create<ChecklistState>()(
 
 				// Check if we should fetch (respecting cache TTL)
 				if (!force && !cacheUtils.shouldFetch('checklist', false)) {
-					console.log('🚫 Cache is still valid but no data found for:', id);
 					// If cache is still valid but no cached data, we should still try to fetch
 					// This prevents the "not found" error when cache is valid but data is missing
 				}
@@ -289,23 +286,17 @@ export const useChecklistStore = create<ChecklistState>()(
 				set({ lastError: null });
 
 				try {
-					console.log('🌐 Making API call to fetch checklist:', id);
 					const response = await checklistService.findOne(id);
-					console.log('📡 API Response:', response);
-
 					const result = handleApiResponse(response);
-					console.log('✅ Handled API Response:', result);
 
 					if (result.success && result.data) {
 						const checklistDetail = result.data;
-						console.log('📋 Checklist detail received:', checklistDetail);
 
 						// Cache the detailed checklist
 						cacheUtils.set('checklist', cacheKey, checklistDetail);
 
 						// Update current checklist
 						set({ currentChecklist: checklistDetail });
-						console.log('💾 Current checklist updated in store');
 
 						// Also update the checklist in the main array if it exists
 						const { checklists } = get();

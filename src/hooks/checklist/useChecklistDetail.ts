@@ -28,12 +28,7 @@ export const useChecklistDetail = (
 
 	// Fetch checklist details when component mounts or checklistId changes
 	useEffect(() => {
-		console.log('🎯 useChecklistDetail effect triggered:', {
-			checklistId,
-			autoFetch,
-		});
 		if (autoFetch && checklistId && checklistId.trim() !== '') {
-			console.log('🚀 Calling fetchChecklistById for:', checklistId);
 			fetchChecklistById(checklistId).catch((error) => {
 				console.error('Failed to fetch checklist details:', error);
 			});
