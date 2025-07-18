@@ -3,14 +3,15 @@
 import { PlusOutlined } from '@ant-design/icons';
 import { Button, Card, Form, Input, Row, Space, Switch, Table } from 'antd';
 import { UploadFile } from 'antd/es/upload/interface';
-import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 import ChecklistCommonHeader from '@/components/features/lecturer/CreateChecklist/ChecklistCommonHeader';
 import ChecklistDeleteButton from '@/components/features/lecturer/CreateChecklist/ChecklistDeleteButton';
 import ChecklistDragger from '@/components/features/lecturer/CreateChecklist/ChecklistDragger';
-import { mockMilestones } from '@/data/milestone';
-import { mockSemesters } from '@/data/semester';
 import { showNotification } from '@/lib/utils/notification';
+import { useChecklistStore } from '@/store';
+import { useMilestoneStore } from '@/store/useMilestoneStore';
 
 type Mode = 'import' | 'manual';
 
@@ -21,6 +22,7 @@ interface UnifiedChecklistFormProps {
 export default function UnifiedChecklistForm({
 	mode,
 }: UnifiedChecklistFormProps) {
+	const router = useRouter();
 	const [form] = Form.useForm();
 	const [fileList, setFileList] = useState<UploadFile[]>([]);
 	const [checklistName, setChecklistName] = useState('');
@@ -28,6 +30,29 @@ export default function UnifiedChecklistForm({
 	const [showErrors, setShowErrors] = useState(false);
 	const [selectedSemester, setSelectedSemester] = useState<string>('');
 	const [selectedMilestone, setSelectedMilestone] = useState<string>('');
+	const [isCreating, setIsCreating] = useState(false);
+
+	const { createChecklist, createChecklistItems } = useChecklistStore();
+	const { milestones, fetchMilestones } = useMilestoneStore();
+
+	// Fetch milestones on component mount
+	useEffect(() => {
+		fetchMilestones();
+	}, [fetchMilestones]);
+
+	// Transform milestones for the dropdown
+	const availableMilestones = milestones.map((milestone) => ({
+		label: milestone.name,
+		value: milestone.id,
+	}));
+
+	// Mock semesters for now (you can replace with real API later)
+	const availableSemesters = [
+		{ label: 'Spring 2024', value: 'spring-2024' },
+		{ label: 'Summer 2024', value: 'summer-2024' },
+		{ label: 'Fall 2024', value: 'fall-2024' },
+		{ label: 'Spring 2025', value: 'spring-2025' },
+	];
 
 	const handleCancel = () => {
 		form.resetFields();
@@ -38,14 +63,18 @@ export default function UnifiedChecklistForm({
 
 	const handleSaveAll = async () => {
 		setShowErrors(true);
+		setIsCreating(true);
+
 		try {
 			const values = await form.validateFields();
 
-			if (!selectedSemester || !selectedMilestone) {
+			// Validation checks
+			if (!selectedMilestone) {
 				showNotification.warning(
-					'Missing Semester or Milestone',
-					'Please select both semester and milestone before saving.',
+					'Missing Milestone',
+					'Please select a milestone before saving.',
 				);
+				setIsCreating(false);
 				return;
 			}
 
@@ -54,28 +83,72 @@ export default function UnifiedChecklistForm({
 					'Missing Checklist Info',
 					'Please provide checklist name and description.',
 				);
+				setIsCreating(false);
 				return;
 			}
 
-			if (values.items.length === 0) {
+			if (!values.items || values.items.length === 0) {
 				showNotification.warning(
 					'No items added',
 					'Please add at least one checklist item before saving.',
 				);
+				setIsCreating(false);
 				return;
 			}
 
-			console.log('Checklist saved with:', {
-				semester: selectedSemester,
-				milestone: selectedMilestone,
+			// Step 1: Create the checklist
+			const createdChecklist = await createChecklist({
 				name: checklistName,
 				description: checklistDescription,
-				items: values.items,
+				milestoneId: selectedMilestone,
 			});
-			showNotification.success('Checklist saved successfully!');
+
+			if (!createdChecklist) {
+				showNotification.error('Failed to create checklist');
+				setIsCreating(false);
+				return;
+			}
+
+			// Step 2: Create checklist items
+			const checklistItems = values.items.map(
+				(item: {
+					name: string;
+					description?: string;
+					isRequired?: boolean;
+				}) => ({
+					name: item.name,
+					description: item.description || '',
+					isRequired: item.isRequired || false,
+				}),
+			);
+
+			try {
+				await createChecklistItems(createdChecklist.id, checklistItems);
+				showNotification.success(
+					`Checklist "${checklistName}" created successfully with ${checklistItems.length} items!`,
+				);
+			} catch (itemError) {
+				console.error('Failed to create checklist items:', itemError);
+				showNotification.warning(
+					'Checklist created but failed to add some items. You can add them later in the edit page.',
+				);
+			}
+
+			// Reset form
+			form.resetFields();
+			setChecklistName('');
+			setChecklistDescription('');
+			setSelectedSemester('');
+			setSelectedMilestone('');
 			setShowErrors(false);
+
+			// Navigate to checklist management
+			router.push('/lecturer/checklist-management');
 		} catch (err) {
-			console.error('Checklist validation failed', err);
+			console.error('Checklist creation failed', err);
+			showNotification.error('Failed to create checklist');
+		} finally {
+			setIsCreating(false);
 		}
 	};
 
@@ -90,9 +163,10 @@ export default function UnifiedChecklistForm({
 				onDescriptionChange={setChecklistDescription}
 				onSemesterChange={setSelectedSemester}
 				onMilestoneChange={setSelectedMilestone}
-				availableSemesters={mockSemesters}
-				availableMilestones={mockMilestones}
+				availableSemesters={availableSemesters}
+				availableMilestones={availableMilestones}
 				showErrors={showErrors}
+				loading={isCreating}
 			/>
 
 			<Card title="Checklist Items">
@@ -226,14 +300,24 @@ export default function UnifiedChecklistForm({
 												style={{ marginTop: 16 }}
 											>
 												{mode === 'manual' && (
-													<Button icon={<PlusOutlined />} onClick={() => add()}>
+													<Button
+														icon={<PlusOutlined />}
+														onClick={() => add()}
+														disabled={isCreating}
+													>
 														Add New Item
 													</Button>
 												)}
 
 												<Space>
-													<Button onClick={handleCancel}>Cancel</Button>
-													<Button type="primary" onClick={handleSaveAll}>
+													<Button onClick={handleCancel} disabled={isCreating}>
+														Cancel
+													</Button>
+													<Button
+														type="primary"
+														onClick={handleSaveAll}
+														loading={isCreating}
+													>
 														{mode === 'manual'
 															? 'Save All'
 															: 'Import All Checklist'}

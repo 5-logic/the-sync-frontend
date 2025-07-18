@@ -16,6 +16,7 @@ interface Props {
 	availableSemesters: { label: string; value: string }[];
 	availableMilestones: { label: string; value: string }[];
 	showErrors: boolean;
+	loading?: boolean;
 }
 
 export default function ChecklistCommonHeader({
@@ -30,6 +31,7 @@ export default function ChecklistCommonHeader({
 	availableSemesters,
 	availableMilestones,
 	showErrors,
+	loading = false,
 }: Readonly<Props>) {
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
@@ -49,6 +51,7 @@ export default function ChecklistCommonHeader({
 						options={availableSemesters}
 						style={{ minWidth: 160 }}
 						placeholder="Select semester"
+						disabled={loading}
 					/>
 
 					<Select
@@ -60,6 +63,7 @@ export default function ChecklistCommonHeader({
 						options={availableMilestones}
 						style={{ minWidth: 200 }}
 						placeholder="Select milestone"
+						disabled={loading}
 					/>
 				</Space>
 			</div>
@@ -74,6 +78,7 @@ export default function ChecklistCommonHeader({
 							value={checklistName}
 							onChange={(e) => onNameChange(e.target.value)}
 							status={showErrors && !checklistName.trim() ? 'error' : undefined}
+							disabled={loading}
 						/>
 					</div>
 
@@ -87,6 +92,7 @@ export default function ChecklistCommonHeader({
 							status={
 								showErrors && !checklistDescription.trim() ? 'error' : undefined
 							}
+							disabled={loading}
 						/>
 					</div>
 				</Space>

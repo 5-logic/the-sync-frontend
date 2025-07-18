@@ -73,7 +73,7 @@ interface ChecklistState {
 		id: string,
 		force?: boolean,
 	) => Promise<Checklist | null>;
-	createChecklist: (data: ChecklistCreate) => Promise<boolean>;
+	createChecklist: (data: ChecklistCreate) => Promise<Checklist | null>;
 	updateChecklist: (id: string, data: ChecklistUpdate) => Promise<boolean>;
 	updateChecklistItems: (
 		checklistId: string,
@@ -369,23 +369,23 @@ export const useChecklistStore = create<ChecklistState>()(
 						// Update cache with new checklist instead of invalidating
 						cacheUtils.set('checklist', 'all', updatedChecklists);
 
-						return true;
+						return result.data; // Return the created checklist instead of boolean
 					}
 
 					if (result.error) {
 						const error = createErrorState(result.error);
 						set({ lastError: error, creating: false });
 						handleCreateError(result);
-						return false;
+						return null;
 					}
 				} catch (error) {
 					handleActionError(error, 'checklist', 'create', set);
 					set({ creating: false });
-					return false;
+					return null;
 				}
 
 				set({ creating: false });
-				return false;
+				return null;
 			},
 
 			// Update checklist
