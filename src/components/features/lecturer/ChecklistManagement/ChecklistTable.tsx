@@ -163,9 +163,10 @@ export default function ChecklistTable({
 			render: (_, record) => {
 				const totalItems = getTotalItems(record.id);
 				const hasItems = totalItems > 0;
-				const deleteTooltip = hasItems
-					? `Cannot delete: contains ${totalItems} item${totalItems > 1 ? 's' : ''}`
-					: 'Delete';
+				let deleteTooltip = 'Delete';
+				if (hasItems) {
+					deleteTooltip = `Cannot delete: contains ${totalItems} item${totalItems > 1 ? 's' : ''}`;
+				}
 
 				return (
 					<Space size="small">

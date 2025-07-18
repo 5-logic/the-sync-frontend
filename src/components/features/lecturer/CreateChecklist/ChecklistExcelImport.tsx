@@ -111,10 +111,8 @@ function validateFieldValue(
 		stringValue = String(value).trim();
 	} else if (Array.isArray(value)) {
 		stringValue = value.join(', ').trim();
-	} else if (typeof value === 'object' && value !== null) {
-		// For objects, provide a more meaningful string or treat as invalid
-		stringValue = '';
-	} // undefined, null, etc. remain as ''
+	}
+	// For objects and other types, stringValue remains ''
 
 	// Check if required field is empty
 	if (field.required && (!value || stringValue === '')) {
