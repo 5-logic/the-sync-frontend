@@ -11,12 +11,14 @@ interface Props {
 	groups: SubmissionGroup[];
 	onAssign: (group: FullMockGroup) => void;
 	loading?: boolean;
+	noMilestone?: boolean;
 }
 
 export default function GroupTable({
 	groups,
 	onAssign,
 	loading,
+	noMilestone,
 }: Readonly<Props>) {
 	const columns: ColumnsType<SubmissionGroup> = [
 		{
@@ -65,6 +67,7 @@ export default function GroupTable({
 			pagination={TablePagination}
 			loading={loading}
 			scroll={{ x: 'max-content' }}
+			locale={noMilestone ? { emptyText: 'No Data (No Milestone)' } : undefined}
 		/>
 	);
 }
