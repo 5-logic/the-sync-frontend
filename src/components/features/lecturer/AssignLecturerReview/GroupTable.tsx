@@ -10,9 +10,14 @@ import { SubmissionGroup } from '@/lib/services/submission.service';
 interface Props {
 	groups: SubmissionGroup[];
 	onAssign: (group: FullMockGroup) => void;
+	loading?: boolean;
 }
 
-export default function GroupTable({ groups, onAssign }: Readonly<Props>) {
+export default function GroupTable({
+	groups,
+	onAssign,
+	loading,
+}: Readonly<Props>) {
 	const columns: ColumnsType<SubmissionGroup> = [
 		{
 			title: 'Group Code',
@@ -58,6 +63,7 @@ export default function GroupTable({ groups, onAssign }: Readonly<Props>) {
 			dataSource={groups}
 			columns={columns}
 			pagination={TablePagination}
+			loading={loading}
 			scroll={{ x: 'max-content' }}
 		/>
 	);

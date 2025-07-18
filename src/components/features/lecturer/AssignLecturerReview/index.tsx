@@ -24,7 +24,11 @@ export default function AssignLecturerReview() {
 	const [milestone, setMilestone] = useState('');
 
 	// Submission store
-	const { submissions, fetchByMilestone } = useSubmissionStore();
+	const {
+		submissions,
+		fetchByMilestone,
+		loading: loadingSubmissions,
+	} = useSubmissionStore();
 
 	// Semester store
 	const {
@@ -167,6 +171,7 @@ export default function AssignLecturerReview() {
 			<GroupTable
 				groups={filteredGroups}
 				onAssign={(group) => setSelectedGroup(group)}
+				loading={loadingSubmissions}
 			/>
 
 			<AssignReviewerModal
