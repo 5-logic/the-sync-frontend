@@ -4,6 +4,7 @@ import { DownloadOutlined } from '@ant-design/icons';
 import { Button, Input, Select, Space, Table, Tag } from 'antd';
 import React, { useState } from 'react';
 
+import { TablePagination } from '@/components/common/TablePagination';
 import data from '@/data/thesisData';
 
 const { Search } = Input;
@@ -78,7 +79,7 @@ const ThesisTable = () => {
 			<Table
 				columns={columns}
 				dataSource={filteredData}
-				pagination={{ pageSize: 10 }}
+				pagination={TablePagination}
 				rowKey="studentId"
 			/>
 		</>
