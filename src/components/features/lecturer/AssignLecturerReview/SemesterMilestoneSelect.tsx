@@ -44,7 +44,6 @@ export default function SemesterMilestoneSelect({
 					disabled={disabledSemester || loadingSemesters}
 					loading={loadingSemesters}
 				>
-					<Option value="">All Semesters</Option>
 					{semesters.map((s) => (
 						<Option key={s.id} value={s.id}>
 							{s.name}
@@ -63,7 +62,6 @@ export default function SemesterMilestoneSelect({
 					disabled={disabledMilestone || loadingMilestones}
 					loading={loadingMilestones}
 				>
-					<Option value="">All Milestones</Option>
 					{milestones.map((m) => (
 						<Option key={m.id} value={m.id}>
 							{m.name}

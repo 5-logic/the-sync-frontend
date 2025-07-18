@@ -24,7 +24,11 @@ export default function AssignLecturerReview() {
 	const [milestone, setMilestone] = useState('');
 
 	// Submission store
-	const { submissions, fetchByMilestone } = useSubmissionStore();
+	const {
+		submissions,
+		fetchByMilestone,
+		loading: loadingSubmissions,
+	} = useSubmissionStore();
 
 	// Semester store
 	const {
@@ -93,7 +97,7 @@ export default function AssignLecturerReview() {
 			}
 			setMilestone(defaultMilestone);
 		} else {
-			setMilestone('');
+			setMilestone('NO_MILESTONE');
 		}
 	}, [milestones]);
 
@@ -105,11 +109,14 @@ export default function AssignLecturerReview() {
 	}, [fetchByMilestone, milestone]);
 
 	// Lấy group trực tiếp từ submissions trả về từ API
-	const groupsInSemester = submissions.map((s) => ({
-		id: s.group.id,
-		code: s.group.code,
-		name: s.group.name,
-	}));
+	const groupsInSemester =
+		milestone === 'NO_MILESTONE'
+			? []
+			: submissions.map((s) => ({
+					id: s.group.id,
+					code: s.group.code,
+					name: s.group.name,
+				}));
 
 	// Search theo group name/code
 	const filteredGroups = groupsInSemester.filter((group) => {
@@ -155,11 +162,14 @@ export default function AssignLecturerReview() {
 				milestones={milestones}
 				loadingSemesters={loadingSemesters}
 				loadingMilestones={loadingMilestones}
+				noMilestone={milestone === 'NO_MILESTONE'}
 			/>
 
 			<GroupTable
 				groups={filteredGroups}
 				onAssign={(group) => setSelectedGroup(group)}
+				loading={loadingSubmissions}
+				noMilestone={milestone === 'NO_MILESTONE'}
 			/>
 
 			<AssignReviewerModal

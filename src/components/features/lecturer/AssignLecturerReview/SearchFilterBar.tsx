@@ -18,6 +18,7 @@ interface Props {
 	milestones: Milestone[];
 	loadingSemesters?: boolean;
 	loadingMilestones?: boolean;
+	noMilestone?: boolean;
 }
 
 export default function SearchFilterBar(props: Readonly<Props>) {
@@ -32,6 +33,7 @@ export default function SearchFilterBar(props: Readonly<Props>) {
 		milestones,
 		loadingSemesters,
 		loadingMilestones,
+		noMilestone,
 	} = props;
 	return (
 		<Row
@@ -44,7 +46,7 @@ export default function SearchFilterBar(props: Readonly<Props>) {
 			<SemesterMilestoneSelect
 				semester={semester}
 				onSemesterChange={onSemesterChange}
-				milestone={milestone}
+				milestone={noMilestone ? 'No Milestone' : (milestone ?? '')}
 				onMilestoneChange={onMilestoneChange}
 				semesters={semesters}
 				milestones={milestones}
