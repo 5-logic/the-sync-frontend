@@ -54,33 +54,44 @@ const checklistFields = [
 	},
 ];
 
+// Field validation configuration
+const fieldValidationRules = {
+	name: { minLength: 2, maxLength: 200 },
+	description: { minLength: 5, maxLength: 1000 },
+} as const;
+
+// Generic length validator
+function validateLength(
+	value: string,
+	rowNumber: number,
+	fieldName: string,
+	rules: { minLength: number; maxLength: number },
+): string[] {
+	const errors: string[] = [];
+	if (value.length < rules.minLength) {
+		errors.push(
+			`Row ${rowNumber}: ${fieldName} must be at least ${rules.minLength} characters`,
+		);
+	}
+	if (value.length > rules.maxLength) {
+		errors.push(
+			`Row ${rowNumber}: ${fieldName} must be less than ${rules.maxLength} characters`,
+		);
+	}
+	return errors;
+}
+
 // Field-specific validators
 const fieldValidators = {
-	name: (value: string, rowNumber: number): string[] => {
-		const errors: string[] = [];
-		if (value.length < 2) {
-			errors.push(`Row ${rowNumber}: Name must be at least 2 characters`);
-		}
-		if (value.length > 200) {
-			errors.push(`Row ${rowNumber}: Name must be less than 200 characters`);
-		}
-		return errors;
-	},
-
-	description: (value: string, rowNumber: number): string[] => {
-		const errors: string[] = [];
-		if (value.length < 5) {
-			errors.push(
-				`Row ${rowNumber}: Description must be at least 5 characters`,
-			);
-		}
-		if (value.length > 1000) {
-			errors.push(
-				`Row ${rowNumber}: Description must be less than 1000 characters`,
-			);
-		}
-		return errors;
-	},
+	name: (value: string, rowNumber: number): string[] =>
+		validateLength(value, rowNumber, 'Name', fieldValidationRules.name),
+	description: (value: string, rowNumber: number): string[] =>
+		validateLength(
+			value,
+			rowNumber,
+			'Description',
+			fieldValidationRules.description,
+		),
 } as const;
 
 // Helper function to validate field value
@@ -130,6 +141,19 @@ function checkDuplicates(
 	return errors;
 }
 
+// Helper function to check if cell value is valid
+function isValidCellValue(cellValue: unknown): boolean {
+	return cellValue !== undefined && cellValue !== null && cellValue !== '';
+}
+
+// Helper function to convert boolean field values
+function convertBooleanField(cellValue: unknown): boolean {
+	const stringValue = String(cellValue).toLowerCase().trim();
+	return (
+		stringValue === 'true' || stringValue === 'mandatory' || stringValue === '1'
+	);
+}
+
 // Helper function to parse Excel data
 function parseExcelData(
 	jsonData: string[][],
@@ -159,9 +183,7 @@ function parseExcelData(
 
 	// Convert rows to objects
 	return dataRows
-		.filter((row) =>
-			row.some((cell) => cell !== undefined && cell !== null && cell !== ''),
-		)
+		.filter((row) => row.some(isValidCellValue))
 		.map((row, index) => {
 			const item = {
 				id: `imported-${Date.now()}-${index}`,
@@ -169,14 +191,9 @@ function parseExcelData(
 
 			Object.entries(fieldMapping).forEach(([colIndex, fieldKey]) => {
 				const cellValue = row[parseInt(colIndex)];
-				if (cellValue !== undefined && cellValue !== null && cellValue !== '') {
+				if (isValidCellValue(cellValue)) {
 					if (fieldKey === 'isRequired') {
-						// Handle boolean conversion for Priority field
-						const stringValue = String(cellValue).toLowerCase().trim();
-						item[fieldKey] =
-							stringValue === 'true' ||
-							stringValue === 'mandatory' ||
-							stringValue === '1';
+						item[fieldKey] = convertBooleanField(cellValue);
 					} else {
 						item[fieldKey] = String(cellValue).trim();
 					}
@@ -190,6 +207,34 @@ function parseExcelData(
 				(field) => item[field.key] && String(item[field.key]).trim() !== '',
 			),
 		);
+}
+
+// Helper function to validate individual row
+function validateRow(
+	item: ExcelChecklistItem,
+	fields: {
+		key: keyof ExcelChecklistItem;
+		title: string;
+		required?: boolean;
+		type: string;
+		options?: { value: string }[];
+	}[],
+	validatedData: ExcelChecklistItem[],
+	rowNumber: number,
+): string[] {
+	const rowErrors: string[] = [];
+
+	// Validate each field
+	fields.forEach((field) => {
+		const fieldErrors = validateFieldValue(field, item[field.key], rowNumber);
+		rowErrors.push(...fieldErrors);
+	});
+
+	// Check for duplicates
+	const duplicateErrors = checkDuplicates(item, validatedData, rowNumber);
+	rowErrors.push(...duplicateErrors);
+
+	return rowErrors;
 }
 
 // Helper function to validate all data
@@ -207,18 +252,8 @@ function validateAllData(
 	const validatedData: ExcelChecklistItem[] = [];
 
 	parsedData.forEach((item, index) => {
-		const rowErrors: string[] = [];
 		const rowNumber = index + 2;
-
-		// Validate each field
-		fields.forEach((field) => {
-			const fieldErrors = validateFieldValue(field, item[field.key], rowNumber);
-			rowErrors.push(...fieldErrors);
-		});
-
-		// Check for duplicates
-		const duplicateErrors = checkDuplicates(item, validatedData, rowNumber);
-		rowErrors.push(...duplicateErrors);
+		const rowErrors = validateRow(item, fields, validatedData, rowNumber);
 
 		validationErrors.push(...rowErrors);
 
@@ -286,6 +321,53 @@ function handleValidationErrors(validationErrors: string[]): void {
 	);
 }
 
+// Constants for file validation
+const EXCEL_MIME_TYPES = [
+	'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+	'application/vnd.ms-excel',
+];
+const MAX_FILE_SIZE_MB = 100;
+
+// Helper function to validate file type and size
+function validateFile(file: RcFile): {
+	isValid: boolean;
+	errorMessage?: string;
+} {
+	const isExcel = EXCEL_MIME_TYPES.includes(file.type);
+	if (!isExcel) {
+		return {
+			isValid: false,
+			errorMessage: 'You can only upload Excel (.xlsx, .xls) files!',
+		};
+	}
+
+	const isLt100MB = file.size / 1024 / 1024 < MAX_FILE_SIZE_MB;
+	if (!isLt100MB) {
+		return {
+			isValid: false,
+			errorMessage: `File must be smaller than ${MAX_FILE_SIZE_MB}MB!`,
+		};
+	}
+
+	return { isValid: true };
+}
+
+// Helper function to transform validated data to ChecklistItems
+function transformToChecklistItems(
+	validatedData: ExcelChecklistItem[],
+): ChecklistItem[] {
+	return validatedData.map((item) => ({
+		id: item.id,
+		name: item.name,
+		description: item.description,
+		isRequired: item.isRequired,
+		acceptance: 'NotAvailable' as const,
+		checklistId: '',
+		createdAt: new Date(),
+		updatedAt: new Date(),
+	}));
+}
+
 export default function ChecklistExcelImport({
 	onImport,
 	loading = false,
@@ -295,25 +377,10 @@ export default function ChecklistExcelImport({
 	const draggerProps: DraggerProps = {
 		name: 'file',
 		beforeUpload: (file) => {
-			const isExcel =
-				file.type ===
-					'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
-				file.type === 'application/vnd.ms-excel';
+			const { isValid, errorMessage } = validateFile(file);
 
-			if (!isExcel) {
-				showNotification.warning(
-					'Invalid File Type',
-					'You can only upload Excel (.xlsx, .xls) files!',
-				);
-				return Upload.LIST_IGNORE;
-			}
-
-			const isLt100MB = file.size / 1024 / 1024 < 100;
-			if (!isLt100MB) {
-				showNotification.error(
-					'File Too Large',
-					'File must be smaller than 100MB!',
-				);
+			if (!isValid) {
+				showNotification.warning('Invalid File', errorMessage!);
 				return Upload.LIST_IGNORE;
 			}
 
@@ -333,19 +400,7 @@ export default function ChecklistExcelImport({
 						setFileList([file]);
 
 						// Auto-import immediately after successful upload
-						const checklistItems: ChecklistItem[] = validatedData.map(
-							(item) => ({
-								id: item.id,
-								name: item.name,
-								description: item.description,
-								isRequired: item.isRequired,
-								acceptance: 'NotAvailable' as const,
-								checklistId: '',
-								createdAt: new Date(),
-								updatedAt: new Date(),
-							}),
-						);
-
+						const checklistItems = transformToChecklistItems(validatedData);
 						onImport(checklistItems);
 
 						// Clear the file list after successful import

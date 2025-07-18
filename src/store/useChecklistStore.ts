@@ -124,6 +124,143 @@ const getErrorMessage = (
 	return errorMessage ?? fallback;
 };
 
+// Constants for cache operations
+const CACHE_KEYS = {
+	ALL: 'all',
+	DETAIL: (id: string) => `detail-${id}`,
+} as const;
+
+// Helper function to sort checklists by creation date
+const sortChecklistsByDate = (checklists: Checklist[]): Checklist[] => {
+	return [...checklists].sort(
+		(a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+	);
+};
+
+// Helper function to update checklist in array
+const updateChecklistInArray = (
+	checklists: Checklist[],
+	checklistId: string,
+	updateFn: (checklist: Checklist) => Checklist,
+): Checklist[] => {
+	const existingIndex = checklists.findIndex((c) => c.id === checklistId);
+	if (existingIndex === -1) return checklists;
+
+	const updatedChecklists = [...checklists];
+	updatedChecklists[existingIndex] = updateFn(updatedChecklists[existingIndex]);
+	return updatedChecklists;
+};
+
+// Helper function to update both state and cache
+const updateStateAndCache = (
+	set: (partial: Partial<ChecklistState>) => void,
+	get: () => ChecklistState,
+	updatedChecklists: Checklist[],
+	shouldFilter = true,
+) => {
+	set({ checklists: updatedChecklists });
+	cacheUtils.set('checklist', CACHE_KEYS.ALL, updatedChecklists);
+	if (shouldFilter) {
+		get().filterChecklists();
+	}
+};
+
+// Helper function to update current checklist and related caches
+const updateCurrentChecklistAndCache = (
+	set: (partial: Partial<ChecklistState>) => void,
+	get: () => ChecklistState,
+	updatedChecklist: Checklist,
+) => {
+	// Update current checklist
+	set({ currentChecklist: updatedChecklist });
+
+	// Update detail cache
+	cacheUtils.set(
+		'checklist',
+		CACHE_KEYS.DETAIL(updatedChecklist.id),
+		updatedChecklist,
+	);
+
+	// Update main checklists array if exists
+	const { checklists } = get();
+	const updatedChecklists = updateChecklistInArray(
+		checklists,
+		updatedChecklist.id,
+		() => updatedChecklist,
+	);
+
+	if (updatedChecklists !== checklists) {
+		updateStateAndCache(set, get, updatedChecklists);
+	}
+};
+
+// Helper function to add items to checklist
+const addItemsToChecklist = (
+	set: (partial: Partial<ChecklistState>) => void,
+	get: () => ChecklistState,
+	checklistId: string,
+	newItems: ChecklistItem[],
+) => {
+	const { currentChecklist, checklists } = get();
+
+	if (currentChecklist && currentChecklist.id === checklistId) {
+		// Check for duplicates before adding
+		const existingIds = (currentChecklist.checklistItems || []).map(
+			(item) => item.id,
+		);
+		const uniqueNewItems = newItems.filter(
+			(item) => !existingIds.includes(item.id),
+		);
+
+		const updatedChecklist = {
+			...currentChecklist,
+			checklistItems: [
+				...(currentChecklist.checklistItems || []),
+				...uniqueNewItems,
+			],
+		};
+
+		updateCurrentChecklistAndCache(set, get, updatedChecklist);
+	} else {
+		// Update main checklists array directly
+		const updatedChecklists = updateChecklistInArray(
+			checklists,
+			checklistId,
+			(existingChecklist) => ({
+				...existingChecklist,
+				checklistItems: [
+					...(existingChecklist.checklistItems || []),
+					...newItems,
+				],
+			}),
+		);
+
+		if (updatedChecklists !== checklists) {
+			updateStateAndCache(set, get, updatedChecklists);
+		}
+	}
+};
+
+// Helper function for async operation with loading state management
+const withLoadingState = async <T>(
+	set: (partial: Partial<ChecklistState>) => void,
+	loadingKey: keyof Pick<
+		ChecklistState,
+		'loading' | 'creating' | 'updating' | 'deleting'
+	>,
+	operation: () => Promise<T>,
+): Promise<T> => {
+	set({ [loadingKey]: true, lastError: null } as Partial<ChecklistState>);
+	try {
+		const result = await operation();
+		set({ [loadingKey]: false } as Partial<ChecklistState>);
+		return result;
+	} catch (error) {
+		set({ [loadingKey]: false } as Partial<ChecklistState>);
+		throw error;
+	}
+};
+
 // Filter function for checklists
 const checklistSearchFilter = createSearchFilter<Checklist>((checklist) => [
 	checklist.name,
@@ -175,18 +312,14 @@ export const useChecklistStore = create<ChecklistState>()(
 
 			// Fetch all checklists with sorting and caching
 			fetchChecklists: async (force = false) => {
-				const cacheKey = 'all';
-
 				// Try to get from cache first
 				if (!force) {
-					const cachedData = cacheUtils.get<Checklist[]>('checklist', cacheKey);
+					const cachedData = cacheUtils.get<Checklist[]>(
+						'checklist',
+						CACHE_KEYS.ALL,
+					);
 					if (cachedData) {
-						// Sort cached data
-						const sortedData = [...cachedData].sort(
-							(a, b) =>
-								new Date(b.createdAt).getTime() -
-								new Date(a.createdAt).getTime(),
-						);
+						const sortedData = sortChecklistsByDate(cachedData);
 						set({
 							checklists: sortedData,
 							filteredChecklists: sortedData,
@@ -201,23 +334,15 @@ export const useChecklistStore = create<ChecklistState>()(
 					return;
 				}
 
-				set({ loading: true, lastError: null });
-
-				try {
+				await withLoadingState(set, 'loading', async () => {
 					const response = await checklistService.findAll();
 					const result = handleApiResponse(response);
 
 					if (result.success && result.data) {
-						// Sort data by createdAt desc (newest first)
-						const sortedData = [...result.data].sort(
-							(a, b) =>
-								new Date(b.createdAt).getTime() -
-								new Date(a.createdAt).getTime(),
-						);
+						const sortedData = sortChecklistsByDate(result.data);
 
-						// Cache the sorted data
-						cacheUtils.set('checklist', cacheKey, sortedData);
-
+						// Cache and update state
+						cacheUtils.set('checklist', CACHE_KEYS.ALL, sortedData);
 						set({
 							checklists: sortedData,
 							filteredChecklists: sortedData,
@@ -235,7 +360,7 @@ export const useChecklistStore = create<ChecklistState>()(
 							),
 						);
 					}
-				} catch {
+				}).catch(() => {
 					set({
 						lastError: {
 							message: 'Failed to fetch checklists',
@@ -243,14 +368,12 @@ export const useChecklistStore = create<ChecklistState>()(
 							timestamp: new Date(),
 						},
 					});
-				} finally {
-					set({ loading: false });
-				}
+				});
 			},
 
 			// Fetch checklist by ID with detailed information
 			fetchChecklistById: async (id: string, force = false) => {
-				const cacheKey = `detail-${id}`;
+				const cacheKey = CACHE_KEYS.DETAIL(id);
 
 				// Set individual loading state
 				set((state) => ({
@@ -277,12 +400,6 @@ export const useChecklistStore = create<ChecklistState>()(
 					}
 				}
 
-				// Check if we should fetch (respecting cache TTL)
-				if (!force && !cacheUtils.shouldFetch('checklist', false)) {
-					// If cache is still valid but no cached data, we should still try to fetch
-					// This prevents the "not found" error when cache is valid but data is missing
-				}
-
 				set({ lastError: null });
 
 				try {
@@ -300,14 +417,16 @@ export const useChecklistStore = create<ChecklistState>()(
 
 						// Also update the checklist in the main array if it exists
 						const { checklists } = get();
-						const existingIndex = checklists.findIndex((c) => c.id === id);
-						if (existingIndex !== -1) {
-							const updatedChecklists = [...checklists];
-							updatedChecklists[existingIndex] = checklistDetail;
-							set({ checklists: updatedChecklists });
+						const updatedChecklists = updateChecklistInArray(
+							checklists,
+							id,
+							() => checklistDetail,
+						);
 
+						if (updatedChecklists !== checklists) {
 							// Update the main cache as well
-							cacheUtils.set('checklist', 'all', updatedChecklists);
+							cacheUtils.set('checklist', CACHE_KEYS.ALL, updatedChecklists);
+							set({ checklists: updatedChecklists });
 						}
 
 						return checklistDetail;
@@ -337,71 +456,52 @@ export const useChecklistStore = create<ChecklistState>()(
 
 			// Create checklist
 			createChecklist: async (data: ChecklistCreate) => {
-				set({ creating: true, lastError: null });
-				try {
+				return await withLoadingState(set, 'creating', async () => {
 					const response = await checklistService.create(data);
 					const result = handleApiResponse(response);
+
 					if (result.success && result.data) {
 						// Add to checklists array and sort by createdAt desc (newest first)
 						const { checklists } = get();
-						const updatedChecklists = [...checklists, result.data].sort(
-							(a, b) =>
-								new Date(b.createdAt).getTime() -
-								new Date(a.createdAt).getTime(),
-						);
-						set({
-							checklists: updatedChecklists,
-							creating: false,
-						});
+						const updatedChecklists = sortChecklistsByDate([
+							...checklists,
+							result.data,
+						]);
 
-						// Re-apply filters
-						get().filterChecklists();
-
-						// Update cache with new checklist instead of invalidating
-						cacheUtils.set('checklist', 'all', updatedChecklists);
-
-						return result.data; // Return the created checklist instead of boolean
+						updateStateAndCache(set, get, updatedChecklists);
+						return result.data;
 					}
 
 					if (result.error) {
 						const error = createErrorState(result.error);
-						set({ lastError: error, creating: false });
+						set({ lastError: error });
 						handleCreateError(result);
 						return null;
 					}
-				} catch (error) {
-					handleActionError(error, 'checklist', 'create', set);
-					set({ creating: false });
-					return null;
-				}
 
-				set({ creating: false });
-				return null;
+					return null;
+				}).catch((error) => {
+					handleActionError(error, 'checklist', 'create', set);
+					return null;
+				});
 			},
 
 			// Update checklist
 			updateChecklist: async (id: string, data: ChecklistUpdate) => {
-				set({ updating: true, lastError: null });
-				try {
+				return await withLoadingState(set, 'updating', async () => {
 					const response = await checklistService.update(id, data);
 					const result = handleApiResponse(response);
+
 					if (result.success && result.data) {
 						// Update local state
 						const { checklists } = get();
-						const updatedChecklists = checklists.map((checklist) =>
-							checklist.id === id ? result.data! : checklist,
+						const updatedChecklists = updateChecklistInArray(
+							checklists,
+							id,
+							() => result.data!,
 						);
-						set({
-							checklists: updatedChecklists,
-							updating: false,
-						});
 
-						// Re-apply filters
-						get().filterChecklists();
-
-						// Update cache instead of invalidating
-						cacheUtils.set('checklist', 'all', updatedChecklists);
-
+						updateStateAndCache(set, get, updatedChecklists);
 						return true;
 					} else {
 						throw new Error(
@@ -411,11 +511,10 @@ export const useChecklistStore = create<ChecklistState>()(
 							),
 						);
 					}
-				} catch (error) {
+				}).catch((error) => {
 					handleActionError(error, 'checklist', 'update', set);
-					set({ updating: false });
 					return false;
-				}
+				});
 			},
 
 			// Update checklist items
@@ -428,46 +527,23 @@ export const useChecklistStore = create<ChecklistState>()(
 					isRequired: boolean;
 				}[],
 			) => {
-				set({ updating: true, lastError: null });
-				try {
+				return await withLoadingState(set, 'updating', async () => {
 					const response = await checklistItemService.updateList(
 						checklistId,
 						items,
 					);
 					const result = handleApiResponse(response);
+
 					if (result.success && result.data) {
-						// Update local state instead of fetching from API
 						const { currentChecklist } = get();
 						if (currentChecklist && currentChecklist.id === checklistId) {
-							// Update the items in the current checklist
 							const updatedChecklist = {
 								...currentChecklist,
 								checklistItems: result.data,
 							};
 
-							// Update current checklist
-							set({ currentChecklist: updatedChecklist });
-
-							// Update cache
-							cacheUtils.set(
-								'checklist',
-								`detail-${checklistId}`,
-								updatedChecklist,
-							);
-
-							// Also update in main checklists array if it exists
-							const { checklists } = get();
-							const existingIndex = checklists.findIndex(
-								(c) => c.id === checklistId,
-							);
-							if (existingIndex !== -1) {
-								const updatedChecklists = [...checklists];
-								updatedChecklists[existingIndex] = updatedChecklist;
-								set({ checklists: updatedChecklists });
-								cacheUtils.set('checklist', 'all', updatedChecklists);
-							}
+							updateCurrentChecklistAndCache(set, get, updatedChecklist);
 						}
-						set({ updating: false });
 						return true;
 					} else {
 						throw new Error(
@@ -477,11 +553,10 @@ export const useChecklistStore = create<ChecklistState>()(
 							),
 						);
 					}
-				} catch (error) {
+				}).catch((error) => {
 					handleActionError(error, 'checklist items', 'update', set);
-					set({ updating: false });
 					return false;
-				}
+				});
 			},
 
 			// Create checklist items
@@ -493,8 +568,7 @@ export const useChecklistStore = create<ChecklistState>()(
 					isRequired: boolean;
 				}[],
 			) => {
-				set({ creating: true, lastError: null });
-				try {
+				return await withLoadingState(set, 'creating', async () => {
 					const response = await checklistItemService.createList(
 						checklistId,
 						items,
@@ -518,80 +592,8 @@ export const useChecklistStore = create<ChecklistState>()(
 							}
 						}
 
-						// Update local state instead of fetching from API
-						const { currentChecklist } = get();
-						if (currentChecklist && currentChecklist.id === checklistId) {
-							// Check for duplicates before adding
-							const existingIds = (currentChecklist.checklistItems || []).map(
-								(item) => item.id,
-							);
-							const duplicateIds = createdItems.filter((item) =>
-								existingIds.includes(item.id),
-							);
-
-							if (duplicateIds.length > 0) {
-								// Filter out duplicates
-								const uniqueNewItems = createdItems.filter(
-									(item) => !existingIds.includes(item.id),
-								);
-								createdItems = uniqueNewItems;
-							}
-
-							// Add the new items to the current checklist
-							const updatedChecklist = {
-								...currentChecklist,
-								checklistItems: [
-									...(currentChecklist.checklistItems || []),
-									...createdItems,
-								],
-							};
-
-							// Update current checklist
-							set({ currentChecklist: updatedChecklist });
-
-							// Update cache
-							cacheUtils.set(
-								'checklist',
-								`detail-${currentChecklist.id}`,
-								updatedChecklist,
-							);
-
-							// Also update in main checklists array if it exists
-							const { checklists } = get();
-							const existingIndex = checklists.findIndex(
-								(c) => c.id === currentChecklist.id,
-							);
-							if (existingIndex !== -1) {
-								const updatedChecklists = [...checklists];
-								updatedChecklists[existingIndex] = updatedChecklist;
-								set({ checklists: updatedChecklists });
-								cacheUtils.set('checklist', 'all', updatedChecklists);
-								// Force re-filter to update the filtered list
-								get().filterChecklists();
-							}
-						} else {
-							// If no current checklist, try to update the main checklists array directly
-							const { checklists } = get();
-							const existingIndex = checklists.findIndex(
-								(c) => c.id === checklistId,
-							);
-							if (existingIndex !== -1) {
-								const updatedChecklists = [...checklists];
-								const existingChecklist = updatedChecklists[existingIndex];
-								updatedChecklists[existingIndex] = {
-									...existingChecklist,
-									checklistItems: [
-										...(existingChecklist.checklistItems || []),
-										...createdItems,
-									],
-								};
-								set({ checklists: updatedChecklists });
-								cacheUtils.set('checklist', 'all', updatedChecklists);
-								// Force re-filter to update the filtered list
-								get().filterChecklists();
-							}
-						}
-						set({ creating: false });
+						// Use helper function to add items
+						addItemsToChecklist(set, get, checklistId, createdItems);
 						return createdItems;
 					} else {
 						throw new Error(
@@ -601,55 +603,21 @@ export const useChecklistStore = create<ChecklistState>()(
 							),
 						);
 					}
-				} catch (error) {
+				}).catch((error) => {
 					handleActionError(error, 'checklist items', 'create', set);
-					set({ creating: false });
 					throw error;
-				}
+				});
 			},
 
 			// Create checklist item
 			createChecklistItem: async (data: ChecklistItemCreate) => {
-				set({ creating: true, lastError: null });
-				try {
+				return await withLoadingState(set, 'creating', async () => {
 					const response = await checklistItemService.create(data);
 					const result = handleApiResponse(response);
+
 					if (result.success && result.data) {
-						// Update local state instead of fetching from API
-						const { currentChecklist } = get();
-						if (currentChecklist && currentChecklist.id === data.checklistId) {
-							// Add the new item to the current checklist
-							const updatedChecklist = {
-								...currentChecklist,
-								checklistItems: [
-									...(currentChecklist.checklistItems || []),
-									result.data,
-								],
-							};
-
-							// Update current checklist
-							set({ currentChecklist: updatedChecklist });
-
-							// Update cache
-							cacheUtils.set(
-								'checklist',
-								`detail-${currentChecklist.id}`,
-								updatedChecklist,
-							);
-
-							// Also update in main checklists array if it exists
-							const { checklists } = get();
-							const existingIndex = checklists.findIndex(
-								(c) => c.id === currentChecklist.id,
-							);
-							if (existingIndex !== -1) {
-								const updatedChecklists = [...checklists];
-								updatedChecklists[existingIndex] = updatedChecklist;
-								set({ checklists: updatedChecklists });
-								cacheUtils.set('checklist', 'all', updatedChecklists);
-							}
-						}
-						set({ creating: false });
+						// Use helper function to add single item
+						addItemsToChecklist(set, get, data.checklistId, [result.data]);
 						return true;
 					} else {
 						throw new Error(
@@ -659,21 +627,19 @@ export const useChecklistStore = create<ChecklistState>()(
 							),
 						);
 					}
-				} catch (error) {
+				}).catch((error) => {
 					handleActionError(error, 'checklist item', 'create', set);
-					set({ creating: false });
 					return false;
-				}
+				});
 			},
 
 			// Delete checklist item
 			deleteChecklistItem: async (id: string) => {
-				set({ deleting: true, lastError: null });
-				try {
+				return await withLoadingState(set, 'deleting', async () => {
 					const response = await checklistItemService.delete(id);
 					const result = handleApiResponse(response);
+
 					if (result.success) {
-						// Update local state instead of fetching from API
 						const { currentChecklist } = get();
 						if (currentChecklist) {
 							// Remove the item from the current checklist
@@ -685,29 +651,8 @@ export const useChecklistStore = create<ChecklistState>()(
 									) || [],
 							};
 
-							// Update current checklist
-							set({ currentChecklist: updatedChecklist });
-
-							// Update cache
-							cacheUtils.set(
-								'checklist',
-								`detail-${currentChecklist.id}`,
-								updatedChecklist,
-							);
-
-							// Also update in main checklists array if it exists
-							const { checklists } = get();
-							const existingIndex = checklists.findIndex(
-								(c) => c.id === currentChecklist.id,
-							);
-							if (existingIndex !== -1) {
-								const updatedChecklists = [...checklists];
-								updatedChecklists[existingIndex] = updatedChecklist;
-								set({ checklists: updatedChecklists });
-								cacheUtils.set('checklist', 'all', updatedChecklists);
-							}
+							updateCurrentChecklistAndCache(set, get, updatedChecklist);
 						}
-						set({ deleting: false });
 						return true;
 					} else {
 						throw new Error(
@@ -717,36 +662,26 @@ export const useChecklistStore = create<ChecklistState>()(
 							),
 						);
 					}
-				} catch (error) {
+				}).catch((error) => {
 					handleActionError(error, 'checklist item', 'delete', set);
-					set({ deleting: false });
 					return false;
-				}
+				});
 			},
 
 			// Delete checklist
 			deleteChecklist: async (id: string) => {
-				set({ deleting: true, lastError: null });
-				try {
+				return await withLoadingState(set, 'deleting', async () => {
 					const response = await checklistService.delete(id);
 					const result = handleApiResponse(response);
+
 					if (result.success) {
 						// Remove from local state
 						const { checklists } = get();
 						const updatedChecklists = checklists.filter(
 							(checklist) => checklist.id !== id,
 						);
-						set({
-							checklists: updatedChecklists,
-							deleting: false,
-						});
 
-						// Re-apply filters
-						get().filterChecklists();
-
-						// Update cache with filtered data instead of invalidating
-						cacheUtils.set('checklist', 'all', updatedChecklists);
-
+						updateStateAndCache(set, get, updatedChecklists);
 						return true;
 					} else {
 						throw new Error(
@@ -756,11 +691,10 @@ export const useChecklistStore = create<ChecklistState>()(
 							),
 						);
 					}
-				} catch (error) {
+				}).catch((error) => {
 					handleActionError(error, 'checklist', 'delete', set);
-					set({ deleting: false });
 					return false;
-				}
+				});
 			},
 
 			setSearchText: (text: string) => {
@@ -833,17 +767,17 @@ export const useChecklistStore = create<ChecklistState>()(
 			// Update checklist in store and sync with cache
 			updateChecklistInStore: (updatedChecklist: Checklist) => {
 				const { checklists } = get();
-				const updatedChecklists = checklists.map((checklist) =>
-					checklist.id === updatedChecklist.id ? updatedChecklist : checklist,
+				const updatedChecklists = updateChecklistInArray(
+					checklists,
+					updatedChecklist.id,
+					() => updatedChecklist,
 				);
 
-				set({ checklists: updatedChecklists });
-
 				// Update both main cache and detail cache
-				cacheUtils.set('checklist', 'all', updatedChecklists);
+				cacheUtils.set('checklist', CACHE_KEYS.ALL, updatedChecklists);
 				cacheUtils.set(
 					'checklist',
-					`detail-${updatedChecklist.id}`,
+					CACHE_KEYS.DETAIL(updatedChecklist.id),
 					updatedChecklist,
 				);
 
@@ -853,7 +787,7 @@ export const useChecklistStore = create<ChecklistState>()(
 					set({ currentChecklist: updatedChecklist });
 				}
 
-				get().filterChecklists();
+				updateStateAndCache(set, get, updatedChecklists, false);
 			},
 
 			isChecklistLoading: (id: string) => {
