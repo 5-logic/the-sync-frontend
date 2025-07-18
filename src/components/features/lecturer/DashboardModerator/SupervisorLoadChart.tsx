@@ -6,10 +6,17 @@ import { supervisorLoadData } from '@/data/moderatorStats';
 const { Text, Title } = Typography;
 
 const CATEGORY_COLORS: Record<string, string> = {
-	'Over Load': '#ff4d4f',
-	'High Load': '#faad14',
-	'Moderate Load': '#1890ff',
-	'Low Load': '#52c41a',
+	'Over Load': '#ff4757',
+	'High Load': '#ffa502',
+	'Moderate Load': '#3742fa',
+	'Low Load': '#2ed573',
+};
+
+const CATEGORY_GRADIENTS: Record<string, string> = {
+	'Over Load': 'linear-gradient(135deg, #ff4757 0%, #ff3838 100%)',
+	'High Load': 'linear-gradient(135deg, #ffa502 0%, #ff9500 100%)',
+	'Moderate Load': 'linear-gradient(135deg, #3742fa 0%, #2f3542 100%)',
+	'Low Load': 'linear-gradient(135deg, #2ed573 0%, #1dd1a1 100%)',
 };
 
 const SupervisorLoadChart: React.FC = () => {
@@ -25,27 +32,28 @@ const SupervisorLoadChart: React.FC = () => {
 					</Text>
 				</Space>
 
-				<div style={{ padding: '20px 0' }}>
+				<div style={{ padding: '24px 0' }}>
 					{/* Chart container with grid */}
 					<div
 						style={{
 							position: 'relative',
-							// backgroundColor: '#fafafa',
-							borderRadius: '8px',
-							padding: '20px',
-							// border: '1px solid #f0f0f0',
+							backgroundColor: '#fafafa',
+							borderRadius: '18px',
+							padding: '28px',
+							border: '1px solid #e8e8e8',
 							overflow: 'visible',
-							minHeight: `${supervisorLoadData.length * 60 + 80}px`, // tăng height để chứa trục X
+							minHeight: `${supervisorLoadData.length * 60 + 80}px`,
+							boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
 						}}
 					>
 						{/* Grid lines */}
 						<div
 							style={{
 								position: 'absolute',
-								top: 0,
-								left: 100,
-								right: 0,
-								bottom: 30, // Dừng lại trước trục X
+								top: 20,
+								left: 110,
+								right: 20,
+								bottom: 40,
 							}}
 						>
 							{[0, 2, 4, 6, 8].map((i) => (
@@ -71,15 +79,14 @@ const SupervisorLoadChart: React.FC = () => {
 											position: 'absolute',
 											left: 0,
 											right: 0,
-											top: `${50 + index * 60}px`, // Center between bars
+											top: `${50 + index * 60}px`,
 											height: '1px',
 											backgroundColor: '#f0f0f0',
 											zIndex: 1,
 										}}
 									/>
 								))
-								.slice(0, -1)}{' '}
-							{/* Remove last line */}
+								.slice(0, -1)}
 						</div>
 
 						{/* Y-axis labels */}
@@ -87,9 +94,9 @@ const SupervisorLoadChart: React.FC = () => {
 							style={{
 								position: 'absolute',
 								left: 0,
-								top: 0,
-								bottom: 0,
-								width: '100px',
+								top: 20,
+								bottom: 50,
+								width: '110px',
 							}}
 						>
 							{supervisorLoadData.map((item, index) => (
@@ -97,12 +104,12 @@ const SupervisorLoadChart: React.FC = () => {
 									key={index}
 									style={{
 										position: 'absolute',
-										right: '10px',
-										top: `${50 + index * 60}px`, // Align with horizontal grid lines (center between bars)
-										fontSize: '12px',
-										color: '#666',
+										right: '12px',
+										top: `${50 + index * 60}px`,
+										fontSize: '13px',
+										color: '#4a4a4a',
 										fontWeight: '500',
-										transform: 'translateY(-50%)', // Center vertically
+										transform: 'translateY(-50%)',
 									}}
 								>
 									{item.name}
@@ -114,10 +121,10 @@ const SupervisorLoadChart: React.FC = () => {
 						<div
 							style={{
 								position: 'absolute',
-								left: 100, // Đồng bộ với Grid line tại mốc 0
-								top: 0,
-								bottom: 40, // Đồng bộ với vùng grid lines
-								right: 0,
+								left: 110,
+								top: 20,
+								bottom: 50,
+								right: 20,
 								zIndex: 2,
 							}}
 						>
@@ -126,16 +133,32 @@ const SupervisorLoadChart: React.FC = () => {
 									key={index}
 									style={{
 										position: 'absolute',
-										top: `${50 + index * 60}px`, // Trùng với vị trí grid line ngang
-										height: '24px',
+										top: `${50 + index * 60}px`,
+										height: '28px',
 										width: `${(item.count / 8) * 100}%`,
-										backgroundColor: CATEGORY_COLORS[item.category],
-										borderRadius: '4px',
+										background: CATEGORY_GRADIENTS[item.category],
 										transform: 'translateY(-50%)',
-										transition: 'width 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
-										boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+										transition: 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
+										boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+										border: '1px solid rgba(255,255,255,0.2)',
 									}}
-								/>
+								>
+									{/* Bar value label */}
+									<div
+										style={{
+											position: 'absolute',
+											right: '8px',
+											top: '50%',
+											transform: 'translateY(-50%)',
+											color: 'white',
+											fontSize: '12px',
+											fontWeight: 'bold',
+											textShadow: '0 1px 2px rgba(0,0,0,0.3)',
+										}}
+									>
+										{item.count}
+									</div>
+								</div>
 							))}
 						</div>
 
@@ -143,11 +166,11 @@ const SupervisorLoadChart: React.FC = () => {
 						<div
 							style={{
 								position: 'absolute',
-								bottom: '10px',
-								left: 100,
-								right: 0,
+								bottom: '20px',
+								left: 110,
+								right: 20,
 								height: '20px',
-								borderTop: '1px solid #d9d9d9',
+								borderTop: '2px solid #d9d9d9',
 							}}
 						>
 							{[0, 2, 4, 6, 8].map((i) => (
@@ -159,7 +182,8 @@ const SupervisorLoadChart: React.FC = () => {
 										transform: 'translateX(-50%)',
 										fontSize: '12px',
 										color: '#595959',
-										marginTop: '4px',
+										marginTop: '6px',
+										fontWeight: '500',
 									}}
 								>
 									{i}
@@ -170,20 +194,34 @@ const SupervisorLoadChart: React.FC = () => {
 				</div>
 
 				{/* Legend */}
-				<div style={{ borderTop: '1px solid #f0f0f0', paddingTop: '16px' }}>
-					<Row gutter={[24, 8]} justify="center">
-						{Object.entries(CATEGORY_COLORS).map(([label, color]) => (
+				<div
+					style={{
+						borderTop: '1px solid #e8e8e8',
+						paddingTop: '20px',
+						padding: '16px 20px',
+					}}
+				>
+					<Row gutter={[32, 12]} justify="center">
+						{Object.entries(CATEGORY_COLORS).map(([label]) => (
 							<Col key={label}>
 								<Space size="small" align="center">
 									<div
 										style={{
-											width: '16px',
-											height: '12px',
-											backgroundColor: color,
-											borderRadius: '2px',
+											width: '18px',
+											height: '14px',
+											background: CATEGORY_GRADIENTS[label],
+											borderRadius: '7px',
+											boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+											border: '1px solid rgba(255,255,255,0.2)',
 										}}
 									/>
-									<Text style={{ fontSize: '12px', color: '#666' }}>
+									<Text
+										style={{
+											fontSize: '13px',
+											color: '#4a4a4a',
+											fontWeight: '500',
+										}}
+									>
 										{label}
 									</Text>
 								</Space>
