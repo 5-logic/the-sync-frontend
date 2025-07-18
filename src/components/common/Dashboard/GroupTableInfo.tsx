@@ -41,7 +41,6 @@ export function GroupInfo() {
 	const filteredData = useMemo(() => {
 		return extendedGroups
 			.filter((group) => {
-				// Filter by semester
 				if (
 					selectedSemester !== 'All semester' &&
 					group.semesterId !== selectedSemester
@@ -49,7 +48,6 @@ export function GroupInfo() {
 					return false;
 				}
 
-				// Filter by search term
 				if (searchTerm) {
 					const searchLower = searchTerm.toLowerCase();
 					return (
