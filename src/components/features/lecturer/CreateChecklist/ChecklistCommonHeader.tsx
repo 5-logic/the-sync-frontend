@@ -65,7 +65,7 @@ export default function ChecklistCommonHeader({
 					</div>
 
 					<div>
-						<FormLabel text="Checklist Description" isRequired />
+						<FormLabel text="Checklist Description" />
 						<Input.TextArea
 							placeholder="Enter checklist description"
 							value={checklistDescription}

@@ -1,10 +1,21 @@
 'use client';
 
 import { PlusOutlined } from '@ant-design/icons';
-import { Button, Card, Form, Input, Row, Space, Switch, Table } from 'antd';
+import {
+	Button,
+	Card,
+	Empty,
+	Form,
+	Input,
+	Row,
+	Space,
+	Switch,
+	Table,
+} from 'antd';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
+import ChecklistLoadingSkeleton from '@/components/common/loading/ChecklistLoadingSkeleton';
 import ChecklistCommonHeader from '@/components/features/lecturer/CreateChecklist/ChecklistCommonHeader';
 import ChecklistDeleteButton from '@/components/features/lecturer/CreateChecklist/ChecklistDeleteButton';
 import ChecklistDragger from '@/components/features/lecturer/CreateChecklist/ChecklistDragger';
@@ -31,7 +42,11 @@ export default function UnifiedChecklistForm({
 	const [isCreating, setIsCreating] = useState(false);
 
 	const { createChecklist, createChecklistItems } = useChecklistStore();
-	const { milestones, fetchMilestones } = useMilestoneStore();
+	const {
+		milestones,
+		fetchMilestones,
+		loading: milestonesLoading,
+	} = useMilestoneStore();
 
 	// Fetch milestones on component mount
 	useEffect(() => {
@@ -43,6 +58,11 @@ export default function UnifiedChecklistForm({
 		label: milestone.name,
 		value: milestone.id,
 	}));
+
+	// Show loading skeleton while milestones are being fetched
+	if (milestonesLoading) {
+		return <ChecklistLoadingSkeleton />;
+	}
 
 	const handleBack = () => {
 		form.resetFields();
@@ -68,10 +88,10 @@ export default function UnifiedChecklistForm({
 				return;
 			}
 
-			if (!checklistName.trim() || !checklistDescription.trim()) {
+			if (!checklistName.trim()) {
 				showNotification.warning(
 					'Missing Checklist Info',
-					'Please provide checklist name and description.',
+					'Please provide checklist name.',
 				);
 				setIsCreating(false);
 				return;
@@ -89,7 +109,7 @@ export default function UnifiedChecklistForm({
 			// Step 1: Create the checklist
 			const createdChecklist = await createChecklist({
 				name: checklistName,
-				description: checklistDescription,
+				description: checklistDescription.trim() || '',
 				milestoneId: selectedMilestone,
 			});
 
@@ -186,7 +206,14 @@ export default function UnifiedChecklistForm({
 												dataSource={fields}
 												rowKey={(record) => record.key}
 												pagination={false}
-												locale={{ emptyText: 'No checklist items added.' }}
+												locale={{
+													emptyText: (
+														<Empty
+															image={Empty.PRESENTED_IMAGE_SIMPLE}
+															description="No checklist items added yet"
+														/>
+													),
+												}}
 												columns={[
 													{
 														title: 'Item Name',
