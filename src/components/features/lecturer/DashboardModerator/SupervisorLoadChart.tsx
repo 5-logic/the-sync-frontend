@@ -71,22 +71,20 @@ const SupervisorLoadChart: React.FC = () => {
 								/>
 							))}
 							{/* Horizontal grid lines */}
-							{supervisorLoadData
-								.map((_, index) => (
-									<div
-										key={`h-${index}`}
-										style={{
-											position: 'absolute',
-											left: 0,
-											right: 0,
-											top: `${50 + index * 60}px`,
-											height: '1px',
-											backgroundColor: '#f0f0f0',
-											zIndex: 1,
-										}}
-									/>
-								))
-								.slice(0, -1)}
+							{supervisorLoadData.map((_, index) => (
+								<div
+									key={`h-${index}`}
+									style={{
+										position: 'absolute',
+										left: 0,
+										right: 0,
+										top: `${50 + index * 60}px`,
+										height: '1px',
+										backgroundColor: '#f0f0f0',
+										zIndex: 1,
+									}}
+								/>
+							))}
 						</div>
 
 						{/* Y-axis labels */}
@@ -140,7 +138,7 @@ const SupervisorLoadChart: React.FC = () => {
 										transform: 'translateY(-50%)',
 										transition: 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
 										boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-										border: '1px solid rgba(255,255,255,0.2)',
+										border: '1px solid rgba(255,255,255,0.4)',
 									}}
 								>
 									{/* Bar value label */}
