@@ -91,7 +91,7 @@ const SupervisorLoadChart: React.FC = () => {
 						>
 							{CHART_CONSTANTS.gridValues.map((i) => (
 								<div
-									key={i}
+									key={`grid-${i}`}
 									style={{
 										position: 'absolute',
 										left: `${(i / CHART_CONSTANTS.maxValue) * 100}%`,
@@ -105,9 +105,9 @@ const SupervisorLoadChart: React.FC = () => {
 								/>
 							))}
 							{/* Horizontal grid lines */}
-							{supervisorLoadData.map((_, index) => (
+							{supervisorLoadData.map((item, index) => (
 								<div
-									key={`h-${index}`}
+									key={`h-${item.name}`}
 									style={{
 										position: 'absolute',
 										left: 0,
@@ -133,7 +133,7 @@ const SupervisorLoadChart: React.FC = () => {
 						>
 							{supervisorLoadData.map((item, index) => (
 								<div
-									key={index}
+									key={`y-label-${item.name}`}
 									style={{
 										position: 'absolute',
 										right: '12px',
@@ -162,7 +162,7 @@ const SupervisorLoadChart: React.FC = () => {
 						>
 							{supervisorLoadData.map((item, index) => (
 								<div
-									key={index}
+									key={`bar-${item.name}`}
 									style={{
 										position: 'absolute',
 										top: `${50 + index * CHART_CONSTANTS.itemHeight}px`,
@@ -207,7 +207,7 @@ const SupervisorLoadChart: React.FC = () => {
 						>
 							{CHART_CONSTANTS.gridValues.map((i) => (
 								<div
-									key={i}
+									key={`x-label-${i}`}
 									style={{
 										position: 'absolute',
 										left: `${(i / CHART_CONSTANTS.maxValue) * 100}%`,
