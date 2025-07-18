@@ -52,29 +52,22 @@ export default function AssignLecturerReview() {
 				(s) => s.status !== 'NotYet' && s.status !== 'End',
 			);
 			const defaultSemester = filtered.length > 0 ? filtered[0].id : '';
-			if (defaultSemester) {
+			if (defaultSemester && defaultSemester !== semester) {
 				setSemester(defaultSemester);
-				fetchMilestonesBySemester(defaultSemester);
-			} else {
-				setSemester('');
 			}
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [semesters]);
 
-	// Khi user chọn semester khác (không phải lần đầu), fetch milestones cho semester đó
+	// Fetch milestones bất cứ khi nào semester thay đổi
 	useEffect(() => {
-		if (
-			semester &&
-			semesters.length > 0 &&
-			semester !==
-				(semesters.filter((s) => s.status !== 'NotYet' && s.status !== 'End')[0]
-					?.id || '')
-		) {
+		if (semester) {
 			fetchMilestonesBySemester(semester);
+		} else {
+			// Clear milestones nếu không có semester
+			setMilestone('');
 		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [semester]);
+	}, [semester, fetchMilestonesBySemester]);
 
 	// Khi milestones đã có, chọn milestone mặc định (gần ngày hiện tại nhất và ở tương lai)
 	useEffect(() => {
