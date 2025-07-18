@@ -3,6 +3,7 @@
 import { DeleteOutlined, EditOutlined, EyeOutlined } from '@ant-design/icons';
 import { Button, Modal, Space, Table, Tooltip, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
+import { useState } from 'react';
 
 import { TablePagination } from '@/components/common/TablePagination';
 import { useNavigationLoader } from '@/hooks/ux/useNavigationLoader';
@@ -24,7 +25,8 @@ export default function ChecklistTable({
 	loading = false,
 }: Props) {
 	const { navigateWithLoading } = useNavigationLoader();
-	const { deleteChecklist, deleting } = useChecklistStore();
+	const { deleteChecklist } = useChecklistStore();
+	const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
 
 	const handleDelete = (checklist: Checklist) => {
 		Modal.confirm({
@@ -41,7 +43,14 @@ export default function ChecklistTable({
 			okType: 'danger',
 			cancelText: 'Cancel',
 			onOk: async () => {
+				setDeletingIds((prev) => new Set(prev).add(checklist.id));
 				const success = await deleteChecklist(checklist.id);
+				setDeletingIds((prev) => {
+					const newSet = new Set(prev);
+					newSet.delete(checklist.id);
+					return newSet;
+				});
+
 				if (success) {
 					showNotification.success('Checklist deleted successfully');
 				} else {
@@ -174,7 +183,7 @@ export default function ChecklistTable({
 							icon={<DeleteOutlined />}
 							size="small"
 							danger
-							loading={deleting}
+							loading={deletingIds.has(record.id)}
 							onClick={() => handleDelete(record)}
 						/>
 					</Tooltip>

@@ -2,7 +2,6 @@
 
 import { PlusOutlined } from '@ant-design/icons';
 import { Button, Card, Form, Input, Row, Space, Switch, Table } from 'antd';
-import { UploadFile } from 'antd/es/upload/interface';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -24,7 +23,7 @@ export default function UnifiedChecklistForm({
 }: UnifiedChecklistFormProps) {
 	const router = useRouter();
 	const [form] = Form.useForm();
-	const [fileList, setFileList] = useState<UploadFile[]>([]);
+	const [fileList, setFileList] = useState<unknown[]>([]);
 	const [checklistName, setChecklistName] = useState('');
 	const [checklistDescription, setChecklistDescription] = useState('');
 	const [showErrors, setShowErrors] = useState(false);
@@ -170,6 +169,7 @@ export default function UnifiedChecklistForm({
 								})),
 							})
 						}
+						loading={isCreating}
 					/>
 				)}
 

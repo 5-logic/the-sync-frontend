@@ -575,6 +575,29 @@ export const useChecklistStore = create<ChecklistState>()(
 								updatedChecklists[existingIndex] = updatedChecklist;
 								set({ checklists: updatedChecklists });
 								cacheUtils.set('checklist', 'all', updatedChecklists);
+								// Force re-filter to update the filtered list
+								get().filterChecklists();
+							}
+						} else {
+							// If no current checklist, try to update the main checklists array directly
+							const { checklists } = get();
+							const existingIndex = checklists.findIndex(
+								(c) => c.id === checklistId,
+							);
+							if (existingIndex !== -1) {
+								const updatedChecklists = [...checklists];
+								const existingChecklist = updatedChecklists[existingIndex];
+								updatedChecklists[existingIndex] = {
+									...existingChecklist,
+									checklistItems: [
+										...(existingChecklist.checklistItems || []),
+										...createdItems,
+									],
+								};
+								set({ checklists: updatedChecklists });
+								cacheUtils.set('checklist', 'all', updatedChecklists);
+								// Force re-filter to update the filtered list
+								get().filterChecklists();
 							}
 						}
 						set({ creating: false });
