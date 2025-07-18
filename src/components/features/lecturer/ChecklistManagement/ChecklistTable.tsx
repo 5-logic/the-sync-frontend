@@ -207,32 +207,30 @@ export default function ChecklistTable({
 	];
 
 	return (
-		<>
-			<Table
-				rowKey="id"
-				columns={columns}
-				dataSource={data}
-				loading={loading}
-				pagination={{
-					...TablePagination,
-					showSizeChanger: true,
-					showQuickJumper: true,
-					showTotal: (total, range) =>
-						`${range[0]}-${range[1]} of ${total} checklists`,
-				}}
-				scroll={{ x: 800 }}
-				size="middle"
-				showSorterTooltip={false}
-				style={{ background: '#fff' }}
-				locale={{
-					emptyText: (
-						<Empty
-							image={Empty.PRESENTED_IMAGE_SIMPLE}
-							description="No checklists found"
-						/>
-					),
-				}}
-			/>
-		</>
+		<Table
+			rowKey="id"
+			columns={columns}
+			dataSource={data}
+			loading={loading}
+			pagination={{
+				...TablePagination,
+				showSizeChanger: true,
+				showQuickJumper: true,
+				showTotal: (total, range) =>
+					`${range[0]}-${range[1]} of ${total} checklists`,
+			}}
+			scroll={{ x: 800 }}
+			size="middle"
+			showSorterTooltip={false}
+			style={{ background: '#fff' }}
+			locale={{
+				emptyText: (
+					<Empty
+						image={Empty.PRESENTED_IMAGE_SIMPLE}
+						description="No checklists found"
+					/>
+				),
+			}}
+		/>
 	);
 }

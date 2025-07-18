@@ -33,7 +33,6 @@ export default function UnifiedChecklistForm({
 }: UnifiedChecklistFormProps) {
 	const router = useRouter();
 	const [form] = Form.useForm();
-	const [fileList, setFileList] = useState<unknown[]>([]);
 	const [checklistName, setChecklistName] = useState('');
 	const [checklistDescription, setChecklistDescription] = useState('');
 	const [showErrors, setShowErrors] = useState(false);
@@ -62,7 +61,6 @@ export default function UnifiedChecklistForm({
 
 	const handleBack = () => {
 		form.resetFields();
-		setFileList([]);
 		setShowErrors(false);
 		router.push('/lecturer/checklist-management');
 	};
@@ -175,8 +173,6 @@ export default function UnifiedChecklistForm({
 			<Card title="Checklist Items">
 				{mode === 'import' && (
 					<ChecklistDragger
-						fileList={fileList}
-						setFileList={setFileList}
 						setChecklistItems={(items) =>
 							form.setFieldsValue({
 								items: items.map((item) => ({

@@ -172,8 +172,8 @@ export default function ChecklistEditPage() {
 	}
 
 	const handleAddItem = () => {
-		// Generate a temporary ID for new items (negative to distinguish from real IDs)
-		const tempId = `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+		// Generate a temporary ID for new items using crypto.randomUUID for better uniqueness
+		const tempId = `temp-${crypto.randomUUID()}`;
 
 		const newItem: ChecklistItem = {
 			id: tempId,

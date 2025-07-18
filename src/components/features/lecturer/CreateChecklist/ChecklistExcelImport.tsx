@@ -14,8 +14,8 @@ import { ChecklistItem } from '@/schemas/checklist';
 const { Dragger: AntDragger } = Upload;
 
 interface ChecklistExcelImportProps {
-	onImport: (items: ChecklistItem[]) => void;
-	loading?: boolean;
+	readonly onImport: (items: ChecklistItem[]) => void;
+	readonly loading?: boolean;
 }
 
 interface ExcelChecklistItem {
@@ -101,7 +101,9 @@ function validateFieldValue(
 	rowNumber: number,
 ): string[] {
 	const errors: string[] = [];
-	const stringValue = value ? String(value).trim() : '';
+	const stringValue = value
+		? (typeof value === 'object' ? JSON.stringify(value) : String(value)).trim()
+		: '';
 
 	// Check if required field is empty
 	if (field.required && (!value || stringValue === '')) {
@@ -387,8 +389,8 @@ export default function ChecklistExcelImport({
 			const reader = new FileReader();
 			reader.onload = (e) => {
 				const data = e.target?.result;
-				if (data) {
-					const result = processExcelFile(data as ArrayBuffer, checklistFields);
+				if (data instanceof ArrayBuffer) {
+					const result = processExcelFile(data, checklistFields);
 					if (result) {
 						const { validatedData, validationErrors } = result;
 

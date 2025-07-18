@@ -4,8 +4,6 @@ import ChecklistExcelImport from '@/components/features/lecturer/CreateChecklist
 import { ChecklistItem } from '@/schemas/checklist';
 
 interface Props {
-	fileList: unknown[];
-	setFileList: (files: unknown[]) => void;
 	setChecklistItems: (items: ChecklistItem[]) => void;
 	loading?: boolean;
 }
