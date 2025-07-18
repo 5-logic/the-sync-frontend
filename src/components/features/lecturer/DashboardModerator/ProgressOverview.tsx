@@ -19,7 +19,15 @@ export function ProgressOverview() {
 					</Text>
 				</Space>
 
-				<Space direction="vertical" size="middle" style={{ width: '100%' }}>
+				<Space
+					direction="vertical"
+					size="middle"
+					style={{
+						borderTop: '1px solid #e8e8e8',
+						width: '100%',
+						paddingTop: '16px',
+					}}
+				>
 					{progressOverview.map((item) => (
 						<Space
 							key={item.label}
