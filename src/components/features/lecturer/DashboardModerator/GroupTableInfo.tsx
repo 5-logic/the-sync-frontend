@@ -1,5 +1,15 @@
 import { DownloadOutlined, SearchOutlined } from '@ant-design/icons';
-import { Button, Card, Input, Select, Space, Table, Typography } from 'antd';
+import {
+	Button,
+	Card,
+	Col,
+	Input,
+	Row,
+	Select,
+	Space,
+	Table,
+	Typography,
+} from 'antd';
 import { useMemo, useState } from 'react';
 
 import { TablePagination } from '@/components/common/TablePagination';
@@ -73,19 +83,20 @@ export function GroupInfo() {
 				</Text>
 			</Space>
 
-			<div className="flex justify-between items-center mt-5 mb-4">
-				<Input
-					placeholder="Search thesis, group, supervisor"
-					style={{ width: 300 }}
-					prefix={<SearchOutlined />}
-					value={searchTerm}
-					onChange={(e) => setSearchTerm(e.target.value)}
-				/>
-				<div className="flex gap-2">
+			<Row gutter={16} style={{ marginTop: 20, marginBottom: 16 }}>
+				<Col flex="auto">
+					<Input
+						placeholder="Search thesis, group, supervisor"
+						prefix={<SearchOutlined />}
+						value={searchTerm}
+						onChange={(e) => setSearchTerm(e.target.value)}
+					/>
+				</Col>
+				<Col flex="200px">
 					<Select
 						value={selectedSemester}
 						onChange={setSelectedSemester}
-						style={{ width: 130 }}
+						style={{ width: '100%' }}
 					>
 						{availableSemesters.map((semester) => (
 							<Select.Option key={semester} value={semester}>
@@ -93,9 +104,13 @@ export function GroupInfo() {
 							</Select.Option>
 						))}
 					</Select>
-					<Button icon={<DownloadOutlined />}>Export Statistic</Button>
-				</div>
-			</div>
+				</Col>
+				<Col flex="200px">
+					<Button icon={<DownloadOutlined />} style={{ width: '100%' }}>
+						Export Statistic
+					</Button>
+				</Col>
+			</Row>
 			<Table
 				columns={columns}
 				dataSource={filteredData}
