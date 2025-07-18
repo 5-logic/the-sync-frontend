@@ -34,7 +34,7 @@ export const VersionTag: React.FC<VersionTagProps> = ({ collapsed }) => {
 
 	return (
 		<>
-			<style jsx>{`
+			<style>{`
 				@keyframes rainbow-text {
 					0% {
 						background-position: 0% 50%;
