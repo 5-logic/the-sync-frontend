@@ -13,13 +13,13 @@ export const progressOverview = [
 ];
 
 export const supervisorLoadData = [
-	{ name: 'Dr. Johnson', count: 8, category: 'Over Load' },
+	{ name: 'Dr. Johnson', count: 7, category: 'Over Load' },
 	{ name: 'Dr. Anderson', count: 6, category: 'Over Load' },
 	{ name: 'Dr. Thompson', count: 5, category: 'High Load' },
 	{ name: 'Dr. Davis', count: 3, category: 'Moderate Load' },
 	{ name: 'Dr. Brown', count: 2, category: 'Moderate Load' },
 	{ name: 'Dr. Wilson', count: 1, category: 'Low Load' },
-	{ name: 'Dr. Williams', count: 0, category: 'Low Load' },
+	{ name: 'Dr. Williams', count: 1, category: 'Low Load' },
 ];
 
 export const groupTableData = [
