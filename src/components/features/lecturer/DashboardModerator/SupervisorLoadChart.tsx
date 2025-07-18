@@ -34,6 +34,8 @@ const SupervisorLoadChart: React.FC = () => {
 							borderRadius: '8px',
 							padding: '20px',
 							border: '1px solid #f0f0f0',
+							overflow: 'hidden',
+							minHeight: `${supervisorLoadData.length * 60 + 40}px`, // auto height theo số dòng
 						}}
 					>
 						{/* Grid lines */}
@@ -135,49 +137,32 @@ const SupervisorLoadChart: React.FC = () => {
 						</div>
 
 						{/* Chart bars */}
+						{/* Chart bars */}
 						<div
-							style={{ position: 'relative', paddingLeft: '100px', zIndex: 2 }}
+							style={{
+								position: 'absolute',
+								left: 100, // Đồng bộ với Grid line tại mốc 0
+								top: 0,
+								bottom: 0,
+								right: 0,
+								zIndex: 2,
+							}}
 						>
 							{supervisorLoadData.map((item, index) => (
 								<div
 									key={index}
 									style={{
+										position: 'absolute',
+										top: `${50 + index * 60}px`, // Trùng với vị trí grid line ngang
 										height: '24px',
-										marginBottom: '36px',
-										position: 'relative',
-										marginTop: index === 0 ? '8px' : '0', // Start position
-										display: 'flex',
-										alignItems: 'center',
+										width: `${(item.count / 8) * 100}%`,
+										backgroundColor: CATEGORY_COLORS[item.category],
+										borderRadius: '4px',
+										transform: 'translateY(-50%)',
+										transition: 'width 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
+										boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
 									}}
-								>
-									<div
-										style={{
-											height: '100%',
-											width: `${(item.count / 8) * 100}%`,
-											backgroundColor: CATEGORY_COLORS[item.category],
-											borderRadius: '0 4px 4px 0',
-											transition: 'width 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
-											boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-											position: 'relative',
-										}}
-									>
-										{/* Value label */}
-										<div
-											style={{
-												position: 'absolute',
-												right: '-30px',
-												top: '50%',
-												transform: 'translateY(-50%)',
-												fontSize: '12px',
-												fontWeight: 'bold',
-												color: '#333',
-												minWidth: '25px',
-											}}
-										>
-											{item.count}
-										</div>
-									</div>
-								</div>
+								/>
 							))}
 						</div>
 					</div>

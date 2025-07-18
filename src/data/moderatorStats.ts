@@ -13,7 +13,7 @@ export const progressOverview = [
 ];
 
 export const supervisorLoadData = [
-	{ name: 'Dr. Johnson', count: 7, category: 'Over Load' },
+	{ name: 'Dr. Johnson', count: 8, category: 'Over Load' },
 	{ name: 'Dr. Anderson', count: 6, category: 'Over Load' },
 	{ name: 'Dr. Thompson', count: 5, category: 'High Load' },
 	{ name: 'Dr. Davis', count: 3, category: 'Moderate Load' },
