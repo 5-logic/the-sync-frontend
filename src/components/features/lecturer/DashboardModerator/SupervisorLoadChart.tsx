@@ -65,7 +65,7 @@ const SupervisorLoadChart: React.FC = () => {
 					</Text>
 				</Space>
 
-				<div style={{ padding: `${CHART_CONSTANTS.padding.container}px 0` }}>
+				<div style={{ padding: '5px' }}>
 					{/* Chart container with grid */}
 					<div
 						style={{
