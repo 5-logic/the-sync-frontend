@@ -29,7 +29,6 @@ export default function ChecklistEditPage() {
 		updateChecklistItems,
 		createChecklistItems,
 		deleteChecklistItem,
-		fetchChecklistById,
 		updating,
 		creating,
 		deleting,
@@ -469,18 +468,11 @@ export default function ChecklistEditPage() {
 			// Execute all operations in parallel for better performance
 			await Promise.all(operations);
 
-			// Clean up temporary items immediately after successful operations
-			if (changes.hasNewItems) {
-				setChecklistItems((prev) =>
-					prev.filter((item) => !item.id.startsWith('temp-')),
-				);
-			}
-
-			// Only refresh once at the end to get final state
-			await fetchChecklistById(checklistId, true);
-
 			// Success feedback
 			showNotification.success('Success', 'Checklist updated successfully');
+
+			// Navigate immediately after success without cleaning up state
+			// This prevents UI glitches from state updates during navigation
 			navigateWithLoading('/lecturer/checklist-management');
 		} catch (error: unknown) {
 			console.error('Save error:', error);
