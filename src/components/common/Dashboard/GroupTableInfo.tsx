@@ -1,4 +1,4 @@
-import { DownloadOutlined, SearchOutlined } from '@ant-design/icons';
+import { ExportOutlined, SearchOutlined } from '@ant-design/icons';
 import {
 	Button,
 	Card,
@@ -104,7 +104,7 @@ export function GroupInfo() {
 					</Select>
 				</Col>
 				<Col flex="200px">
-					<Button icon={<DownloadOutlined />} style={{ width: '100%' }}>
+					<Button icon={<ExportOutlined />} style={{ width: '100%' }}>
 						Export Statistic
 					</Button>
 				</Col>
