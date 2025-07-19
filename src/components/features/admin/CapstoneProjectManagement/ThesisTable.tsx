@@ -239,9 +239,8 @@ const ThesisTable = () => {
 			/>
 
 			<Text type="secondary" style={{ marginTop: 16, display: 'block' }}>
-				Danh sách bao gồm {filteredData.length} sinh viên và{' '}
-				{new Set(filteredData.map((item) => item.groupId)).size} luận văn tốt
-				nghiệp
+				List includes {filteredData.length} students and{' '}
+				{new Set(filteredData.map((item) => item.groupId)).size} thesis projects
 			</Text>
 
 			<style>{`
