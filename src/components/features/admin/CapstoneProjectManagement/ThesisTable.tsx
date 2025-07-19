@@ -41,7 +41,7 @@ const ThesisTable = () => {
 				stt: counter++,
 				studentId: `ST${group.id.toUpperCase()}${(index + 1).toString().padStart(2, '0')}`,
 				name: memberName,
-				major: majors[index % majors.length], // Phân bổ đều SE và AI
+				major: majors[index % majors.length],
 				thesisName: thesis?.englishName || group.title,
 				abbreviation: thesis?.abbreviation || group.code,
 				supervisor: group.supervisors.join(', '),
