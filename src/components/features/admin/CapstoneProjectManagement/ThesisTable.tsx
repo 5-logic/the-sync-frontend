@@ -126,6 +126,7 @@ const ThesisTable = () => {
 			dataIndex: 'name',
 			key: 'name',
 			align: 'center' as const,
+			render: (text: string) => <div style={{ textAlign: 'left' }}>{text}</div>,
 		},
 		{
 			title: 'Major',
@@ -170,7 +171,11 @@ const ThesisTable = () => {
 			align: 'center' as const,
 			render: (supervisor: string, record: ThesisTableData) => ({
 				children: supervisor ? (
-					supervisor.split(', ').map((sup) => <div key={sup}>{sup}</div>)
+					<div style={{ textAlign: 'left' }}>
+						{supervisor.split(', ').map((sup) => (
+							<div key={sup}>{sup}</div>
+						))}
+					</div>
 				) : (
 					<span style={{ color: '#999' }}>-</span>
 				),
