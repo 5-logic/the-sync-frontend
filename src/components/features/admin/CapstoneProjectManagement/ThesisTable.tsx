@@ -173,14 +173,34 @@ const ThesisTable = () => {
 					</Button>
 				</Col>
 			</Row>
-
 			<Table
 				columns={columns}
 				dataSource={filteredData}
 				pagination={TablePagination}
 				rowKey="studentId"
 				bordered
+				rowClassName={(record, index) => {
+					const currentGroup = record.groupId;
+					const nextGroup = filteredData[index + 1]?.groupId;
+					return currentGroup !== nextGroup ? 'group-end-row' : '';
+				}}
 			/>
+
+			<style jsx global>{`
+				.group-end-row {
+					position: relative;
+				}
+
+				.group-end-row::after {
+					content: '';
+					position: absolute;
+					bottom: 0;
+					left: 0;
+					height: 2px;
+					width: 100%;
+					background-color: #d9d9d9;
+				}
+			`}</style>
 		</>
 	);
 };
