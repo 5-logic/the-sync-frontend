@@ -18,7 +18,8 @@ type ThesisTableData = {
 	thesisName: string;
 	abbreviation: string;
 	supervisor: string;
-	rowSpanGroup: number; // chỉ dùng cho các cột cần merge
+	rowSpanGroup: number; // chỉ dùng cho các cột cần merge (thesis, abbreviation, supervisor)
+	rowSpanMajor: number; // rowSpan cho cột major trong từng group
 	groupId: string;
 };
 
@@ -29,38 +30,70 @@ const ThesisTable = () => {
 	const data = useMemo((): ThesisTableData[] => {
 		const majors = ['Software Engineering', 'Artificial Intelligence'];
 		let counter = 1;
-		const groupCounts: Record<string, number> = {};
 		const tempData: ThesisTableData[] = [];
 
 		allMockGroups.forEach((group) => {
 			const thesis = mockTheses.find((t) => t.groupId === group.id);
-			groupCounts[group.id] = group.members.length;
 
-			group.members.forEach((memberName, index) => {
-				tempData.push({
-					groupId: group.id,
-					stt: counter++,
-					studentId: `ST${group.id.toUpperCase()}${(index + 1).toString().padStart(2, '0')}`,
-					name: memberName,
-					major: majors[(counter + index) % majors.length], // giả định mix chuyên ngành
-					thesisName: thesis?.englishName || group.title,
-					abbreviation: thesis?.abbreviation || group.code,
-					supervisor: group.supervisors.join(', '),
-					rowSpanGroup: 1, // sẽ set bên dưới
-				});
-			});
+			// Tạo dữ liệu cho từng member trong group
+			const groupMembers = group.members.map((memberName, index) => ({
+				groupId: group.id,
+				stt: counter++,
+				studentId: `ST${group.id.toUpperCase()}${(index + 1).toString().padStart(2, '0')}`,
+				name: memberName,
+				major: majors[index % majors.length], // Phân bổ đều SE và AI
+				thesisName: thesis?.englishName || group.title,
+				abbreviation: thesis?.abbreviation || group.code,
+				supervisor: group.supervisors.join(', '),
+				rowSpanGroup: 0, // sẽ set sau
+				rowSpanMajor: 0, // sẽ set sau
+			}));
+
+			// Sắp xếp lại theo major để group các sinh viên cùng chuyên ngành
+			const sortedGroupMembers = groupMembers.sort((a, b) =>
+				a.major.localeCompare(b.major),
+			);
+			tempData.push(...sortedGroupMembers);
 		});
 
-		// Gán rowSpan cho nhóm (chỉ cho các cột cần merge)
-		const seenGroups = new Set();
-		return tempData.map((item) => {
+		// Tính toán rowSpan
+		const result: ThesisTableData[] = [];
+		const groupCounts: Record<string, number> = {};
+		const seenGroups = new Set<string>();
+		const seenMajorInGroups = new Set<string>(); // track "groupId-major"
+
+		// Đếm số lượng member trong mỗi group
+		allMockGroups.forEach((group) => {
+			groupCounts[group.id] = group.members.length;
+		});
+
+		// Tính rowSpan cho từng item
+		tempData.forEach((item) => {
+			// RowSpan cho group (thesis, abbreviation, supervisor)
 			if (!seenGroups.has(item.groupId)) {
 				seenGroups.add(item.groupId);
-				return { ...item, rowSpanGroup: groupCounts[item.groupId] };
+				item.rowSpanGroup = groupCounts[item.groupId];
 			} else {
-				return { ...item, rowSpanGroup: 0 };
+				item.rowSpanGroup = 0;
 			}
+
+			// RowSpan cho major - tính trong từng group
+			const majorKey = `${item.groupId}-${item.major}`;
+			if (!seenMajorInGroups.has(majorKey)) {
+				seenMajorInGroups.add(majorKey);
+				// Đếm số sinh viên cùng major trong group này
+				const majorCount = tempData.filter(
+					(data) => data.groupId === item.groupId && data.major === item.major,
+				).length;
+				item.rowSpanMajor = majorCount;
+			} else {
+				item.rowSpanMajor = 0;
+			}
+
+			result.push(item);
 		});
+
+		return result;
 	}, []);
 
 	const handleSearch = (value: string) => {
@@ -87,7 +120,12 @@ const ThesisTable = () => {
 			title: 'Major',
 			dataIndex: 'major',
 			key: 'major',
-			// ❌ Không merge cột này nữa
+			render: (text: string, record: ThesisTableData) => ({
+				children: text,
+				props: {
+					rowSpan: record.rowSpanMajor,
+				},
+			}),
 		},
 		{
 			title: 'Thesis Title',
