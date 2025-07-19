@@ -11,6 +11,24 @@ import { mockTheses } from '@/data/thesis';
 
 const { Text } = Typography;
 
+// Utility function để highlight search text
+const highlightText = (text: string, searchTerm: string) => {
+	if (!searchTerm) return text;
+
+	const regex = new RegExp(`(${searchTerm})`, 'gi');
+	const parts = text.split(regex);
+
+	return parts.map((part, index) =>
+		regex.test(part) ? (
+			<mark key={index} style={{ backgroundColor: '#fff2b8', padding: 0 }}>
+				{part}
+			</mark>
+		) : (
+			part
+		),
+	);
+};
+
 type ThesisTableData = {
 	stt: number;
 	studentId: string;
@@ -100,10 +118,32 @@ const ThesisTable = () => {
 	};
 
 	const filteredData = data.filter((item) => {
-		const matchesSearch =
-			item.name.toLowerCase().includes(searchText) ||
-			item.thesisName.toLowerCase().includes(searchText);
-		return matchesSearch;
+		if (!searchText) return true;
+
+		const searchTerm = searchText.toLowerCase();
+
+		// Search trong các trường: name, studentId, thesisName, abbreviation, supervisor, major
+		const matchesName = item.name.toLowerCase().includes(searchTerm);
+		const matchesStudentId = item.studentId.toLowerCase().includes(searchTerm);
+		const matchesThesisTitle = item.thesisName
+			.toLowerCase()
+			.includes(searchTerm);
+		const matchesAbbreviation = item.abbreviation
+			.toLowerCase()
+			.includes(searchTerm);
+		const matchesSupervisor = item.supervisor
+			.toLowerCase()
+			.includes(searchTerm);
+		const matchesMajor = item.major.toLowerCase().includes(searchTerm);
+
+		return (
+			matchesName ||
+			matchesStudentId ||
+			matchesThesisTitle ||
+			matchesAbbreviation ||
+			matchesSupervisor ||
+			matchesMajor
+		);
 	});
 
 	const columns: ColumnsType<ThesisTableData> = [
@@ -113,14 +153,22 @@ const ThesisTable = () => {
 			dataIndex: 'studentId',
 			key: 'studentId',
 			align: 'center' as const,
-			render: (text: string) => <div style={{ textAlign: 'left' }}>{text}</div>,
+			render: (text: string) => (
+				<div style={{ textAlign: 'left' }}>
+					{highlightText(text, searchText)}
+				</div>
+			),
 		},
 		{
 			title: 'Full Name',
 			dataIndex: 'name',
 			key: 'name',
 			align: 'center' as const,
-			render: (text: string) => <div style={{ textAlign: 'left' }}>{text}</div>,
+			render: (text: string) => (
+				<div style={{ textAlign: 'left' }}>
+					{highlightText(text, searchText)}
+				</div>
+			),
 		},
 		{
 			title: 'Major',
@@ -128,7 +176,7 @@ const ThesisTable = () => {
 			key: 'major',
 			align: 'center' as const,
 			render: (text: string, record: ThesisTableData) => ({
-				children: text,
+				children: highlightText(text, searchText),
 				props: {
 					rowSpan: record.rowSpanMajor,
 				},
@@ -140,7 +188,7 @@ const ThesisTable = () => {
 			key: 'thesisName',
 			align: 'center' as const,
 			render: (text: string, record: ThesisTableData) => ({
-				children: text,
+				children: highlightText(text, searchText),
 				props: {
 					rowSpan: record.rowSpanGroup,
 				},
@@ -152,7 +200,9 @@ const ThesisTable = () => {
 			key: 'abbreviation',
 			align: 'center' as const,
 			render: (abbreviation: string, record: ThesisTableData) => ({
-				children: <Tag color="blue">{abbreviation}</Tag>,
+				children: (
+					<Tag color="blue">{highlightText(abbreviation, searchText)}</Tag>
+				),
 				props: {
 					rowSpan: record.rowSpanGroup,
 				},
@@ -167,7 +217,7 @@ const ThesisTable = () => {
 				children: supervisor ? (
 					<div style={{ textAlign: 'left' }}>
 						{supervisor.split(', ').map((sup) => (
-							<div key={sup}>{sup}</div>
+							<div key={sup}>{highlightText(sup, searchText)}</div>
 						))}
 					</div>
 				) : (
@@ -189,7 +239,7 @@ const ThesisTable = () => {
 			>
 				<Col flex="auto">
 					<Input
-						placeholder="Search by name or thesis title..."
+						placeholder="Search by name, student ID, thesis title, abbreviation, supervisor, or major..."
 						value={searchText}
 						onChange={(e) => handleSearch(e.target.value)}
 						prefix={<SearchOutlined />}
