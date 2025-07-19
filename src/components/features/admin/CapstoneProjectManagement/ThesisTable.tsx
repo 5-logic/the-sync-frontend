@@ -140,14 +140,14 @@ const ThesisTable = () => {
 						<Option value="Electronics">Electronics</Option>
 					</Select>
 				</Col>
-				<Col style={{ width: 250 }}>
+				<Col style={{ width: 200 }}>
 					<Button
 						icon={<DownloadOutlined />}
 						type="primary"
 						size="middle"
 						style={{ width: '100%' }}
 					>
-						Export PDF
+						Export file PDF
 					</Button>
 				</Col>
 			</Row>
