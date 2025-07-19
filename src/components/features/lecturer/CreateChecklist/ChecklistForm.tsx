@@ -1,16 +1,26 @@
 'use client';
 
 import { PlusOutlined } from '@ant-design/icons';
-import { Button, Card, Form, Input, Row, Space, Switch, Table } from 'antd';
-import { UploadFile } from 'antd/es/upload/interface';
-import { useState } from 'react';
+import {
+	Button,
+	Card,
+	Empty,
+	Form,
+	Input,
+	Row,
+	Space,
+	Switch,
+	Table,
+} from 'antd';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 import ChecklistCommonHeader from '@/components/features/lecturer/CreateChecklist/ChecklistCommonHeader';
 import ChecklistDeleteButton from '@/components/features/lecturer/CreateChecklist/ChecklistDeleteButton';
 import ChecklistDragger from '@/components/features/lecturer/CreateChecklist/ChecklistDragger';
-import { mockMilestones } from '@/data/milestone';
-import { mockSemesters } from '@/data/semester';
-import { showNotification } from '@/lib/utils';
+import { showNotification } from '@/lib/utils/notification';
+import { useChecklistStore } from '@/store';
+import { useMilestoneStore } from '@/store/useMilestoneStore';
 
 type Mode = 'import' | 'manual';
 
@@ -21,85 +31,148 @@ interface UnifiedChecklistFormProps {
 export default function UnifiedChecklistForm({
 	mode,
 }: UnifiedChecklistFormProps) {
+	const router = useRouter();
 	const [form] = Form.useForm();
-	const [fileList, setFileList] = useState<UploadFile[]>([]);
 	const [checklistName, setChecklistName] = useState('');
 	const [checklistDescription, setChecklistDescription] = useState('');
 	const [showErrors, setShowErrors] = useState(false);
-	const [selectedSemester, setSelectedSemester] = useState<string>('');
 	const [selectedMilestone, setSelectedMilestone] = useState<string>('');
+	const [isCreating, setIsCreating] = useState(false);
 
-	const handleCancel = () => {
+	const { createChecklist, createChecklistItems } = useChecklistStore();
+	const {
+		milestones,
+		fetchMilestones,
+		loading: milestonesLoading,
+	} = useMilestoneStore();
+
+	// Fetch milestones on component mount
+	useEffect(() => {
+		fetchMilestones();
+	}, [fetchMilestones]);
+
+	// Transform milestones for the dropdown
+	const availableMilestones = milestones.map((milestone) => ({
+		label: milestone.name,
+		value: milestone.id,
+	}));
+
+	// Don't show full skeleton for just milestone loading - let the component render with loading state
+
+	const handleBack = () => {
 		form.resetFields();
-		setFileList([]);
 		setShowErrors(false);
-		showNotification.info('Checklist action cancelled.');
+		router.push('/lecturer/checklist-management');
 	};
 
 	const handleSaveAll = async () => {
 		setShowErrors(true);
+		setIsCreating(true);
+
 		try {
 			const values = await form.validateFields();
 
-			if (!selectedSemester || !selectedMilestone) {
+			// Validation checks
+			if (!selectedMilestone) {
 				showNotification.warning(
-					'Missing Semester or Milestone',
-					'Please select both semester and milestone before saving.',
+					'Missing Milestone',
+					'Please select a milestone before saving.',
 				);
+				setIsCreating(false);
 				return;
 			}
 
-			if (!checklistName.trim() || !checklistDescription.trim()) {
+			if (!checklistName.trim()) {
 				showNotification.warning(
 					'Missing Checklist Info',
-					'Please provide checklist name and description.',
+					'Please provide checklist name.',
 				);
+				setIsCreating(false);
 				return;
 			}
 
-			if (values.items.length === 0) {
+			if (!values.items || values.items.length === 0) {
 				showNotification.warning(
 					'No items added',
 					'Please add at least one checklist item before saving.',
 				);
+				setIsCreating(false);
 				return;
 			}
 
-			console.log('Checklist saved with:', {
-				semester: selectedSemester,
-				milestone: selectedMilestone,
+			// Step 1: Create the checklist
+			const createdChecklist = await createChecklist({
 				name: checklistName,
-				description: checklistDescription,
-				items: values.items,
+				description: checklistDescription.trim() || '',
+				milestoneId: selectedMilestone,
 			});
-			showNotification.success('Checklist saved successfully!');
+
+			if (!createdChecklist) {
+				showNotification.error('Failed to create checklist');
+				setIsCreating(false);
+				return;
+			}
+
+			// Step 2: Create checklist items
+			const checklistItems = values.items.map(
+				(item: {
+					name: string;
+					description?: string;
+					isRequired?: boolean;
+				}) => ({
+					name: item.name,
+					description: item.description || '',
+					isRequired: item.isRequired || false,
+				}),
+			);
+
+			try {
+				await createChecklistItems(createdChecklist.id, checklistItems);
+				showNotification.success(
+					`Checklist "${checklistName}" created successfully with ${checklistItems.length} items!`,
+				);
+			} catch (itemError) {
+				console.error('Failed to create checklist items:', itemError);
+				showNotification.warning(
+					'Checklist created but failed to add some items. You can add them later in the edit page.',
+				);
+			}
+
+			// Reset form
+			form.resetFields();
+			setChecklistName('');
+			setChecklistDescription('');
+			setSelectedMilestone('');
 			setShowErrors(false);
+
+			// Navigate to checklist management
+			router.push('/lecturer/checklist-management');
 		} catch (err) {
-			console.error('Checklist validation failed', err);
+			console.error('Checklist creation failed', err);
+			showNotification.error('Failed to create checklist');
+		} finally {
+			setIsCreating(false);
 		}
 	};
 
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
 			<ChecklistCommonHeader
-				semester={selectedSemester}
 				milestone={selectedMilestone}
 				checklistName={checklistName}
 				checklistDescription={checklistDescription}
 				onNameChange={setChecklistName}
 				onDescriptionChange={setChecklistDescription}
-				onSemesterChange={setSelectedSemester}
 				onMilestoneChange={setSelectedMilestone}
-				availableSemesters={mockSemesters}
-				availableMilestones={mockMilestones}
+				availableMilestones={availableMilestones}
 				showErrors={showErrors}
+				loading={isCreating}
+				milestonesLoading={milestonesLoading}
 			/>
 
 			<Card title="Checklist Items">
 				{mode === 'import' && (
 					<ChecklistDragger
-						fileList={fileList}
-						setFileList={setFileList}
 						setChecklistItems={(items) =>
 							form.setFieldsValue({
 								items: items.map((item) => ({
@@ -109,6 +182,7 @@ export default function UnifiedChecklistForm({
 								})),
 							})
 						}
+						loading={isCreating}
 					/>
 				)}
 
@@ -125,7 +199,14 @@ export default function UnifiedChecklistForm({
 												dataSource={fields}
 												rowKey={(record) => record.key}
 												pagination={false}
-												locale={{ emptyText: 'No checklist items added.' }}
+												locale={{
+													emptyText: (
+														<Empty
+															image={Empty.PRESENTED_IMAGE_SIMPLE}
+															description="No checklist items added yet"
+														/>
+													),
+												}}
 												columns={[
 													{
 														title: 'Item Name',
@@ -180,7 +261,7 @@ export default function UnifiedChecklistForm({
 														),
 													},
 													{
-														title: 'Required',
+														title: 'Priority',
 														dataIndex: 'isRequired',
 														key: 'isRequired',
 														align: 'center' as const,
@@ -226,19 +307,30 @@ export default function UnifiedChecklistForm({
 												style={{ marginTop: 16 }}
 											>
 												{mode === 'manual' && (
-													<Button icon={<PlusOutlined />} onClick={() => add()}>
+													<Button
+														type="primary"
+														icon={<PlusOutlined />}
+														onClick={() => add()}
+														disabled={isCreating}
+													>
 														Add New Item
 													</Button>
 												)}
 
-												<Space>
-													<Button onClick={handleCancel}>Cancel</Button>
-													<Button type="primary" onClick={handleSaveAll}>
-														{mode === 'manual'
-															? 'Save All'
-															: 'Import All Checklist'}
-													</Button>
-												</Space>
+												{mode === 'import' && hasItems && (
+													<Space>
+														<Button onClick={handleBack} disabled={isCreating}>
+															Back
+														</Button>
+														<Button
+															type="primary"
+															onClick={handleSaveAll}
+															loading={isCreating}
+														>
+															Import All Checklist
+														</Button>
+													</Space>
+												)}
 											</Row>
 										</>
 									)}
@@ -248,6 +340,19 @@ export default function UnifiedChecklistForm({
 					</Form.List>
 				</Form>
 			</Card>
+
+			{mode === 'manual' && (
+				<Row justify="end">
+					<Space>
+						<Button onClick={handleBack} disabled={isCreating}>
+							Back
+						</Button>
+						<Button type="primary" onClick={handleSaveAll} loading={isCreating}>
+							Save All
+						</Button>
+					</Space>
+				</Row>
+			)}
 		</Space>
 	);
 }

@@ -14,8 +14,8 @@ export type GroupWithPhase = ExtendedGroup & {
 export type FullMockGroup = Group & {
 	title: string;
 	supervisors: string[];
-	members: string[]; // Array of member names
-	leader: string; // ✅ thêm leader
+	members: StudentMember[];
+	leader: string;
 	status: 'Finalized' | 'Incomplete' | 'Unassigned';
 	phase?: string;
 	submissionFile?: string;
@@ -118,11 +118,19 @@ const metaData: Record<string, GroupMeta> = {
 	},
 };
 
+// ===== Student data type =====
+export type StudentMember = {
+	id: string;
+	name: string;
+	major: 'Software Engineering' | 'Artificial Intelligence';
+	isLeader?: boolean;
+};
+
 // ===== Mock member data for FullMockGroup =====
 type FullGroupMeta = {
 	title: string;
 	supervisors: string[];
-	members: string[];
+	members: StudentMember[];
 	leader: string;
 	status: 'Finalized' | 'Incomplete' | 'Unassigned';
 	milestoneAlert?: string;
@@ -134,7 +142,17 @@ const fullGroupMetaData: Record<string, FullGroupMeta> = {
 	g1: {
 		title: 'AI-powered Healthcare System',
 		supervisors: ['Dr. Sarah Johnson', 'Dr. Davis'],
-		members: ['John Doe', 'Alice Wang', 'Bob Chen', 'Emily Zhang'],
+		members: [
+			{
+				id: 'ST001',
+				name: 'John Doe',
+				major: 'Software Engineering',
+				isLeader: true,
+			},
+			{ id: 'ST002', name: 'Alice Wang', major: 'Artificial Intelligence' },
+			{ id: 'ST003', name: 'Bob Chen', major: 'Software Engineering' },
+			{ id: 'ST004', name: 'Emily Zhang', major: 'Artificial Intelligence' },
+		],
 		leader: 'John Doe',
 		status: 'Finalized',
 		milestoneAlert: 'All milestones completed on time',
@@ -149,7 +167,17 @@ const fullGroupMetaData: Record<string, FullGroupMeta> = {
 	g2: {
 		title: 'Blockchain Supply Chain',
 		supervisors: ['Dr. Michael Chen', 'Dr. Martinez'],
-		members: ['Jane Smith', 'David Kim', 'Lisa Park', 'Tom Wilson'],
+		members: [
+			{ id: 'ST005', name: 'Jane Smith', major: 'Software Engineering' },
+			{ id: 'ST006', name: 'David Kim', major: 'Artificial Intelligence' },
+			{
+				id: 'ST007',
+				name: 'Lisa Park',
+				major: 'Software Engineering',
+				isLeader: true,
+			},
+			{ id: 'ST008', name: 'Tom Wilson', major: 'Software Engineering' },
+		],
 		leader: 'Lisa Park',
 		status: 'Finalized',
 		milestoneAlert: 'Minor delay in final documentation',
@@ -165,13 +193,18 @@ const fullGroupMetaData: Record<string, FullGroupMeta> = {
 		title: 'Smart City IoT Platform',
 		supervisors: ['Dr. Emily Wong'],
 		members: [
-			'Mike Johnson',
-			'Sarah Lee',
-			'Chris Brown',
-			'Amy Liu',
-			'Kevin Chen',
+			{
+				id: 'ST009',
+				name: 'Mike Johnson',
+				major: 'Software Engineering',
+				isLeader: true,
+			},
+			{ id: 'ST010', name: 'Sarah Lee', major: 'Artificial Intelligence' },
+			{ id: 'ST011', name: 'Chris Brown', major: 'Software Engineering' },
+			{ id: 'ST012', name: 'Amy Liu', major: 'Artificial Intelligence' },
+			{ id: 'ST013', name: 'Kevin Chen', major: 'Artificial Intelligence' },
 		],
-		leader: 'Mile Johnson',
+		leader: 'Mike Johnson',
 		status: 'Incomplete',
 		milestoneAlert: 'Behind schedule - requires attention',
 		progress: 60,
@@ -185,13 +218,18 @@ const fullGroupMetaData: Record<string, FullGroupMeta> = {
 	},
 	g4: {
 		title: 'Cybersecurity Framework',
-		supervisors: [],
+		supervisors: ['Dr. Michael Chen', 'Dr. Martinez'],
 		members: [
-			'Sarah Wilson',
-			'Mark Davis',
-			'Linda Garcia',
-			'Jason Taylor',
-			'Maria Rodriguez',
+			{
+				id: 'ST014',
+				name: 'Sarah Wilson',
+				major: 'Software Engineering',
+				isLeader: true,
+			},
+			{ id: 'ST015', name: 'Mark Davis', major: 'Software Engineering' },
+			{ id: 'ST016', name: 'Linda Garcia', major: 'Artificial Intelligence' },
+			{ id: 'ST017', name: 'Jason Taylor', major: 'Artificial Intelligence' },
+			{ id: 'ST018', name: 'Maria Rodriguez', major: 'Software Engineering' },
 		],
 		leader: 'Sarah Wilson',
 		status: 'Unassigned',
@@ -285,7 +323,7 @@ export const mockReviewGroups: Record<string, FullMockGroup[]> = {
 		createFullMockGroup('g2', 'Review 1'),
 	],
 	'Review 2': [createFullMockGroup('g3', 'Review 2')],
-	'Review 3': [createFullMockGroup('g3', 'Review 3')],
+	'Review 3': [],
 	'Final Review': [createFullMockGroup('g4', 'Final Review')],
 };
 
