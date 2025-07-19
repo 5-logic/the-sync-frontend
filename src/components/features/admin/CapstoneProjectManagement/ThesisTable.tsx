@@ -44,75 +44,78 @@ type ThesisTableData = {
 	groupId: string;
 };
 
+// Helper function để tính rowSpan
+const calculateRowSpans = (data: ThesisTableData[]): ThesisTableData[] => {
+	const result: ThesisTableData[] = [];
+	const groupCounts: Record<string, number> = {};
+	const seenGroups = new Set<string>();
+	const seenMajorInGroups = new Set<string>();
+
+	// Đếm số lượng member trong mỗi group
+	data.forEach((item) => {
+		groupCounts[item.groupId] = (groupCounts[item.groupId] || 0) + 1;
+	});
+
+	// Tính rowSpan cho từng item
+	data.forEach((item) => {
+		const newItem = { ...item };
+
+		// RowSpan cho group (thesis, abbreviation, supervisor)
+		if (!seenGroups.has(item.groupId)) {
+			seenGroups.add(item.groupId);
+			newItem.rowSpanGroup = groupCounts[item.groupId];
+		} else {
+			newItem.rowSpanGroup = 0;
+		}
+
+		// RowSpan cho major - tính trong từng group
+		const majorKey = `${item.groupId}-${item.major}`;
+		if (!seenMajorInGroups.has(majorKey)) {
+			seenMajorInGroups.add(majorKey);
+			const majorCount = data.filter(
+				(d) => d.groupId === item.groupId && d.major === item.major,
+			).length;
+			newItem.rowSpanMajor = majorCount;
+		} else {
+			newItem.rowSpanMajor = 0;
+		}
+
+		result.push(newItem);
+	});
+
+	return result;
+};
+
 const ThesisTable = () => {
 	const [searchText, setSearchText] = useState('');
 
-	const data = useMemo((): ThesisTableData[] => {
+	const baseData = useMemo((): ThesisTableData[] => {
 		let counter = 1;
 		const tempData: ThesisTableData[] = [];
 
 		allMockGroups.forEach((group) => {
 			const thesis = mockTheses.find((t) => t.groupId === group.id);
 
-			// Sử dụng dữ liệu member từ group.ts
-			const groupMembers = group.members.map((member) => ({
-				groupId: group.id,
-				stt: counter++,
-				studentId: member.id,
-				name: member.name,
-				major: member.major,
-				thesisName: thesis?.englishName || group.title,
-				abbreviation: thesis?.abbreviation || group.code,
-				supervisor: group.supervisors.join(', '),
-				rowSpanGroup: 0,
-				rowSpanMajor: 0,
-			}));
+			// Tạo và sắp xếp members theo major
+			const groupMembers = group.members
+				.map((member) => ({
+					groupId: group.id,
+					stt: counter++,
+					studentId: member.id,
+					name: member.name,
+					major: member.major,
+					thesisName: thesis?.englishName || group.title,
+					abbreviation: thesis?.abbreviation || group.code,
+					supervisor: group.supervisors.join(', '),
+					rowSpanGroup: 0,
+					rowSpanMajor: 0,
+				}))
+				.sort((a, b) => a.major.localeCompare(b.major));
 
-			// Sắp xếp lại theo major để group các sinh viên cùng chuyên ngành
-			const sortedGroupMembers = groupMembers.sort((a, b) =>
-				a.major.localeCompare(b.major),
-			);
-			tempData.push(...sortedGroupMembers);
+			tempData.push(...groupMembers);
 		});
 
-		// Tính toán rowSpan
-		const result: ThesisTableData[] = [];
-		const groupCounts: Record<string, number> = {};
-		const seenGroups = new Set<string>();
-		const seenMajorInGroups = new Set<string>(); // track "groupId-major"
-
-		// Đếm số lượng member trong mỗi group
-		allMockGroups.forEach((group) => {
-			groupCounts[group.id] = group.members.length;
-		});
-
-		// Tính rowSpan cho từng item
-		tempData.forEach((item) => {
-			// RowSpan cho group (thesis, abbreviation, supervisor)
-			if (!seenGroups.has(item.groupId)) {
-				seenGroups.add(item.groupId);
-				item.rowSpanGroup = groupCounts[item.groupId];
-			} else {
-				item.rowSpanGroup = 0;
-			}
-
-			// RowSpan cho major - tính trong từng group
-			const majorKey = `${item.groupId}-${item.major}`;
-			if (!seenMajorInGroups.has(majorKey)) {
-				seenMajorInGroups.add(majorKey);
-				// Đếm số sinh viên cùng major trong group này
-				const majorCount = tempData.filter(
-					(data) => data.groupId === item.groupId && data.major === item.major,
-				).length;
-				item.rowSpanMajor = majorCount;
-			} else {
-				item.rowSpanMajor = 0;
-			}
-
-			result.push(item);
-		});
-
-		return result;
+		return calculateRowSpans(tempData);
 	}, []);
 
 	const handleSearch = (value: string) => {
@@ -121,165 +124,117 @@ const ThesisTable = () => {
 
 	const filteredData = useMemo(() => {
 		// Filter dữ liệu trước
-		const filtered = data.filter((item) => {
+		const filtered = baseData.filter((item) => {
 			if (!searchText) return true;
 
 			const searchTerm = searchText.toLowerCase();
+			const searchFields = [
+				item.name,
+				item.studentId,
+				item.thesisName,
+				item.abbreviation,
+				item.supervisor,
+				item.major,
+			];
 
-			// Search trong các trường: name, studentId, thesisName, abbreviation, supervisor, major
-			const matchesName = item.name.toLowerCase().includes(searchTerm);
-			const matchesStudentId = item.studentId
-				.toLowerCase()
-				.includes(searchTerm);
-			const matchesThesisTitle = item.thesisName
-				.toLowerCase()
-				.includes(searchTerm);
-			const matchesAbbreviation = item.abbreviation
-				.toLowerCase()
-				.includes(searchTerm);
-			const matchesSupervisor = item.supervisor
-				.toLowerCase()
-				.includes(searchTerm);
-			const matchesMajor = item.major.toLowerCase().includes(searchTerm);
-
-			return (
-				matchesName ||
-				matchesStudentId ||
-				matchesThesisTitle ||
-				matchesAbbreviation ||
-				matchesSupervisor ||
-				matchesMajor
+			return searchFields.some((field) =>
+				field.toLowerCase().includes(searchTerm),
 			);
 		});
 
 		// Tính toán lại rowSpan cho dữ liệu đã filter
-		const result: ThesisTableData[] = [];
-		const groupCounts: Record<string, number> = {};
-		const seenGroups = new Set<string>();
-		const seenMajorInGroups = new Set<string>();
+		return calculateRowSpans(filtered);
+	}, [baseData, searchText]);
 
-		// Đếm số lượng member trong mỗi group TRONG dữ liệu đã filter
-		filtered.forEach((item) => {
-			groupCounts[item.groupId] = (groupCounts[item.groupId] || 0) + 1;
-		});
+	// Helper function để render text với highlight
+	const renderHighlightText = (
+		text: string,
+		align: 'left' | 'center' = 'left',
+	) => (
+		<div style={{ textAlign: align }}>{highlightText(text, searchText)}</div>
+	);
 
-		// Tính rowSpan cho từng item dựa trên dữ liệu đã filter
-		filtered.forEach((item) => {
-			const newItem = { ...item };
-
-			// RowSpan cho group (thesis, abbreviation, supervisor)
-			if (!seenGroups.has(item.groupId)) {
-				seenGroups.add(item.groupId);
-				newItem.rowSpanGroup = groupCounts[item.groupId];
-			} else {
-				newItem.rowSpanGroup = 0;
-			}
-
-			// RowSpan cho major - tính trong từng group
-			const majorKey = `${item.groupId}-${item.major}`;
-			if (!seenMajorInGroups.has(majorKey)) {
-				seenMajorInGroups.add(majorKey);
-				// Đếm số sinh viên cùng major trong group này TRONG dữ liệu đã filter
-				const majorCount = filtered.filter(
-					(data) => data.groupId === item.groupId && data.major === item.major,
-				).length;
-				newItem.rowSpanMajor = majorCount;
-			} else {
-				newItem.rowSpanMajor = 0;
-			}
-
-			result.push(newItem);
-		});
-
-		return result;
-	}, [data, searchText]);
+	// Helper function để render cell với rowSpan
+	const renderCellWithRowSpan = (
+		content: React.ReactNode,
+		rowSpan: number,
+	) => ({
+		children: content,
+		props: { rowSpan },
+	});
 
 	const columns: ColumnsType<ThesisTableData> = [
 		{
 			title: 'No.',
 			key: 'no',
-			align: 'center' as const,
+			align: 'center',
 			render: (_, __, index) => index + 1,
 		},
 		{
 			title: 'Student ID',
 			dataIndex: 'studentId',
 			key: 'studentId',
-			align: 'center' as const,
-			render: (text: string) => (
-				<div style={{ textAlign: 'left' }}>
-					{highlightText(text, searchText)}
-				</div>
-			),
+			align: 'center',
+			render: (text: string) => renderHighlightText(text),
 		},
 		{
 			title: 'Full Name',
 			dataIndex: 'name',
 			key: 'name',
-			align: 'center' as const,
-			render: (text: string) => (
-				<div style={{ textAlign: 'left' }}>
-					{highlightText(text, searchText)}
-				</div>
-			),
+			align: 'center',
+			render: (text: string) => renderHighlightText(text),
 		},
 		{
 			title: 'Major',
 			dataIndex: 'major',
 			key: 'major',
-			align: 'center' as const,
-			render: (text: string, record: ThesisTableData) => ({
-				children: highlightText(text, searchText),
-				props: {
-					rowSpan: record.rowSpanMajor,
-				},
-			}),
+			align: 'center',
+			render: (text: string, record: ThesisTableData) =>
+				renderCellWithRowSpan(
+					highlightText(text, searchText),
+					record.rowSpanMajor,
+				),
 		},
 		{
 			title: 'Thesis Title',
 			dataIndex: 'thesisName',
 			key: 'thesisName',
-			align: 'center' as const,
-			render: (text: string, record: ThesisTableData) => ({
-				children: highlightText(text, searchText),
-				props: {
-					rowSpan: record.rowSpanGroup,
-				},
-			}),
+			align: 'center',
+			render: (text: string, record: ThesisTableData) =>
+				renderCellWithRowSpan(
+					highlightText(text, searchText),
+					record.rowSpanGroup,
+				),
 		},
 		{
 			title: 'Abbreviation',
 			dataIndex: 'abbreviation',
 			key: 'abbreviation',
-			align: 'center' as const,
-			render: (abbreviation: string, record: ThesisTableData) => ({
-				children: (
-					<Tag color="blue">{highlightText(abbreviation, searchText)}</Tag>
+			align: 'center',
+			render: (abbreviation: string, record: ThesisTableData) =>
+				renderCellWithRowSpan(
+					<Tag color="blue">{highlightText(abbreviation, searchText)}</Tag>,
+					record.rowSpanGroup,
 				),
-				props: {
-					rowSpan: record.rowSpanGroup,
-				},
-			}),
 		},
 		{
 			title: 'Supervisor',
 			dataIndex: 'supervisor',
 			key: 'supervisor',
-			align: 'center' as const,
-			render: (supervisor: string, record: ThesisTableData) => ({
-				children: supervisor ? (
-					<div style={{ textAlign: 'left' }}>
-						{supervisor.split(', ').map((sup) => (
-							<div key={sup}>{highlightText(sup, searchText)}</div>
-						))}
-					</div>
-				) : (
-					<span style={{ color: '#999' }}>-</span>
+			align: 'center',
+			render: (supervisor: string, record: ThesisTableData) =>
+				renderCellWithRowSpan(
+					supervisor ? (
+						<div style={{ textAlign: 'left' }}>
+							{supervisor.split(', ').map((sup) => (
+								<div key={sup}>{highlightText(sup, searchText)}</div>
+							))}
+						</div>
+					) : (
+						<span style={{ color: '#999' }}>-</span>
+					),
+					record.rowSpanGroup,
 				),
-				props: {
-					rowSpan: record.rowSpanGroup,
-				},
-			}),
 		},
 	];
 
