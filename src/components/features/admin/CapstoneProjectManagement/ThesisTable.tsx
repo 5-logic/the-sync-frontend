@@ -189,6 +189,11 @@ const ThesisTable = () => {
 
 	return (
 		<>
+			<div style={{ marginBottom: 16, textAlign: 'right' }}>
+				<Text type="secondary" style={{ fontSize: '14px' }}>
+					Kỳ Hè 2025 - FPT University Bình Định
+				</Text>
+			</div>
 			<Row gutter={[16, 16]} align="middle" style={{ marginBottom: 16 }}>
 				<Col flex="auto">
 					<Input
