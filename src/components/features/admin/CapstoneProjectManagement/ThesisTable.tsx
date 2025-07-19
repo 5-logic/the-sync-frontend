@@ -10,7 +10,6 @@ import { mockTheses } from '@/data/thesis';
 
 const { Option } = Select;
 
-// Kết hợp dữ liệu từ groups và theses
 type ThesisTableData = {
 	stt: number;
 	studentId: string;
@@ -19,42 +18,53 @@ type ThesisTableData = {
 	thesisName: string;
 	abbreviation: string;
 	supervisor: string;
+	rowSpan: number;
 };
 
 const ThesisTable = () => {
 	const [searchText, setSearchText] = useState('');
 	const [filteredMajor, setFilteredMajor] = useState<string | null>(null);
 
-	// Tạo dữ liệu kết hợp từ groups và theses
+	// Tạo dữ liệu kết hợp từ groups và theses, có tính rowSpan
 	const data = useMemo((): ThesisTableData[] => {
-		const combinedData: ThesisTableData[] = [];
+		const majors = [
+			'Software Engineering',
+			'Artificial Intelligence',
+			'Cybersecurity',
+		];
 		let counter = 1;
-
-		// Danh sách major để phân bổ ngẫu nhiên
-		const majors = ['Information Technology', 'Economics', 'Electronics'];
+		const groupCounts: Record<string, number> = {};
+		const tempData: (ThesisTableData & { groupId: string })[] = [];
 
 		allMockGroups.forEach((group) => {
-			// Tìm thesis tương ứng với group
 			const thesis = mockTheses.find((t) => t.groupId === group.id);
+			groupCounts[group.id] = group.members.length;
 
-			// Thêm từng member trong group
 			group.members.forEach((memberName, index) => {
-				combinedData.push({
+				tempData.push({
+					groupId: group.id,
 					stt: counter++,
 					studentId: `ST${group.id.toUpperCase()}${(index + 1).toString().padStart(2, '0')}`,
 					name: memberName,
-					major: majors[index % majors.length], // Phân bổ major theo vòng lặp
+					major: majors[index % majors.length],
 					thesisName: thesis?.englishName || group.title,
-					abbreviation: thesis?.abbreviation || `${group.code}`,
-					supervisor:
-						group.supervisors.length > 0
-							? group.supervisors.join(', ')
-							: 'Unassigned',
+					abbreviation: thesis?.abbreviation || group.code,
+					supervisor: group.supervisors.join(', '),
+					rowSpan: 1, // placeholder, sẽ ghi đè bên dưới
 				});
 			});
 		});
 
-		return combinedData;
+		// Gán rowSpan
+		const seen = new Set();
+		return tempData.map((item) => {
+			if (seen.has(item.groupId)) {
+				return { ...item, rowSpan: 0 };
+			} else {
+				seen.add(item.groupId);
+				return { ...item, rowSpan: groupCounts[item.groupId] };
+			}
+		});
 	}, []);
 
 	const handleSearch = (value: string) => {
@@ -77,38 +87,55 @@ const ThesisTable = () => {
 		{ title: 'No.', dataIndex: 'stt', key: 'stt' },
 		{ title: 'Student ID', dataIndex: 'studentId', key: 'studentId' },
 		{ title: 'Full Name', dataIndex: 'name', key: 'name' },
-		{ title: 'Major', dataIndex: 'major', key: 'major' },
-		{ title: 'Thesis Title', dataIndex: 'thesisName', key: 'thesisName' },
+		{
+			title: 'Major',
+			dataIndex: 'major',
+			key: 'major',
+			render: (text: string, record: ThesisTableData) => ({
+				children: text,
+				props: {
+					rowSpan: record.rowSpan,
+				},
+			}),
+		},
+		{
+			title: 'Thesis Title',
+			dataIndex: 'thesisName',
+			key: 'thesisName',
+			render: (text: string, record: ThesisTableData) => ({
+				children: text,
+				props: {
+					rowSpan: record.rowSpan,
+				},
+			}),
+		},
 		{
 			title: 'Abbreviation',
 			dataIndex: 'abbreviation',
 			key: 'abbreviation',
-			render: (abbreviation: string) => <Tag color="blue">{abbreviation}</Tag>,
+			render: (abbreviation: string, record: ThesisTableData) => ({
+				children: <Tag color="blue">{abbreviation}</Tag>,
+				props: {
+					rowSpan: record.rowSpan,
+				},
+			}),
 		},
 		{
 			title: 'Supervisor',
 			dataIndex: 'supervisor',
 			key: 'supervisor',
-			render: (supervisor: string) => {
-				if (!supervisor || supervisor === 'Unassigned') {
-					return <span style={{ color: '#999' }}>-</span>;
-				}
-
-				// Split by comma and display in vertical list like AssignSupervisor
-				const supervisors = supervisor
-					.split(', ')
-					.filter((name) => name.trim());
-
-				return supervisors.length > 0 ? (
-					<div>
-						{supervisors.map((sup, index) => (
-							<div key={index}>{sup.trim()}</div>
-						))}
-					</div>
+			render: (supervisor: string, record: ThesisTableData) => ({
+				children: supervisor ? (
+					supervisor
+						.split(', ')
+						.map((sup, index) => <div key={index}>{sup}</div>)
 				) : (
 					<span style={{ color: '#999' }}>-</span>
-				);
-			},
+				),
+				props: {
+					rowSpan: record.rowSpan,
+				},
+			}),
 		},
 	];
 
@@ -133,11 +160,11 @@ const ThesisTable = () => {
 						style={{ width: '100%' }}
 						size="middle"
 					>
-						<Option value="Information Technology">
-							Information Technology
+						<Option value="Software Engineering">Software Engineering</Option>
+						<Option value="Artificial Intelligence">
+							Artificial Intelligence
 						</Option>
-						<Option value="Economics">Economics</Option>
-						<Option value="Electronics">Electronics</Option>
+						<Option value="Cybersecurity">Cybersecurity</Option>
 					</Select>
 				</Col>
 				<Col style={{ width: 200 }}>
@@ -147,15 +174,17 @@ const ThesisTable = () => {
 						size="middle"
 						style={{ width: '100%' }}
 					>
-						Export file PDF
+						Export PDF
 					</Button>
 				</Col>
 			</Row>
+
 			<Table
 				columns={columns}
 				dataSource={filteredData}
 				pagination={TablePagination}
 				rowKey="studentId"
+				bordered
 			/>
 		</>
 	);
