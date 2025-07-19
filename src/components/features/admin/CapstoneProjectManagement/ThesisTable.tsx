@@ -114,43 +114,39 @@ const ThesisTable = () => {
 
 	return (
 		<>
-			<Row
-				gutter={[16, 16]}
-				align="middle"
-				justify="space-between"
-				style={{ marginBottom: 16 }}
-			>
-				<Col xs={24} md={18}>
-					<Row gutter={[8, 8]} wrap>
-						<Col flex="auto">
-							<Input
-								placeholder="Search by name or thesis title..."
-								value={searchText}
-								onChange={(e) => handleSearch(e.target.value)}
-								prefix={<SearchOutlined />}
-								allowClear
-								size="middle"
-							/>
-						</Col>
-						<Col style={{ width: 200 }}>
-							<Select
-								placeholder="Filter by major"
-								onChange={handleFilterMajor}
-								allowClear
-								style={{ width: '100%' }}
-								size="middle"
-							>
-								<Option value="Information Technology">
-									Information Technology
-								</Option>
-								<Option value="Economics">Economics</Option>
-								<Option value="Electronics">Electronics</Option>
-							</Select>
-						</Col>
-					</Row>
+			<Row gutter={[16, 16]} align="middle" style={{ marginBottom: 16 }}>
+				<Col flex="auto">
+					<Input
+						placeholder="Search by name or thesis title..."
+						value={searchText}
+						onChange={(e) => handleSearch(e.target.value)}
+						prefix={<SearchOutlined />}
+						allowClear
+						size="middle"
+					/>
 				</Col>
-				<Col xs={24} md={6} style={{ textAlign: 'right' }}>
-					<Button icon={<DownloadOutlined />} type="primary" size="middle">
+				<Col style={{ width: 250 }}>
+					<Select
+						placeholder="Filter by major"
+						onChange={handleFilterMajor}
+						allowClear
+						style={{ width: '100%' }}
+						size="middle"
+					>
+						<Option value="Information Technology">
+							Information Technology
+						</Option>
+						<Option value="Economics">Economics</Option>
+						<Option value="Electronics">Electronics</Option>
+					</Select>
+				</Col>
+				<Col style={{ width: 250 }}>
+					<Button
+						icon={<DownloadOutlined />}
+						type="primary"
+						size="middle"
+						style={{ width: '100%' }}
+					>
 						Export PDF
 					</Button>
 				</Col>
