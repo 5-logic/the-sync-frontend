@@ -14,8 +14,8 @@ export type GroupWithPhase = ExtendedGroup & {
 export type FullMockGroup = Group & {
 	title: string;
 	supervisors: string[];
-	members: string[]; // Array of member names
-	leader: string; // ✅ thêm leader
+	members: string[];
+	leader: string;
 	status: 'Finalized' | 'Incomplete' | 'Unassigned';
 	phase?: string;
 	submissionFile?: string;
