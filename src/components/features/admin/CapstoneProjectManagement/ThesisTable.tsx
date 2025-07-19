@@ -1,7 +1,7 @@
 'use client';
 
 import { DownloadOutlined, SearchOutlined } from '@ant-design/icons';
-import { Button, Col, Input, Row, Select, Table, Tag } from 'antd';
+import { Button, Col, Input, Row, Select, Table, Tag, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import React, { useMemo, useState } from 'react';
 
@@ -10,6 +10,7 @@ import { allMockGroups } from '@/data/group';
 import { mockTheses } from '@/data/thesis';
 
 const { Option } = Select;
+const { Text } = Typography;
 
 type ThesisTableData = {
 	stt: number;
@@ -236,6 +237,12 @@ const ThesisTable = () => {
 					return currentGroup !== nextGroup ? 'group-end-row' : '';
 				}}
 			/>
+
+			<Text type="secondary" style={{ marginTop: 16, display: 'block' }}>
+				Danh sách bao gồm {filteredData.length} sinh viên và{' '}
+				{new Set(filteredData.map((item) => item.groupId)).size} luận văn tốt
+				nghiệp
+			</Text>
 
 			<style>{`
 				.group-end-row {
