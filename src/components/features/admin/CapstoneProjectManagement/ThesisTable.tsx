@@ -18,8 +18,8 @@ type ThesisTableData = {
 	thesisName: string;
 	abbreviation: string;
 	supervisor: string;
-	rowSpanGroup: number; // chỉ dùng cho các cột cần merge (thesis, abbreviation, supervisor)
-	rowSpanMajor: number; // rowSpan cho cột major trong từng group
+	rowSpanGroup: number;
+	rowSpanMajor: number;
 	groupId: string;
 };
 
