@@ -155,9 +155,7 @@ const ThesisTable = () => {
 			key: 'supervisor',
 			render: (supervisor: string, record: ThesisTableData) => ({
 				children: supervisor ? (
-					supervisor
-						.split(', ')
-						.map((sup, index) => <div key={index}>{sup}</div>)
+					supervisor.split(', ').map((sup) => <div key={sup}>{sup}</div>)
 				) : (
 					<span style={{ color: '#999' }}>-</span>
 				),
@@ -220,7 +218,7 @@ const ThesisTable = () => {
 				}}
 			/>
 
-			<style jsx global>{`
+			<style>{`
 				.group-end-row {
 					position: relative;
 				}
