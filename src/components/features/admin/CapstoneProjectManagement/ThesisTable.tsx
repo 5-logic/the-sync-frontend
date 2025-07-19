@@ -226,14 +226,6 @@ const ThesisTable = () => {
 				</Col>
 			</Row>
 
-			<Row justify="end" style={{ marginBottom: 16 }}>
-				<Col>
-					<Text type="secondary" style={{ fontSize: '14px' }}>
-						Summer 2025 - FPT University Binh Dinh
-					</Text>
-				</Col>
-			</Row>
-
 			<Table
 				columns={columns}
 				dataSource={filteredData}
