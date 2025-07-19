@@ -11,7 +11,6 @@ import { mockTheses } from '@/data/thesis';
 
 const { Text } = Typography;
 
-// Utility function để highlight search text
 const highlightText = (text: string, searchTerm: string) => {
 	if (!searchTerm) return text;
 
@@ -285,7 +284,7 @@ const ThesisTable = () => {
 			>
 				<Col flex="auto">
 					<Input
-						placeholder="Search by name, student ID, thesis title, abbreviation, supervisor, or major..."
+						placeholder="Search by name, student ID, thesis title, abbreviation, supervisor, or major"
 						value={searchText}
 						onChange={(e) => handleSearch(e.target.value)}
 						prefix={<SearchOutlined />}
