@@ -189,11 +189,14 @@ const ThesisTable = () => {
 
 	return (
 		<>
-			<div style={{ marginBottom: 16, textAlign: 'right' }}>
-				<Text type="secondary" style={{ fontSize: '14px' }}>
-					Summer 2025 - FPT University Binh Dinh
-				</Text>
-			</div>
+			<Row justify="end" style={{ marginBottom: 16 }}>
+				<Col>
+					<Text type="secondary" style={{ fontSize: '14px' }}>
+						Summer 2025 - FPT University Binh Dinh
+					</Text>
+				</Col>
+			</Row>
+
 			<Row gutter={[16, 16]} align="middle" style={{ marginBottom: 16 }}>
 				<Col flex="auto">
 					<Input
@@ -230,6 +233,7 @@ const ThesisTable = () => {
 					</Button>
 				</Col>
 			</Row>
+
 			<Table
 				columns={columns}
 				dataSource={filteredData}
