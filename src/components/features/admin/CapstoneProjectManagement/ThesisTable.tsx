@@ -28,20 +28,19 @@ const ThesisTable = () => {
 	const [filteredMajor, setFilteredMajor] = useState<string | null>(null);
 
 	const data = useMemo((): ThesisTableData[] => {
-		const majors = ['Software Engineering', 'Artificial Intelligence'];
 		let counter = 1;
 		const tempData: ThesisTableData[] = [];
 
 		allMockGroups.forEach((group) => {
 			const thesis = mockTheses.find((t) => t.groupId === group.id);
 
-			// Tạo dữ liệu cho từng member trong group
-			const groupMembers = group.members.map((memberName, index) => ({
+			// Sử dụng dữ liệu member từ group.ts
+			const groupMembers = group.members.map((member) => ({
 				groupId: group.id,
 				stt: counter++,
-				studentId: `ST${group.id.toUpperCase()}${(index + 1).toString().padStart(2, '0')}`,
-				name: memberName,
-				major: majors[index % majors.length],
+				studentId: member.id,
+				name: member.name,
+				major: member.major,
 				thesisName: thesis?.englishName || group.title,
 				abbreviation: thesis?.abbreviation || group.code,
 				supervisor: group.supervisors.join(', '),
@@ -191,7 +190,6 @@ const ThesisTable = () => {
 						<Option value="Artificial Intelligence">
 							Artificial Intelligence
 						</Option>
-						<Option value="Cybersecurity">Cybersecurity</Option>
 					</Select>
 				</Col>
 				<Col style={{ width: 200 }}>
