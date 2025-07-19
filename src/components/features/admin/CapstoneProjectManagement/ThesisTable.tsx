@@ -19,7 +19,10 @@ const highlightText = (text: string, searchTerm: string) => {
 
 	return parts.map((part, index) =>
 		regex.test(part) ? (
-			<mark key={index} style={{ backgroundColor: '#fff2b8', padding: 0 }}>
+			<mark
+				key={`highlight-${part}-${index}`}
+				style={{ backgroundColor: '#fff2b8', padding: 0 }}
+			>
 				{part}
 			</mark>
 		) : (
