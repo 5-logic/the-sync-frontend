@@ -2,6 +2,7 @@
 
 import { DownloadOutlined, SearchOutlined } from '@ant-design/icons';
 import { Button, Col, Input, Row, Select, Table, Tag } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
 import React, { useMemo, useState } from 'react';
 
 import { TablePagination } from '@/components/common/TablePagination';
@@ -111,7 +112,7 @@ const ThesisTable = () => {
 		return matchesSearch && matchesMajor;
 	});
 
-	const columns = [
+	const columns: ColumnsType<ThesisTableData> = [
 		{ title: 'No.', dataIndex: 'stt', key: 'stt' },
 		{ title: 'Student ID', dataIndex: 'studentId', key: 'studentId' },
 		{ title: 'Full Name', dataIndex: 'name', key: 'name' },
@@ -141,6 +142,7 @@ const ThesisTable = () => {
 			title: 'Abbreviation',
 			dataIndex: 'abbreviation',
 			key: 'abbreviation',
+			align: 'center' as const,
 			render: (abbreviation: string, record: ThesisTableData) => ({
 				children: <Tag color="blue">{abbreviation}</Tag>,
 				props: {
