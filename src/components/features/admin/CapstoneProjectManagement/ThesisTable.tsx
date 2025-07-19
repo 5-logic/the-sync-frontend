@@ -1,6 +1,6 @@
 'use client';
 
-import { DownloadOutlined, SearchOutlined } from '@ant-design/icons';
+import { ExportOutlined, SearchOutlined } from '@ant-design/icons';
 import { Button, Col, Input, Row, Table, Tag, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import React, { useMemo, useState } from 'react';
@@ -302,7 +302,7 @@ const ThesisTable = () => {
 				</Col>
 				<Col style={{ width: 200 }}>
 					<Button
-						icon={<DownloadOutlined />}
+						icon={<ExportOutlined />}
 						type="primary"
 						size="middle"
 						style={{ width: '100%' }}
