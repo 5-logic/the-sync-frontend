@@ -192,7 +192,12 @@ const ThesisTable = () => {
 	}, [data, searchText]);
 
 	const columns: ColumnsType<ThesisTableData> = [
-		{ title: 'No.', dataIndex: 'stt', key: 'stt', align: 'center' as const },
+		{
+			title: 'No.',
+			key: 'no',
+			align: 'center' as const,
+			render: (_, __, index) => index + 1,
+		},
 		{
 			title: 'Student ID',
 			dataIndex: 'studentId',
