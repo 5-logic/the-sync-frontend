@@ -197,7 +197,7 @@ const ThesisTable = () => {
 				</Col>
 			</Row>
 
-			<Row gutter={[16, 16]} align="middle" style={{ marginBottom: 16 }}>
+			<Row gutter={[16, 16]} align="middle" style={{ marginBottom: 20 }}>
 				<Col flex="auto">
 					<Input
 						placeholder="Search by name or thesis title..."
