@@ -85,7 +85,31 @@ const ThesisTable = () => {
 			key: 'abbreviation',
 			render: (abbreviation: string) => <Tag color="blue">{abbreviation}</Tag>,
 		},
-		{ title: 'Supervisor', dataIndex: 'supervisor', key: 'supervisor' },
+		{
+			title: 'Supervisor',
+			dataIndex: 'supervisor',
+			key: 'supervisor',
+			render: (supervisor: string) => {
+				if (!supervisor || supervisor === 'Unassigned') {
+					return <span style={{ color: '#999' }}>-</span>;
+				}
+
+				// Split by comma and display in vertical list like AssignSupervisor
+				const supervisors = supervisor
+					.split(', ')
+					.filter((name) => name.trim());
+
+				return supervisors.length > 0 ? (
+					<div>
+						{supervisors.map((sup, index) => (
+							<div key={index}>{sup.trim()}</div>
+						))}
+					</div>
+				) : (
+					<span style={{ color: '#999' }}>-</span>
+				);
+			},
+		},
 	];
 
 	return (
