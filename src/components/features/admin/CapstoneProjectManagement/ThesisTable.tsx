@@ -113,13 +113,25 @@ const ThesisTable = () => {
 	});
 
 	const columns: ColumnsType<ThesisTableData> = [
-		{ title: 'No.', dataIndex: 'stt', key: 'stt' },
-		{ title: 'Student ID', dataIndex: 'studentId', key: 'studentId' },
-		{ title: 'Full Name', dataIndex: 'name', key: 'name' },
+		{ title: 'No.', dataIndex: 'stt', key: 'stt', align: 'center' as const },
+		{
+			title: 'Student ID',
+			dataIndex: 'studentId',
+			key: 'studentId',
+			align: 'center' as const,
+			render: (text: string) => <div style={{ textAlign: 'left' }}>{text}</div>,
+		},
+		{
+			title: 'Full Name',
+			dataIndex: 'name',
+			key: 'name',
+			align: 'center' as const,
+		},
 		{
 			title: 'Major',
 			dataIndex: 'major',
 			key: 'major',
+			align: 'center' as const,
 			render: (text: string, record: ThesisTableData) => ({
 				children: text,
 				props: {
@@ -131,6 +143,7 @@ const ThesisTable = () => {
 			title: 'Thesis Title',
 			dataIndex: 'thesisName',
 			key: 'thesisName',
+			align: 'center' as const,
 			render: (text: string, record: ThesisTableData) => ({
 				children: text,
 				props: {
@@ -154,6 +167,7 @@ const ThesisTable = () => {
 			title: 'Supervisor',
 			dataIndex: 'supervisor',
 			key: 'supervisor',
+			align: 'center' as const,
 			render: (supervisor: string, record: ThesisTableData) => ({
 				children: supervisor ? (
 					supervisor.split(', ').map((sup) => <div key={sup}>{sup}</div>)
