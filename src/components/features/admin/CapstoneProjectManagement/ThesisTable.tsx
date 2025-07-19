@@ -45,8 +45,8 @@ const ThesisTable = () => {
 				thesisName: thesis?.englishName || group.title,
 				abbreviation: thesis?.abbreviation || group.code,
 				supervisor: group.supervisors.join(', '),
-				rowSpanGroup: 0, // sẽ set sau
-				rowSpanMajor: 0, // sẽ set sau
+				rowSpanGroup: 0,
+				rowSpanMajor: 0,
 			}));
 
 			// Sắp xếp lại theo major để group các sinh viên cùng chuyên ngành
