@@ -218,7 +218,7 @@ const fullGroupMetaData: Record<string, FullGroupMeta> = {
 	},
 	g4: {
 		title: 'Cybersecurity Framework',
-		supervisors: [],
+		supervisors: ['Dr. Michael Chen', 'Dr. Martinez'],
 		members: [
 			{
 				id: 'ST014',
