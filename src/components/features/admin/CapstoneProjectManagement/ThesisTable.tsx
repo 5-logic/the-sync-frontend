@@ -117,34 +117,80 @@ const ThesisTable = () => {
 		setSearchText(value.toLowerCase());
 	};
 
-	const filteredData = data.filter((item) => {
-		if (!searchText) return true;
+	const filteredData = useMemo(() => {
+		// Filter dữ liệu trước
+		const filtered = data.filter((item) => {
+			if (!searchText) return true;
 
-		const searchTerm = searchText.toLowerCase();
+			const searchTerm = searchText.toLowerCase();
 
-		// Search trong các trường: name, studentId, thesisName, abbreviation, supervisor, major
-		const matchesName = item.name.toLowerCase().includes(searchTerm);
-		const matchesStudentId = item.studentId.toLowerCase().includes(searchTerm);
-		const matchesThesisTitle = item.thesisName
-			.toLowerCase()
-			.includes(searchTerm);
-		const matchesAbbreviation = item.abbreviation
-			.toLowerCase()
-			.includes(searchTerm);
-		const matchesSupervisor = item.supervisor
-			.toLowerCase()
-			.includes(searchTerm);
-		const matchesMajor = item.major.toLowerCase().includes(searchTerm);
+			// Search trong các trường: name, studentId, thesisName, abbreviation, supervisor, major
+			const matchesName = item.name.toLowerCase().includes(searchTerm);
+			const matchesStudentId = item.studentId
+				.toLowerCase()
+				.includes(searchTerm);
+			const matchesThesisTitle = item.thesisName
+				.toLowerCase()
+				.includes(searchTerm);
+			const matchesAbbreviation = item.abbreviation
+				.toLowerCase()
+				.includes(searchTerm);
+			const matchesSupervisor = item.supervisor
+				.toLowerCase()
+				.includes(searchTerm);
+			const matchesMajor = item.major.toLowerCase().includes(searchTerm);
 
-		return (
-			matchesName ||
-			matchesStudentId ||
-			matchesThesisTitle ||
-			matchesAbbreviation ||
-			matchesSupervisor ||
-			matchesMajor
-		);
-	});
+			return (
+				matchesName ||
+				matchesStudentId ||
+				matchesThesisTitle ||
+				matchesAbbreviation ||
+				matchesSupervisor ||
+				matchesMajor
+			);
+		});
+
+		// Tính toán lại rowSpan cho dữ liệu đã filter
+		const result: ThesisTableData[] = [];
+		const groupCounts: Record<string, number> = {};
+		const seenGroups = new Set<string>();
+		const seenMajorInGroups = new Set<string>();
+
+		// Đếm số lượng member trong mỗi group TRONG dữ liệu đã filter
+		filtered.forEach((item) => {
+			groupCounts[item.groupId] = (groupCounts[item.groupId] || 0) + 1;
+		});
+
+		// Tính rowSpan cho từng item dựa trên dữ liệu đã filter
+		filtered.forEach((item) => {
+			const newItem = { ...item };
+
+			// RowSpan cho group (thesis, abbreviation, supervisor)
+			if (!seenGroups.has(item.groupId)) {
+				seenGroups.add(item.groupId);
+				newItem.rowSpanGroup = groupCounts[item.groupId];
+			} else {
+				newItem.rowSpanGroup = 0;
+			}
+
+			// RowSpan cho major - tính trong từng group
+			const majorKey = `${item.groupId}-${item.major}`;
+			if (!seenMajorInGroups.has(majorKey)) {
+				seenMajorInGroups.add(majorKey);
+				// Đếm số sinh viên cùng major trong group này TRONG dữ liệu đã filter
+				const majorCount = filtered.filter(
+					(data) => data.groupId === item.groupId && data.major === item.major,
+				).length;
+				newItem.rowSpanMajor = majorCount;
+			} else {
+				newItem.rowSpanMajor = 0;
+			}
+
+			result.push(newItem);
+		});
+
+		return result;
+	}, [data, searchText]);
 
 	const columns: ColumnsType<ThesisTableData> = [
 		{ title: 'No.', dataIndex: 'stt', key: 'stt', align: 'center' as const },
