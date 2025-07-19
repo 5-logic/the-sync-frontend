@@ -285,7 +285,7 @@ export const mockReviewGroups: Record<string, FullMockGroup[]> = {
 		createFullMockGroup('g2', 'Review 1'),
 	],
 	'Review 2': [createFullMockGroup('g3', 'Review 2')],
-	'Review 3': [createFullMockGroup('g3', 'Review 3')],
+	'Review 3': [],
 	'Final Review': [createFullMockGroup('g4', 'Final Review')],
 };
 
