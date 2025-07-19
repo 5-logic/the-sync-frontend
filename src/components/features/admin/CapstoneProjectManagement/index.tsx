@@ -1,18 +1,22 @@
 'use client';
 
-import { Layout, Typography } from 'antd';
+import { Space } from 'antd';
 import React from 'react';
+
+import { Header } from '@/components/common/Header';
 
 import ThesisTable from './ThesisTable';
 
-const { Title } = Typography;
-
 const HomePage = () => {
 	return (
-		<Layout style={{ padding: '24px' }}>
-			<Title level={2}>Graduation Thesis Assignment List</Title>
+		<Space direction="vertical" size="large" style={{ width: '100%' }}>
+			<Header
+				title="Capstone Project Management"
+				description="Manage supervisor assignments for thesis groups"
+				badgeText="Moderator Only"
+			/>
 			<ThesisTable />
-		</Layout>
+		</Space>
 	);
 };
 
