@@ -27,11 +27,7 @@ const ThesisTable = () => {
 	const [filteredMajor, setFilteredMajor] = useState<string | null>(null);
 
 	const data = useMemo((): ThesisTableData[] => {
-		const majors = [
-			'Software Engineering',
-			'Artificial Intelligence',
-			'Cybersecurity',
-		];
+		const majors = ['Software Engineering', 'Artificial Intelligence'];
 		let counter = 1;
 		const groupCounts: Record<string, number> = {};
 		const tempData: ThesisTableData[] = [];
