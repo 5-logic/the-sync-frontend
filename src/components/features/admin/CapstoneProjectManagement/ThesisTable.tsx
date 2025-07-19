@@ -1,7 +1,7 @@
 'use client';
 
 import { DownloadOutlined, SearchOutlined } from '@ant-design/icons';
-import { Button, Col, Input, Row, Select, Table, Tag, Typography } from 'antd';
+import { Button, Col, Input, Row, Table, Tag, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import React, { useMemo, useState } from 'react';
 
@@ -9,7 +9,6 @@ import { TablePagination } from '@/components/common/TablePagination';
 import { allMockGroups } from '@/data/group';
 import { mockTheses } from '@/data/thesis';
 
-const { Option } = Select;
 const { Text } = Typography;
 
 type ThesisTableData = {
@@ -27,7 +26,6 @@ type ThesisTableData = {
 
 const ThesisTable = () => {
 	const [searchText, setSearchText] = useState('');
-	const [filteredMajor, setFilteredMajor] = useState<string | null>(null);
 
 	const data = useMemo((): ThesisTableData[] => {
 		let counter = 1;
@@ -101,16 +99,11 @@ const ThesisTable = () => {
 		setSearchText(value.toLowerCase());
 	};
 
-	const handleFilterMajor = (value: string) => {
-		setFilteredMajor(value);
-	};
-
 	const filteredData = data.filter((item) => {
 		const matchesSearch =
 			item.name.toLowerCase().includes(searchText) ||
 			item.thesisName.toLowerCase().includes(searchText);
-		const matchesMajor = filteredMajor ? item.major === filteredMajor : true;
-		return matchesSearch && matchesMajor;
+		return matchesSearch;
 	});
 
 	const columns: ColumnsType<ThesisTableData> = [
@@ -189,7 +182,11 @@ const ThesisTable = () => {
 
 	return (
 		<>
-			<Row gutter={[16, 16]} align="middle" style={{ marginBottom: 20 }}>
+			<Row
+				gutter={[16, 16]}
+				align="middle"
+				style={{ marginBottom: 20, marginTop: 20 }}
+			>
 				<Col flex="auto">
 					<Input
 						placeholder="Search by name or thesis title..."
@@ -199,20 +196,6 @@ const ThesisTable = () => {
 						allowClear
 						size="middle"
 					/>
-				</Col>
-				<Col style={{ width: 250 }}>
-					<Select
-						placeholder="Filter by major"
-						onChange={handleFilterMajor}
-						allowClear
-						style={{ width: '100%' }}
-						size="middle"
-					>
-						<Option value="Software Engineering">Software Engineering</Option>
-						<Option value="Artificial Intelligence">
-							Artificial Intelligence
-						</Option>
-					</Select>
 				</Col>
 				<Col style={{ width: 200 }}>
 					<Button
