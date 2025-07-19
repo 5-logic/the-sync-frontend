@@ -23,7 +23,7 @@ export interface UseAssignSupervisorReturn {
 		silent?: boolean,
 	) => Promise<boolean>;
 	refreshData: () => Promise<void>;
-	fetchData: (forceRefresh?: boolean) => Promise<void>;
+	fetchData: (forceRefresh?: boolean, semesterId?: string) => Promise<void>;
 	bulkAssignSupervisors: (
 		assignments: Array<{
 			thesisId: string;
