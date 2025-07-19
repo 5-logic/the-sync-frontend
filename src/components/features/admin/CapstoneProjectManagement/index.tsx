@@ -13,7 +13,6 @@ const HomePage = () => {
 			<Header
 				title="Capstone Project Management"
 				description="Capstone Project Management is a platform that updates supervision assignment decisions and facilitates comprehensive tracking and management of capstone project implementation."
-				badgeText="Moderator Only"
 			/>
 			<ThesisTable />
 		</Space>
