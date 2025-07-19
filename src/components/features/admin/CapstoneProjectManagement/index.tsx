@@ -4,8 +4,7 @@ import { Space } from 'antd';
 import React from 'react';
 
 import { Header } from '@/components/common/Header';
-
-import ThesisTable from './ThesisTable';
+import ThesisTable from '@/components/features/admin/CapstoneProjectManagement/ThesisTable';
 
 const HomePage = () => {
 	return (
