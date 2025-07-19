@@ -18,14 +18,14 @@ type ThesisTableData = {
 	thesisName: string;
 	abbreviation: string;
 	supervisor: string;
-	rowSpan: number;
+	rowSpanGroup: number; // chỉ dùng cho các cột cần merge
+	groupId: string;
 };
 
 const ThesisTable = () => {
 	const [searchText, setSearchText] = useState('');
 	const [filteredMajor, setFilteredMajor] = useState<string | null>(null);
 
-	// Tạo dữ liệu kết hợp từ groups và theses, có tính rowSpan
 	const data = useMemo((): ThesisTableData[] => {
 		const majors = [
 			'Software Engineering',
@@ -34,7 +34,7 @@ const ThesisTable = () => {
 		];
 		let counter = 1;
 		const groupCounts: Record<string, number> = {};
-		const tempData: (ThesisTableData & { groupId: string })[] = [];
+		const tempData: ThesisTableData[] = [];
 
 		allMockGroups.forEach((group) => {
 			const thesis = mockTheses.find((t) => t.groupId === group.id);
@@ -46,23 +46,23 @@ const ThesisTable = () => {
 					stt: counter++,
 					studentId: `ST${group.id.toUpperCase()}${(index + 1).toString().padStart(2, '0')}`,
 					name: memberName,
-					major: majors[index % majors.length],
+					major: majors[(counter + index) % majors.length], // giả định mix chuyên ngành
 					thesisName: thesis?.englishName || group.title,
 					abbreviation: thesis?.abbreviation || group.code,
 					supervisor: group.supervisors.join(', '),
-					rowSpan: 1, // placeholder, sẽ ghi đè bên dưới
+					rowSpanGroup: 1, // sẽ set bên dưới
 				});
 			});
 		});
 
-		// Gán rowSpan
-		const seen = new Set();
+		// Gán rowSpan cho nhóm (chỉ cho các cột cần merge)
+		const seenGroups = new Set();
 		return tempData.map((item) => {
-			if (seen.has(item.groupId)) {
-				return { ...item, rowSpan: 0 };
+			if (!seenGroups.has(item.groupId)) {
+				seenGroups.add(item.groupId);
+				return { ...item, rowSpanGroup: groupCounts[item.groupId] };
 			} else {
-				seen.add(item.groupId);
-				return { ...item, rowSpan: groupCounts[item.groupId] };
+				return { ...item, rowSpanGroup: 0 };
 			}
 		});
 	}, []);
@@ -91,12 +91,7 @@ const ThesisTable = () => {
 			title: 'Major',
 			dataIndex: 'major',
 			key: 'major',
-			render: (text: string, record: ThesisTableData) => ({
-				children: text,
-				props: {
-					rowSpan: record.rowSpan,
-				},
-			}),
+			// ❌ Không merge cột này nữa
 		},
 		{
 			title: 'Thesis Title',
@@ -105,7 +100,7 @@ const ThesisTable = () => {
 			render: (text: string, record: ThesisTableData) => ({
 				children: text,
 				props: {
-					rowSpan: record.rowSpan,
+					rowSpan: record.rowSpanGroup,
 				},
 			}),
 		},
@@ -116,7 +111,7 @@ const ThesisTable = () => {
 			render: (abbreviation: string, record: ThesisTableData) => ({
 				children: <Tag color="blue">{abbreviation}</Tag>,
 				props: {
-					rowSpan: record.rowSpan,
+					rowSpan: record.rowSpanGroup,
 				},
 			}),
 		},
@@ -133,7 +128,7 @@ const ThesisTable = () => {
 					<span style={{ color: '#999' }}>-</span>
 				),
 				props: {
-					rowSpan: record.rowSpan,
+					rowSpan: record.rowSpanGroup,
 				},
 			}),
 		},
