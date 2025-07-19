@@ -189,14 +189,6 @@ const ThesisTable = () => {
 
 	return (
 		<>
-			<Row justify="end" style={{ marginBottom: 16 }}>
-				<Col>
-					<Text type="secondary" style={{ fontSize: '14px' }}>
-						Summer 2025 - FPT University Binh Dinh
-					</Text>
-				</Col>
-			</Row>
-
 			<Row gutter={[16, 16]} align="middle" style={{ marginBottom: 20 }}>
 				<Col flex="auto">
 					<Input
@@ -231,6 +223,14 @@ const ThesisTable = () => {
 					>
 						Export PDF
 					</Button>
+				</Col>
+			</Row>
+
+			<Row justify="end" style={{ marginBottom: 16 }}>
+				<Col>
+					<Text type="secondary" style={{ fontSize: '14px' }}>
+						Summer 2025 - FPT University Binh Dinh
+					</Text>
 				</Col>
 			</Row>
 
