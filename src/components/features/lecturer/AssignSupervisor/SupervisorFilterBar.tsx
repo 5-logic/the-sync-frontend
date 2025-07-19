@@ -8,26 +8,18 @@ import GroupSearchBar from '@/components/features/lecturer/AssignSupervisor/Grou
 
 const { Option } = Select;
 
-type StatusType = 'All' | 'Finalized' | 'Incomplete' | 'Unassigned';
-
 interface Props {
 	search: string;
 	onSearchChange: (val: string) => void;
-	status: StatusType;
-	onStatusChange: (val: StatusType) => void;
+	semester: string;
+	onSemesterChange: (val: string) => void;
 	onRefresh: () => void;
 	refreshing: boolean;
 	onAssignAllDrafts: () => void;
 	draftCount: number;
 	updating: boolean;
+	semesterOptions: Array<{ value: string; label: string }>;
 }
-
-const STATUS_OPTIONS = [
-	{ value: 'All' as const, label: 'All Status' },
-	{ value: 'Finalized' as const, label: 'Finalized' },
-	{ value: 'Incomplete' as const, label: 'Incomplete' },
-	{ value: 'Unassigned' as const, label: 'Unassigned' },
-];
 
 /**
  * Optimized Filter bar component for supervisor assignment page
@@ -37,19 +29,20 @@ const SupervisorFilterBar = memo<Props>(
 	({
 		search,
 		onSearchChange,
-		status,
-		onStatusChange,
+		semester,
+		onSemesterChange,
 		onRefresh,
 		refreshing,
 		onAssignAllDrafts,
 		draftCount,
 		updating,
+		semesterOptions,
 	}) => {
-		const handleStatusChange = useCallback(
-			(value: StatusType) => {
-				onStatusChange(value);
+		const handleSemesterChange = useCallback(
+			(value: string) => {
+				onSemesterChange(value);
 			},
-			[onStatusChange],
+			[onSemesterChange],
 		);
 
 		return (
@@ -69,12 +62,12 @@ const SupervisorFilterBar = memo<Props>(
 				</Col>
 				<Col style={{ width: 160 }}>
 					<Select
-						value={status}
-						onChange={handleStatusChange}
+						value={semester}
+						onChange={handleSemesterChange}
 						style={{ width: '100%' }}
-						placeholder="Filter by status"
+						placeholder="Filter by semester"
 					>
-						{STATUS_OPTIONS.map((option) => (
+						{semesterOptions.map((option) => (
 							<Option key={option.value} value={option.value}>
 								{option.label}
 							</Option>
@@ -97,7 +90,6 @@ const SupervisorFilterBar = memo<Props>(
 						loading={updating}
 						disabled={draftCount === 0}
 						onClick={onAssignAllDrafts}
-						style={{ color: 'white' }}
 					>
 						Assign All Drafts ({draftCount})
 					</Button>

@@ -2,60 +2,69 @@
 
 import { Space } from 'antd';
 import { useRouter } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { useEffect } from 'react';
 
 import { Header } from '@/components/common/Header';
 import ChecklistTable from '@/components/features/lecturer/ChecklistManagement/ChecklistTable';
 import ChecklistToolbar from '@/components/features/lecturer/ChecklistManagement/ChecklistToolbar';
-import { mockChecklistItems } from '@/data/ChecklistItems';
-import { mockChecklists } from '@/data/checklist';
+import { useChecklistStore } from '@/store';
 
 export default function ChecklistManagement() {
 	const router = useRouter();
-	const [semester, setSemester] = useState('');
-	const [milestone, setMilestone] = useState('');
-	const [searchValue, setSearchValue] = useState('');
 
-	const getTotalItems = (checklistId: string) =>
-		mockChecklistItems.filter((item) => item.checklistId === checklistId)
-			.length;
+	const {
+		filteredChecklists,
+		loading,
+		fetchChecklists,
+		setSearchText,
+		setSelectedMilestoneId,
+		getTotalItems,
+	} = useChecklistStore();
+
+	// Fetch checklists on component mount
+	useEffect(() => {
+		fetchChecklists();
+	}, [fetchChecklists]);
 
 	const handleCreateChecklist = () => {
 		router.push(`/lecturer/create-checklist`);
 	};
 
-	// Lọc theo search + semester + milestone
-	const filteredChecklists = useMemo(() => {
-		return mockChecklists.filter((item) => {
-			const matchesSearch =
-				item.name.toLowerCase().includes(searchValue.toLowerCase()) || // NOSONAR
-				item.description?.toLowerCase().includes(searchValue.toLowerCase());
+	const handleRefresh = () => {
+		fetchChecklists(true); // Force refresh
+	};
 
-			const matchesSemester = semester ? item.semester === semester : true;
-			const matchesMilestone = milestone ? item.milestone === milestone : true;
+	const handleSearchChange = (value: string) => {
+		setSearchText(value);
+	};
 
-			return matchesSearch && matchesSemester && matchesMilestone;
-		});
-	}, [searchValue, semester, milestone]);
+	const handleMilestoneChange = (milestoneId: string | null) => {
+		setSelectedMilestoneId(milestoneId);
+	};
 
 	return (
-		<Space direction="vertical" size="large" style={{ width: '100%' }}>
-			<Header
-				title="Checklist Management"
-				description="Manage evaluation checklists by thesis phases to ensure consistency, transparency, and progress tracking."
-				badgeText="Moderator Only"
-			/>
+		<div style={{ padding: '0 4px' }}>
+			<Space direction="vertical" size="large" style={{ width: '100%' }}>
+				<Header
+					title="Checklist Management"
+					description="Manage evaluation checklists by thesis phases to ensure consistency, transparency, and progress tracking."
+					badgeText="Moderator Only"
+				/>
 
-			<ChecklistToolbar
-				semester={semester}
-				onSemesterChange={setSemester}
-				milestone={milestone}
-				onMilestoneChange={setMilestone}
-				onCreate={handleCreateChecklist}
-				onSearchChange={setSearchValue}
-			/>
+				<ChecklistToolbar
+					onCreate={handleCreateChecklist}
+					onRefresh={handleRefresh}
+					onSearchChange={handleSearchChange}
+					onMilestoneChange={handleMilestoneChange}
+					loading={loading}
+				/>
 
-			<ChecklistTable data={filteredChecklists} getTotalItems={getTotalItems} />
-		</Space>
+				<ChecklistTable
+					data={filteredChecklists}
+					getTotalItems={getTotalItems}
+					loading={loading}
+				/>
+			</Space>
+		</div>
 	);
 }

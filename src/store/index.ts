@@ -1,6 +1,7 @@
 // Store exports
 export { useAdminStore } from '@/store/useAdminStore';
 export { useAppStore } from '@/store/useAppStore';
+export { useChecklistStore } from '@/store/useChecklistStore';
 export { useGroupDashboardStore } from '@/store/useGroupDashboardStore';
 export { useGroupsStore } from '@/store/useGroupsStore';
 export { useLecturerStore } from '@/store/useLecturerStore';

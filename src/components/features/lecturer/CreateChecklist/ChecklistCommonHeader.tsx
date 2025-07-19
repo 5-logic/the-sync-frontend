@@ -5,31 +5,29 @@ import { Card, Input, Select, Space, Typography } from 'antd';
 import { FormLabel } from '@/components/common/FormLabel';
 
 interface Props {
-	semester: string;
 	milestone: string;
 	checklistName: string;
 	checklistDescription: string;
 	onNameChange: (val: string) => void;
 	onDescriptionChange: (val: string) => void;
-	onSemesterChange: (val: string) => void;
 	onMilestoneChange: (val: string) => void;
-	availableSemesters: { label: string; value: string }[];
 	availableMilestones: { label: string; value: string }[];
 	showErrors: boolean;
+	loading?: boolean;
+	milestonesLoading?: boolean;
 }
 
 export default function ChecklistCommonHeader({
-	semester,
 	milestone,
 	checklistName,
 	checklistDescription,
 	onNameChange,
 	onDescriptionChange,
-	onSemesterChange,
 	onMilestoneChange,
-	availableSemesters,
 	availableMilestones,
 	showErrors,
+	loading = false,
+	milestonesLoading = false,
 }: Readonly<Props>) {
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
@@ -42,17 +40,6 @@ export default function ChecklistCommonHeader({
 				<Space size="middle" wrap>
 					<Select
 						value={
-							availableSemesters.find((s) => s.value === semester)?.value ??
-							undefined
-						}
-						onChange={onSemesterChange}
-						options={availableSemesters}
-						style={{ minWidth: 160 }}
-						placeholder="Select semester"
-					/>
-
-					<Select
-						value={
 							availableMilestones.find((m) => m.value === milestone)?.value ??
 							undefined
 						}
@@ -60,6 +47,8 @@ export default function ChecklistCommonHeader({
 						options={availableMilestones}
 						style={{ minWidth: 200 }}
 						placeholder="Select milestone"
+						disabled={loading}
+						loading={milestonesLoading}
 					/>
 				</Space>
 			</div>
@@ -74,11 +63,12 @@ export default function ChecklistCommonHeader({
 							value={checklistName}
 							onChange={(e) => onNameChange(e.target.value)}
 							status={showErrors && !checklistName.trim() ? 'error' : undefined}
+							disabled={loading}
 						/>
 					</div>
 
 					<div>
-						<FormLabel text="Checklist Description" isRequired />
+						<FormLabel text="Checklist Description" />
 						<Input.TextArea
 							placeholder="Enter checklist description"
 							value={checklistDescription}
@@ -87,6 +77,7 @@ export default function ChecklistCommonHeader({
 							status={
 								showErrors && !checklistDescription.trim() ? 'error' : undefined
 							}
+							disabled={loading}
 						/>
 					</div>
 				</Space>
