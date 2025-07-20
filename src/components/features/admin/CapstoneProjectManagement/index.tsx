@@ -10,8 +10,8 @@ const HomePage = () => {
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
 			<Header
-				title="Capstone Defense Results"
-				description="View, import, and assess capstone defense results with detailed student info and final evaluation status."
+				title="Capstone Project"
+				description="Capstone Project Management is a platform that updates supervision assignment decisions and facilitates comprehensive tracking and management of capstone project implementation."
 				badgeText="Summer 2025 - FPT University Binh Dinh"
 			/>
 			<ThesisTable />
