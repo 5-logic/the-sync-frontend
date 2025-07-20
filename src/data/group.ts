@@ -124,7 +124,7 @@ export type StudentMember = {
 	name: string;
 	major: 'Software Engineering' | 'Artificial Intelligence';
 	isLeader?: boolean;
-	defenseStatus?: 'Pass' | 'Not Pass';
+	defenseStatus?: 'Pass' | 'Failed';
 };
 
 // ===== Mock member data for FullMockGroup =====
@@ -161,7 +161,7 @@ const fullGroupMetaData: Record<string, FullGroupMeta> = {
 				id: 'ST003',
 				name: 'Bob Chen',
 				major: 'Software Engineering',
-				defenseStatus: 'Not Pass',
+				defenseStatus: 'Failed',
 			},
 			{
 				id: 'ST004',
@@ -195,7 +195,7 @@ const fullGroupMetaData: Record<string, FullGroupMeta> = {
 				id: 'ST006',
 				name: 'David Kim',
 				major: 'Artificial Intelligence',
-				defenseStatus: 'Not Pass',
+				defenseStatus: 'Failed',
 			},
 			{
 				id: 'ST007',
@@ -231,7 +231,7 @@ const fullGroupMetaData: Record<string, FullGroupMeta> = {
 				name: 'Mike Johnson',
 				major: 'Software Engineering',
 				isLeader: true,
-				defenseStatus: 'Not Pass',
+				defenseStatus: 'Failed',
 			},
 			{
 				id: 'ST010',
@@ -249,7 +249,7 @@ const fullGroupMetaData: Record<string, FullGroupMeta> = {
 				id: 'ST012',
 				name: 'Amy Liu',
 				major: 'Artificial Intelligence',
-				defenseStatus: 'Not Pass',
+				defenseStatus: 'Failed',
 			},
 			{
 				id: 'ST013',
@@ -291,7 +291,7 @@ const fullGroupMetaData: Record<string, FullGroupMeta> = {
 				id: 'ST016',
 				name: 'Linda Garcia',
 				major: 'Artificial Intelligence',
-				defenseStatus: 'Not Pass',
+				defenseStatus: 'Failed',
 			},
 			{
 				id: 'ST017',
@@ -303,7 +303,7 @@ const fullGroupMetaData: Record<string, FullGroupMeta> = {
 				id: 'ST018',
 				name: 'Maria Rodriguez',
 				major: 'Software Engineering',
-				defenseStatus: 'Not Pass',
+				defenseStatus: 'Failed',
 			},
 		],
 		leader: 'Sarah Wilson',

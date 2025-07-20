@@ -137,6 +137,7 @@ const ThesisTable = () => {
 				item.studentId,
 				item.thesisName,
 				item.major,
+				item.status,
 			];
 			return searchFields.some((field) =>
 				field.toLowerCase().includes(searchText),
@@ -253,7 +254,7 @@ const ThesisTable = () => {
 			>
 				<Col flex="auto">
 					<Input
-						placeholder="Search by name, student ID, thesis title, or major"
+						placeholder="Search by name, student ID, thesis title, major, or status"
 						value={searchText}
 						onChange={(e) => handleSearch(e.target.value)}
 						prefix={<SearchOutlined />}
