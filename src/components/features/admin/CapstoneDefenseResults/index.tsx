@@ -4,8 +4,7 @@ import { Space } from 'antd';
 import React from 'react';
 
 import { Header } from '@/components/common/Header';
-
-import GroupTable from './GroupTable';
+import GroupTable from '@/components/features/admin/CapstoneDefenseResults/GroupTable';
 
 const HomePage = () => {
 	return (
