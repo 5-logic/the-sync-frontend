@@ -5,20 +5,30 @@ import { useEffect, useState } from 'react';
 
 import { Header } from '@/components/common/Header';
 import AssignReviewerModal from '@/components/features/lecturer/AssignLecturerReview/AssignReviewerModal';
-import GroupTable from '@/components/features/lecturer/AssignLecturerReview/GroupTable';
+import DraftReviewerAssignmentsList from '@/components/features/lecturer/AssignLecturerReview/DraftReviewerAssignmentsList';
+import GroupTable, {
+	GroupTableProps,
+} from '@/components/features/lecturer/AssignLecturerReview/GroupTable';
 import SearchFilterBar from '@/components/features/lecturer/AssignLecturerReview/SearchFilterBar';
-import { FullMockGroup } from '@/data/group';
 import { mockLecturers } from '@/data/lecturers';
 import { mockReviews } from '@/data/review';
-import { mockSubmissions } from '@/data/submission';
+import reviewService from '@/lib/services/review.service';
 import {
 	useMilestoneStore,
 	useSemesterStore,
 	useSubmissionStore,
 } from '@/store';
+import { useDraftReviewerAssignmentStore } from '@/store/useDraftReviewerAssignmentStore';
 
 export default function AssignLecturerReview() {
-	const [selectedGroup, setSelectedGroup] = useState<FullMockGroup | null>(
+	// Draft reviewer store
+	const {
+		addDraftReviewerAssignment,
+		getDraftReviewerAssignmentsList,
+		clearAllDraftReviewerDrafts,
+	} = useDraftReviewerAssignmentStore();
+	const [updating, setUpdating] = useState(false);
+	const [selectedGroup, setSelectedGroup] = useState<GroupTableProps | null>(
 		null,
 	);
 	const [search, setSearch] = useState('');
@@ -121,7 +131,11 @@ export default function AssignLecturerReview() {
 					title: s.thesis?.englishName || '',
 					supervisors: s.thesis?.supervisors.map((sup) => sup.fullName),
 					reviewers: s.reviewLecturers.map((rev) => rev.fullName),
+					submissionId: s.id,
+					phase: String(s.milestone),
 				}));
+
+	console.log('Groups in semester:', groupsInSemester);
 
 	// Search theo group name/code
 	const filteredGroups = groupsInSemester.filter((group) => {
@@ -134,8 +148,8 @@ export default function AssignLecturerReview() {
 
 	// Hàm lấy reviewer hiện tại từ groupId + milestone
 	function getReviewersForGroup(groupId: string, milestone: string): string[] {
-		const submission = mockSubmissions.find(
-			(s) => s.groupId === groupId && s.milestone === milestone,
+		const submission = filteredGroups.find(
+			(g) => g.id === groupId && g.phase === milestone,
 		);
 		if (!submission) return [];
 
@@ -175,11 +189,54 @@ export default function AssignLecturerReview() {
 				loadingMilestones={loadingMilestones}
 				noMilestone={milestone === 'NO_MILESTONE'}
 				onRefresh={handleRefresh}
+				onAssignAllDrafts={async () => {
+					setUpdating(true);
+					const drafts = getDraftReviewerAssignmentsList();
+					if (!drafts.length) {
+						setUpdating(false);
+						return;
+					}
+					try {
+						await reviewService.assignBulkReviewers({
+							assignments: drafts.map((draft) => ({
+								submissionId: draft.submissionId,
+								lecturerIds: draft.reviewerIds,
+							})),
+						});
+						clearAllDraftReviewerDrafts();
+					} catch (e) {
+						console.error('Failed to assign all draft reviewers:', e);
+					}
+					setUpdating(false);
+				}}
+				draftCount={getDraftReviewerAssignmentsList().length}
+				updating={updating}
 			/>
+
+			<DraftReviewerAssignmentsList />
 
 			<GroupTable
 				groups={filteredGroups}
-				// onAssign={(group) => setSelectedGroup(group)}
+				onAssign={(group: GroupTableProps) => {
+					// Find the full group object from submissions to match FullMockGroup type
+					const submission = submissions.find((s) => s.group.id === group.id);
+					if (submission) {
+						const submissionGroup = submission.group;
+						setSelectedGroup({
+							...submissionGroup,
+							title: submission.thesis?.englishName || '',
+							phase: String(submission.milestone),
+							supervisors:
+								submission.thesis?.supervisors?.map((sup) => sup.fullName) ||
+								[],
+							reviewers: getReviewersForGroup(
+								submissionGroup.id,
+								submission.milestone.id || '',
+							),
+							submissionId: submission.id,
+						});
+					}
+				}}
 				loading={loadingSubmissions}
 				noMilestone={milestone === 'NO_MILESTONE'}
 			/>
@@ -192,11 +249,24 @@ export default function AssignLecturerReview() {
 						? getReviewersForGroup(selectedGroup.id, selectedGroup.phase ?? '')
 						: []
 				}
-				lecturerOptions={mockLecturers.map((l) => l.fullName)}
 				onCancel={() => setSelectedGroup(null)}
-				onSubmit={(selectedReviewers) => {
-					// handle update reviewer logic
-					console.log('Assigned reviewers:', selectedReviewers);
+				onAssign={() => setSelectedGroup(null)}
+				onSaveDraft={(selectedReviewers) => {
+					if (!selectedGroup) return;
+					const submission = filteredGroups.find(
+						(g) => g.id === selectedGroup.id && g.phase === milestone,
+					);
+					if (!submission) return;
+					const reviewerNames = selectedReviewers.map(
+						(id) => mockLecturers.find((l) => l.id === id)?.fullName || id,
+					);
+					addDraftReviewerAssignment({
+						submissionId: submission.id,
+						thesisTitle: selectedGroup.title,
+						groupName: selectedGroup.name,
+						reviewerIds: selectedReviewers,
+						reviewerNames,
+					});
 					setSelectedGroup(null);
 				}}
 			/>
