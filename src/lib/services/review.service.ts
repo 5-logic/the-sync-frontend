@@ -30,8 +30,29 @@ export interface ChangeReviewerResult {
 	submissionId: string;
 }
 
+export interface EligibleReviewer {
+	id: string;
+	name: string;
+	email: string;
+	isModerator: boolean;
+}
+
+export type GetEligibleReviewersResult = EligibleReviewer[];
+
 class ReviewService {
 	private readonly baseUrl = '/reviews';
+	/**
+	 * Get eligible reviewers for a submission (returns lecturer details)
+	 */
+	async getEligibleReviewers(
+		submissionId: string,
+	): Promise<ApiResponse<GetEligibleReviewersResult>> {
+		const response = await httpClient.get<
+			ApiResponse<GetEligibleReviewersResult>
+		>(`${this.baseUrl}/${submissionId}/eligible-reviewers`);
+		// BE returns array of eligible reviewers
+		return response.data;
+	}
 
 	/**
 	 * Assign reviewers to multiple submissions (returns { totalAssignedCount, submissionCount, results })
