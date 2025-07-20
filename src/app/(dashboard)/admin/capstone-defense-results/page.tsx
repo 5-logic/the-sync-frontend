@@ -1,5 +1,5 @@
 import { createMetadata } from '@/app/metadata';
-import CapstoneProjectManagement from '@/components/features/admin/CapstoneProjectManagement';
+import CapstoneDefenseResults from '@/components/features/admin/CapstoneDefenseResults';
 
 export const metadata = createMetadata({
 	title: 'Admin Capstone Project Management',
@@ -7,6 +7,6 @@ export const metadata = createMetadata({
 		'Admin Capstone Project Management for TheSync - Group Formation and Capstone Thesis Development',
 });
 
-export default function CapstoneProjectManagementPage() {
-	return <CapstoneProjectManagement />;
+export default function CapstoneDefenseResultsPage() {
+	return <CapstoneDefenseResults />;
 }
