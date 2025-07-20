@@ -20,6 +20,9 @@ interface Props {
 	loadingMilestones?: boolean;
 	noMilestone?: boolean;
 	onRefresh?: () => void;
+	onAssignAllDrafts?: () => void;
+	draftCount?: number;
+	updating?: boolean;
 }
 
 export default function SearchFilterBar(props: Readonly<Props>) {
@@ -73,7 +76,15 @@ export default function SearchFilterBar(props: Readonly<Props>) {
 			</Col>
 
 			<Col>
-				<Button type="primary">Assign Reviewer</Button>
+				<Button
+					type="primary"
+					onClick={props.onAssignAllDrafts}
+					disabled={!props.draftCount}
+					loading={props.updating}
+					style={{ color: 'white' }}
+				>
+					Assign All Drafts ({props.draftCount || 0})
+				</Button>
 			</Col>
 		</Row>
 	);
