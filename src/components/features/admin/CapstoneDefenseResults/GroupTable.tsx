@@ -18,7 +18,6 @@ import {
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import React, { useMemo, useState } from 'react';
-import * as XLSX from 'xlsx';
 
 import { TablePagination } from '@/components/common/TablePagination';
 import { allMockGroups } from '@/data/group';
@@ -94,9 +93,7 @@ const calculateRowSpans = (data: ThesisTableData[]): ThesisTableData[] => {
 
 const ThesisTable = () => {
 	const [searchText, setSearchText] = useState('');
-	const [importedData, setImportedData] = useState<ThesisTableData[] | null>(
-		null,
-	);
+	const [showTable, setShowTable] = useState(false);
 
 	const baseData = useMemo((): ThesisTableData[] => {
 		let counter = 1;
@@ -123,7 +120,8 @@ const ThesisTable = () => {
 		return calculateRowSpans(tempData);
 	}, []);
 
-	const dataToUse = importedData ?? baseData;
+	// Sử dụng dữ liệu từ group.ts
+	const dataToUse = baseData;
 
 	const handleSearch = (value: string) => {
 		setSearchText(value.toLowerCase());
@@ -215,88 +213,90 @@ const ThesisTable = () => {
 		},
 	];
 
-	const handleExcelImport = (file: File) => {
-		const reader = new FileReader();
-		reader.onload = (e) => {
-			const data = new Uint8Array(e.target!.result as ArrayBuffer);
-			const workbook = XLSX.read(data, { type: 'array' });
-			const sheet = workbook.Sheets[workbook.SheetNames[0]];
-			const raw = XLSX.utils.sheet_to_json(sheet);
-
-			const parsed = (raw as unknown[]).map((item, idx) => {
-				const row = item as Record<string, unknown>;
-				return {
-					stt: idx + 1,
-					studentId: String(row['Student ID'] ?? ''),
-					name: String(row['Full Name'] ?? ''),
-					major: String(row['Major'] ?? ''),
-					thesisName: String(row['Thesis Title'] ?? ''),
-					status: String(row['Status'] ?? 'Pass'),
-					groupId: String(row['Group ID'] ?? `G${Math.floor(idx / 3) + 1}`),
-					rowSpanGroup: 0,
-					rowSpanMajor: 0,
-				};
-			});
-
-			setImportedData(calculateRowSpans(parsed));
-			message.success('Imported successfully!');
-		};
-		reader.readAsArrayBuffer(file);
+	const handleExcelImport = () => {
+		// Chỉ hiển thị table, không xử lý file thực tế
+		setShowTable(true);
+		message.success('File imported successfully!');
 		return false;
 	};
 
 	return (
 		<>
-			<Row
-				gutter={[16, 16]}
-				align="middle"
-				style={{ marginBottom: 20, marginTop: 20 }}
-			>
-				<Col flex="auto">
-					<Input
-						placeholder="Search by name, student ID, thesis title, major, or status"
-						value={searchText}
-						onChange={(e) => handleSearch(e.target.value)}
-						prefix={<SearchOutlined />}
-						allowClear
-						size="middle"
-					/>
-				</Col>
+			{/* Import Section */}
+			<Row justify="center" style={{ marginBottom: 24 }}>
 				<Col>
 					<Upload
 						beforeUpload={handleExcelImport}
 						accept=".xlsx"
 						showUploadList={false}
 					>
-						<Button icon={<ImportOutlined />} size="middle">
-							Import Excel
+						<Button
+							icon={<ImportOutlined />}
+							size="large"
+							type="primary"
+							style={{ height: 48, padding: '0 32px', fontSize: '16px' }}
+						>
+							Import Excel File
 						</Button>
 					</Upload>
 				</Col>
-				<Col>
-					<Button icon={<ExportOutlined />} type="primary" size="middle">
-						Export PDF
-					</Button>
-				</Col>
 			</Row>
 
-			<Table
-				columns={columns}
-				dataSource={filteredData}
-				pagination={TablePagination}
-				rowKey={(record) => record.studentId + record.groupId}
-				bordered
-				rowClassName={(record, index) => {
-					const currentGroup = record.groupId;
-					const nextGroup = filteredData[index + 1]?.groupId;
-					return currentGroup !== nextGroup ? 'group-end-row' : '';
-				}}
-			/>
+			{/* Chỉ hiển thị search và table khi đã nhấn import */}
+			{showTable && (
+				<>
+					<Row gutter={[16, 16]} align="middle" style={{ marginBottom: 20 }}>
+						<Col flex="auto">
+							<Input
+								placeholder="Search by name, student ID, thesis title, major, or status"
+								value={searchText}
+								onChange={(e) => handleSearch(e.target.value)}
+								prefix={<SearchOutlined />}
+								allowClear
+								size="middle"
+							/>
+						</Col>
+						<Col>
+							<Button icon={<ExportOutlined />} type="primary" size="middle">
+								Export PDF
+							</Button>
+						</Col>
+					</Row>
 
-			<Text type="secondary" style={{ marginTop: 16, display: 'block' }}>
-				List includes {filteredData.length} students and{' '}
-				{new Set(filteredData.map((item) => item.groupId)).size} thesis projects
-			</Text>
+					<Table
+						columns={columns}
+						dataSource={filteredData}
+						pagination={TablePagination}
+						rowKey={(record) => record.studentId + record.groupId}
+						bordered
+						rowClassName={(record, index) => {
+							const currentGroup = record.groupId;
+							const nextGroup = filteredData[index + 1]?.groupId;
+							return currentGroup !== nextGroup ? 'group-end-row' : '';
+						}}
+					/>
+
+					<Text type="secondary" style={{ marginTop: 16, display: 'block' }}>
+						List includes {filteredData.length} students and{' '}
+						{new Set(filteredData.map((item) => item.groupId)).size} thesis
+						projects
+					</Text>
+				</>
+			)}
+
+			{/* Hiển thị hướng dẫn khi chưa import */}
+			{!showTable && (
+				<div style={{ textAlign: 'center', padding: '60px 0', color: '#999' }}>
+					<ImportOutlined style={{ fontSize: '48px', marginBottom: '16px' }} />
+					<h3 style={{ color: '#999', fontWeight: 'normal' }}>
+						Please import an Excel file to view capstone defense results
+					</h3>
+					<p style={{ color: '#999' }}>
+						The file should contain columns: Student ID, Full Name, Major,
+						Thesis Title, Status, Group ID
+					</p>
+				</div>
+			)}
 
 			<style>{`
 				.group-end-row {
