@@ -112,7 +112,7 @@ const ThesisTable = () => {
 					name: member.name,
 					major: member.major,
 					thesisName: thesis?.englishName || group.title,
-					status: Math.random() > 0.5 ? 'Pass' : 'Not Pass',
+					status: member.defenseStatus || 'Pass', // Sử dụng defenseStatus từ data
 					rowSpanGroup: 0,
 					rowSpanMajor: 0,
 				}))
@@ -208,11 +208,9 @@ const ThesisTable = () => {
 			dataIndex: 'status',
 			key: 'status',
 			align: 'center',
-			render: (status: string, record: ThesisTableData) =>
-				renderCellWithRowSpan(
-					<Tag color={status === 'Pass' ? 'green' : 'red'}>{status}</Tag>,
-					record.rowSpanGroup,
-				),
+			render: (status: string) => (
+				<Tag color={status === 'Pass' ? 'green' : 'red'}>{status}</Tag>
+			),
 		},
 	];
 
