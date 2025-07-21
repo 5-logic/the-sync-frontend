@@ -9,21 +9,17 @@ import GroupSearchTable from '@/components/features/lecturer/GroupProgess/GroupS
 import MilestoneDetailCard from '@/components/features/lecturer/GroupProgess/MilestoneDetailCard';
 import ProgressOverviewCard from '@/components/features/lecturer/GroupProgess/ProgressOverviewCard';
 import { useGroupProgress } from '@/hooks/lecturer/useGroupProgress';
+import { useMilestones } from '@/hooks/lecturer/useMilestones';
 import { Group } from '@/lib/services/groups.service';
+import { Milestone } from '@/schemas/milestone';
 import { useGroupsStore } from '@/store/useGroupsStore';
 
 const { Text } = Typography;
 const { Step } = Steps;
 
-// Mock phases for now - can be moved to API later
-const AVAILABLE_PHASES = ['Review 1', 'Review 2', 'Review 3', 'Final Review'];
-
 export default function GroupProgressPage() {
 	const [selectedGroup, setSelectedGroup] = useState<Group | undefined>(
 		undefined,
-	);
-	const [selectedPhase, setSelectedPhase] = useState<string>(
-		AVAILABLE_PHASES[0],
 	);
 	const [searchText, setSearchText] = useState<string>('');
 
@@ -43,6 +39,16 @@ export default function GroupProgressPage() {
 		fetchGroupDetail,
 		clearSelectedGroup,
 	} = useGroupProgress();
+
+	// Milestones hook for steps
+	const {
+		milestones,
+		selectedMilestone,
+		loading: milestonesLoading,
+		error: milestonesError,
+		fetchMilestones,
+		selectMilestone,
+	} = useMilestones();
 
 	// Filter groups based on search
 	const filteredGroups = useMemo(() => {
@@ -70,22 +76,25 @@ export default function GroupProgressPage() {
 	// Handle group selection
 	function handleGroupSelect(group: Group) {
 		setSelectedGroup(group);
-		setSelectedPhase(AVAILABLE_PHASES[0]);
+		// Reset to first milestone when selecting a new group
+		if (milestones.length > 0) {
+			selectMilestone(milestones[0]);
+		}
 		fetchGroupDetail(group.id);
 	}
 
 	// Handle refresh
 	function handleRefresh() {
 		fetchGroups(true);
+		fetchMilestones();
 		if (selectedGroup) {
 			fetchGroupDetail(selectedGroup.id);
 		}
 	}
 
-	// Handle phase change
-	function handlePhaseChange(phase: string) {
-		setSelectedPhase(phase);
-		// TODO: In the future, fetch phase-specific data here
+	// Handle milestone change
+	function handleMilestoneChange(milestone: Milestone) {
+		selectMilestone(milestone);
 	}
 
 	// Loading state
@@ -122,6 +131,16 @@ export default function GroupProgressPage() {
 					/>
 				)}
 
+				{milestonesError && (
+					<Alert
+						message="Error Loading Milestones"
+						description={milestonesError}
+						type="error"
+						showIcon
+						closable
+					/>
+				)}
+
 				<GroupSearchTable
 					data={filteredGroups}
 					searchText={searchText}
@@ -146,7 +165,7 @@ export default function GroupProgressPage() {
 						)}
 
 						<Card
-							loading={detailLoading}
+							loading={detailLoading || milestonesLoading}
 							title={
 								selectedGroupDetail
 									? `Group Name: ${selectedGroupDetail.name} | ${selectedGroupDetail.thesis?.vietnameseName || selectedGroupDetail.thesis?.englishName || 'No Thesis'}`
@@ -163,14 +182,17 @@ export default function GroupProgressPage() {
 							)}
 
 							<Steps
-								current={AVAILABLE_PHASES.indexOf(selectedPhase)}
+								current={milestones.findIndex(
+									(m) => m.id === selectedMilestone?.id,
+								)}
 								style={{ marginTop: 16 }}
 							>
-								{AVAILABLE_PHASES.map((phase) => (
+								{milestones.map((milestone) => (
 									<Step
-										key={phase}
-										title={phase}
-										onClick={() => handlePhaseChange(phase)}
+										key={milestone.id}
+										title={milestone.name}
+										description={`${new Date(milestone.startDate).toLocaleDateString()} - ${new Date(milestone.endDate).toLocaleDateString()}`}
+										onClick={() => handleMilestoneChange(milestone)}
 										style={{ cursor: 'pointer' }}
 									/>
 								))}
@@ -181,7 +203,7 @@ export default function GroupProgressPage() {
 							<Col xs={24} md={16}>
 								<MilestoneDetailCard
 									group={selectedGroupDetail || selectedGroup}
-									phase={selectedPhase}
+									milestone={selectedMilestone}
 								/>
 							</Col>
 							<Col xs={24} md={8}>
