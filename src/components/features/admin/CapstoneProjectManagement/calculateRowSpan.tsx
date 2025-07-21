@@ -1,4 +1,3 @@
-// utils/calculateRowSpan.ts
 export const calculateRowSpans = <
 	T extends { groupId: string; major: string; semester: string },
 >(
