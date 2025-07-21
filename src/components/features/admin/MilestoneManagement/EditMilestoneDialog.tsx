@@ -2,9 +2,12 @@
 
 import { Form, Modal } from 'antd';
 import dayjs from 'dayjs';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
+import { DocumentEditSection } from '@/components/features/admin/MilestoneManagement/DocumentEditSection';
 import MilestoneForm from '@/components/features/admin/MilestoneManagement/MilestoneForm';
+import { StorageService } from '@/lib/services/storage.service';
+import { showNotification } from '@/lib/utils/notification';
 import { Milestone, MilestoneUpdate } from '@/schemas/milestone';
 import { Semester } from '@/schemas/semester';
 import { useMilestoneStore } from '@/store';
@@ -27,12 +30,28 @@ export default function EditMilestoneDialog({
 	const [form] = Form.useForm();
 	const { updating, updateMilestone } = useMilestoneStore();
 
-	// Reset form when dialog closes
+	// State for managing documents
+	const [existingDocuments, setExistingDocuments] = useState<string[]>([]);
+	const [newFiles, setNewFiles] = useState<File[]>([]);
+
+	// Reset form and documents when dialog closes
 	useEffect(() => {
 		if (!open) {
 			form.resetFields();
+			setExistingDocuments([]);
+			setNewFiles([]);
 		}
 	}, [open, form]);
+
+	// Initialize documents when milestone changes
+	useEffect(() => {
+		if (milestone?.documents) {
+			setExistingDocuments(milestone.documents);
+		} else {
+			setExistingDocuments([]);
+		}
+		setNewFiles([]); // Reset new files when milestone changes
+	}, [milestone]);
 	const handleSubmit = async () => {
 		if (!milestone) return;
 
@@ -53,12 +72,82 @@ export default function EditMilestoneDialog({
 			// Convert date range to individual dates
 			const duration = values.duration ?? [];
 			const [startDate, endDate] = duration;
+
+			let finalDocuments: string[] = [];
+
+			// Handle documents update
+			if (existingDocuments.length > 0 || newFiles.length > 0) {
+				// Delete documents that were removed from existingDocuments
+				const documentsToDelete =
+					milestone.documents?.filter(
+						(url) => !existingDocuments.includes(url),
+					) || [];
+
+				console.log('🔍 Debug Documents Update:', {
+					originalDocuments: milestone.documents,
+					existingDocuments,
+					newFiles: newFiles.map((f) => f.name),
+					documentsToDelete,
+				});
+
+				// Delete removed documents from Supabase
+				if (documentsToDelete.length > 0) {
+					try {
+						await Promise.all(
+							documentsToDelete.map((url) => StorageService.deleteFile(url)),
+						);
+						showNotification.success(
+							'Delete Success',
+							`${documentsToDelete.length} document(s) deleted successfully`,
+						);
+					} catch (error) {
+						console.error('Failed to delete some documents:', error);
+						// Continue with update even if some deletes failed
+					}
+				}
+
+				// Upload new files if any
+				if (newFiles.length > 0) {
+					try {
+						const uploadPromises = newFiles.map((file) =>
+							StorageService.uploadFile(file, 'milestone-templates'),
+						);
+						const newDocumentUrls = await Promise.all(uploadPromises);
+
+						console.log('✅ New documents uploaded:', newDocumentUrls);
+
+						showNotification.success(
+							'Upload Success',
+							`${newFiles.length} file(s) uploaded successfully`,
+						);
+
+						// Combine existing documents with new uploaded documents
+						finalDocuments = [...existingDocuments, ...newDocumentUrls];
+					} catch (error) {
+						showNotification.error(
+							'Upload Failed',
+							'Failed to upload some files. Please try again.',
+						);
+						console.error('File upload failed:', error);
+						return; // Don't proceed with milestone update if upload fails
+					}
+				} else {
+					// Only existing documents, no new uploads
+					finalDocuments = existingDocuments;
+				}
+			}
+
+			console.log('📄 Final documents to send:', finalDocuments);
+
 			const milestoneData: MilestoneUpdate = {
 				name: values.milestoneName,
 				startDate: startDate?.toDate(),
 				endDate: endDate?.toDate(),
+				documents: finalDocuments.length > 0 ? finalDocuments : undefined,
 				// Don't update semesterId since it's not editable
 			};
+
+			console.log('🚀 Milestone update data:', milestoneData);
 
 			const success = await updateMilestone(milestone.id, milestoneData);
 			if (success) {
@@ -125,6 +214,16 @@ export default function EditMilestoneDialog({
 				milestone={milestone}
 				disabled={isEditDisabled}
 				showSemesterField={false}
+				// Note: Files are not passed to edit mode for now
+			/>
+
+			{/* Document management section */}
+			<DocumentEditSection
+				existingDocuments={existingDocuments}
+				newFiles={newFiles}
+				onExistingDocumentsChange={setExistingDocuments}
+				onNewFilesChange={setNewFiles}
+				disabled={isEditDisabled}
 			/>
 		</Modal>
 	);
