@@ -9,6 +9,7 @@ import { ConfirmationModal } from '@/components/common/ConfirmModal';
 import {
 	MilestoneHeader,
 	MilestoneSubmissionForm,
+	SubmissionEditView,
 	SubmittedFilesView,
 } from '@/components/features/student/TrackProgress/MilestoneDetail';
 import { useMilestoneProgress } from '@/hooks/student';
@@ -29,6 +30,12 @@ interface UploadInfo {
 export default function MilestoneDetailCard() {
 	const { isLeader } = useStudentGroupStatus();
 	const [updateMode, setUpdateMode] = useState<Record<string, boolean>>({});
+	const [updateExistingDocs, setUpdateExistingDocs] = useState<
+		Record<string, string[]>
+	>({});
+	const [updateNewFiles, setUpdateNewFiles] = useState<Record<string, File[]>>(
+		{},
+	);
 	const {
 		milestones,
 		loading,
@@ -36,7 +43,9 @@ export default function MilestoneDetailCard() {
 		updateMilestoneFiles,
 		submitMilestone,
 		updateMilestoneSubmission,
+		refetchSubmissions,
 	} = useMilestoneProgress();
+	const { group } = useStudentGroupStatus();
 
 	const handleFileChange = (info: UploadInfo, milestoneId: string) => {
 		const { fileList } = info;
@@ -79,14 +88,71 @@ export default function MilestoneDetailCard() {
 		updateMilestoneFiles(milestoneId, newFiles);
 	};
 
+	const handleCustomUpdate = async (
+		milestoneId: string,
+		existingDocs: string[],
+		newFiles: File[],
+	) => {
+		if (!group?.id) {
+			message.error('Group information not available');
+			return;
+		}
+
+		// Upload new files to Supabase
+		const uploadPromises = newFiles.map((file) =>
+			StorageService.uploadFile(file, 'milestone-submissions'),
+		);
+
+		const newDocumentUrls = await Promise.all(uploadPromises);
+
+		// Combine existing docs and new uploaded docs
+		const allDocumentUrls = [...existingDocs, ...newDocumentUrls];
+
+		// Update submission via API (using the service directly)
+		const groupService = (await import('@/lib/services/groups.service'))
+			.default;
+		await groupService.updateMilestoneSubmission(
+			group.id,
+			milestoneId,
+			allDocumentUrls,
+		);
+
+		showNotification.success(
+			'Success',
+			'Milestone submission updated successfully',
+		);
+
+		// Refresh submissions to get updated data
+		await refetchSubmissions();
+	};
+
 	const handleSubmit = async (
 		milestoneId: string,
 		isUpdate: boolean = false,
+		customExistingDocs?: string[],
+		customNewFiles?: File[],
 	) => {
-		const submission = submissions[milestoneId];
-		if (!submission?.files?.length) {
-			message.warning('Please upload files before submitting');
-			return;
+		// Use custom files if provided (for update mode), otherwise use regular submission files
+		const filesToSubmit =
+			customNewFiles || submissions[milestoneId]?.files || [];
+
+		// For custom update mode, check if we have either existing docs or new files
+		if (customExistingDocs !== undefined || customNewFiles !== undefined) {
+			const hasExistingDocs = (customExistingDocs?.length ?? 0) > 0;
+			const hasNewFiles = filesToSubmit.length > 0;
+
+			if (!hasExistingDocs && !hasNewFiles) {
+				message.warning(
+					'Please keep at least one existing file or add new files',
+				);
+				return;
+			}
+		} else {
+			// Regular submission mode
+			if (!filesToSubmit.length) {
+				message.warning('Please upload files before submitting');
+				return;
+			}
 		}
 
 		// Find the milestone to check if submission is still allowed
@@ -96,14 +162,39 @@ export default function MilestoneDetailCard() {
 			return;
 		}
 
+		const confirmTitle = isUpdate ? 'Confirm Update' : 'Confirm Submission';
+		const confirmMessage = isUpdate
+			? 'Are you sure you want to update this submission?'
+			: 'Are you sure you want to submit these files?';
+
+		let confirmDetails = '';
+		if (isUpdate) {
+			if (customExistingDocs !== undefined || customNewFiles !== undefined) {
+				const hasExistingDocs = (customExistingDocs?.length ?? 0) > 0;
+				const hasNewFiles = (customNewFiles?.length ?? 0) > 0;
+
+				if (hasExistingDocs && hasNewFiles) {
+					confirmDetails =
+						'This will update your submission with the selected existing files and new uploads.';
+				} else if (hasExistingDocs && !hasNewFiles) {
+					confirmDetails =
+						'This will update your submission with only the selected existing files.';
+				} else if (!hasExistingDocs && hasNewFiles) {
+					confirmDetails =
+						'This will replace your previous submission with only the new files.';
+				}
+			} else {
+				confirmDetails = 'This will replace your previous submission files.';
+			}
+		} else {
+			confirmDetails =
+				'Once submitted, you cannot make changes to this milestone submission.';
+		}
+
 		ConfirmationModal.show({
-			title: isUpdate ? 'Confirm Update' : 'Confirm Submission',
-			message: isUpdate
-				? 'Are you sure you want to update this submission?'
-				: 'Are you sure you want to submit these files?',
-			details: isUpdate
-				? 'This will replace your previous submission files.'
-				: 'Once submitted, you cannot make changes to this milestone submission.',
+			title: confirmTitle,
+			message: confirmMessage,
+			details: confirmDetails,
 			noteType: 'warning',
 			note: 'Please make sure all files are correct before proceeding.',
 			okText: isUpdate ? 'Update' : 'Submit',
@@ -112,7 +203,19 @@ export default function MilestoneDetailCard() {
 			onOk: async () => {
 				try {
 					if (isUpdate) {
-						await updateMilestoneSubmission(milestoneId);
+						// Handle custom update with existing docs and new files
+						if (
+							customExistingDocs !== undefined ||
+							customNewFiles !== undefined
+						) {
+							await handleCustomUpdate(
+								milestoneId,
+								customExistingDocs || [],
+								customNewFiles || [],
+							);
+						} else {
+							await updateMilestoneSubmission(milestoneId);
+						}
 					} else {
 						await submitMilestone(milestoneId);
 					}
@@ -121,6 +224,17 @@ export default function MilestoneDetailCard() {
 						...prev,
 						[milestoneId]: false,
 					}));
+					// Clear update state if in update mode
+					if (customExistingDocs || customNewFiles) {
+						setUpdateExistingDocs((prev) => ({
+							...prev,
+							[milestoneId]: [],
+						}));
+						setUpdateNewFiles((prev) => ({
+							...prev,
+							[milestoneId]: [],
+						}));
+					}
 				} catch {
 					// Errors are handled in the hook
 				}
@@ -311,16 +425,84 @@ export default function MilestoneDetailCard() {
 									documents={submission.documents || []}
 									canSubmit={submissionCanSubmit}
 									onUpdateMode={() => {
-										// Enable update mode to show upload interface
+										// Enable update mode and initialize with existing documents
 										setUpdateMode((prev) => ({
 											...prev,
 											[milestone.id]: true,
 										}));
-										// Clear current files to allow new upload
-										updateMilestoneFiles(milestone.id, []);
+										// Initialize existing docs and clear new files
+										setUpdateExistingDocs((prev) => ({
+											...prev,
+											[milestone.id]: submission.documents || [],
+										}));
+										setUpdateNewFiles((prev) => ({
+											...prev,
+											[milestone.id]: [],
+										}));
 									}}
 								/>
+							) : updateMode[milestone.id] &&
+							  (submission?.documents?.length ?? 0) > 0 ? (
+								// Update mode for existing submission
+								<SubmissionEditView
+									existingDocuments={
+										updateExistingDocs[milestone.id]?.length > 0
+											? updateExistingDocs[milestone.id]
+											: submission?.documents || []
+									}
+									newFiles={updateNewFiles[milestone.id] || []}
+									onExistingDocumentsChange={(documents) => {
+										setUpdateExistingDocs((prev) => ({
+											...prev,
+											[milestone.id]: documents,
+										}));
+									}}
+									onNewFilesChange={(files) => {
+										setUpdateNewFiles((prev) => ({
+											...prev,
+											[milestone.id]: files,
+										}));
+									}}
+									onSubmit={() => {
+										// Handle update submission with existing + new files
+										const existingDocs = updateExistingDocs[milestone.id] || [];
+										const newFiles = updateNewFiles[milestone.id] || [];
+
+										// Validate that there are files to submit
+										if (existingDocs.length === 0 && newFiles.length === 0) {
+											message.warning(
+												'Please keep at least one file or add new files',
+											);
+											return;
+										}
+
+										handleSubmit(
+											milestone.id.toString(),
+											true,
+											existingDocs,
+											newFiles,
+										);
+									}}
+									onCancel={() => {
+										// Exit update mode and clear temporary state
+										setUpdateMode((prev) => ({
+											...prev,
+											[milestone.id]: false,
+										}));
+										setUpdateExistingDocs((prev) => ({
+											...prev,
+											[milestone.id]: [],
+										}));
+										setUpdateNewFiles((prev) => ({
+											...prev,
+											[milestone.id]: [],
+										}));
+									}}
+									isSubmitting={isSubmitting}
+									disabled={!submissionCanSubmit}
+								/>
 							) : (
+								// Regular submission form for new submissions or update mode actions
 								<MilestoneSubmissionForm
 									files={submission?.files || []}
 									canSubmit={submissionCanSubmit}
@@ -335,24 +517,44 @@ export default function MilestoneDetailCard() {
 										removeFile(milestone.id, fileName, fileSize)
 									}
 									onCancelUpdate={() => {
-										// Exit update mode and restore original files
+										// Exit update mode and clear temporary state
 										setUpdateMode((prev) => ({
 											...prev,
 											[milestone.id]: false,
 										}));
-										// Clear the temporary files to go back to view mode
-										updateMilestoneFiles(milestone.id, []);
+										// Clear temporary update state
+										setUpdateExistingDocs((prev) => ({
+											...prev,
+											[milestone.id]: [],
+										}));
+										setUpdateNewFiles((prev) => ({
+											...prev,
+											[milestone.id]: [],
+										}));
 									}}
 									onSubmit={() => {
-										// Use updateMilestoneSubmission if already submitted, otherwise submitMilestone
+										const isInUpdateMode = updateMode[milestone.id];
 										const isAlreadySubmitted =
 											(submission?.documents?.length ?? 0) > 0;
-										if (isAlreadySubmitted) {
-											// Call update API (will show confirmation modal in handleSubmit)
-											handleSubmit(milestone.id, true);
+
+										if (isInUpdateMode && isAlreadySubmitted) {
+											// Handle update submission with existing + new files
+											const existingDocs =
+												updateExistingDocs[milestone.id] || [];
+											const newFiles = updateNewFiles[milestone.id] || [];
+
+											handleSubmit(
+												milestone.id.toString(),
+												true,
+												existingDocs,
+												newFiles,
+											);
+										} else if (isAlreadySubmitted) {
+											// Regular update
+											handleSubmit(milestone.id.toString(), true);
 										} else {
-											// Call submit API
-											handleSubmit(milestone.id, false);
+											// New submission
+											handleSubmit(milestone.id.toString(), false);
 										}
 									}}
 								/>
