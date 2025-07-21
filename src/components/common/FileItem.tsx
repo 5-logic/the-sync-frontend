@@ -10,16 +10,16 @@ import { Button } from 'antd';
 import { StorageService } from '@/lib/services/storage.service';
 
 interface FileItemProps {
-	file?: File;
-	documentUrl?: string;
-	fileName?: string;
-	fileSize?: number;
-	showSize?: boolean;
-	showDownload?: boolean;
-	disabled?: boolean;
-	variant?: 'default' | 'new' | 'existing';
-	onDelete?: () => void;
-	onDownload?: (url: string) => void;
+	readonly file?: File;
+	readonly documentUrl?: string;
+	readonly fileName?: string;
+	readonly fileSize?: number;
+	readonly showSize?: boolean;
+	readonly showDownload?: boolean;
+	readonly disabled?: boolean;
+	readonly variant?: 'default' | 'new' | 'existing';
+	readonly onDelete?: () => void;
+	readonly onDownload?: (url: string) => void;
 }
 
 export function FileItem({
@@ -43,32 +43,27 @@ export function FileItem({
 
 	// Determine styling based on variant
 	const getBackgroundColor = () => {
-		switch (variant) {
-			case 'new':
-				return '#f6ffed';
-			case 'existing':
-				return '#fff';
-			default:
-				return '#fff';
+		if (variant === 'new') {
+			return '#f6ffed';
 		}
+		if (variant === 'existing') {
+			return '#fff';
+		}
+		return '#fff';
 	};
 
 	const getBorderColor = () => {
-		switch (variant) {
-			case 'new':
-				return '#e6f7ff';
-			default:
-				return '#d9d9d9';
+		if (variant === 'new') {
+			return '#e6f7ff';
 		}
+		return '#d9d9d9';
 	};
 
 	const getIconColor = () => {
-		switch (variant) {
-			case 'new':
-				return '#52c41a';
-			default:
-				return '#1890ff';
+		if (variant === 'new') {
+			return '#52c41a';
 		}
+		return '#1890ff';
 	};
 
 	const handleDownload = async () => {
