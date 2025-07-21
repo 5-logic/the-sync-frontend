@@ -3,7 +3,7 @@
 import { UploadOutlined } from '@ant-design/icons';
 import { Card, Space, Upload } from 'antd';
 
-import { FileItem } from '@/components/common/FileItem';
+import { FileItem } from '@/components/common/FileUpload/FileItem';
 import { FormLabel } from '@/components/common/FormLabel';
 
 interface UploadInfo {

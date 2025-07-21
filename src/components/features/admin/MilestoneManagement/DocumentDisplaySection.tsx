@@ -2,7 +2,7 @@
 
 import { Card, Space } from 'antd';
 
-import { FileItem } from '@/components/common/FileItem';
+import { FileItem } from '@/components/common/FileUpload/FileItem';
 import { FormLabel } from '@/components/common/FormLabel';
 import { StorageService } from '@/lib/services/storage.service';
 
