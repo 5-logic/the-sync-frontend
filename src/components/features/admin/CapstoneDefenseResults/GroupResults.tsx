@@ -1,10 +1,11 @@
 'use client';
 
-import { Button, Col, Modal, Row, Table, Typography } from 'antd';
+import { Button, Col, Modal, Row, Space, Table, Typography } from 'antd';
 import type {} from 'antd/es/table';
 import { TableRowSelection } from 'antd/es/table/interface';
 import React, { useCallback, useMemo, useState } from 'react';
 
+import { Header } from '@/components/common/Header';
 import { TablePagination } from '@/components/common/TablePagination';
 import { getColumns } from '@/components/features/admin/CapstoneProjectManagement/Columns';
 import { FilterBar } from '@/components/features/admin/CapstoneProjectManagement/FilterBar';
@@ -202,7 +203,11 @@ const GroupResults = () => {
 	};
 
 	return (
-		<>
+		<Space direction="vertical" size="large" style={{ width: '100%' }}>
+			<Header
+				title="Capstone Defense Results"
+				description="View, import, and assess capstone defense results with detailed student info and final evaluation status."
+			/>
 			<Row gutter={[16, 16]} align="middle" style={{ marginBottom: 16 }}>
 				<Col flex="auto" />
 				<Col>
@@ -255,7 +260,7 @@ const GroupResults = () => {
 				}{' '}
 				thesis projects
 			</Text>
-		</>
+		</Space>
 	);
 };
 

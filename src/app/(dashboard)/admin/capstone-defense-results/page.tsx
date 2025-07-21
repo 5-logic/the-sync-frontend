@@ -1,5 +1,5 @@
 import { createMetadata } from '@/app/metadata';
-import CapstoneDefenseResults from '@/components/features/admin/CapstoneDefenseResults';
+import GroupResults from '@/components/features/admin/CapstoneDefenseResults/GroupResults';
 
 export const metadata = createMetadata({
 	title: 'Admin Capstone Defense Results',
@@ -8,5 +8,5 @@ export const metadata = createMetadata({
 });
 
 export default function CapstoneDefenseResultsPage() {
-	return <CapstoneDefenseResults />;
+	return <GroupResults />;
 }
