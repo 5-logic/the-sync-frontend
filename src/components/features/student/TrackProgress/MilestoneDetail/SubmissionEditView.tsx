@@ -1,19 +1,11 @@
 'use client';
 
 import { Button, Card, Space } from 'antd';
-import { useState } from 'react';
 
 import { DocumentUploadButton } from '@/components/common/FileUpload/DocumentUploadButton';
 import { FileItem } from '@/components/common/FileUpload/FileItem';
 import { FormLabel } from '@/components/common/FormLabel';
-
-interface UploadInfo {
-	readonly fileList: Array<{
-		readonly originFileObj?: File;
-		readonly name: string;
-		readonly status?: string;
-	}>;
-}
+import { useDocumentManagement } from '@/hooks/ui/useDocumentManagement';
 
 interface SubmissionEditViewProps {
 	readonly existingDocuments: string[]; // URLs of existing submitted documents
@@ -36,51 +28,17 @@ export function SubmissionEditView({
 	isSubmitting = false,
 	disabled = false,
 }: SubmissionEditViewProps) {
-	const [uploading] = useState(false);
-
-	// Handle removing existing document
-	const handleRemoveExistingDocument = (documentUrl: string) => {
-		const updatedDocuments = existingDocuments.filter(
-			(url) => url !== documentUrl,
-		);
-		onExistingDocumentsChange(updatedDocuments);
-	};
-
-	// Handle new file selection
-	const handleFileSelect = (info: UploadInfo) => {
-		const { fileList } = info;
-
-		// Get all files from fileList
-		const allFiles = fileList
-			.filter((item) => item.originFileObj && item.status !== 'removed')
-			.map((item) => item.originFileObj!)
-			.filter((file): file is File => Boolean(file));
-
-		// Filter out files that already exist (by name and size)
-		const filteredNewFiles = allFiles.filter(
-			(newFile) =>
-				!newFiles.some(
-					(existingFile) =>
-						existingFile.name === newFile.name &&
-						existingFile.size === newFile.size,
-				),
-		);
-
-		if (filteredNewFiles.length === 0) return;
-
-		// Add only the truly new files to existing files
-		const updatedFiles = [...newFiles, ...filteredNewFiles];
-		onNewFilesChange(updatedFiles);
-	};
-
-	// Handle removing new file
-	const handleRemoveNewFile = (fileToRemove: File) => {
-		const updatedFiles = newFiles.filter(
-			(file) =>
-				!(file.name === fileToRemove.name && file.size === fileToRemove.size),
-		);
-		onNewFilesChange(updatedFiles);
-	};
+	const {
+		uploading,
+		handleRemoveExistingDocument,
+		handleFileSelect,
+		handleRemoveNewFile,
+	} = useDocumentManagement({
+		existingDocuments,
+		newFiles,
+		onExistingDocumentsChange,
+		onNewFilesChange,
+	});
 
 	return (
 		<Card
