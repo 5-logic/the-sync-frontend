@@ -112,7 +112,6 @@ const GroupResults = () => {
 
 	const hasUnsavedChanges = Object.keys(statusUpdates).length > 0;
 
-	// eslint-disable-next-line react-hooks/exhaustive-deps
 	const getDisplayStatus = useCallback(
 		(originalStatus: string, studentId: string) => {
 			return statusUpdates[studentId] || originalStatus;
@@ -141,7 +140,6 @@ const GroupResults = () => {
 			return matchesSearch && matchesSemester;
 		});
 
-		// Recalculate rowSpans for filtered data
 		return calculateRowSpans(filtered);
 	}, [dataToUse, debouncedSearchValue, selectedSemester]);
 
