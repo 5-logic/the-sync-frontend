@@ -14,6 +14,7 @@ interface SubmissionState {
 		milestoneId: string,
 		force?: boolean,
 	) => Promise<SubmissionItem[] | null>;
+	fetchById: (id: string) => Promise<SubmissionItem | null>;
 	clear: () => void;
 	clearCache: () => void;
 }
@@ -66,6 +67,35 @@ export const useSubmissionStore = create<SubmissionState>((set, get) => ({
 				return submissionsData;
 			} else {
 				set({ error: 'Failed to fetch submissions', loading: false });
+				return null;
+			}
+		} catch (e) {
+			set({
+				error: e instanceof Error ? e.message : 'Unknown error',
+				loading: false,
+			});
+			return null;
+		}
+	},
+
+	fetchById: async (id: string) => {
+		set({ loading: true, error: null });
+		try {
+			const res = await submissionService.findById(id);
+			if (res && res.success && res.data && res.data.submission) {
+				// Update the single submission in the array if it exists
+				set((state) => {
+					const idx = state.submissions.findIndex((s) => s.id === id);
+					let newSubs = state.submissions;
+					if (idx !== -1) {
+						newSubs = [...state.submissions];
+						newSubs[idx] = res.data.submission;
+					}
+					return { submissions: newSubs, loading: false };
+				});
+				return res.data.submission;
+			} else {
+				set({ error: 'Failed to fetch submission', loading: false });
 				return null;
 			}
 		} catch (e) {
