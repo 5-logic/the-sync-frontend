@@ -7,7 +7,7 @@ import { TablePagination } from '@/components/common/TablePagination';
 import { FilterBar } from '@/components/features/admin/CapstoneProjectManagement/FilterBar';
 
 import { getColumns } from './Columns';
-import { useThesisTableData } from './useThesisTableData';
+import { useThesisTableData } from './useGroupTableData';
 
 const { Text } = Typography;
 

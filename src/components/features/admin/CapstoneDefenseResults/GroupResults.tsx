@@ -11,7 +11,7 @@ import { FilterBar } from '@/components/features/admin/CapstoneProjectManagement
 import {
 	ThesisTableData,
 	useThesisTableData,
-} from '@/components/features/admin/CapstoneProjectManagement/useThesisTableData';
+} from '@/components/features/admin/CapstoneProjectManagement/useGroupTableData';
 import '@/styles/components.css';
 
 const { Text } = Typography;

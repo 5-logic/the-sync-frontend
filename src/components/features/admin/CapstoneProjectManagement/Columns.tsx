@@ -4,7 +4,7 @@ import React from 'react';
 
 import { highlightText } from '@/components/features/admin/CapstoneProjectManagement/HighlightText';
 import { RowSpanCell } from '@/components/features/admin/CapstoneProjectManagement/RowSpanCell';
-import { ThesisTableData } from '@/components/features/admin/CapstoneProjectManagement/useThesisTableData';
+import { ThesisTableData } from '@/components/features/admin/CapstoneProjectManagement/useGroupTableData';
 
 // Dùng chung cho cả bảng GroupResults và GroupManagement
 export const getColumns = (
