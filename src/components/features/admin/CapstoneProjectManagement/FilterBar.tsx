@@ -33,7 +33,6 @@ export const FilterBar = ({
 	showExportPdf = false,
 	loading = false,
 }: Props) => {
-	// Filter out 'all' from availableSemesters for display since we show it separately
 	const semesterOptions = availableSemesters.filter(
 		(semester) => semester !== 'all',
 	);
