@@ -14,8 +14,8 @@ export type GroupWithPhase = ExtendedGroup & {
 export type FullMockGroup = Group & {
 	title: string;
 	supervisors: string[];
-	members: string[]; // Array of member names
-	leader: string; // ✅ thêm leader
+	members: StudentMember[];
+	leader: string;
 	status: 'Finalized' | 'Incomplete' | 'Unassigned';
 	phase?: string;
 	submissionFile?: string;
@@ -80,49 +80,22 @@ const metaData: Record<string, GroupMeta> = {
 		members: 5,
 		status: 'Unassigned',
 	},
-	g5: {
-		thesisTitle: 'E-commerce Platform',
-		supervisors: ['Dr. Lisa Park'],
-		members: 4,
-		status: 'Finalized',
-	},
-	g6: {
-		thesisTitle: 'Machine Learning Analytics',
-		supervisors: ['Dr. Robert Kim'],
-		members: 3,
-		status: 'Incomplete',
-	},
-	g7: {
-		thesisTitle: 'Mobile App Development',
-		supervisors: ['Dr. Jennifer Lee'],
-		members: 4,
-		status: 'Finalized',
-	},
-	g8: {
-		thesisTitle: 'Cloud Computing Solution',
-		supervisors: ['Dr. Mark Wilson'],
-		members: 5,
-		status: 'Incomplete',
-	},
-	g9: {
-		thesisTitle: 'Data Science Project',
-		supervisors: ['Dr. Anna Smith'],
-		members: 3,
-		status: 'Finalized',
-	},
-	g10: {
-		thesisTitle: 'IoT Smart Home',
-		supervisors: ['Dr. Tom Brown'],
-		members: 4,
-		status: 'Incomplete',
-	},
+};
+
+// ===== Student data type =====
+export type StudentMember = {
+	id: string;
+	name: string;
+	major: 'Software Engineering' | 'Artificial Intelligence';
+	isLeader?: boolean;
+	defenseStatus?: 'Pass' | 'Failed';
 };
 
 // ===== Mock member data for FullMockGroup =====
 type FullGroupMeta = {
 	title: string;
 	supervisors: string[];
-	members: string[];
+	members: StudentMember[];
 	leader: string;
 	status: 'Finalized' | 'Incomplete' | 'Unassigned';
 	milestoneAlert?: string;
@@ -134,7 +107,33 @@ const fullGroupMetaData: Record<string, FullGroupMeta> = {
 	g1: {
 		title: 'AI-powered Healthcare System',
 		supervisors: ['Dr. Sarah Johnson', 'Dr. Davis'],
-		members: ['John Doe', 'Alice Wang', 'Bob Chen', 'Emily Zhang'],
+		members: [
+			{
+				id: 'ST001',
+				name: 'John Doe',
+				major: 'Software Engineering',
+				isLeader: true,
+				defenseStatus: 'Pass',
+			},
+			{
+				id: 'ST002',
+				name: 'Alice Wang',
+				major: 'Artificial Intelligence',
+				defenseStatus: 'Pass',
+			},
+			{
+				id: 'ST003',
+				name: 'Bob Chen',
+				major: 'Software Engineering',
+				defenseStatus: 'Failed',
+			},
+			{
+				id: 'ST004',
+				name: 'Emily Zhang',
+				major: 'Artificial Intelligence',
+				defenseStatus: 'Pass',
+			},
+		],
 		leader: 'John Doe',
 		status: 'Finalized',
 		milestoneAlert: 'All milestones completed on time',
@@ -149,7 +148,33 @@ const fullGroupMetaData: Record<string, FullGroupMeta> = {
 	g2: {
 		title: 'Blockchain Supply Chain',
 		supervisors: ['Dr. Michael Chen', 'Dr. Martinez'],
-		members: ['Jane Smith', 'David Kim', 'Lisa Park', 'Tom Wilson'],
+		members: [
+			{
+				id: 'ST005',
+				name: 'Jane Smith',
+				major: 'Software Engineering',
+				defenseStatus: 'Pass',
+			},
+			{
+				id: 'ST006',
+				name: 'David Kim',
+				major: 'Artificial Intelligence',
+				defenseStatus: 'Failed',
+			},
+			{
+				id: 'ST007',
+				name: 'Lisa Park',
+				major: 'Software Engineering',
+				isLeader: true,
+				defenseStatus: 'Pass',
+			},
+			{
+				id: 'ST008',
+				name: 'Tom Wilson',
+				major: 'Software Engineering',
+				defenseStatus: 'Pass',
+			},
+		],
 		leader: 'Lisa Park',
 		status: 'Finalized',
 		milestoneAlert: 'Minor delay in final documentation',
@@ -165,13 +190,39 @@ const fullGroupMetaData: Record<string, FullGroupMeta> = {
 		title: 'Smart City IoT Platform',
 		supervisors: ['Dr. Emily Wong'],
 		members: [
-			'Mike Johnson',
-			'Sarah Lee',
-			'Chris Brown',
-			'Amy Liu',
-			'Kevin Chen',
+			{
+				id: 'ST009',
+				name: 'Mike Johnson',
+				major: 'Software Engineering',
+				isLeader: true,
+				defenseStatus: 'Failed',
+			},
+			{
+				id: 'ST010',
+				name: 'Sarah Lee',
+				major: 'Artificial Intelligence',
+				defenseStatus: 'Pass',
+			},
+			{
+				id: 'ST011',
+				name: 'Chris Brown',
+				major: 'Software Engineering',
+				defenseStatus: 'Pass',
+			},
+			{
+				id: 'ST012',
+				name: 'Amy Liu',
+				major: 'Artificial Intelligence',
+				defenseStatus: 'Failed',
+			},
+			{
+				id: 'ST013',
+				name: 'Kevin Chen',
+				major: 'Artificial Intelligence',
+				defenseStatus: 'Pass',
+			},
 		],
-		leader: 'Mile Johnson',
+		leader: 'Mike Johnson',
 		status: 'Incomplete',
 		milestoneAlert: 'Behind schedule - requires attention',
 		progress: 60,
@@ -185,13 +236,39 @@ const fullGroupMetaData: Record<string, FullGroupMeta> = {
 	},
 	g4: {
 		title: 'Cybersecurity Framework',
-		supervisors: [],
+		supervisors: ['Dr. Michael Chen', 'Dr. Martinez'],
 		members: [
-			'Sarah Wilson',
-			'Mark Davis',
-			'Linda Garcia',
-			'Jason Taylor',
-			'Maria Rodriguez',
+			{
+				id: 'ST014',
+				name: 'Sarah Wilson',
+				major: 'Software Engineering',
+				isLeader: true,
+				defenseStatus: 'Pass',
+			},
+			{
+				id: 'ST015',
+				name: 'Mark Davis',
+				major: 'Software Engineering',
+				defenseStatus: 'Pass',
+			},
+			{
+				id: 'ST016',
+				name: 'Linda Garcia',
+				major: 'Artificial Intelligence',
+				defenseStatus: 'Failed',
+			},
+			{
+				id: 'ST017',
+				name: 'Jason Taylor',
+				major: 'Artificial Intelligence',
+				defenseStatus: 'Pass',
+			},
+			{
+				id: 'ST018',
+				name: 'Maria Rodriguez',
+				major: 'Software Engineering',
+				defenseStatus: 'Failed',
+			},
 		],
 		leader: 'Sarah Wilson',
 		status: 'Unassigned',
@@ -285,7 +362,7 @@ export const mockReviewGroups: Record<string, FullMockGroup[]> = {
 		createFullMockGroup('g2', 'Review 1'),
 	],
 	'Review 2': [createFullMockGroup('g3', 'Review 2')],
-	'Review 3': [createFullMockGroup('g3', 'Review 3')],
+	'Review 3': [],
 	'Final Review': [createFullMockGroup('g4', 'Final Review')],
 };
 
