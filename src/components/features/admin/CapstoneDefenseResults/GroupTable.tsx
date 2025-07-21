@@ -222,6 +222,26 @@ const ThesisTable = () => {
 
 	return (
 		<>
+			{/* Import Section */}
+			<Row justify="center" style={{ marginBottom: 24 }}>
+				<Col>
+					<Upload
+						beforeUpload={handleExcelImport}
+						accept=".xlsx"
+						showUploadList={false}
+					>
+						<Button
+							icon={<ImportOutlined />}
+							size="large"
+							type="primary"
+							style={{ height: 48, padding: '0 32px', fontSize: '16px' }}
+						>
+							Import Excel File
+						</Button>
+					</Upload>
+				</Col>
+			</Row>
+
 			{/* Chỉ hiển thị search và table khi đã nhấn import */}
 			{showTable && (
 				<>
@@ -267,26 +287,7 @@ const ThesisTable = () => {
 			{/* Hiển thị hướng dẫn khi chưa import */}
 			{!showTable && (
 				<div style={{ textAlign: 'center', padding: '60px 0', color: '#999' }}>
-					{/* Import Section */}
-					<Row justify="center" style={{ marginBottom: 24 }}>
-						<Col>
-							<Upload
-								beforeUpload={handleExcelImport}
-								accept=".xlsx"
-								showUploadList={false}
-							>
-								<Button
-									icon={<ImportOutlined />}
-									size="large"
-									type="primary"
-									style={{ height: 48, padding: '0 32px', fontSize: '16px' }}
-								>
-									Import Excel File
-								</Button>
-							</Upload>
-						</Col>
-					</Row>
-
+					<ImportOutlined style={{ fontSize: '48px', marginBottom: '16px' }} />
 					<h3 style={{ color: '#999', fontWeight: 'normal' }}>
 						Please import an Excel file to view capstone defense results
 					</h3>
