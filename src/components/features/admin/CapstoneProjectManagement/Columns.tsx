@@ -2,9 +2,9 @@ import { Select, Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import React from 'react';
 
-import { highlightText } from './HighlightText';
-import { RowSpanCell } from './RowSpanCell';
-import { ThesisTableData } from './useThesisTableData';
+import { highlightText } from '@/components/features/admin/CapstoneProjectManagement/HighlightText';
+import { RowSpanCell } from '@/components/features/admin/CapstoneProjectManagement/RowSpanCell';
+import { ThesisTableData } from '@/components/features/admin/CapstoneProjectManagement/useThesisTableData';
 
 // Dùng chung cho cả bảng GroupResults và GroupManagement
 export const getColumns = (
