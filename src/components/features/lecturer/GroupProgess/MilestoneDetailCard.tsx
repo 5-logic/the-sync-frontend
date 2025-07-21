@@ -6,16 +6,20 @@ import { Button, Card, Col, Grid, Input, Row, Typography } from 'antd';
 import type { FullMockGroup } from '@/data/group';
 import { Group } from '@/lib/services/groups.service';
 import { GroupDashboard } from '@/schemas/group';
+import { Milestone } from '@/schemas/milestone';
 
 interface Props {
 	group: FullMockGroup | Group | GroupDashboard;
-	phase: string;
+	milestone: Milestone | null;
 }
 
 const { Text } = Typography;
 const { useBreakpoint } = Grid;
 
-export default function MilestoneDetailCard({ group, phase }: Readonly<Props>) {
+export default function MilestoneDetailCard({
+	group,
+	milestone,
+}: Readonly<Props>) {
 	const screens = useBreakpoint();
 
 	// Type guards for different group types
@@ -26,7 +30,7 @@ export default function MilestoneDetailCard({ group, phase }: Readonly<Props>) {
 
 	return (
 		<Card
-			title={`Milestone - ${phase}`}
+			title={milestone ? `Milestone - ${milestone.name}` : 'Select a Milestone'}
 			style={{
 				height: '100%',
 				display: 'flex',
@@ -40,6 +44,24 @@ export default function MilestoneDetailCard({ group, phase }: Readonly<Props>) {
 				overflow: 'hidden',
 			}}
 		>
+			{/* Milestone information */}
+			{milestone && (
+				<div
+					style={{
+						marginBottom: 16,
+						padding: '12px',
+						background: '#f5f5f5',
+						borderRadius: '6px',
+					}}
+				>
+					<Text strong>Milestone Period: </Text>
+					<Text>
+						{new Date(milestone.startDate).toLocaleDateString()} -{' '}
+						{new Date(milestone.endDate).toLocaleDateString()}
+					</Text>
+				</div>
+			)}
+
 			{/* Phần nội dung có thể scroll */}
 			<div
 				style={{
