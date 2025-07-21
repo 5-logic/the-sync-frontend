@@ -1,10 +1,10 @@
 'use client';
 
-import { UploadOutlined } from '@ant-design/icons';
-import { Button, Card, Space, Upload, UploadProps } from 'antd';
+import { Card, Space } from 'antd';
 import { useState } from 'react';
 
-import { FileItem } from '@/components/common/FileItem';
+import { DocumentUploadButton } from '@/components/common/FileUpload/DocumentUploadButton';
+import { FileItem } from '@/components/common/FileUpload/FileItem';
 import { FormLabel } from '@/components/common/FormLabel';
 
 interface UploadedFile {
@@ -76,16 +76,6 @@ export function DocumentUploadSection({
 		onFilesChange(updatedFiles);
 	};
 
-	const uploadProps: UploadProps = {
-		multiple: true,
-		onChange: handleFileSelect,
-		showUploadList: false,
-		disabled: disabled || uploading,
-		beforeUpload: () => false, // Prevent auto upload
-		accept: '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt',
-		fileList: [], // Always keep Upload component's internal fileList empty
-	};
-
 	return (
 		<Card
 			size="small"
@@ -116,30 +106,13 @@ export function DocumentUploadSection({
 
 				{/* Upload section */}
 				{!disabled && (
-					<div>
-						<Upload {...uploadProps}>
-							<Button
-								icon={<UploadOutlined />}
-								loading={uploading}
-								disabled={disabled}
-								style={{ width: '100%' }}
-							>
-								{uploading ? 'Uploading...' : 'Upload Template Documents'}
-							</Button>
-						</Upload>
-
-						<div
-							style={{
-								fontSize: 12,
-								color: '#999',
-								marginTop: 4,
-								textAlign: 'center',
-							}}
-						>
-							Support: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, TXT (Max: 10MB per
-							file)
-						</div>
-					</div>
+					<DocumentUploadButton
+						onFilesSelect={handleFileSelect}
+						disabled={disabled}
+						uploading={uploading}
+						buttonText="Upload Template Documents"
+						helpText="Support: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, TXT (Max: 10MB per file)"
+					/>
 				)}
 			</Space>
 		</Card>
