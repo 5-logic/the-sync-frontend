@@ -214,17 +214,6 @@ const ThesisTable = () => {
 				),
 		},
 		{
-			title: 'Semester',
-			dataIndex: 'semester',
-			key: 'semester',
-			align: 'center',
-			render: (text: string, record: ThesisTableData) =>
-				renderCellWithRowSpan(
-					highlightText(text, searchText),
-					record.rowSpanSemester,
-				),
-		},
-		{
 			title: 'Thesis Title',
 			dataIndex: 'thesisName',
 			key: 'thesisName',
@@ -263,6 +252,17 @@ const ThesisTable = () => {
 						<span style={{ color: '#999' }}>-</span>
 					),
 					record.rowSpanGroup,
+				),
+		},
+		{
+			title: 'Semester',
+			dataIndex: 'semester',
+			key: 'semester',
+			align: 'center',
+			render: (text: string, record: ThesisTableData) =>
+				renderCellWithRowSpan(
+					highlightText(text, searchText),
+					record.rowSpanSemester,
 				),
 		},
 	];
