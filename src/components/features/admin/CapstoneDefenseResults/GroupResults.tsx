@@ -72,7 +72,14 @@ const GroupResults = () => {
 						<strong>{selectedRowKeys.length}</strong> student(s) will be
 						updated:
 					</p>
-					<div style={{ maxHeight: 200, overflowY: 'auto', marginBottom: 16 }}>
+					<div
+						style={{
+							maxHeight: 200,
+							overflowY: 'auto',
+							marginBottom: 5,
+							marginTop: 16,
+						}}
+					>
 						{selectedStudents.map((student: GroupTableData) => (
 							<div key={String(student.studentId)}>
 								<b>{student.studentId}</b> - {student.name}
