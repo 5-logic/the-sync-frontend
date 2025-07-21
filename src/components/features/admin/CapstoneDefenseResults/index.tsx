@@ -203,43 +203,49 @@ const CapstoneDefenseResults = () => {
 	};
 
 	return (
-		<Space direction="vertical" size="large" style={{ width: '100%' }}>
-			<Header
-				title="Capstone Defense Results"
-				description="View, import, and assess capstone defense results with detailed student info and final evaluation status."
-			/>
-			<Row gutter={[16, 16]} align="middle" style={{ marginBottom: 16 }}>
-				<Col flex="auto" />
-				<Col>
-					<Button
-						onClick={handleBulkStatusUpdate}
-						disabled={selectedRowKeys.length === 0}
-					>
-						Update Defense Results
-					</Button>
-				</Col>
-				<Col>
-					<Button
-						type="primary"
-						onClick={handleSaveChanges}
-						disabled={!hasUnsavedChanges}
-					>
-						Save Changes{' '}
-						{hasUnsavedChanges && `(${Object.keys(statusUpdates).length})`}
-					</Button>
-				</Col>
-			</Row>
+		<Space direction="vertical" size="small" style={{ width: '100%' }}>
+			<div>
+				<Header title="Capstone Defense Results" />
+				<Row gutter={[16, 16]} align="middle" style={{ marginTop: -4 }}>
+					<Col flex="auto">
+						<Typography.Text type="secondary">
+							View, import, and assess capstone defense results with detailed
+							student info and final evaluation status.
+						</Typography.Text>
+					</Col>
+					<Col>
+						<Button
+							onClick={handleBulkStatusUpdate}
+							disabled={selectedRowKeys.length === 0}
+						>
+							Update Defense Results
+						</Button>
+					</Col>
+					<Col>
+						<Button
+							type="primary"
+							onClick={handleSaveChanges}
+							disabled={!hasUnsavedChanges}
+						>
+							Save Changes{' '}
+							{hasUnsavedChanges && `(${Object.keys(statusUpdates).length})`}
+						</Button>
+					</Col>
+				</Row>
+			</div>
 
-			<FilterBar
-				searchText={searchValue}
-				onSearchChange={handleSearch}
-				selectedSemester={selectedSemester}
-				onSemesterChange={setSelectedSemester}
-				availableSemesters={availableSemesters}
-				onExportPdf={handleExportPdf}
-				searchPlaceholder="Search..."
-				showExportPdf={true}
-			/>
+			<div style={{ marginTop: 24 }}>
+				<FilterBar
+					searchText={searchValue}
+					onSearchChange={handleSearch}
+					selectedSemester={selectedSemester}
+					onSemesterChange={setSelectedSemester}
+					availableSemesters={availableSemesters}
+					onExportPdf={handleExportPdf}
+					searchPlaceholder="Search..."
+					showExportPdf={true}
+				/>
+			</div>
 
 			<Table
 				className="group-results-table"
