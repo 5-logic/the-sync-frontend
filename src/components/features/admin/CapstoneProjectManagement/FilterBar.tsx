@@ -15,6 +15,7 @@ type Props = {
 	exportPdfText?: string;
 	showExportExcel?: boolean;
 	showExportPdf?: boolean;
+	loading?: boolean;
 };
 
 export const FilterBar = ({
@@ -30,57 +31,70 @@ export const FilterBar = ({
 	exportPdfText = 'Export PDF',
 	showExportExcel = false,
 	showExportPdf = false,
-}: Props) => (
-	<Row gutter={[16, 16]} align="middle" style={{ marginBottom: 16 }}>
-		<Col flex="auto">
-			<Input
-				placeholder={searchPlaceholder}
-				value={searchText}
-				onChange={(e) => onSearchChange(e.target.value)}
-				prefix={<SearchOutlined />}
-				allowClear
-				size="middle"
-			/>
-		</Col>
-		<Col style={{ width: 150 }}>
-			<Select
-				value={selectedSemester}
-				onChange={onSemesterChange}
-				style={{ width: '100%' }}
-				size="middle"
-			>
-				<Select.Option value="all">All Semesters</Select.Option>
-				{availableSemesters.map((semester) => (
-					<Select.Option key={semester} value={semester}>
-						{semester}
-					</Select.Option>
-				))}
-			</Select>
-		</Col>
-		{showExportExcel && (
+	loading = false,
+}: Props) => {
+	// Filter out 'all' from availableSemesters for display since we show it separately
+	const semesterOptions = availableSemesters.filter(
+		(semester) => semester !== 'all',
+	);
+
+	return (
+		<Row gutter={[16, 16]} align="middle" style={{ marginBottom: 16 }}>
+			<Col flex="auto">
+				<Input
+					placeholder={searchPlaceholder}
+					value={searchText}
+					onChange={(e) => onSearchChange(e.target.value)}
+					prefix={<SearchOutlined />}
+					allowClear
+					size="middle"
+					disabled={loading}
+				/>
+			</Col>
 			<Col style={{ width: 150 }}>
-				<Button
-					icon={<ExportOutlined />}
-					type="primary"
-					size="middle"
+				<Select
+					value={selectedSemester}
+					onChange={onSemesterChange}
 					style={{ width: '100%' }}
-					onClick={onExportExcel}
-				>
-					{exportExcelText}
-				</Button>
-			</Col>
-		)}
-		{showExportPdf && (
-			<Col>
-				<Button
-					icon={<ExportOutlined />}
-					type="primary"
 					size="middle"
-					onClick={onExportPdf}
+					placeholder="Select Semester"
+					disabled={loading}
 				>
-					{exportPdfText}
-				</Button>
+					<Select.Option value="all">All Semesters</Select.Option>
+					{semesterOptions.map((semester) => (
+						<Select.Option key={semester} value={semester}>
+							{semester}
+						</Select.Option>
+					))}
+				</Select>
 			</Col>
-		)}
-	</Row>
-);
+			{showExportExcel && (
+				<Col style={{ width: 150 }}>
+					<Button
+						icon={<ExportOutlined />}
+						type="primary"
+						size="middle"
+						style={{ width: '100%' }}
+						onClick={onExportExcel}
+						disabled={loading}
+					>
+						{exportExcelText}
+					</Button>
+				</Col>
+			)}
+			{showExportPdf && (
+				<Col>
+					<Button
+						icon={<ExportOutlined />}
+						type="primary"
+						size="middle"
+						onClick={onExportPdf}
+						disabled={loading}
+					>
+						{exportPdfText}
+					</Button>
+				</Col>
+			)}
+		</Row>
+	);
+};

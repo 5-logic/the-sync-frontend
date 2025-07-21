@@ -5,21 +5,27 @@ import React, { useMemo, useState } from 'react';
 
 import { TablePagination } from '@/components/common/TablePagination';
 import { FilterBar } from '@/components/features/admin/CapstoneProjectManagement/FilterBar';
+import { calculateRowSpans } from '@/components/features/admin/CapstoneProjectManagement/calculateRowSpan';
+import { useDebouncedSearch } from '@/hooks/ui/useDebounce';
 
 import { getColumns } from './Columns';
-import { GroupTableData } from './useGroupTableData';
+import {
+	GroupTableData,
+	GroupTableData as GroupTableDataType,
+} from './useGroupTableData';
 
 const { Text } = Typography;
 
 const GroupManagement = () => {
-	const [searchText, setSearchText] = useState('');
+	const { searchValue, debouncedSearchValue, setSearchValue } =
+		useDebouncedSearch('', 300);
 	const [selectedSemester, setSelectedSemester] = useState<string>('all');
 	const { baseData, availableSemesters } = GroupTableData();
 
 	const filteredData = useMemo(() => {
-		const filtered = baseData.filter((item) => {
+		const filtered = baseData.filter((item: GroupTableDataType) => {
 			const matchesSearch =
-				!searchText ||
+				!debouncedSearchValue.trim() ||
 				[
 					item.name,
 					item.studentId,
@@ -28,13 +34,19 @@ const GroupManagement = () => {
 					item.supervisor,
 					item.major,
 					item.semester,
-				].some((field) => (field ?? '').toLowerCase().includes(searchText));
+				].some((field) =>
+					(field ?? '')
+						.toLowerCase()
+						.includes(debouncedSearchValue.toLowerCase().trim()),
+				);
 			const matchesSemester =
 				selectedSemester === 'all' || item.semester === selectedSemester;
 			return matchesSearch && matchesSemester;
 		});
-		return filtered;
-	}, [baseData, searchText, selectedSemester]);
+
+		// Recalculate rowSpans for filtered data
+		return calculateRowSpans(filtered);
+	}, [baseData, debouncedSearchValue, selectedSemester]);
 
 	const handleExportExcel = () => {
 		console.log('Exporting to Excel...');
@@ -42,17 +54,17 @@ const GroupManagement = () => {
 
 	const columns = useMemo(
 		() =>
-			getColumns(searchText, {
+			getColumns(debouncedSearchValue, {
 				showAbbreviationSupervisor: true,
 			}),
-		[searchText],
+		[debouncedSearchValue],
 	);
 
 	return (
 		<>
 			<FilterBar
-				searchText={searchText}
-				onSearchChange={setSearchText}
+				searchText={searchValue}
+				onSearchChange={setSearchValue}
 				selectedSemester={selectedSemester}
 				onSemesterChange={setSelectedSemester}
 				availableSemesters={availableSemesters}
@@ -70,7 +82,11 @@ const GroupManagement = () => {
 
 			<Text type="secondary" style={{ marginTop: 16, display: 'block' }}>
 				List includes {filteredData.length} students and{' '}
-				{new Set(filteredData.map((item) => item.groupId)).size} thesis projects
+				{
+					new Set(filteredData.map((item: GroupTableDataType) => item.groupId))
+						.size
+				}{' '}
+				thesis projects
 			</Text>
 		</>
 	);

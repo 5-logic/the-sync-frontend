@@ -8,16 +8,19 @@ import React, { useCallback, useMemo, useState } from 'react';
 
 import { TablePagination } from '@/components/common/TablePagination';
 import { FilterBar } from '@/components/features/admin/CapstoneProjectManagement/FilterBar';
+import { calculateRowSpans } from '@/components/features/admin/CapstoneProjectManagement/calculateRowSpan';
 import {
 	GroupTableData,
 	useGroupTableData,
 } from '@/components/features/admin/CapstoneProjectManagement/useGroupTableData';
+import { useDebouncedSearch } from '@/hooks/ui/useDebounce';
 import '@/styles/components.css';
 
 const { Text } = Typography;
 
 const GroupResults = () => {
-	const [searchText, setSearchText] = useState('');
+	const { searchValue, debouncedSearchValue, setSearchValue } =
+		useDebouncedSearch('', 300);
 	const [selectedSemester, setSelectedSemester] = useState<string>('all');
 	const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 	const [statusUpdates, setStatusUpdates] = useState<Record<string, string>>(
@@ -28,7 +31,7 @@ const GroupResults = () => {
 	const dataToUse = baseData;
 
 	const handleSearch = (value: string) => {
-		setSearchText(value.toLowerCase());
+		setSearchValue(value);
 	};
 
 	const handleExportPdf = () => {
@@ -120,7 +123,7 @@ const GroupResults = () => {
 	const filteredData = useMemo(() => {
 		const filtered = dataToUse.filter((item: GroupTableData) => {
 			const matchesSearch =
-				!searchText ||
+				!debouncedSearchValue.trim() ||
 				[
 					item.name,
 					item.studentId,
@@ -131,24 +134,27 @@ const GroupResults = () => {
 				].some((field) =>
 					String(field ?? '')
 						.toLowerCase()
-						.includes(searchText),
+						.includes(debouncedSearchValue.toLowerCase().trim()),
 				);
 			const matchesSemester =
 				selectedSemester === 'all' || item.semester === selectedSemester;
 			return matchesSearch && matchesSemester;
 		});
-		return filtered;
-	}, [dataToUse, searchText, selectedSemester]);
+
+		// Recalculate rowSpans for filtered data
+		return calculateRowSpans(filtered);
+	}, [dataToUse, debouncedSearchValue, selectedSemester]);
 
 	const columns = useMemo(
 		() =>
-			getColumns(searchText, {
+			getColumns(debouncedSearchValue, {
+				showAbbreviationSupervisor: true,
 				showStatus: true,
 				getDisplayStatus,
 				statusUpdates,
 				handleStatusChange,
 			}),
-		[getDisplayStatus, searchText, statusUpdates],
+		[getDisplayStatus, debouncedSearchValue, statusUpdates],
 	);
 
 	const rowSelection: TableRowSelection<GroupTableData> = {
@@ -181,7 +187,7 @@ const GroupResults = () => {
 			</Row>
 
 			<FilterBar
-				searchText={searchText}
+				searchText={searchValue}
 				onSearchChange={handleSearch}
 				selectedSemester={selectedSemester}
 				onSemesterChange={setSelectedSemester}

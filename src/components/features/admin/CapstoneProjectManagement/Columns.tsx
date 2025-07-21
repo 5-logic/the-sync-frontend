@@ -4,7 +4,7 @@ import React from 'react';
 
 import { highlightText } from '@/components/features/admin/CapstoneProjectManagement/HighlightText';
 import { RowSpanCell } from '@/components/features/admin/CapstoneProjectManagement/RowSpanCell';
-import { ThesisTableData } from '@/components/features/admin/CapstoneProjectManagement/useGroupTableData';
+import { GroupTableData } from '@/components/features/admin/CapstoneProjectManagement/useGroupTableData';
 
 // Dùng chung cho cả bảng GroupResults và GroupManagement
 export const getColumns = (
@@ -16,7 +16,7 @@ export const getColumns = (
 		statusUpdates?: Record<string, string>;
 		handleStatusChange?: (studentId: string, newStatus: string) => void;
 	},
-): ColumnsType<ThesisTableData> => {
+): ColumnsType<GroupTableData> => {
 	const {
 		showAbbreviationSupervisor = false,
 		showStatus = false,
@@ -25,7 +25,7 @@ export const getColumns = (
 		handleStatusChange = () => {},
 	} = options || {};
 
-	const baseColumns: ColumnsType<ThesisTableData> = [
+	const baseColumns: ColumnsType<GroupTableData> = [
 		{
 			title: 'No.',
 			key: 'no',
