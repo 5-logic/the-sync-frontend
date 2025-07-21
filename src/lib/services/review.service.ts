@@ -29,15 +29,14 @@ export interface ChangeReviewerResult {
 	reviewerId: string;
 	submissionId: string;
 }
-
-export interface EligibleReviewer {
+export interface Lecturer {
 	id: string;
-	name: string;
+	fullName: string;
 	email: string;
 	isModerator: boolean;
 }
 
-export type GetEligibleReviewersResult = EligibleReviewer[];
+export type GetEligibleReviewersResult = Lecturer[];
 
 class ReviewService {
 	private readonly baseUrl = '/reviews';

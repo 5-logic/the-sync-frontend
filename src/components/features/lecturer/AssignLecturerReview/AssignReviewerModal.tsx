@@ -8,7 +8,7 @@ import { GroupTableProps } from '@/components/features/lecturer/AssignLecturerRe
 import {
 	AssignBulkReviewersResult,
 	ChangeReviewerResult,
-	EligibleReviewer,
+	Lecturer,
 } from '@/lib/services/review.service';
 import { useReviewStore } from '@/store/useReviewStore';
 
@@ -35,9 +35,7 @@ function AssignReviewerModal(props: Props) {
 		onReloadSubmission,
 	} = props;
 	const [form] = Form.useForm();
-	const [eligibleLecturers, setEligibleLecturers] = useState<
-		EligibleReviewer[]
-	>([]);
+	const [eligibleLecturers, setEligibleLecturers] = useState<Lecturer[]>([]);
 	const [loading, setLoading] = useState(false);
 	const getEligibleReviewers = useReviewStore((s) => s.getEligibleReviewers);
 	const assignBulkReviewers = useReviewStore((s) => s.assignBulkReviewers);
@@ -75,12 +73,37 @@ function AssignReviewerModal(props: Props) {
 					? group.reviewers
 					: initialValues || [];
 
+			// reviewerVals có thể là array các object hoặc string id
+			const reviewer1Id =
+				typeof reviewerVals[0] === 'string'
+					? reviewerVals[0]
+					: reviewerVals[0]?.id;
+			const reviewer2Id =
+				typeof reviewerVals[1] === 'string'
+					? reviewerVals[1]
+					: reviewerVals[1]?.id;
+
+			// Lấy tên reviewer nếu có object, nếu không thì lấy id
+			const reviewer1Name =
+				typeof reviewerVals[0] === 'object' && reviewerVals[0]?.fullName
+					? reviewerVals[0].fullName
+					: reviewerVals[0];
+			const reviewer2Name =
+				typeof reviewerVals[1] === 'object' && reviewerVals[1]?.fullName
+					? reviewerVals[1].fullName
+					: reviewerVals[1];
+
 			form.setFieldsValue({
-				reviewer1: reviewerVals[0],
-				reviewer2: reviewerVals[1],
+				reviewer1: reviewer1Id,
+				reviewer2: reviewer2Id,
 			});
-			setReviewer1(reviewerVals[0]);
-			setReviewer2(reviewerVals[1]);
+			setReviewer1(reviewer1Id);
+			setReviewer2(reviewer2Id);
+			// Hiển thị log với tên reviewer nếu có
+			console.log('Setting initial reviewers:', {
+				reviewer1: reviewer1Name,
+				reviewer2: reviewer2Name,
+			});
 		}
 	}, [open, group, initialValues, form]);
 
@@ -114,7 +137,7 @@ function AssignReviewerModal(props: Props) {
 					setLoading(true);
 					try {
 						if (isChange && changeReviewer && currentReviewerIds.length === 2) {
-							// Call changeReviewer for each reviewer slot
+							// Chỉ gọi changeReviewer cho từng reviewer bị thay đổi
 							const results: ChangeReviewerResult[] = [];
 							for (let i = 0; i < 2; i++) {
 								if (currentReviewerIds[i] !== selected[i]) {
@@ -129,7 +152,8 @@ function AssignReviewerModal(props: Props) {
 								if (onReloadSubmission) onReloadSubmission(group.submissionId);
 							}
 							onAssign(results.length > 0 ? results[0] : null);
-						} else if (assignBulkReviewers) {
+						} else if (!isChange && assignBulkReviewers) {
+							// Chỉ gọi assignBulkReviewers khi là assign mới
 							const result = await assignBulkReviewers({
 								assignments: [
 									{
@@ -161,7 +185,7 @@ function AssignReviewerModal(props: Props) {
 						options={eligibleLecturers
 							.filter((lecturer) => lecturer.id !== reviewer2)
 							.map((lecturer) => ({
-								label: `${lecturer.name}`,
+								label: `${lecturer.fullName}`,
 								value: lecturer.id,
 							}))}
 						allowClear
@@ -186,7 +210,7 @@ function AssignReviewerModal(props: Props) {
 						options={eligibleLecturers
 							.filter((lecturer) => lecturer.id !== reviewer1)
 							.map((lecturer) => ({
-								label: `${lecturer.name}`,
+								label: `${lecturer.fullName}`,
 								value: lecturer.id,
 							}))}
 						allowClear

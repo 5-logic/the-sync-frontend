@@ -129,8 +129,8 @@ export default function AssignLecturerReview() {
 					code: s.group.code,
 					name: s.group.name,
 					title: s.thesis?.englishName || '',
-					supervisors: s.thesis?.supervisors.map((sup) => sup.fullName),
-					reviewers: s.reviewLecturers.map((rev) => rev.fullName),
+					supervisors: s.thesis?.supervisors || [],
+					reviewers: s.reviewLecturers || [],
 					submissionId: s.id,
 					phase: String(s.milestone),
 				}));
@@ -234,10 +234,8 @@ export default function AssignLecturerReview() {
 							...submissionGroup,
 							title: submission.thesis?.englishName || '',
 							phase: String(submission.milestone),
-							supervisors:
-								submission.thesis?.supervisors?.map((sup) => sup.fullName) ||
-								[],
-							reviewers: submission.reviewLecturers.map((rev) => rev.fullName),
+							supervisors: submission.thesis?.supervisors || [],
+							reviewers: submission.reviewLecturers,
 							submissionId: submission.id,
 						});
 					}

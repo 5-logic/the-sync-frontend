@@ -4,14 +4,15 @@ import { Button, Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 
 import { TablePagination } from '@/components/common/TablePagination';
+import { Lecturer } from '@/lib/services/review.service';
 
 export interface GroupTableProps {
 	id: string;
 	code: string;
 	name: string;
 	title: string;
-	supervisors: string[];
-	reviewers: string[];
+	supervisors: Lecturer[];
+	reviewers: Lecturer[];
 	submissionId?: string;
 	phase?: string;
 }
@@ -50,7 +51,9 @@ export default function GroupTable({
 			render: (_, record) => (
 				<div>
 					{record.supervisors && record.supervisors.length > 0
-						? record.supervisors.map((name, idx) => <div key={idx}>{name}</div>)
+						? record.supervisors.map((lecturer, idx) => (
+								<div key={idx}>{lecturer.fullName}</div>
+							))
 						: ''}
 				</div>
 			),
@@ -61,7 +64,9 @@ export default function GroupTable({
 			render: (_, record) => (
 				<div>
 					{record.reviewers && record.reviewers.length > 0
-						? record.reviewers.map((name, idx) => <div key={idx}>{name}</div>)
+						? record.reviewers.map((lecturer, idx) => (
+								<div key={idx}>{lecturer.fullName}</div>
+							))
 						: ''}
 				</div>
 			),

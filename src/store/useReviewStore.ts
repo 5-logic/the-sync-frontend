@@ -5,7 +5,7 @@ import {
 	AssignBulkReviewersResult,
 	ChangeReviewerDto,
 	ChangeReviewerResult,
-	EligibleReviewer,
+	Lecturer,
 	reviewService,
 } from '@/lib/services/review.service';
 import { showNotification } from '@/lib/utils';
@@ -15,7 +15,7 @@ export interface ReviewStoreState {
 	getEligibleReviewers: (
 		submissionId: string,
 		force?: boolean,
-	) => Promise<EligibleReviewer[]>;
+	) => Promise<Lecturer[]>;
 	clearEligibleReviewersCache: () => void;
 	// Placeholders for future review service methods
 	assignBulkReviewers?: (
@@ -28,7 +28,7 @@ export interface ReviewStoreState {
 }
 
 // Initialize cache for eligible reviewers
-cacheUtils.initCache<EligibleReviewer[]>('eligibleReviewers', {
+cacheUtils.initCache<Lecturer[]>('eligibleReviewers', {
 	ttl: 10 * 60 * 1000, // 10 minutes
 	maxSize: 1000,
 	enableLocalStorage: true,
@@ -37,7 +37,7 @@ cacheUtils.initCache<EligibleReviewer[]>('eligibleReviewers', {
 export const useReviewStore = create<ReviewStoreState>(() => ({
 	async getEligibleReviewers(submissionId: string, force = false) {
 		if (!force) {
-			const cached = cacheUtils.get<EligibleReviewer[]>(
+			const cached = cacheUtils.get<Lecturer[]>(
 				'eligibleReviewers',
 				submissionId,
 			);
