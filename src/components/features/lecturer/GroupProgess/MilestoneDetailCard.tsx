@@ -4,9 +4,11 @@ import { DownloadOutlined, SendOutlined } from '@ant-design/icons';
 import { Button, Card, Col, Grid, Input, Row, Typography } from 'antd';
 
 import type { FullMockGroup } from '@/data/group';
+import { Group } from '@/lib/services/groups.service';
+import { GroupDashboard } from '@/schemas/group';
 
 interface Props {
-	group: FullMockGroup;
+	group: FullMockGroup | Group | GroupDashboard;
 	phase: string;
 }
 
@@ -15,6 +17,12 @@ const { useBreakpoint } = Grid;
 
 export default function MilestoneDetailCard({ group, phase }: Readonly<Props>) {
 	const screens = useBreakpoint();
+
+	// Type guards for different group types
+	const isFullMockGroup = (
+		g: FullMockGroup | Group | GroupDashboard,
+	): g is FullMockGroup =>
+		'submissionFile' in g && 'submissionDate' in g && 'uploadedBy' in g;
 
 	return (
 		<Card
@@ -29,7 +37,7 @@ export default function MilestoneDetailCard({ group, phase }: Readonly<Props>) {
 				display: 'flex',
 				flexDirection: 'column',
 				padding: screens.xs ? '12px' : '16px',
-				overflow: 'hidden', // Quan trọng: ngăn overflow
+				overflow: 'hidden',
 			}}
 		>
 			{/* Phần nội dung có thể scroll */}
@@ -47,7 +55,12 @@ export default function MilestoneDetailCard({ group, phase }: Readonly<Props>) {
 					style={{ marginBottom: 8 }}
 				>
 					<Col span={screens.xs ? 24 : 'auto'}>
-						<Text>Submission file: {group.submissionFile}</Text>
+						<Text>
+							Submission file:{' '}
+							{isFullMockGroup(group)
+								? group.submissionFile
+								: 'No submission yet'}
+						</Text>
 					</Col>
 					<Col
 						span={screens.xs ? 24 : 'auto'}
@@ -69,10 +82,17 @@ export default function MilestoneDetailCard({ group, phase }: Readonly<Props>) {
 						span={screens.xs ? 24 : 'auto'}
 						style={{ marginBottom: screens.xs ? 8 : 0 }}
 					>
-						<Text>Submission Date: {group.submissionDate}</Text>
+						<Text>
+							Submission Date:{' '}
+							{isFullMockGroup(group)
+								? group.submissionDate
+								: 'No submission yet'}
+						</Text>
 					</Col>
 					<Col span={screens.xs ? 24 : 'auto'}>
-						<Text type="secondary">Uploaded by: {group.uploadedBy}</Text>
+						<Text type="secondary">
+							Uploaded by: {isFullMockGroup(group) ? group.uploadedBy : 'N/A'}
+						</Text>
 					</Col>
 				</Row>
 			</div>
