@@ -73,7 +73,7 @@ export const getColumns = (
 				align: 'center',
 				render: (abbreviation, record) =>
 					RowSpanCell(
-						<Tag color="blue">{highlightText(abbreviation!, searchText)}</Tag>,
+						<Tag color="blue">{highlightText(abbreviation, searchText)}</Tag>,
 						record.rowSpanGroup,
 					),
 			},
