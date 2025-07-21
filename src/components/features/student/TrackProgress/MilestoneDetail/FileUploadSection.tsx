@@ -1,12 +1,9 @@
 'use client';
 
-import {
-	DeleteOutlined,
-	FileTextOutlined,
-	UploadOutlined,
-} from '@ant-design/icons';
-import { Button, Card, Space, Upload } from 'antd';
+import { UploadOutlined } from '@ant-design/icons';
+import { Card, Space, Upload } from 'antd';
 
+import { FileItem } from '@/components/common/FileItem';
 import { FormLabel } from '@/components/common/FormLabel';
 
 interface UploadInfo {
@@ -47,88 +44,23 @@ export function FileUploadSection({
 				{files.length > 0 ? (
 					<div>
 						{files.map((file) => (
-							<div
+							<FileItem
 								key={`${file.name}-${file.size}`}
-								style={{
-									display: 'flex',
-									alignItems: 'center',
-									justifyContent: 'space-between',
-									padding: '12px 16px',
-									border: '1px solid #d9d9d9',
-									borderRadius: 8,
-									backgroundColor: '#fff',
-									marginBottom: 8,
-									gap: 8,
-									minWidth: 0,
-								}}
-							>
-								<div
-									style={{
-										display: 'flex',
-										alignItems: 'center',
-										gap: 8,
-										minWidth: 0,
-										flex: 1,
-									}}
-								>
-									<FileTextOutlined
-										style={{ color: '#1890ff', flexShrink: 0 }}
-									/>
-									<div style={{ minWidth: 0, flex: 1 }}>
-										<div
-											style={{
-												fontWeight: 500,
-												wordBreak: 'break-all',
-												overflow: 'hidden',
-												textOverflow: 'ellipsis',
-												whiteSpace: 'nowrap',
-												maxWidth: '100%',
-											}}
-											title={file.name}
-										>
-											{file.name}
-										</div>
-										<div style={{ color: '#666', fontSize: 13 }}>
-											{(file.size / 1024 / 1024).toFixed(1)} MB
-										</div>
-									</div>
-								</div>
-								<DeleteOutlined
-									style={{
-										color: 'red',
-										cursor: 'pointer',
-										fontSize: 16,
-										flexShrink: 0,
-									}}
-									onClick={() => onRemoveFile(file.name, file.size)}
-								/>
-							</div>
+								file={file}
+								showSize={true}
+								onDelete={() => onRemoveFile(file.name, file.size)}
+							/>
 						))}
 
 						<div style={{ marginTop: 16 }}>
-							<Upload
-								multiple
-								onChange={onFileChange}
-								showUploadList={false}
-								disabled={!canSubmit || isSubmitting}
-							>
-								<Button
-									icon={<UploadOutlined />}
-									disabled={!canSubmit || isSubmitting}
-									loading={isSubmitting}
-								>
-									{isSubmitting ? 'Uploading...' : 'Upload More Files'}
-								</Button>
-							</Upload>
-
 							<div
 								style={{
 									fontSize: 12,
 									color: '#999',
-									marginTop: 4,
+									textAlign: 'center',
 								}}
 							>
-								Support for all file types (Max: 10MB per file)
+								Use the drag area below to add more files
 							</div>
 						</div>
 					</div>
