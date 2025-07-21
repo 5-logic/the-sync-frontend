@@ -191,7 +191,6 @@ export default function GroupProgressPage() {
 									<Step
 										key={milestone.id}
 										title={milestone.name}
-										description={`${new Date(milestone.startDate).toLocaleDateString()} - ${new Date(milestone.endDate).toLocaleDateString()}`}
 										onClick={() => handleMilestoneChange(milestone)}
 										style={{ cursor: 'pointer' }}
 									/>
