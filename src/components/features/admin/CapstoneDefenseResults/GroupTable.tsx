@@ -1,7 +1,7 @@
 'use client';
 
 import { ExportOutlined, SearchOutlined } from '@ant-design/icons';
-import { Button, Col, Input, Row, Table, Tag, Typography } from 'antd';
+import { Button, Col, Input, Row, Select, Table, Tag, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import React, { useMemo, useState } from 'react';
 
@@ -93,6 +93,7 @@ const calculateRowSpans = (data: ThesisTableData[]): ThesisTableData[] => {
 
 const ThesisTable = () => {
 	const [searchText, setSearchText] = useState('');
+	const [selectedSemester, setSelectedSemester] = useState<string>('all');
 
 	const baseData = useMemo((): ThesisTableData[] => {
 		let counter = 1;
@@ -121,6 +122,12 @@ const ThesisTable = () => {
 		return calculateRowSpans(tempData);
 	}, []);
 
+	// Get unique semesters for filter buttons
+	const availableSemesters = useMemo(() => {
+		const semesters = new Set(baseData.map((item) => item.semester));
+		return Array.from(semesters).sort();
+	}, [baseData]);
+
 	// Sử dụng dữ liệu từ group.ts
 	const dataToUse = baseData;
 
@@ -130,21 +137,26 @@ const ThesisTable = () => {
 
 	const filteredData = useMemo(() => {
 		const filtered = dataToUse.filter((item) => {
-			if (!searchText) return true;
-			const searchFields = [
-				item.name,
-				item.studentId,
-				item.thesisName,
-				item.major,
-				item.status,
-				item.semester,
-			];
-			return searchFields.some((field) =>
-				field.toLowerCase().includes(searchText),
-			);
+			// Search filter
+			const matchesSearch =
+				!searchText ||
+				[
+					item.name,
+					item.studentId,
+					item.thesisName,
+					item.major,
+					item.status,
+					item.semester,
+				].some((field) => field.toLowerCase().includes(searchText));
+
+			// Semester filter
+			const matchesSemester =
+				selectedSemester === 'all' || item.semester === selectedSemester;
+
+			return matchesSearch && matchesSemester;
 		});
 		return calculateRowSpans(filtered);
-	}, [dataToUse, searchText]);
+	}, [dataToUse, searchText, selectedSemester]);
 
 	const renderHighlightText = (
 		text: string,
@@ -239,6 +251,22 @@ const ThesisTable = () => {
 						allowClear
 						size="middle"
 					/>
+				</Col>
+				<Col style={{ width: 150 }}>
+					<Select
+						value={selectedSemester}
+						onChange={setSelectedSemester}
+						style={{ width: '100%' }}
+						size="middle"
+						placeholder="Select Semester"
+					>
+						<Select.Option value="all">All Semesters</Select.Option>
+						{availableSemesters.map((semester) => (
+							<Select.Option key={semester} value={semester}>
+								{semester}
+							</Select.Option>
+						))}
+					</Select>
 				</Col>
 				<Col>
 					<Button icon={<ExportOutlined />} type="primary" size="middle">

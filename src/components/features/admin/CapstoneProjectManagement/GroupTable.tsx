@@ -1,7 +1,7 @@
 'use client';
 
 import { ExportOutlined, SearchOutlined } from '@ant-design/icons';
-import { Button, Col, Input, Row, Table, Tag, Typography } from 'antd';
+import { Button, Col, Input, Row, Select, Table, Tag, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import React, { useMemo, useState } from 'react';
 
@@ -103,6 +103,7 @@ const calculateRowSpans = (data: ThesisTableData[]): ThesisTableData[] => {
 
 const ThesisTable = () => {
 	const [searchText, setSearchText] = useState('');
+	const [selectedSemester, setSelectedSemester] = useState<string>('all');
 
 	const baseData = useMemo((): ThesisTableData[] => {
 		let counter = 1;
@@ -135,6 +136,12 @@ const ThesisTable = () => {
 		return calculateRowSpans(tempData);
 	}, []);
 
+	// Get unique semesters for filter buttons
+	const availableSemesters = useMemo(() => {
+		const semesters = new Set(baseData.map((item) => item.semester));
+		return Array.from(semesters).sort();
+	}, [baseData]);
+
 	const handleSearch = (value: string) => {
 		setSearchText(value.toLowerCase());
 	};
@@ -142,27 +149,29 @@ const ThesisTable = () => {
 	const filteredData = useMemo(() => {
 		// Filter dữ liệu trước
 		const filtered = baseData.filter((item) => {
-			if (!searchText) return true;
+			// Search filter
+			const matchesSearch =
+				!searchText ||
+				[
+					item.name,
+					item.studentId,
+					item.thesisName,
+					item.abbreviation,
+					item.supervisor,
+					item.major,
+					item.semester,
+				].some((field) => field.toLowerCase().includes(searchText));
 
-			const searchTerm = searchText.toLowerCase();
-			const searchFields = [
-				item.name,
-				item.studentId,
-				item.thesisName,
-				item.abbreviation,
-				item.supervisor,
-				item.major,
-				item.semester,
-			];
+			// Semester filter
+			const matchesSemester =
+				selectedSemester === 'all' || item.semester === selectedSemester;
 
-			return searchFields.some((field) =>
-				field.toLowerCase().includes(searchTerm),
-			);
+			return matchesSearch && matchesSemester;
 		});
 
 		// Tính toán lại rowSpan cho dữ liệu đã filter
 		return calculateRowSpans(filtered);
-	}, [baseData, searchText]);
+	}, [baseData, searchText, selectedSemester]);
 
 	// Helper function để render text với highlight
 	const renderHighlightText = (
@@ -283,6 +292,22 @@ const ThesisTable = () => {
 						allowClear
 						size="middle"
 					/>
+				</Col>
+				<Col style={{ width: 150 }}>
+					<Select
+						value={selectedSemester}
+						onChange={setSelectedSemester}
+						style={{ width: '100%' }}
+						size="middle"
+						placeholder="Select Semester"
+					>
+						<Select.Option value="all">All Semesters</Select.Option>
+						{availableSemesters.map((semester) => (
+							<Select.Option key={semester} value={semester}>
+								{semester}
+							</Select.Option>
+						))}
+					</Select>
 				</Col>
 				<Col style={{ width: 200 }}>
 					<Button
