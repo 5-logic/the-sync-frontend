@@ -1,4 +1,3 @@
-// components/common/ExtendedFilterBar.tsx
 import { ExportOutlined, SearchOutlined } from '@ant-design/icons';
 import { Button, Col, Input, Row, Select } from 'antd';
 import React from 'react';
