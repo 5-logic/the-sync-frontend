@@ -26,9 +26,15 @@ const GroupResults = () => {
 	const [statusUpdates, setStatusUpdates] = useState<Record<string, string>>(
 		{},
 	);
+	const [baseDataState, setBaseDataState] = useState<GroupTableData[]>([]);
 	const { baseData, availableSemesters } = useGroupTableData();
 
-	const dataToUse = baseData;
+	// Initialize baseDataState when baseData changes
+	React.useEffect(() => {
+		setBaseDataState(baseData);
+	}, [baseData]);
+
+	const dataToUse = baseDataState;
 
 	const handleSearch = (value: string) => {
 		setSearchValue(value);
@@ -51,6 +57,21 @@ const GroupResults = () => {
 
 	const handleSaveChanges = () => {
 		console.log('Status updates to save:', statusUpdates);
+
+		// Update the baseDataState with new status values
+		setBaseDataState((prevData) =>
+			prevData.map((student) => {
+				if (statusUpdates[student.studentId]) {
+					return {
+						...student,
+						status: statusUpdates[student.studentId],
+					};
+				}
+				return student;
+			}),
+		);
+
+		// Clear the temporary updates and selection
 		setStatusUpdates({});
 		setSelectedRowKeys([]);
 	};
