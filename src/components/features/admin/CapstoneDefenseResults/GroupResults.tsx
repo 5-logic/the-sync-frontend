@@ -101,7 +101,7 @@ const calculateRowSpans = (data: ThesisTableData[]): ThesisTableData[] => {
 	return result;
 };
 
-const ThesisTable = () => {
+const GroupResults = () => {
 	const [searchText, setSearchText] = useState('');
 	const [selectedSemester, setSelectedSemester] = useState<string>('all');
 	const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
@@ -535,4 +535,4 @@ const ThesisTable = () => {
 	);
 };
 
-export default ThesisTable;
+export default GroupResults;
