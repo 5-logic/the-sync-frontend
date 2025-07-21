@@ -1,6 +1,7 @@
 'use client';
 
-import { Card, Collapse, Spin, message } from 'antd';
+import { DownloadOutlined } from '@ant-design/icons';
+import { Button, Card, Collapse, Spin, message } from 'antd';
 import dayjs from 'dayjs';
 import { useState } from 'react';
 
@@ -12,6 +13,8 @@ import {
 } from '@/components/features/student/TrackProgress/MilestoneDetail';
 import { useMilestoneProgress } from '@/hooks/student';
 import { useStudentGroupStatus } from '@/hooks/student/useStudentGroupStatus';
+import { StorageService } from '@/lib/services/storage.service';
+import { showNotification } from '@/lib/utils/notification';
 import { Milestone } from '@/schemas/milestone';
 
 const { Panel } = Collapse;
@@ -154,6 +157,34 @@ export default function MilestoneDetailCard() {
 		return 'Please make sure to submit your report before the deadline.';
 	};
 
+	const handleDownloadSingleFile = async (documentUrl: string) => {
+		try {
+			const fileName = StorageService.getFileNameFromUrl(documentUrl);
+
+			// Create a temporary anchor element to trigger download
+			const link = document.createElement('a');
+			link.href = documentUrl;
+			link.download = fileName;
+			link.target = '_blank';
+			link.style.display = 'none';
+
+			document.body.appendChild(link);
+			link.click();
+			document.body.removeChild(link);
+
+			showNotification.success(
+				'Download Started',
+				`Template "${fileName}" download started successfully`,
+			);
+		} catch (error) {
+			console.error('Failed to download document:', documentUrl, error);
+			showNotification.error(
+				'Download Failed',
+				'Failed to download template document',
+			);
+		}
+	};
+
 	if (loading) {
 		return (
 			<Card
@@ -219,6 +250,60 @@ export default function MilestoneDetailCard() {
 							key={milestone.id}
 							header={<MilestoneHeader milestone={milestone} />}
 						>
+							{/* Download Templates Section */}
+							{milestone.documents && milestone.documents.length > 0 && (
+								<div style={{ marginBottom: 16 }}>
+									<div
+										style={{
+											fontSize: 14,
+											fontWeight: 500,
+											color: '#333',
+											marginBottom: 8,
+										}}
+									>
+										📎 Submission Templates ({milestone.documents.length} file
+										{milestone.documents.length > 1 ? 's' : ''}):
+									</div>
+
+									{/* Individual file download buttons */}
+									<div
+										style={{
+											display: 'flex',
+											flexDirection: 'column',
+											gap: 4,
+											backgroundColor: '#f9f9f9',
+											padding: '8px 12px',
+											borderRadius: 6,
+											border: '1px solid #e8e8e8',
+										}}
+									>
+										{milestone.documents.map((documentUrl, index) => {
+											const fileName =
+												StorageService.getFileNameFromUrl(documentUrl);
+											return (
+												<Button
+													key={`${milestone.id}-doc-${index}`}
+													type="text"
+													size="small"
+													icon={<DownloadOutlined />}
+													onClick={() => handleDownloadSingleFile(documentUrl)}
+													style={{
+														justifyContent: 'flex-start',
+														color: '#1890ff',
+														textAlign: 'left',
+														height: 'auto',
+														padding: '6px 8px',
+														fontWeight: 500,
+													}}
+												>
+													{fileName}
+												</Button>
+											);
+										})}
+									</div>
+								</div>
+							)}
+
 							{/* Check if milestone has been submitted and not in update mode */}
 							{(submission?.documents?.length ?? 0) > 0 &&
 							!updateMode[milestone.id] ? (
