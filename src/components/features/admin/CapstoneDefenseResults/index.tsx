@@ -12,7 +12,6 @@ const HomePage = () => {
 			<Header
 				title="Capstone Defense Results"
 				description="View, import, and assess capstone defense results with detailed student info and final evaluation status."
-				badgeText="Summer 2025 - FPT University Binh Dinh"
 			/>
 			<GroupTable />
 		</Space>
