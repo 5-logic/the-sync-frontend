@@ -135,8 +135,6 @@ export default function AssignLecturerReview() {
 					phase: String(s.milestone),
 				}));
 
-	console.log('Groups in semester:', groupsInSemester);
-
 	// Search theo group name/code
 	const filteredGroups = groupsInSemester.filter((group) => {
 		const term = search.toLowerCase();
@@ -229,10 +227,7 @@ export default function AssignLecturerReview() {
 							supervisors:
 								submission.thesis?.supervisors?.map((sup) => sup.fullName) ||
 								[],
-							reviewers: getReviewersForGroup(
-								submissionGroup.id,
-								submission.milestone.id || '',
-							),
+							reviewers: submission.reviewLecturers.map((rev) => rev.fullName),
 							submissionId: submission.id,
 						});
 					}
