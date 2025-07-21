@@ -41,8 +41,8 @@ const CapstoneDefenseResults = () => {
 		setSearchValue(value);
 	};
 
-	const handleExportPdf = () => {
-		console.log('Exporting to PDF...');
+	const handleExportExcel = () => {
+		console.log('Exporting to Excel...');
 	};
 
 	const handleRowSelectionChange = (newSelectedKeys: React.Key[]) => {
@@ -241,9 +241,9 @@ const CapstoneDefenseResults = () => {
 					selectedSemester={selectedSemester}
 					onSemesterChange={setSelectedSemester}
 					availableSemesters={availableSemesters}
-					onExportPdf={handleExportPdf}
+					onExportExcel={handleExportExcel}
 					searchPlaceholder="Search..."
-					showExportPdf={true}
+					showExportExcel={true}
 				/>
 			</div>
 
