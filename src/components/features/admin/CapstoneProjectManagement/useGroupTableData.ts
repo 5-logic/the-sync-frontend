@@ -20,7 +20,6 @@ export type GroupTableData = {
 	status?: string;
 };
 
-// ✅ Hàm xử lý dữ liệu gốc
 const generateBaseData = (): GroupTableData[] => {
 	let counter = 1;
 	const tempData: GroupTableData[] = [];
@@ -55,7 +54,7 @@ const generateBaseData = (): GroupTableData[] => {
 	return calculateRowSpans(tempData);
 };
 
-// ✅ Logic dùng chung
+// Logic dùng chung
 const getGroupTableData = () => {
 	const baseData = generateBaseData();
 
@@ -69,13 +68,13 @@ const getGroupTableData = () => {
 	};
 };
 
-// ✅ Hook cho GroupManagement
+// Hook cho GroupManagement
 export const GroupTableData = () => {
 	const data = useMemo(() => getGroupTableData(), []);
 	return data;
 };
 
-// ✅ Hook cho GroupResults
+// Hook cho GroupResults
 export const useGroupTableData = () => {
 	const data = useMemo(() => getGroupTableData(), []);
 	return data;
