@@ -1,15 +1,11 @@
 'use client';
 
-import {
-	DeleteOutlined,
-	FileTextOutlined,
-	UploadOutlined,
-} from '@ant-design/icons';
+import { UploadOutlined } from '@ant-design/icons';
 import { Button, Card, Space, Upload, UploadProps } from 'antd';
 import { useState } from 'react';
 
+import { FileItem } from '@/components/common/FileItem';
 import { FormLabel } from '@/components/common/FormLabel';
-import { StorageService } from '@/lib/services/storage.service';
 
 interface UploadInfo {
 	readonly fileList: Array<{
@@ -110,67 +106,15 @@ export function DocumentEditSection({
 						<div style={{ fontWeight: 500, marginBottom: 8, color: '#333' }}>
 							Existing Documents:
 						</div>
-						{existingDocuments.map((documentUrl, index) => {
-							const fileName = StorageService.getFileNameFromUrl(documentUrl);
-
-							return (
-								<div
-									key={`existing-${documentUrl}-${index}`}
-									style={{
-										display: 'flex',
-										alignItems: 'center',
-										justifyContent: 'space-between',
-										padding: '12px 16px',
-										border: '1px solid #d9d9d9',
-										borderRadius: 8,
-										backgroundColor: '#fff',
-										marginBottom: 8,
-										gap: 8,
-										minWidth: 0,
-									}}
-								>
-									<div
-										style={{
-											display: 'flex',
-											alignItems: 'center',
-											gap: 8,
-											minWidth: 0,
-											flex: 1,
-										}}
-									>
-										<FileTextOutlined
-											style={{ color: '#1890ff', flexShrink: 0 }}
-										/>
-										<div style={{ minWidth: 0, flex: 1 }}>
-											<div
-												style={{
-													fontWeight: 500,
-													wordBreak: 'break-all',
-													overflow: 'hidden',
-													textOverflow: 'ellipsis',
-													whiteSpace: 'nowrap',
-													maxWidth: '100%',
-												}}
-												title={fileName}
-											>
-												{fileName}
-											</div>
-										</div>
-									</div>
-									{!disabled && (
-										<DeleteOutlined
-											style={{
-												color: 'red',
-												cursor: 'pointer',
-												fontSize: 16,
-												flexShrink: 0,
-											}}
-											onClick={() => handleRemoveExistingDocument(documentUrl)}
-										/>
-									)}
-								</div>
-							);
-						})}
+						{existingDocuments.map((documentUrl, index) => (
+							<FileItem
+								key={`existing-${documentUrl}-${index}`}
+								documentUrl={documentUrl}
+								variant="existing"
+								disabled={disabled}
+								onDelete={() => handleRemoveExistingDocument(documentUrl)}
+							/>
+						))}
 					</div>
 				)}
 
@@ -181,62 +125,13 @@ export function DocumentEditSection({
 							New Files to Upload:
 						</div>
 						{newFiles.map((file, index) => (
-							<div
+							<FileItem
 								key={`new-${file.name}-${file.size}-${index}`}
-								style={{
-									display: 'flex',
-									alignItems: 'center',
-									justifyContent: 'space-between',
-									padding: '12px 16px',
-									border: '1px solid #e6f7ff',
-									borderRadius: 8,
-									backgroundColor: '#f6ffed',
-									marginBottom: 8,
-									gap: 8,
-									minWidth: 0,
-								}}
-							>
-								<div
-									style={{
-										display: 'flex',
-										alignItems: 'center',
-										gap: 8,
-										minWidth: 0,
-										flex: 1,
-									}}
-								>
-									<FileTextOutlined
-										style={{ color: '#52c41a', flexShrink: 0 }}
-									/>
-									<div style={{ minWidth: 0, flex: 1 }}>
-										<div
-											style={{
-												fontWeight: 500,
-												wordBreak: 'break-all',
-												overflow: 'hidden',
-												textOverflow: 'ellipsis',
-												whiteSpace: 'nowrap',
-												maxWidth: '100%',
-											}}
-											title={file.name}
-										>
-											{file.name}{' '}
-											<span style={{ color: '#52c41a' }}>(New)</span>
-										</div>
-									</div>
-								</div>
-								{!disabled && (
-									<DeleteOutlined
-										style={{
-											color: 'red',
-											cursor: 'pointer',
-											fontSize: 16,
-											flexShrink: 0,
-										}}
-										onClick={() => handleRemoveNewFile(file)}
-									/>
-								)}
-							</div>
+								file={file}
+								variant="new"
+								disabled={disabled}
+								onDelete={() => handleRemoveNewFile(file)}
+							/>
 						))}
 					</div>
 				)}
