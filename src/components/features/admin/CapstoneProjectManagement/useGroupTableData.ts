@@ -1,11 +1,10 @@
-// src/hooks/useThesisTableData.ts
 import { useMemo } from 'react';
 
 import { calculateRowSpans } from '@/components/features/admin/CapstoneProjectManagement/calculateRowSpan';
 import { allMockGroups } from '@/data/group';
 import { mockTheses } from '@/data/thesis';
 
-export type ThesisTableData = {
+export type GroupTableData = {
 	stt: number;
 	studentId: string;
 	name: string;
@@ -21,15 +20,18 @@ export type ThesisTableData = {
 	status?: string;
 };
 
-export const useThesisTableData = () => {
-	const baseData: ThesisTableData[] = useMemo(() => {
-		let counter = 1;
-		const tempData: ThesisTableData[] = [];
+// Base data generation with proper memoization
+const generateBaseData = (): GroupTableData[] => {
+	let counter = 1;
+	const tempData: GroupTableData[] = [];
 
-		allMockGroups.forEach((group) => {
+	allMockGroups
+		.filter((group) => group && group.members?.length > 0) // tránh group lỗi
+		.forEach((group) => {
 			const thesis = mockTheses.find((t) => t.groupId === group.id);
 
 			const groupMembers = group.members
+				.filter((member): member is NonNullable<typeof member> => !!member) // tránh member lỗi
 				.map((member) => ({
 					groupId: group.id,
 					stt: counter++,
@@ -50,13 +52,39 @@ export const useThesisTableData = () => {
 			tempData.push(...groupMembers);
 		});
 
-		return calculateRowSpans(tempData);
-	}, []);
+	return calculateRowSpans(tempData);
+};
+
+// Hook for GroupManagement (thesis table data)
+export const GroupTableData = () => {
+	const baseData = useMemo(() => generateBaseData(), []);
 
 	const availableSemesters = useMemo(() => {
-		const semesters = new Set(baseData.map((item) => item.semester));
-		return Array.from(semesters).sort();
+		const semesters = Array.from(
+			new Set(baseData.map((item) => item.semester)),
+		);
+		return ['all', ...semesters];
 	}, [baseData]);
 
-	return { baseData, availableSemesters };
+	return {
+		baseData,
+		availableSemesters,
+	};
+};
+
+// Hook for GroupResults (group table data)
+export const useGroupTableData = () => {
+	const baseData = useMemo(() => generateBaseData(), []);
+
+	const availableSemesters = useMemo(() => {
+		const semesters = Array.from(
+			new Set(baseData.map((item) => item.semester)),
+		);
+		return ['all', ...semesters];
+	}, [baseData]);
+
+	return {
+		baseData,
+		availableSemesters,
+	};
 };

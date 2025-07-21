@@ -7,14 +7,14 @@ import { TablePagination } from '@/components/common/TablePagination';
 import { FilterBar } from '@/components/features/admin/CapstoneProjectManagement/FilterBar';
 
 import { getColumns } from './Columns';
-import { useThesisTableData } from './useGroupTableData';
+import { GroupTableData } from './useGroupTableData';
 
 const { Text } = Typography;
 
 const GroupManagement = () => {
 	const [searchText, setSearchText] = useState('');
 	const [selectedSemester, setSelectedSemester] = useState<string>('all');
-	const { baseData, availableSemesters } = useThesisTableData();
+	const { baseData, availableSemesters } = GroupTableData();
 
 	const filteredData = useMemo(() => {
 		const filtered = baseData.filter((item) => {

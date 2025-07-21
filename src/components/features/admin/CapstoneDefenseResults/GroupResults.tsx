@@ -9,8 +9,8 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { TablePagination } from '@/components/common/TablePagination';
 import { FilterBar } from '@/components/features/admin/CapstoneProjectManagement/FilterBar';
 import {
-	ThesisTableData,
-	useThesisTableData,
+	GroupTableData,
+	useGroupTableData,
 } from '@/components/features/admin/CapstoneProjectManagement/useGroupTableData';
 import '@/styles/components.css';
 
@@ -23,7 +23,7 @@ const GroupResults = () => {
 	const [statusUpdates, setStatusUpdates] = useState<Record<string, string>>(
 		{},
 	);
-	const { baseData, availableSemesters } = useThesisTableData();
+	const { baseData, availableSemesters } = useGroupTableData();
 
 	const dataToUse = baseData;
 
@@ -55,8 +55,9 @@ const GroupResults = () => {
 	const handleBulkStatusUpdate = () => {
 		if (selectedRowKeys.length === 0) return;
 
-		const selectedStudents = filteredData.filter((student) =>
-			selectedRowKeys.includes(`${student.studentId}-${student.groupId}`),
+		const selectedStudents = filteredData.filter(
+			(student: { studentId: unknown; groupId: unknown }) =>
+				selectedRowKeys.includes(`${student.studentId}-${student.groupId}`),
 		);
 
 		Modal.confirm({
@@ -69,13 +70,16 @@ const GroupResults = () => {
 						updated:
 					</p>
 					<div style={{ maxHeight: 200, overflowY: 'auto', marginBottom: 16 }}>
-						{selectedStudents.map((student) => (
-							<div key={student.studentId}>
+						{selectedStudents.map((student: GroupTableData) => (
+							<div key={String(student.studentId)}>
 								<b>{student.studentId}</b> - {student.name}
 								<br />
 								<small>
 									Current:{' '}
-									{getDisplayStatus(student.status!, student.studentId)}
+									{getDisplayStatus(
+										student.status ?? '',
+										String(student.studentId),
+									)}
 								</small>
 							</div>
 						))}
@@ -114,7 +118,7 @@ const GroupResults = () => {
 	);
 
 	const filteredData = useMemo(() => {
-		const filtered = dataToUse.filter((item) => {
+		const filtered = dataToUse.filter((item: GroupTableData) => {
 			const matchesSearch =
 				!searchText ||
 				[
@@ -124,7 +128,11 @@ const GroupResults = () => {
 					item.major,
 					item.status,
 					item.semester,
-				].some((field) => (field ?? '').toLowerCase().includes(searchText));
+				].some((field) =>
+					String(field ?? '')
+						.toLowerCase()
+						.includes(searchText),
+				);
 			const matchesSemester =
 				selectedSemester === 'all' || item.semester === selectedSemester;
 			return matchesSearch && matchesSemester;
@@ -143,7 +151,7 @@ const GroupResults = () => {
 		[getDisplayStatus, searchText, statusUpdates],
 	);
 
-	const rowSelection: TableRowSelection<ThesisTableData> = {
+	const rowSelection: TableRowSelection<GroupTableData> = {
 		selectedRowKeys,
 		onChange: handleRowSelectionChange,
 	};
@@ -195,7 +203,12 @@ const GroupResults = () => {
 
 			<Text type="secondary" style={{ marginTop: 16, display: 'block' }}>
 				List includes {filteredData.length} students and{' '}
-				{new Set(filteredData.map((item) => item.groupId)).size} thesis projects
+				{
+					new Set(
+						filteredData.map((item: { groupId: unknown }) => item.groupId),
+					).size
+				}{' '}
+				thesis projects
 			</Text>
 		</>
 	);

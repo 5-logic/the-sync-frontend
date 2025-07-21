@@ -1,5 +1,7 @@
 import { Group } from '@/schemas/group';
 
+import { mockStudentMembers } from './mockStudentMembers';
+
 export type ExtendedGroup = Group & {
 	thesisTitle: string;
 	supervisors: string[];
@@ -108,31 +110,10 @@ const fullGroupMetaData: Record<string, FullGroupMeta> = {
 		title: 'AI-powered Healthcare System',
 		supervisors: ['Dr. Sarah Johnson', 'Dr. Davis'],
 		members: [
-			{
-				id: 'ST001',
-				name: 'John Doe',
-				major: 'Software Engineering',
-				isLeader: true,
-				defenseStatus: 'Pass',
-			},
-			{
-				id: 'ST002',
-				name: 'Alice Wang',
-				major: 'Artificial Intelligence',
-				defenseStatus: 'Pass',
-			},
-			{
-				id: 'ST003',
-				name: 'Bob Chen',
-				major: 'Software Engineering',
-				defenseStatus: 'Failed',
-			},
-			{
-				id: 'ST004',
-				name: 'Emily Zhang',
-				major: 'Artificial Intelligence',
-				defenseStatus: 'Pass',
-			},
+			mockStudentMembers.ST001,
+			mockStudentMembers.ST002,
+			mockStudentMembers.ST003,
+			mockStudentMembers.ST004,
 		],
 		leader: 'John Doe',
 		status: 'Finalized',
@@ -149,31 +130,10 @@ const fullGroupMetaData: Record<string, FullGroupMeta> = {
 		title: 'Blockchain Supply Chain',
 		supervisors: ['Dr. Michael Chen', 'Dr. Martinez'],
 		members: [
-			{
-				id: 'ST005',
-				name: 'Jane Smith',
-				major: 'Software Engineering',
-				defenseStatus: 'Pass',
-			},
-			{
-				id: 'ST006',
-				name: 'David Kim',
-				major: 'Artificial Intelligence',
-				defenseStatus: 'Failed',
-			},
-			{
-				id: 'ST007',
-				name: 'Lisa Park',
-				major: 'Software Engineering',
-				isLeader: true,
-				defenseStatus: 'Pass',
-			},
-			{
-				id: 'ST008',
-				name: 'Tom Wilson',
-				major: 'Software Engineering',
-				defenseStatus: 'Pass',
-			},
+			mockStudentMembers.ST005,
+			mockStudentMembers.ST006,
+			mockStudentMembers.ST007,
+			mockStudentMembers.ST008,
 		],
 		leader: 'Lisa Park',
 		status: 'Finalized',
@@ -190,37 +150,10 @@ const fullGroupMetaData: Record<string, FullGroupMeta> = {
 		title: 'Smart City IoT Platform',
 		supervisors: ['Dr. Emily Wong'],
 		members: [
-			{
-				id: 'ST009',
-				name: 'Mike Johnson',
-				major: 'Software Engineering',
-				isLeader: true,
-				defenseStatus: 'Failed',
-			},
-			{
-				id: 'ST010',
-				name: 'Sarah Lee',
-				major: 'Artificial Intelligence',
-				defenseStatus: 'Pass',
-			},
-			{
-				id: 'ST011',
-				name: 'Chris Brown',
-				major: 'Software Engineering',
-				defenseStatus: 'Pass',
-			},
-			{
-				id: 'ST012',
-				name: 'Amy Liu',
-				major: 'Artificial Intelligence',
-				defenseStatus: 'Failed',
-			},
-			{
-				id: 'ST013',
-				name: 'Kevin Chen',
-				major: 'Artificial Intelligence',
-				defenseStatus: 'Pass',
-			},
+			mockStudentMembers.ST009,
+			mockStudentMembers.ST0010,
+			mockStudentMembers.ST0011,
+			mockStudentMembers.ST0012,
 		],
 		leader: 'Mike Johnson',
 		status: 'Incomplete',
@@ -238,37 +171,10 @@ const fullGroupMetaData: Record<string, FullGroupMeta> = {
 		title: 'Cybersecurity Framework',
 		supervisors: ['Dr. Michael Chen', 'Dr. Martinez'],
 		members: [
-			{
-				id: 'ST014',
-				name: 'Sarah Wilson',
-				major: 'Software Engineering',
-				isLeader: true,
-				defenseStatus: 'Pass',
-			},
-			{
-				id: 'ST015',
-				name: 'Mark Davis',
-				major: 'Software Engineering',
-				defenseStatus: 'Pass',
-			},
-			{
-				id: 'ST016',
-				name: 'Linda Garcia',
-				major: 'Artificial Intelligence',
-				defenseStatus: 'Failed',
-			},
-			{
-				id: 'ST017',
-				name: 'Jason Taylor',
-				major: 'Artificial Intelligence',
-				defenseStatus: 'Pass',
-			},
-			{
-				id: 'ST018',
-				name: 'Maria Rodriguez',
-				major: 'Software Engineering',
-				defenseStatus: 'Failed',
-			},
+			mockStudentMembers.ST0013,
+			mockStudentMembers.ST0014,
+			mockStudentMembers.ST0015,
+			mockStudentMembers.ST0016,
 		],
 		leader: 'Sarah Wilson',
 		status: 'Unassigned',
@@ -367,8 +273,8 @@ export const mockReviewGroups: Record<string, FullMockGroup[]> = {
 };
 
 // Gom tất cả nhóm thành 1 danh sách kèm phase
-export const allMockGroups: FullMockGroup[] = Object.values(
-	mockReviewGroups,
-).flatMap((groups) => groups);
+export const allMockGroups: FullMockGroup[] = Object.values(mockReviewGroups)
+	.flatMap((groups) => groups)
+	.filter((g): g is FullMockGroup => !!g); // <-- đảm bảo không có undefined
 
 export default mockGroups;
