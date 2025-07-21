@@ -1,20 +1,23 @@
 'use client';
 
-import { Button, Form, Modal, Select } from 'antd';
+import { Button, Form, Modal, Select, message } from 'antd';
 import React, { useEffect, useState } from 'react';
 
 import { FormLabel } from '@/components/common/FormLabel';
 import { GroupTableProps } from '@/components/features/lecturer/AssignLecturerReview/GroupTable';
 import {
 	AssignBulkReviewersResult,
+	ChangeReviewerResult,
 	EligibleReviewer,
 } from '@/lib/services/review.service';
 import { useReviewStore } from '@/store/useReviewStore';
 
-interface Props {
+export interface Props {
 	open: boolean;
 	onCancel: () => void;
-	onAssign: (result: AssignBulkReviewersResult) => void;
+	onAssign: (
+		result: AssignBulkReviewersResult | ChangeReviewerResult | null,
+	) => void;
 	onSaveDraft?: (values: string[]) => void;
 	initialValues?: string[];
 	group: GroupTableProps | null;
@@ -36,6 +39,7 @@ function AssignReviewerModal(props: Props) {
 	const [loading, setLoading] = useState(false);
 	const getEligibleReviewers = useReviewStore((s) => s.getEligibleReviewers);
 	const assignBulkReviewers = useReviewStore((s) => s.assignBulkReviewers);
+	const changeReviewer = useReviewStore((s) => s.changeReviewer);
 	const [reviewer1, setReviewer1] = useState<string | undefined>(undefined);
 	const [reviewer2, setReviewer2] = useState<string | undefined>(undefined);
 
@@ -64,18 +68,33 @@ function AssignReviewerModal(props: Props) {
 
 	useEffect(() => {
 		if (open) {
+			const reviewerVals =
+				group?.reviewers && group.reviewers.length > 0
+					? group.reviewers
+					: initialValues || [];
+
 			form.setFieldsValue({
-				reviewer1: initialValues?.[0],
-				reviewer2: initialValues?.[1],
+				reviewer1: reviewerVals[0],
+				reviewer2: reviewerVals[1],
 			});
-			setReviewer1(initialValues?.[0]);
-			setReviewer2(initialValues?.[1]);
+			setReviewer1(reviewerVals[0]);
+			setReviewer2(reviewerVals[1]);
 		}
-	}, [open, initialValues, form]);
+	}, [open, group, initialValues, form]);
+
+	const isChange = group && group.reviewers && group.reviewers.length > 0;
+
+	// Helper: get current reviewer IDs if changing
+	const currentReviewerIds =
+		initialValues && initialValues.length === 2 ? initialValues : [];
 
 	return (
 		<Modal
-			title={`Assign Reviewers for Group: ${group?.code ?? ''}`}
+			title={
+				isChange
+					? `Change Reviewers for Group: ${group?.code ?? ''}`
+					: `Assign Reviewers for Group: ${group?.code ?? ''}`
+			}
 			open={open}
 			onCancel={onCancel}
 			footer={null}
@@ -89,17 +108,43 @@ function AssignReviewerModal(props: Props) {
 					if (!group?.submissionId) return;
 					const selected = [reviewer1, reviewer2].filter(Boolean) as string[];
 					if (selected.length < 2) return;
-					// Gọi assignBulkReviewers từ store
-					const result = await assignBulkReviewers?.({
-						assignments: [
-							{
-								submissionId: group.submissionId,
-								lecturerIds: selected,
-							},
-						],
-					});
-					if (result) {
-						onAssign(result);
+
+					if (isChange && changeReviewer && currentReviewerIds.length === 2) {
+						setLoading(true);
+						try {
+							// Call changeReviewer for each reviewer slot
+							const results: ChangeReviewerResult[] = [];
+							for (let i = 0; i < 2; i++) {
+								if (currentReviewerIds[i] !== selected[i]) {
+									const result = await changeReviewer(group.submissionId, {
+										currentReviewerId: currentReviewerIds[i],
+										newReviewerId: selected[i],
+									});
+									if (result) results.push(result);
+								}
+							}
+							if (results.length > 0) {
+								message.success('Reviewers updated successfully');
+							}
+							onAssign(results.length > 0 ? results[0] : null);
+						} catch (error) {
+							console.error('Failed to update reviewers:', error);
+							message.error('Failed to update reviewers');
+						} finally {
+							setLoading(false);
+						}
+					} else if (assignBulkReviewers) {
+						const result = await assignBulkReviewers({
+							assignments: [
+								{
+									submissionId: group.submissionId,
+									lecturerIds: selected,
+								},
+							],
+						});
+						if (result) {
+							onAssign(result);
+						}
 					}
 				}}
 			>
@@ -120,7 +165,6 @@ function AssignReviewerModal(props: Props) {
 						allowClear
 						onChange={(value) => {
 							setReviewer1(value);
-							// Nếu chọn trùng reviewer2 thì reset reviewer2
 							if (value === reviewer2) {
 								setReviewer2(undefined);
 								form.setFieldsValue({ reviewer2: undefined });
@@ -129,7 +173,6 @@ function AssignReviewerModal(props: Props) {
 						}}
 					/>
 				</Form.Item>
-
 				<Form.Item
 					label={<FormLabel text="Reviewer 2" isRequired isBold />}
 					name="reviewer2"
@@ -147,7 +190,6 @@ function AssignReviewerModal(props: Props) {
 						allowClear
 						onChange={(value) => {
 							setReviewer2(value);
-							// Nếu chọn trùng reviewer1 thì reset reviewer1
 							if (value === reviewer1) {
 								setReviewer1(undefined);
 								form.setFieldsValue({ reviewer1: undefined });
@@ -156,16 +198,14 @@ function AssignReviewerModal(props: Props) {
 						}}
 					/>
 				</Form.Item>
-
 				<Form.Item className="text-right">
 					<Button onClick={onCancel} style={{ marginRight: 8 }}>
 						Cancel
 					</Button>
-					{onSaveDraft && (
+					{onSaveDraft && !isChange && (
 						<Button
 							style={{ marginRight: 8 }}
 							onClick={() => {
-								// Lấy giá trị reviewer1, reviewer2 từ state để đảm bảo đồng bộ
 								const selected = [reviewer1, reviewer2].filter(Boolean);
 								onSaveDraft(selected as string[]);
 							}}
@@ -174,7 +214,7 @@ function AssignReviewerModal(props: Props) {
 						</Button>
 					)}
 					<Button type="primary" htmlType="submit">
-						Assign
+						{isChange ? 'Change' : 'Assign'}
 					</Button>
 				</Form.Item>
 			</Form>
