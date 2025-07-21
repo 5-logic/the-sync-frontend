@@ -13,6 +13,7 @@ import React, { useMemo, useState } from 'react';
 import { TablePagination } from '@/components/common/TablePagination';
 import { highlightText } from '@/components/features/admin/CapstoneProjectManagement/HighlightText';
 import { RowSpanCell } from '@/components/features/admin/CapstoneProjectManagement/RowSpanCell';
+import '@/styles/components.css';
 
 const { Text } = Typography;
 
@@ -244,6 +245,7 @@ const GroupResults = () => {
 			/>
 
 			<Table
+				className="group-results-table"
 				columns={columns}
 				dataSource={filteredData}
 				rowKey={(record) => `${record.studentId}-${record.groupId}`}
