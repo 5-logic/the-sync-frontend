@@ -8,6 +8,7 @@ import {
 	EligibleReviewer,
 	reviewService,
 } from '@/lib/services/review.service';
+import { showNotification } from '@/lib/utils';
 import { cacheUtils } from '@/store/helpers/cacheHelpers';
 
 export interface ReviewStoreState {
@@ -54,11 +55,23 @@ export const useReviewStore = create<ReviewStoreState>(() => ({
 
 	async assignBulkReviewers(dto) {
 		const res = await reviewService.assignBulkReviewers(dto);
-		return res.success && res.data ? res.data : null;
+		if (res.success && res.data) {
+			showNotification.success('Success', 'Reviewers assigned successfully');
+			return res.data;
+		} else {
+			showNotification.error('Failed', 'Failed to assign reviewers');
+			return null;
+		}
 	},
 
 	async changeReviewer(submissionId, dto) {
 		const res = await reviewService.changeReviewer(submissionId, dto);
-		return res.success && res.data ? res.data : null;
+		if (res.success && res.data) {
+			showNotification.success('Success', 'Reviewer changed successfully');
+			return res.data;
+		} else {
+			showNotification.error('Failed', 'Failed to change reviewer');
+			return null;
+		}
 	},
 }));
