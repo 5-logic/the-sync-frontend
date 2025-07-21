@@ -1,9 +1,19 @@
 'use client';
 
 import { ExportOutlined, SearchOutlined } from '@ant-design/icons';
-import { Button, Col, Input, Row, Select, Table, Tag, Typography } from 'antd';
+import {
+	Button,
+	Col,
+	Input,
+	Modal,
+	Row,
+	Select,
+	Table,
+	Typography,
+} from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import React, { useMemo, useState } from 'react';
+import { TableRowSelection } from 'antd/es/table/interface';
+import React, { useCallback, useMemo, useState } from 'react';
 
 import { TablePagination } from '@/components/common/TablePagination';
 import { allMockGroups } from '@/data/group';
@@ -94,6 +104,10 @@ const calculateRowSpans = (data: ThesisTableData[]): ThesisTableData[] => {
 const ThesisTable = () => {
 	const [searchText, setSearchText] = useState('');
 	const [selectedSemester, setSelectedSemester] = useState<string>('all');
+	const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+	const [statusUpdates, setStatusUpdates] = useState<Record<string, string>>(
+		{},
+	);
 
 	const baseData = useMemo((): ThesisTableData[] => {
 		let counter = 1;
@@ -133,6 +147,120 @@ const ThesisTable = () => {
 
 	const handleSearch = (value: string) => {
 		setSearchText(value.toLowerCase());
+	};
+
+	const handleRowSelectionChange = (newSelectedKeys: React.Key[]) => {
+		setSelectedRowKeys(newSelectedKeys);
+	};
+
+	const handleStatusChange = (studentId: string, newStatus: string) => {
+		setStatusUpdates((prev) => ({
+			...prev,
+			[studentId]: newStatus,
+		}));
+	};
+
+	const handleSaveChanges = () => {
+		// TODO: Implement API call to save status changes
+		console.log('Status updates to save:', statusUpdates);
+
+		// For now, just clear the updates and show success
+		setStatusUpdates({});
+		setSelectedRowKeys([]);
+
+		// You can add notification here
+		// showNotification.success('Changes Saved', 'Defense results updated successfully');
+	};
+
+	const handleBulkStatusUpdate = () => {
+		if (selectedRowKeys.length === 0) return;
+
+		// Get selected students info for display
+		const selectedStudents = filteredData.filter((student) =>
+			selectedRowKeys.includes(`${student.studentId}-${student.groupId}`),
+		);
+
+		Modal.confirm({
+			title: 'Update Defense Results',
+			width: 500,
+			content: (
+				<div style={{ marginTop: 16 }}>
+					<p style={{ fontSize: '16px', marginBottom: 16 }}>
+						You are about to update defense results for{' '}
+						<strong>{selectedRowKeys.length} student(s)</strong>:
+					</p>
+					<div
+						style={{
+							maxHeight: '200px',
+							overflowY: 'auto',
+							border: '1px solid #d9d9d9',
+							borderRadius: '6px',
+							padding: '12px',
+							backgroundColor: '#fafafa',
+							marginBottom: 16,
+						}}
+					>
+						{selectedStudents.map((student, index) => (
+							<div
+								key={student.studentId}
+								style={{
+									padding: '4px 0',
+									borderBottom:
+										index < selectedStudents.length - 1
+											? '1px solid #e8e8e8'
+											: 'none',
+								}}
+							>
+								<strong>{student.studentId}</strong> - {student.name}
+								<br />
+								<span style={{ color: '#666', fontSize: '12px' }}>
+									Current: {getDisplayStatus(student.status, student.studentId)}
+								</span>
+							</div>
+						))}
+					</div>
+					<p style={{ color: '#666', marginBottom: 0 }}>
+						Please choose the result to apply to all selected students:
+					</p>
+				</div>
+			),
+			okText: 'PASS',
+			cancelText: 'FAILED',
+			okType: 'primary',
+			okButtonProps: {
+				style: { backgroundColor: '#52c41a', borderColor: '#52c41a' },
+			},
+			cancelButtonProps: {
+				danger: true,
+				style: { color: '#ff4d4f', borderColor: '#ff4d4f' },
+			},
+			onOk: () => {
+				// Apply Pass status to all selected students
+				selectedRowKeys.forEach((key) => {
+					const rowKey = String(key);
+					const studentId = rowKey.split('-')[0];
+					handleStatusChange(studentId, 'Pass');
+				});
+				// Clear selection after update
+				setSelectedRowKeys([]);
+			},
+			onCancel: () => {
+				// Apply Failed status to all selected students
+				selectedRowKeys.forEach((key) => {
+					const rowKey = String(key);
+					const studentId = rowKey.split('-')[0];
+					handleStatusChange(studentId, 'Failed');
+				});
+				// Clear selection after update
+				setSelectedRowKeys([]);
+			},
+		});
+	};
+
+	const hasUnsavedChanges = Object.keys(statusUpdates).length > 0;
+
+	const getDisplayStatus = (originalStatus: string, studentId: string) => {
+		return statusUpdates[studentId] || originalStatus;
 	};
 
 	const filteredData = useMemo(() => {
@@ -233,15 +361,84 @@ const ThesisTable = () => {
 			dataIndex: 'status',
 			key: 'status',
 			align: 'center',
-			render: (status: string) => (
-				<Tag color={status === 'Pass' ? 'green' : 'red'}>{status}</Tag>
-			),
+			render: (status: string, record: ThesisTableData) => {
+				const currentStatus = getDisplayStatus(status, record.studentId);
+				const isModified = statusUpdates[record.studentId] !== undefined;
+
+				return (
+					<Select
+						value={currentStatus}
+						onChange={(newStatus) =>
+							handleStatusChange(record.studentId, newStatus)
+						}
+						style={{
+							width: 120,
+							border: isModified ? '2px solid #faad14' : undefined,
+						}}
+						size="small"
+						dropdownStyle={{ minWidth: 120 }}
+					>
+						<Select.Option value="Pass">
+							<span style={{ color: '#52c41a' }}>Pass</span>
+						</Select.Option>
+						<Select.Option value="Failed">
+							<span style={{ color: '#ff4d4f' }}>Failed</span>
+						</Select.Option>
+					</Select>
+				);
+			},
 		},
 	];
 
+	const rowSelection: TableRowSelection<ThesisTableData> = {
+		selectedRowKeys,
+		onChange: handleRowSelectionChange,
+		getCheckboxProps: () => ({
+			disabled: false, // Có thể thêm logic disable nếu cần
+		}),
+		columnWidth: 50,
+	};
+
 	return (
 		<>
-			<Row gutter={[16, 16]} align="middle" style={{ marginBottom: 20 }}>
+			{/* Header row with action buttons */}
+			<Row gutter={[16, 16]} align="middle" style={{ marginBottom: 16 }}>
+				<Col flex="auto">{/* Empty space for alignment */}</Col>
+				<Col>
+					<Button
+						type="default"
+						size="middle"
+						onClick={handleBulkStatusUpdate}
+						disabled={selectedRowKeys.length === 0}
+						style={{
+							backgroundColor:
+								selectedRowKeys.length > 0 ? '#f0f9ff' : '#f5f5f5',
+							borderColor: selectedRowKeys.length > 0 ? '#1890ff' : '#d9d9d9',
+							color: selectedRowKeys.length > 0 ? '#1890ff' : '#bfbfbf',
+						}}
+					>
+						Update Defense Results
+					</Button>
+				</Col>
+				<Col>
+					<Button
+						type="primary"
+						size="middle"
+						onClick={handleSaveChanges}
+						disabled={!hasUnsavedChanges}
+						style={{
+							backgroundColor: hasUnsavedChanges ? '#52c41a' : '#f5f5f5',
+							borderColor: hasUnsavedChanges ? '#52c41a' : '#d9d9d9',
+							color: hasUnsavedChanges ? '#ffffff' : '#bfbfbf',
+						}}
+					>
+						Save Changes{' '}
+						{hasUnsavedChanges && `(${Object.keys(statusUpdates).length})`}
+					</Button>
+				</Col>
+			</Row>
+
+			<Row gutter={[16, 16]} align="middle" style={{ marginBottom: 16 }}>
 				<Col flex="auto">
 					<Input
 						placeholder="Search by name, student ID, thesis title, major, semester, or status"
@@ -279,7 +476,8 @@ const ThesisTable = () => {
 				columns={columns}
 				dataSource={filteredData}
 				pagination={TablePagination}
-				rowKey={(record) => record.studentId + record.groupId}
+				rowKey={(record) => `${record.studentId}-${record.groupId}`}
+				rowSelection={rowSelection}
 				bordered
 				rowClassName={(record, index) => {
 					const currentGroup = record.groupId;
@@ -291,6 +489,16 @@ const ThesisTable = () => {
 			<Text type="secondary" style={{ marginTop: 16, display: 'block' }}>
 				List includes {filteredData.length} students and{' '}
 				{new Set(filteredData.map((item) => item.groupId)).size} thesis projects
+				{selectedRowKeys.length > 0 && (
+					<span style={{ marginLeft: 16, color: '#1890ff' }}>
+						• {selectedRowKeys.length} student(s) selected
+					</span>
+				)}
+				{hasUnsavedChanges && (
+					<span style={{ marginLeft: 16, color: '#faad14' }}>
+						• {Object.keys(statusUpdates).length} unsaved change(s)
+					</span>
+				)}
 			</Text>
 
 			<style>{`
@@ -305,6 +513,22 @@ const ThesisTable = () => {
 					height: 2px;
 					width: 100%;
 					background-color: #d9d9d9;
+				}
+				/* Remove background color for all selected row cells */
+				.ant-table-tbody > tr.ant-table-row-selected > td {
+					background-color: transparent !important;
+				}
+				/* Only highlight first 3 columns (No., Student ID, Full Name) for selected rows */
+				.ant-table-tbody > tr.ant-table-row-selected > td:nth-child(2),
+				.ant-table-tbody > tr.ant-table-row-selected > td:nth-child(3),
+				.ant-table-tbody > tr.ant-table-row-selected > td:nth-child(4) {
+					background-color: #e6f4ff !important;
+				}
+				/* Hover effect for selected rows - only first 3 columns */
+				.ant-table-tbody > tr.ant-table-row-selected:hover > td:nth-child(2),
+				.ant-table-tbody > tr.ant-table-row-selected:hover > td:nth-child(3),
+				.ant-table-tbody > tr.ant-table-row-selected:hover > td:nth-child(4) {
+					background-color: #bae0ff !important;
 				}
 			`}</style>
 		</>
