@@ -1,8 +1,8 @@
 'use client';
 
-import { DownloadOutlined, FileTextOutlined } from '@ant-design/icons';
-import { Button, Card, Space } from 'antd';
+import { Card, Space } from 'antd';
 
+import { FileItem } from '@/components/common/FileItem';
 import { FormLabel } from '@/components/common/FormLabel';
 import { StorageService } from '@/lib/services/storage.service';
 
@@ -53,70 +53,15 @@ export function DocumentDisplaySection({
 
 				{/* Display existing documents */}
 				<div>
-					{documents.map((documentUrl, index) => {
-						const fileName = StorageService.getFileNameFromUrl(documentUrl);
-
-						return (
-							<div
-								key={`${documentUrl}-${index}`}
-								style={{
-									display: 'flex',
-									alignItems: 'center',
-									justifyContent: 'space-between',
-									padding: '12px 16px',
-									border: '1px solid #d9d9d9',
-									borderRadius: 8,
-									backgroundColor: '#fff',
-									marginBottom: 8,
-									gap: 8,
-									minWidth: 0,
-								}}
-							>
-								<div
-									style={{
-										display: 'flex',
-										alignItems: 'center',
-										gap: 8,
-										minWidth: 0,
-										flex: 1,
-									}}
-								>
-									<FileTextOutlined
-										style={{ color: '#1890ff', flexShrink: 0 }}
-									/>
-									<div style={{ minWidth: 0, flex: 1 }}>
-										<div
-											style={{
-												fontWeight: 500,
-												wordBreak: 'break-all',
-												overflow: 'hidden',
-												textOverflow: 'ellipsis',
-												whiteSpace: 'nowrap',
-												maxWidth: '100%',
-											}}
-											title={fileName}
-										>
-											{fileName}
-										</div>
-									</div>
-								</div>
-								{!disabled && (
-									<Button
-										type="text"
-										size="small"
-										icon={<DownloadOutlined />}
-										onClick={() => handleDownload(documentUrl)}
-										style={{
-											color: '#1890ff',
-											flexShrink: 0,
-										}}
-									>
-										Download
-									</Button>
-								)}
-							</div>
-						);
-					})}
+					{documents.map((documentUrl, index) => (
+						<FileItem
+							key={`${documentUrl}-${index}`}
+							documentUrl={documentUrl}
+							showDownload={true}
+							disabled={disabled}
+							onDownload={handleDownload}
+						/>
+					))}
 				</div>
 			</Space>
 		</Card>
