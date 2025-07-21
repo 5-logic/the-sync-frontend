@@ -262,7 +262,7 @@ const ThesisTable = () => {
 						size="middle"
 						style={{ width: '100%' }}
 					>
-						Export PDF
+						Export Excel
 					</Button>
 				</Col>
 			</Row>
