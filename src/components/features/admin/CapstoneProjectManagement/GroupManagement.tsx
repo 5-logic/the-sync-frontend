@@ -8,65 +8,15 @@ import { TablePagination } from '@/components/common/TablePagination';
 import { FilterBar } from '@/components/features/admin/CapstoneProjectManagement/FilterBar';
 import { highlightText } from '@/components/features/admin/CapstoneProjectManagement/HighlightText';
 import { RowSpanCell } from '@/components/features/admin/CapstoneProjectManagement/RowSpanCell';
-import { calculateRowSpans } from '@/components/features/admin/CapstoneProjectManagement/calculateRowSpan';
-import { allMockGroups } from '@/data/group';
-import { mockTheses } from '@/data/thesis';
+
+import { ThesisTableData, useThesisTableData } from './useThesisTableData';
 
 const { Text } = Typography;
-
-type ThesisTableData = {
-	stt: number;
-	studentId: string;
-	name: string;
-	major: string;
-	thesisName: string;
-	abbreviation: string;
-	supervisor: string;
-	semester: string;
-	rowSpanGroup: number;
-	rowSpanMajor: number;
-	rowSpanSemester: number;
-	groupId: string;
-};
 
 const GroupManagement = () => {
 	const [searchText, setSearchText] = useState('');
 	const [selectedSemester, setSelectedSemester] = useState<string>('all');
-
-	const baseData = useMemo((): ThesisTableData[] => {
-		let counter = 1;
-		const tempData: ThesisTableData[] = [];
-
-		allMockGroups.forEach((group) => {
-			const thesis = mockTheses.find((t) => t.groupId === group.id);
-
-			const groupMembers = group.members
-				.map((member) => ({
-					groupId: group.id,
-					stt: counter++,
-					studentId: member.id,
-					name: member.name,
-					major: member.major,
-					thesisName: thesis?.englishName || group.title,
-					abbreviation: thesis?.abbreviation || group.code,
-					supervisor: group.supervisors.join(', '),
-					semester: group.semesterId,
-					rowSpanGroup: 0,
-					rowSpanMajor: 0,
-					rowSpanSemester: 0,
-				}))
-				.sort((a, b) => a.major.localeCompare(b.major));
-
-			tempData.push(...groupMembers);
-		});
-
-		return calculateRowSpans(tempData);
-	}, []);
-
-	const availableSemesters = useMemo(() => {
-		const semesters = new Set(baseData.map((item) => item.semester));
-		return Array.from(semesters).sort();
-	}, [baseData]);
+	const { baseData, availableSemesters } = useThesisTableData();
 
 	const filteredData = useMemo(() => {
 		const filtered = baseData.filter((item) => {
@@ -80,25 +30,15 @@ const GroupManagement = () => {
 					item.supervisor,
 					item.major,
 					item.semester,
-				].some((field) => field.toLowerCase().includes(searchText));
-
+				].some((field) => (field ?? '').toLowerCase().includes(searchText));
 			const matchesSemester =
 				selectedSemester === 'all' || item.semester === selectedSemester;
-
 			return matchesSearch && matchesSemester;
 		});
-		return calculateRowSpans(filtered);
+		return filtered;
 	}, [baseData, searchText, selectedSemester]);
 
-	const renderHighlightText = (
-		text: string,
-		align: 'left' | 'center' = 'left',
-	) => (
-		<div style={{ textAlign: align }}>{highlightText(text, searchText)}</div>
-	);
-
 	const handleExportExcel = () => {
-		// TODO: Implement Excel export functionality
 		console.log('Exporting to Excel...');
 	};
 
@@ -114,14 +54,14 @@ const GroupManagement = () => {
 			dataIndex: 'studentId',
 			key: 'studentId',
 			align: 'center',
-			render: (text) => renderHighlightText(text),
+			render: (text) => highlightText(text, searchText),
 		},
 		{
 			title: 'Full Name',
 			dataIndex: 'name',
 			key: 'name',
 			align: 'center',
-			render: (text) => renderHighlightText(text),
+			render: (text) => highlightText(text, searchText),
 		},
 		{
 			title: 'Major',
@@ -146,7 +86,7 @@ const GroupManagement = () => {
 			align: 'center',
 			render: (abbreviation, record) =>
 				RowSpanCell(
-					<Tag color="blue">{highlightText(abbreviation, searchText)}</Tag>,
+					<Tag color="blue">{highlightText(abbreviation!, searchText)}</Tag>,
 					record.rowSpanGroup,
 				),
 		},
@@ -159,9 +99,13 @@ const GroupManagement = () => {
 				RowSpanCell(
 					supervisor ? (
 						<div style={{ textAlign: 'left' }}>
-							{supervisor.split(', ').map((sup: string) => (
-								<div key={sup}>{highlightText(sup, searchText)}</div>
-							))}
+							{supervisor
+								.split(', ')
+								.map((sup: React.Key | null | undefined) => (
+									<div key={sup}>
+										{highlightText(sup ? String(sup) : '', searchText)}
+									</div>
+								))}
 						</div>
 					) : (
 						<span style={{ color: '#999' }}>-</span>
@@ -194,35 +138,15 @@ const GroupManagement = () => {
 			<Table
 				columns={columns}
 				dataSource={filteredData}
-				pagination={TablePagination}
 				rowKey="studentId"
+				pagination={TablePagination}
 				bordered
-				rowClassName={(record, index) => {
-					const currentGroup = record.groupId;
-					const nextGroup = filteredData[index + 1]?.groupId;
-					return currentGroup !== nextGroup ? 'group-end-row' : '';
-				}}
 			/>
 
 			<Text type="secondary" style={{ marginTop: 16, display: 'block' }}>
 				List includes {filteredData.length} students and{' '}
 				{new Set(filteredData.map((item) => item.groupId)).size} thesis projects
 			</Text>
-
-			<style>{`
-				.group-end-row {
-					position: relative;
-				}
-				.group-end-row::after {
-					content: '';
-					position: absolute;
-					bottom: 0;
-					left: 0;
-					height: 2px;
-					width: 100%;
-					background-color: #d9d9d9;
-				}
-			`}</style>
 		</>
 	);
 };
