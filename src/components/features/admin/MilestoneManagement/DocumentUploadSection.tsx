@@ -1,13 +1,10 @@
 'use client';
 
-import {
-	DeleteOutlined,
-	FileTextOutlined,
-	UploadOutlined,
-} from '@ant-design/icons';
+import { UploadOutlined } from '@ant-design/icons';
 import { Button, Card, Space, Upload, UploadProps } from 'antd';
 import { useState } from 'react';
 
+import { FileItem } from '@/components/common/FileItem';
 import { FormLabel } from '@/components/common/FormLabel';
 
 interface UploadedFile {
@@ -107,61 +104,12 @@ export function DocumentUploadSection({
 				{displayFiles.length > 0 && (
 					<div>
 						{displayFiles.map((file) => (
-							<div
+							<FileItem
 								key={`${file.name}-${file.size}`}
-								style={{
-									display: 'flex',
-									alignItems: 'center',
-									justifyContent: 'space-between',
-									padding: '12px 16px',
-									border: '1px solid #d9d9d9',
-									borderRadius: 8,
-									backgroundColor: '#fff',
-									marginBottom: 8,
-									gap: 8,
-									minWidth: 0,
-								}}
-							>
-								<div
-									style={{
-										display: 'flex',
-										alignItems: 'center',
-										gap: 8,
-										minWidth: 0,
-										flex: 1,
-									}}
-								>
-									<FileTextOutlined
-										style={{ color: '#1890ff', flexShrink: 0 }}
-									/>
-									<div style={{ minWidth: 0, flex: 1 }}>
-										<div
-											style={{
-												fontWeight: 500,
-												wordBreak: 'break-all',
-												overflow: 'hidden',
-												textOverflow: 'ellipsis',
-												whiteSpace: 'nowrap',
-												maxWidth: '100%',
-											}}
-											title={file.name}
-										>
-											{file.name}
-										</div>
-									</div>
-								</div>
-								{!disabled && (
-									<DeleteOutlined
-										style={{
-											color: 'red',
-											cursor: 'pointer',
-											fontSize: 16,
-											flexShrink: 0,
-										}}
-										onClick={() => handleFileRemove(file.file)}
-									/>
-								)}
-							</div>
+								file={file.file}
+								disabled={disabled}
+								onDelete={() => handleFileRemove(file.file)}
+							/>
 						))}
 					</div>
 				)}
