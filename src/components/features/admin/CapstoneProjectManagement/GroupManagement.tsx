@@ -6,13 +6,13 @@ import React, { useMemo, useState } from 'react';
 import { TablePagination } from '@/components/common/TablePagination';
 import { FilterBar } from '@/components/features/admin/CapstoneProjectManagement/FilterBar';
 import { calculateRowSpans } from '@/components/features/admin/CapstoneProjectManagement/calculateRowSpan';
-import { useDebouncedSearch } from '@/hooks/ui/useDebounce';
-
-import { getColumns } from './Columns';
 import {
 	GroupTableData,
 	GroupTableData as GroupTableDataType,
-} from './useGroupTableData';
+} from '@/components/features/admin/CapstoneProjectManagement/useGroupTableData';
+import { useDebouncedSearch } from '@/hooks/ui/useDebounce';
+
+import { getColumns } from './Columns';
 
 const { Text } = Typography;
 
