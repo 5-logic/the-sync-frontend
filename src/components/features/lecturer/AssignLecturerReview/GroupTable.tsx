@@ -72,13 +72,13 @@ export default function GroupTable({
 			key: 'action',
 			render: (_, record) => (
 				<Button type="primary" onClick={() => onAssign(record)}>
-					Assign
+					{record.reviewers && record.reviewers.length > 0
+						? 'Change'
+						: 'Assign'}
 				</Button>
 			),
 		},
 	];
-
-	console.log('Rendering GroupTable with groups:', groups);
 
 	return (
 		<Table<GroupTableProps>
