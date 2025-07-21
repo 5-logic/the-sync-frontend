@@ -19,7 +19,7 @@ import '@/styles/components.css';
 
 const { Text } = Typography;
 
-const GroupResults = () => {
+const CapstoneDefenseResults = () => {
 	const { searchValue, debouncedSearchValue, setSearchValue } =
 		useDebouncedSearch('', 300);
 	const [selectedSemester, setSelectedSemester] = useState<string>('all');
@@ -264,4 +264,4 @@ const GroupResults = () => {
 	);
 };
 
-export default GroupResults;
+export default CapstoneDefenseResults;
