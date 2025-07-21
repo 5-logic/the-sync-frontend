@@ -41,6 +41,32 @@ export interface SubmissionItem {
 	reviewLecturers: SubmissionLecturer[];
 }
 
+export interface SubmissionDetailResponse {
+	success: boolean;
+	statusCode: number;
+	data: {
+		submission: SubmissionItem & {
+			updatedAt?: string;
+		};
+		group: SubmissionGroup & {
+			semester?: {
+				id: string;
+				name: string;
+				code: string;
+				status: string;
+			};
+			thesis?: SubmissionThesis;
+			supervisors?: SubmissionLecturer[];
+		};
+		reviewers: Array<{
+			id: string;
+			name: string;
+			email: string;
+			isModerator: boolean;
+		}>;
+	};
+}
+
 class SubmissionService {
 	private readonly baseUrl = '/submissions';
 
@@ -49,6 +75,13 @@ class SubmissionService {
 	): Promise<ApiResponse<SubmissionItem[]>> {
 		const response = await httpClient.get<ApiResponse<SubmissionItem[]>>(
 			`/submissions/milestone/${milestoneId}`,
+		);
+		return response.data;
+	}
+
+	async findById(id: string): Promise<SubmissionDetailResponse> {
+		const response = await httpClient.get<SubmissionDetailResponse>(
+			`${this.baseUrl}/${id}`,
 		);
 		return response.data;
 	}
