@@ -1,12 +1,12 @@
 'use client';
 
+import { FilterBar } from '../CapstoneProjectManagement/FilterBar';
 import { Button, Col, Modal, Row, Select, Table, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { TableRowSelection } from 'antd/es/table/interface';
 import React, { useMemo, useState } from 'react';
 
 import { TablePagination } from '@/components/common/TablePagination';
-import { ExtendedFilterBar } from '@/components/features/admin/CapstoneProjectManagement/ExtendedFilterBar';
 import { highlightText } from '@/components/features/admin/CapstoneProjectManagement/HighlightText';
 import { RowSpanCell } from '@/components/features/admin/CapstoneProjectManagement/RowSpanCell';
 import { calculateRowSpans } from '@/components/features/admin/CapstoneProjectManagement/calculateRowSpan';
@@ -366,7 +366,7 @@ const GroupResults = () => {
 				</Col>
 			</Row>
 
-			<ExtendedFilterBar
+			<FilterBar
 				searchText={searchText}
 				onSearchChange={handleSearch}
 				selectedSemester={selectedSemester}

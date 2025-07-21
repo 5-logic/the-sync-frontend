@@ -17,7 +17,7 @@ type Props = {
 	showExportPdf?: boolean;
 };
 
-export const ExtendedFilterBar = ({
+export const FilterBar = ({
 	searchText,
 	onSearchChange,
 	selectedSemester,
