@@ -52,17 +52,87 @@ export default function EditMilestoneDialog({
 		}
 		setNewFiles([]); // Reset new files when milestone changes
 	}, [milestone]);
-	const handleSubmit = async () => {
-		if (!milestone) return;
+
+	// Helper function to validate milestone editing permissions
+	const validateEditPermissions = (): boolean => {
+		if (!milestone) return false;
 
 		// Check if milestone has already started
 		if (dayjs(milestone.startDate).isBefore(dayjs(), 'day')) {
-			return;
+			return false;
 		}
 
 		// Check if semester status allows editing
 		const semester = semesters.find((s) => s.id === milestone.semesterId);
-		if (semester && semester.status !== 'Ongoing') {
+		return !semester || semester.status === 'Ongoing';
+	};
+
+	// Helper function to handle document deletions
+	const handleDocumentDeletions = async (
+		documentsToDelete: string[],
+	): Promise<void> => {
+		if (documentsToDelete.length === 0) return;
+
+		try {
+			await Promise.all(
+				documentsToDelete.map((url) => StorageService.deleteFile(url)),
+			);
+			showNotification.success(
+				'Delete Success',
+				`${documentsToDelete.length} document(s) deleted successfully`,
+			);
+		} catch (error) {
+			console.error('Failed to delete some documents:', error);
+			// Continue with update even if some deletes failed
+		}
+	};
+
+	// Helper function to handle new file uploads
+	const handleNewFileUploads = async (files: File[]): Promise<string[]> => {
+		if (files.length === 0) return [];
+
+		const uploadPromises = files.map((file) =>
+			StorageService.uploadFile(file, 'milestone-templates'),
+		);
+		const newDocumentUrls = await Promise.all(uploadPromises);
+
+		showNotification.success(
+			'Upload Success',
+			`${files.length} file(s) uploaded successfully`,
+		);
+
+		return newDocumentUrls;
+	};
+
+	// Helper function to process document updates
+	const processDocumentUpdates = async (): Promise<string[]> => {
+		if (existingDocuments.length === 0 && newFiles.length === 0) {
+			return [];
+		}
+
+		const documentsToDelete =
+			milestone?.documents?.filter((url) => !existingDocuments.includes(url)) ||
+			[];
+
+		// Handle deletions
+		await handleDocumentDeletions(documentsToDelete);
+
+		// Handle new uploads
+		try {
+			const newDocumentUrls = await handleNewFileUploads(newFiles);
+			return [...existingDocuments, ...newDocumentUrls];
+		} catch (error) {
+			showNotification.error(
+				'Upload Failed',
+				'Failed to upload some files. Please try again.',
+			);
+			console.error('File upload failed:', error);
+			throw error; // Re-throw to prevent milestone update
+		}
+	};
+
+	const handleSubmit = async () => {
+		if (!validateEditPermissions()) {
 			return;
 		}
 
@@ -73,71 +143,8 @@ export default function EditMilestoneDialog({
 			const duration = values.duration ?? [];
 			const [startDate, endDate] = duration;
 
-			let finalDocuments: string[] = [];
-
-			// Handle documents update
-			if (existingDocuments.length > 0 || newFiles.length > 0) {
-				// Delete documents that were removed from existingDocuments
-				const documentsToDelete =
-					milestone.documents?.filter(
-						(url) => !existingDocuments.includes(url),
-					) || [];
-
-				console.log('🔍 Debug Documents Update:', {
-					originalDocuments: milestone.documents,
-					existingDocuments,
-					newFiles: newFiles.map((f) => f.name),
-					documentsToDelete,
-				});
-
-				// Delete removed documents from Supabase
-				if (documentsToDelete.length > 0) {
-					try {
-						await Promise.all(
-							documentsToDelete.map((url) => StorageService.deleteFile(url)),
-						);
-						showNotification.success(
-							'Delete Success',
-							`${documentsToDelete.length} document(s) deleted successfully`,
-						);
-					} catch (error) {
-						console.error('Failed to delete some documents:', error);
-						// Continue with update even if some deletes failed
-					}
-				}
-
-				// Upload new files if any
-				if (newFiles.length > 0) {
-					try {
-						const uploadPromises = newFiles.map((file) =>
-							StorageService.uploadFile(file, 'milestone-templates'),
-						);
-						const newDocumentUrls = await Promise.all(uploadPromises);
-
-						console.log('✅ New documents uploaded:', newDocumentUrls);
-
-						showNotification.success(
-							'Upload Success',
-							`${newFiles.length} file(s) uploaded successfully`,
-						);
-
-						// Combine existing documents with new uploaded documents
-						finalDocuments = [...existingDocuments, ...newDocumentUrls];
-					} catch (error) {
-						showNotification.error(
-							'Upload Failed',
-							'Failed to upload some files. Please try again.',
-						);
-						console.error('File upload failed:', error);
-						return; // Don't proceed with milestone update if upload fails
-					}
-				} else {
-					// Only existing documents, no new uploads
-					finalDocuments = existingDocuments;
-				}
-			}
-
-			console.log('📄 Final documents to send:', finalDocuments);
+			// Process document updates
+			const finalDocuments = await processDocumentUpdates();
 
 			const milestoneData: MilestoneUpdate = {
 				name: values.milestoneName,
@@ -147,9 +154,7 @@ export default function EditMilestoneDialog({
 				// Don't update semesterId since it's not editable
 			};
 
-			console.log('🚀 Milestone update data:', milestoneData);
-
-			const success = await updateMilestone(milestone.id, milestoneData);
+			const success = await updateMilestone(milestone!.id, milestoneData);
 			if (success) {
 				onClose();
 			}
