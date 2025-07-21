@@ -100,6 +100,19 @@ const GroupResults = () => {
 			okText: 'PASS',
 			cancelText: 'FAILED',
 			okType: 'primary',
+			okButtonProps: {
+				style: {
+					backgroundColor: 'transparent',
+					borderColor: '#52c41a',
+					color: 'green',
+				},
+			},
+			cancelButtonProps: {
+				style: {
+					borderColor: '#ff4d4f',
+					color: 'red',
+				},
+			},
 			onOk: () => {
 				selectedRowKeys.forEach((key) => {
 					const studentId = String(key).split('-')[0];
