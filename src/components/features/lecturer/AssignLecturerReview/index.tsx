@@ -166,6 +166,16 @@ export default function AssignLecturerReview() {
 		}
 	}
 
+	// Reload only a single submission by id
+	const reloadSubmissionById = async (submissionId: string) => {
+		if (!submissionId) return;
+		// fetchByMilestone will reload all, so we need a custom fetch if you want only one
+		// For now, just reload all for the milestone, but you can optimize with a custom fetch if available
+		if (milestone) {
+			await fetchByMilestone(milestone, true);
+		}
+	};
+
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
 			<Header
@@ -246,6 +256,7 @@ export default function AssignLecturerReview() {
 				}
 				onCancel={() => setSelectedGroup(null)}
 				onAssign={() => setSelectedGroup(null)}
+				onReloadSubmission={reloadSubmissionById}
 				onSaveDraft={(selectedReviewers) => {
 					if (!selectedGroup) return;
 					const submission = filteredGroups.find(
