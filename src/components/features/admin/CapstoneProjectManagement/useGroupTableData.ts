@@ -20,18 +20,18 @@ export type GroupTableData = {
 	status?: string;
 };
 
-// Base data generation with proper memoization
+// ✅ Hàm xử lý dữ liệu gốc
 const generateBaseData = (): GroupTableData[] => {
 	let counter = 1;
 	const tempData: GroupTableData[] = [];
 
 	allMockGroups
-		.filter((group) => group && group.members?.length > 0) // tránh group lỗi
+		.filter((group) => group && group.members?.length > 0)
 		.forEach((group) => {
 			const thesis = mockTheses.find((t) => t.groupId === group.id);
 
 			const groupMembers = group.members
-				.filter((member): member is NonNullable<typeof member> => !!member) // tránh member lỗi
+				.filter((member): member is NonNullable<typeof member> => !!member)
 				.map((member) => ({
 					groupId: group.id,
 					stt: counter++,
@@ -55,36 +55,28 @@ const generateBaseData = (): GroupTableData[] => {
 	return calculateRowSpans(tempData);
 };
 
-// Hook for GroupManagement (thesis table data)
-export const GroupTableData = () => {
-	const baseData = useMemo(() => generateBaseData(), []);
+// ✅ Logic dùng chung
+const getGroupTableData = () => {
+	const baseData = generateBaseData();
 
-	const availableSemesters = useMemo(() => {
-		const semesters = Array.from(
-			new Set(baseData.map((item) => item.semester)),
-		);
-		return ['all', ...semesters];
-	}, [baseData]);
+	const availableSemesters = Array.from(
+		new Set(baseData.map((item) => item.semester)),
+	);
 
 	return {
 		baseData,
-		availableSemesters,
+		availableSemesters: ['all', ...availableSemesters],
 	};
 };
 
-// Hook for GroupResults (group table data)
+// ✅ Hook cho GroupManagement
+export const GroupTableData = () => {
+	const data = useMemo(() => getGroupTableData(), []);
+	return data;
+};
+
+// ✅ Hook cho GroupResults
 export const useGroupTableData = () => {
-	const baseData = useMemo(() => generateBaseData(), []);
-
-	const availableSemesters = useMemo(() => {
-		const semesters = Array.from(
-			new Set(baseData.map((item) => item.semester)),
-		);
-		return ['all', ...semesters];
-	}, [baseData]);
-
-	return {
-		baseData,
-		availableSemesters,
-	};
+	const data = useMemo(() => getGroupTableData(), []);
+	return data;
 };
