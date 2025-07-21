@@ -5,13 +5,13 @@ import type { ColumnsType } from 'antd/es/table';
 import React, { useMemo, useState } from 'react';
 
 import { TablePagination } from '@/components/common/TablePagination';
+import { calculateRowSpans } from '@/components/features/admin/CapstoneProjectManagement/calculateRowSpan';
 import { allMockGroups } from '@/data/group';
 import { mockTheses } from '@/data/thesis';
 
 import { FilterBar } from './FilterBar';
 import { highlightText } from './HighlightText';
 import { RowSpanCell } from './RowSpanCell';
-import { calculateRowSpans } from './calculateRowSpan';
 
 const { Text } = Typography;
 
