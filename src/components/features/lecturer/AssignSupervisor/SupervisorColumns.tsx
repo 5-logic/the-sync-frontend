@@ -91,13 +91,13 @@ export const createActionRenderer = (
 
 		return (
 			<Space size="small">
-				<Button type="primary" size="small" onClick={() => onAssign(record)}>
+				<Button type="primary" size="middle" onClick={() => onAssign(record)}>
 					{isFinalized ? 'Change' : 'Assign'}
 				</Button>
 				{draft && (
 					<Button
 						type="text"
-						size="small"
+						size="middle"
 						danger
 						icon={<DeleteOutlined />}
 						onClick={() => removeDraftAssignment(record.thesisId)}

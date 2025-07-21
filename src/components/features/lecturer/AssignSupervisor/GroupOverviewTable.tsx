@@ -44,7 +44,6 @@ const GroupOverviewTable = memo<Props>(
 				pagination={TablePagination}
 				scroll={{ x: 'max-content' }}
 				onChange={onChange}
-				size="middle"
 			/>
 		);
 	},
