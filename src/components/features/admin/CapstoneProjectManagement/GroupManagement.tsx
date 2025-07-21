@@ -8,7 +8,7 @@ import { TablePagination } from '@/components/common/TablePagination';
 import { allMockGroups } from '@/data/group';
 import { mockTheses } from '@/data/thesis';
 
-import { FilterBar } from './FilterBar';
+import { ExtendedFilterBar } from './ExtendedFilterBar';
 import { highlightText } from './HighlightText';
 import { RowSpanCell } from './RowSpanCell';
 import { calculateRowSpans } from './calculateRowSpan';
@@ -182,13 +182,14 @@ const GroupManagement = () => {
 
 	return (
 		<>
-			<FilterBar
+			<ExtendedFilterBar
 				searchText={searchText}
 				onSearchChange={setSearchText}
 				selectedSemester={selectedSemester}
 				onSemesterChange={setSelectedSemester}
 				availableSemesters={availableSemesters}
 				onExportExcel={handleExportExcel}
+				showExportExcel={true}
 			/>
 
 			<Table

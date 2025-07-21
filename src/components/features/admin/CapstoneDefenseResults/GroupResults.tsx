@@ -1,43 +1,19 @@
 'use client';
 
-import { ExportOutlined, SearchOutlined } from '@ant-design/icons';
-import {
-	Button,
-	Col,
-	Input,
-	Modal,
-	Row,
-	Select,
-	Table,
-	Typography,
-} from 'antd';
+import { Button, Col, Modal, Row, Select, Table, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { TableRowSelection } from 'antd/es/table/interface';
 import React, { useMemo, useState } from 'react';
 
 import { TablePagination } from '@/components/common/TablePagination';
+import { ExtendedFilterBar } from '@/components/features/admin/CapstoneProjectManagement/ExtendedFilterBar';
+import { highlightText } from '@/components/features/admin/CapstoneProjectManagement/HighlightText';
+import { RowSpanCell } from '@/components/features/admin/CapstoneProjectManagement/RowSpanCell';
+import { calculateRowSpans } from '@/components/features/admin/CapstoneProjectManagement/calculateRowSpan';
 import { allMockGroups } from '@/data/group';
 import { mockTheses } from '@/data/thesis';
 
 const { Text } = Typography;
-
-const highlightText = (text: string, searchTerm: string) => {
-	if (!searchTerm) return text;
-	const regex = new RegExp(`(${searchTerm})`, 'gi');
-	const parts = text.split(regex);
-	return parts.map((part, index) =>
-		regex.test(part) ? (
-			<mark
-				key={`highlight-${part}-${index}`}
-				style={{ backgroundColor: '#fff2b8', padding: 0 }}
-			>
-				{part}
-			</mark>
-		) : (
-			part
-		),
-	);
-};
 
 type ThesisTableData = {
 	stt: number;
@@ -51,54 +27,6 @@ type ThesisTableData = {
 	rowSpanGroup: number;
 	rowSpanMajor: number;
 	rowSpanSemester: number;
-};
-
-const calculateRowSpans = (data: ThesisTableData[]): ThesisTableData[] => {
-	const result: ThesisTableData[] = [];
-	const groupCounts: Record<string, number> = {};
-	const seenGroups = new Set<string>();
-	const seenMajorInGroups = new Set<string>();
-	const seenSemesterInGroups = new Set<string>();
-
-	data.forEach((item) => {
-		groupCounts[item.groupId] = (groupCounts[item.groupId] || 0) + 1;
-	});
-
-	data.forEach((item) => {
-		const newItem = { ...item };
-		if (!seenGroups.has(item.groupId)) {
-			seenGroups.add(item.groupId);
-			newItem.rowSpanGroup = groupCounts[item.groupId];
-		} else {
-			newItem.rowSpanGroup = 0;
-		}
-
-		const majorKey = `${item.groupId}-${item.major}`;
-		if (!seenMajorInGroups.has(majorKey)) {
-			seenMajorInGroups.add(majorKey);
-			const majorCount = data.filter(
-				(d) => d.groupId === item.groupId && d.major === item.major,
-			).length;
-			newItem.rowSpanMajor = majorCount;
-		} else {
-			newItem.rowSpanMajor = 0;
-		}
-
-		const semesterKey = `${item.groupId}-${item.semester}`;
-		if (!seenSemesterInGroups.has(semesterKey)) {
-			seenSemesterInGroups.add(semesterKey);
-			const semesterCount = data.filter(
-				(d) => d.groupId === item.groupId && d.semester === item.semester,
-			).length;
-			newItem.rowSpanSemester = semesterCount;
-		} else {
-			newItem.rowSpanSemester = 0;
-		}
-
-		result.push(newItem);
-	});
-
-	return result;
 };
 
 const GroupResults = () => {
@@ -147,6 +75,11 @@ const GroupResults = () => {
 
 	const handleSearch = (value: string) => {
 		setSearchText(value.toLowerCase());
+	};
+
+	const handleExportPdf = () => {
+		// TODO: Implement PDF export functionality
+		console.log('Exporting to PDF...');
 	};
 
 	const handleRowSelectionChange = (newSelectedKeys: React.Key[]) => {
@@ -293,13 +226,8 @@ const GroupResults = () => {
 		<div style={{ textAlign: align }}>{highlightText(text, searchText)}</div>
 	);
 
-	const renderCellWithRowSpan = (
-		content: React.ReactNode,
-		rowSpan: number,
-	) => ({
-		children: content,
-		props: { rowSpan },
-	});
+	const renderCellWithRowSpan = (content: React.ReactNode, rowSpan: number) =>
+		RowSpanCell(content, rowSpan);
 
 	const columns: ColumnsType<ThesisTableData> = [
 		{
@@ -438,39 +366,16 @@ const GroupResults = () => {
 				</Col>
 			</Row>
 
-			<Row gutter={[16, 16]} align="middle" style={{ marginBottom: 16 }}>
-				<Col flex="auto">
-					<Input
-						placeholder="Search by name, student ID, thesis title, major, semester, or status"
-						value={searchText}
-						onChange={(e) => handleSearch(e.target.value)}
-						prefix={<SearchOutlined />}
-						allowClear
-						size="middle"
-					/>
-				</Col>
-				<Col style={{ width: 150 }}>
-					<Select
-						value={selectedSemester}
-						onChange={setSelectedSemester}
-						style={{ width: '100%' }}
-						size="middle"
-						placeholder="Select Semester"
-					>
-						<Select.Option value="all">All Semesters</Select.Option>
-						{availableSemesters.map((semester) => (
-							<Select.Option key={semester} value={semester}>
-								{semester}
-							</Select.Option>
-						))}
-					</Select>
-				</Col>
-				<Col>
-					<Button icon={<ExportOutlined />} type="primary" size="middle">
-						Export PDF
-					</Button>
-				</Col>
-			</Row>
+			<ExtendedFilterBar
+				searchText={searchText}
+				onSearchChange={handleSearch}
+				selectedSemester={selectedSemester}
+				onSemesterChange={setSelectedSemester}
+				availableSemesters={availableSemesters}
+				onExportPdf={handleExportPdf}
+				searchPlaceholder="Search by name, student ID, thesis title, major, semester, or status"
+				showExportPdf={true}
+			/>
 
 			<Table
 				columns={columns}
