@@ -126,7 +126,7 @@ export const getColumns = (
 						value={currentStatus}
 						onChange={(value) => handleStatusChange(record.studentId, value)}
 						style={{
-							width: 120,
+							width: 100,
 							border: isModified ? '2px solid #faad14' : undefined,
 						}}
 						size="small"

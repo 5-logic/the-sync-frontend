@@ -146,7 +146,7 @@ const GroupResults = () => {
 	const columns = useMemo(
 		() =>
 			getColumns(debouncedSearchValue, {
-				showAbbreviationSupervisor: true,
+				showAbbreviationSupervisor: false,
 				showStatus: true,
 				getDisplayStatus,
 				statusUpdates,
