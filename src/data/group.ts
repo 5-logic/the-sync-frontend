@@ -86,6 +86,7 @@ const metaData: Record<string, GroupMeta> = {
 
 // ===== Student data type =====
 export type StudentMember = {
+	toLowerCase(): unknown;
 	id: string;
 	name: string;
 	major: 'Software Engineering' | 'Artificial Intelligence';
