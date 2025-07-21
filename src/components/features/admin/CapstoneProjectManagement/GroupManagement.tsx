@@ -7,11 +7,10 @@ import React, { useMemo, useState } from 'react';
 import { TablePagination } from '@/components/common/TablePagination';
 import { FilterBar } from '@/components/features/admin/CapstoneProjectManagement/FilterBar';
 import { highlightText } from '@/components/features/admin/CapstoneProjectManagement/HighlightText';
+import { RowSpanCell } from '@/components/features/admin/CapstoneProjectManagement/RowSpanCell';
 import { calculateRowSpans } from '@/components/features/admin/CapstoneProjectManagement/calculateRowSpan';
 import { allMockGroups } from '@/data/group';
 import { mockTheses } from '@/data/thesis';
-
-import { RowSpanCell } from './RowSpanCell';
 
 const { Text } = Typography;
 
