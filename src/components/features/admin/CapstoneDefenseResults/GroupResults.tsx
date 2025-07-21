@@ -1,18 +1,18 @@
 'use client';
 
-import { FilterBar } from '../CapstoneProjectManagement/FilterBar';
-import {
-	ThesisTableData,
-	useThesisTableData,
-} from '../CapstoneProjectManagement/useThesisTableData';
 import { Button, Col, Modal, Row, Select, Table, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { TableRowSelection } from 'antd/es/table/interface';
 import React, { useMemo, useState } from 'react';
 
 import { TablePagination } from '@/components/common/TablePagination';
+import { FilterBar } from '@/components/features/admin/CapstoneProjectManagement/FilterBar';
 import { highlightText } from '@/components/features/admin/CapstoneProjectManagement/HighlightText';
 import { RowSpanCell } from '@/components/features/admin/CapstoneProjectManagement/RowSpanCell';
+import {
+	ThesisTableData,
+	useThesisTableData,
+} from '@/components/features/admin/CapstoneProjectManagement/useThesisTableData';
 import '@/styles/components.css';
 
 const { Text } = Typography;
