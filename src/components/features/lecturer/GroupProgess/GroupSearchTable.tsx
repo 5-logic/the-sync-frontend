@@ -5,19 +5,23 @@ import { Button, Input, Space, Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 
 import { TablePagination } from '@/components/common/TablePagination';
+import type { FullMockGroup } from '@/data/group';
 import { Group } from '@/lib/services/groups.service';
 
-interface Props {
-	data: Group[];
+// Union type to support both real API data and mock data
+type GroupData = Group | FullMockGroup;
+
+interface Props<T extends GroupData = Group> {
+	data: T[];
 	searchText: string;
 	onSearchChange: (value: string) => void;
-	selectedGroup?: Group;
-	onGroupSelect: (group: Group) => void;
+	selectedGroup?: T;
+	onGroupSelect: (group: T) => void;
 	loading?: boolean;
 	onRefresh?: () => void;
 }
 
-export default function GroupSearchTable({
+export default function GroupSearchTable<T extends GroupData = Group>({
 	searchText,
 	onSearchChange,
 	data,
@@ -25,8 +29,8 @@ export default function GroupSearchTable({
 	onGroupSelect,
 	loading = false,
 	onRefresh,
-}: Readonly<Props>) {
-	const columns: ColumnsType<Group> = [
+}: Readonly<Props<T>>) {
+	const columns: ColumnsType<T> = [
 		{
 			title: 'Group Name',
 			dataIndex: 'name',
@@ -40,7 +44,13 @@ export default function GroupSearchTable({
 		{
 			title: 'Thesis Title',
 			key: 'thesisTitle',
-			render: () => '-', // API chưa trả về thesis, để trống như yêu cầu
+			render: (_, record) => {
+				// Handle both Group and FullMockGroup types
+				if ('title' in record && record.title) {
+					return record.title;
+				}
+				return '-';
+			},
 		},
 		{
 			title: 'Project Direction',
@@ -51,17 +61,47 @@ export default function GroupSearchTable({
 		{
 			title: 'Leader',
 			key: 'leader',
-			render: (_, record) => record.leader?.student?.user?.fullName || '-',
+			render: (_, record) => {
+				// Handle both Group and FullMockGroup types
+				if ('leader' in record) {
+					if (typeof record.leader === 'string') {
+						return record.leader; // FullMockGroup case
+					}
+					if (
+						record.leader &&
+						typeof record.leader === 'object' &&
+						'student' in record.leader
+					) {
+						return record.leader.student?.user?.fullName || '-'; // Group case
+					}
+				}
+				return '-';
+			},
 		},
 		{
 			title: 'Members',
-			dataIndex: 'memberCount',
 			key: 'memberCount',
+			render: (_, record) => {
+				// Handle both Group and FullMockGroup types
+				if ('memberCount' in record) {
+					return record.memberCount; // Group case
+				}
+				if ('members' in record && Array.isArray(record.members)) {
+					return record.members.length; // FullMockGroup case
+				}
+				return '-';
+			},
 		},
 		{
 			title: 'Semester',
 			key: 'semester',
-			render: (_, record) => record.semester?.name || '-',
+			render: (_, record) => {
+				// Handle both Group and FullMockGroup types
+				if ('semester' in record && record.semester?.name) {
+					return record.semester.name;
+				}
+				return '-';
+			},
 		},
 		{
 			title: 'Actions',
