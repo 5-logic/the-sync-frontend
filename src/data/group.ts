@@ -80,42 +80,6 @@ const metaData: Record<string, GroupMeta> = {
 		members: 5,
 		status: 'Unassigned',
 	},
-	g5: {
-		thesisTitle: 'E-commerce Platform',
-		supervisors: ['Dr. Lisa Park'],
-		members: 4,
-		status: 'Finalized',
-	},
-	g6: {
-		thesisTitle: 'Machine Learning Analytics',
-		supervisors: ['Dr. Robert Kim'],
-		members: 3,
-		status: 'Incomplete',
-	},
-	g7: {
-		thesisTitle: 'Mobile App Development',
-		supervisors: ['Dr. Jennifer Lee'],
-		members: 4,
-		status: 'Finalized',
-	},
-	g8: {
-		thesisTitle: 'Cloud Computing Solution',
-		supervisors: ['Dr. Mark Wilson'],
-		members: 5,
-		status: 'Incomplete',
-	},
-	g9: {
-		thesisTitle: 'Data Science Project',
-		supervisors: ['Dr. Anna Smith'],
-		members: 3,
-		status: 'Finalized',
-	},
-	g10: {
-		thesisTitle: 'IoT Smart Home',
-		supervisors: ['Dr. Tom Brown'],
-		members: 4,
-		status: 'Incomplete',
-	},
 };
 
 // ===== Student data type =====
