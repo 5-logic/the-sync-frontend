@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Form, Modal, Select, message } from 'antd';
+import { Button, Form, Modal, Select } from 'antd';
 import React, { useEffect, useState } from 'react';
 
 import { FormLabel } from '@/components/common/FormLabel';
@@ -21,6 +21,7 @@ export interface Props {
 	onSaveDraft?: (values: string[]) => void;
 	initialValues?: string[];
 	group: GroupTableProps | null;
+	onReloadSubmission?: (submissionId: string) => void;
 }
 
 function AssignReviewerModal(props: Props) {
@@ -31,6 +32,7 @@ function AssignReviewerModal(props: Props) {
 		onSaveDraft,
 		initialValues = [],
 		group,
+		onReloadSubmission,
 	} = props;
 	const [form] = Form.useForm();
 	const [eligibleLecturers, setEligibleLecturers] = useState<
@@ -109,9 +111,9 @@ function AssignReviewerModal(props: Props) {
 					const selected = [reviewer1, reviewer2].filter(Boolean) as string[];
 					if (selected.length < 2) return;
 
-					if (isChange && changeReviewer && currentReviewerIds.length === 2) {
-						setLoading(true);
-						try {
+					setLoading(true);
+					try {
+						if (isChange && changeReviewer && currentReviewerIds.length === 2) {
 							// Call changeReviewer for each reviewer slot
 							const results: ChangeReviewerResult[] = [];
 							for (let i = 0; i < 2; i++) {
@@ -124,27 +126,27 @@ function AssignReviewerModal(props: Props) {
 								}
 							}
 							if (results.length > 0) {
-								message.success('Reviewers updated successfully');
+								if (onReloadSubmission) onReloadSubmission(group.submissionId);
 							}
 							onAssign(results.length > 0 ? results[0] : null);
-						} catch (error) {
-							console.error('Failed to update reviewers:', error);
-							message.error('Failed to update reviewers');
-						} finally {
-							setLoading(false);
+						} else if (assignBulkReviewers) {
+							const result = await assignBulkReviewers({
+								assignments: [
+									{
+										submissionId: group.submissionId,
+										lecturerIds: selected,
+									},
+								],
+							});
+							if (result) {
+								if (onReloadSubmission) onReloadSubmission(group.submissionId);
+								onAssign(result);
+							}
 						}
-					} else if (assignBulkReviewers) {
-						const result = await assignBulkReviewers({
-							assignments: [
-								{
-									submissionId: group.submissionId,
-									lecturerIds: selected,
-								},
-							],
-						});
-						if (result) {
-							onAssign(result);
-						}
+					} catch (error) {
+						console.error('Failed to assign/change reviewers:', error);
+					} finally {
+						setLoading(false);
 					}
 				}}
 			>
@@ -213,7 +215,7 @@ function AssignReviewerModal(props: Props) {
 							Save Draft
 						</Button>
 					)}
-					<Button type="primary" htmlType="submit">
+					<Button type="primary" htmlType="submit" loading={loading}>
 						{isChange ? 'Change' : 'Assign'}
 					</Button>
 				</Form.Item>
