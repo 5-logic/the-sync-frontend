@@ -1,14 +1,13 @@
 'use client';
 
-import { Button, Col, Modal, Row, Select, Table, Typography } from 'antd';
-import type { ColumnsType } from 'antd/es/table';
+import { getColumns } from '../CapstoneProjectManagement/Columns';
+import { Button, Col, Modal, Row, Table, Typography } from 'antd';
+import type {} from 'antd/es/table';
 import { TableRowSelection } from 'antd/es/table/interface';
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 
 import { TablePagination } from '@/components/common/TablePagination';
 import { FilterBar } from '@/components/features/admin/CapstoneProjectManagement/FilterBar';
-import { highlightText } from '@/components/features/admin/CapstoneProjectManagement/HighlightText';
-import { RowSpanCell } from '@/components/features/admin/CapstoneProjectManagement/RowSpanCell';
 import {
 	ThesisTableData,
 	useThesisTableData,
@@ -106,9 +105,13 @@ const GroupResults = () => {
 
 	const hasUnsavedChanges = Object.keys(statusUpdates).length > 0;
 
-	const getDisplayStatus = (originalStatus: string, studentId: string) => {
-		return statusUpdates[studentId] || originalStatus;
-	};
+	// eslint-disable-next-line react-hooks/exhaustive-deps
+	const getDisplayStatus = useCallback(
+		(originalStatus: string, studentId: string) => {
+			return statusUpdates[studentId] || originalStatus;
+		},
+		[statusUpdates],
+	);
 
 	const filteredData = useMemo(() => {
 		const filtered = dataToUse.filter((item) => {
@@ -129,80 +132,16 @@ const GroupResults = () => {
 		return filtered;
 	}, [dataToUse, searchText, selectedSemester]);
 
-	const columns: ColumnsType<ThesisTableData> = [
-		{
-			title: 'No.',
-			key: 'no',
-			align: 'center',
-			render: (_, __, index) => index + 1,
-		},
-		{
-			title: 'Student ID',
-			dataIndex: 'studentId',
-			key: 'studentId',
-			align: 'center',
-			render: (text) => highlightText(text, searchText),
-		},
-		{
-			title: 'Full Name',
-			dataIndex: 'name',
-			key: 'name',
-			align: 'center',
-			render: (text) => highlightText(text, searchText),
-		},
-		{
-			title: 'Major',
-			dataIndex: 'major',
-			key: 'major',
-			align: 'center',
-			render: (text, record) =>
-				RowSpanCell(highlightText(text, searchText), record.rowSpanMajor),
-		},
-		{
-			title: 'Thesis Title',
-			dataIndex: 'thesisName',
-			key: 'thesisName',
-			align: 'center',
-			render: (text, record) =>
-				RowSpanCell(highlightText(text, searchText), record.rowSpanGroup),
-		},
-		{
-			title: 'Semester',
-			dataIndex: 'semester',
-			key: 'semester',
-			align: 'center',
-			render: (text, record) =>
-				RowSpanCell(highlightText(text, searchText), record.rowSpanSemester),
-		},
-		{
-			title: 'Status',
-			dataIndex: 'status',
-			key: 'status',
-			align: 'center',
-			render: (status, record) => {
-				const currentStatus = getDisplayStatus(status!, record.studentId);
-				const isModified = statusUpdates[record.studentId] !== undefined;
-				return (
-					<Select
-						value={currentStatus}
-						onChange={(value) => handleStatusChange(record.studentId, value)}
-						style={{
-							width: 120,
-							border: isModified ? '2px solid #faad14' : undefined,
-						}}
-						size="small"
-					>
-						<Select.Option value="Pass">
-							<span style={{ color: '#52c41a' }}>Pass</span>
-						</Select.Option>
-						<Select.Option value="Failed">
-							<span style={{ color: '#ff4d4f' }}>Failed</span>
-						</Select.Option>
-					</Select>
-				);
-			},
-		},
-	];
+	const columns = useMemo(
+		() =>
+			getColumns(searchText, {
+				showStatus: true,
+				getDisplayStatus,
+				statusUpdates,
+				handleStatusChange,
+			}),
+		[getDisplayStatus, searchText, statusUpdates],
+	);
 
 	const rowSelection: TableRowSelection<ThesisTableData> = {
 		selectedRowKeys,
