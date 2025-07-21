@@ -37,8 +37,10 @@ type ThesisTableData = {
 	thesisName: string;
 	status: string;
 	groupId: string;
+	semester: string;
 	rowSpanGroup: number;
 	rowSpanMajor: number;
+	rowSpanSemester: number;
 };
 
 const calculateRowSpans = (data: ThesisTableData[]): ThesisTableData[] => {
@@ -46,6 +48,7 @@ const calculateRowSpans = (data: ThesisTableData[]): ThesisTableData[] => {
 	const groupCounts: Record<string, number> = {};
 	const seenGroups = new Set<string>();
 	const seenMajorInGroups = new Set<string>();
+	const seenSemesterInGroups = new Set<string>();
 
 	data.forEach((item) => {
 		groupCounts[item.groupId] = (groupCounts[item.groupId] || 0) + 1;
@@ -69,6 +72,17 @@ const calculateRowSpans = (data: ThesisTableData[]): ThesisTableData[] => {
 			newItem.rowSpanMajor = majorCount;
 		} else {
 			newItem.rowSpanMajor = 0;
+		}
+
+		const semesterKey = `${item.groupId}-${item.semester}`;
+		if (!seenSemesterInGroups.has(semesterKey)) {
+			seenSemesterInGroups.add(semesterKey);
+			const semesterCount = data.filter(
+				(d) => d.groupId === item.groupId && d.semester === item.semester,
+			).length;
+			newItem.rowSpanSemester = semesterCount;
+		} else {
+			newItem.rowSpanSemester = 0;
 		}
 
 		result.push(newItem);
@@ -95,8 +109,10 @@ const ThesisTable = () => {
 					major: member.major,
 					thesisName: thesis?.englishName || group.title,
 					status: member.defenseStatus || 'Pass', // Sử dụng defenseStatus từ data
+					semester: group.semesterId, // Thêm semester từ group
 					rowSpanGroup: 0,
 					rowSpanMajor: 0,
+					rowSpanSemester: 0,
 				}))
 				.sort((a, b) => a.major.localeCompare(b.major));
 			tempData.push(...groupMembers);
@@ -121,6 +137,7 @@ const ThesisTable = () => {
 				item.thesisName,
 				item.major,
 				item.status,
+				item.semester,
 			];
 			return searchFields.some((field) =>
 				field.toLowerCase().includes(searchText),
@@ -177,6 +194,17 @@ const ThesisTable = () => {
 				),
 		},
 		{
+			title: 'Semester',
+			dataIndex: 'semester',
+			key: 'semester',
+			align: 'center',
+			render: (text: string, record: ThesisTableData) =>
+				renderCellWithRowSpan(
+					highlightText(text, searchText),
+					record.rowSpanSemester,
+				),
+		},
+		{
 			title: 'Thesis Title',
 			dataIndex: 'thesisName',
 			key: 'thesisName',
@@ -203,7 +231,7 @@ const ThesisTable = () => {
 			<Row gutter={[16, 16]} align="middle" style={{ marginBottom: 20 }}>
 				<Col flex="auto">
 					<Input
-						placeholder="Search by name, student ID, thesis title, major, or status"
+						placeholder="Search by name, student ID, thesis title, major, semester, or status"
 						value={searchText}
 						onChange={(e) => handleSearch(e.target.value)}
 						prefix={<SearchOutlined />}
