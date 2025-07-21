@@ -119,7 +119,7 @@ export const getColumns = (
 			key: 'status',
 			align: 'center',
 			render: (status, record) => {
-				const currentStatus = getDisplayStatus(status!, record.studentId);
+				const currentStatus = getDisplayStatus(status, record.studentId);
 				const isModified = statusUpdates[record.studentId] !== undefined;
 				return (
 					<Select
