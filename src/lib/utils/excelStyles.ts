@@ -1,4 +1,3 @@
-// Shared Excel styling utilities
 export interface CellStyle {
 	alignment?: {
 		horizontal?: string;

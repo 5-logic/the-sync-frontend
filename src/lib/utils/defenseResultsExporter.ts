@@ -1,7 +1,11 @@
 import { message } from 'antd';
 import * as XLSX from 'xlsx-js-style';
 
-import { getDataRowStyle, getHeaderStyle, getTitleStyle } from './excelStyles';
+import {
+	getDataRowStyle,
+	getHeaderStyle,
+	getTitleStyle,
+} from '@/lib/utils/excelStyles';
 
 export interface DefenseResultsExportData {
 	'No.': number;

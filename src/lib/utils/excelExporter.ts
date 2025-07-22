@@ -5,7 +5,7 @@ import {
 	getHeaderStyle,
 	getDataRowStyle as getSharedDataRowStyle,
 	getTitleStyle,
-} from './excelStyles';
+} from '@/lib/utils/excelStyles';
 
 export interface ExcelExportData {
 	'No.': number;
