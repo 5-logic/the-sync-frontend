@@ -9,7 +9,6 @@ type Props = {
 	onSemesterChange: (semester: string) => void;
 	availableSemesters: string[];
 	onExportExcel?: () => void;
-	onExportPdf?: () => void;
 	searchPlaceholder?: string;
 	exportExcelText?: string;
 	exportPdfText?: string;
@@ -25,7 +24,6 @@ export const FilterBar = ({
 	onSemesterChange,
 	availableSemesters,
 	onExportExcel,
-	onExportPdf,
 	searchPlaceholder = 'Search...',
 	exportExcelText = 'Export Excel',
 	exportPdfText = 'Export PDF',
@@ -87,7 +85,7 @@ export const FilterBar = ({
 						icon={<ExportOutlined />}
 						type="primary"
 						size="middle"
-						onClick={onExportPdf}
+						onClick={onExportExcel}
 						disabled={loading}
 					>
 						{exportPdfText}
