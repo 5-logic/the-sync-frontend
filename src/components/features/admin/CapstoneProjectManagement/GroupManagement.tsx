@@ -55,7 +55,7 @@ const GroupManagement = () => {
 				selectedSemester === 'all'
 					? 'ALL SEMESTERS'
 					: selectedSemester.toUpperCase();
-			const title = `LIST OF ASSIGNMENTS AND GUIDELINES FOR THESIS FOR SEMESTER ${semesterText}`;
+			const title = `LIST OF ASSIGNMENTS AND GUIDELINES FOR THESIS FOR ${semesterText}`;
 
 			// Create workbook and worksheet
 			const wb = XLSX.utils.book_new();
@@ -276,7 +276,7 @@ const GroupManagement = () => {
 			// Generate filename with current date
 			const currentDate = new Date();
 			const dateString = currentDate.toISOString().split('T')[0];
-			const filename = `Group_List_${dateString}.xlsx`;
+			const filename = `Capstone_Project_${dateString}.xlsx`;
 
 			// Write file
 			XLSX.writeFile(wb, filename);
