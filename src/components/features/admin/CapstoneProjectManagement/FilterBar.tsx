@@ -75,19 +75,6 @@ export const FilterBar = ({
 					</Button>
 				</Col>
 			)}
-			{showExportExcel && (
-				<Col>
-					<Button
-						icon={<ExportOutlined />}
-						type="primary"
-						size="middle"
-						onClick={onExportExcel}
-						disabled={loading}
-					>
-						{exportExcelText}
-					</Button>
-				</Col>
-			)}
 		</Row>
 	);
 };
