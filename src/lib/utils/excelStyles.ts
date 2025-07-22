@@ -56,6 +56,25 @@ export const getTitleStyle = (backgroundColor: string): CellStyle => ({
 	},
 });
 
+export const getSubtitleStyle = (backgroundColor: string): CellStyle => ({
+	alignment: getBaseCellAlignment(),
+	font: {
+		bold: false,
+		sz: 12,
+		color: { rgb: '000000' },
+	},
+	fill: {
+		patternType: 'solid',
+		fgColor: { rgb: backgroundColor },
+	},
+	border: {
+		top: getBorderStyle('thin'),
+		bottom: getBorderStyle('thin'),
+		left: getBorderStyle('thin'),
+		right: getBorderStyle('thin'),
+	},
+});
+
 export const getHeaderStyle = (backgroundColor: string): CellStyle => ({
 	alignment: getBaseCellAlignment(),
 	font: {
@@ -99,13 +118,13 @@ export const addHeadersAndData = (
 	ws: XLSX.WorkSheet,
 	exportData: Array<Record<string, string | number | boolean>>,
 ) => {
-	// Add headers and data starting from row 3
+	// Add headers and data starting from row 4
 	const headers = Object.keys(exportData[0] || {});
-	XLSX.utils.sheet_add_aoa(ws, [headers], { origin: 'A3' });
+	XLSX.utils.sheet_add_aoa(ws, [headers], { origin: 'A4' });
 
 	if (exportData.length > 0) {
 		const dataRows = exportData.map((row) => Object.values(row));
-		XLSX.utils.sheet_add_aoa(ws, dataRows, { origin: 'A4' });
+		XLSX.utils.sheet_add_aoa(ws, dataRows, { origin: 'A5' });
 	}
 };
 
@@ -121,12 +140,18 @@ export const createMergesAndGroupBoundaries = (
 	totalColumns: number,
 ) => {
 	const merges: XLSX.Range[] = [];
-	let currentRow = 4; // Start from row 4 (after title, empty row, and header)
+	let currentRow = 5; // Start from row 5 (after title, subtitle, empty row, and header)
 
 	// Merge title across all columns
 	merges.push({
 		s: { r: 0, c: 0 }, // A1
 		e: { r: 0, c: totalColumns - 1 }, // Last column
+	});
+
+	// Merge subtitle across all columns
+	merges.push({
+		s: { r: 1, c: 0 }, // A2
+		e: { r: 1, c: totalColumns - 1 }, // Last column
 	});
 
 	// Track group boundaries for borders

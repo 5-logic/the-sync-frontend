@@ -7,6 +7,7 @@ import {
 	createMergesAndGroupBoundaries,
 	getHeaderStyle,
 	getDataRowStyle as getSharedDataRowStyle,
+	getSubtitleStyle,
 	getTitleStyle,
 } from '@/lib/utils/excelStyles';
 
@@ -62,8 +63,16 @@ export const exportToExcel = ({
 		// Add title row
 		XLSX.utils.sheet_add_aoa(ws, [[title]], { origin: 'A1' });
 
+		// Add subtitle row with decision information using current date
+		const exportDate = new Date();
+		const day = exportDate.getDate();
+		const month = exportDate.getMonth() + 1; // getMonth() returns 0-11
+		const year = exportDate.getFullYear();
+		const subtitle = `(Issued under Decision No. keynum/QĐ-FPTUBĐ dated ${day} month ${month} year ${year} of the Rector of FPT University)`;
+		XLSX.utils.sheet_add_aoa(ws, [[subtitle]], { origin: 'A2' });
+
 		// Add empty row
-		XLSX.utils.sheet_add_aoa(ws, [[]], { origin: 'A2' });
+		XLSX.utils.sheet_add_aoa(ws, [[]], { origin: 'A3' });
 
 		// Prepare data for Excel export
 		const exportData: ExcelExportData[] = data.map((item, index) => ({
@@ -77,7 +86,7 @@ export const exportToExcel = ({
 			Semester: item.semester,
 		}));
 
-		// Add headers and data starting from row 3
+		// Add headers and data starting from row 4
 		addHeadersAndData(ws, exportData);
 
 		// Set column widths
@@ -133,9 +142,12 @@ const getCellStyle = (rowIndex: number, groupBoundaries: number[]) => {
 		return getTitleStyle('D6EAF8'); // Blue theme for group management
 	}
 	if (rowIndex === 1) {
-		return {}; // Empty row - no styling
+		return getSubtitleStyle('F0F8FF'); // Light blue theme for subtitle
 	}
 	if (rowIndex === 2) {
+		return {}; // Empty row - no styling
+	}
+	if (rowIndex === 3) {
 		return getHeaderStyle('E6F3FF'); // Light blue for header
 	}
 	return getSharedDataRowStyle(rowIndex, groupBoundaries);
