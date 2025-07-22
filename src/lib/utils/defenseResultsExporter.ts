@@ -221,10 +221,10 @@ const getDefenseResultsTitleRowStyle = () => ({
 		fgColor: { rgb: 'FFE6CC' }, // Orange theme for defense results
 	},
 	border: {
-		top: { style: 'thick', color: { rgb: '000000' } },
-		bottom: { style: 'thick', color: { rgb: '000000' } },
-		left: { style: 'thick', color: { rgb: '000000' } },
-		right: { style: 'thick', color: { rgb: '000000' } },
+		top: { style: 'thin', color: { rgb: '000000' } },
+		bottom: { style: 'thin', color: { rgb: '000000' } },
+		left: { style: 'thin', color: { rgb: '000000' } },
+		right: { style: 'thin', color: { rgb: '000000' } },
 	},
 });
 
@@ -244,10 +244,10 @@ const getDefenseResultsHeaderRowStyle = () => ({
 		fgColor: { rgb: 'FFF2E6' }, // Light orange for header
 	},
 	border: {
-		top: { style: 'thick', color: { rgb: '000000' } },
-		bottom: { style: 'thick', color: { rgb: '000000' } },
-		left: { style: 'thick', color: { rgb: '000000' } },
-		right: { style: 'thick', color: { rgb: '000000' } },
+		top: { style: 'thin', color: { rgb: '000000' } },
+		bottom: { style: 'thin', color: { rgb: '000000' } },
+		left: { style: 'thin', color: { rgb: '000000' } },
+		right: { style: 'thin', color: { rgb: '000000' } },
 	},
 });
 
@@ -262,7 +262,7 @@ const getDefenseResultsDataRowStyle = (
 
 	const groupSeparatorStyle = {
 		style: 'medium',
-		color: { rgb: '606060' }, // Darker gray color
+		color: { rgb: '808080' },
 	};
 
 	return {
