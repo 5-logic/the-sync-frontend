@@ -2,6 +2,9 @@ import { message } from 'antd';
 import * as XLSX from 'xlsx-js-style';
 
 import {
+	addHeadersAndData,
+	applyCellStyling as applySharedCellStyling,
+	createMergesAndGroupBoundaries,
 	getHeaderStyle,
 	getDataRowStyle as getSharedDataRowStyle,
 	getTitleStyle,
@@ -16,6 +19,7 @@ export interface ExcelExportData {
 	Abbreviation: string;
 	Supervisor: string;
 	Semester: string;
+	[key: string]: string | number | boolean;
 }
 
 export interface GroupTableDataForExport {
@@ -74,13 +78,7 @@ export const exportToExcel = ({
 		}));
 
 		// Add headers and data starting from row 3
-		const headers = Object.keys(exportData[0] || {});
-		XLSX.utils.sheet_add_aoa(ws, [headers], { origin: 'A3' });
-
-		if (exportData.length > 0) {
-			const dataRows = exportData.map((row) => Object.values(row));
-			XLSX.utils.sheet_add_aoa(ws, dataRows, { origin: 'A4' });
-		}
+		addHeadersAndData(ws, exportData);
 
 		// Set column widths
 		const colWidths = [
@@ -120,93 +118,14 @@ const applyMergesAndStyling = (
 	ws: XLSX.WorkSheet,
 	data: GroupTableDataForExport[],
 ) => {
-	// Create merge ranges for grouped data
-	const merges: XLSX.Range[] = [];
-	let currentRow = 4; // Start from row 4 (after title, empty row, and header)
-
-	// Merge title across all columns
-	merges.push({
-		s: { r: 0, c: 0 }, // A1
-		e: { r: 0, c: 7 }, // H1 (8 columns)
-	});
-
-	// Track group boundaries for borders
-	const groupBoundaries: number[] = [];
-	let lastGroupId = '';
-
-	data.forEach((item) => {
-		// Track group boundaries
-		if (item.groupId !== lastGroupId && lastGroupId !== '') {
-			groupBoundaries.push(currentRow - 1);
-		}
-		lastGroupId = item.groupId;
-
-		// Merge Major column (column D = index 3)
-		if (item.rowSpanMajor > 1) {
-			merges.push({
-				s: { r: currentRow - 1, c: 3 },
-				e: { r: currentRow - 1 + item.rowSpanMajor - 1, c: 3 },
-			});
-		}
-
-		// Merge Thesis Title column (column E = index 4)
-		if (item.rowSpanGroup > 1) {
-			merges.push({
-				s: { r: currentRow - 1, c: 4 },
-				e: { r: currentRow - 1 + item.rowSpanGroup - 1, c: 4 },
-			});
-		}
-
-		// Merge Abbreviation column (column F = index 5)
-		if (item.rowSpanGroup > 1) {
-			merges.push({
-				s: { r: currentRow - 1, c: 5 },
-				e: { r: currentRow - 1 + item.rowSpanGroup - 1, c: 5 },
-			});
-		}
-
-		// Merge Supervisor column (column G = index 6)
-		if (item.rowSpanGroup > 1) {
-			merges.push({
-				s: { r: currentRow - 1, c: 6 },
-				e: { r: currentRow - 1 + item.rowSpanGroup - 1, c: 6 },
-			});
-		}
-
-		// Merge Semester column (column H = index 7)
-		if (item.rowSpanSemester > 1) {
-			merges.push({
-				s: { r: currentRow - 1, c: 7 },
-				e: { r: currentRow - 1 + item.rowSpanSemester - 1, c: 7 },
-			});
-		}
-
-		currentRow++;
-	});
+	// Create merge ranges and group boundaries using shared utility
+	const { merges, groupBoundaries } = createMergesAndGroupBoundaries(data, 8);
 
 	// Apply merges to worksheet
 	ws['!merges'] = merges;
 
-	// Apply styling
-	applyCellStyling(ws, groupBoundaries);
-};
-
-const applyCellStyling = (ws: XLSX.WorkSheet, groupBoundaries: number[]) => {
-	const range = XLSX.utils.decode_range(ws['!ref'] || 'A1:H1');
-
-	for (let R = range.s.r; R <= range.e.r; ++R) {
-		for (let C = range.s.c; C <= range.e.c; ++C) {
-			const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
-
-			// Create cell if it doesn't exist
-			if (!ws[cellAddress]) {
-				ws[cellAddress] = { v: '', t: 's' };
-			}
-
-			// Apply styling based on row type
-			ws[cellAddress].s = getCellStyle(R, groupBoundaries);
-		}
-	}
+	// Apply styling using shared utility
+	applySharedCellStyling(ws, groupBoundaries, 8, getCellStyle);
 };
 
 const getCellStyle = (rowIndex: number, groupBoundaries: number[]) => {
