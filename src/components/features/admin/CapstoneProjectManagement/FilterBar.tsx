@@ -11,9 +11,7 @@ type Props = {
 	onExportExcel?: () => void;
 	searchPlaceholder?: string;
 	exportExcelText?: string;
-	exportPdfText?: string;
 	showExportExcel?: boolean;
-	showExportPdf?: boolean;
 	loading?: boolean;
 };
 
@@ -26,9 +24,7 @@ export const FilterBar = ({
 	onExportExcel,
 	searchPlaceholder = 'Search...',
 	exportExcelText = 'Export Excel',
-	exportPdfText = 'Export PDF',
 	showExportExcel = false,
-	showExportPdf = false,
 	loading = false,
 }: Props) => {
 	const semesterOptions = availableSemesters.filter(
@@ -79,7 +75,7 @@ export const FilterBar = ({
 					</Button>
 				</Col>
 			)}
-			{showExportPdf && (
+			{showExportExcel && (
 				<Col>
 					<Button
 						icon={<ExportOutlined />}
@@ -88,7 +84,7 @@ export const FilterBar = ({
 						onClick={onExportExcel}
 						disabled={loading}
 					>
-						{exportPdfText}
+						{exportExcelText}
 					</Button>
 				</Col>
 			)}
