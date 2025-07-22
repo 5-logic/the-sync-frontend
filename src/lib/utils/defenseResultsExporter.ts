@@ -1,6 +1,8 @@
 import { message } from 'antd';
 import * as XLSX from 'xlsx-js-style';
 
+import { getDataRowStyle, getHeaderStyle, getTitleStyle } from './excelStyles';
+
 export interface DefenseResultsExportData {
 	'No.': number;
 	'Student ID': string;
@@ -194,90 +196,13 @@ const getDefenseResultsCellStyle = (
 	groupBoundaries: number[],
 ) => {
 	if (rowIndex === 0) {
-		return getDefenseResultsTitleRowStyle();
+		return getTitleStyle('FFE6CC'); // Orange theme for defense results
 	}
 	if (rowIndex === 1) {
 		return {}; // Empty row - no styling
 	}
 	if (rowIndex === 2) {
-		return getDefenseResultsHeaderRowStyle();
+		return getHeaderStyle('FFF2E6'); // Light orange for header
 	}
-	return getDefenseResultsDataRowStyle(rowIndex, groupBoundaries);
-};
-
-const getDefenseResultsTitleRowStyle = () => ({
-	alignment: {
-		horizontal: 'center',
-		vertical: 'center',
-		wrapText: true,
-	},
-	font: {
-		bold: true,
-		sz: 16,
-		color: { rgb: '000000' },
-	},
-	fill: {
-		patternType: 'solid',
-		fgColor: { rgb: 'FFE6CC' }, // Orange theme for defense results
-	},
-	border: {
-		top: { style: 'thin', color: { rgb: '000000' } },
-		bottom: { style: 'thin', color: { rgb: '000000' } },
-		left: { style: 'thin', color: { rgb: '000000' } },
-		right: { style: 'thin', color: { rgb: '000000' } },
-	},
-});
-
-const getDefenseResultsHeaderRowStyle = () => ({
-	alignment: {
-		horizontal: 'center',
-		vertical: 'center',
-		wrapText: true,
-	},
-	font: {
-		bold: true,
-		sz: 12,
-		color: { rgb: '000000' },
-	},
-	fill: {
-		patternType: 'solid',
-		fgColor: { rgb: 'FFF2E6' }, // Light orange for header
-	},
-	border: {
-		top: { style: 'thin', color: { rgb: '000000' } },
-		bottom: { style: 'thin', color: { rgb: '000000' } },
-		left: { style: 'thin', color: { rgb: '000000' } },
-		right: { style: 'thin', color: { rgb: '000000' } },
-	},
-});
-
-const getDefenseResultsDataRowStyle = (
-	rowIndex: number,
-	groupBoundaries: number[],
-) => {
-	const borderStyle = {
-		style: 'thin',
-		color: { rgb: '000000' },
-	};
-
-	const groupSeparatorStyle = {
-		style: 'medium',
-		color: { rgb: '808080' },
-	};
-
-	return {
-		alignment: {
-			horizontal: 'center',
-			vertical: 'center',
-			wrapText: true,
-		},
-		border: {
-			top: groupBoundaries.includes(rowIndex)
-				? groupSeparatorStyle
-				: borderStyle,
-			bottom: borderStyle,
-			left: borderStyle,
-			right: borderStyle,
-		},
-	};
+	return getDataRowStyle(rowIndex, groupBoundaries, '808080');
 };

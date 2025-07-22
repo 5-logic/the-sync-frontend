@@ -1,6 +1,12 @@
 import { message } from 'antd';
 import * as XLSX from 'xlsx-js-style';
 
+import {
+	getHeaderStyle,
+	getDataRowStyle as getSharedDataRowStyle,
+	getTitleStyle,
+} from './excelStyles';
+
 export interface ExcelExportData {
 	'No.': number;
 	'Student ID': string;
@@ -205,85 +211,13 @@ const applyCellStyling = (ws: XLSX.WorkSheet, groupBoundaries: number[]) => {
 
 const getCellStyle = (rowIndex: number, groupBoundaries: number[]) => {
 	if (rowIndex === 0) {
-		return getTitleRowStyle();
+		return getTitleStyle('D6EAF8'); // Blue theme for group management
 	}
 	if (rowIndex === 1) {
 		return {}; // Empty row - no styling
 	}
 	if (rowIndex === 2) {
-		return getHeaderRowStyle();
+		return getHeaderStyle('E6F3FF'); // Light blue for header
 	}
-	return getDataRowStyle(rowIndex, groupBoundaries);
-};
-
-const getTitleRowStyle = () => ({
-	alignment: {
-		horizontal: 'center',
-		vertical: 'center',
-		wrapText: true,
-	},
-	font: {
-		bold: true,
-		sz: 16,
-		color: { rgb: '000000' },
-	},
-	fill: {
-		patternType: 'solid',
-		fgColor: { rgb: 'D6EAF8' },
-	},
-	border: {
-		top: { style: 'thin', color: { rgb: '000000' } },
-		bottom: { style: 'thin', color: { rgb: '000000' } },
-		left: { style: 'thin', color: { rgb: '000000' } },
-		right: { style: 'thin', color: { rgb: '000000' } },
-	},
-});
-
-const getHeaderRowStyle = () => ({
-	alignment: {
-		horizontal: 'center',
-		vertical: 'center',
-		wrapText: true,
-	},
-	font: {
-		bold: true,
-		sz: 12,
-		color: { rgb: '000000' },
-	},
-	fill: {
-		patternType: 'solid',
-		fgColor: { rgb: 'E6F3FF' },
-	},
-	border: {
-		top: { style: 'thin', color: { rgb: '000000' } },
-		bottom: { style: 'thin', color: { rgb: '000000' } },
-		left: { style: 'thin', color: { rgb: '000000' } },
-		right: { style: 'thin', color: { rgb: '000000' } },
-	},
-});
-
-const getDataRowStyle = (rowIndex: number, groupBoundaries: number[]) => {
-	const borderStyle = {
-		style: 'thin',
-		color: { rgb: '000000' },
-	};
-
-	const thickBorderStyle = {
-		style: 'medium',
-		color: { rgb: '808080' },
-	};
-
-	return {
-		alignment: {
-			horizontal: 'center',
-			vertical: 'center',
-			wrapText: true,
-		},
-		border: {
-			top: groupBoundaries.includes(rowIndex) ? thickBorderStyle : borderStyle,
-			bottom: borderStyle,
-			left: borderStyle,
-			right: borderStyle,
-		},
-	};
+	return getSharedDataRowStyle(rowIndex, groupBoundaries);
 };
