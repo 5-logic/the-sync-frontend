@@ -197,88 +197,93 @@ const applyCellStyling = (ws: XLSX.WorkSheet, groupBoundaries: number[]) => {
 				ws[cellAddress] = { v: '', t: 's' };
 			}
 
-			// Default border style
-			const borderStyle = {
-				style: 'thin',
-				color: { rgb: '000000' },
-			};
-
-			// Thick border for group boundaries
-			const thickBorderStyle = {
-				style: 'thick',
-				color: { rgb: '000000' },
-			};
-
-			// Title row styling (row 0)
-			if (R === 0) {
-				ws[cellAddress].s = {
-					alignment: {
-						horizontal: 'center',
-						vertical: 'center',
-						wrapText: true,
-					},
-					font: {
-						bold: true,
-						sz: 16,
-						color: { rgb: '000000' },
-					},
-					fill: {
-						patternType: 'solid',
-						fgColor: { rgb: 'D6EAF8' },
-					},
-					border: {
-						top: { style: 'thick', color: { rgb: '000000' } },
-						bottom: { style: 'thick', color: { rgb: '000000' } },
-						left: { style: 'thick', color: { rgb: '000000' } },
-						right: { style: 'thick', color: { rgb: '000000' } },
-					},
-				};
-			}
-			// Empty row (row 1) - no styling needed
-			else if (R === 1) {
-				continue;
-			}
-			// Header row styling (row 2)
-			else if (R === 2) {
-				ws[cellAddress].s = {
-					alignment: {
-						horizontal: 'center',
-						vertical: 'center',
-						wrapText: true,
-					},
-					font: {
-						bold: true,
-						sz: 12,
-						color: { rgb: '000000' },
-					},
-					fill: {
-						patternType: 'solid',
-						fgColor: { rgb: 'E6F3FF' },
-					},
-					border: {
-						top: { style: 'thick', color: { rgb: '000000' } },
-						bottom: { style: 'thick', color: { rgb: '000000' } },
-						left: { style: 'thick', color: { rgb: '000000' } },
-						right: { style: 'thick', color: { rgb: '000000' } },
-					},
-				};
-			}
-			// Data rows styling (row 3+)
-			else {
-				ws[cellAddress].s = {
-					alignment: {
-						horizontal: 'center',
-						vertical: 'center',
-						wrapText: true,
-					},
-					border: {
-						top: groupBoundaries.includes(R) ? thickBorderStyle : borderStyle,
-						bottom: borderStyle,
-						left: borderStyle,
-						right: borderStyle,
-					},
-				};
-			}
+			// Apply styling based on row type
+			ws[cellAddress].s = getCellStyle(R, groupBoundaries);
 		}
 	}
+};
+
+const getCellStyle = (rowIndex: number, groupBoundaries: number[]) => {
+	if (rowIndex === 0) {
+		return getTitleRowStyle();
+	}
+	if (rowIndex === 1) {
+		return {}; // Empty row - no styling
+	}
+	if (rowIndex === 2) {
+		return getHeaderRowStyle();
+	}
+	return getDataRowStyle(rowIndex, groupBoundaries);
+};
+
+const getTitleRowStyle = () => ({
+	alignment: {
+		horizontal: 'center',
+		vertical: 'center',
+		wrapText: true,
+	},
+	font: {
+		bold: true,
+		sz: 16,
+		color: { rgb: '000000' },
+	},
+	fill: {
+		patternType: 'solid',
+		fgColor: { rgb: 'D6EAF8' },
+	},
+	border: {
+		top: { style: 'thick', color: { rgb: '000000' } },
+		bottom: { style: 'thick', color: { rgb: '000000' } },
+		left: { style: 'thick', color: { rgb: '000000' } },
+		right: { style: 'thick', color: { rgb: '000000' } },
+	},
+});
+
+const getHeaderRowStyle = () => ({
+	alignment: {
+		horizontal: 'center',
+		vertical: 'center',
+		wrapText: true,
+	},
+	font: {
+		bold: true,
+		sz: 12,
+		color: { rgb: '000000' },
+	},
+	fill: {
+		patternType: 'solid',
+		fgColor: { rgb: 'E6F3FF' },
+	},
+	border: {
+		top: { style: 'thick', color: { rgb: '000000' } },
+		bottom: { style: 'thick', color: { rgb: '000000' } },
+		left: { style: 'thick', color: { rgb: '000000' } },
+		right: { style: 'thick', color: { rgb: '000000' } },
+	},
+});
+
+const getDataRowStyle = (rowIndex: number, groupBoundaries: number[]) => {
+	const borderStyle = {
+		style: 'thin',
+		color: { rgb: '000000' },
+	};
+
+	const thickBorderStyle = {
+		style: 'thick',
+		color: { rgb: '000000' },
+	};
+
+	return {
+		alignment: {
+			horizontal: 'center',
+			vertical: 'center',
+			wrapText: true,
+		},
+		border: {
+			top: groupBoundaries.includes(rowIndex) ? thickBorderStyle : borderStyle,
+			bottom: borderStyle,
+			left: borderStyle,
+			right: borderStyle,
+		},
+	};
 };
