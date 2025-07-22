@@ -92,28 +92,17 @@ export default function GroupSearchTable<T extends GroupData = Group>({
 				return '-';
 			},
 		},
-		{
-			title: 'Semester',
-			key: 'semester',
-			render: (_, record) => {
-				// Handle both Group and FullMockGroup types
-				if ('semester' in record && record.semester?.name) {
-					return record.semester.name;
-				}
-				return '-';
-			},
-		},
+
 		{
 			title: 'Actions',
+			align: 'center',
 			key: 'actions',
 			render: (_, record) => (
 				<Button
 					type="link"
 					icon={<EyeOutlined />}
 					onClick={() => onGroupSelect(record)}
-				>
-					View
-				</Button>
+				></Button>
 			),
 		},
 	];
