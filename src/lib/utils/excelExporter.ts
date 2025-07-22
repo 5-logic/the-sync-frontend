@@ -81,7 +81,7 @@ export const exportToExcel = ({
 			{ wch: 5 }, // No.
 			{ wch: 15 }, // Student ID
 			{ wch: 25 }, // Full Name
-			{ wch: 20 }, // Major
+			{ wch: 25 }, // Major
 			{ wch: 40 }, // Thesis Title
 			{ wch: 15 }, // Abbreviation
 			{ wch: 30 }, // Supervisor
