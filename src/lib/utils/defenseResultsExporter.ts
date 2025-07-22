@@ -1,49 +1,49 @@
 import { message } from 'antd';
 import * as XLSX from 'xlsx-js-style';
 
-export interface ExcelExportData {
+export interface DefenseResultsExportData {
 	'No.': number;
 	'Student ID': string;
 	'Full Name': string;
 	Major: string;
 	'Thesis Title': string;
-	Abbreviation: string;
-	Supervisor: string;
 	Semester: string;
+	Status: string;
 }
 
-export interface GroupTableDataForExport {
+export interface DefenseResultsDataForExport {
 	groupId: string;
 	studentId: string;
 	name: string;
 	major: string;
 	thesisName: string;
-	abbreviation?: string;
-	supervisor?: string;
 	semester: string;
+	status?: string;
 	rowSpanMajor: number;
 	rowSpanGroup: number;
 	rowSpanSemester: number;
 }
 
-export interface ExportExcelOptions {
-	data: GroupTableDataForExport[];
+export interface ExportDefenseResultsOptions {
+	data: DefenseResultsDataForExport[];
 	selectedSemester: string;
+	statusUpdates?: Record<string, string>;
 	filename?: string;
 }
 
-export const exportToExcel = ({
+export const exportDefenseResultsToExcel = ({
 	data,
 	selectedSemester,
+	statusUpdates = {},
 	filename,
-}: ExportExcelOptions) => {
+}: ExportDefenseResultsOptions) => {
 	try {
 		// Get semester text for title
 		const semesterText =
 			selectedSemester === 'all'
 				? 'ALL SEMESTERS'
 				: selectedSemester.toUpperCase();
-		const title = `LIST OF ASSIGNMENTS AND GUIDELINES FOR THESIS FOR ${semesterText}`;
+		const title = `CAPSTONE DEFENSE RESULTS FOR ${semesterText}`;
 
 		// Create workbook and worksheet
 		const wb = XLSX.utils.book_new();
@@ -56,15 +56,14 @@ export const exportToExcel = ({
 		XLSX.utils.sheet_add_aoa(ws, [[]], { origin: 'A2' });
 
 		// Prepare data for Excel export
-		const exportData: ExcelExportData[] = data.map((item, index) => ({
+		const exportData: DefenseResultsExportData[] = data.map((item, index) => ({
 			'No.': index + 1,
 			'Student ID': item.studentId,
 			'Full Name': item.name,
 			Major: item.major,
 			'Thesis Title': item.thesisName,
-			Abbreviation: item.abbreviation || '',
-			Supervisor: item.supervisor || '',
 			Semester: item.semester,
+			Status: statusUpdates[item.studentId] || item.status || 'Pass',
 		}));
 
 		// Add headers and data starting from row 3
@@ -76,52 +75,52 @@ export const exportToExcel = ({
 			XLSX.utils.sheet_add_aoa(ws, dataRows, { origin: 'A4' });
 		}
 
-		// Set column widths
+		// Set column widths for defense results
 		const colWidths = [
 			{ wch: 5 }, // No.
 			{ wch: 15 }, // Student ID
 			{ wch: 25 }, // Full Name
-			{ wch: 25 }, // Major
+			{ wch: 20 }, // Major
 			{ wch: 40 }, // Thesis Title
-			{ wch: 15 }, // Abbreviation
-			{ wch: 30 }, // Supervisor
 			{ wch: 15 }, // Semester
+			{ wch: 12 }, // Status
 		];
 		ws['!cols'] = colWidths;
 
 		// Create merge ranges and apply styling
-		applyMergesAndStyling(ws, data);
+		applyDefenseResultsMergesAndStyling(ws, data);
 
 		// Add worksheet to workbook
-		XLSX.utils.book_append_sheet(wb, ws, 'Group Management');
+		XLSX.utils.book_append_sheet(wb, ws, 'Defense Results');
 
 		// Generate filename
 		const currentDate = new Date();
 		const dateString = currentDate.toISOString().split('T')[0];
-		const finalFilename = filename || `Capstone_Project_${dateString}.xlsx`;
+		const finalFilename =
+			filename || `Capstone_Defense_Results_${dateString}.xlsx`;
 
 		// Write file
 		XLSX.writeFile(wb, finalFilename);
 
-		message.success('Excel file exported successfully!');
+		message.success('Defense results exported successfully!');
 	} catch (error) {
-		console.error('Error exporting Excel:', error);
-		message.error('An error occurred while exporting Excel file!');
+		console.error('Error exporting defense results:', error);
+		message.error('An error occurred while exporting defense results!');
 	}
 };
 
-const applyMergesAndStyling = (
+const applyDefenseResultsMergesAndStyling = (
 	ws: XLSX.WorkSheet,
-	data: GroupTableDataForExport[],
+	data: DefenseResultsDataForExport[],
 ) => {
 	// Create merge ranges for grouped data
 	const merges: XLSX.Range[] = [];
 	let currentRow = 4; // Start from row 4 (after title, empty row, and header)
 
-	// Merge title across all columns
+	// Merge title across all columns (7 columns for defense results)
 	merges.push({
 		s: { r: 0, c: 0 }, // A1
-		e: { r: 0, c: 7 }, // H1 (8 columns)
+		e: { r: 0, c: 6 }, // G1 (7 columns)
 	});
 
 	// Track group boundaries for borders
@@ -151,27 +150,11 @@ const applyMergesAndStyling = (
 			});
 		}
 
-		// Merge Abbreviation column (column F = index 5)
-		if (item.rowSpanGroup > 1) {
-			merges.push({
-				s: { r: currentRow - 1, c: 5 },
-				e: { r: currentRow - 1 + item.rowSpanGroup - 1, c: 5 },
-			});
-		}
-
-		// Merge Supervisor column (column G = index 6)
-		if (item.rowSpanGroup > 1) {
-			merges.push({
-				s: { r: currentRow - 1, c: 6 },
-				e: { r: currentRow - 1 + item.rowSpanGroup - 1, c: 6 },
-			});
-		}
-
-		// Merge Semester column (column H = index 7)
+		// Merge Semester column (column F = index 5)
 		if (item.rowSpanSemester > 1) {
 			merges.push({
-				s: { r: currentRow - 1, c: 7 },
-				e: { r: currentRow - 1 + item.rowSpanSemester - 1, c: 7 },
+				s: { r: currentRow - 1, c: 5 },
+				e: { r: currentRow - 1 + item.rowSpanSemester - 1, c: 5 },
 			});
 		}
 
@@ -182,11 +165,14 @@ const applyMergesAndStyling = (
 	ws['!merges'] = merges;
 
 	// Apply styling
-	applyCellStyling(ws, groupBoundaries);
+	applyDefenseResultsCellStyling(ws, groupBoundaries);
 };
 
-const applyCellStyling = (ws: XLSX.WorkSheet, groupBoundaries: number[]) => {
-	const range = XLSX.utils.decode_range(ws['!ref'] || 'A1:H1');
+const applyDefenseResultsCellStyling = (
+	ws: XLSX.WorkSheet,
+	groupBoundaries: number[],
+) => {
+	const range = XLSX.utils.decode_range(ws['!ref'] || 'A1:G1');
 
 	for (let R = range.s.r; R <= range.e.r; ++R) {
 		for (let C = range.s.c; C <= range.e.c; ++C) {
@@ -198,25 +184,28 @@ const applyCellStyling = (ws: XLSX.WorkSheet, groupBoundaries: number[]) => {
 			}
 
 			// Apply styling based on row type
-			ws[cellAddress].s = getCellStyle(R, groupBoundaries);
+			ws[cellAddress].s = getDefenseResultsCellStyle(R, groupBoundaries);
 		}
 	}
 };
 
-const getCellStyle = (rowIndex: number, groupBoundaries: number[]) => {
+const getDefenseResultsCellStyle = (
+	rowIndex: number,
+	groupBoundaries: number[],
+) => {
 	if (rowIndex === 0) {
-		return getTitleRowStyle();
+		return getDefenseResultsTitleRowStyle();
 	}
 	if (rowIndex === 1) {
 		return {}; // Empty row - no styling
 	}
 	if (rowIndex === 2) {
-		return getHeaderRowStyle();
+		return getDefenseResultsHeaderRowStyle();
 	}
-	return getDataRowStyle(rowIndex, groupBoundaries);
+	return getDefenseResultsDataRowStyle(rowIndex, groupBoundaries);
 };
 
-const getTitleRowStyle = () => ({
+const getDefenseResultsTitleRowStyle = () => ({
 	alignment: {
 		horizontal: 'center',
 		vertical: 'center',
@@ -229,7 +218,7 @@ const getTitleRowStyle = () => ({
 	},
 	fill: {
 		patternType: 'solid',
-		fgColor: { rgb: 'D6EAF8' },
+		fgColor: { rgb: 'FFE6CC' }, // Orange theme for defense results
 	},
 	border: {
 		top: { style: 'thick', color: { rgb: '000000' } },
@@ -239,7 +228,7 @@ const getTitleRowStyle = () => ({
 	},
 });
 
-const getHeaderRowStyle = () => ({
+const getDefenseResultsHeaderRowStyle = () => ({
 	alignment: {
 		horizontal: 'center',
 		vertical: 'center',
@@ -252,7 +241,7 @@ const getHeaderRowStyle = () => ({
 	},
 	fill: {
 		patternType: 'solid',
-		fgColor: { rgb: 'E6F3FF' },
+		fgColor: { rgb: 'FFF2E6' }, // Light orange for header
 	},
 	border: {
 		top: { style: 'thick', color: { rgb: '000000' } },
@@ -262,15 +251,18 @@ const getHeaderRowStyle = () => ({
 	},
 });
 
-const getDataRowStyle = (rowIndex: number, groupBoundaries: number[]) => {
+const getDefenseResultsDataRowStyle = (
+	rowIndex: number,
+	groupBoundaries: number[],
+) => {
 	const borderStyle = {
 		style: 'thin',
 		color: { rgb: '000000' },
 	};
 
-	const thickBorderStyle = {
+	const groupSeparatorStyle = {
 		style: 'medium',
-		color: { rgb: '606060' },
+		color: { rgb: '606060' }, // Darker gray color
 	};
 
 	return {
@@ -280,7 +272,9 @@ const getDataRowStyle = (rowIndex: number, groupBoundaries: number[]) => {
 			wrapText: true,
 		},
 		border: {
-			top: groupBoundaries.includes(rowIndex) ? thickBorderStyle : borderStyle,
+			top: groupBoundaries.includes(rowIndex)
+				? groupSeparatorStyle
+				: borderStyle,
 			bottom: borderStyle,
 			left: borderStyle,
 			right: borderStyle,
