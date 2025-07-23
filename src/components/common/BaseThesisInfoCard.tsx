@@ -136,9 +136,13 @@ export default function BaseThesisInfoCard({ thesis, supervisor }: Props) {
 					Required Skills
 				</Title>
 				<Space wrap size={[8, 12]}>
-					{thesis.thesisRequiredSkills?.map((trs) => (
-						<Tag key={trs.skill.id}>{trs.skill.name}</Tag>
-					)) || <Text type="secondary">No skills specified</Text>}
+					{thesis.thesisRequiredSkills?.length ? (
+						thesis.thesisRequiredSkills
+							.filter((trs) => trs.skill) // Filter out undefined skills
+							.map((trs) => <Tag key={trs.skill.id}>{trs.skill.name}</Tag>)
+					) : (
+						<Text type="secondary">No skills specified</Text>
+					)}
 				</Space>
 			</div>
 
