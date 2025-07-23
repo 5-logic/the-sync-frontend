@@ -389,21 +389,63 @@ const SemesterTable = forwardRef<
 
 			// Validate status transition rules
 			if (!validateStatusTransition(editingRecord, values)) return;
-			// Prepare payload
-			const payload: SemesterUpdate = {
-				name: values.name,
-				code: values.code,
-				// Only include maxGroup if status allows it (not End)
-				...(values.status !== 'End' && values.maxGroup
-					? { maxGroup: parseInt(values.maxGroup, 10) }
-					: {}),
-				status: values.status,
-				ongoingPhase:
-					values.status === 'Ongoing' ? values.ongoingPhase : undefined,
+
+			// Create original values object for comparison
+			const original = {
+				name: editingRecord.name,
+				code: editingRecord.code,
+				maxGroup: editingRecord.maxGroup,
+				status: editingRecord.status,
+				ongoingPhase: editingRecord.ongoingPhase,
+				defaultThesesPerLecturer: editingRecord.defaultThesesPerLecturer,
+				maxThesesPerLecturer: editingRecord.maxThesesPerLecturer,
 			};
 
-			// Update semester
-			const success = await updateSemester(editingRecord.id, payload);
+			// Build payload with only changed fields
+			const payload: Partial<SemesterUpdate> = {};
+
+			// Check each field for changes and add to payload if different
+			if (values.name !== original.name) {
+				payload.name = values.name;
+			}
+			if (values.code !== original.code) {
+				payload.code = values.code;
+			}
+			if (values.maxGroup !== original.maxGroup) {
+				// Only include maxGroup if status allows it (not End)
+				if (values.status !== 'End' && values.maxGroup) {
+					payload.maxGroup = parseInt(values.maxGroup, 10);
+				}
+			}
+			if (values.status !== original.status) {
+				payload.status = values.status;
+			}
+			if (values.ongoingPhase !== original.ongoingPhase) {
+				payload.ongoingPhase =
+					values.status === 'Ongoing' ? values.ongoingPhase : undefined;
+			}
+			if (
+				values.defaultThesesPerLecturer !== original.defaultThesesPerLecturer
+			) {
+				payload.defaultThesesPerLecturer = Number(
+					values.defaultThesesPerLecturer,
+				);
+			}
+			if (values.maxThesesPerLecturer !== original.maxThesesPerLecturer) {
+				payload.maxThesesPerLecturer = Number(values.maxThesesPerLecturer);
+			}
+
+			// Only proceed if there are actual changes
+			if (Object.keys(payload).length === 0) {
+				handleUpdateSuccess();
+				return;
+			}
+
+			// Update semester with only changed fields
+			const success = await updateSemester(
+				editingRecord.id,
+				payload as SemesterUpdate,
+			);
 			if (success) {
 				handleUpdateSuccess();
 			}
@@ -495,6 +537,8 @@ const SemesterTable = forwardRef<
 			maxGroup: editingRecord.maxGroup,
 			status: editingRecord.status,
 			ongoingPhase: editingRecord.ongoingPhase,
+			defaultThesesPerLecturer: editingRecord.defaultThesesPerLecturer,
+			maxThesesPerLecturer: editingRecord.maxThesesPerLecturer,
 		};
 
 		const changed = Object.keys(original).some(
@@ -859,9 +903,8 @@ const SemesterTable = forwardRef<
 							},
 							{
 								type: 'number',
-								min: 4,
-								message:
-									'Default theses per lecturer must be a positive integer',
+								min: 1,
+								message: 'Default theses per lecturer must be at least 1',
 								transform: (value) => (value ? Number(value) : undefined),
 							},
 						]}
@@ -869,7 +912,7 @@ const SemesterTable = forwardRef<
 						<Input
 							placeholder="Enter default theses per lecturer"
 							type="number"
-							min={4}
+							min={1}
 							step={1}
 							disabled={updating}
 						/>
@@ -889,8 +932,8 @@ const SemesterTable = forwardRef<
 							},
 							{
 								type: 'number',
-								min: 4,
-								message: 'Max theses per lecturer must be a positive integer',
+								min: 1,
+								message: 'Max theses per lecturer must be at least 1',
 								transform: (value) => (value ? Number(value) : undefined),
 							},
 						]}
@@ -898,7 +941,7 @@ const SemesterTable = forwardRef<
 						<Input
 							placeholder="Enter max theses per lecturer"
 							type="number"
-							min={4}
+							min={1}
 							step={1}
 							disabled={updating} // Use updating from store
 						/>
