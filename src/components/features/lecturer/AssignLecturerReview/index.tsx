@@ -10,9 +10,10 @@ import GroupTable, {
 	GroupTableProps,
 } from '@/components/features/lecturer/AssignLecturerReview/GroupTable';
 import SearchFilterBar from '@/components/features/lecturer/AssignLecturerReview/SearchFilterBar';
-import { mockLecturers } from '@/data/lecturers';
 import { mockReviews } from '@/data/review';
+import lecturerService from '@/lib/services/lecturers.service';
 import reviewService from '@/lib/services/review.service';
+import { Lecturer } from '@/schemas/lecturer';
 import {
 	useMilestoneStore,
 	useSemesterStore,
@@ -34,6 +35,7 @@ export default function AssignLecturerReview() {
 	const [search, setSearch] = useState('');
 	const [semester, setSemester] = useState('');
 	const [milestone, setMilestone] = useState('');
+	const [lecturers, setLecturers] = useState<Lecturer[]>([]);
 
 	// Submission store
 	const {
@@ -56,9 +58,15 @@ export default function AssignLecturerReview() {
 		loading: loadingMilestones,
 	} = useMilestoneStore();
 
-	// Fetch semesters ngay khi mount
+	// Fetch semesters and lecturers when component mounts
 	useEffect(() => {
 		fetchSemesters();
+		// Fetch lecturers for name mapping
+		lecturerService.findAll().then((response) => {
+			if (response.success && response.data) {
+				setLecturers(response.data);
+			}
+		});
 	}, [fetchSemesters]);
 
 	// Khi semesters đã có, chọn semester đầu tiên hợp lệ và fetch milestones cho nó
@@ -154,7 +162,7 @@ export default function AssignLecturerReview() {
 		return mockReviews
 			.filter((r) => r.submissionId === submission.id)
 			.map((r) => {
-				const lecturer = mockLecturers.find((l) => l.id === r.lecturerId);
+				const lecturer = lecturers.find((l) => l.id === r.lecturerId);
 				return lecturer?.fullName;
 			})
 			.filter(Boolean) as string[];
@@ -262,7 +270,7 @@ export default function AssignLecturerReview() {
 					);
 					if (!submission) return;
 					const reviewerNames = selectedReviewers.map(
-						(id) => mockLecturers.find((l) => l.id === id)?.fullName || id,
+						(id) => lecturers.find((l) => l.id === id)?.fullName || id,
 					);
 					addDraftReviewerAssignment({
 						submissionId: submission.id,

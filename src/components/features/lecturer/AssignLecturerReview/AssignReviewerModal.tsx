@@ -5,6 +5,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 
 import { FormLabel } from '@/components/common/FormLabel';
 import { GroupTableProps } from '@/components/features/lecturer/AssignLecturerReview/GroupTable';
+import lecturerService from '@/lib/services/lecturers.service';
 import {
 	AssignBulkReviewersResult,
 	ChangeReviewerResult,
@@ -33,7 +34,13 @@ export interface Props {
 
 /**
  * Modal component for assigning reviewers to groups
+ * Uses lecturerService.findAll() to fetch all lecturers and filters eligible ones
  * Supports both Save Draft and Assign/Change actions
+ * Features:
+ * - Displays fullName in dropdown but submits lecturer ID
+ * - Prevents duplicate selections between reviewer1 and reviewer2
+ * - Filters out lecturers already assigned as reviewers for the group
+ * - Clean code with proper error handling and validation
  */
 export default function AssignReviewerModal({
 	open,
@@ -47,7 +54,7 @@ export default function AssignReviewerModal({
 	onReloadSubmission,
 }: Props) {
 	const [form] = Form.useForm();
-	const [eligibleLecturers, setEligibleLecturers] = useState<Lecturer[]>([]);
+	const [allLecturers, setAllLecturers] = useState<Lecturer[]>([]);
 	const [fetchLoading, setFetchLoading] = useState(false);
 	const [renderKey, setRenderKey] = useState(0);
 	const [isInitialized, setIsInitialized] = useState(false);
@@ -57,7 +64,6 @@ export default function AssignReviewerModal({
 	);
 
 	// Store actions
-	const getEligibleReviewers = useReviewStore((s) => s.getEligibleReviewers);
 	const assignBulkReviewers = useReviewStore((s) => s.assignBulkReviewers);
 	const changeReviewer = useReviewStore((s) => s.changeReviewer);
 
@@ -116,28 +122,31 @@ export default function AssignReviewerModal({
 		setIsInitialized(false);
 	};
 
-	// Fetch eligible lecturers
+	// Fetch all lecturers and filter eligible ones
 	useEffect(() => {
 		let ignore = false;
-		if (open && group?.submissionId) {
+		if (open) {
 			setFetchLoading(true);
-			getEligibleReviewers(group.submissionId)
-				.then((data) => {
-					if (!ignore) setEligibleLecturers(data);
+			lecturerService
+				.findAll()
+				.then((response) => {
+					if (!ignore && response.success && response.data) {
+						setAllLecturers(response.data);
+					}
 				})
 				.catch(() => {
-					if (!ignore) setEligibleLecturers([]);
+					if (!ignore) setAllLecturers([]);
 				})
 				.finally(() => {
 					if (!ignore) setFetchLoading(false);
 				});
 		} else if (!open) {
-			setEligibleLecturers([]);
+			setAllLecturers([]);
 		}
 		return () => {
 			ignore = true;
 		};
-	}, [open, group?.submissionId, getEligibleReviewers]);
+	}, [open]);
 
 	// Initialize form values
 	useEffect(() => {
@@ -193,6 +202,21 @@ export default function AssignReviewerModal({
 		if (loading || fetchLoading) return 'reviewer2-loading';
 		return `reviewer2-${reviewer1Value || 'none'}-${renderKey}`;
 	};
+
+	// Get eligible lecturers (filter out those already assigned as reviewers)
+	const eligibleLecturers = useMemo((): Lecturer[] => {
+		if (!group || !allLecturers.length) return allLecturers;
+
+		// Get current reviewer IDs from the group
+		const currentReviewerIds = (group.reviewers || []).map((reviewer) => {
+			return typeof reviewer === 'string' ? reviewer : reviewer.id;
+		});
+
+		// Filter out lecturers who are already assigned as reviewers
+		return allLecturers.filter(
+			(lecturer) => !currentReviewerIds.includes(lecturer.id),
+		);
+	}, [allLecturers, group]);
 
 	// Compute reviewer options using useMemo for performance
 	const reviewer1Options = useMemo((): LecturerOption[] => {
@@ -419,6 +443,15 @@ export default function AssignReviewerModal({
 								if (!value) {
 									return Promise.resolve(); // Allow empty for save draft
 								}
+
+								const reviewer2 =
+									reviewer2Value || form.getFieldValue('reviewer2');
+								if (value && value === reviewer2) {
+									return Promise.reject(
+										new Error('Reviewer 1 must be different from Reviewer 2'),
+									);
+								}
+
 								return Promise.resolve();
 							},
 						},
