@@ -31,6 +31,7 @@ interface ActionButtonProps {
 	approveLoading?: boolean;
 	rejectLoading?: boolean;
 	publishLoading?: boolean;
+	duplicateLoading?: boolean;
 	mode?: 'thesis-management' | 'publish-list';
 	isPublished?: boolean;
 	canUnpublish?: boolean;
@@ -54,13 +55,18 @@ export default function ActionButtons({
 	approveLoading = false,
 	rejectLoading = false,
 	publishLoading = false,
+	duplicateLoading = false,
 	mode = 'thesis-management',
 	isPublished = false,
 	canUnpublish = true,
 }: Readonly<ActionButtonProps>) {
+	// Show duplicate check button for lecturers and moderators
+	const showDuplicateCheck =
+		(canModerate || isThesisOwner) &&
+		(status === THESIS_STATUS.PENDING || status === THESIS_STATUS.NEW);
+
 	// Determine if we should show moderator actions (Approve/Reject)
-	// BUSINESS LOGIC: Only show for "Pending" status (already submitted for review)
-	// "New" status means not submitted yet, so no need for approval
+	// BUSINESS LOGIC: Only show for "Pending" status and only for moderators (not thesis owners)
 	const showModeratorActions = canModerate && status === THESIS_STATUS.PENDING;
 
 	// SECURITY FIX: Only show register submit button for thesis owner (in thesis management mode)
@@ -140,13 +146,16 @@ export default function ActionButtons({
 			) : (
 				<Row justify="space-between">
 					<Col>
-						<Button
-							icon={<SearchOutlined />}
-							onClick={onToggleDuplicate}
-							type="primary"
-						>
-							Duplicate Thesis Detection
-						</Button>
+						{showDuplicateCheck && (
+							<Button
+								icon={<SearchOutlined />}
+								onClick={onToggleDuplicate}
+								type="primary"
+								loading={duplicateLoading}
+							>
+								Check Similar Thesis
+							</Button>
+						)}
 					</Col>
 					<Col>
 						<Space>

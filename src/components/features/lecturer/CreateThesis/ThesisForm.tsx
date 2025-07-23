@@ -1,11 +1,9 @@
 'use client';
 
-import { SearchOutlined } from '@ant-design/icons';
 import { Button, Col, Form, Input, Row, Select, TreeSelect } from 'antd';
 import { useEffect, useState } from 'react';
 
 import { FormLabel } from '@/components/common/FormLabel';
-import ThesisDuplicateList from '@/components/features/lecturer/CreateThesis/ThesisDuplicateList';
 import SupportingDocumentField from '@/components/features/lecturer/CreateThesis/ThesisFileUpload';
 import { getSortedDomains } from '@/lib/constants/domains';
 import { useSkillSetStore } from '@/store';
@@ -37,7 +35,6 @@ export default function ThesisForm({
 	loading = false,
 }: Props) {
 	const [form] = Form.useForm();
-	const [showDuplicateList, setShowDuplicateList] = useState(false);
 	const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>(null);
 	const [hasFileChanged, setHasFileChanged] = useState(false);
 
@@ -265,21 +262,7 @@ export default function ThesisForm({
 				/>
 			</div>
 
-			{showDuplicateList && (
-				<div style={{ marginBottom: 24 }}>
-					<ThesisDuplicateList />
-				</div>
-			)}
-
-			<Row justify="space-between" align="middle">
-				<Col>
-					<Button
-						icon={<SearchOutlined />}
-						onClick={() => setShowDuplicateList(!showDuplicateList)}
-					>
-						{showDuplicateList ? 'Hide' : 'Check'} Similar Theses
-					</Button>
-				</Col>
+			<Row justify="end" align="middle">
 				<Col>
 					<Button
 						type="primary"
