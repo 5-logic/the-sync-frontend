@@ -142,21 +142,29 @@ export default function RequestsDialog({
 	};
 
 	const handleRejectInvite = async (requestId: string) => {
-		// Use 'Cancelled' for student rejecting invite, 'Rejected' for group leader cancelling invite
-		const status = config.mode === 'student' ? 'Cancelled' : 'Rejected';
+		// Student rejecting invitation - use 'Rejected'
+		const status = 'Rejected';
 		const success = await updateRequestStatus(requestId, status);
 		if (success) {
-			const message =
-				config.mode === 'student'
-					? 'Invitation rejected successfully!'
-					: 'Invitation cancelled successfully!';
+			const message = 'Invitation rejected successfully!';
 			showNotification.success(message);
 			onRequestsUpdate?.();
 		} else {
-			const message =
-				config.mode === 'student'
-					? 'Failed to reject invitation. Please try again.'
-					: 'Failed to cancel invitation. Please try again.';
+			const message = 'Failed to reject invitation. Please try again.';
+			showNotification.error(message);
+		}
+	};
+
+	const handleCancelInvite = async (requestId: string) => {
+		// Group leader cancelling invitation - use 'Cancelled'
+		const status = 'Cancelled';
+		const success = await updateRequestStatus(requestId, status);
+		if (success) {
+			const message = 'Invitation cancelled successfully!';
+			showNotification.success(message);
+			onRequestsUpdate?.();
+		} else {
+			const message = 'Failed to cancel invitation. Please try again.';
 			showNotification.error(message);
 		}
 	};
@@ -270,7 +278,7 @@ export default function RequestsDialog({
 				description: `Student: ${targetName}`,
 				okText: 'Yes, Cancel',
 				okType: 'danger' as const,
-				onConfirm: () => handleRejectInvite(requestId),
+				onConfirm: () => handleCancelInvite(requestId), // Use handleCancelInvite instead
 			},
 			viewDetailAction: createViewDetailAction(request),
 		};

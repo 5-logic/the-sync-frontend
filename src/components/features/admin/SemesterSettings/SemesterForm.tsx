@@ -70,6 +70,15 @@ const SemesterForm = memo<SemesterFormProps>(({ form, onSuccess }) => {
 		form.resetFields();
 	}, [form, clearError]);
 
+	// Set default values for new semester
+	useEffect(() => {
+		form.setFieldsValue({
+			maxGroup: 5,
+			defaultThesesPerLecturer: 4,
+			maxThesesPerLecturer: 6,
+		});
+	}, [form]);
+
 	const nameRules = [
 		{ required: true, message: 'Semester name is required' },
 		{ max: 100, message: 'Name must be less than 100 characters' },
@@ -108,7 +117,7 @@ const SemesterForm = memo<SemesterFormProps>(({ form, onSuccess }) => {
 								<Input
 									placeholder="Enter semester name (e.g., Summer 2025)"
 									maxLength={100}
-									disabled={creating} // Use creating from store
+									disabled={creating}
 								/>
 							</Form.Item>
 						</Col>
@@ -127,7 +136,7 @@ const SemesterForm = memo<SemesterFormProps>(({ form, onSuccess }) => {
 								<Input
 									placeholder="Enter semester code (e.g., SU25)"
 									maxLength={20}
-									disabled={creating} // Use creating from store
+									disabled={creating}
 								/>
 							</Form.Item>
 						</Col>
@@ -137,48 +146,89 @@ const SemesterForm = memo<SemesterFormProps>(({ form, onSuccess }) => {
 						<Title level={5} style={{ marginBottom: 8 }}>
 							Semester Policy
 						</Title>
-						<Form.Item
-							name="maxGroup"
-							label={FormLabel({
-								text: 'Maximum Number of Groups',
-								isBold: true,
-							})}
-						>
-							<InputNumber
-								placeholder="Enter maximum number of groups"
-								min={1}
-								max={1000}
-								precision={0}
-								parser={(value) =>
-									Number((value ?? '').replace(/\$\s?|(,*)/g, ''))
-								}
-								formatter={(value) =>
-									value !== undefined && value !== null
-										? Number(value).toLocaleString('en-US')
-										: ''
-								}
-								style={{ width: '100%' }}
-								disabled={creating} // Use creating from store
-								controls={true}
-								keyboard={true}
-								stringMode={false}
-							/>
-						</Form.Item>
+						<Row gutter={16}>
+							<Col xs={24} md={8}>
+								<Form.Item
+									name="maxGroup"
+									label={FormLabel({
+										text: 'Maximum Number of Groups',
+										isBold: true,
+									})}
+								>
+									<InputNumber
+										placeholder="Enter maximum number of groups"
+										min={1}
+										max={1000}
+										precision={0}
+										parser={(value) =>
+											Number((value ?? '').replace(/\$\s?|(,*)/g, ''))
+										}
+										formatter={(value) =>
+											value !== undefined && value !== null
+												? Number(value).toLocaleString('en-US')
+												: ''
+										}
+										style={{ width: '100%' }}
+										disabled={creating}
+										controls={true}
+										keyboard={true}
+										stringMode={false}
+									/>
+								</Form.Item>
+							</Col>
+							<Col xs={24} md={8}>
+								<Form.Item
+									name="defaultThesesPerLecturer"
+									label={FormLabel({
+										text: 'Default Theses per Lecturer',
+										isBold: true,
+									})}
+									rules={[{ required: true, message: 'Required' }]}
+								>
+									<InputNumber
+										min={1}
+										max={20}
+										precision={0}
+										style={{ width: '100%' }}
+										disabled={creating}
+										controls={true}
+										keyboard={true}
+									/>
+								</Form.Item>
+							</Col>
+							<Col xs={24} md={8}>
+								<Form.Item
+									name="maxThesesPerLecturer"
+									label={FormLabel({
+										text: 'Max Theses per Lecturer',
+										isBold: true,
+									})}
+									rules={[{ required: true, message: 'Required' }]}
+								>
+									<InputNumber
+										min={1}
+										max={50}
+										precision={0}
+										style={{ width: '100%' }}
+										disabled={creating}
+										controls={true}
+										keyboard={true}
+									/>
+								</Form.Item>
+							</Col>
+						</Row>
 					</Space>
 
 					<Row justify="end">
 						<Space>
-							<Button
-								onClick={handleClearForm}
-								disabled={creating} // Use creating from store
-							>
+							<Button onClick={handleClearForm} disabled={creating}>
 								Clear Form
 							</Button>
 							<Button
 								type="primary"
 								htmlType="submit"
 								disabled={!isFormValid}
-								loading={creating} // Use creating from store
+								loading={creating}
 							>
 								Create Semester
 							</Button>

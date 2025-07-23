@@ -4,9 +4,9 @@ import { Card, Col, Row, Space, Steps, Typography } from 'antd';
 import { useMemo, useState } from 'react';
 
 import { Header } from '@/components/common/Header';
+import ProgressOverviewCard from '@/components/common/ProgressOverview/ProgressOverviewCard';
 import GroupSearchTable from '@/components/features/lecturer/GroupProgess/GroupSearchTable';
 import MilestoneDetailCard from '@/components/features/lecturer/GroupProgess/MilestoneDetailCard';
-import ProgressOverviewCard from '@/components/features/lecturer/GroupProgess/ProgressOverviewCard';
 import { FullMockGroup, allMockGroups, mockReviewGroups } from '@/data/group';
 
 const { Text } = Typography;
@@ -34,7 +34,7 @@ export default function GroupProgressPage() {
 
 			const nameMatch = name.toLowerCase().includes(keyword);
 			const titleMatch = title.toLowerCase().includes(keyword);
-			return Boolean(nameMatch ? true : titleMatch);
+			return nameMatch || titleMatch;
 		});
 	}, [searchText]);
 
@@ -59,8 +59,7 @@ export default function GroupProgressPage() {
 			>
 				<Header
 					title="Group Progress"
-					description="The instructor monitors the groups progress, closely following
-						important milestones to evaluate the groups performance."
+					description="The instructor monitors the groups progress, closely following important milestones to evaluate the group's performance."
 				/>
 
 				<GroupSearchTable
@@ -110,7 +109,8 @@ export default function GroupProgressPage() {
 								/>
 							</Col>
 							<Col xs={24} md={8}>
-								<ProgressOverviewCard group={selectedGroup} />
+								{/* Không cần truyền group nữa */}
+								<ProgressOverviewCard />
 							</Col>
 						</Row>
 					</>

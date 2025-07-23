@@ -1,5 +1,5 @@
 import { createMetadata } from '@/app/metadata';
-import ProfileSettingsPage from '@/components/features/lecturer/ProfileSetting';
+import ProfileSettingsClient from '@/components/pages/lecturer/ProfileSettingsClient';
 
 export const metadata = createMetadata({
 	title: 'Lecturer Profile Settings',
@@ -8,5 +8,5 @@ export const metadata = createMetadata({
 });
 
 export default function LecturerProfileSettingsPage() {
-	return <ProfileSettingsPage />;
+	return <ProfileSettingsClient />;
 }

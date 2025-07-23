@@ -8,6 +8,7 @@ import { HttpInterceptors } from '@/lib/services/http/interceptors';
  * Uses modular interceptors from ./http/interceptors.ts
  * This is the single source of truth for HTTP client configuration
  */
+
 const httpClient = axios.create({
 	baseURL: API_BASE_URL,
 	headers: {
