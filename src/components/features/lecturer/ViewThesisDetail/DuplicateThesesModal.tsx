@@ -1,6 +1,6 @@
 'use client';
 
-import { Col, Modal, Row, Typography } from 'antd';
+import { Col, Modal, Row, Spin, Typography } from 'antd';
 
 import DuplicateThesisCard from '@/components/features/lecturer/ViewThesisDetail/DuplicateThesisCard';
 import { DuplicateThesis } from '@/lib/services/ai-duplicate.service';
@@ -18,6 +18,40 @@ export default function DuplicateThesesModal({
 	duplicateTheses,
 	loading,
 }: Props) {
+	// Determine what content to display
+	const renderContent = () => {
+		if (loading) {
+			return (
+				<div style={{ textAlign: 'center', padding: '40px 0' }}>
+					<Spin size="large" />
+					<div style={{ marginTop: 16 }}>
+						<Typography.Text>Loading similar theses...</Typography.Text>
+					</div>
+				</div>
+			);
+		}
+
+		if (duplicateTheses.length === 0) {
+			return (
+				<div style={{ textAlign: 'center', padding: '40px 0' }}>
+					<Typography.Text type="secondary">
+						No similar theses found.
+					</Typography.Text>
+				</div>
+			);
+		}
+
+		return (
+			<Row gutter={[16, 16]}>
+				{duplicateTheses.map((duplicateThesis) => (
+					<Col xs={24} sm={12} lg={8} key={duplicateThesis.id}>
+						<DuplicateThesisCard duplicateThesis={duplicateThesis} />
+					</Col>
+				))}
+			</Row>
+		);
+	};
+
 	return (
 		<Modal
 			title="Similar Theses Detected"
@@ -36,25 +70,7 @@ export default function DuplicateThesesModal({
 				</Typography.Text>
 			</div>
 
-			{loading ? (
-				<div style={{ textAlign: 'center', padding: '40px 0' }}>
-					<Typography.Text>Loading similar theses...</Typography.Text>
-				</div>
-			) : duplicateTheses.length === 0 ? (
-				<div style={{ textAlign: 'center', padding: '40px 0' }}>
-					<Typography.Text type="secondary">
-						No similar theses found.
-					</Typography.Text>
-				</div>
-			) : (
-				<Row gutter={[16, 16]}>
-					{duplicateTheses.map((duplicateThesis) => (
-						<Col xs={24} sm={12} lg={8} key={duplicateThesis.id}>
-							<DuplicateThesisCard duplicateThesis={duplicateThesis} />
-						</Col>
-					))}
-				</Row>
-			)}
+			{renderContent()}
 		</Modal>
 	);
 }
