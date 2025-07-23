@@ -5,11 +5,11 @@ import {
 	addHeadersAndData,
 	applyCellStyling,
 	createMergesAndGroupBoundaries,
-	generateSubtitle,
 	getDataRowStyle,
 	getHeaderStyle,
 	getSubtitleStyle,
 	getTitleStyle,
+	initializeExcelWorksheet,
 } from '@/lib/utils/excelStyles';
 
 export interface DefenseResultsExportData {
@@ -57,19 +57,8 @@ export const exportDefenseResultsToExcel = ({
 				: selectedSemester.toUpperCase();
 		const title = `CAPSTONE DEFENSE RESULTS FOR ${semesterText}`;
 
-		// Create workbook and worksheet
-		const wb = XLSX.utils.book_new();
-		const ws = XLSX.utils.aoa_to_sheet([]);
-
-		// Add title row
-		XLSX.utils.sheet_add_aoa(ws, [[title]], { origin: 'A1' });
-
-		// Add subtitle row with decision information using current date
-		const subtitle = generateSubtitle();
-		XLSX.utils.sheet_add_aoa(ws, [[subtitle]], { origin: 'A2' });
-
-		// Add empty row
-		XLSX.utils.sheet_add_aoa(ws, [[]], { origin: 'A3' });
+		// Initialize Excel workbook and worksheet with title and subtitle
+		const { wb, ws } = initializeExcelWorksheet(title);
 
 		// Prepare data for Excel export
 		const exportData: DefenseResultsExportData[] = data.map((item, index) => ({

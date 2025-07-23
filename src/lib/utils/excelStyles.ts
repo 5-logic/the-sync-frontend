@@ -122,6 +122,24 @@ export const generateSubtitle = () => {
 	return `(Issued under Decision No. keynum/QĐ-FPTUBĐ dated ${day} month ${month} year ${year} of the Rector of FPT University)`;
 };
 
+export const initializeExcelWorksheet = (title: string) => {
+	// Create workbook and worksheet
+	const wb = XLSX.utils.book_new();
+	const ws = XLSX.utils.aoa_to_sheet([]);
+
+	// Add title row
+	XLSX.utils.sheet_add_aoa(ws, [[title]], { origin: 'A1' });
+
+	// Add subtitle row with decision information using current date
+	const subtitle = generateSubtitle();
+	XLSX.utils.sheet_add_aoa(ws, [[subtitle]], { origin: 'A2' });
+
+	// Add empty row
+	XLSX.utils.sheet_add_aoa(ws, [[]], { origin: 'A3' });
+
+	return { wb, ws };
+};
+
 export const addHeadersAndData = (
 	ws: XLSX.WorkSheet,
 	exportData: Array<Record<string, string | number | boolean>>,
