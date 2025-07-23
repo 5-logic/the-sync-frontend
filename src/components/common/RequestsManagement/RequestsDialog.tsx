@@ -143,9 +143,7 @@ export default function RequestsDialog({
 
 	const handleRejectInvite = async (requestId: string) => {
 		// Student rejecting invitation - use 'Rejected'
-		console.log('handleRejectInvite called - config.mode:', config.mode); // Debug
 		const status = 'Rejected';
-		console.log('Status to send:', status); // Debug
 		const success = await updateRequestStatus(requestId, status);
 		if (success) {
 			const message = 'Invitation rejected successfully!';
@@ -159,9 +157,7 @@ export default function RequestsDialog({
 
 	const handleCancelInvite = async (requestId: string) => {
 		// Group leader cancelling invitation - use 'Cancelled'
-		console.log('handleCancelInvite called - config.mode:', config.mode); // Debug
 		const status = 'Cancelled';
-		console.log('Status to send:', status); // Debug
 		const success = await updateRequestStatus(requestId, status);
 		if (success) {
 			const message = 'Invitation cancelled successfully!';

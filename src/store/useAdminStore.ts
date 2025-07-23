@@ -96,7 +96,6 @@ export const useAdminStore = create<AdminState>()(
 					try {
 						set({ loading: true, error: null });
 						const response = await adminService.findOne();
-						console.log('AdminService.findOne response:', response);
 						if (response.success && response.data) {
 							set({ admin: response.data, loading: false, lastFetched: now });
 							cacheUtils.set(ADMIN_CACHE_KEY, response.data.id, response.data);

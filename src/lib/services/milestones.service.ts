@@ -76,6 +76,16 @@ class MilestoneService {
 		);
 		return response.data;
 	}
+
+	/**
+	 * Get milestones by semester ID
+	 */
+	async findBySemester(semesterId: string): Promise<ApiResponse<Milestone[]>> {
+		const response = await httpClient.get<ApiResponse<Milestone[]>>(
+			`${this.baseUrl}/semester/${semesterId}`,
+		);
+		return response.data;
+	}
 }
 
 // Export a singleton instance

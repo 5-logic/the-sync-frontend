@@ -88,6 +88,11 @@ const DYNAMIC_ROUTE_PATTERNS: Array<{
 
 	// Student dynamic routes - add patterns for any dynamic routes here
 	{
+		pattern: /^\/student\/list-thesis\/(.+)$/,
+		getTitle: () => 'Thesis Detail',
+		getParentPath: () => '/student/list-thesis',
+	},
+	{
 		pattern: /^\/student\/group-detail\/(.+)$/,
 		getTitle: () => 'Group Detail',
 		getParentPath: () => '/student',
