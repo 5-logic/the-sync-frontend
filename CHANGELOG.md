@@ -9,6 +9,117 @@ For more information about this project, see the [README](./README.md).
 
 ---
 
+## [0.6.0] - 2025-07-23
+
+### Added
+
+#### Admin Dashboard & Capstone Management
+
+- Complete Capstone Defense Results page with thesis table and import/export functionality ([#270](https://github.com/5-logic/the-sync-frontend/pull/270))
+- Capstone Project Management page with comprehensive group management ([#244](https://github.com/5-logic/the-sync-frontend/pull/244), [#253](https://github.com/5-logic/the-sync-frontend/pull/253))
+- Enhanced admin dashboard with statistics and group table information
+- Excel export functionality for defense results and group management data
+- Advanced filtering and search capabilities for capstone project management
+
+#### Lecturer Dashboard & Tools
+
+- Complete lecturer dashboard with statistics, assigned groups, and thesis management ([#252](https://github.com/5-logic/the-sync-frontend/pull/252), [#257](https://github.com/5-logic/the-sync-frontend/pull/257))
+- Moderator dashboard page with supervisor load charts and progress overview ([#242](https://github.com/5-logic/the-sync-frontend/pull/242))
+- Enhanced supervisor assignment with draft assignments and bulk operations ([#209](https://github.com/5-logic/the-sync-frontend/pull/209), [#210](https://github.com/5-logic/the-sync-frontend/pull/210))
+- Comprehensive checklist management with Excel import/export capabilities ([#258](https://github.com/5-logic/the-sync-frontend/pull/258))
+- AI-powered thesis duplicate detection system ([#268](https://github.com/5-logic/the-sync-frontend/pull/268), [#269](https://github.com/5-logic/the-sync-frontend/pull/269), [#271](https://github.com/5-logic/the-sync-frontend/pull/271))
+
+#### Student Progress & Milestone Management
+
+- Enhanced track progress page with milestone detail management ([#226](https://github.com/5-logic/the-sync-frontend/pull/226), [#241](https://github.com/5-logic/the-sync-frontend/pull/241))
+- Advanced milestone submission system with file upload and document management
+- Milestone progress tracking with timeline visualization
+- Enhanced milestone detail cards with submission status and file handling
+- Document upload functionality for milestone submissions
+
+#### File Management & Upload System
+
+- Advanced document management system with drag-and-drop file upload
+- File item components for enhanced file display and interaction
+- Document upload buttons with progress tracking
+- Template download functionality for milestone submissions
+- Enhanced file handling for thesis supporting documents
+
+#### Dashboard Components & Analytics
+
+- Comprehensive dashboard statistics for all user roles
+- Supervisor load charts with visual progress indicators
+- Progress overview cards with milestone tracking
+- Group table information with advanced filtering
+- Version tag component with animated styling effects
+
+### Changed
+
+#### Enhanced User Interface
+
+- Improved layout and styling across all dashboard components
+- Enhanced responsive design for mobile and desktop views
+- Updated navigation breadcrumbs with dynamic route patterns
+- Current semester tag in header for improved context awareness
+- Enhanced sidebar with version information display
+
+#### API & Schema Improvements
+
+- **Checklist Schema:** Enhanced with milestone relationships and document support
+- **Supervision Schema:** New comprehensive schema for supervisor assignments and bulk operations
+- **Submission Schema:** Enhanced with document and status field support
+- **Group Schema:** Added extended group data with member and thesis information
+- **Milestone Schema:** Updated with document upload and submission tracking
+
+#### Service Layer Enhancements
+
+- **ChecklistService & ChecklistItemService:** Complete CRUD operations with Excel import/export
+- **SupervisionService:** Enhanced with bulk assignment and draft management capabilities
+- **AiDuplicateService:** New service for AI-powered thesis duplicate detection
+- **ThesesService:** Enhanced with relations support and duplicate checking
+- **MilestoneService:** Added submission and document management capabilities
+
+#### Performance & Architecture
+
+- Enhanced store management with specialized stores for supervision, checklist, and draft assignments
+- Improved caching strategies with background refresh capabilities
+- Better state management with optimistic updates
+- Enhanced loading states with skeleton components
+- Improved error handling and user feedback systems
+
+### Fixed
+
+- Fixed row key type issues in group overview tables for better flexibility
+- Improved form validation and error handling across all components
+- Enhanced table pagination and sorting functionality
+- Fixed responsive design issues on mobile devices
+- Improved accessibility and keyboard navigation
+- Fixed memory leaks in background processes and polling
+
+### Technical Details
+
+- **New Services:** `ChecklistService`, `ChecklistItemService`, `AiDuplicateService`
+- **Enhanced Stores:** `useChecklistStore`, `useAssignSupervisorStore`, `useDraftAssignmentStore`, `useSupervisionStore`
+- **New Components:** Dashboard components, file upload system, milestone detail management
+- **Utility Functions:** Excel export utilities, defense results exporter, document management helpers
+- **Enhanced Hooks:** `useAssignSupervisor`, `useMilestoneProgress`, `useAiDuplicateCheck`, `useCurrentSemester`
+
+### API Breaking Changes
+
+- **Supervision Management:** New bulk assignment endpoints with enhanced request/response structures
+- **Checklist Management:** Enhanced API with milestone relationships and document support
+- **Milestone Submissions:** New submission tracking with document and status management
+- **Dashboard Analytics:** New endpoints for statistics and progress tracking
+
+### Migration Notes
+
+- Users should refresh browser cache for new dashboard components and styling
+- Excel templates have been updated with new field requirements for checklist import
+- Supervisor assignment workflows now support draft and bulk operations
+- Milestone submission system requires updated document handling
+
+---
+
 ## [0.5.0] - 2025-07-16
 
 ### Added
@@ -526,4 +637,3 @@ Changes that are committed but not yet released.
 - [0.3.0](https://github.com/5-logic/the-sync-frontend/releases/tag/0.3.0)
 - [0.2.0](https://github.com/5-logic/the-sync-frontend/releases/tag/0.2.0)
 - [0.1.0](https://github.com/5-logic/the-sync-frontend/releases/tag/0.1.0)
-

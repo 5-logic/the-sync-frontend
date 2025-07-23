@@ -11,7 +11,7 @@ interface Props {
 	readonly data: SupervisorAssignmentData[];
 	readonly columns: ColumnsType<SupervisorAssignmentData>;
 	readonly loading?: boolean;
-	readonly rowKey?: keyof SupervisorAssignmentData;
+	readonly rowKey?: string | ((record: SupervisorAssignmentData) => string);
 	readonly onChange?: TableProps<SupervisorAssignmentData>['onChange'];
 }
 
@@ -23,7 +23,7 @@ const GroupOverviewTable = memo<Props>(
 	({ data, columns, loading = false, rowKey = 'id', onChange }) => {
 		return (
 			<Table
-				rowKey={rowKey as string}
+				rowKey={rowKey}
 				columns={columns}
 				dataSource={data}
 				loading={loading}
