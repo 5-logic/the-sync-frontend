@@ -7,6 +7,7 @@ import {
 	createMergesAndGroupBoundaries,
 	getDataRowStyle,
 	getHeaderStyle,
+	getSubtitleStyle,
 	getTitleStyle,
 } from '@/lib/utils/excelStyles';
 
@@ -62,8 +63,16 @@ export const exportDefenseResultsToExcel = ({
 		// Add title row
 		XLSX.utils.sheet_add_aoa(ws, [[title]], { origin: 'A1' });
 
+		// Add subtitle row
+		const exportDate = new Date();
+		const day = exportDate.getDate();
+		const month = exportDate.getMonth() + 1; // getMonth() returns 0-11
+		const year = exportDate.getFullYear();
+		const subtitle = `(Issued under Decision No. keynum/QĐ-FPTUBĐ dated ${day} month ${month} year ${year} of the Rector of FPT University)`;
+		XLSX.utils.sheet_add_aoa(ws, [[subtitle]], { origin: 'A2' });
+
 		// Add empty row
-		XLSX.utils.sheet_add_aoa(ws, [[]], { origin: 'A2' });
+		XLSX.utils.sheet_add_aoa(ws, [[]], { origin: 'A3' });
 
 		// Prepare data for Excel export
 		const exportData: DefenseResultsExportData[] = data.map((item, index) => ({
@@ -76,7 +85,7 @@ export const exportDefenseResultsToExcel = ({
 			Status: statusUpdates[item.studentId] || item.status || 'Pass',
 		}));
 
-		// Add headers and data starting from row 3
+		// Add headers and data starting from row 4
 		addHeadersAndData(ws, exportData);
 
 		// Set column widths for defense results
@@ -135,9 +144,12 @@ const getDefenseResultsCellStyle = (
 		return getTitleStyle('FFE6CC'); // Orange theme for defense results
 	}
 	if (rowIndex === 1) {
-		return {}; // Empty row - no styling
+		return getSubtitleStyle('FFF2E6'); // Light orange theme for subtitle
 	}
 	if (rowIndex === 2) {
+		return {}; // Empty row - no styling (white background, no borders)
+	}
+	if (rowIndex === 3) {
 		return getHeaderStyle('FFF2E6'); // Light orange for header
 	}
 	return getDataRowStyle(rowIndex, groupBoundaries, '808080');
