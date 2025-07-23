@@ -7,6 +7,9 @@ export * from '@/hooks/auth';
 // Lecturer-related hooks
 export * from '@/hooks/lecturer/useAssignSupervisor';
 
+// Semester-related hooks
+export * from '@/hooks/semester';
+
 // UI/Layout hooks
 export * from '@/hooks/ui';
 
