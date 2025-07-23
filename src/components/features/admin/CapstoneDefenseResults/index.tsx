@@ -15,6 +15,7 @@ import {
 	useGroupTableData,
 } from '@/components/features/admin/CapstoneProjectManagement/useGroupTableData';
 import { useDebouncedSearch } from '@/hooks/ui/useDebounce';
+import { exportDefenseResultsToExcel } from '@/lib/utils/defenseResultsExporter';
 import '@/styles/components.css';
 
 const { Text } = Typography;
@@ -42,7 +43,11 @@ const CapstoneDefenseResults = () => {
 	};
 
 	const handleExportExcel = () => {
-		console.log('Exporting to Excel...');
+		exportDefenseResultsToExcel({
+			data: filteredData,
+			selectedSemester,
+			statusUpdates,
+		});
 	};
 
 	const handleRowSelectionChange = (newSelectedKeys: React.Key[]) => {
