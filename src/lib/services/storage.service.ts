@@ -126,4 +126,25 @@ export class StorageService {
 
 		return data.signedUrl;
 	}
+
+	/**
+	 * Extract filename from Supabase URL
+	 */
+	static getFileNameFromUrl(url: string): string {
+		try {
+			// Extract path from URL first
+			const path = url.includes(this.bucketName)
+				? url.split(`${this.bucketName}/`)[1]
+				: url;
+
+			// Get filename from path (remove folder structure)
+			const pathParts = path.split('/');
+			const filename = pathParts[pathParts.length - 1];
+
+			// Remove query parameters if any
+			return filename.split('?')[0];
+		} catch {
+			return 'Unknown file';
+		}
+	}
 }

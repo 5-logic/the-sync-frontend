@@ -1,24 +1,22 @@
 'use client';
 
-import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
+import { DeleteOutlined } from '@ant-design/icons';
 import { Input, Switch, Table, Tag, Tooltip } from 'antd';
 import type { ColumnType } from 'antd/es/table';
-import dayjs from 'dayjs';
 
+import { formatDate } from '@/lib/utils/dateFormat';
 import { ChecklistItem } from '@/schemas/checklist';
 
 interface Props {
 	items: ChecklistItem[];
 	editable?: boolean;
-	allowEdit?: boolean;
-	allowDelete?: boolean;
-	onEdit?: (item: ChecklistItem) => void;
-	onDelete?: (item: ChecklistItem) => void;
+	loading?: boolean;
 	onChangeField?: (
 		id: string,
 		field: keyof ChecklistItem,
 		value: string | boolean,
 	) => void;
+	onDelete?: (item: ChecklistItem) => void;
 }
 
 const priorityColorMap = {
@@ -29,6 +27,7 @@ const priorityColorMap = {
 const getEditableColumns = (
 	onChangeField?: Props['onChangeField'],
 	onDelete?: Props['onDelete'],
+	loading?: boolean,
 ): ColumnType<ChecklistItem>[] => [
 	{
 		title: 'Question',
@@ -37,8 +36,9 @@ const getEditableColumns = (
 		render: (text, record) => (
 			<Input
 				placeholder="Enter item name"
-				value={text}
+				value={text?.trim() === '' ? '' : text || ''}
 				onChange={(e) => onChangeField?.(record.id, 'name', e.target.value)}
+				disabled={loading}
 			/>
 		),
 	},
@@ -53,12 +53,15 @@ const getEditableColumns = (
 				onChange={(e) =>
 					onChangeField?.(record.id, 'description', e.target.value)
 				}
+				disabled={loading}
 			/>
 		),
 	},
 	{
 		title: 'Priority',
 		key: 'priority',
+		align: 'center' as const,
+		width: 120,
 		render: (_, record) => (
 			<Switch
 				checked={record.isRequired}
@@ -67,35 +70,36 @@ const getEditableColumns = (
 				onChange={(checked) =>
 					onChangeField?.(record.id, 'isRequired', checked)
 				}
+				disabled={loading}
 			/>
 		),
 	},
 	{
 		title: 'Action',
 		key: 'action',
-		width: 100,
+		width: 80,
+		align: 'center' as const,
 		render: (_, record) => (
 			<Tooltip title="Delete">
 				<DeleteOutlined
-					style={{ color: '#ff4d4f', cursor: 'pointer' }}
-					onClick={() => onDelete?.(record)}
+					style={{
+						color: loading ? '#d9d9d9' : '#ff4d4f',
+						cursor: loading ? 'not-allowed' : 'pointer',
+					}}
+					onClick={() => !loading && onDelete?.(record)}
 				/>
 			</Tooltip>
 		),
 	},
 ];
 
-const getViewColumns = (
-	allowEdit?: boolean,
-	allowDelete?: boolean,
-	onEdit?: Props['onEdit'],
-	onDelete?: Props['onDelete'],
-): ColumnType<ChecklistItem>[] => {
+const getViewColumns = (): ColumnType<ChecklistItem>[] => {
 	const columns: ColumnType<ChecklistItem>[] = [
 		{
 			title: 'Question',
 			dataIndex: 'name',
 			key: 'name',
+			sorter: (a, b) => (a.name || '').localeCompare(b.name || ''),
 		},
 		{
 			title: 'Description',
@@ -116,47 +120,19 @@ const getViewColumns = (
 			title: 'Created At',
 			dataIndex: 'createdAt',
 			key: 'createdAt',
-			render: (value: Date) => dayjs(value).format('YYYY-MM-DD HH:mm'),
+			render: (value: Date) => formatDate(value),
+			sorter: (a, b) =>
+				new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
 		},
 		{
 			title: 'Updated At',
 			dataIndex: 'updatedAt',
 			key: 'updatedAt',
-			render: (value: Date) => dayjs(value).format('YYYY-MM-DD HH:mm'),
+			render: (value: Date) => formatDate(value),
+			sorter: (a, b) =>
+				new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime(),
 		},
 	];
-
-	if (allowEdit || allowDelete) {
-		columns.push({
-			title: 'Action',
-			key: 'action',
-			width: 100,
-			render: (_, record) => (
-				<>
-					{allowEdit && (
-						<Tooltip title="Edit">
-							<EditOutlined
-								style={{
-									color: '#1890ff',
-									marginRight: 12,
-									cursor: 'pointer',
-								}}
-								onClick={() => onEdit?.(record)}
-							/>
-						</Tooltip>
-					)}
-					{allowDelete && (
-						<Tooltip title="Delete">
-							<DeleteOutlined
-								style={{ color: '#ff4d4f', cursor: 'pointer' }}
-								onClick={() => onDelete?.(record)}
-							/>
-						</Tooltip>
-					)}
-				</>
-			),
-		});
-	}
 
 	return columns;
 };
@@ -164,15 +140,13 @@ const getViewColumns = (
 export default function ChecklistItemsTable({
 	items,
 	editable = false,
-	allowEdit,
-	allowDelete,
-	onEdit,
+	loading = false,
 	onDelete,
 	onChangeField,
 }: Readonly<Props>) {
 	const columns = editable
-		? getEditableColumns(onChangeField, onDelete)
-		: getViewColumns(allowEdit, allowDelete, onEdit, onDelete);
+		? getEditableColumns(onChangeField, onDelete, loading)
+		: getViewColumns();
 
 	return (
 		<Table
@@ -180,6 +154,7 @@ export default function ChecklistItemsTable({
 			dataSource={items}
 			columns={columns}
 			pagination={false}
+			loading={loading}
 		/>
 	);
 }

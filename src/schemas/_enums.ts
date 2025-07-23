@@ -35,6 +35,7 @@ export const ChecklistReviewAcceptanceSchema = z.enum([
 	'No',
 	'NotAvailable',
 ]);
+export const SubmissionStatusSchema = z.enum(['Submitted', 'Not Submitted']);
 
 // Export inferred types
 export type Gender = z.infer<typeof GenderSchema>;
@@ -48,3 +49,4 @@ export type EnrollmentStatus = z.infer<typeof EnrollmentStatusSchema>;
 export type ChecklistReviewAcceptance = z.infer<
 	typeof ChecklistReviewAcceptanceSchema
 >;
+export type SubmissionStatus = z.infer<typeof SubmissionStatusSchema>;

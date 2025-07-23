@@ -1,6 +1,33 @@
 import httpClient from '@/lib/services/_httpClient';
 import { ApiResponse } from '@/schemas/_common';
-import { Thesis, ThesisCreate, ThesisUpdate } from '@/schemas/thesis';
+import {
+	Thesis,
+	ThesisCreate,
+	ThesisUpdate,
+	ThesisWithRelations,
+} from '@/schemas/thesis';
+
+// Enhanced thesis interface with supervision and group information
+export interface ThesisWithGroup extends Thesis {
+	supervisor: {
+		id: string;
+		fullName: string;
+	} | null;
+	group: {
+		id: string;
+		name: string;
+		memberCount: number;
+	} | null;
+	supervisions: Array<{
+		id: string;
+		lecturer: {
+			id: string;
+			fullName: string;
+			email: string;
+		};
+		status: 'Active' | 'Inactive';
+	}>;
+}
 
 // Review thesis interface
 interface ReviewThesisDto {
@@ -15,9 +42,28 @@ class ThesisService {
 		return response.data;
 	}
 
+	/**
+	 * Get all theses with supervision and group information for assign supervisor page
+	 */
+	async findAllWithSupervision(): Promise<ApiResponse<ThesisWithGroup[]>> {
+		const response = await httpClient.get<ApiResponse<ThesisWithGroup[]>>(
+			`${this.baseUrl}?include=supervision,group`,
+		);
+		return response.data;
+	}
+
 	async findOne(id: string): Promise<ApiResponse<Thesis>> {
 		const response = await httpClient.get<ApiResponse<Thesis>>(
 			`${this.baseUrl}/${id}`,
+		);
+		return response.data;
+	}
+
+	async findOneWithRelations(
+		id: string,
+	): Promise<ApiResponse<ThesisWithRelations>> {
+		const response = await httpClient.get<ApiResponse<ThesisWithRelations>>(
+			`${this.baseUrl}/${id}?include=lecturer,skills`,
 		);
 		return response.data;
 	}

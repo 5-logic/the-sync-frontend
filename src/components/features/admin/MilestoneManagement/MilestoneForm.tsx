@@ -5,9 +5,10 @@ import { FormInstance } from 'antd/es/form';
 import dayjs, { Dayjs } from 'dayjs';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import { FormLabel } from '@/components/common/FormLabel';
+import { DocumentUploadSection } from '@/components/features/admin/MilestoneManagement/DocumentUploadSection';
 import { SEMESTER_STATUS_TAGS } from '@/lib/constants/semester';
 import { DATE_FORMAT } from '@/lib/utils/dateFormat';
 import { Milestone } from '@/schemas/milestone';
@@ -26,6 +27,8 @@ type Props = Readonly<{
 	milestone?: Milestone | null; // For edit mode
 	disabled?: boolean;
 	showSemesterField?: boolean; // Control visibility of semester field
+	files?: File[]; // For files state
+	onFilesChange?: (files: File[]) => void; // Callback for files change
 }>;
 
 export default function MilestoneForm({
@@ -36,8 +39,17 @@ export default function MilestoneForm({
 	milestone = null,
 	disabled = false,
 	showSemesterField = true,
+	files = [],
+	onFilesChange,
 }: Props) {
 	const isEditMode = !!milestone;
+
+	// State for managing files locally if no callback provided
+	const [localFiles, setLocalFiles] = useState<File[]>(files);
+
+	// Use provided callback or local state handler
+	const handleFilesChange = onFilesChange || setLocalFiles;
+	const currentFiles = onFilesChange ? files : localFiles;
 
 	// Validation function to check date overlap
 	const checkDateOverlap = (
@@ -182,6 +194,9 @@ export default function MilestoneForm({
 				semesterId: milestone.semesterId,
 				duration: [dayjs(milestone.startDate), dayjs(milestone.endDate)],
 			});
+
+			// Note: For files, we can't restore File objects from milestone.documents
+			// This would only be relevant for edit mode, which typically doesn't need file re-upload
 		}
 	}, [isEditMode, milestone, form]);
 
@@ -275,6 +290,19 @@ export default function MilestoneForm({
 					</Form.Item>
 				</Col>
 			</Row>
+
+			{/* Document Upload Section - Only show in create mode */}
+			{onFilesChange && (
+				<Row style={{ marginTop: 16 }}>
+					<Col span={24}>
+						<DocumentUploadSection
+							files={currentFiles}
+							onFilesChange={handleFilesChange}
+							disabled={disabled}
+						/>
+					</Col>
+				</Row>
+			)}
 		</Form>
 	);
 }

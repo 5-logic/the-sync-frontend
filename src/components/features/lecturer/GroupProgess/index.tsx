@@ -4,9 +4,9 @@ import { Card, Col, Row, Space, Steps, Typography } from 'antd';
 import { useMemo, useState } from 'react';
 
 import { Header } from '@/components/common/Header';
+import ProgressOverviewCard from '@/components/common/ProgressOverview/ProgressOverviewCard';
 import GroupSearchTable from '@/components/features/lecturer/GroupProgess/GroupSearchTable';
 import MilestoneDetailCard from '@/components/features/lecturer/GroupProgess/MilestoneDetailCard';
-import ProgressOverviewCard from '@/components/features/lecturer/GroupProgess/ProgressOverviewCard';
 import { FullMockGroup, allMockGroups, mockReviewGroups } from '@/data/group';
 
 const { Text } = Typography;
