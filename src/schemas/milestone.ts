@@ -7,6 +7,7 @@ export const MilestoneSchema = z.object({
 	endDate: z.date(),
 	semesterId: z.string().uuid(),
 	checklistId: z.string().uuid().nullable().optional(),
+	documents: z.array(z.string()).optional(),
 	createdAt: z.date(),
 	updatedAt: z.date(),
 });
