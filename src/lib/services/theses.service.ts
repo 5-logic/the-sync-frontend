@@ -1,6 +1,11 @@
 import httpClient from '@/lib/services/_httpClient';
 import { ApiResponse } from '@/schemas/_common';
-import { Thesis, ThesisCreate, ThesisUpdate } from '@/schemas/thesis';
+import {
+	Thesis,
+	ThesisCreate,
+	ThesisUpdate,
+	ThesisWithRelations,
+} from '@/schemas/thesis';
 
 // Enhanced thesis interface with supervision and group information
 export interface ThesisWithGroup extends Thesis {
@@ -50,6 +55,15 @@ class ThesisService {
 	async findOne(id: string): Promise<ApiResponse<Thesis>> {
 		const response = await httpClient.get<ApiResponse<Thesis>>(
 			`${this.baseUrl}/${id}`,
+		);
+		return response.data;
+	}
+
+	async findOneWithRelations(
+		id: string,
+	): Promise<ApiResponse<ThesisWithRelations>> {
+		const response = await httpClient.get<ApiResponse<ThesisWithRelations>>(
+			`${this.baseUrl}/${id}?include=lecturer,skills`,
 		);
 		return response.data;
 	}
