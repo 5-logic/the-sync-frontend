@@ -73,7 +73,7 @@ export default function AssignReviewerModal({
 
 	// Helper methods for form initialization
 	const shouldInitializeForm = (): boolean => {
-		return open && !isInitialized;
+		return open && !isInitialized && allLecturers.length > 0 && !fetchLoading;
 	};
 
 	const shouldResetForm = (): boolean => {
@@ -84,6 +84,8 @@ export default function AssignReviewerModal({
 		return (
 			open &&
 			isInitialized &&
+			allLecturers.length > 0 &&
+			!fetchLoading &&
 			(initialValues[0] !== previousInitialValues[0] ||
 				initialValues[1] !== previousInitialValues[1])
 		);
@@ -171,7 +173,7 @@ export default function AssignReviewerModal({
 			setPreviousInitialValues([...initialValues]);
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [open, initialValues, group]);
+	}, [open, initialValues, group, allLecturers, fetchLoading]);
 
 	// Handle render key updates only when not loading
 	useEffect(() => {
@@ -461,19 +463,27 @@ export default function AssignReviewerModal({
 						},
 					]}
 				>
-					<Select
-						key={getReviewer1Key()}
-						placeholder={getReviewer1Placeholder()}
-						options={reviewer1Options}
-						allowClear
-						showSearch
-						disabled={loading || fetchLoading}
-						filterOption={filterOption}
-						optionLabelProp="label"
-						onChange={() => {
-							form.validateFields(['reviewer2']);
-						}}
-					/>
+					{fetchLoading || allLecturers.length === 0 ? (
+						<Select
+							placeholder="Loading lecturers..."
+							disabled={true}
+							loading={fetchLoading}
+						/>
+					) : (
+						<Select
+							key={getReviewer1Key()}
+							placeholder={getReviewer1Placeholder()}
+							options={reviewer1Options}
+							allowClear
+							showSearch
+							disabled={loading || fetchLoading}
+							filterOption={filterOption}
+							optionLabelProp="label"
+							onChange={() => {
+								form.validateFields(['reviewer2']);
+							}}
+						/>
+					)}
 				</Form.Item>
 
 				<Form.Item
@@ -497,19 +507,27 @@ export default function AssignReviewerModal({
 						},
 					]}
 				>
-					<Select
-						key={getReviewer2Key()}
-						placeholder={getReviewer2Placeholder()}
-						options={reviewer2Options}
-						allowClear
-						showSearch
-						disabled={loading || fetchLoading}
-						filterOption={filterOption}
-						optionLabelProp="label"
-						onChange={() => {
-							form.validateFields(['reviewer1']);
-						}}
-					/>
+					{fetchLoading || allLecturers.length === 0 ? (
+						<Select
+							placeholder="Loading lecturers..."
+							disabled={true}
+							loading={fetchLoading}
+						/>
+					) : (
+						<Select
+							key={getReviewer2Key()}
+							placeholder={getReviewer2Placeholder()}
+							options={reviewer2Options}
+							allowClear
+							showSearch
+							disabled={loading || fetchLoading}
+							filterOption={filterOption}
+							optionLabelProp="label"
+							onChange={() => {
+								form.validateFields(['reviewer1']);
+							}}
+						/>
+					)}
 				</Form.Item>
 			</Form>
 		</Modal>
