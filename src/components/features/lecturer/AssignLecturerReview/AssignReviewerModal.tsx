@@ -207,16 +207,20 @@ export default function AssignReviewerModal({
 	const eligibleLecturers = useMemo((): Lecturer[] => {
 		if (!group || !allLecturers.length) return allLecturers;
 
-		// Get current reviewer IDs from the group
+		// In change mode, include current reviewers so they can be displayed
+		if (isChangeMode) {
+			return allLecturers;
+		}
+
+		// In assign mode, filter out lecturers who are already assigned as reviewers
 		const currentReviewerIds = (group.reviewers || []).map((reviewer) => {
 			return typeof reviewer === 'string' ? reviewer : reviewer.id;
 		});
 
-		// Filter out lecturers who are already assigned as reviewers
 		return allLecturers.filter(
 			(lecturer) => !currentReviewerIds.includes(lecturer.id),
 		);
-	}, [allLecturers, group]);
+	}, [allLecturers, group, isChangeMode]);
 
 	// Compute reviewer options using useMemo for performance
 	const reviewer1Options = useMemo((): LecturerOption[] => {
@@ -466,9 +470,6 @@ export default function AssignReviewerModal({
 						disabled={loading || fetchLoading}
 						filterOption={filterOption}
 						optionLabelProp="label"
-						optionFilterProp="label"
-						value={reviewer1Value}
-						dropdownMatchSelectWidth={false}
 						onChange={() => {
 							form.validateFields(['reviewer2']);
 						}}
@@ -505,9 +506,6 @@ export default function AssignReviewerModal({
 						disabled={loading || fetchLoading}
 						filterOption={filterOption}
 						optionLabelProp="label"
-						optionFilterProp="label"
-						value={reviewer2Value}
-						dropdownMatchSelectWidth={false}
 						onChange={() => {
 							form.validateFields(['reviewer1']);
 						}}
