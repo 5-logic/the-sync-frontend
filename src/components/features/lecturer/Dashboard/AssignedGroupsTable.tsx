@@ -3,7 +3,7 @@ import { Button, Card, Col, Input, Row, Select, Table, Tooltip } from 'antd';
 import React, { useState } from 'react';
 
 import { TablePagination } from '@/components/common/TablePagination';
-import { allMockGroups } from '@/data/group';
+import { type FullMockGroup, allMockGroups } from '@/data/group';
 
 const { Option } = Select;
 
@@ -31,7 +31,7 @@ const AssignedGroupsTable: React.FC = () => {
 				group.leader?.toLowerCase().includes(lowerSearch) ||
 				group.title?.toLowerCase().includes(lowerSearch) ||
 				group.members?.some((member) =>
-					member.toLowerCase().includes(lowerSearch),
+					member.name?.toLowerCase().includes(lowerSearch),
 				))
 		);
 	});
@@ -61,7 +61,7 @@ const AssignedGroupsTable: React.FC = () => {
 		{
 			title: 'Actions',
 			key: 'actions',
-			render: (_: unknown, record: unknown) => (
+			render: (_: unknown, record: FullMockGroup) => (
 				<Tooltip title="View Details">
 					<Button
 						type="link"
