@@ -2,38 +2,40 @@
 
 import { Table } from 'antd';
 import type { ColumnsType, TableProps } from 'antd/es/table';
+import { memo } from 'react';
 
 import { TablePagination } from '@/components/common/TablePagination';
-import { ExtendedGroup } from '@/data/group';
+import { type SupervisorAssignmentData } from '@/store/useAssignSupervisorStore';
 
 interface Props {
-	readonly data: ExtendedGroup[];
-	readonly columns: ColumnsType<ExtendedGroup>;
-	readonly rowKey?: keyof ExtendedGroup;
-	readonly onChange?: TableProps<ExtendedGroup>['onChange'];
-	readonly hideStatusColumn?: boolean; // New prop to hide the status column
+	readonly data: SupervisorAssignmentData[];
+	readonly columns: ColumnsType<SupervisorAssignmentData>;
+	readonly loading?: boolean;
+	readonly rowKey?: string | ((record: SupervisorAssignmentData) => string);
+	readonly onChange?: TableProps<SupervisorAssignmentData>['onChange'];
 }
 
-export default function GroupOverviewTable({
-	data,
-	columns,
-	rowKey = 'id',
-	onChange,
-	hideStatusColumn = false, // Default to false
-}: Props) {
-	// Filter out the status column if hideStatusColumn is true
-	const filteredColumns = hideStatusColumn
-		? columns.filter((col) => col.key !== 'status')
-		: columns;
+/**
+ * Optimized Table component for displaying supervisor assignment data
+ * Uses React.memo to prevent unnecessary re-renders
+ */
+const GroupOverviewTable = memo<Props>(
+	({ data, columns, loading = false, rowKey = 'id', onChange }) => {
+		return (
+			<Table
+				rowKey={rowKey}
+				columns={columns}
+				dataSource={data}
+				loading={loading}
+				pagination={TablePagination}
+				scroll={{ x: 'max-content' }}
+				onChange={onChange}
+				size="middle"
+			/>
+		);
+	},
+);
 
-	return (
-		<Table
-			rowKey={rowKey as string}
-			columns={filteredColumns}
-			dataSource={data}
-			pagination={TablePagination}
-			scroll={{ x: 'max-content' }}
-			onChange={onChange}
-		/>
-	);
-}
+GroupOverviewTable.displayName = 'GroupOverviewTable';
+
+export default GroupOverviewTable;

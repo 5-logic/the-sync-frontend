@@ -9,6 +9,159 @@ For more information about this project, see the [README](./README.md).
 
 ---
 
+## [0.6.0] - 2025-07-23
+
+### Added
+
+#### Admin Dashboard & Capstone Management
+
+- Complete Capstone Defense Results page with thesis table and import/export functionality ([#270](https://github.com/5-logic/the-sync-frontend/pull/270))
+- Capstone Project Management page with comprehensive group management ([#244](https://github.com/5-logic/the-sync-frontend/pull/244), [#253](https://github.com/5-logic/the-sync-frontend/pull/253))
+- Enhanced admin dashboard with statistics and group table information
+- Excel export functionality for defense results and group management data
+- Advanced filtering and search capabilities for capstone project management
+
+#### Lecturer Dashboard & Tools
+
+- Complete lecturer dashboard with statistics, assigned groups, and thesis management ([#252](https://github.com/5-logic/the-sync-frontend/pull/252), [#257](https://github.com/5-logic/the-sync-frontend/pull/257))
+- Moderator dashboard page with supervisor load charts and progress overview ([#242](https://github.com/5-logic/the-sync-frontend/pull/242))
+- Enhanced supervisor assignment with draft assignments and bulk operations ([#209](https://github.com/5-logic/the-sync-frontend/pull/209), [#210](https://github.com/5-logic/the-sync-frontend/pull/210))
+- Comprehensive checklist management with Excel import/export capabilities ([#258](https://github.com/5-logic/the-sync-frontend/pull/258))
+- AI-powered thesis duplicate detection system ([#268](https://github.com/5-logic/the-sync-frontend/pull/268), [#269](https://github.com/5-logic/the-sync-frontend/pull/269), [#271](https://github.com/5-logic/the-sync-frontend/pull/271))
+
+#### Student Progress & Milestone Management
+
+- Enhanced track progress page with milestone detail management ([#226](https://github.com/5-logic/the-sync-frontend/pull/226), [#241](https://github.com/5-logic/the-sync-frontend/pull/241))
+- Advanced milestone submission system with file upload and document management
+- Milestone progress tracking with timeline visualization
+- Enhanced milestone detail cards with submission status and file handling
+- Document upload functionality for milestone submissions
+
+#### File Management & Upload System
+
+- Advanced document management system with drag-and-drop file upload
+- File item components for enhanced file display and interaction
+- Document upload buttons with progress tracking
+- Template download functionality for milestone submissions
+- Enhanced file handling for thesis supporting documents
+
+#### Dashboard Components & Analytics
+
+- Comprehensive dashboard statistics for all user roles
+- Supervisor load charts with visual progress indicators
+- Progress overview cards with milestone tracking
+- Group table information with advanced filtering
+- Version tag component with animated styling effects
+
+### Changed
+
+#### Enhanced User Interface
+
+- Improved layout and styling across all dashboard components
+- Enhanced responsive design for mobile and desktop views
+- Updated navigation breadcrumbs with dynamic route patterns
+- Current semester tag in header for improved context awareness
+- Enhanced sidebar with version information display
+
+#### API & Schema Improvements
+
+- **Checklist Schema:** Enhanced with milestone relationships and document support
+- **Supervision Schema:** New comprehensive schema for supervisor assignments and bulk operations
+- **Submission Schema:** Enhanced with document and status field support
+- **Group Schema:** Added extended group data with member and thesis information
+- **Milestone Schema:** Updated with document upload and submission tracking
+
+#### Service Layer Enhancements
+
+- **ChecklistService & ChecklistItemService:** Complete CRUD operations with Excel import/export
+- **SupervisionService:** Enhanced with bulk assignment and draft management capabilities
+- **AiDuplicateService:** New service for AI-powered thesis duplicate detection
+- **ThesesService:** Enhanced with relations support and duplicate checking
+- **MilestoneService:** Added submission and document management capabilities
+
+#### Performance & Architecture
+
+- Enhanced store management with specialized stores for supervision, checklist, and draft assignments
+- Improved caching strategies with background refresh capabilities
+- Better state management with optimistic updates
+- Enhanced loading states with skeleton components
+- Improved error handling and user feedback systems
+
+### Fixed
+
+- Fixed row key type issues in group overview tables for better flexibility
+- Improved form validation and error handling across all components
+- Enhanced table pagination and sorting functionality
+- Fixed responsive design issues on mobile devices
+- Improved accessibility and keyboard navigation
+- Fixed memory leaks in background processes and polling
+
+### Technical Details
+
+- **New Services:** `ChecklistService`, `ChecklistItemService`, `AiDuplicateService`
+- **Enhanced Stores:** `useChecklistStore`, `useAssignSupervisorStore`, `useDraftAssignmentStore`, `useSupervisionStore`
+- **New Components:** Dashboard components, file upload system, milestone detail management
+- **Utility Functions:** Excel export utilities, defense results exporter, document management helpers
+- **Enhanced Hooks:** `useAssignSupervisor`, `useMilestoneProgress`, `useAiDuplicateCheck`, `useCurrentSemester`
+
+### API Breaking Changes
+
+- **Supervision Management:** New bulk assignment endpoints with enhanced request/response structures
+- **Checklist Management:** Enhanced API with milestone relationships and document support
+- **Milestone Submissions:** New submission tracking with document and status management
+- **Dashboard Analytics:** New endpoints for statistics and progress tracking
+
+### Migration Notes
+
+- Users should refresh browser cache for new dashboard components and styling
+- Excel templates have been updated with new field requirements for checklist import
+- Supervisor assignment workflows now support draft and bulk operations
+- Milestone submission system requires updated document handling
+
+---
+
+## [0.5.0] - 2025-07-16
+
+### Added
+
+- Student Dashboard page and improved student group/thesis management ([#166](https://github.com/5-logic/the-sync-frontend/pull/166), [#172](https://github.com/5-logic/the-sync-frontend/pull/172), [#179](https://github.com/5-logic/the-sync-frontend/pull/179), [#204](https://github.com/5-logic/the-sync-frontend/pull/204), [#211](https://github.com/5-logic/the-sync-frontend/pull/211))
+- UI for student to view and register thesis, including AI-suggested topics ([#221](https://github.com/5-logic/the-sync-frontend/pull/221), [#230](https://github.com/5-logic/the-sync-frontend/pull/230), [#234](https://github.com/5-logic/the-sync-frontend/pull/234))
+- Group assignment and invitation features for students ([#166](https://github.com/5-logic/the-sync-frontend/pull/166), [#179](https://github.com/5-logic/the-sync-frontend/pull/179))
+- Breadcrumb navigation and improved layout for all roles ([#205](https://github.com/5-logic/the-sync-frontend/pull/205))
+- Admin account settings modal and admin data management ([#231](https://github.com/5-logic/the-sync-frontend/pull/231))
+- Password reset and OTP verification flows ([#181](https://github.com/5-logic/the-sync-frontend/pull/181), [#201](https://github.com/5-logic/the-sync-frontend/pull/201))
+- Track progress UI for students and groups ([#205](https://github.com/5-logic/the-sync-frontend/pull/205))
+- Enhanced group dashboard with thesis, supervisor, and progress cards ([#230](https://github.com/5-logic/the-sync-frontend/pull/230))
+
+### Changed
+
+- Refactored and improved layout for thesis, group, and student components
+- Enhanced caching and force refresh for students, lecturers, milestones, and groups
+- Improved error handling and notification for password reset and OTP flows
+- Updated breadcrumb and sidebar navigation for all roles
+- Improved performance and UI consistency across pages
+
+### Fixed
+
+- Fixed SonarCloud issues and code quality improvements
+- Fixed UI bugs in student, group, and thesis pages
+- Fixed build and import issues for new components
+- Fixed password validation and OTP input handling
+
+### Technical Details
+
+- Major refactor of student/group/thesis hooks and stores
+- Added new Zod schemas for password reset and OTP
+- Improved modularization of services and hooks
+- Enhanced test cases and removed debug logs
+
+### Migration Notes
+
+- No breaking API changes, but new features require updated UI and store logic
+- Users should refresh browser cache for new UI and navigation
+
+---
+
 ## [0.4.0] - 2025-07-10
 
 ### Added

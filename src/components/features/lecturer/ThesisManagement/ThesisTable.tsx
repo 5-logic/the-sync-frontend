@@ -11,7 +11,7 @@ import {
 import { Button, Dropdown, Table, Tag, Tooltip } from 'antd';
 import type { MenuProps } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { ThesisConfirmationModals } from '@/components/common/ConfirmModal';
 import { TablePagination } from '@/components/common/TablePagination';
@@ -24,7 +24,9 @@ import {
 	ThesisStatus,
 	UI_CONSTANTS,
 } from '@/lib/constants/thesis';
+import { aiDuplicateService } from '@/lib/services/ai-duplicate.service';
 import { formatDate } from '@/lib/utils/dateFormat';
+import { showNotification } from '@/lib/utils/notification';
 import {
 	THESIS_ERROR_CONFIGS,
 	THESIS_SUCCESS_CONFIGS,
@@ -45,6 +47,11 @@ export default function ThesisTable({ data, loading }: Readonly<Props>) {
 	const { session } = useSessionData();
 	const { isNavigating, targetPath, navigateWithLoading } =
 		useNavigationLoader();
+
+	// Loading state for register submit buttons
+	const [submitLoadingThesisId, setSubmitLoadingThesisId] = useState<
+		string | null
+	>(null);
 
 	// Fetch lecturers for Owner column display
 	useEffect(() => {
@@ -86,6 +93,37 @@ export default function ThesisTable({ data, loading }: Readonly<Props>) {
 
 	const handleRegisterSubmit = useCallback(
 		async (thesis: Thesis) => {
+			// Set loading state for this specific thesis
+			setSubmitLoadingThesisId(thesis.id);
+
+			try {
+				// Check for duplicates first
+				const duplicateResponse = await aiDuplicateService.checkDuplicate(
+					thesis.id,
+				);
+				if (
+					duplicateResponse.success &&
+					duplicateResponse.data &&
+					duplicateResponse.data.length > 0
+				) {
+					// Found duplicates - block submission
+					const duplicateCount = duplicateResponse.data.length;
+					showNotification.error(
+						'Cannot Submit Thesis',
+						`Found ${duplicateCount} similar thesis${duplicateCount > 1 ? 'es' : ''}. Please review and resolve the similarities before submitting.`,
+					);
+					return; // Exit early, don't submit
+				}
+			} catch (duplicateError) {
+				console.error('Duplicate check failed:', duplicateError);
+				showNotification.error(
+					'Duplicate Check Failed',
+					'Unable to check for duplicate theses. Please try again.',
+				);
+				return; // Exit early on error
+			}
+
+			// No duplicates found, proceed with confirmation modal
 			ThesisConfirmationModals.submit(thesis.englishName, async () => {
 				try {
 					const success = await submitThesis(thesis.id);
@@ -161,11 +199,16 @@ export default function ThesisTable({ data, loading }: Readonly<Props>) {
 
 	// Extract register submit click handler to reduce nesting
 	const handleRegisterSubmitClick = useCallback(
-		(record: Thesis, isDisabled: boolean) => {
+		async (record: Thesis, isDisabled: boolean) => {
 			if (!isDisabled) {
-				handleRegisterSubmit(record).catch(() => {
+				try {
+					await handleRegisterSubmit(record);
+				} catch {
 					// Error is already handled in handleRegisterSubmit
-				});
+				} finally {
+					// Always clear loading state
+					setSubmitLoadingThesisId(null);
+				}
 			}
 		},
 		[handleRegisterSubmit],
@@ -218,6 +261,7 @@ export default function ThesisTable({ data, loading }: Readonly<Props>) {
 			// SECURITY: Check thesis ownership
 			const isThesisOwner = record.lecturerId === session?.user?.id;
 			const submitProps = getRegisterSubmitProps(record, isThesisOwner);
+			const isSubmitLoading = submitLoadingThesisId === record.id;
 
 			return (
 				<div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
@@ -227,7 +271,8 @@ export default function ThesisTable({ data, loading }: Readonly<Props>) {
 							icon={<SendOutlined />}
 							type={submitProps.type}
 							size="small"
-							disabled={submitProps.disabled}
+							disabled={submitProps.disabled || isSubmitLoading}
+							loading={isSubmitLoading}
 							onClick={() =>
 								handleRegisterSubmitClick(record, submitProps.disabled)
 							}
@@ -250,6 +295,7 @@ export default function ThesisTable({ data, loading }: Readonly<Props>) {
 			getRegisterSubmitProps,
 			handleRegisterSubmitClick,
 			getDropdownItems,
+			submitLoadingThesisId,
 		],
 	);
 

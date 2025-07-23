@@ -3,6 +3,7 @@ import Image from 'next/image';
 import React from 'react';
 
 import { SidebarSectionProps } from '@/components/layout/CollapsibleLayout/CollapsibleLayout.types';
+import { VersionTag } from '@/components/layout/CollapsibleLayout/VersionTag';
 import Logo from '@/components/layout/Header/Logo';
 
 const { Sider } = Layout;
@@ -77,8 +78,24 @@ export const SidebarSection: React.FC<SidebarSectionProps> = ({
 					}
 				}}
 				aria-label="Menu navigation"
+				style={{
+					height: 'calc(100vh - 120px)', // Adjust height to leave space for version tag
+					overflowY: 'auto',
+				}}
 			>
 				{children}
+			</div>
+
+			{/* Version Tag at the bottom */}
+			<div
+				style={{
+					position: 'absolute',
+					bottom: 0,
+					left: 0,
+					right: 0,
+				}}
+			>
+				<VersionTag collapsed={collapsed} />
 			</div>
 		</Sider>
 	);

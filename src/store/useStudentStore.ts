@@ -214,26 +214,19 @@ export const useStudentStore = create<StudentState>()(
 			)(set, get),
 
 			fetchStudentsWithoutGroup: async (semesterId: string, force = false) => {
-				console.log('fetchStudentsWithoutGroup called with force:', force);
 				set({ loading: true, lastError: null });
-				console.log('Loading set to true');
 				try {
 					// Clear cache if force refresh
 					if (force) {
-						console.log('Clearing cache...');
 						cacheUtils.clear(ENTITY_NAME);
 					}
 
 					const response =
 						await studentService.findStudentsWithoutGroup(semesterId);
-
-					console.log('API response received');
 					processStudentsWithoutGroupResponse(response, set, get);
 				} catch (error) {
-					console.log('Error occurred:', error);
 					handleActionError(error, ENTITY_NAME, 'fetch without group', set);
 				} finally {
-					console.log('Setting loading to false');
 					set({ loading: false });
 				}
 			},
