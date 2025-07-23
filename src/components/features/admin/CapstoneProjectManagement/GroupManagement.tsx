@@ -4,6 +4,7 @@ import { Table, Typography } from 'antd';
 import React, { useMemo, useState } from 'react';
 
 import { TablePagination } from '@/components/common/TablePagination';
+import { getColumns } from '@/components/features/admin/CapstoneProjectManagement/Columns';
 import { FilterBar } from '@/components/features/admin/CapstoneProjectManagement/FilterBar';
 import { calculateRowSpans } from '@/components/features/admin/CapstoneProjectManagement/calculateRowSpan';
 import {
@@ -11,8 +12,7 @@ import {
 	GroupTableData as GroupTableDataType,
 } from '@/components/features/admin/CapstoneProjectManagement/useGroupTableData';
 import { useDebouncedSearch } from '@/hooks/ui/useDebounce';
-
-import { getColumns } from './Columns';
+import { exportToExcel } from '@/lib/utils/excelExporter';
 
 const { Text } = Typography;
 
@@ -49,7 +49,10 @@ const GroupManagement = () => {
 	}, [baseData, debouncedSearchValue, selectedSemester]);
 
 	const handleExportExcel = () => {
-		console.log('Exporting to Excel...');
+		exportToExcel({
+			data: filteredData,
+			selectedSemester,
+		});
 	};
 
 	const columns = useMemo(
