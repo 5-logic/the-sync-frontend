@@ -3,6 +3,8 @@ import { useState } from 'react';
 
 import { ThesisConfirmationModals } from '@/components/common/ConfirmModal';
 import { TIMING } from '@/lib/constants/thesis';
+import { aiDuplicateService } from '@/lib/services/ai-duplicate.service';
+import { showNotification } from '@/lib/utils/notification';
 import {
 	THESIS_ERROR_CONFIGS,
 	THESIS_SUCCESS_CONFIGS,
@@ -39,7 +41,39 @@ export const useThesisActions = (thesisId: string) => {
 		const thesis = theses.find((t) => t.id === thesisId);
 		const thesisTitle = thesis?.englishName ?? 'this thesis';
 
-		// Show confirmation modal before submitting
+		// Set loading state for duplicate check
+		setSubmitLoading(true);
+
+		try {
+			// Check for duplicates first
+			const duplicateResponse =
+				await aiDuplicateService.checkDuplicate(thesisId);
+			if (
+				duplicateResponse.success &&
+				duplicateResponse.data &&
+				duplicateResponse.data.length > 0
+			) {
+				// Found duplicates - block submission
+				const duplicateCount = duplicateResponse.data.length;
+				showNotification.error(
+					'Cannot Submit Thesis',
+					`Found ${duplicateCount} similar thesis${duplicateCount > 1 ? 'es' : ''}. Please review and resolve the similarities before submitting.`,
+				);
+				return; // Exit early, don't submit
+			}
+		} catch (duplicateError) {
+			console.error('Duplicate check failed:', duplicateError);
+			showNotification.error(
+				'Duplicate Check Failed',
+				'Unable to check for duplicate theses. Please try again.',
+			);
+			return; // Exit early on error
+		} finally {
+			// Clear loading state after duplicate check
+			setSubmitLoading(false);
+		}
+
+		// No duplicates found, proceed with confirmation modal
 		ThesisConfirmationModals.submit(thesisTitle, async () => {
 			try {
 				setSubmitLoading(true);
