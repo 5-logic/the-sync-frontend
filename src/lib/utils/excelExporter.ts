@@ -5,6 +5,7 @@ import {
 	addHeadersAndData,
 	applyCellStyling as applySharedCellStyling,
 	createMergesAndGroupBoundaries,
+	generateSubtitle,
 	getHeaderStyle,
 	getDataRowStyle as getSharedDataRowStyle,
 	getSubtitleStyle,
@@ -64,11 +65,7 @@ export const exportToExcel = ({
 		XLSX.utils.sheet_add_aoa(ws, [[title]], { origin: 'A1' });
 
 		// Add subtitle row with decision information using current date
-		const exportDate = new Date();
-		const day = exportDate.getDate();
-		const month = exportDate.getMonth() + 1; // getMonth() returns 0-11
-		const year = exportDate.getFullYear();
-		const subtitle = `(Issued under Decision No. keynum/QĐ-FPTUBĐ dated ${day} month ${month} year ${year} of the Rector of FPT University)`;
+		const subtitle = generateSubtitle();
 		XLSX.utils.sheet_add_aoa(ws, [[subtitle]], { origin: 'A2' });
 
 		// Add empty row

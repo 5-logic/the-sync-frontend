@@ -114,6 +114,14 @@ export const getDataRowStyle = (
 };
 
 // Shared Excel export utilities
+export const generateSubtitle = () => {
+	const exportDate = new Date();
+	const day = exportDate.getDate();
+	const month = exportDate.getMonth() + 1; // getMonth() returns 0-11
+	const year = exportDate.getFullYear();
+	return `(Issued under Decision No. keynum/QĐ-FPTUBĐ dated ${day} month ${month} year ${year} of the Rector of FPT University)`;
+};
+
 export const addHeadersAndData = (
 	ws: XLSX.WorkSheet,
 	exportData: Array<Record<string, string | number | boolean>>,
