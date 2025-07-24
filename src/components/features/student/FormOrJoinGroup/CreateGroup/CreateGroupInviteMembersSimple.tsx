@@ -8,6 +8,7 @@ import { TEAM_CONFIG, TEAM_STYLES } from '@/lib/constants';
 import { MemberManagementUtils } from '@/lib/utils/memberManagement';
 import { showNotification } from '@/lib/utils/notification';
 import {
+	createNotFoundContent,
 	createStudentAutoCompleteOptions,
 	createStudentTableColumns,
 } from '@/lib/utils/studentInviteHelpers';
@@ -140,41 +141,14 @@ function CreateGroupInviteMembersSimple({
 		return MemberManagementUtils.generateInfoTextCreateGroup(members);
 	}, [members]);
 
-	// Extract nested ternary for notFoundContent
+	// Use shared utility for notFoundContent
 	const renderNotFoundContent = useMemo(() => {
-		if (!searchText.trim()) {
-			return null;
-		}
-
-		if (loading || isSearching) {
-			return (
-				<div
-					style={{
-						padding: '8px',
-						textAlign: 'center',
-						color: '#999',
-					}}
-				>
-					Searching students...
-				</div>
-			);
-		}
-
-		if (searchResults.length === 0) {
-			return (
-				<div
-					style={{
-						padding: '8px',
-						textAlign: 'center',
-						color: '#999',
-					}}
-				>
-					No students found with &ldquo;{searchText}&rdquo;
-				</div>
-			);
-		}
-
-		return null;
+		return createNotFoundContent(
+			searchText,
+			loading,
+			isSearching,
+			searchResults.length,
+		);
 	}, [searchText, loading, isSearching, searchResults.length]);
 
 	return (

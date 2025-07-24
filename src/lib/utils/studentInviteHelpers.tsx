@@ -165,3 +165,48 @@ export function createStudentTableColumns(
 
 	return baseColumns;
 }
+
+/**
+ * Creates notFoundContent for AutoComplete components
+ * Shared utility to prevent code duplication between student invite components
+ */
+export function createNotFoundContent(
+	searchText: string,
+	loading: boolean,
+	isSearching: boolean,
+	searchResultsLength: number,
+): React.ReactNode {
+	if (!searchText.trim()) {
+		return null;
+	}
+
+	if (loading || isSearching) {
+		return (
+			<div
+				style={{
+					padding: '8px',
+					textAlign: 'center',
+					color: '#999',
+				}}
+			>
+				Searching students...
+			</div>
+		);
+	}
+
+	if (searchResultsLength === 0) {
+		return (
+			<div
+				style={{
+					padding: '8px',
+					textAlign: 'center',
+					color: '#999',
+				}}
+			>
+				No students found with &ldquo;{searchText}&rdquo;
+			</div>
+		);
+	}
+
+	return null;
+}
