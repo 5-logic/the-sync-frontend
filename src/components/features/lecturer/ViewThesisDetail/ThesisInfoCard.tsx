@@ -37,6 +37,7 @@ export default function ThesisInfoCard({ thesis }: Props) {
 		description: thesis.description,
 		domain: thesis.domain,
 		status: thesis.status,
+		semesterId: thesis.semesterId,
 		thesisRequiredSkills: thesis.thesisRequiredSkills,
 		thesisVersions: thesis.thesisVersions,
 	};

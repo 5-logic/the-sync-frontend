@@ -172,6 +172,28 @@ export default function ThesisTable({ data, loading }: Readonly<Props>) {
 		return STATUS_COLORS[status as ThesisStatus] ?? 'default';
 	}, []);
 
+	// Generate consistent color for semester based on semesterId
+	const getSemesterColor = useCallback((semesterId: string): string => {
+		const colors = [
+			'purple',
+			'blue',
+			'green',
+			'orange',
+			'red',
+			'cyan',
+			'magenta',
+			'volcano',
+			'geekblue',
+			'gold',
+		];
+		// Create a simple hash from semesterId to get consistent color
+		let hash = 0;
+		for (let i = 0; i < semesterId.length; i++) {
+			hash = semesterId.charCodeAt(i) + ((hash << 5) - hash);
+		}
+		return colors[Math.abs(hash) % colors.length];
+	}, []);
+
 	// Create dropdown menu items for each thesis with status rules
 	const getDropdownItems = useCallback(
 		(record: Thesis): MenuProps['items'] => {
@@ -396,12 +418,14 @@ export default function ThesisTable({ data, loading }: Readonly<Props>) {
 				dataIndex: 'semesterId',
 				key: 'semester',
 				width: UI_CONSTANTS.TABLE_WIDTHS.DOMAIN,
+				align: 'center' as const,
 				ellipsis: {
 					showTitle: false,
 				},
 				render: (semesterId: string) => {
 					const semester = getSemesterById(semesterId);
 					const displayName = semester?.name ?? 'Unknown';
+					const color = getSemesterColor(semesterId);
 
 					return (
 						<div
@@ -414,7 +438,7 @@ export default function ThesisTable({ data, loading }: Readonly<Props>) {
 						>
 							<Tooltip title={displayName} placement="topLeft">
 								<Tag
-									color="purple"
+									color={color}
 									style={{
 										maxWidth: '100%',
 										overflow: 'hidden',
@@ -450,9 +474,9 @@ export default function ThesisTable({ data, loading }: Readonly<Props>) {
 				),
 			},
 			{
-				title: 'Submitted date',
+				title: 'Created date',
 				dataIndex: 'createdAt',
-				key: 'summitDate',
+				key: 'createdDate',
 				width: UI_CONSTANTS.TABLE_WIDTHS.DATE,
 				align: 'center' as const,
 				sorter: (a, b) =>
@@ -467,7 +491,13 @@ export default function ThesisTable({ data, loading }: Readonly<Props>) {
 				render: (_, record) => renderActionsColumn(record),
 			},
 		],
-		[getLecturerById, getSemesterById, getStatusColor, renderActionsColumn],
+		[
+			getLecturerById,
+			getSemesterById,
+			getSemesterColor,
+			getStatusColor,
+			renderActionsColumn,
+		],
 	);
 
 	return (
