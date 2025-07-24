@@ -72,7 +72,7 @@ export default function EditStudentDialog({
 			studentData.majorId = values.majorId;
 		}
 
-		return await updateStudent(student.id, studentData as StudentUpdate);
+		return await updateStudent(student.id, studentData);
 	};
 
 	return (
