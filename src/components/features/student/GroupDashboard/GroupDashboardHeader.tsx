@@ -24,6 +24,9 @@ export default function GroupDashboardHeader({
 	// Check if semester allows modifications (only show button when Preparing)
 	const canShowRequestButton = group.semester.status === 'Preparing';
 
+	// Only show requests button if user is leader AND semester is preparing
+	const shouldShowRequestsButton = isCurrentUserLeader && canShowRequestButton;
+
 	// Configuration for shared RequestsButton (group leader mode)
 	const requestsConfig = {
 		mode: 'group-leader' as const,
@@ -46,7 +49,7 @@ export default function GroupDashboardHeader({
 					View your group information, members, and thesis progress
 				</Paragraph>
 			</div>
-			{isCurrentUserLeader && canShowRequestButton && (
+			{shouldShowRequestsButton && (
 				<RequestsButton config={requestsConfig} requests={requests}>
 					<UserAddOutlined />
 					Request Invite/Join Group
