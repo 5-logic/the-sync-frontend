@@ -25,9 +25,11 @@ function CreateGroupInviteMembersSimple({
 }: CreateGroupInviteMembersSimpleProps) {
 	const [searchText, setSearchText] = useState('');
 	const [searchResults, setSearchResults] = useState<Student[]>([]);
+	const [isSearching, setIsSearching] = useState(false);
 
 	// Get store data - simple selectors
 	const students = useStudentStore((state) => state.students);
+	const loading = useStudentStore((state) => state.loading);
 	const fetchStudentsWithoutGroupAuto = useStudentStore(
 		(state) => state.fetchStudentsWithoutGroupAuto,
 	);
@@ -45,8 +47,12 @@ function CreateGroupInviteMembersSimple({
 	useEffect(() => {
 		if (!searchText.trim()) {
 			setSearchResults([]);
+			setIsSearching(false);
 			return;
 		}
+
+		// Set searching state immediately when user types
+		setIsSearching(true);
 
 		// Debounce search to prevent excessive filtering
 		const timeoutId = setTimeout(() => {
@@ -71,9 +77,13 @@ function CreateGroupInviteMembersSimple({
 			});
 
 			setSearchResults(filtered);
+			setIsSearching(false);
 		}, TEAM_CONFIG.SEARCH_DEBOUNCE_MS);
 
-		return () => clearTimeout(timeoutId);
+		return () => {
+			clearTimeout(timeoutId);
+			setIsSearching(false);
+		};
 	}, [searchText, students, currentUserId]);
 
 	// Build options for AutoComplete
@@ -144,16 +154,28 @@ function CreateGroupInviteMembersSimple({
 								onSelect={handleStudentSelect}
 								placeholder="Search by name, student code, or email..."
 								notFoundContent={
-									searchText.trim() && searchResults.length === 0 ? (
-										<div
-											style={{
-												padding: '8px',
-												textAlign: 'center',
-												color: '#999',
-											}}
-										>
-											No students found with &ldquo;{searchText}&rdquo;
-										</div>
+									searchText.trim() ? (
+										loading || isSearching ? (
+											<div
+												style={{
+													padding: '8px',
+													textAlign: 'center',
+													color: '#999',
+												}}
+											>
+												Searching students...
+											</div>
+										) : searchResults.length === 0 ? (
+											<div
+												style={{
+													padding: '8px',
+													textAlign: 'center',
+													color: '#999',
+												}}
+											>
+												No students found with &ldquo;{searchText}&rdquo;
+											</div>
+										) : null
 									) : null
 								}
 								style={{ width: '100%' }}
