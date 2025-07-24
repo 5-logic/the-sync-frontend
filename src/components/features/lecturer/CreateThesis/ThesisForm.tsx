@@ -219,7 +219,7 @@ export default function ThesisForm({
 					placeholder="Describe your thesis..."
 					rows={4}
 					showCount
-					maxLength={1000}
+					maxLength={2000}
 				/>
 			</Form.Item>
 
