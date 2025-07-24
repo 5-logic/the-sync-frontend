@@ -50,7 +50,7 @@ export default function ThesisFilterBar({
 
 	// Check if this specific button is loading
 	const isCreateButtonLoading =
-		isNavigating && targetPath === '/lecturer/create-thesis';
+		isNavigating && targetPath === '/lecturer/thesis-management/create-thesis';
 
 	return (
 		<Row
