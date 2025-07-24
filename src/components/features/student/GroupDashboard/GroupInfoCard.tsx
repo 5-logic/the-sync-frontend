@@ -193,6 +193,17 @@ export default memo(function GroupInfoCard({
 		}
 	};
 
+	// Helper function to get Invite Members button title
+	const getInviteMembersButtonTitle = () => {
+		if (!canModifyGroup) {
+			return 'Cannot invite members during this semester status';
+		}
+		if (hasReachedMaxMembers) {
+			return `Cannot invite more members. Maximum ${GROUP_MAX_MEMBERS} members allowed.`;
+		}
+		return 'Invite new members to this group';
+	};
+
 	const showLeaveGroupConfirm = () => {
 		const canLeave =
 			canModifyGroup &&
@@ -404,13 +415,7 @@ export default memo(function GroupInfoCard({
 										type="primary"
 										onClick={() => setIsInviteDialogVisible(true)}
 										disabled={!canModifyGroup || hasReachedMaxMembers}
-										title={
-											!canModifyGroup
-												? 'Cannot invite members during this semester status'
-												: hasReachedMaxMembers
-													? `Cannot invite more members. Maximum ${GROUP_MAX_MEMBERS} members allowed.`
-													: 'Invite new members to this group'
-										}
+										title={getInviteMembersButtonTitle()}
 									>
 										Invite Members
 									</Button>
