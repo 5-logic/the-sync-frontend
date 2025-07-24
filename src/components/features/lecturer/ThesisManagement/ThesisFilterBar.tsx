@@ -45,7 +45,7 @@ export default function ThesisFilterBar({
 		useNavigationLoader();
 
 	const handleCreateThesis = () => {
-		navigateWithLoading('/lecturer/create-thesis');
+		navigateWithLoading('/lecturer/thesis-management/create-thesis');
 	};
 
 	// Check if this specific button is loading
