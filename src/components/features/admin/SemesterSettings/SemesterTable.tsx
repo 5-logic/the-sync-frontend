@@ -95,7 +95,7 @@ const SemesterTable = forwardRef<
 	useImperativeHandle(
 		ref,
 		() => ({
-			refresh: fetchSemesters,
+			refresh: () => fetchSemesters(true), // Force fetch to bypass cache
 		}),
 		[fetchSemesters],
 	);
