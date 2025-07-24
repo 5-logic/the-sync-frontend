@@ -97,13 +97,16 @@ export const useCapstoneManagementStore = create<CapstoneManagementState>(
 						lastError: result.error?.message || 'Failed to fetch groups',
 						loading: false,
 					});
-					showNotification.error('Error', 'Failed to fetch groups');
+					showNotification.error(
+						'Failed to fetch groups',
+						result.error?.message || 'An error occurred while fetching groups',
+					);
 				}
 			} catch (error) {
 				const errorMessage =
 					error instanceof Error ? error.message : 'Failed to fetch groups';
 				set({ lastError: errorMessage, loading: false });
-				showNotification.error('Error', errorMessage);
+				showNotification.error('Failed to fetch groups', errorMessage);
 			}
 		},
 
@@ -146,7 +149,7 @@ export const useCapstoneManagementStore = create<CapstoneManagementState>(
 						? error.message
 						: 'Failed to fetch group details';
 				set({ lastError: errorMessage, loadingDetails: false });
-				showNotification.error('Error', errorMessage);
+				showNotification.error('Failed to fetch group details', errorMessage);
 			}
 		},
 
@@ -164,11 +167,17 @@ export const useCapstoneManagementStore = create<CapstoneManagementState>(
 					set({ semesters: result.data });
 				} else {
 					console.error('Failed to fetch semesters:', result.error);
-					showNotification.error('Error', 'Failed to fetch semesters');
+					showNotification.error(
+						'Failed to fetch semesters',
+						result.error?.message ||
+							'An error occurred while fetching semesters',
+					);
 				}
 			} catch (error) {
 				console.error('Failed to fetch semesters:', error);
-				showNotification.error('Error', 'Failed to fetch semesters');
+				const errorMessage =
+					error instanceof Error ? error.message : 'Failed to fetch semesters';
+				showNotification.error('Failed to fetch semesters', errorMessage);
 			}
 		},
 
@@ -187,7 +196,9 @@ export const useCapstoneManagementStore = create<CapstoneManagementState>(
 				}
 			} catch (error) {
 				console.error('Failed to refresh data:', error);
-				showNotification.error('Error', 'Failed to refresh data');
+				const errorMessage =
+					error instanceof Error ? error.message : 'Failed to refresh data';
+				showNotification.error('Failed to refresh data', errorMessage);
 			}
 		},
 
