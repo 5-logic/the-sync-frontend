@@ -369,27 +369,45 @@ export default function ThesisTable({ data, loading }: Readonly<Props>) {
 				render: (domain: string | null | undefined) => {
 					if (!domain) {
 						return (
-							<Tooltip title="No Domain specified">
-								<Tag color="default">No Domain</Tag>
-							</Tooltip>
+							<div
+								style={{
+									display: 'flex',
+									alignItems: 'center',
+									justifyContent: 'center',
+									height: '100%',
+								}}
+							>
+								<Tooltip title="No Domain specified">
+									<Tag color="default">No Domain</Tag>
+								</Tooltip>
+							</div>
 						);
 					}
 
 					return (
-						<Tooltip title={domain} placement="topLeft">
-							<Tag
-								color="blue"
-								style={{
-									maxWidth: '100%',
-									overflow: 'hidden',
-									textOverflow: 'ellipsis',
-									whiteSpace: 'nowrap',
-									display: 'inline-block',
-								}}
-							>
-								{domain}
-							</Tag>
-						</Tooltip>
+						<div
+							style={{
+								display: 'flex',
+								alignItems: 'center',
+								justifyContent: 'center',
+								height: '100%',
+							}}
+						>
+							<Tooltip title={domain} placement="topLeft">
+								<Tag
+									color="blue"
+									style={{
+										maxWidth: '100%',
+										overflow: 'hidden',
+										textOverflow: 'ellipsis',
+										whiteSpace: 'nowrap',
+										display: 'inline-block',
+									}}
+								>
+									{domain}
+								</Tag>
+							</Tooltip>
+						</div>
 					);
 				},
 			},
@@ -399,7 +417,16 @@ export default function ThesisTable({ data, loading }: Readonly<Props>) {
 				key: 'status',
 				width: UI_CONSTANTS.TABLE_WIDTHS.STATUS,
 				render: (status: string) => (
-					<Tag color={getStatusColor(status)}>{status}</Tag>
+					<div
+						style={{
+							display: 'flex',
+							alignItems: 'center',
+							justifyContent: 'center',
+							height: '100%',
+						}}
+					>
+						<Tag color={getStatusColor(status)}>{status}</Tag>
+					</div>
 				),
 			},
 			{
@@ -407,6 +434,7 @@ export default function ThesisTable({ data, loading }: Readonly<Props>) {
 				dataIndex: 'createdAt',
 				key: 'summitDate',
 				width: UI_CONSTANTS.TABLE_WIDTHS.DATE,
+				align: 'center' as const,
 				sorter: (a, b) =>
 					new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
 				render: (date: Date) => formatDate(date),
