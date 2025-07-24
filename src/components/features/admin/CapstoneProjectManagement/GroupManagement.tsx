@@ -1,58 +1,79 @@
 'use client';
 
-import { Table, Typography } from 'antd';
-import React, { useMemo, useState } from 'react';
+import { Spin, Table, Typography } from 'antd';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import { TablePagination } from '@/components/common/TablePagination';
 import { getColumns } from '@/components/features/admin/CapstoneProjectManagement/Columns';
 import { FilterBar } from '@/components/features/admin/CapstoneProjectManagement/FilterBar';
 import { calculateRowSpans } from '@/components/features/admin/CapstoneProjectManagement/calculateRowSpan';
-import {
-	GroupTableData,
-	GroupTableData as GroupTableDataType,
-} from '@/components/features/admin/CapstoneProjectManagement/useGroupTableData';
 import { useDebouncedSearch } from '@/hooks/ui/useDebounce';
+import { Group } from '@/lib/services/groups.service';
 import { exportToExcel } from '@/lib/utils/excelExporter';
+import { Semester } from '@/schemas/semester';
+import { type GroupTableData, useCapstoneManagementStore } from '@/store';
 
 const { Text } = Typography;
 
-const GroupManagement = () => {
+const GroupManagement: React.FC = () => {
 	const { searchValue, debouncedSearchValue, setSearchValue } =
 		useDebouncedSearch('', 300);
 	const [selectedSemester, setSelectedSemester] = useState<string>('all');
-	const { baseData, availableSemesters } = GroupTableData();
 
-	const filteredData = useMemo(() => {
-		const filtered = baseData.filter((item: GroupTableDataType) => {
-			const matchesSearch =
-				!debouncedSearchValue.trim() ||
-				[
-					item.name,
-					item.studentId,
-					item.thesisName,
-					item.abbreviation,
-					item.supervisor,
-					item.major,
-					item.semester,
-				].some((field) =>
-					(field ?? '')
-						.toLowerCase()
-						.includes(debouncedSearchValue.toLowerCase().trim()),
-				);
-			const matchesSemester =
-				selectedSemester === 'all' || item.semester === selectedSemester;
-			return matchesSearch && matchesSemester;
-		});
+	// Use store instead of mock data
+	const {
+		semesters,
+		loading,
+		loadingDetails,
+		groups,
+		fetchGroups,
+		fetchGroupDetails,
+		fetchSemesters,
+		getFilteredTableData,
+		refresh,
+	} = useCapstoneManagementStore();
+
+	// Fetch data on component mount
+	useEffect(() => {
+		const initializeData = async () => {
+			await Promise.all([fetchGroups(), fetchSemesters()]);
+		};
+		initializeData();
+	}, [fetchGroups, fetchSemesters]);
+
+	// Fetch group details when groups are loaded
+	useEffect(() => {
+		if (groups.length > 0) {
+			const groupIds = groups.map((group: Group) => group.id);
+			fetchGroupDetails(groupIds);
+		}
+	}, [groups, fetchGroupDetails]);
+
+	// Get available semesters for filter
+	const availableSemesters = useMemo(() => {
+		return semesters.map((semester: Semester) => semester.name);
+	}, [semesters]);
+
+	// Get filtered data using store method
+	const filteredData: GroupTableData[] = useMemo(() => {
+		const filtered = getFilteredTableData(
+			debouncedSearchValue,
+			selectedSemester === 'all' ? undefined : selectedSemester,
+		);
 
 		// Recalculate rowSpans for filtered data
-		return calculateRowSpans(filtered);
-	}, [baseData, debouncedSearchValue, selectedSemester]);
+		return calculateRowSpans(filtered) as GroupTableData[];
+	}, [debouncedSearchValue, selectedSemester, getFilteredTableData]);
 
 	const handleExportExcel = () => {
 		exportToExcel({
 			data: filteredData,
 			selectedSemester,
 		});
+	};
+
+	const handleRefresh = async () => {
+		await refresh();
 	};
 
 	const columns = useMemo(
@@ -64,7 +85,7 @@ const GroupManagement = () => {
 	);
 
 	return (
-		<>
+		<Spin spinning={loading || loadingDetails}>
 			<FilterBar
 				searchText={searchValue}
 				onSearchChange={setSearchValue}
@@ -72,7 +93,9 @@ const GroupManagement = () => {
 				onSemesterChange={setSelectedSemester}
 				availableSemesters={availableSemesters}
 				onExportExcel={handleExportExcel}
+				onRefresh={handleRefresh}
 				showExportExcel={true}
+				loading={loading || loadingDetails}
 			/>
 
 			<Table
@@ -85,13 +108,10 @@ const GroupManagement = () => {
 
 			<Text type="secondary" style={{ marginTop: 16, display: 'block' }}>
 				List includes {filteredData.length} students and{' '}
-				{
-					new Set(filteredData.map((item: GroupTableDataType) => item.groupId))
-						.size
-				}{' '}
+				{new Set(filteredData.map((item: GroupTableData) => item.groupId)).size}{' '}
 				thesis projects
 			</Text>
-		</>
+		</Spin>
 	);
 };
 
