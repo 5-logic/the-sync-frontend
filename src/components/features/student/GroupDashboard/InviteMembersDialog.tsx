@@ -6,7 +6,7 @@ import requestService from '@/lib/services/requests.service';
 import { showNotification } from '@/lib/utils/notification';
 import { GroupDashboard } from '@/schemas/group';
 import type { Student } from '@/schemas/student';
-import { useRequestsStore } from '@/store';
+import { useRequestsStore, useStudentStore } from '@/store';
 
 const { Text } = Typography;
 
@@ -28,6 +28,7 @@ export default function InviteMembersDialog({
 	const [selectedMembers, setSelectedMembers] = useState<Student[]>([]);
 	const [loading, setLoading] = useState(false);
 	const { fetchGroupRequests, requests } = useRequestsStore();
+	const { fetchStudentsWithoutGroupAuto } = useStudentStore();
 
 	// Get existing member IDs to exclude from invites
 	const existingMemberIds = group.members.map((member) => member.userId);
@@ -69,12 +70,13 @@ export default function InviteMembersDialog({
 		pendingInviteRequestUserIds,
 	]);
 
-	// Fetch requests when dialog opens to ensure we have latest data
+	// Fetch requests and students when dialog opens to ensure we have latest data
 	useEffect(() => {
 		if (visible) {
 			fetchGroupRequests(groupId, true); // Force refresh to get latest requests
+			fetchStudentsWithoutGroupAuto(); // Refresh students list to get latest data
 		}
-	}, [visible, groupId, fetchGroupRequests]);
+	}, [visible, groupId, fetchGroupRequests, fetchStudentsWithoutGroupAuto]);
 
 	// Debug log in development mode
 	useEffect(() => {
