@@ -387,6 +387,7 @@ export default function ThesisTable({ data, loading }: Readonly<Props>) {
 				dataIndex: 'status',
 				key: 'status',
 				width: UI_CONSTANTS.TABLE_WIDTHS.STATUS,
+				align: 'center' as const,
 				render: (status: string) => (
 					<div
 						style={{
