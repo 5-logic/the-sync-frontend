@@ -44,6 +44,9 @@ export const useThesisActions = (
 		const thesisTitle = thesis?.englishName ?? 'this thesis';
 
 		try {
+			// Set loading state before checking duplicates
+			setSubmitLoading(true);
+
 			// Check for duplicate theses first
 			const duplicateResult = await aiDuplicateService.checkDuplicate(thesisId);
 
@@ -52,6 +55,9 @@ export const useThesisActions = (
 				duplicateResult.data &&
 				duplicateResult.data.length > 0
 			) {
+				// Clear loading state before showing modal
+				setSubmitLoading(false);
+
 				// Found duplicates - show duplicate confirmation modal
 				ThesisConfirmationModals.submitWithDuplicatesFromDetail(
 					thesisTitle,
@@ -83,6 +89,9 @@ export const useThesisActions = (
 					},
 				);
 			} else {
+				// Clear loading state before showing modal
+				setSubmitLoading(false);
+
 				// No duplicates found - show normal confirmation modal
 				ThesisConfirmationModals.submit(thesisTitle, async () => {
 					try {
@@ -105,7 +114,9 @@ export const useThesisActions = (
 			}
 		} catch (error) {
 			console.error('Error checking duplicates:', error);
-			// If duplicate check fails, proceed with normal confirmation
+			// Clear loading state and proceed with normal confirmation
+			setSubmitLoading(false);
+
 			ThesisConfirmationModals.submit(thesisTitle, async () => {
 				try {
 					setSubmitLoading(true);
@@ -155,6 +166,9 @@ export const useThesisActions = (
 		const thesisTitle = thesis?.englishName ?? 'this thesis';
 
 		try {
+			// Set loading state before checking duplicates
+			setApproveLoading(true);
+
 			// Check for duplicate theses first
 			const duplicateResult = await aiDuplicateService.checkDuplicate(thesisId);
 
@@ -163,6 +177,9 @@ export const useThesisActions = (
 				duplicateResult.data &&
 				duplicateResult.data.length > 0
 			) {
+				// Clear loading state before showing modal
+				setApproveLoading(false);
+
 				// Found duplicates - show duplicate confirmation modal
 				ThesisConfirmationModals.approveWithDuplicates(
 					thesisTitle,
@@ -216,7 +233,9 @@ export const useThesisActions = (
 			}
 		} catch (error) {
 			console.error('Error checking duplicates:', error);
-			// If duplicate check fails, proceed with approval
+			// Clear loading state and proceed with approval
+			setApproveLoading(false);
+
 			try {
 				setApproveLoading(true);
 				const success = await reviewThesis(thesisId, 'Approved');
