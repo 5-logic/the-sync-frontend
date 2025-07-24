@@ -43,7 +43,11 @@ interface Props {
 export default function ThesisTable({ data, loading }: Readonly<Props>) {
 	const { deleteThesis, submitThesis } = useThesisStore();
 	const { getLecturerById, fetchLecturers } = useLecturerStore();
-	const { getSemesterById, fetchSemesters } = useSemesterStore();
+	const {
+		getSemesterById,
+		fetchSemesters,
+		loading: semesterLoading,
+	} = useSemesterStore();
 	const { session } = useSessionData();
 	const { isNavigating, targetPath, navigateWithLoading } =
 		useNavigationLoader();
@@ -427,6 +431,22 @@ export default function ThesisTable({ data, loading }: Readonly<Props>) {
 					const displayName = semester?.name ?? 'Unknown';
 					const color = getSemesterColor(semesterId);
 
+					// Show loading spinner while semesters are being fetched
+					if (semesterLoading && !semester) {
+						return (
+							<div
+								style={{
+									display: 'flex',
+									alignItems: 'center',
+									justifyContent: 'center',
+									height: '100%',
+								}}
+							>
+								<LoadingOutlined spin style={{ color: '#1890ff' }} />
+							</div>
+						);
+					}
+
 					return (
 						<div
 							style={{
@@ -497,6 +517,7 @@ export default function ThesisTable({ data, loading }: Readonly<Props>) {
 			getSemesterColor,
 			getStatusColor,
 			renderActionsColumn,
+			semesterLoading,
 		],
 	);
 

@@ -50,7 +50,11 @@ export default function ThesisFilterBar({
 }: Readonly<Props>) {
 	const { isNavigating, targetPath, navigateWithLoading } =
 		useNavigationLoader();
-	const { semesters, fetchSemesters } = useSemesterStore();
+	const {
+		semesters,
+		fetchSemesters,
+		loading: semesterLoading,
+	} = useSemesterStore();
 	const { currentSemester } = useCurrentSemester();
 
 	// Fetch semesters for dropdown options
@@ -112,6 +116,7 @@ export default function ThesisFilterBar({
 						label: s.name,
 					}))}
 					onChange={onSemesterChange}
+					loading={semesterLoading}
 					style={{ width: '100%' }}
 				/>
 			</Col>
