@@ -175,12 +175,16 @@ export default function ThesisTable({ data, loading }: Readonly<Props>) {
 		(record: Thesis): MenuProps['items'] => {
 			// SECURITY: Check thesis ownership
 			const isThesisOwner = record.lecturerId === session?.user?.id;
-			const canEditOrDelete =
+			const canEdit =
 				isThesisOwner &&
 				(record.status === THESIS_STATUS.NEW ||
-					record.status === THESIS_STATUS.REJECTED);
+					record.status === THESIS_STATUS.REJECTED ||
+					record.status === THESIS_STATUS.APPROVED);
 
-			// Check if this specific record is being navigated to
+			const canDelete =
+				isThesisOwner &&
+				(record.status === THESIS_STATUS.NEW ||
+					record.status === THESIS_STATUS.REJECTED); // Check if this specific record is being navigated to
 			const editPath = `/lecturer/thesis-management/${record.id}/edit-thesis`;
 			const viewPath = `/lecturer/thesis-management/${record.id}`;
 			const isEditLoading = isNavigating && targetPath === editPath;
@@ -198,8 +202,8 @@ export default function ThesisTable({ data, loading }: Readonly<Props>) {
 					key: 'edit',
 					label: 'Edit Thesis',
 					icon: isEditLoading ? <LoadingOutlined spin /> : <EditOutlined />,
-					disabled: !canEditOrDelete || (isNavigating && !isEditLoading),
-					onClick: () => canEditOrDelete && handleEdit(record.id),
+					disabled: !canEdit || (isNavigating && !isEditLoading),
+					onClick: () => canEdit && handleEdit(record.id),
 				},
 				{
 					type: 'divider',
@@ -209,8 +213,8 @@ export default function ThesisTable({ data, loading }: Readonly<Props>) {
 					label: 'Delete',
 					icon: <DeleteOutlined />,
 					danger: true,
-					disabled: !canEditOrDelete || isNavigating,
-					onClick: () => canEditOrDelete && handleDelete(record),
+					disabled: !canDelete || isNavigating,
+					onClick: () => canDelete && handleDelete(record),
 				},
 			];
 		},
