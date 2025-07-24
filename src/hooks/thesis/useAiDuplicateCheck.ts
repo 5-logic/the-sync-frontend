@@ -21,11 +21,15 @@ export function useAiDuplicateCheck() {
 				setDuplicateTheses(duplicateResponse.data);
 				setIsModalVisible(true);
 			} else {
-				showNotification.error('Failed to check for duplicate theses');
+				showNotification.error(
+					'Duplicate Check Failed',
+					'Failed to check for duplicate theses',
+				);
 			}
 		} catch (error) {
 			console.error('Error checking duplicate theses:', error);
 			showNotification.error(
+				'Error',
 				'An error occurred while checking for duplicate theses',
 			);
 		} finally {

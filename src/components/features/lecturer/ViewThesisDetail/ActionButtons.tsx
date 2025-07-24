@@ -80,10 +80,12 @@ export default function ActionButtons({
 		isThesisOwner &&
 		(status === THESIS_STATUS.NEW || status === THESIS_STATUS.REJECTED);
 
-	// SECURITY FIX: Only allow edit for thesis owner AND (new or rejected status)
+	// SECURITY FIX: Only allow edit for thesis owner AND (new, rejected, or approved status)
 	const canEdit =
 		isThesisOwner &&
-		(status === THESIS_STATUS.NEW || status === THESIS_STATUS.REJECTED);
+		(status === THESIS_STATUS.NEW ||
+			status === THESIS_STATUS.REJECTED ||
+			status === THESIS_STATUS.APPROVED);
 
 	// Register submit button text and state
 	const getRegisterSubmitProps = () => {

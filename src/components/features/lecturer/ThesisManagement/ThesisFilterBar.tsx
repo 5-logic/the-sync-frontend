@@ -7,8 +7,11 @@ import {
 	SearchOutlined,
 } from '@ant-design/icons';
 import { Button, Col, Input, Row, Select } from 'antd';
+import { useEffect } from 'react';
 
+import { useCurrentSemester } from '@/hooks/semester';
 import { useNavigationLoader } from '@/hooks/ux/useNavigationLoader';
+import { useSemesterStore } from '@/store';
 
 interface Props {
 	search: string;
@@ -17,6 +20,8 @@ interface Props {
 	onStatusChange: (val?: 'approved' | 'pending' | 'rejected' | 'new') => void;
 	owned?: boolean;
 	onOwnedChange: (val?: boolean) => void;
+	semester?: string;
+	onSemesterChange: (val?: string) => void;
 	onRefresh: () => void;
 }
 
@@ -39,18 +44,38 @@ export default function ThesisFilterBar({
 	onStatusChange,
 	owned,
 	onOwnedChange,
+	semester,
+	onSemesterChange,
 	onRefresh,
 }: Readonly<Props>) {
 	const { isNavigating, targetPath, navigateWithLoading } =
 		useNavigationLoader();
+	const {
+		semesters,
+		fetchSemesters,
+		loading: semesterLoading,
+	} = useSemesterStore();
+	const { currentSemester } = useCurrentSemester();
+
+	// Fetch semesters for dropdown options
+	useEffect(() => {
+		fetchSemesters();
+	}, [fetchSemesters]);
+
+	// Set default semester to current semester when component mounts
+	useEffect(() => {
+		if (currentSemester && !semester) {
+			onSemesterChange(currentSemester.id);
+		}
+	}, [currentSemester, semester, onSemesterChange]);
 
 	const handleCreateThesis = () => {
-		navigateWithLoading('/lecturer/create-thesis');
+		navigateWithLoading('/lecturer/thesis-management/create-thesis');
 	};
 
 	// Check if this specific button is loading
 	const isCreateButtonLoading =
-		isNavigating && targetPath === '/lecturer/create-thesis';
+		isNavigating && targetPath === '/lecturer/thesis-management/create-thesis';
 
 	return (
 		<Row
@@ -77,6 +102,21 @@ export default function ThesisFilterBar({
 					value={owned}
 					options={ownedOptions}
 					onChange={onOwnedChange}
+					style={{ width: '100%' }}
+				/>
+			</Col>
+
+			<Col style={{ width: 140 }}>
+				<Select
+					allowClear
+					placeholder="All Semesters"
+					value={semester}
+					options={semesters.map((s) => ({
+						value: s.id,
+						label: s.name,
+					}))}
+					onChange={onSemesterChange}
+					loading={semesterLoading}
 					style={{ width: '100%' }}
 				/>
 			</Col>

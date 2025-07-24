@@ -131,7 +131,7 @@ class ThesisService {
 		thesesIds: string[];
 		isPublish: boolean;
 	}): Promise<ApiResponse<void>> {
-		const response = await httpClient.put<ApiResponse<void>>(
+		const response = await httpClient.post<ApiResponse<void>>(
 			`${this.baseUrl}/publish`,
 			data,
 		);

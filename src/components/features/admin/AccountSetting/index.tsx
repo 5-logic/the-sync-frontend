@@ -24,6 +24,7 @@ const AccountSettingModal: React.FC<AccountSettingModalProps> = ({
 		username: string;
 		email: string;
 	}>({ username: '', email: '' });
+	const [hasChanges, setHasChanges] = useState(false);
 
 	useEffect(() => {
 		if (open) {
@@ -38,9 +39,20 @@ const AccountSettingModal: React.FC<AccountSettingModalProps> = ({
 					newPassword: '',
 					confirmPassword: '',
 				});
+				setHasChanges(false);
 			});
 		}
 	}, [open, fetchAdmin, form]);
+
+	// Check for changes whenever form values change
+	const handleFormChange = () => {
+		const values = form.getFieldsValue();
+		const emailChanged = values.email !== adminData.email;
+		const passwordFieldsHaveValue =
+			values.oldPassword || values.newPassword || values.confirmPassword;
+
+		setHasChanges(emailChanged || passwordFieldsHaveValue);
+	};
 
 	const handleFinish = async (values: {
 		email: string;
@@ -48,11 +60,8 @@ const AccountSettingModal: React.FC<AccountSettingModalProps> = ({
 		newPassword: string;
 		confirmPassword: string;
 	}) => {
-		if (
-			values.newPassword &&
-			values.confirmPassword &&
-			values.newPassword !== values.confirmPassword
-		) {
+		// Validate password confirmation
+		if (values.newPassword && values.newPassword !== values.confirmPassword) {
 			form.setFields([
 				{
 					name: 'confirmPassword',
@@ -61,18 +70,52 @@ const AccountSettingModal: React.FC<AccountSettingModalProps> = ({
 			]);
 			return;
 		}
+
+		// Check if only current password is filled without new password
+		if (values.oldPassword && !values.newPassword) {
+			form.setFields([
+				{
+					name: 'newPassword',
+					errors: [
+						'New password is required when current password is provided',
+					],
+				},
+			]);
+			return;
+		}
+
+		// Check if new password is filled without current password
+		if (values.newPassword && !values.oldPassword) {
+			form.setFields([
+				{
+					name: 'oldPassword',
+					errors: ['Current password is required when setting new password'],
+				},
+			]);
+			return;
+		}
+
 		try {
 			const emailChanged = values.email !== adminData.email;
-			const passwordChanged = values.oldPassword || values.newPassword;
+			const passwordChanged = values.oldPassword && values.newPassword;
+
 			if (!emailChanged && !passwordChanged) {
 				onClose();
 				return;
 			}
-			const updateDto: AdminUpdate = { email: values.email };
-			if (values.oldPassword && values.newPassword) {
+
+			// Build update object with only changed fields
+			const updateDto: AdminUpdate = {};
+
+			if (emailChanged) {
+				updateDto.email = values.email;
+			}
+
+			if (passwordChanged) {
 				updateDto.oldPassword = values.oldPassword;
 				updateDto.newPassword = values.newPassword;
 			}
+
 			const updated = await updateAdmin(updateDto);
 			if (updated) {
 				setAdmin(updated);
@@ -81,6 +124,7 @@ const AccountSettingModal: React.FC<AccountSettingModalProps> = ({
 					newPassword: '',
 					confirmPassword: '',
 				});
+				setHasChanges(false);
 				onClose();
 			}
 		} catch (err: unknown) {
@@ -106,6 +150,7 @@ const AccountSettingModal: React.FC<AccountSettingModalProps> = ({
 				layout="vertical"
 				requiredMark={false}
 				onFinish={handleFinish}
+				onValuesChange={handleFormChange}
 				className="space-y-4"
 			>
 				<Form.Item label={<FormLabel text="Username" isBold />} name="username">
@@ -121,7 +166,22 @@ const AccountSettingModal: React.FC<AccountSettingModalProps> = ({
 				<Form.Item
 					label={<FormLabel text="Current Password" isBold />}
 					name="oldPassword"
-					rules={[]}
+					dependencies={['newPassword']}
+					rules={[
+						({ getFieldValue }) => ({
+							validator(_, value) {
+								const newPassword = getFieldValue('newPassword');
+								if (newPassword && !value) {
+									return Promise.reject(
+										new Error(
+											'Current password is required when setting new password',
+										),
+									);
+								}
+								return Promise.resolve();
+							},
+						}),
+					]}
 				>
 					<Input.Password
 						autoComplete="current-password"
@@ -131,10 +191,21 @@ const AccountSettingModal: React.FC<AccountSettingModalProps> = ({
 				<Form.Item
 					label={<FormLabel text="New Password" isBold />}
 					name="newPassword"
+					dependencies={['oldPassword']}
 					rules={[
 						({ getFieldValue }) => ({
 							validator(_, value) {
 								if (!value) return Promise.resolve();
+
+								const oldPassword = getFieldValue('oldPassword');
+								if (value && !oldPassword) {
+									return Promise.reject(
+										new Error(
+											'Current password is required when setting new password',
+										),
+									);
+								}
+
 								if (value.length < 12) {
 									return Promise.reject(
 										new Error('Password must be at least 12 characters long'),
@@ -166,8 +237,15 @@ const AccountSettingModal: React.FC<AccountSettingModalProps> = ({
 					rules={[
 						({ getFieldValue }) => ({
 							validator(_, value) {
-								if (!value) return Promise.resolve();
-								if (value !== getFieldValue('newPassword')) {
+								if (!value && !getFieldValue('newPassword')) {
+									return Promise.resolve();
+								}
+								if (!value && getFieldValue('newPassword')) {
+									return Promise.reject(
+										new Error('Please confirm your new password'),
+									);
+								}
+								if (value && value !== getFieldValue('newPassword')) {
 									return Promise.reject(new Error('Passwords do not match'));
 								}
 								return Promise.resolve();
@@ -188,6 +266,7 @@ const AccountSettingModal: React.FC<AccountSettingModalProps> = ({
 						type="primary"
 						htmlType="submit"
 						loading={loading}
+						disabled={!hasChanges}
 						style={{ minWidth: 120 }}
 					>
 						Save Changes

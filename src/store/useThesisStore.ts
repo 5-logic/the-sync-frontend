@@ -29,6 +29,7 @@ export interface ThesisFilters {
 	selectedStatus: ThesisStatusFilter;
 	selectedDomain?: string;
 	selectedOwned?: boolean;
+	selectedSemester?: string;
 }
 
 // Complete thesis store state
@@ -63,6 +64,7 @@ interface ThesisState {
 	selectedStatus: ThesisStatusFilter;
 	selectedDomain: string | undefined;
 	selectedOwned: boolean | undefined;
+	selectedSemester: string | undefined;
 
 	// Current lecturer
 	currentLecturerId: string | null;
@@ -97,6 +99,7 @@ interface ThesisState {
 	setSelectedStatus: (status: ThesisStatusFilter) => void;
 	setSelectedDomain: (domain: string | undefined) => void;
 	setSelectedOwned: (owned: boolean | undefined) => void;
+	setSelectedSemester: (semester: string | undefined) => void;
 	filterTheses: () => void;
 
 	// Utilities
@@ -151,6 +154,7 @@ export const useThesisStore = create<ThesisState>()(
 			selectedStatus: undefined,
 			selectedDomain: undefined,
 			selectedOwned: undefined,
+			selectedSemester: undefined,
 			currentLecturerId: null,
 			sessionLecturerId: null,
 
@@ -525,6 +529,11 @@ export const useThesisStore = create<ThesisState>()(
 				get().filterTheses();
 			},
 
+			setSelectedSemester: (semester: string | undefined) => {
+				set({ selectedSemester: semester });
+				get().filterTheses();
+			},
+
 			filterTheses: () => {
 				const {
 					theses,
@@ -532,6 +541,7 @@ export const useThesisStore = create<ThesisState>()(
 					selectedStatus,
 					selectedDomain,
 					selectedOwned,
+					selectedSemester,
 					sessionLecturerId,
 				} = get();
 
@@ -553,6 +563,13 @@ export const useThesisStore = create<ThesisState>()(
 				if (selectedDomain) {
 					filtered = filtered.filter(
 						(thesis) => thesis.domain === selectedDomain,
+					);
+				}
+
+				// Filter by semester
+				if (selectedSemester) {
+					filtered = filtered.filter(
+						(thesis) => thesis.semesterId === selectedSemester,
 					);
 				}
 

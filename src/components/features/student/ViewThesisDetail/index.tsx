@@ -98,9 +98,12 @@ export default function StudentThesisDetailPage() {
 							phoneNumber?: string;
 						},
 					},
-					// Use actual data from API response if available with type guards
+					// Map thesisRequiredSkills to the expected format
 					thesisRequiredSkills: hasThesisSkills(thesisData)
-						? thesisData.thesisRequiredSkills || []
+						? (thesisData.thesisRequiredSkills || []).map((item) => ({
+								id: item.skill.id,
+								name: item.skill.name,
+							}))
 						: [],
 					thesisVersions: hasThesisVersions(thesisData)
 						? thesisData.thesisVersions || []

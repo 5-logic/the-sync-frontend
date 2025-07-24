@@ -41,7 +41,7 @@ export default function ThesisCard({
 		(thesis.thesisRequiredSkills?.length || 0) - maxVisibleSkills;
 
 	// Check if thesis is already taken by another group
-	const isThesisTaken = thesis.groupId !== null;
+	const isThesisTaken = thesis.groupId != null; // Use != null to catch both null and undefined
 
 	// Check if current group has this thesis assigned
 	const isThesisAssignedToGroup = group?.id === thesis.groupId;
@@ -189,13 +189,13 @@ export default function ThesisCard({
 						overflow: 'hidden',
 					}}
 				>
-					{visibleSkills.map((trs) => (
+					{visibleSkills.map((skill) => (
 						<Tag
-							key={trs.skill.id}
+							key={skill.id}
 							color="processing"
 							style={{ borderRadius: 6, border: '1px solid #91d5ff' }}
 						>
-							{trs.skill.name}
+							{skill.name}
 						</Tag>
 					))}
 					{extraSkillsCount > 0 && (
