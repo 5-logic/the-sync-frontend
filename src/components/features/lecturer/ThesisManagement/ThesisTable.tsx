@@ -33,7 +33,7 @@ import {
 	handleThesisSuccess,
 } from '@/lib/utils/thesis-handlers';
 import { Thesis } from '@/schemas/thesis';
-import { useLecturerStore, useThesisStore } from '@/store';
+import { useLecturerStore, useSemesterStore, useThesisStore } from '@/store';
 
 interface Props {
 	data: Thesis[];
@@ -43,6 +43,7 @@ interface Props {
 export default function ThesisTable({ data, loading }: Readonly<Props>) {
 	const { deleteThesis, submitThesis } = useThesisStore();
 	const { getLecturerById, fetchLecturers } = useLecturerStore();
+	const { getSemesterById, fetchSemesters } = useSemesterStore();
 	const { session } = useSessionData();
 	const { isNavigating, targetPath, navigateWithLoading } =
 		useNavigationLoader();
@@ -52,10 +53,11 @@ export default function ThesisTable({ data, loading }: Readonly<Props>) {
 		string | null
 	>(null);
 
-	// Fetch lecturers for Owner column display
+	// Fetch lecturers and semesters for display
 	useEffect(() => {
 		fetchLecturers();
-	}, [fetchLecturers]);
+		fetchSemesters();
+	}, [fetchLecturers, fetchSemesters]);
 
 	// Memoized handlers to prevent unnecessary re-renders
 	const handleEdit = useCallback(
@@ -390,30 +392,16 @@ export default function ThesisTable({ data, loading }: Readonly<Props>) {
 				},
 			},
 			{
-				title: 'Domain',
-				dataIndex: 'domain',
-				key: 'domain',
+				title: 'Semester',
+				dataIndex: 'semesterId',
+				key: 'semester',
 				width: UI_CONSTANTS.TABLE_WIDTHS.DOMAIN,
 				ellipsis: {
 					showTitle: false,
 				},
-				render: (domain: string | null | undefined) => {
-					if (!domain) {
-						return (
-							<div
-								style={{
-									display: 'flex',
-									alignItems: 'center',
-									justifyContent: 'center',
-									height: '100%',
-								}}
-							>
-								<Tooltip title="No Domain specified">
-									<Tag color="default">No Domain</Tag>
-								</Tooltip>
-							</div>
-						);
-					}
+				render: (semesterId: string) => {
+					const semester = getSemesterById(semesterId);
+					const displayName = semester?.name ?? 'Unknown';
 
 					return (
 						<div
@@ -424,9 +412,9 @@ export default function ThesisTable({ data, loading }: Readonly<Props>) {
 								height: '100%',
 							}}
 						>
-							<Tooltip title={domain} placement="topLeft">
+							<Tooltip title={displayName} placement="topLeft">
 								<Tag
-									color="blue"
+									color="purple"
 									style={{
 										maxWidth: '100%',
 										overflow: 'hidden',
@@ -435,7 +423,7 @@ export default function ThesisTable({ data, loading }: Readonly<Props>) {
 										display: 'inline-block',
 									}}
 								>
-									{domain}
+									{displayName}
 								</Tag>
 							</Tooltip>
 						</div>
@@ -479,7 +467,7 @@ export default function ThesisTable({ data, loading }: Readonly<Props>) {
 				render: (_, record) => renderActionsColumn(record),
 			},
 		],
-		[getLecturerById, getStatusColor, renderActionsColumn],
+		[getLecturerById, getSemesterById, getStatusColor, renderActionsColumn],
 	);
 
 	return (
