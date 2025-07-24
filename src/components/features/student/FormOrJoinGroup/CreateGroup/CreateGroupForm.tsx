@@ -6,6 +6,7 @@ import CreateGroupInviteMembersSimple from '@/components/features/student/FormOr
 import GroupFormFields from '@/components/features/student/FormOrJoinGroup/CreateGroup/GroupFormFields';
 import groupService from '@/lib/services/groups.service';
 import requestService from '@/lib/services/requests.service';
+import { handleApiError } from '@/lib/utils/handleApi';
 import { showNotification } from '@/lib/utils/notification';
 import { GroupCreateService as GroupCreate } from '@/schemas/group';
 import type { Student } from '@/schemas/student';
@@ -130,10 +131,8 @@ function CreateGroupForm() {
 				setMembers([]);
 			} catch (error) {
 				console.error('Error creating group:', error);
-				showNotification.error(
-					'Failed to Create Group',
-					error instanceof Error ? error.message : 'Failed to create group',
-				);
+				const apiError = handleApiError(error, 'Failed to create group');
+				showNotification.error('Failed to Create Group', apiError.message);
 			} finally {
 				setLoading(false);
 			}
