@@ -51,16 +51,16 @@ export const getColumns = (
 			dataIndex: 'major',
 			key: 'major',
 			align: 'center',
-			render: (text, record) =>
-				RowSpanCell(highlightText(text, searchText), record.rowSpanMajor),
+			render: (text) => RowSpanCell(highlightText(text, searchText)),
+			onCell: (record) => ({ rowSpan: record.rowSpanMajor }),
 		},
 		{
 			title: 'Thesis Title',
 			dataIndex: 'thesisName',
 			key: 'thesisName',
 			align: 'center',
-			render: (text, record) =>
-				RowSpanCell(highlightText(text, searchText), record.rowSpanGroup),
+			render: (text) => RowSpanCell(highlightText(text, searchText)),
+			onCell: (record) => ({ rowSpan: record.rowSpanGroup }),
 		},
 	];
 
@@ -71,18 +71,18 @@ export const getColumns = (
 				dataIndex: 'abbreviation',
 				key: 'abbreviation',
 				align: 'center',
-				render: (abbreviation, record) =>
+				render: (abbreviation) =>
 					RowSpanCell(
 						<Tag color="blue">{highlightText(abbreviation, searchText)}</Tag>,
-						record.rowSpanGroup,
 					),
+				onCell: (record) => ({ rowSpan: record.rowSpanGroup }),
 			},
 			{
 				title: 'Supervisor',
 				dataIndex: 'supervisor',
 				key: 'supervisor',
 				align: 'center',
-				render: (supervisor, record) =>
+				render: (supervisor) =>
 					RowSpanCell(
 						supervisor ? (
 							<div style={{ textAlign: 'left' }}>
@@ -97,8 +97,8 @@ export const getColumns = (
 						) : (
 							<span style={{ color: '#999' }}>-</span>
 						),
-						record.rowSpanGroup,
 					),
+				onCell: (record) => ({ rowSpan: record.rowSpanGroup }),
 			},
 		);
 	}
@@ -108,8 +108,8 @@ export const getColumns = (
 		dataIndex: 'semester',
 		key: 'semester',
 		align: 'center',
-		render: (text, record) =>
-			RowSpanCell(highlightText(text, searchText), record.rowSpanSemester),
+		render: (text) => RowSpanCell(highlightText(text, searchText)),
+		onCell: (record) => ({ rowSpan: record.rowSpanSemester }),
 	});
 
 	if (showStatus) {
