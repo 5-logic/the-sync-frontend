@@ -24,9 +24,7 @@ import {
 	ThesisStatus,
 	UI_CONSTANTS,
 } from '@/lib/constants/thesis';
-import { aiDuplicateService } from '@/lib/services/ai-duplicate.service';
 import { formatDate } from '@/lib/utils/dateFormat';
-import { showNotification } from '@/lib/utils/notification';
 import {
 	THESIS_ERROR_CONFIGS,
 	THESIS_SUCCESS_CONFIGS,
@@ -96,34 +94,7 @@ export default function ThesisTable({ data, loading }: Readonly<Props>) {
 			// Set loading state for this specific thesis
 			setSubmitLoadingThesisId(thesis.id);
 
-			try {
-				// Check for duplicates first
-				const duplicateResponse = await aiDuplicateService.checkDuplicate(
-					thesis.id,
-				);
-				if (
-					duplicateResponse.success &&
-					duplicateResponse.data &&
-					duplicateResponse.data.length > 0
-				) {
-					// Found duplicates - block submission
-					const duplicateCount = duplicateResponse.data.length;
-					showNotification.error(
-						'Cannot Submit Thesis',
-						`Found ${duplicateCount} similar thesis${duplicateCount > 1 ? 'es' : ''}. Please review and resolve the similarities before submitting.`,
-					);
-					return; // Exit early, don't submit
-				}
-			} catch (duplicateError) {
-				console.error('Duplicate check failed:', duplicateError);
-				showNotification.error(
-					'Duplicate Check Failed',
-					'Unable to check for duplicate theses. Please try again.',
-				);
-				return; // Exit early on error
-			}
-
-			// No duplicates found, proceed with confirmation modal
+			// Proceed with confirmation modal directly
 			ThesisConfirmationModals.submit(thesis.englishName, async () => {
 				try {
 					const success = await submitThesis(thesis.id);
