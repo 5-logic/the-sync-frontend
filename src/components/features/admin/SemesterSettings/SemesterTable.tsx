@@ -41,6 +41,14 @@ import { useSemesterStore } from '@/store';
 const { Option } = Select;
 const { Text } = Typography;
 
+// Form values type with string support for form inputs
+type SemesterFormValues = Omit<SemesterUpdate, 'maxGroup'> & {
+	maxGroup?: number | string;
+};
+
+// Original values type for comparison (allows all SemesterUpdate fields)
+type SemesterOriginalValues = SemesterUpdate;
+
 export interface SemesterTableRef {
 	refresh: () => Promise<void>;
 }
@@ -379,32 +387,14 @@ const SemesterTable = forwardRef<
 		setIsFormChanged(false);
 	}, [form]);
 
-	const handleEditSubmit = useCallback(async () => {
-		try {
-			const values = await form.validateFields();
-			if (!editingRecord) return;
-
-			// Validate edit permissions
-			if (!validateEditPermissions(editingRecord)) return;
-
-			// Validate status transition rules
-			if (!validateStatusTransition(editingRecord, values)) return;
-
-			// Create original values object for comparison
-			const original = {
-				name: editingRecord.name,
-				code: editingRecord.code,
-				maxGroup: editingRecord.maxGroup,
-				status: editingRecord.status,
-				ongoingPhase: editingRecord.ongoingPhase,
-				defaultThesesPerLecturer: editingRecord.defaultThesesPerLecturer,
-				maxThesesPerLecturer: editingRecord.maxThesesPerLecturer,
-			};
-
-			// Build payload with only changed fields
+	// Helper function to build update payload with only changed fields
+	const buildUpdatePayload = useCallback(
+		(
+			values: SemesterFormValues,
+			original: SemesterOriginalValues,
+		): Partial<SemesterUpdate> => {
 			const payload: Partial<SemesterUpdate> = {};
 
-			// Check each field for changes and add to payload if different
 			if (values.name !== original.name) {
 				payload.name = values.name;
 			}
@@ -414,7 +404,10 @@ const SemesterTable = forwardRef<
 			if (values.maxGroup !== original.maxGroup) {
 				// Only include maxGroup if status allows it (not End)
 				if (values.status !== 'End' && values.maxGroup) {
-					payload.maxGroup = parseInt(values.maxGroup, 10);
+					payload.maxGroup =
+						typeof values.maxGroup === 'string'
+							? parseInt(values.maxGroup, 10)
+							: values.maxGroup;
 				}
 			}
 			if (values.status !== original.status) {
@@ -435,6 +428,41 @@ const SemesterTable = forwardRef<
 				payload.maxThesesPerLecturer = Number(values.maxThesesPerLecturer);
 			}
 
+			return payload;
+		},
+		[],
+	);
+
+	// Helper function to get original values for comparison
+	const getOriginalValues = useCallback((record: Semester) => {
+		return {
+			name: record.name,
+			code: record.code,
+			maxGroup: record.maxGroup,
+			status: record.status,
+			ongoingPhase: record.ongoingPhase,
+			defaultThesesPerLecturer: record.defaultThesesPerLecturer,
+			maxThesesPerLecturer: record.maxThesesPerLecturer,
+		};
+	}, []);
+
+	const handleEditSubmit = useCallback(async () => {
+		try {
+			const values = await form.validateFields();
+			if (!editingRecord) return;
+
+			// Validate edit permissions
+			if (!validateEditPermissions(editingRecord)) return;
+
+			// Validate status transition rules
+			if (!validateStatusTransition(editingRecord, values)) return;
+
+			// Create original values object for comparison
+			const original = getOriginalValues(editingRecord);
+
+			// Build payload with only changed fields
+			const payload = buildUpdatePayload(values, original);
+
 			// Only proceed if there are actual changes
 			if (Object.keys(payload).length === 0) {
 				handleUpdateSuccess();
@@ -442,10 +470,7 @@ const SemesterTable = forwardRef<
 			}
 
 			// Update semester with only changed fields
-			const success = await updateSemester(
-				editingRecord.id,
-				payload as SemesterUpdate,
-			);
+			const success = await updateSemester(editingRecord.id, payload);
 			if (success) {
 				handleUpdateSuccess();
 			}
@@ -459,6 +484,8 @@ const SemesterTable = forwardRef<
 		validateEditPermissions,
 		validateStatusTransition,
 		handleUpdateSuccess,
+		getOriginalValues,
+		buildUpdatePayload,
 	]);
 
 	const handleCancel = useCallback(() => {
