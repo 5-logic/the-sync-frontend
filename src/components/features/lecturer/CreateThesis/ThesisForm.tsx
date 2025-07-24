@@ -138,10 +138,10 @@ export default function ThesisForm({
 			// Handle array comparison for skills
 			if (field === 'skills') {
 				const currentSkills = Array.isArray(currentValue)
-					? currentValue.sort()
+					? currentValue.toSorted((a: string, b: string) => a.localeCompare(b))
 					: [];
 				const initialSkills = Array.isArray(initialValue)
-					? initialValue.sort()
+					? initialValue.toSorted((a: string, b: string) => a.localeCompare(b))
 					: [];
 				return JSON.stringify(currentSkills) !== JSON.stringify(initialSkills);
 			}
@@ -199,10 +199,14 @@ export default function ThesisForm({
 
 		// Handle skills separately
 		const currentSkills = Array.isArray(currentValues.skills)
-			? currentValues.skills.sort()
+			? currentValues.skills.toSorted((a: string, b: string) =>
+					a.localeCompare(b),
+				)
 			: [];
 		const initialSkills = Array.isArray(initialValues?.skills)
-			? initialValues.skills.sort()
+			? initialValues.skills.toSorted((a: string, b: string) =>
+					a.localeCompare(b),
+				)
 			: [];
 		if (JSON.stringify(currentSkills) !== JSON.stringify(initialSkills)) {
 			changedFields.skillIds = currentSkills;
