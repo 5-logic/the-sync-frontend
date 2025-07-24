@@ -9,6 +9,115 @@ For more information about this project, see the [README](./README.md).
 
 ---
 
+## [0.6.1] - 2025-07-24
+
+### Added
+
+#### Enhanced User Interface Components
+
+- New ConfirmModal component with 100 lines of enhanced confirmation dialog functionality
+- Loading state notifications for better user feedback during async operations
+- Search functionality for project area selection in group forms
+- Semester filtering capabilities in thesis management components
+- Loading states for duplicate checks in thesis submission and approval actions
+
+#### Form and Data Management Improvements
+
+- Form change detection in ThesisForm for both create and edit modes
+- Enhanced edit dialogs with change tracking and validation for admin, lecturer, and student management
+- Real-time group data updates with refresh functionality in GroupInfoCard
+- Background member invitation processing in group creation flow
+- Improved array comparison logic and utilities
+
+### Changed
+
+#### Thesis Management Enhancements
+
+- Moved lecturer create thesis page to new structure: `src/app/(dashboard)/lecturer/thesis-management/create-thesis/page.tsx`
+- Increased thesis description maximum length from 1000 to 2000 characters
+- Simplified thesisRequiredSkills structure across components and hooks
+- Updated thesis route paths to reflect new organizational structure
+- Enhanced thesis filtering with semester-based filtering and loading states
+- Improved thesis table layout with better column width adjustments and status alignment
+
+#### Group Management Improvements
+
+- Enhanced GroupInfoCard with member limits and improved refresh functionality (463 lines of changes)
+- Improved GroupMembersCard with loading states and better member action handling
+- Enhanced InviteMembersDialog with better user exclusion and search functionality
+- Refined group creation flow with better error handling and user feedback
+- Added group member constants for maximum limits management
+
+#### User Experience Enhancements
+
+- Enhanced notification system with titles and loading notification support
+- Improved search functionality with loading states and better user feedback
+- Enhanced account settings modal with form change tracking and password validation
+- Better handling of null and undefined values in thesis and group operations
+- Improved breadcrumb navigation and filtering components
+
+#### API and Service Improvements
+
+- Changed publishTheses method from PUT to POST for correct HTTP method usage
+- Enhanced duplicate check integration in thesis submission workflow
+- Improved error handling with better API error utilization
+- Optimized cache management and loading state handling
+- Enhanced semester update logic to only send changed fields
+
+### Fixed
+
+#### Authentication and Security
+
+- Fixed logout functionality after admin profile updates when password is changed
+- Enhanced password field validation in account settings
+- Improved session and authentication state management
+
+#### UI and Form Handling
+
+- Fixed edit and delete permissions for thesis based on ownership and status
+- Corrected navigation paths in breadcrumb and thesis filter components
+- Fixed student search feedback with proper loading states
+- Resolved array comparison issues in form validation
+- Fixed conditional display logic for requests button in group dashboard
+
+#### Data Management
+
+- Fixed thesis taken check to handle both null and undefined values
+- Improved register button logic for thesis group handling
+- Enhanced semester update validation and refresh mechanisms
+- Fixed fetch logic for students list in invite dialogs
+- Corrected skills comparison using toSorted for consistent ordering
+
+#### Performance and Stability
+
+- Optimized loading state management in cached fetch actions
+- Improved memory management and prevented unnecessary re-renders
+- Enhanced error boundary handling across components
+- Fixed race conditions in form submissions and data updates
+
+### Technical Details
+
+- **Major Refactoring:** Thesis management structure reorganization with new routing
+- **Component Updates:** 52 files changed with 2074 additions and 815 deletions
+- **Enhanced Utilities:** New notification utilities and form validation helpers
+- **Store Improvements:** Better cache management and optimized state updates
+- **Schema Updates:** Enhanced thesis schema with improved validation patterns
+
+### API Breaking Changes
+
+- Thesis creation endpoint structure updates for skill requirements
+- Group member management API enhancements with new validation rules
+- Semester filtering integration in thesis management endpoints
+
+### Migration Notes
+
+- Update thesis management navigation to use new route structure
+- Refresh browser cache for updated UI components and styling
+- Review group member limits and validation rules for existing groups
+- Check thesis description length constraints (now 2000 characters)
+
+---
+
 ## [0.6.0] - 2025-07-23
 
 ### Added
