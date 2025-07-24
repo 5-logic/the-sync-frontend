@@ -24,7 +24,7 @@ const ROUTE_TITLES: Record<string, string> = {
 	'/lecturer/checklist-detail': 'Checklist Detail',
 	'/lecturer/checklist-edit': 'Edit Checklist',
 	'/lecturer/create-checklist': 'Create Checklist',
-	'/lecturer/create-thesis': 'Create Thesis',
+	'/lecturer/thesis-management/create-thesis': 'Create Thesis',
 	'/lecturer/account-setting': 'Account Setting',
 	'/lecturer/assign-lecturer-review': 'Assign Lecturer Review',
 	'/lecturer/assign-list-publish-thesis': 'Assign List Publish Thesis',

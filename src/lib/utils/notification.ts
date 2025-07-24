@@ -1,4 +1,6 @@
+import { LoadingOutlined } from '@ant-design/icons';
 import { notification } from 'antd';
+import React from 'react';
 
 /**
  * Configure global notification settings
@@ -51,14 +53,36 @@ export const showNotification = {
 	},
 
 	/**
+	 * Show loading notification (info with loading icon)
+	 */
+	loading: (
+		message: string,
+		description?: string,
+		options?: { key?: string; duration?: number },
+	) => {
+		notification.info({
+			message,
+			description,
+			duration: options?.duration ?? 0, // Don't auto dismiss by default
+			key: options?.key,
+			icon: React.createElement(LoadingOutlined),
+		});
+	},
+
+	/**
 	 * Destroy all notifications
 	 */
-	destroy: () => {
-		notification.destroy();
+	destroy: (key?: string) => {
+		if (key) {
+			notification.destroy(key);
+		} else {
+			notification.destroy();
+		}
 	},
 
 	/**
 	 * Destroy specific notification by key
+	 * @deprecated Use destroy(key) instead
 	 */
 	destroyByKey: (key: string) => {
 		notification.destroy(key);
