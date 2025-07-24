@@ -8,10 +8,12 @@ import { GroupConfirmationModals } from '@/components/features/student/GroupDash
 import GroupMembersCard from '@/components/features/student/GroupDashboard/GroupMembersCard';
 import InviteMembersDialog from '@/components/features/student/GroupDashboard/InviteMembersDialog';
 import { useSessionData } from '@/hooks/auth/useAuth';
+import { GROUP_MAX_MEMBERS } from '@/lib/constants/group';
 import groupService from '@/lib/services/groups.service';
 import { formatDate } from '@/lib/utils/dateFormat';
 import { showNotification } from '@/lib/utils/notification';
 import { GroupDashboard } from '@/schemas/group';
+import { useRequestsStore } from '@/store';
 import { useGroupDashboardStore } from '@/store/useGroupDashboardStore';
 
 const { Title, Text } = Typography;
@@ -33,6 +35,7 @@ export default memo(function GroupInfoCard({
 	const [localGroup, setLocalGroup] = useState<GroupDashboard>(group);
 	const { session } = useSessionData();
 	const { clearGroup } = useGroupDashboardStore();
+	const { fetchGroupRequests } = useRequestsStore();
 	const router = useRouter();
 
 	// Sync local state with prop changes
@@ -55,6 +58,9 @@ export default memo(function GroupInfoCard({
 				// Update local component state with fresh data
 				setLocalGroup(response.data[0]);
 			}
+
+			// Also refresh requests to get latest request data
+			await fetchGroupRequests(localGroup.id, true);
 		} catch {
 			showNotification.error(
 				'Refresh Failed',
@@ -67,6 +73,9 @@ export default memo(function GroupInfoCard({
 
 	// Check if current user is the leader
 	const isCurrentUserLeader = session?.user?.id === localGroup.leader.userId;
+
+	// Check if group has reached maximum members
+	const hasReachedMaxMembers = localGroup.members.length >= GROUP_MAX_MEMBERS;
 
 	// Check if group has thesis or submissions (cannot delete)
 	const hasThesisOrSubmissions = localGroup.thesis !== null;
@@ -309,7 +318,7 @@ export default memo(function GroupInfoCard({
 							{/* Responsibilities */}
 							<div>
 								<Text className="text-sm text-gray-400 block font-semibold">
-									Responsibilities
+									Expected Responsibilities
 								</Text>
 								{localGroup.responsibilities &&
 								localGroup.responsibilities.length > 0 ? (
@@ -339,7 +348,11 @@ export default memo(function GroupInfoCard({
 					</div>
 
 					{/* Members Card */}
-					<GroupMembersCard group={localGroup} viewOnly={viewOnly} />
+					<GroupMembersCard
+						group={localGroup}
+						viewOnly={viewOnly}
+						onRefresh={handleRefreshGroup}
+					/>
 
 					{/* Created Date and Action Buttons */}
 					<div
@@ -390,11 +403,13 @@ export default memo(function GroupInfoCard({
 									<Button
 										type="primary"
 										onClick={() => setIsInviteDialogVisible(true)}
-										disabled={!canModifyGroup}
+										disabled={!canModifyGroup || hasReachedMaxMembers}
 										title={
 											!canModifyGroup
 												? 'Cannot invite members during this semester status'
-												: 'Invite new members to this group'
+												: hasReachedMaxMembers
+													? `Cannot invite more members. Maximum ${GROUP_MAX_MEMBERS} members allowed.`
+													: 'Invite new members to this group'
 										}
 									>
 										Invite Members
