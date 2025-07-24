@@ -119,12 +119,8 @@ export const ThesisWithRelationsSchema = ThesisSchema.extend({
 	thesisRequiredSkills: z
 		.array(
 			z.object({
-				thesisId: z.string().uuid(),
-				skillId: z.string().uuid(),
-				skill: z.object({
-					id: z.string().uuid(),
-					name: z.string(),
-				}),
+				id: z.string().uuid(),
+				name: z.string(),
 			}),
 		)
 		.optional(),

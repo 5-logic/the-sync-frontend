@@ -189,13 +189,13 @@ export default function ThesisCard({
 						overflow: 'hidden',
 					}}
 				>
-					{visibleSkills.map((trs) => (
+					{visibleSkills.map((skill) => (
 						<Tag
-							key={trs.skill.id}
+							key={skill.id}
 							color="processing"
 							style={{ borderRadius: 6, border: '1px solid #91d5ff' }}
 						>
-							{trs.skill.name}
+							{skill.name}
 						</Tag>
 					))}
 					{extraSkillsCount > 0 && (

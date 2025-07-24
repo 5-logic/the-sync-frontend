@@ -25,9 +25,8 @@ export interface BaseThesisInfo {
 	domain?: string | null;
 	status: 'New' | 'Pending' | 'Approved' | 'Rejected';
 	thesisRequiredSkills?: Array<{
-		thesisId: string;
-		skillId: string;
-		skill: { id: string; name: string };
+		id: string;
+		name: string;
 	}>;
 	thesisVersions?: Array<{
 		id: string;
@@ -137,9 +136,9 @@ export default function BaseThesisInfoCard({ thesis, supervisor }: Props) {
 				</Title>
 				<Space wrap size={[8, 12]}>
 					{thesis.thesisRequiredSkills?.length ? (
-						thesis.thesisRequiredSkills
-							.filter((trs) => trs.skill) // Filter out undefined skills
-							.map((trs) => <Tag key={trs.skill.id}>{trs.skill.name}</Tag>)
+						thesis.thesisRequiredSkills.map((skill) => (
+							<Tag key={skill.id}>{skill.name}</Tag>
+						))
 					) : (
 						<Text type="secondary">No skills specified</Text>
 					)}
