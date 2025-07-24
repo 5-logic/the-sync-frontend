@@ -61,7 +61,7 @@ export default function EditLecturerDialog({
 			lecturerData.gender = values.gender;
 		}
 
-		return await updateLecturer(lecturer.id, lecturerData as LecturerUpdate);
+		return await updateLecturer(lecturer.id, lecturerData);
 	};
 
 	return (
