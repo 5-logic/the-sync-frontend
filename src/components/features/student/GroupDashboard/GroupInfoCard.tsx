@@ -1,6 +1,7 @@
-import { Button, Card, Divider, Space, Tag, Typography } from 'antd';
+import { ReloadOutlined } from '@ant-design/icons';
+import { Button, Card, Divider, Space, Spin, Tag, Typography } from 'antd';
 import { useRouter } from 'next/navigation';
-import { memo, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 
 import EditGroupInfoDialog from '@/components/features/student/GroupDashboard/EditGroupInfoDialog';
 import { GroupConfirmationModals } from '@/components/features/student/GroupDashboard/GroupConfirmationModals';
@@ -28,38 +29,63 @@ export default memo(function GroupInfoCard({
 	const [isEditDialogVisible, setIsEditDialogVisible] = useState(false);
 	const [isLeaving, setIsLeaving] = useState(false);
 	const [isDeleting, setIsDeleting] = useState(false);
+	const [isRefreshing, setIsRefreshing] = useState(false);
+	const [localGroup, setLocalGroup] = useState<GroupDashboard>(group);
 	const { session } = useSessionData();
-	const { refreshGroup, clearGroup } = useGroupDashboardStore();
+	const { clearGroup } = useGroupDashboardStore();
 	const router = useRouter();
+
+	// Sync local state with prop changes
+	useEffect(() => {
+		setLocalGroup(group);
+	}, [group]);
 
 	const handleInviteSuccess = () => {
 		setIsInviteDialogVisible(false);
 		// Refresh group data to reflect any changes
-		refreshGroup();
+		handleRefreshGroup();
+	};
+
+	const handleRefreshGroup = async () => {
+		setIsRefreshing(true);
+		try {
+			// Fetch fresh group data directly without updating global store
+			const response = await groupService.getStudentGroup();
+			if (response.success && response.data.length > 0) {
+				// Update local component state with fresh data
+				setLocalGroup(response.data[0]);
+			}
+		} catch {
+			showNotification.error(
+				'Failed to refresh group information. Please try again.',
+			);
+		} finally {
+			setIsRefreshing(false);
+		}
 	};
 
 	// Check if current user is the leader
-	const isCurrentUserLeader = session?.user?.id === group.leader.userId;
+	const isCurrentUserLeader = session?.user?.id === localGroup.leader.userId;
 
 	// Check if group has thesis or submissions (cannot delete)
-	const hasThesisOrSubmissions = group.thesis !== null;
+	const hasThesisOrSubmissions = localGroup.thesis !== null;
 
 	// Check if semester is in PREPARING status and group doesn't have thesis
 	const canModifyGroup =
-		group.semester.status === 'Preparing' && !hasThesisOrSubmissions;
+		localGroup.semester.status === 'Preparing' && !hasThesisOrSubmissions;
 
 	// Check if semester is NOT in PREPARING status - hide action buttons
-	const shouldHideActionButtons = group.semester.status !== 'Preparing';
+	const shouldHideActionButtons = localGroup.semester.status !== 'Preparing';
 
 	// Check if user is the only member (cannot leave - must delete instead)
-	const isOnlyMember = group.members.length === 1;
+	const isOnlyMember = localGroup.members.length === 1;
 
 	// Helper function to get Leave Group button title
 	const getLeaveGroupButtonTitle = () => {
 		if (!canModifyGroup) {
 			return 'Cannot leave group during this semester status';
 		}
-		if (isCurrentUserLeader && group.members.length > 1) {
+		if (isCurrentUserLeader && localGroup.members.length > 1) {
 			return 'Transfer leadership before leaving';
 		}
 		if (isOnlyMember) {
@@ -87,7 +113,7 @@ export default memo(function GroupInfoCard({
 			return;
 		}
 
-		if (isCurrentUserLeader && group.members.length > 1) {
+		if (isCurrentUserLeader && localGroup.members.length > 1) {
 			showNotification.error(
 				'As a leader, you must transfer leadership to another member before leaving the group.',
 			);
@@ -103,7 +129,7 @@ export default memo(function GroupInfoCard({
 
 		setIsLeaving(true);
 		try {
-			await groupService.leaveGroup(group.id);
+			await groupService.leaveGroup(localGroup.id);
 			showNotification.success('Successfully left the group!');
 			// Clear group data from store
 			clearGroup();
@@ -133,7 +159,7 @@ export default memo(function GroupInfoCard({
 
 		setIsDeleting(true);
 		try {
-			await groupService.deleteGroup(group.id);
+			await groupService.deleteGroup(localGroup.id);
 			showNotification.success('Group deleted successfully!');
 			// Clear group data from store
 			clearGroup();
@@ -149,11 +175,11 @@ export default memo(function GroupInfoCard({
 	const showLeaveGroupConfirm = () => {
 		const canLeave =
 			canModifyGroup &&
-			!(isCurrentUserLeader && group.members.length > 1) &&
+			!(isCurrentUserLeader && localGroup.members.length > 1) &&
 			!isOnlyMember;
 
 		GroupConfirmationModals.leaveGroup(
-			group.name,
+			localGroup.name,
 			canLeave,
 			isCurrentUserLeader,
 			isOnlyMember,
@@ -167,7 +193,7 @@ export default memo(function GroupInfoCard({
 		const canDelete = canModifyGroup && !hasThesisOrSubmissions;
 
 		GroupConfirmationModals.deleteGroup(
-			group.name,
+			localGroup.name,
 			canDelete,
 			hasThesisOrSubmissions,
 			canModifyGroup,
@@ -177,206 +203,221 @@ export default memo(function GroupInfoCard({
 	};
 
 	return (
-		<Card className="bg-white border border-gray-200 rounded-md">
-			<div className="pb-4">
-				<div className="flex justify-between items-center">
-					<Title level={4} className="text-base font-bold text-gray-600 mb-3">
-						Group Information
-					</Title>
-					{/* Edit Group Info Button - only visible to leader and when can modify */}
-					{!viewOnly && isCurrentUserLeader && canModifyGroup && (
-						<Button
-							type="primary"
-							onClick={() => setIsEditDialogVisible(true)}
-							title="Edit group information"
-						>
-							Edit Group Info
-						</Button>
-					)}
-				</div>
-				<Divider className="bg-gray-100 my-3" size="small" />
-			</div>
-
-			<div className="space-y-4">
-				{/* Group Details */}
-				<div className="space-y-4">
-					{/* Basic Group Info */}
-					<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-						<div>
-							<Text className="text-sm text-gray-400 block font-semibold">
-								Group Name
-							</Text>
-							<Text className="text-sm text-gray-600">{group.name}</Text>
-						</div>
-						<div>
-							<Text className="text-sm text-gray-400 block font-semibold">
-								Group Code
-							</Text>
-							<Text className="text-sm text-gray-600">{group.code}</Text>
-						</div>
-						<div>
-							<Text className="text-sm text-gray-400 block font-semibold">
-								Semester
-							</Text>
-							<Text className="text-sm text-gray-600">
-								{group.semester.name}
-							</Text>
-						</div>
-					</div>
-
-					{/* Project Direction */}
-					<div>
-						<Text className="text-sm text-gray-400 block font-semibold">
-							Project Direction
-						</Text>
-						<Text className="text-sm text-gray-600">
-							{group.projectDirection || (
-								<span className="text-gray-400 italic">Not specified</span>
-							)}
-						</Text>
-					</div>
-
-					{/* Skills and Responsibilities - 2 columns */}
-					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-						{' '}
-						{/* Required Skills */}
-						<div>
-							<Text className="text-sm text-gray-400 block font-semibold">
-								Required Skills
-							</Text>
-							{group.skills && group.skills.length > 0 ? (
-								<div className="flex flex-wrap gap-2 mt-1">
-									{group.skills.map((skill) => (
-										<Tag key={skill.id} color="blue" className="text-xs">
-											{skill.name}
-										</Tag>
-									))}
-								</div>
-							) : (
-								<Text className="text-gray-400 italic">Not specified</Text>
-							)}
-						</div>
-						{/* Responsibilities */}
-						<div>
-							<Text className="text-sm text-gray-400 block font-semibold">
-								Responsibilities
-							</Text>
-							{group.responsibilities && group.responsibilities.length > 0 ? (
-								<div className="flex flex-wrap gap-2 mt-1">
-									{group.responsibilities.map((responsibility) => (
-										<Tag
-											key={responsibility.id}
-											color="green"
-											className="text-xs"
-										>
-											{responsibility.name}
-										</Tag>
-									))}
-								</div>
-							) : (
-								<Text className="text-gray-400 italic">Not specified</Text>
-							)}
-						</div>
-					</div>
-
-					{/* Members Section */}
-					<div>
-						<Text className="text-sm text-gray-400 block font-semibold">
-							Members
-						</Text>
-					</div>
-				</div>
-
-				{/* Members Card */}
-				<GroupMembersCard group={group} viewOnly={viewOnly} />
-
-				{/* Created Date and Action Buttons */}
-				<div
-					className={`flex flex-col sm:flex-row sm:items-end ${viewOnly ? 'sm:justify-start' : 'sm:justify-between'} gap-4 pt-4`}
-				>
-					<div className="flex-shrink-0">
-						<Text className="text-sm text-gray-400 block font-semibold">
-							Created Date
-						</Text>
-						<Text className="text-sm text-gray-600 whitespace-nowrap">
-							{formatDate(group.createdAt)}
-						</Text>
-					</div>
-
-					{/* Action buttons only shown when not in viewOnly mode and semester is Preparing */}
-					{!viewOnly && !shouldHideActionButtons && (
-						<Space>
-							{/* Leave Group Button - visible to all members */}
-							<Button
-								danger
-								loading={isLeaving}
-								disabled={
-									!canModifyGroup ||
-									(isCurrentUserLeader && group.members.length > 1) ||
-									isOnlyMember
-								}
-								onClick={showLeaveGroupConfirm}
-								title={getLeaveGroupButtonTitle()}
-							>
-								Leave Group
-							</Button>
-
-							{/* Delete Group Button - only visible to leader */}
-							{isCurrentUserLeader && (
+		<Spin spinning={isRefreshing} tip="Refreshing group information...">
+			<Card className="bg-white border border-gray-200 rounded-md">
+				<div className="pb-4">
+					<div className="flex justify-between items-center">
+						<Title level={4} className="text-base font-bold text-gray-600 mb-3">
+							Group Information
+						</Title>
+						<div className="flex gap-2">
+							{/* Refresh Button - always visible when not in viewOnly mode */}
+							{!viewOnly && (
 								<Button
-									danger
-									loading={isDeleting}
-									disabled={!canModifyGroup || hasThesisOrSubmissions}
-									onClick={showDeleteGroupConfirm}
-									title={getDeleteGroupButtonTitle()}
-								>
-									Delete Group
-								</Button>
+									icon={<ReloadOutlined />}
+									onClick={handleRefreshGroup}
+									loading={isRefreshing}
+									title="Refresh group information"
+								/>
 							)}
-
-							{/* Invite Members Button - only visible to leader */}
-							{isCurrentUserLeader && (
+							{/* Edit Group Info Button - only visible to leader and when can modify */}
+							{!viewOnly && isCurrentUserLeader && canModifyGroup && (
 								<Button
 									type="primary"
-									onClick={() => setIsInviteDialogVisible(true)}
-									disabled={!canModifyGroup}
-									title={
-										!canModifyGroup
-											? 'Cannot invite members during this semester status'
-											: 'Invite new members to this group'
-									}
+									onClick={() => setIsEditDialogVisible(true)}
+									title="Edit group information"
 								>
-									Invite Members
+									Edit Group Info
 								</Button>
 							)}
-						</Space>
-					)}
+						</div>
+					</div>
+					<Divider className="bg-gray-100 my-3" size="small" />
 				</div>
-			</div>
 
-			{/* Invite dialog only shown when not in viewOnly mode */}
-			{!viewOnly && (
-				<InviteMembersDialog
-					visible={isInviteDialogVisible}
-					onCancel={() => setIsInviteDialogVisible(false)}
-					onSuccess={handleInviteSuccess}
-					groupId={group.id}
-					group={group}
-				/>
-			)}
+				<div className="space-y-4">
+					{/* Group Details */}
+					<div className="space-y-4">
+						{/* Basic Group Info */}
+						<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+							<div>
+								<Text className="text-sm text-gray-400 block font-semibold">
+									Group Name
+								</Text>
+								<Text className="text-sm text-gray-600">{localGroup.name}</Text>
+							</div>
+							<div>
+								<Text className="text-sm text-gray-400 block font-semibold">
+									Group Code
+								</Text>
+								<Text className="text-sm text-gray-600">{localGroup.code}</Text>
+							</div>
+							<div>
+								<Text className="text-sm text-gray-400 block font-semibold">
+									Semester
+								</Text>
+								<Text className="text-sm text-gray-600">
+									{localGroup.semester.name}
+								</Text>
+							</div>
+						</div>
 
-			{/* Edit Group Info dialog only shown when not in viewOnly mode */}
-			{!viewOnly && (
-				<EditGroupInfoDialog
-					visible={isEditDialogVisible}
-					onCancel={() => setIsEditDialogVisible(false)}
-					onSuccess={() => {
-						setIsEditDialogVisible(false);
-						refreshGroup();
-					}}
-					group={group}
-				/>
-			)}
-		</Card>
+						{/* Project Direction */}
+						<div>
+							<Text className="text-sm text-gray-400 block font-semibold">
+								Project Direction
+							</Text>
+							<Text className="text-sm text-gray-600">
+								{localGroup.projectDirection || (
+									<span className="text-gray-400 italic">Not specified</span>
+								)}
+							</Text>
+						</div>
+
+						{/* Skills and Responsibilities - 2 columns */}
+						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+							{' '}
+							{/* Required Skills */}
+							<div>
+								<Text className="text-sm text-gray-400 block font-semibold">
+									Required Skills
+								</Text>
+								{localGroup.skills && localGroup.skills.length > 0 ? (
+									<div className="flex flex-wrap gap-2 mt-1">
+										{localGroup.skills.map((skill) => (
+											<Tag key={skill.id} color="blue" className="text-xs">
+												{skill.name}
+											</Tag>
+										))}
+									</div>
+								) : (
+									<Text className="text-gray-400 italic">Not specified</Text>
+								)}
+							</div>
+							{/* Responsibilities */}
+							<div>
+								<Text className="text-sm text-gray-400 block font-semibold">
+									Responsibilities
+								</Text>
+								{localGroup.responsibilities &&
+								localGroup.responsibilities.length > 0 ? (
+									<div className="flex flex-wrap gap-2 mt-1">
+										{localGroup.responsibilities.map((responsibility) => (
+											<Tag
+												key={responsibility.id}
+												color="green"
+												className="text-xs"
+											>
+												{responsibility.name}
+											</Tag>
+										))}
+									</div>
+								) : (
+									<Text className="text-gray-400 italic">Not specified</Text>
+								)}
+							</div>
+						</div>
+
+						{/* Members Section */}
+						<div>
+							<Text className="text-sm text-gray-400 block font-semibold">
+								Members
+							</Text>
+						</div>
+					</div>
+
+					{/* Members Card */}
+					<GroupMembersCard group={localGroup} viewOnly={viewOnly} />
+
+					{/* Created Date and Action Buttons */}
+					<div
+						className={`flex flex-col sm:flex-row sm:items-end ${viewOnly ? 'sm:justify-start' : 'sm:justify-between'} gap-4 pt-4`}
+					>
+						<div className="flex-shrink-0">
+							<Text className="text-sm text-gray-400 block font-semibold">
+								Created Date
+							</Text>
+							<Text className="text-sm text-gray-600 whitespace-nowrap">
+								{formatDate(localGroup.createdAt)}
+							</Text>
+						</div>
+
+						{/* Action buttons only shown when not in viewOnly mode and semester is Preparing */}
+						{!viewOnly && !shouldHideActionButtons && (
+							<Space>
+								{/* Leave Group Button - visible to all members */}
+								<Button
+									danger
+									loading={isLeaving}
+									disabled={
+										!canModifyGroup ||
+										(isCurrentUserLeader && localGroup.members.length > 1) ||
+										isOnlyMember
+									}
+									onClick={showLeaveGroupConfirm}
+									title={getLeaveGroupButtonTitle()}
+								>
+									Leave Group
+								</Button>
+
+								{/* Delete Group Button - only visible to leader */}
+								{isCurrentUserLeader && (
+									<Button
+										danger
+										loading={isDeleting}
+										disabled={!canModifyGroup || hasThesisOrSubmissions}
+										onClick={showDeleteGroupConfirm}
+										title={getDeleteGroupButtonTitle()}
+									>
+										Delete Group
+									</Button>
+								)}
+
+								{/* Invite Members Button - only visible to leader */}
+								{isCurrentUserLeader && (
+									<Button
+										type="primary"
+										onClick={() => setIsInviteDialogVisible(true)}
+										disabled={!canModifyGroup}
+										title={
+											!canModifyGroup
+												? 'Cannot invite members during this semester status'
+												: 'Invite new members to this group'
+										}
+									>
+										Invite Members
+									</Button>
+								)}
+							</Space>
+						)}
+					</div>
+				</div>
+
+				{/* Invite dialog only shown when not in viewOnly mode */}
+				{!viewOnly && (
+					<InviteMembersDialog
+						visible={isInviteDialogVisible}
+						onCancel={() => setIsInviteDialogVisible(false)}
+						onSuccess={handleInviteSuccess}
+						groupId={localGroup.id}
+						group={localGroup}
+					/>
+				)}
+
+				{/* Edit Group Info dialog only shown when not in viewOnly mode */}
+				{!viewOnly && (
+					<EditGroupInfoDialog
+						visible={isEditDialogVisible}
+						onCancel={() => setIsEditDialogVisible(false)}
+						onSuccess={() => {
+							setIsEditDialogVisible(false);
+							// Update local state with fresh data after successful edit
+							handleRefreshGroup();
+						}}
+						group={localGroup}
+					/>
+				)}
+			</Card>
+		</Spin>
 	);
 });
