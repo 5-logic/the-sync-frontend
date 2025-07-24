@@ -20,10 +20,14 @@ export default function EditLecturerDialog({
 	onClose,
 }: EditLecturerDialogProps) {
 	const { updateLecturer, updating } = useLecturerStore();
-	const { form, initializeForm, handleCancel, handleSubmit } = useEditDialog<
-		Lecturer,
-		LecturerUpdate
-	>({
+	const {
+		form,
+		initializeForm,
+		handleCancel,
+		handleSubmit,
+		isFormChanged,
+		handleFormChange,
+	} = useEditDialog<Lecturer, LecturerUpdate>({
 		onClose,
 	});
 
@@ -36,17 +40,28 @@ export default function EditLecturerDialog({
 
 	// Note: handleCancel from useEditDialog already handles form reset and onClose
 
-	const onSubmit = async (values: LecturerUpdate): Promise<boolean> => {
+	const onSubmit = async (
+		values: Partial<LecturerUpdate>,
+	): Promise<boolean> => {
 		if (!lecturer) return false;
 
-		const lecturerData: LecturerUpdate = {
-			fullName: values.fullName?.trim(),
-			email: values.email?.trim().toLowerCase(),
-			phoneNumber: values.phoneNumber?.trim(),
-			gender: values.gender,
-		};
+		// Process the changed fields
+		const lecturerData: Partial<LecturerUpdate> = {};
 
-		return await updateLecturer(lecturer.id, lecturerData);
+		if (values.fullName !== undefined) {
+			lecturerData.fullName = values.fullName.trim();
+		}
+		if (values.email !== undefined) {
+			lecturerData.email = values.email.trim().toLowerCase();
+		}
+		if (values.phoneNumber !== undefined) {
+			lecturerData.phoneNumber = values.phoneNumber.trim();
+		}
+		if (values.gender !== undefined) {
+			lecturerData.gender = values.gender;
+		}
+
+		return await updateLecturer(lecturer.id, lecturerData as LecturerUpdate);
 	};
 
 	return (
@@ -61,12 +76,16 @@ export default function EditLecturerDialog({
 			width={500}
 			destroyOnClose
 			centered
+			okButtonProps={{
+				disabled: !isFormChanged,
+			}}
 		>
 			<Form
 				form={form}
 				layout="vertical"
 				requiredMark={false}
 				autoComplete="off"
+				onValuesChange={handleFormChange}
 			>
 				<Space direction="vertical" size="small" style={{ width: '100%' }}>
 					<PersonFormFields

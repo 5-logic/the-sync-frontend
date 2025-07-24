@@ -22,10 +22,14 @@ export default function EditStudentDialog({
 }: EditStudentDialogProps) {
 	const { updating, updateStudent } = useStudentStore();
 	const { majors, loading: majorsLoading, fetchMajors } = useMajorStore();
-	const { form, initializeForm, handleCancel, handleSubmit } = useEditDialog<
-		Student,
-		StudentUpdate
-	>({
+	const {
+		form,
+		initializeForm,
+		handleCancel,
+		handleSubmit,
+		isFormChanged,
+		handleFormChange,
+	} = useEditDialog<Student, StudentUpdate>({
 		onClose,
 	});
 
@@ -43,19 +47,32 @@ export default function EditStudentDialog({
 		}
 	}, [student, initializeForm]);
 
-	const onSubmit = async (values: StudentUpdate): Promise<boolean> => {
+	const onSubmit = async (values: Partial<StudentUpdate>): Promise<boolean> => {
 		if (!student) return false;
 
-		const studentData: StudentUpdate = {
-			studentCode: values.studentCode?.trim().toUpperCase(),
-			email: values.email?.trim().toLowerCase(),
-			fullName: values.fullName?.trim(),
-			gender: values.gender,
-			phoneNumber: values.phoneNumber?.trim(),
-			majorId: values.majorId,
-		};
+		// Process the changed fields
+		const studentData: Partial<StudentUpdate> = {};
 
-		return await updateStudent(student.id, studentData);
+		if (values.studentCode !== undefined) {
+			studentData.studentCode = values.studentCode.trim().toUpperCase();
+		}
+		if (values.email !== undefined) {
+			studentData.email = values.email.trim().toLowerCase();
+		}
+		if (values.fullName !== undefined) {
+			studentData.fullName = values.fullName.trim();
+		}
+		if (values.gender !== undefined) {
+			studentData.gender = values.gender;
+		}
+		if (values.phoneNumber !== undefined) {
+			studentData.phoneNumber = values.phoneNumber.trim();
+		}
+		if (values.majorId !== undefined) {
+			studentData.majorId = values.majorId;
+		}
+
+		return await updateStudent(student.id, studentData as StudentUpdate);
 	};
 
 	return (
@@ -70,12 +87,16 @@ export default function EditStudentDialog({
 			width={500}
 			destroyOnClose
 			centered
+			okButtonProps={{
+				disabled: !isFormChanged,
+			}}
 		>
 			<Form
 				form={form}
 				layout="vertical"
 				requiredMark={false}
 				autoComplete="off"
+				onValuesChange={handleFormChange}
 			>
 				<Space direction="vertical" size="small" style={{ width: '100%' }}>
 					{/* Student ID */}
