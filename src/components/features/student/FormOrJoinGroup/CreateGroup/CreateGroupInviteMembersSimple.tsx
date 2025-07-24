@@ -140,6 +140,43 @@ function CreateGroupInviteMembersSimple({
 		return MemberManagementUtils.generateInfoTextCreateGroup(members);
 	}, [members]);
 
+	// Extract nested ternary for notFoundContent
+	const renderNotFoundContent = useMemo(() => {
+		if (!searchText.trim()) {
+			return null;
+		}
+
+		if (loading || isSearching) {
+			return (
+				<div
+					style={{
+						padding: '8px',
+						textAlign: 'center',
+						color: '#999',
+					}}
+				>
+					Searching students...
+				</div>
+			);
+		}
+
+		if (searchResults.length === 0) {
+			return (
+				<div
+					style={{
+						padding: '8px',
+						textAlign: 'center',
+						color: '#999',
+					}}
+				>
+					No students found with &ldquo;{searchText}&rdquo;
+				</div>
+			);
+		}
+
+		return null;
+	}, [searchText, loading, isSearching, searchResults.length]);
+
 	return (
 		<div>
 			<div style={{ marginBottom: 16 }}>
@@ -153,31 +190,7 @@ function CreateGroupInviteMembersSimple({
 								onSearch={setSearchText}
 								onSelect={handleStudentSelect}
 								placeholder="Search by name, student code, or email..."
-								notFoundContent={
-									searchText.trim() ? (
-										loading || isSearching ? (
-											<div
-												style={{
-													padding: '8px',
-													textAlign: 'center',
-													color: '#999',
-												}}
-											>
-												Searching students...
-											</div>
-										) : searchResults.length === 0 ? (
-											<div
-												style={{
-													padding: '8px',
-													textAlign: 'center',
-													color: '#999',
-												}}
-											>
-												No students found with &ldquo;{searchText}&rdquo;
-											</div>
-										) : null
-									) : null
-								}
+								notFoundContent={renderNotFoundContent}
 								style={{ width: '100%' }}
 								filterOption={false}
 								allowClear
