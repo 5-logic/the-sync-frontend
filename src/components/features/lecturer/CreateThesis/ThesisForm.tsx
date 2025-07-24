@@ -37,6 +37,7 @@ export default function ThesisForm({
 	const [form] = Form.useForm();
 	const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>(null);
 	const [hasFileChanged, setHasFileChanged] = useState(false);
+	const [hasFormChanged, setHasFormChanged] = useState(false);
 
 	// Get sorted domain options
 	const domainOptions = getSortedDomains();
@@ -98,41 +99,125 @@ export default function ThesisForm({
 		}
 	}, [mode, initialValues, initialFile]);
 
+	// Initialize form change state after initial values are set
+	useEffect(() => {
+		if (mode === 'edit' && initialValues) {
+			// Reset change state when initial values are loaded
+			setHasFormChanged(false);
+			setHasFileChanged(false);
+		}
+	}, [mode, initialValues]);
+
+	// Function to check if form values have changed
+	const checkFormChanges = () => {
+		if (mode === 'create') {
+			setHasFormChanged(true);
+			return;
+		}
+
+		// Don't check changes if initial values haven't been set yet
+		if (!initialValues) {
+			return;
+		}
+
+		const currentValues = form.getFieldsValue();
+
+		// Compare current values with initial values
+		const fieldsToCompare = [
+			'englishName',
+			'vietnameseName',
+			'abbreviation',
+			'description',
+			'domain',
+			'skills',
+		];
+		const hasChanges = fieldsToCompare.some((field) => {
+			const currentValue = currentValues[field];
+			const initialValue = initialValues?.[field];
+
+			// Handle array comparison for skills
+			if (field === 'skills') {
+				const currentSkills = Array.isArray(currentValue)
+					? currentValue.sort()
+					: [];
+				const initialSkills = Array.isArray(initialValue)
+					? initialValue.sort()
+					: [];
+				return JSON.stringify(currentSkills) !== JSON.stringify(initialSkills);
+			}
+
+			// Handle other fields
+			return currentValue !== initialValue;
+		});
+
+		setHasFormChanged(hasChanges || hasFileChanged);
+	};
+
 	// Handle file change from upload component
 	const handleFileChange = (file: UploadedFile | null) => {
 		setUploadedFile(file);
 		setHasFileChanged(true); // Mark as changed when user uploads/deletes file
+		checkFormChanges(); // Check for overall changes
+	};
+
+	// Function to get only changed fields
+	const getChangedFields = (values: Record<string, unknown>) => {
+		if (mode === 'create') {
+			// For create mode, return all values
+			const selectedSkills = (values.skills as string[]) ?? [];
+			const semesterId = preparingSemester?.id;
+
+			// eslint-disable-next-line @typescript-eslint/no-unused-vars
+			const { supportingDocument, skills, ...restValues } = values;
+			return {
+				...restValues,
+				skillIds: selectedSkills,
+				semesterId,
+				supportingDocument: uploadedFile?.url ?? '',
+			};
+		}
+
+		// For edit mode, only include changed fields
+		const changedFields: Record<string, unknown> = {};
+		const currentValues = form.getFieldsValue();
+
+		// Check each field for changes
+		const fieldsToCheck = [
+			'englishName',
+			'vietnameseName',
+			'abbreviation',
+			'description',
+			'domain',
+		];
+		fieldsToCheck.forEach((field) => {
+			const currentValue = currentValues[field];
+			const initialValue = initialValues?.[field];
+			if (currentValue !== initialValue) {
+				changedFields[field] = currentValue;
+			}
+		});
+
+		// Handle skills separately
+		const currentSkills = Array.isArray(currentValues.skills)
+			? currentValues.skills.sort()
+			: [];
+		const initialSkills = Array.isArray(initialValues?.skills)
+			? initialValues.skills.sort()
+			: [];
+		if (JSON.stringify(currentSkills) !== JSON.stringify(initialSkills)) {
+			changedFields.skillIds = currentSkills;
+		}
+
+		// Include supporting document if file changed
+		if (hasFileChanged) {
+			changedFields.supportingDocument = uploadedFile?.url ?? '';
+		}
+
+		return changedFields;
 	};
 
 	const handleFormSubmit = (values: Record<string, unknown>) => {
-		// Convert selected skills to string array
-		const selectedSkills = (values.skills as string[]) ?? [];
-
-		// Get the preparing semester ID
-		const semesterId = preparingSemester?.id;
-		if (!semesterId) {
-			console.error(
-				'No preparing semester found. Available semesters:',
-				semesters,
-			);
-			// You might want to show a user-friendly error message here
-			return;
-		}
-
-		// Prepare the final form data to match backend DTO
-		// eslint-disable-next-line @typescript-eslint/no-unused-vars
-		const { supportingDocument, skills, ...restValues } = values;
-		const formData: Record<string, unknown> = {
-			...restValues,
-			skillIds: selectedSkills, // Pass skills as skillIds array for API
-			semesterId, // Add semesterId from preparing semester
-		};
-
-		// Only include supportingDocument if file changed (for edit mode) or always for create mode
-		if (mode === 'create' || hasFileChanged) {
-			formData.supportingDocument = uploadedFile?.url ?? '';
-		}
-
+		const formData = getChangedFields(values);
 		onSubmit(formData);
 	};
 
@@ -147,6 +232,9 @@ export default function ThesisForm({
 		if (loading) {
 			return mode === 'create' ? 'Creating...' : 'Updating...';
 		}
+		if (mode === 'edit' && !hasFormChanged) {
+			return 'No changes to update';
+		}
 		return mode === 'create' ? 'Create Thesis' : 'Update Thesis';
 	};
 
@@ -158,6 +246,7 @@ export default function ThesisForm({
 			style={{ width: '100%' }}
 			initialValues={initialValues}
 			onFinish={handleFormSubmit}
+			onValuesChange={checkFormChanges} // Detect changes when form values change
 		>
 			<Form.Item
 				name="englishName"
@@ -269,7 +358,12 @@ export default function ThesisForm({
 						htmlType="submit"
 						size="large"
 						loading={loading || semestersLoading}
-						disabled={loading || semestersLoading || !preparingSemester}
+						disabled={
+							loading ||
+							semestersLoading ||
+							!preparingSemester ||
+							(mode === 'edit' && !hasFormChanged)
+						}
 					>
 						{getButtonText()}
 					</Button>
