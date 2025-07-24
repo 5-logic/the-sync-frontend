@@ -1,12 +1,13 @@
 'use client';
 
-import { Button, Form, Modal, Popconfirm } from 'antd';
+import { Button, Form, Modal, Popconfirm, Spin } from 'antd';
 import { useEffect, useState } from 'react';
 
 import GroupFormFields from '@/components/features/student/FormOrJoinGroup/CreateGroup/GroupFormFields';
 import groupService, { GroupUpdate } from '@/lib/services/groups.service';
 import { showNotification } from '@/lib/utils/notification';
 import { GroupDashboard } from '@/schemas/group';
+import { useResponsibilityStore, useSkillSetStore } from '@/store';
 
 interface EditGroupInfoDialogProps {
 	readonly visible: boolean;
@@ -23,38 +24,145 @@ export default function EditGroupInfoDialog({
 }: EditGroupInfoDialogProps) {
 	const [form] = Form.useForm();
 	const [loading, setLoading] = useState(false);
+	const [hasChanges, setHasChanges] = useState(false);
+	const [initialValues, setInitialValues] = useState<{
+		name: string;
+		area: string;
+		skills: string[];
+		responsibility: string[];
+	} | null>(null);
+
+	// Get loading states for skills and responsibilities
+	const skillsLoading = useSkillSetStore((state) => state.loading);
+	const responsibilitiesLoading = useResponsibilityStore(
+		(state) => state.loading,
+	);
+	const skillSets = useSkillSetStore((state) => state.skillSets);
+	const responsibilities = useResponsibilityStore(
+		(state) => state.responsibilities,
+	);
+
+	// Check if form data is ready to be displayed
+	const isDataLoading =
+		skillsLoading || responsibilitiesLoading || !skillSets || !responsibilities;
 
 	// Reset form when dialog opens with current group data
 	useEffect(() => {
-		if (visible && group) {
-			form.setFieldsValue({
+		if (visible && group && !isDataLoading) {
+			const formValues = {
 				name: group.name,
 				area: group.projectDirection || '',
 				skills: group.skills?.map((skill) => skill.id) || [],
 				responsibility: group.responsibilities?.map((resp) => resp.id) || [],
-			});
+			};
+
+			form.setFieldsValue(formValues);
+			setInitialValues(formValues); // Store initial values for comparison
+			setHasChanges(false); // Reset changes state
 		}
-	}, [visible, group, form]);
+	}, [visible, group, form, isDataLoading]);
+
+	// Helper function to compare arrays
+	const arraysEqual = (a: string[], b: string[]): boolean => {
+		if (a.length !== b.length) return false;
+		const sortedA = [...a].sort();
+		const sortedB = [...b].sort();
+		return sortedA.every((val, index) => val === sortedB[index]);
+	};
+
+	// Helper function to get only changed fields
+	const getChangedFields = (
+		currentValues: {
+			name: string;
+			area: string;
+			skills: string[];
+			responsibility: string[];
+		},
+		initialValues: {
+			name: string;
+			area: string;
+			skills: string[];
+			responsibility: string[];
+		},
+	): Partial<GroupUpdate> => {
+		const changes: Partial<GroupUpdate> = {};
+
+		// Check name
+		if (currentValues.name !== initialValues.name) {
+			changes.name = currentValues.name;
+		}
+
+		// Check project direction/area
+		if (currentValues.area !== initialValues.area) {
+			changes.projectDirection = currentValues.area || '';
+		}
+
+		// Check skills
+		if (!arraysEqual(currentValues.skills || [], initialValues.skills || [])) {
+			changes.skillIds = currentValues.skills || [];
+		}
+
+		// Check responsibilities
+		if (
+			!arraysEqual(
+				currentValues.responsibility || [],
+				initialValues.responsibility || [],
+			)
+		) {
+			changes.responsibilityIds = currentValues.responsibility || [];
+		}
+
+		return changes;
+	};
+
+	// Function to check if there are any changes
+	const checkForChanges = () => {
+		if (!initialValues) return false;
+
+		const currentValues = form.getFieldsValue();
+		const changedFields = getChangedFields(currentValues, initialValues);
+		return Object.keys(changedFields).length > 0;
+	};
+
+	// Update hasChanges when form values change
+	const handleFormChange = () => {
+		const hasFormChanges = checkForChanges();
+		setHasChanges(hasFormChanges);
+	};
 
 	const handleSubmit = async () => {
 		try {
 			const values = await form.validateFields();
+
+			// Check if we have initial values to compare with
+			if (!initialValues) {
+				showNotification.error(
+					'Error',
+					'Unable to determine changes. Please close and reopen the dialog.',
+				);
+				return;
+			}
+
+			// Get only the changed fields
+			const changedFields = getChangedFields(values, initialValues);
+
+			// Log changes in development mode
+			if (process.env.NODE_ENV === 'development') {
+				console.log('Changed fields:', changedFields);
+			}
+
 			setLoading(true);
 
-			const updateData: GroupUpdate = {
-				name: values.name,
-				projectDirection: values.area || '',
-				skillIds: values.skills || [],
-				responsibilityIds: values.responsibility || [],
-			};
-
-			const response = await groupService.update(group.id, updateData);
+			const response = await groupService.update(group.id, changedFields);
 
 			if (response.success) {
 				showNotification.success(
 					'Success',
 					'Group information updated successfully!',
 				);
+				// Update initial values to current values after successful update
+				setInitialValues(values);
+				setHasChanges(false); // Reset changes state after successful update
 				onSuccess();
 			} else {
 				showNotification.error(
@@ -75,6 +183,8 @@ export default function EditGroupInfoDialog({
 
 	const handleCancel = () => {
 		form.resetFields();
+		setInitialValues(null); // Reset initial values
+		setHasChanges(false); // Reset changes state
 		onCancel();
 	};
 
@@ -86,7 +196,11 @@ export default function EditGroupInfoDialog({
 			width={800}
 			centered
 			footer={[
-				<Button key="cancel" onClick={handleCancel} disabled={loading}>
+				<Button
+					key="cancel"
+					onClick={handleCancel}
+					disabled={loading || isDataLoading}
+				>
 					Cancel
 				</Button>,
 				<Popconfirm
@@ -97,22 +211,36 @@ export default function EditGroupInfoDialog({
 					okText="Yes, Update"
 					cancelText="Cancel"
 					okButtonProps={{ loading }}
-					disabled={loading}
+					disabled={loading || isDataLoading || !hasChanges}
 				>
-					<Button type="primary" loading={loading}>
+					<Button
+						type="primary"
+						loading={loading}
+						disabled={isDataLoading || !hasChanges}
+					>
 						Update Group
 					</Button>
 				</Popconfirm>,
 			]}
 		>
-			<Form
-				form={form}
-				layout="vertical"
-				requiredMark={false}
-				style={{ marginTop: '20px' }}
-			>
-				<GroupFormFields />
-			</Form>
+			{isDataLoading ? (
+				<div style={{ textAlign: 'center', padding: '40px 0' }}>
+					<Spin size="large" />
+					<div style={{ marginTop: 16, color: '#666' }}>
+						Loading skills and responsibilities...
+					</div>
+				</div>
+			) : (
+				<Form
+					form={form}
+					layout="vertical"
+					requiredMark={false}
+					style={{ marginTop: '20px' }}
+					onValuesChange={handleFormChange}
+				>
+					<GroupFormFields />
+				</Form>
+			)}
 		</Modal>
 	);
 }
