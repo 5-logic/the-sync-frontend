@@ -57,6 +57,7 @@ export default memo(function GroupInfoCard({
 			}
 		} catch {
 			showNotification.error(
+				'Refresh Failed',
 				'Failed to refresh group information. Please try again.',
 			);
 		} finally {
@@ -108,6 +109,7 @@ export default memo(function GroupInfoCard({
 	const handleLeaveGroup = async () => {
 		if (!canModifyGroup) {
 			showNotification.error(
+				'Cannot Leave Group',
 				'Cannot leave group. Semester is not in PREPARING status.',
 			);
 			return;
@@ -115,6 +117,7 @@ export default memo(function GroupInfoCard({
 
 		if (isCurrentUserLeader && localGroup.members.length > 1) {
 			showNotification.error(
+				'Transfer Leadership Required',
 				'As a leader, you must transfer leadership to another member before leaving the group.',
 			);
 			return;
@@ -122,6 +125,7 @@ export default memo(function GroupInfoCard({
 
 		if (isOnlyMember) {
 			showNotification.error(
+				'Cannot Leave Group',
 				'Cannot leave group as the only member. Please delete the group instead.',
 			);
 			return;
@@ -130,13 +134,16 @@ export default memo(function GroupInfoCard({
 		setIsLeaving(true);
 		try {
 			await groupService.leaveGroup(localGroup.id);
-			showNotification.success('Successfully left the group!');
+			showNotification.success('Success', 'Successfully left the group!');
 			// Clear group data from store
 			clearGroup();
 			// Navigate to form or join group page since user no longer has a group
 			router.push('/student/form-or-join-group');
 		} catch {
-			showNotification.error('Failed to leave group. Please try again.');
+			showNotification.error(
+				'Error',
+				'Failed to leave group. Please try again.',
+			);
 		} finally {
 			setIsLeaving(false);
 		}
@@ -145,6 +152,7 @@ export default memo(function GroupInfoCard({
 	const handleDeleteGroup = async () => {
 		if (!canModifyGroup) {
 			showNotification.error(
+				'Cannot Delete Group',
 				'Cannot delete group. Semester is not in PREPARING status.',
 			);
 			return;
@@ -152,6 +160,7 @@ export default memo(function GroupInfoCard({
 
 		if (hasThesisOrSubmissions) {
 			showNotification.error(
+				'Cannot Delete Group',
 				'Cannot delete group that has assigned thesis or submissions.',
 			);
 			return;
@@ -160,13 +169,16 @@ export default memo(function GroupInfoCard({
 		setIsDeleting(true);
 		try {
 			await groupService.deleteGroup(localGroup.id);
-			showNotification.success('Group deleted successfully!');
+			showNotification.success('Success', 'Group deleted successfully!');
 			// Clear group data from store
 			clearGroup();
 			// Navigate to form or join group page since group no longer exists
 			router.push('/student/form-or-join-group');
 		} catch {
-			showNotification.error('Failed to delete group. Please try again.');
+			showNotification.error(
+				'Error',
+				'Failed to delete group. Please try again.',
+			);
 		} finally {
 			setIsDeleting(false);
 		}

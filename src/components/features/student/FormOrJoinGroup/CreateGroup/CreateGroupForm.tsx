@@ -52,7 +52,7 @@ function CreateGroupForm() {
 				}
 
 				const createdGroup = groupResponse.data;
-				showNotification.success('Group created successfully!');
+				showNotification.success('Success', 'Group created successfully!');
 
 				// Reset form immediately after successful creation
 				form.resetFields();
@@ -131,6 +131,7 @@ function CreateGroupForm() {
 			} catch (error) {
 				console.error('Error creating group:', error);
 				showNotification.error(
+					'Failed to Create Group',
 					error instanceof Error ? error.message : 'Failed to create group',
 				);
 			} finally {

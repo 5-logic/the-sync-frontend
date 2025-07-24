@@ -105,13 +105,19 @@ export default function InviteTeamMembers({
 				currentUserId &&
 				targetStudent.id === currentUserId
 			) {
-				showNotification.warning('You cannot add yourself to the group.');
+				showNotification.warning(
+					'Cannot Add Yourself',
+					'You cannot add yourself to the group.',
+				);
 				return;
 			}
 
 			// Prevent adding excluded users
 			if (targetStudent && excludeUserIds.includes(targetStudent.id)) {
-				showNotification.warning('This student is already a group member.');
+				showNotification.warning(
+					'Already a Member',
+					'This student is already a group member.',
+				);
 				return;
 			}
 
@@ -143,6 +149,7 @@ export default function InviteTeamMembers({
 
 			if (!targetStudent) {
 				showNotification.error(
+					'Student Not Found',
 					'Student not found. Please check email or Student ID.',
 				);
 				return;
@@ -152,7 +159,10 @@ export default function InviteTeamMembers({
 				(member) => member.id === targetStudent.id,
 			);
 			if (isAlreadyMember) {
-				showNotification.warning('This student is already in the group.');
+				showNotification.warning(
+					'Already Added',
+					'This student is already in the group.',
+				);
 				return;
 			}
 
@@ -168,14 +178,17 @@ export default function InviteTeamMembers({
 						? `Group would have ${totalMembersAfterAdd} members, exceeding limit of ${TEAM_CONFIG.MAX_MEMBERS}`
 						: `Group can have maximum ${TEAM_CONFIG.MAX_MEMBERS} members`;
 
-				showNotification.error(contextMessage);
+				showNotification.error('Member Limit Exceeded', contextMessage);
 				return;
 			}
 
 			const newMember: Student = targetStudent;
 
 			onMembersChange([...members, newMember]);
-			showNotification.success(`${targetStudent.fullName} added successfully!`);
+			showNotification.success(
+				'Success',
+				`${targetStudent.fullName} added successfully!`,
+			);
 			setSearchText('');
 		},
 		[

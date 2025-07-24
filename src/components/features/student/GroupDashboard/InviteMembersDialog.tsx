@@ -34,7 +34,10 @@ export default function InviteMembersDialog({
 
 	const handleSendInvites = async () => {
 		if (selectedMembers.length === 0) {
-			showNotification.warning('Please select at least one student to invite.');
+			showNotification.warning(
+				'No Students Selected',
+				'Please select at least one student to invite.',
+			);
 			return;
 		}
 
@@ -48,6 +51,7 @@ export default function InviteMembersDialog({
 
 			if (response.success) {
 				showNotification.success(
+					'Invitations Sent',
 					`Successfully sent ${selectedMembers.length} invitation(s)!`,
 				);
 				setSelectedMembers([]);
@@ -57,11 +61,17 @@ export default function InviteMembersDialog({
 
 				onSuccess();
 			} else {
-				showNotification.error('Failed to send invitations. Please try again.');
+				showNotification.error(
+					'Failed to Send Invitations',
+					'Failed to send invitations. Please try again.',
+				);
 			}
 		} catch (error) {
 			console.error('Error sending invitations:', error);
-			showNotification.error('Failed to send invitations. Please try again.');
+			showNotification.error(
+				'Failed to Send Invitations',
+				'Failed to send invitations. Please try again.',
+			);
 		} finally {
 			setLoading(false);
 		}
