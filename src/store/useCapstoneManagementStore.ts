@@ -1,7 +1,9 @@
 import { create } from 'zustand';
 
 import groupService, { Group } from '@/lib/services/groups.service';
+import lecturerService from '@/lib/services/lecturers.service';
 import semesterService from '@/lib/services/semesters.service';
+import supervisionService from '@/lib/services/supervisions.service';
 import { handleApiResponse } from '@/lib/utils/handleApi';
 import { showNotification } from '@/lib/utils/notification';
 import { GroupDashboard } from '@/schemas/group';
@@ -9,6 +11,8 @@ import { Semester as SemesterType } from '@/schemas/semester';
 
 export interface GroupDetailWithMembers extends GroupDashboard {
 	supervisions?: Array<{
+		id: string;
+		lecturerId: string;
 		lecturer: {
 			id: string;
 			fullName: string;
@@ -130,7 +134,63 @@ export const useCapstoneManagementStore = create<CapstoneManagementState>(
 					if (result.success && result.data) {
 						const groupDetail: GroupDetailWithMembers = {
 							...result.data,
+							supervisions: [], // Initialize with empty array
 						};
+
+						// Fetch supervision data if thesis exists
+						if (groupDetail.thesis?.id) {
+							try {
+								const supervisionResponse =
+									await supervisionService.getByThesisId(groupDetail.thesis.id);
+								const supervisionResult =
+									handleApiResponse(supervisionResponse);
+
+								if (supervisionResult.success && supervisionResult.data) {
+									// Fetch lecturer details for each supervision
+									const supervisionsWithLecturers = await Promise.all(
+										supervisionResult.data.map(async (supervision) => {
+											try {
+												const lecturerResponse = await lecturerService.findOne(
+													supervision.lecturerId,
+												);
+												const lecturerResult =
+													handleApiResponse(lecturerResponse);
+
+												if (lecturerResult.success && lecturerResult.data) {
+													return {
+														id: supervision.lecturerId, // Use lecturerId as supervision id for now
+														lecturerId: supervision.lecturerId,
+														lecturer: {
+															id: lecturerResult.data.id,
+															fullName: lecturerResult.data.fullName,
+															email: lecturerResult.data.email,
+														},
+													};
+												}
+												return null;
+											} catch (error) {
+												console.error(
+													`Failed to fetch lecturer ${supervision.lecturerId}:`,
+													error,
+												);
+												return null;
+											}
+										}),
+									);
+
+									// Filter out null results
+									groupDetail.supervisions = supervisionsWithLecturers.filter(
+										(supervision) => supervision !== null,
+									);
+								}
+							} catch (error) {
+								console.error(
+									`Failed to fetch supervisions for thesis ${groupDetail.thesis.id}:`,
+									error,
+								);
+							}
+						}
+
 						groupDetails.push(groupDetail);
 					} else {
 						console.error('Failed to fetch group detail:', result.error);
@@ -220,8 +280,11 @@ export const useCapstoneManagementStore = create<CapstoneManagementState>(
 			});
 
 			sortedGroups.forEach((group) => {
-				// Get supervisor from supervisions
-				const supervisor = group.supervisions?.[0]?.lecturer?.fullName || '';
+				// Get supervisors from supervisions - join multiple supervisors with comma
+				const supervisors =
+					group.supervisions
+						?.map((supervision) => supervision.lecturer.fullName)
+						.join(', ') || '';
 
 				group.members.forEach((member) => {
 					tableData.push({
@@ -235,8 +298,8 @@ export const useCapstoneManagementStore = create<CapstoneManagementState>(
 						rowSpanGroup: 0, // Will be calculated later
 						rowSpanMajor: 0, // Will be calculated later
 						rowSpanSemester: 0, // Will be calculated later
-						abbreviation: member.major.code,
-						supervisor,
+						abbreviation: group.thesis?.abbreviation || group.code,
+						supervisor: supervisors,
 						status: 'Ongoing', // Default status
 					});
 				});
