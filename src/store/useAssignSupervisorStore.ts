@@ -82,7 +82,27 @@ const fetchSupervisorDetails = async (
 	}
 };
 
-// Helper function to create assignment data from thesis
+// Helper function to process bulk assignment optimistic updates
+const processBulkAssignmentUpdate = (
+	assignment: { thesisId: string; lecturerIds: string[] },
+	lecturers: Lecturer[],
+	updateFunction: (
+		thesisId: string,
+		supervisors: Array<{ id: string; fullName: string; email: string }>,
+	) => void,
+): void => {
+	const supervisors = assignment.lecturerIds
+		.map((id) => lecturers.find((l) => l.id === id))
+		.filter(Boolean) as Array<{
+		id: string;
+		fullName: string;
+		email: string;
+	}>;
+
+	if (supervisors.length > 0) {
+		updateFunction(assignment.thesisId, supervisors);
+	}
+};
 const createAssignmentData = async (
 	thesis: Thesis,
 	semesterMap: Map<string, string>,
@@ -352,16 +372,18 @@ export const useAssignSupervisorStore = create<AssignSupervisorState>()(
 				thesisId: string,
 				newSupervisors: Array<{ id: string; fullName: string; email: string }>,
 			): void => {
+				const supervisorNames = newSupervisors.map((s) => s.fullName);
+
 				set((state) => ({
-					data: state.data.map((item) =>
-						item.thesisId === thesisId
-							? {
-									...item,
-									supervisorDetails: newSupervisors,
-									supervisors: newSupervisors.map((s) => s.fullName),
-								}
-							: item,
-					),
+					data: state.data.map((item) => {
+						if (item.thesisId !== thesisId) return item;
+
+						return {
+							...item,
+							supervisorDetails: newSupervisors,
+							supervisors: supervisorNames,
+						};
+					}),
 				}));
 			},
 
@@ -392,21 +414,13 @@ export const useAssignSupervisorStore = create<AssignSupervisorState>()(
 
 				try {
 					// Optimistic updates for all assignments
+					const { lecturers, updateAssignmentOptimistically } = get();
 					assignments.forEach((assignment) => {
-						const supervisors = assignment.lecturerIds
-							.map((id) => get().lecturers.find((l) => l.id === id))
-							.filter(Boolean) as Array<{
-							id: string;
-							fullName: string;
-							email: string;
-						}>;
-
-						if (supervisors.length > 0) {
-							get().updateAssignmentOptimistically(
-								assignment.thesisId,
-								supervisors,
-							);
-						}
+						processBulkAssignmentUpdate(
+							assignment,
+							lecturers,
+							updateAssignmentOptimistically,
+						);
 					});
 
 					// Call API
