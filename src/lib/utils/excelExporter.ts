@@ -2,7 +2,6 @@ import * as XLSX from 'xlsx-js-style';
 
 import {
 	addHeadersAndData,
-	applyCellStyling as applySharedCellStyling,
 	createMergesAndGroupBoundaries,
 	getHeaderStyle,
 	getDataRowStyle as getSharedDataRowStyle,
@@ -128,10 +127,37 @@ const applyMergesAndStyling = (
 	ws['!merges'] = merges;
 
 	// Apply styling using shared utility
-	applySharedCellStyling(ws, groupBoundaries, 8, getCellStyle);
+	applyCustomCellStyling(ws, groupBoundaries, 8);
 };
 
-const getCellStyle = (rowIndex: number, groupBoundaries: number[]) => {
+const applyCustomCellStyling = (
+	ws: XLSX.WorkSheet,
+	groupBoundaries: number[],
+	totalColumns: number,
+) => {
+	const columnLetter = String.fromCharCode(65 + totalColumns - 1); // A=65, so A+7=H for 8 columns
+	const range = XLSX.utils.decode_range(ws['!ref'] || `A1:${columnLetter}1`);
+
+	for (let R = range.s.r; R <= range.e.r; ++R) {
+		for (let C = range.s.c; C <= range.e.c; ++C) {
+			const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
+
+			// Create cell if it doesn't exist
+			if (!ws[cellAddress]) {
+				ws[cellAddress] = { v: '', t: 's' };
+			}
+
+			// Apply styling based on row type and column
+			ws[cellAddress].s = getCellStyle(R, C, groupBoundaries);
+		}
+	}
+};
+
+const getCellStyle = (
+	rowIndex: number,
+	columnIndex: number,
+	groupBoundaries: number[],
+) => {
 	if (rowIndex === 0) {
 		return getTitleStyle('D6EAF8'); // Blue theme for group management
 	}
@@ -144,5 +170,20 @@ const getCellStyle = (rowIndex: number, groupBoundaries: number[]) => {
 	if (rowIndex === 3) {
 		return getHeaderStyle('E6F3FF'); // Light blue for header
 	}
-	return getSharedDataRowStyle(rowIndex, groupBoundaries);
+
+	// For data rows, apply custom alignment for Full Name column (index 2)
+	const baseStyle = getSharedDataRowStyle(rowIndex, groupBoundaries);
+
+	// Apply left alignment to Full Name column (column C, index 2)
+	if (columnIndex === 2) {
+		return {
+			...baseStyle,
+			alignment: {
+				...baseStyle.alignment,
+				horizontal: 'left',
+			},
+		};
+	}
+
+	return baseStyle;
 };
