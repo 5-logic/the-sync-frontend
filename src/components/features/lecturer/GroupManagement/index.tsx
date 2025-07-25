@@ -5,15 +5,15 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 
 import { Header } from '@/components/common/Header';
-import GroupAssignTable from '@/components/features/lecturer/AssignStudent/GroupAssignTable';
-import StudentFilterBar from '@/components/features/lecturer/AssignStudent/StudentFilterBar';
-import StudentTable from '@/components/features/lecturer/AssignStudent/StudentTable';
+import GroupAssignTable from '@/components/features/lecturer/GroupManagement/GroupAssignTable';
+import StudentFilterBar from '@/components/features/lecturer/GroupManagement/StudentFilterBar';
+import StudentTable from '@/components/features/lecturer/GroupManagement/StudentTable';
 import { useGroupsStore } from '@/store/useGroupsStore';
 import { useMajorStore } from '@/store/useMajorStore';
 import { useSemesterStore } from '@/store/useSemesterStore';
 import { useStudentStore } from '@/store/useStudentStore';
 
-export default function AssignStudentPage() {
+export default function GroupManagementPage() {
 	const router = useRouter();
 	const { students, fetchStudentsWithoutGroup, loading } = useStudentStore();
 	const { majors, fetchMajors, loading: majorLoading } = useMajorStore();
@@ -113,14 +113,14 @@ export default function AssignStudentPage() {
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
 			<Header
-				title="Assign Student"
-				description="Manage student assignments for thesis groups"
+				title="Group Management"
+				description="Manage student assignments and thesis groups"
 				badgeText="Moderator Only"
 			/>
 
 			<GroupAssignTable
 				onView={(group) => {
-					router.push(`/lecturer/assign-student/${group.id}`);
+					router.push(`/lecturer/group-management/${group.id}`);
 				}}
 			/>
 

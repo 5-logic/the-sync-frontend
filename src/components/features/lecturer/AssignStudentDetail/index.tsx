@@ -5,11 +5,11 @@ import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { Header } from '@/components/common/Header';
-import StudentFilterBar from '@/components/features/lecturer/AssignStudent/StudentFilterBar';
-import StudentTable from '@/components/features/lecturer/AssignStudent/StudentTable';
 import AssignConfirmModal from '@/components/features/lecturer/AssignStudentDetail/AssignConfirmModal';
 import GroupInfoCard from '@/components/features/lecturer/AssignStudentDetail/GroupInfoCard';
 import TeamMembers from '@/components/features/lecturer/AssignStudentDetail/TeamMembers';
+import StudentFilterBar from '@/components/features/lecturer/GroupManagement/StudentFilterBar';
+import StudentTable from '@/components/features/lecturer/GroupManagement/StudentTable';
 import groupService from '@/lib/services/groups.service';
 import { handleApiResponse } from '@/lib/utils/handleApi';
 import { GroupDashboard } from '@/schemas/group';
@@ -199,7 +199,7 @@ export default function AssignStudentsDetailPage() {
 						<Row justify="space-between">
 							<Button
 								type="default"
-								onClick={() => router.push('/lecturer/assign-student')}
+								onClick={() => router.push('/lecturer/group-management')}
 							>
 								Back
 							</Button>

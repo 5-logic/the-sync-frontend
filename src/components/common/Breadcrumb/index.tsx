@@ -28,7 +28,7 @@ const ROUTE_TITLES: Record<string, string> = {
 	'/lecturer/account-setting': 'Account Setting',
 	'/lecturer/assign-lecturer-review': 'Assign Lecturer Review',
 	'/lecturer/assign-list-publish-thesis': 'Assign List Publish Thesis',
-	'/lecturer/assign-student': 'Assign Student',
+	'/lecturer/group-management': 'Group Management',
 	'/lecturer/assign-supervisor': 'Assign Supervisor',
 	'/lecturer/thesis-version-control': 'Thesis Version Control',
 	'/lecturer/timeline-review': 'Timeline Review',
