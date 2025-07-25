@@ -273,7 +273,7 @@ export const useCapstoneManagementStore = create<CapstoneManagementState>(
 			let stt = 1;
 
 			// Sort groups by semester, then by group name
-			const sortedGroups = groups.sort((a, b) => {
+			const sortedGroups = groups.toSorted((a, b) => {
 				const semesterCompare = a.semester.name.localeCompare(b.semester.name);
 				if (semesterCompare !== 0) return semesterCompare;
 				return a.name.localeCompare(b.name);
@@ -376,7 +376,7 @@ export const useCapstoneManagementStore = create<CapstoneManagementState>(
 						item.studentId.toLowerCase().includes(term) ||
 						item.major.toLowerCase().includes(term) ||
 						item.thesisName.toLowerCase().includes(term) ||
-						(item.supervisor && item.supervisor.toLowerCase().includes(term)),
+						item.supervisor?.toLowerCase().includes(term),
 				);
 			}
 
