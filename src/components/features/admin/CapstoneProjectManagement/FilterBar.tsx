@@ -89,6 +89,7 @@ export const FilterBar = ({
 						style={{ width: '100%' }}
 						onClick={onExportExcel}
 						disabled={loading}
+						title="Export to Excel"
 					>
 						{exportExcelText}
 					</Button>

@@ -24,6 +24,7 @@ import {
 } from '@/components/features/admin/CapstoneProjectManagement/calculateRowSpan';
 import { useDebouncedSearch } from '@/hooks/ui/useDebounce';
 import { exportDefenseResultsToExcel } from '@/lib/utils/defenseResultsExporter';
+import { showNotification } from '@/lib/utils/notification';
 import { Semester } from '@/schemas/semester';
 import { type GroupTableData, useCapstoneManagementStore } from '@/store';
 import '@/styles/components.css';
@@ -70,11 +71,76 @@ const CapstoneDefenseResults = () => {
 		return semesters.map((semester: Semester) => semester.name);
 	}, [semesters]);
 
+	// Check if export is allowed based on semester status
+	const exportValidation = useMemo(() => {
+		if (selectedSemester !== 'all') {
+			const selectedSemesterData = semesters.find(
+				(s) => s.name === selectedSemester,
+			);
+			if (selectedSemesterData) {
+				const { status, ongoingPhase } = selectedSemesterData;
+
+				// Allow export for "End" status
+				if (status === 'End') {
+					return {
+						canExport: true,
+						reason: '',
+					};
+				}
+
+				// Allow export for "Ongoing" status with "ScopeLocked" phase
+				if (status === 'Ongoing' && ongoingPhase === 'ScopeLocked') {
+					return {
+						canExport: true,
+						reason: '',
+					};
+				}
+
+				// Block export for other cases
+				if (status === 'Ongoing' && ongoingPhase !== 'ScopeLocked') {
+					return {
+						canExport: false,
+						reason: `Export not allowed. Semester is in "Ongoing" status but phase is "${ongoingPhase}". Export requires "ScopeLocked" phase or "End" status.`,
+					};
+				}
+
+				return {
+					canExport: false,
+					reason: `Export not allowed for semester with status "${status}". Export is only allowed for "Ongoing" semesters with "ScopeLocked" phase or "End" status.`,
+				};
+			}
+		} else {
+			// When "all" is selected, check if there are any valid semesters
+			const validSemesters = semesters.filter(
+				(s) =>
+					s.status === 'End' ||
+					(s.status === 'Ongoing' && s.ongoingPhase === 'ScopeLocked'),
+			);
+			if (validSemesters.length === 0) {
+				return {
+					canExport: false,
+					reason:
+						'Export not allowed. No semesters with valid export conditions found. Export requires "End" status or "Ongoing" status with "ScopeLocked" phase.',
+				};
+			}
+		}
+		return {
+			canExport: true,
+			reason: '',
+		};
+	}, [selectedSemester, semesters]);
+
 	const handleSearch = (value: string) => {
 		setSearchValue(value);
 	};
 
 	const handleExportExcel = () => {
+		// Always check validation and show notification if not allowed
+		if (!exportValidation.canExport) {
+			showNotification.error('Export Not Allowed', exportValidation.reason);
+			return;
+		}
+
 		const selectedStudents = filteredData.filter((student) =>
 			selectedRowKeys.includes(`${student.studentId}-${student.groupId}`),
 		);
@@ -84,6 +150,10 @@ const CapstoneDefenseResults = () => {
 			selectedStudents.length > 0 ? selectedStudents : filteredData;
 		const dataForExport = dataToExport.map((item) => ({
 			...item,
+			thesisName:
+				item.thesisName && item.thesisName !== 'Not assigned'
+					? item.thesisName
+					: '',
 			rowSpanMajor: item.rowSpanMajor || 0,
 			rowSpanGroup: item.rowSpanGroup || 0,
 			rowSpanSemester: item.rowSpanSemester || 0,
@@ -205,7 +275,9 @@ const CapstoneDefenseResults = () => {
 				[
 					item.name,
 					item.studentId,
-					item.thesisName,
+					item.thesisName && item.thesisName !== 'Not assigned'
+						? item.thesisName
+						: '',
 					item.major,
 					item.status,
 					item.semester,
