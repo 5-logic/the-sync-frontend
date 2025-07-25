@@ -26,10 +26,10 @@ const GroupManagement: React.FC = () => {
 		loading,
 		loadingDetails,
 		groups,
+		tableData,
 		fetchGroups,
 		fetchGroupDetails,
 		fetchSemesters,
-		getFilteredTableData,
 		refresh,
 	} = useCapstoneManagementStore();
 
@@ -54,16 +54,31 @@ const GroupManagement: React.FC = () => {
 		return semesters.map((semester: Semester) => semester.name);
 	}, [semesters]);
 
-	// Get filtered data using store method
+	// Get filtered data using direct filtering
 	const filteredData: GroupTableData[] = useMemo(() => {
-		const filtered = getFilteredTableData(
-			debouncedSearchValue,
-			selectedSemester === 'all' ? undefined : selectedSemester,
-		);
+		let filtered = [...tableData]; // Start with all data from store
+
+		// Apply semester filter only if not 'all' or undefined
+		if (selectedSemester && selectedSemester !== 'all') {
+			filtered = filtered.filter((item) => item.semester === selectedSemester);
+		}
+
+		// Apply search filter
+		if (debouncedSearchValue) {
+			const term = debouncedSearchValue.toLowerCase();
+			filtered = filtered.filter(
+				(item) =>
+					item.name.toLowerCase().includes(term) ||
+					item.studentId.toLowerCase().includes(term) ||
+					item.major.toLowerCase().includes(term) ||
+					item.thesisName.toLowerCase().includes(term) ||
+					(item.supervisor && item.supervisor.toLowerCase().includes(term)),
+			);
+		}
 
 		// Recalculate rowSpans for filtered data
 		return calculateRowSpans(filtered) as GroupTableData[];
-	}, [debouncedSearchValue, selectedSemester, getFilteredTableData]);
+	}, [debouncedSearchValue, selectedSemester, tableData]);
 
 	const handleExportExcel = () => {
 		exportToExcel({
