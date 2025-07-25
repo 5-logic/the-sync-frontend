@@ -82,6 +82,49 @@ const fetchSupervisorDetails = async (
 	}
 };
 
+// Helper function to show notification based on assignment result
+const showAssignmentNotification = (
+	successful: number,
+	failed: number,
+	allAlreadyExists: boolean,
+	silent: boolean,
+): void => {
+	if (silent) return;
+
+	if (successful > 0 && failed === 0) {
+		const message = allAlreadyExists
+			? `All ${successful} supervisors were already assigned`
+			: `All ${successful} supervisors assigned successfully`;
+
+		const notificationType = allAlreadyExists ? 'info' : 'success';
+		const title = allAlreadyExists ? 'Already Assigned' : 'Assignment Complete';
+
+		showNotification[notificationType](title, message);
+	} else if (successful > 0 && failed > 0) {
+		showNotification.warning(
+			'Partial Success',
+			`${successful} assignments succeeded, ${failed} failed`,
+		);
+	} else {
+		showNotification.error('Assignment Failed', 'All assignments failed');
+	}
+};
+
+// Helper function to handle error case
+const handleAssignmentError = (
+	originalData: SupervisorAssignmentData[],
+	setState: (partial: Partial<{ data: SupervisorAssignmentData[] }>) => void,
+	silent: boolean,
+): void => {
+	const supervisionError = useSupervisionStore.getState().lastError;
+	const errorMessage = supervisionError || 'No response from server';
+
+	setState({ data: originalData });
+	if (!silent) {
+		showNotification.error('Assignment Failed', errorMessage);
+	}
+};
+
 // Helper function to handle bulk assignment result
 const handleBulkAssignmentResult = (
 	result: {
@@ -93,54 +136,26 @@ const handleBulkAssignmentResult = (
 	setState: (partial: Partial<{ data: SupervisorAssignmentData[] }>) => void,
 ): boolean => {
 	if (!result) {
-		// No result returned - API error
-		const supervisionError = useSupervisionStore.getState().lastError;
-		const errorMessage = supervisionError || 'No response from server';
-
-		setState({ data: originalData });
-		showNotification.error('Assignment Failed', errorMessage);
+		handleAssignmentError(originalData, setState, silent);
 		return false;
 	}
 
 	const { successful, failed } = result.summary;
+	const allAlreadyExists = result.results.every(
+		(r: { status: string }) => r.status === 'already_exists',
+	);
 
-	if (successful > 0 && failed === 0) {
-		// Check if all were already assigned
-		const allAlreadyExists = result.results.every(
-			(r: { status: string }) => r.status === 'already_exists',
-		);
+	// Show appropriate notification
+	showAssignmentNotification(successful, failed, allAlreadyExists, silent);
 
-		if (!silent) {
-			const message = allAlreadyExists
-				? `All ${successful} supervisors were already assigned`
-				: `All ${successful} supervisors assigned successfully`;
-
-			const notificationType = allAlreadyExists ? 'info' : 'success';
-			const title = allAlreadyExists
-				? 'Already Assigned'
-				: 'Assignment Complete';
-
-			showNotification[notificationType](title, message);
-		}
-		return true;
-	}
-
-	if (successful > 0 && failed > 0) {
-		if (!silent) {
-			showNotification.warning(
-				'Partial Success',
-				`${successful} assignments succeeded, ${failed} failed`,
-			);
-		}
+	// Handle failed assignments
+	if (successful === 0) {
+		setState({ data: originalData });
 		return false;
 	}
 
-	// All failed
-	setState({ data: originalData });
-	if (!silent) {
-		showNotification.error('Assignment Failed', 'All assignments failed');
-	}
-	return false;
+	// Return success for partial or full success
+	return failed === 0;
 };
 
 // Helper function to process bulk assignment optimistic updates
