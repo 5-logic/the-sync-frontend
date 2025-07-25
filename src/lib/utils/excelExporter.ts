@@ -55,7 +55,7 @@ export const exportToExcel = ({
 			(selectedSemester === 'all'
 				? 'ALL SEMESTERS'
 				: selectedSemester.toUpperCase());
-		const title = `LIST OF ASSIGNMENTS AND GUIDELINES FOR THESIS FOR ${semesterText.toUpperCase()}`;
+		const title = `LIST OF ASSIGNMENTS AND GUIDELINES FOR THESIS IN ${semesterText.toUpperCase()}`;
 
 		// Initialize Excel workbook and worksheet with title and subtitle
 		const { wb, ws } = initializeExcelWorksheet(title);
