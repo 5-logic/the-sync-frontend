@@ -288,7 +288,7 @@ export const useAssignSupervisorStore = create<AssignSupervisorState>()(
 				}
 			},
 
-			// Change supervisor with optimistic updates
+			// Change supervisor with optimistic updates (uses assign API internally)
 			changeSupervisor: async (
 				thesisId: string,
 				currentSupervisorId: string,
@@ -443,11 +443,23 @@ export const useAssignSupervisorStore = create<AssignSupervisorState>()(
 					const { successful, failed } = result.summary;
 
 					if (successful > 0 && failed === 0) {
+						// Check if all were already assigned
+						const allAlreadyExists = result.results.every(
+							(r) => r.status === 'already_exists',
+						);
+
 						if (!silent) {
-							showNotification.success(
-								'Assignment Complete',
-								`All ${successful} supervisors assigned successfully`,
-							);
+							if (allAlreadyExists) {
+								showNotification.info(
+									'Already Assigned',
+									`All ${successful} supervisors were already assigned`,
+								);
+							} else {
+								showNotification.success(
+									'Assignment Complete',
+									`All ${successful} supervisors assigned successfully`,
+								);
+							}
 						}
 						return true;
 					} else if (successful > 0 && failed > 0) {
