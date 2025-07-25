@@ -66,6 +66,31 @@ interface CapstoneManagementState {
 		searchTerm?: string,
 		semesterFilter?: string,
 	) => GroupTableData[];
+
+	// Helper methods for reducing complexity
+	processGroupResponses: (
+		responses: unknown[],
+	) => Promise<GroupDetailWithMembers[]>;
+	enrichGroupWithSupervisions: (
+		groupData: GroupDashboard,
+	) => Promise<GroupDetailWithMembers>;
+	fetchSupervisions: (
+		thesisId: string,
+	) => Promise<NonNullable<GroupDetailWithMembers['supervisions']>>;
+	fetchLecturerForSupervision: (supervision: {
+		lecturerId: string;
+	}) => Promise<{
+		id: string;
+		lecturerId: string;
+		lecturer: {
+			id: string;
+			fullName: string;
+			email: string;
+		};
+	} | null>;
+	buildTableDataRows: (groups: GroupDetailWithMembers[]) => GroupTableData[];
+	calculateRowSpans: (tableData: GroupTableData[]) => void;
+
 	clearError: () => void;
 	reset: () => void;
 }
@@ -122,82 +147,13 @@ export const useCapstoneManagementStore = create<CapstoneManagementState>(
 
 			set({ loadingDetails: true, lastError: null });
 			try {
-				const detailPromises = groupIds.map((groupId) =>
-					groupService.findOne(groupId),
+				const responses = await Promise.all(
+					groupIds.map((groupId) => groupService.findOne(groupId)),
 				);
-				const responses = await Promise.all(detailPromises);
 
-				const groupDetails: GroupDetailWithMembers[] = [];
-
-				for (const response of responses) {
-					const result = handleApiResponse(response);
-					if (result.success && result.data) {
-						const groupDetail: GroupDetailWithMembers = {
-							...result.data,
-							supervisions: [], // Initialize with empty array
-						};
-
-						// Fetch supervision data if thesis exists
-						if (groupDetail.thesis?.id) {
-							try {
-								const supervisionResponse =
-									await supervisionService.getByThesisId(groupDetail.thesis.id);
-								const supervisionResult =
-									handleApiResponse(supervisionResponse);
-
-								if (supervisionResult.success && supervisionResult.data) {
-									// Fetch lecturer details for each supervision
-									const supervisionsWithLecturers = await Promise.all(
-										supervisionResult.data.map(async (supervision) => {
-											try {
-												const lecturerResponse = await lecturerService.findOne(
-													supervision.lecturerId,
-												);
-												const lecturerResult =
-													handleApiResponse(lecturerResponse);
-
-												if (lecturerResult.success && lecturerResult.data) {
-													return {
-														id: supervision.lecturerId, // Use lecturerId as supervision id for now
-														lecturerId: supervision.lecturerId,
-														lecturer: {
-															id: lecturerResult.data.id,
-															fullName: lecturerResult.data.fullName,
-															email: lecturerResult.data.email,
-														},
-													};
-												}
-												return null;
-											} catch (error) {
-												console.error(
-													`Failed to fetch lecturer ${supervision.lecturerId}:`,
-													error,
-												);
-												return null;
-											}
-										}),
-									);
-
-									// Filter out null results
-									groupDetail.supervisions = supervisionsWithLecturers.filter(
-										(supervision) => supervision !== null,
-									);
-								}
-							} catch (error) {
-								console.error(
-									`Failed to fetch supervisions for thesis ${groupDetail.thesis.id}:`,
-									error,
-								);
-							}
-						}
-
-						groupDetails.push(groupDetail);
-					} else {
-						console.error('Failed to fetch group detail:', result.error);
-					}
-				}
-
+				const groupDetails = await get().processGroupResponses(responses);
 				const tableData = get().transformGroupsToTableData(groupDetails);
+
 				set({
 					groupsWithDetails: groupDetails,
 					tableData,
@@ -210,6 +166,105 @@ export const useCapstoneManagementStore = create<CapstoneManagementState>(
 						: 'Failed to fetch group details';
 				set({ lastError: errorMessage, loadingDetails: false });
 				showNotification.error('Failed to fetch group details', errorMessage);
+			}
+		},
+
+		processGroupResponses: async (responses: unknown[]) => {
+			const groupDetails: GroupDetailWithMembers[] = [];
+
+			for (const response of responses) {
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				const result = handleApiResponse(response as any);
+				if (!result.success || !result.data) {
+					console.error('Failed to fetch group detail:', result.error);
+					continue;
+				}
+
+				const groupDetail = await get().enrichGroupWithSupervisions(
+					result.data as GroupDashboard,
+				);
+				groupDetails.push(groupDetail);
+			}
+
+			return groupDetails;
+		},
+
+		enrichGroupWithSupervisions: async (
+			groupData: GroupDashboard,
+		): Promise<GroupDetailWithMembers> => {
+			const groupDetail: GroupDetailWithMembers = {
+				...groupData,
+				supervisions: [],
+			};
+
+			if (!groupDetail.thesis?.id) {
+				return groupDetail;
+			}
+
+			try {
+				const supervisions = await get().fetchSupervisions(
+					groupDetail.thesis.id,
+				);
+				groupDetail.supervisions = supervisions;
+			} catch (error) {
+				console.error(
+					`Failed to fetch supervisions for thesis ${groupDetail.thesis.id}:`,
+					error,
+				);
+			}
+
+			return groupDetail;
+		},
+
+		fetchSupervisions: async (thesisId: string) => {
+			const supervisionResponse =
+				await supervisionService.getByThesisId(thesisId);
+			const supervisionResult = handleApiResponse(supervisionResponse);
+
+			if (!supervisionResult.success || !supervisionResult.data) {
+				return [];
+			}
+
+			const supervisionsWithLecturers = await Promise.all(
+				supervisionResult.data.map((supervision: { lecturerId: string }) =>
+					get().fetchLecturerForSupervision(supervision),
+				),
+			);
+
+			return supervisionsWithLecturers.filter(
+				(supervision): supervision is NonNullable<typeof supervision> =>
+					supervision !== null,
+			);
+		},
+
+		fetchLecturerForSupervision: async (supervision: {
+			lecturerId: string;
+		}) => {
+			try {
+				const lecturerResponse = await lecturerService.findOne(
+					supervision.lecturerId,
+				);
+				const lecturerResult = handleApiResponse(lecturerResponse);
+
+				if (!lecturerResult.success || !lecturerResult.data) {
+					return null;
+				}
+
+				return {
+					id: supervision.lecturerId,
+					lecturerId: supervision.lecturerId,
+					lecturer: {
+						id: lecturerResult.data.id,
+						fullName: lecturerResult.data.fullName,
+						email: lecturerResult.data.email,
+					},
+				};
+			} catch (error) {
+				console.error(
+					`Failed to fetch lecturer ${supervision.lecturerId}:`,
+					error,
+				);
+				return null;
 			}
 		},
 
@@ -269,6 +324,14 @@ export const useCapstoneManagementStore = create<CapstoneManagementState>(
 		transformGroupsToTableData: (
 			groups: GroupDetailWithMembers[],
 		): GroupTableData[] => {
+			const tableData = get().buildTableDataRows(groups);
+			get().calculateRowSpans(tableData);
+			return tableData;
+		},
+
+		buildTableDataRows: (
+			groups: GroupDetailWithMembers[],
+		): GroupTableData[] => {
 			const tableData: GroupTableData[] = [];
 			let stt = 1;
 
@@ -305,53 +368,81 @@ export const useCapstoneManagementStore = create<CapstoneManagementState>(
 				});
 			});
 
-			// Calculate row spans
+			return tableData;
+		},
+
+		calculateRowSpans: (tableData: GroupTableData[]): void => {
 			let semesterSpan = 1;
 			let groupSpan = 1;
 			let majorSpan = 1;
+
+			const updateSemesterSpan = (
+				index: number,
+				currentSpan: number,
+				current: GroupTableData,
+				next?: GroupTableData,
+			): number => {
+				if (next && next.semester === current.semester) {
+					return currentSpan + 1;
+				}
+
+				// Apply semester span to all rows in this semester
+				for (let j = index - currentSpan + 1; j <= index; j++) {
+					tableData[j].rowSpanSemester =
+						j === index - currentSpan + 1 ? currentSpan : 0;
+				}
+				return 1;
+			};
+
+			const updateGroupSpan = (
+				index: number,
+				currentSpan: number,
+				current: GroupTableData,
+				next?: GroupTableData,
+			): number => {
+				if (next && next.groupId === current.groupId) {
+					return currentSpan + 1;
+				}
+
+				// Apply group span to all rows in this group
+				for (let j = index - currentSpan + 1; j <= index; j++) {
+					tableData[j].rowSpanGroup =
+						j === index - currentSpan + 1 ? currentSpan : 0;
+				}
+				return 1;
+			};
+
+			const updateMajorSpan = (
+				index: number,
+				currentSpan: number,
+				current: GroupTableData,
+				next?: GroupTableData,
+			): number => {
+				if (
+					next &&
+					next.major === current.major &&
+					next.groupId === current.groupId
+				) {
+					return currentSpan + 1;
+				}
+
+				// Apply major span to all rows in this major within the same group
+				for (let j = index - currentSpan + 1; j <= index; j++) {
+					tableData[j].rowSpanMajor =
+						j === index - currentSpan + 1 ? currentSpan : 0;
+				}
+				return 1;
+			};
 
 			for (let i = 0; i < tableData.length; i++) {
 				const current = tableData[i];
 				const next = tableData[i + 1];
 
 				// Calculate spans for grouping
-				if (next && next.semester === current.semester) {
-					semesterSpan++;
-				} else {
-					// Apply semester span to all rows in this semester
-					for (let j = i - semesterSpan + 1; j <= i; j++) {
-						tableData[j].rowSpanSemester =
-							j === i - semesterSpan + 1 ? semesterSpan : 0;
-					}
-					semesterSpan = 1;
-				}
-
-				if (next && next.groupId === current.groupId) {
-					groupSpan++;
-				} else {
-					// Apply group span to all rows in this group
-					for (let j = i - groupSpan + 1; j <= i; j++) {
-						tableData[j].rowSpanGroup = j === i - groupSpan + 1 ? groupSpan : 0;
-					}
-					groupSpan = 1;
-				}
-
-				if (
-					next &&
-					next.major === current.major &&
-					next.groupId === current.groupId
-				) {
-					majorSpan++;
-				} else {
-					// Apply major span to all rows in this major within the same group
-					for (let j = i - majorSpan + 1; j <= i; j++) {
-						tableData[j].rowSpanMajor = j === i - majorSpan + 1 ? majorSpan : 0;
-					}
-					majorSpan = 1;
-				}
+				semesterSpan = updateSemesterSpan(i, semesterSpan, current, next);
+				groupSpan = updateGroupSpan(i, groupSpan, current, next);
+				majorSpan = updateMajorSpan(i, majorSpan, current, next);
 			}
-
-			return tableData;
 		},
 
 		getFilteredTableData: (
