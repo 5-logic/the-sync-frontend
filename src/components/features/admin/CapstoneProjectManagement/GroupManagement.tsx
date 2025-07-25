@@ -72,7 +72,7 @@ const GroupManagement: React.FC = () => {
 					item.studentId.toLowerCase().includes(term) ||
 					item.major.toLowerCase().includes(term) ||
 					item.thesisName.toLowerCase().includes(term) ||
-					(item.supervisor && item.supervisor.toLowerCase().includes(term)),
+					item.supervisor?.toLowerCase().includes(term),
 			);
 		}
 
