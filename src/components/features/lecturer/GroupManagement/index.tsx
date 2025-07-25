@@ -122,6 +122,10 @@ export default function GroupManagementPage() {
 				onView={(group) => {
 					router.push(`/lecturer/group-management/${group.id}`);
 				}}
+				onDelete={(group) => {
+					console.log('Group deleted:', group.name);
+					// Optional: You can add additional logic here if needed
+				}}
 			/>
 
 			<Card title="Ungrouped Students">

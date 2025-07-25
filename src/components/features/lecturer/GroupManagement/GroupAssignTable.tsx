@@ -1,8 +1,17 @@
-import { EyeOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
-import { Button, Card, Col, Input, Row, Spin } from 'antd';
-import { useEffect, useMemo, useState } from 'react';
+import {
+	DeleteOutlined,
+	EyeOutlined,
+	ReloadOutlined,
+	SearchOutlined,
+} from '@ant-design/icons';
+import { Button, Card, Col, Input, Row, Space, Spin } from 'antd';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
+import { ConfirmationModal } from '@/components/common/ConfirmModal';
 import { Group } from '@/lib/services/groups.service';
+import groupService from '@/lib/services/groups.service';
+import { handleApiResponse } from '@/lib/utils/handleApi';
+import { showNotification } from '@/lib/utils/notification';
 import { isTextMatch } from '@/lib/utils/textNormalization';
 import { useGroupsStore } from '@/store/useGroupsStore';
 
@@ -10,10 +19,12 @@ import CustomGroupTable from './GroupTable';
 
 interface Props {
 	readonly onView?: (group: Group) => void;
+	readonly onDelete?: (group: Group) => void;
 }
 
-export default function GroupAssignTable({ onView }: Props) {
+export default function GroupAssignTable({ onView, onDelete }: Props) {
 	const [groupSearch, setGroupSearch] = useState('');
+	const [deleteLoading, setDeleteLoading] = useState<string | null>(null);
 	const { groups, loading, fetchGroups } = useGroupsStore();
 
 	useEffect(() => {
@@ -23,6 +34,53 @@ export default function GroupAssignTable({ onView }: Props) {
 	const handleRefresh = () => {
 		useGroupsStore.getState().refetch(); // Use refetch method for forced refresh
 	};
+
+	const handleDeleteGroup = useCallback(
+		async (group: Group) => {
+			try {
+				setDeleteLoading(group.id);
+
+				const response = await groupService.deleteGroup(group.id);
+				const result = handleApiResponse(response);
+
+				if (result.success) {
+					showNotification.success(
+						'Group Deleted',
+						`Group "${group.name}" has been deleted successfully!`,
+					);
+					handleRefresh(); // Refresh the groups list
+					onDelete?.(group); // Call optional callback
+				}
+				// handleApiResponse already shows error messages from backend
+			} catch (error) {
+				console.error('Error deleting group:', error);
+				showNotification.error(
+					'Delete Failed',
+					'An error occurred while deleting the group',
+				);
+			} finally {
+				setDeleteLoading(null);
+			}
+		},
+		[onDelete],
+	);
+
+	const showDeleteConfirm = useCallback(
+		(group: Group) => {
+			ConfirmationModal.show({
+				title: 'Delete Group',
+				message: 'Are you sure you want to delete this group?',
+				details: `${group.name} (${group.code})`,
+				note: 'This action cannot be undone. All group data will be permanently deleted.',
+				noteType: 'danger',
+				okText: 'Yes, Delete',
+				okType: 'danger',
+				onOk: () => handleDeleteGroup(group),
+				loading: deleteLoading === group.id,
+			});
+		},
+		[deleteLoading, handleDeleteGroup],
+	);
 
 	const filteredGroups = useMemo(() => {
 		return groups
@@ -67,20 +125,31 @@ export default function GroupAssignTable({ onView }: Props) {
 			{
 				title: 'Actions',
 				render: (_: unknown, record: Group) => (
-					<Button
-						type="link"
-						icon={<EyeOutlined />}
-						onClick={() => {
-							onView?.(record);
-						}}
-					/>
+					<Space>
+						<Button
+							type="link"
+							icon={<EyeOutlined />}
+							onClick={() => {
+								onView?.(record);
+							}}
+							title="View Details"
+						/>
+						<Button
+							type="link"
+							icon={<DeleteOutlined />}
+							onClick={() => showDeleteConfirm(record)}
+							loading={deleteLoading === record.id}
+							danger
+							title="Delete Group"
+						/>
+					</Space>
 				),
 				key: 'actions',
 				align: 'center' as const,
-				width: '10%',
+				width: '15%',
 			},
 		];
-	}, [onView]);
+	}, [onView, deleteLoading, showDeleteConfirm]);
 
 	return (
 		<Card title="Active Groups">
