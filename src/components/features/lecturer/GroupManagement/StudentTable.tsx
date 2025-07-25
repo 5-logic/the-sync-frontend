@@ -13,6 +13,7 @@ interface Props {
 	showOnlyUngrouped?: boolean;
 	majorNamesMap?: Record<string, string>;
 	loading?: boolean;
+	disableSelection?: boolean;
 }
 
 export default function StudentTable({
@@ -22,6 +23,7 @@ export default function StudentTable({
 	showOnlyUngrouped = true,
 	majorNamesMap = {},
 	loading = false,
+	disableSelection = false,
 }: Readonly<Props>) {
 	const filteredData = showOnlyUngrouped
 		? data.filter((student) => student.isActive) // Filter active students for ungrouped
@@ -65,8 +67,14 @@ export default function StudentTable({
 						? {
 								type: 'radio',
 								selectedRowKeys,
-								onChange: (selectedKeys) =>
-									onSelectionChange(selectedKeys as string[]),
+								onChange: (selectedKeys) => {
+									if (!disableSelection) {
+										onSelectionChange(selectedKeys as string[]);
+									}
+								},
+								getCheckboxProps: () => ({
+									disabled: disableSelection,
+								}),
 							}
 						: undefined
 				}

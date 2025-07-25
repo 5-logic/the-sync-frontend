@@ -27,7 +27,7 @@ export default function ThesisCard({ group, onViewDetail }: Props) {
 			>
 				<Empty
 					image={Empty.PRESENTED_IMAGE_SIMPLE}
-					description="Không có thesis"
+					description="This group has no thesis yet."
 					style={{ margin: 0 }}
 				/>
 			</Card>

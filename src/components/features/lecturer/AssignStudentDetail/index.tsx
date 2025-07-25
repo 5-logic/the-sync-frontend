@@ -383,6 +383,21 @@ export default function AssignStudentsDetailPage() {
 			</Row>
 
 			<Card title="Assign Student to Group">
+				{isGroupFull && (
+					<div
+						style={{
+							marginBottom: 16,
+							padding: '8px 12px',
+							backgroundColor: '#f6ffed',
+							border: '1px solid #b7eb8f',
+							borderRadius: '6px',
+							color: '#389e0d',
+						}}
+					>
+						✓ This group has reached maximum capacity (6 members). Student
+						assignment is disabled.
+					</div>
+				)}
 				<div style={{ marginBottom: 16 }}>
 					<StudentFilterBar
 						search={filters.keyword}
@@ -409,6 +424,7 @@ export default function AssignStudentsDetailPage() {
 					selectedRowKeys={selectedStudentIds}
 					onSelectionChange={setSelectedStudentIds}
 					loading={studentsLoading}
+					disableSelection={isGroupFull}
 				/>
 				<Row gutter={[16, 16]} className="mt-4">
 					<Col span={24}>
