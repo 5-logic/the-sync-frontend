@@ -25,6 +25,7 @@ import {
 	UI_CONSTANTS,
 } from '@/lib/constants/thesis';
 import { aiDuplicateService } from '@/lib/services/ai-duplicate.service';
+import { getSemesterTagColor } from '@/lib/utils/colorUtils';
 import { formatDate } from '@/lib/utils/dateFormat';
 import {
 	THESIS_ERROR_CONFIGS,
@@ -174,28 +175,6 @@ export default function ThesisTable({ data, loading }: Readonly<Props>) {
 	// Type-safe color mapping for status
 	const getStatusColor = useCallback((status: string): string => {
 		return STATUS_COLORS[status as ThesisStatus] ?? 'default';
-	}, []);
-
-	// Generate consistent color for semester based on semesterId
-	const getSemesterColor = useCallback((semesterId: string): string => {
-		const colors = [
-			'purple',
-			'blue',
-			'green',
-			'orange',
-			'red',
-			'cyan',
-			'magenta',
-			'volcano',
-			'geekblue',
-			'gold',
-		];
-		// Create a simple hash from semesterId to get consistent color
-		let hash = 0;
-		for (let i = 0; i < semesterId.length; i++) {
-			hash = semesterId.charCodeAt(i) + ((hash << 5) - hash);
-		}
-		return colors[Math.abs(hash) % colors.length];
 	}, []);
 
 	// Create dropdown menu items for each thesis with status rules
@@ -429,7 +408,7 @@ export default function ThesisTable({ data, loading }: Readonly<Props>) {
 				render: (semesterId: string) => {
 					const semester = getSemesterById(semesterId);
 					const displayName = semester?.name ?? 'Unknown';
-					const color = getSemesterColor(semesterId);
+					const color = getSemesterTagColor(semesterId);
 
 					// Show loading spinner while semesters are being fetched
 					if (semesterLoading && !semester) {
@@ -514,7 +493,6 @@ export default function ThesisTable({ data, loading }: Readonly<Props>) {
 		[
 			getLecturerById,
 			getSemesterById,
-			getSemesterColor,
 			getStatusColor,
 			renderActionsColumn,
 			semesterLoading,

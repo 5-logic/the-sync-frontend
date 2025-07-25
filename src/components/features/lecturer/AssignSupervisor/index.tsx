@@ -6,14 +6,16 @@ import { useEffect, useMemo, useState } from 'react';
 import { ConfirmationModal } from '@/components/common/ConfirmModal';
 import { Header } from '@/components/common/Header';
 import AssignSupervisorModal from '@/components/features/lecturer/AssignSupervisor/AssignSupervisorModal';
-import GroupOverviewTable from '@/components/features/lecturer/AssignSupervisor/GroupOverviewTable';
 import {
+	TABLE_WIDTHS,
 	baseColumns,
 	createActionRenderer,
 	createSupervisorRenderer,
 } from '@/components/features/lecturer/AssignSupervisor/SupervisorColumns';
 import SupervisorFilterBar from '@/components/features/lecturer/AssignSupervisor/SupervisorFilterBar';
+import ThesisOverviewTable from '@/components/features/lecturer/AssignSupervisor/ThesisOverviewTable';
 import { useAssignSupervisor } from '@/hooks/lecturer/useAssignSupervisor';
+import { useCurrentSemester } from '@/hooks/semester';
 import { type SupervisorAssignmentData } from '@/store/useAssignSupervisorStore';
 import { useDraftAssignmentStore } from '@/store/useDraftAssignmentStore';
 import { useSemesterStore } from '@/store/useSemesterStore';
@@ -23,6 +25,9 @@ import { useSemesterStore } from '@/store/useSemesterStore';
  */
 
 export default function AssignSupervisors() {
+	// Get current semester for default filter
+	const { currentSemester } = useCurrentSemester();
+
 	const [search, setSearch] = useState('');
 	const [selectedGroup, setSelectedGroup] =
 		useState<SupervisorAssignmentData | null>(null);
@@ -46,6 +51,13 @@ export default function AssignSupervisors() {
 
 	// Semester store for real semester data
 	const { semesters, fetchSemesters } = useSemesterStore();
+
+	// Set default semester filter when current semester is available
+	useEffect(() => {
+		if (currentSemester && semesterFilter === 'All') {
+			setSemesterFilter(currentSemester.id);
+		}
+	}, [currentSemester, semesterFilter]);
 
 	// Manual fetch on component mount
 	useEffect(() => {
@@ -106,8 +118,8 @@ export default function AssignSupervisors() {
 	const filteredData = useMemo(() => {
 		return data.filter((item) => {
 			const searchText = search.toLowerCase();
-			const matchesSearch = [item.groupName, item.thesisTitle].some((field) =>
-				field.toLowerCase().includes(searchText),
+			const matchesSearch = [item.abbreviation, item.thesisTitle].some(
+				(field) => field.toLowerCase().includes(searchText),
 			);
 			// Semester filtering is now handled server-side
 			return matchesSearch;
@@ -289,7 +301,7 @@ export default function AssignSupervisors() {
 		addDraftAssignment({
 			thesisId: selectedGroup.thesisId,
 			thesisTitle: selectedGroup.thesisTitle,
-			groupName: selectedGroup.groupName,
+			groupName: selectedGroup.abbreviation,
 			lecturerIds: supervisorIds,
 			lecturerNames,
 		});
@@ -494,8 +506,7 @@ export default function AssignSupervisors() {
 			{
 				title: 'Action',
 				key: 'action',
-				width: 120,
-				fixed: 'right' as const,
+				width: TABLE_WIDTHS.ACTIONS,
 				align: 'center' as const,
 				render: actionRenderer,
 			},
@@ -560,7 +571,7 @@ export default function AssignSupervisors() {
 				semesterOptions={semesterOptions}
 			/>
 
-			<GroupOverviewTable
+			<ThesisOverviewTable
 				data={filteredData}
 				columns={columns}
 				loading={loading}
