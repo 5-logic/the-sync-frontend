@@ -82,6 +82,67 @@ const fetchSupervisorDetails = async (
 	}
 };
 
+// Helper function to handle bulk assignment result
+const handleBulkAssignmentResult = (
+	result: {
+		summary: { successful: number; failed: number };
+		results: Array<{ status: string }>;
+	} | null,
+	silent: boolean,
+	originalData: SupervisorAssignmentData[],
+	setState: (partial: Partial<{ data: SupervisorAssignmentData[] }>) => void,
+): boolean => {
+	if (!result) {
+		// No result returned - API error
+		const supervisionError = useSupervisionStore.getState().lastError;
+		const errorMessage = supervisionError || 'No response from server';
+
+		setState({ data: originalData });
+		showNotification.error('Assignment Failed', errorMessage);
+		return false;
+	}
+
+	const { successful, failed } = result.summary;
+
+	if (successful > 0 && failed === 0) {
+		// Check if all were already assigned
+		const allAlreadyExists = result.results.every(
+			(r: { status: string }) => r.status === 'already_exists',
+		);
+
+		if (!silent) {
+			const message = allAlreadyExists
+				? `All ${successful} supervisors were already assigned`
+				: `All ${successful} supervisors assigned successfully`;
+
+			const notificationType = allAlreadyExists ? 'info' : 'success';
+			const title = allAlreadyExists
+				? 'Already Assigned'
+				: 'Assignment Complete';
+
+			showNotification[notificationType](title, message);
+		}
+		return true;
+	}
+
+	if (successful > 0 && failed > 0) {
+		if (!silent) {
+			showNotification.warning(
+				'Partial Success',
+				`${successful} assignments succeeded, ${failed} failed`,
+			);
+		}
+		return false;
+	}
+
+	// All failed
+	setState({ data: originalData });
+	if (!silent) {
+		showNotification.error('Assignment Failed', 'All assignments failed');
+	}
+	return false;
+};
+
 // Helper function to process bulk assignment optimistic updates
 const processBulkAssignmentUpdate = (
 	assignment: { thesisId: string; lecturerIds: string[] },
@@ -429,58 +490,8 @@ export const useAssignSupervisorStore = create<AssignSupervisorState>()(
 						assignments,
 					});
 
-					if (!result) {
-						// No result returned - API error
-						const supervisionError = useSupervisionStore.getState().lastError;
-						const errorMessage = supervisionError || 'No response from server';
-
-						set({ data: originalData });
-						showNotification.error('Assignment Failed', errorMessage);
-						return false;
-					}
-
-					// Handle success
-					const { successful, failed } = result.summary;
-
-					if (successful > 0 && failed === 0) {
-						// Check if all were already assigned
-						const allAlreadyExists = result.results.every(
-							(r) => r.status === 'already_exists',
-						);
-
-						if (!silent) {
-							if (allAlreadyExists) {
-								showNotification.info(
-									'Already Assigned',
-									`All ${successful} supervisors were already assigned`,
-								);
-							} else {
-								showNotification.success(
-									'Assignment Complete',
-									`All ${successful} supervisors assigned successfully`,
-								);
-							}
-						}
-						return true;
-					} else if (successful > 0 && failed > 0) {
-						if (!silent) {
-							showNotification.warning(
-								'Partial Success',
-								`${successful} assignments succeeded, ${failed} failed`,
-							);
-						}
-						return false;
-					} else {
-						// All failed
-						set({ data: originalData });
-						if (!silent) {
-							showNotification.error(
-								'Assignment Failed',
-								'All assignments failed',
-							);
-						}
-						return false;
-					}
+					// Handle the result using helper function
+					return handleBulkAssignmentResult(result, silent, originalData, set);
 				} catch (error) {
 					// Revert all optimistic updates on error
 					set({ data: originalData });
