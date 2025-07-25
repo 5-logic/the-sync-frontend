@@ -1,11 +1,27 @@
 import { DeleteOutlined } from '@ant-design/icons';
-import { Button, Space, Typography } from 'antd';
+import { Button, Space, Tag, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 
+import { getSemesterTagColor } from '@/lib/utils/colorUtils';
 import { type SupervisorAssignmentData } from '@/store/useAssignSupervisorStore';
 import { type DraftAssignment } from '@/store/useDraftAssignmentStore';
 
 const { Text } = Typography;
+
+// UI Constants for table layout - responsive design with percentages
+export const TABLE_WIDTHS = {
+	ABBREVIATION: '12%', // Shortened for more space
+	TITLE: '46%', // Extended for better readability
+	SEMESTER: '15%',
+	SUPERVISOR: '17%',
+	ACTIONS: '10%',
+} as const;
+
+export const TEXT_DISPLAY = {
+	MAX_LINES: 2,
+	LINE_HEIGHT: '1.4',
+	MAX_HEIGHT: '2.8em', // 2 lines * 1.4 line-height
+} as const;
 
 /**
  * Renders supervisor names in a vertical list
@@ -24,6 +40,7 @@ export const renderSupervisors = (supervisors: string[]) =>
 /**
  * Renders supervisor names with draft information
  * This should be used in a component that has access to draft store
+ * Mobile-optimized design
  */
 export const createSupervisorRenderer = (
 	getDraftAssignment: (thesisId: string) => DraftAssignment | undefined,
@@ -37,7 +54,9 @@ export const createSupervisorRenderer = (
 			return (
 				<div>
 					{draft.lecturerNames.map((name: string) => (
-						<div key={name}>{name} (Draft)</div>
+						<div key={name}>
+							{name} <Text type="warning">(Draft)</Text>
+						</div>
 					))}
 					{/* Show current supervisors if any exist */}
 					{supervisors.length > 0 && (
@@ -66,6 +85,7 @@ export const createSupervisorRenderer = (
 
 /**
  * Creates action renderer with draft delete functionality
+ * Mobile-optimized with compact button design
  */
 export const createActionRenderer = (
 	onAssign: (record: SupervisorAssignmentData) => void,
@@ -80,13 +100,12 @@ export const createActionRenderer = (
 
 		return (
 			<Space size="small">
-				<Button type="primary" size="small" onClick={() => onAssign(record)}>
+				<Button type="primary" onClick={() => onAssign(record)}>
 					{buttonText}
 				</Button>
 				{draft && (
 					<Button
 						type="text"
-						size="small"
 						danger
 						icon={<DeleteOutlined />}
 						onClick={() => removeDraftAssignment(record.thesisId)}
@@ -107,55 +126,91 @@ export const createActionRenderer = (
 
 /**
  * Base column definitions for supervisor assignment table
+ * Consistent with thesis management table styling
  */
 export const baseColumns: ColumnsType<SupervisorAssignmentData> = [
 	{
 		title: 'Abbreviation',
-		dataIndex: 'groupName',
-		key: 'groupName',
-		width: 140,
-		ellipsis: true,
-		sorter: (a, b) => a.groupName.localeCompare(b.groupName),
+		dataIndex: 'abbreviation',
+		key: 'abbreviation',
+		width: TABLE_WIDTHS.ABBREVIATION,
+		ellipsis: {
+			showTitle: false,
+		},
+		sorter: (a, b) => a.abbreviation.localeCompare(b.abbreviation),
 		sortDirections: ['ascend', 'descend'],
+		render: (text: string) => (
+			<div
+				style={{
+					overflow: 'hidden',
+					textOverflow: 'ellipsis',
+					whiteSpace: 'nowrap',
+					textAlign: 'left',
+					width: '100%',
+					paddingLeft: '8px',
+				}}
+				title={text}
+			>
+				{text}
+			</div>
+		),
 	},
 	{
 		title: 'English Name',
 		dataIndex: 'thesisTitle',
 		key: 'thesisTitle',
-		width: 400,
-		ellipsis: {
-			showTitle: true,
-		},
+		width: TABLE_WIDTHS.TITLE,
+		ellipsis: false,
 		sorter: (a, b) => a.thesisTitle.localeCompare(b.thesisTitle),
 		sortDirections: ['ascend', 'descend'],
+		render: (text: string) => (
+			<div
+				style={{
+					display: '-webkit-box',
+					WebkitLineClamp: TEXT_DISPLAY.MAX_LINES,
+					WebkitBoxOrient: 'vertical',
+					overflow: 'hidden',
+					textOverflow: 'ellipsis',
+					lineHeight: TEXT_DISPLAY.LINE_HEIGHT,
+					maxHeight: TEXT_DISPLAY.MAX_HEIGHT,
+				}}
+				title={text}
+			>
+				{text}
+			</div>
+		),
 	},
 	{
-		title: 'Domain',
-		dataIndex: 'memberCount',
-		key: 'memberCount',
-		width: 180,
-		ellipsis: true,
-		sorter: (a, b) => {
-			// Handle special case for "No Domain" entries
-			const domainA =
-				a.groupName === 'No Abbreviation' ? 'No Domain' : a.memberCount;
-			const domainB =
-				b.groupName === 'No Abbreviation' ? 'No Domain' : b.memberCount;
-			return domainA.localeCompare(domainB);
+		title: 'Semester',
+		dataIndex: 'semester',
+		key: 'semester',
+		width: TABLE_WIDTHS.SEMESTER,
+		align: 'center' as const,
+		ellipsis: {
+			showTitle: false,
 		},
+		sorter: (a, b) => a.semester.localeCompare(b.semester),
 		sortDirections: ['ascend', 'descend'],
-		render: (domain: string, record: SupervisorAssignmentData) => {
-			if (record.groupName === 'No Abbreviation') {
-				return <span style={{ color: '#999' }}>No Domain</span>;
-			}
-			return domain;
-		},
+		render: (semester: string) => (
+			<div
+				style={{
+					display: 'flex',
+					alignItems: 'center',
+					justifyContent: 'center',
+					height: '100%',
+				}}
+			>
+				<Tag color={getSemesterTagColor(semester)} title={semester}>
+					{semester}
+				</Tag>
+			</div>
+		),
 	},
 	{
 		title: 'Supervisor',
 		dataIndex: 'supervisors',
 		key: 'supervisors',
-		width: 280,
+		width: TABLE_WIDTHS.SUPERVISOR,
 		render: renderSupervisors,
 	},
 ];

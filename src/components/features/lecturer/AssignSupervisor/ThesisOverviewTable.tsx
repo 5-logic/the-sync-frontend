@@ -18,8 +18,9 @@ interface Props {
 /**
  * Optimized Table component for displaying supervisor assignment data
  * Uses React.memo to prevent unnecessary re-renders
+ * Responsive design with percentage-based widths
  */
-const GroupOverviewTable = memo<Props>(
+const ThesisOverviewTable = memo<Props>(
 	({ data, columns, loading = false, rowKey = 'id', onChange }) => {
 		return (
 			<Table
@@ -28,14 +29,14 @@ const GroupOverviewTable = memo<Props>(
 				dataSource={data}
 				loading={loading}
 				pagination={TablePagination}
-				scroll={{ x: 'max-content' }}
 				onChange={onChange}
 				size="middle"
+				tableLayout="fixed"
 			/>
 		);
 	},
 );
 
-GroupOverviewTable.displayName = 'GroupOverviewTable';
+ThesisOverviewTable.displayName = 'ThesisOverviewTable';
 
-export default GroupOverviewTable;
+export default ThesisOverviewTable;
