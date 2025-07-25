@@ -31,7 +31,7 @@ const { Text } = Typography;
 const CapstoneDefenseResults = () => {
 	const { searchValue, debouncedSearchValue, setSearchValue } =
 		useDebouncedSearch('', 300);
-	const [selectedSemester, setSelectedSemester] = useState<string>('all');
+	const [selectedSemester, setSelectedSemester] = useState<string>('');
 	const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 	const [statusUpdates, setStatusUpdates] = useState<Record<string, string>>(
 		{},
@@ -42,6 +42,13 @@ const CapstoneDefenseResults = () => {
 		selectedSemester,
 		debouncedSearchValue,
 	);
+
+	// Set the first available semester as default when semesters are loaded
+	React.useEffect(() => {
+		if (availableSemesters.length > 0 && !selectedSemester) {
+			setSelectedSemester(availableSemesters[0]);
+		}
+	}, [availableSemesters, selectedSemester]);
 
 	// Export validation
 	const exportValidation = useSemesterExportValidation(

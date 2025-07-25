@@ -47,8 +47,8 @@ export const useCapstoneManagement = (
 	const filteredData: GroupTableData[] = useMemo(() => {
 		let filtered = [...tableData]; // Start with all data from store
 
-		// Apply semester filter only if not 'all' or undefined
-		if (selectedSemester && selectedSemester !== 'all') {
+		// Apply semester filter - always filter by specific semester
+		if (selectedSemester) {
 			// Find the semester code based on the selected semester name
 			const semesterCode = semesters.find(
 				(s) => s.name === selectedSemester,

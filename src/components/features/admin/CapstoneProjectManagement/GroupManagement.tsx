@@ -23,7 +23,7 @@ const { Text } = Typography;
 const GroupManagement: React.FC = () => {
 	const { searchValue, debouncedSearchValue, setSearchValue } =
 		useDebouncedSearch('', 300);
-	const [selectedSemester, setSelectedSemester] = useState<string>('all');
+	const [selectedSemester, setSelectedSemester] = useState<string>('');
 
 	// Use custom hooks to reduce duplication
 	const {
@@ -34,6 +34,13 @@ const GroupManagement: React.FC = () => {
 		loadingDetails,
 		refresh,
 	} = useCapstoneManagement(selectedSemester, debouncedSearchValue);
+
+	// Set the first available semester as default when semesters are loaded
+	React.useEffect(() => {
+		if (availableSemesters.length > 0 && !selectedSemester) {
+			setSelectedSemester(availableSemesters[0]);
+		}
+	}, [availableSemesters, selectedSemester]);
 
 	// Export validation
 	const exportValidation = useSemesterExportValidation(

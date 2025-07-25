@@ -39,38 +39,20 @@ const validateSpecificSemester = (
 	};
 };
 
-// Helper function to validate when "all" semesters are selected
-const validateAllSemesters = (
-	semesters: Semester[],
-): ExportValidationResult => {
-	const validSemesters = semesters.filter(isSemesterExportAllowed);
-
-	if (validSemesters.length === 0) {
-		return {
-			canExport: false,
-			reason:
-				'Export not allowed. No semesters with valid export conditions found. Export requires "End" status or "Ongoing" status with "ScopeLocked" phase.',
-		};
-	}
-
-	return { canExport: true, reason: '' };
-};
-
 export const useSemesterExportValidation = (
 	selectedSemester: string,
 	semesters: Semester[],
 ): ExportValidationResult => {
 	return useMemo(() => {
-		if (selectedSemester === 'all') {
-			return validateAllSemesters(semesters);
-		}
-
 		const selectedSemesterData = semesters.find(
 			(s) => s.name === selectedSemester,
 		);
 
 		if (!selectedSemesterData) {
-			return { canExport: true, reason: '' };
+			return {
+				canExport: false,
+				reason: 'Please select a valid semester to export data.',
+			};
 		}
 
 		return validateSpecificSemester(selectedSemesterData);
