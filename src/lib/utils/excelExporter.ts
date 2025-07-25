@@ -1,4 +1,3 @@
-import { message } from 'antd';
 import * as XLSX from 'xlsx-js-style';
 
 import {
@@ -11,6 +10,8 @@ import {
 	getTitleStyle,
 	initializeExcelWorksheet,
 } from '@/lib/utils/excelStyles';
+
+import { showNotification } from './notification';
 
 export interface ExcelExportData {
 	'No.': number;
@@ -102,10 +103,17 @@ export const exportToExcel = ({
 		// Write file
 		XLSX.writeFile(wb, finalFilename);
 
-		message.success('Excel file exported successfully!');
+		showNotification.success(
+			'Excel file exported successfully!',
+			'Your file has been saved.',
+		);
 	} catch (error) {
 		console.error('Error exporting Excel:', error);
-		message.error('An error occurred while exporting Excel file!');
+
+		showNotification.error(
+			'Export failed!',
+			'An error occurred while exporting Excel file.',
+		);
 	}
 };
 
