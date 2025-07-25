@@ -18,7 +18,7 @@ import StudentTable from '@/components/features/lecturer/GroupManagement/Student
 import { useCurrentSemester } from '@/hooks/semester/useCurrentSemester';
 import groupService from '@/lib/services/groups.service';
 import thesesService from '@/lib/services/theses.service';
-import { handleApiResponse } from '@/lib/utils/handleApi';
+import { handleApiError, handleApiResponse } from '@/lib/utils/handleApi';
 import { showNotification } from '@/lib/utils/notification';
 import { GroupDashboard } from '@/schemas/group';
 import { Thesis } from '@/schemas/thesis';
@@ -260,14 +260,21 @@ export default function AssignStudentsDetailPage() {
 				if (group?.semester?.id) {
 					fetchStudentsWithoutGroup(group.semester.id, true);
 				}
+			} else {
+				// Show error message from backend
+				showNotification.error(
+					'Assignment Failed',
+					result.error?.message || 'Failed to assign student to group',
+				);
 			}
-			// handleApiResponse already shows error messages from backend
 		} catch (error) {
 			console.error('Error assigning student:', error);
-			showNotification.error(
-				'Assignment Failed',
-				'An error occurred while assigning the student',
+			// Use handleApiError to extract proper error message
+			const { message } = handleApiError(
+				error,
+				'Failed to assign student to group',
 			);
+			showNotification.error('Assignment Failed', message);
 		} finally {
 			setAssignLoading(false);
 		}
@@ -323,13 +330,21 @@ export default function AssignStudentsDetailPage() {
 				}
 
 				fetchAvailableTheses();
+			} else {
+				// Show error message from backend
+				showNotification.error(
+					'Assignment Failed',
+					result.error?.message || 'Failed to assign thesis to group',
+				);
 			}
 		} catch (error) {
 			console.error('Error assigning thesis:', error);
-			showNotification.error(
-				'Assignment Failed',
-				'An error occurred while assigning the thesis',
+			// Use handleApiError to extract proper error message
+			const { message } = handleApiError(
+				error,
+				'Failed to assign thesis to group',
 			);
+			showNotification.error('Assignment Failed', message);
 		} finally {
 			setAssignThesisLoading(false);
 		}
