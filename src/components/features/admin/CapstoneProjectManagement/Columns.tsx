@@ -91,13 +91,9 @@ export const getColumns = (
 					RowSpanCell(
 						supervisor ? (
 							<div style={{ textAlign: 'center' }}>
-								{supervisor
-									.split(', ')
-									.map((sup: React.Key | null | undefined) => (
-										<div key={sup}>
-											{highlightText(sup ? String(sup) : '', searchText)}
-										</div>
-									))}
+								{supervisor.split(', ').map((sup: string, index: number) => (
+									<div key={index}>{highlightText(sup.trim(), searchText)}</div>
+								))}
 							</div>
 						) : (
 							<span style={{ color: '#999' }}>-</span>
