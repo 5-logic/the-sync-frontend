@@ -128,7 +128,7 @@ class ThesisService {
 
 	// Bulk publish theses
 	async publishTheses(data: {
-		thesesIds: string[];
+		thesisIds: string[];
 		isPublish: boolean;
 	}): Promise<ApiResponse<void>> {
 		const response = await httpClient.post<ApiResponse<void>>(
