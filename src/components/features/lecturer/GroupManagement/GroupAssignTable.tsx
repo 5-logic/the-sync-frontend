@@ -8,8 +8,7 @@ import { Button, Card, Col, Input, Row, Space, Spin } from 'antd';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { ConfirmationModal } from '@/components/common/ConfirmModal';
-import { Group } from '@/lib/services/groups.service';
-import groupService from '@/lib/services/groups.service';
+import groupService, { Group } from '@/lib/services/groups.service';
 import { handleApiResponse } from '@/lib/utils/handleApi';
 import { showNotification } from '@/lib/utils/notification';
 import { isTextMatch } from '@/lib/utils/textNormalization';
