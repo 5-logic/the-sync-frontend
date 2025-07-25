@@ -68,7 +68,7 @@ export const exportToExcel = ({
 			Major: item.major,
 			'Thesis Title': item.thesisName,
 			Abbreviation: item.abbreviation || '',
-			Supervisor: item.supervisor || '',
+			Supervisor: item.supervisor ? item.supervisor.replace(/, /g, '\n') : '',
 		}));
 
 		// Add headers and data starting from row 4
@@ -82,7 +82,7 @@ export const exportToExcel = ({
 			{ wch: 25 }, // Major
 			{ wch: 40 }, // Thesis Title
 			{ wch: 15 }, // Abbreviation
-			{ wch: 30 }, // Supervisor
+			{ wch: 20 }, // Supervisor - reduced width since names are on separate lines
 		];
 		ws['!cols'] = colWidths;
 
@@ -169,7 +169,7 @@ const getCellStyle = (
 		return getHeaderStyle('E6F3FF'); // Light blue for header
 	}
 
-	// For data rows, apply custom alignment for Full Name column (index 2)
+	// For data rows, apply custom alignment for specific columns
 	const baseStyle = getSharedDataRowStyle(rowIndex, groupBoundaries);
 
 	// Apply left alignment to Full Name column (column C, index 2)
@@ -179,6 +179,20 @@ const getCellStyle = (
 			alignment: {
 				...baseStyle.alignment,
 				horizontal: 'left',
+				wrapText: true,
+			},
+		};
+	}
+
+	// Apply text wrapping and center alignment to Supervisor column (column G, index 6)
+	if (columnIndex === 6) {
+		return {
+			...baseStyle,
+			alignment: {
+				...baseStyle.alignment,
+				horizontal: 'center',
+				vertical: 'center',
+				wrapText: true,
 			},
 		};
 	}
