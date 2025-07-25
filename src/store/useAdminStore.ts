@@ -96,7 +96,6 @@ export const useAdminStore = create<AdminState>()(
 					try {
 						set({ loading: true, error: null });
 						const response = await adminService.findOne();
-						console.log('AdminService.findOne response:', response);
 						if (response.success && response.data) {
 							set({ admin: response.data, loading: false, lastFetched: now });
 							cacheUtils.set(ADMIN_CACHE_KEY, response.data.id, response.data);
@@ -129,7 +128,15 @@ export const useAdminStore = create<AdminState>()(
 								'Success',
 								'Profile updated successfully',
 							);
-							await AuthService.logout({ redirect: true });
+
+							// Only logout if password was changed
+							const passwordChanged =
+								'oldPassword' in updateAdminDto &&
+								'newPassword' in updateAdminDto;
+							if (passwordChanged) {
+								await AuthService.logout({ redirect: true });
+							}
+
 							cacheUtils.set(ADMIN_CACHE_KEY, response.data.id, response.data);
 							return response.data;
 						} else if (!response.success) {

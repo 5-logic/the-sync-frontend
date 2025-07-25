@@ -111,11 +111,9 @@ export default function ThesisStatusCard({ thesisId }: ThesisStatusCardProps) {
 						thesis.thesisRequiredSkills.length > 0 ? (
 							<Space size={[4, 8]} wrap>
 								{thesis.thesisRequiredSkills.map(
-									(
-										skillItem: any, // eslint-disable-line @typescript-eslint/no-explicit-any
-									) => (
-										<Tag key={skillItem.skill.id} color="blue">
-											{skillItem.skill.name}
+									(skill: { id: string; name: string }) => (
+										<Tag key={skill.id} color="blue">
+											{skill.name}
 										</Tag>
 									),
 								)}

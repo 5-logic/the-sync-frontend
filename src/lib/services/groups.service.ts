@@ -45,6 +45,24 @@ export interface Group {
 	};
 }
 
+export interface MilestoneSubmission {
+	id: string;
+	groupId: string;
+	milestoneId: string;
+	documents: string[];
+	status: 'Submitted' | 'Not Submitted';
+	createdAt: string;
+	updatedAt: string;
+	milestone: {
+		id: string;
+		name: string;
+		startDate: string;
+		endDate: string;
+	};
+	assignmentReviews: unknown[];
+	reviews: unknown[];
+}
+
 class GroupService {
 	private readonly baseUrl = '/groups';
 
@@ -165,6 +183,39 @@ class GroupService {
 	async unpickThesis(groupId: string): Promise<ApiResponse<void>> {
 		const response = await httpClient.put<ApiResponse<void>>(
 			`${this.baseUrl}/${groupId}/unpick-thesis`,
+		);
+		return response.data;
+	}
+
+	async submitMilestone(
+		groupId: string,
+		milestoneId: string,
+		documents: string[],
+	): Promise<ApiResponse<void>> {
+		const response = await httpClient.post<ApiResponse<void>>(
+			`${this.baseUrl}/${groupId}/milestones/${milestoneId}`,
+			{ documents },
+		);
+		return response.data;
+	}
+
+	async updateMilestoneSubmission(
+		groupId: string,
+		milestoneId: string,
+		documents: string[],
+	): Promise<ApiResponse<void>> {
+		const response = await httpClient.put<ApiResponse<void>>(
+			`${this.baseUrl}/${groupId}/milestones/${milestoneId}`,
+			{ documents },
+		);
+		return response.data;
+	}
+
+	async getSubmissions(
+		groupId: string,
+	): Promise<ApiResponse<MilestoneSubmission[]>> {
+		const response = await httpClient.get<ApiResponse<MilestoneSubmission[]>>(
+			`${this.baseUrl}/${groupId}/submissions`,
 		);
 		return response.data;
 	}

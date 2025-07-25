@@ -11,7 +11,7 @@ import {
 import { Button, Dropdown, Table, Tag, Tooltip } from 'antd';
 import type { MenuProps } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { ThesisConfirmationModals } from '@/components/common/ConfirmModal';
 import { TablePagination } from '@/components/common/TablePagination';
@@ -24,6 +24,7 @@ import {
 	ThesisStatus,
 	UI_CONSTANTS,
 } from '@/lib/constants/thesis';
+import { aiDuplicateService } from '@/lib/services/ai-duplicate.service';
 import { formatDate } from '@/lib/utils/dateFormat';
 import {
 	THESIS_ERROR_CONFIGS,
@@ -32,7 +33,7 @@ import {
 	handleThesisSuccess,
 } from '@/lib/utils/thesis-handlers';
 import { Thesis } from '@/schemas/thesis';
-import { useLecturerStore, useThesisStore } from '@/store';
+import { useLecturerStore, useSemesterStore, useThesisStore } from '@/store';
 
 interface Props {
 	data: Thesis[];
@@ -42,14 +43,25 @@ interface Props {
 export default function ThesisTable({ data, loading }: Readonly<Props>) {
 	const { deleteThesis, submitThesis } = useThesisStore();
 	const { getLecturerById, fetchLecturers } = useLecturerStore();
+	const {
+		getSemesterById,
+		fetchSemesters,
+		loading: semesterLoading,
+	} = useSemesterStore();
 	const { session } = useSessionData();
 	const { isNavigating, targetPath, navigateWithLoading } =
 		useNavigationLoader();
 
-	// Fetch lecturers for Owner column display
+	// Loading state for register submit buttons
+	const [submitLoadingThesisId, setSubmitLoadingThesisId] = useState<
+		string | null
+	>(null);
+
+	// Fetch lecturers and semesters for display
 	useEffect(() => {
 		fetchLecturers();
-	}, [fetchLecturers]);
+		fetchSemesters();
+	}, [fetchLecturers, fetchSemesters]);
 
 	// Memoized handlers to prevent unnecessary re-renders
 	const handleEdit = useCallback(
@@ -86,18 +98,77 @@ export default function ThesisTable({ data, loading }: Readonly<Props>) {
 
 	const handleRegisterSubmit = useCallback(
 		async (thesis: Thesis) => {
-			ThesisConfirmationModals.submit(thesis.englishName, async () => {
-				try {
-					const success = await submitThesis(thesis.id);
-					if (success) {
-						handleThesisSuccess(THESIS_SUCCESS_CONFIGS.SUBMIT);
-					}
-				} catch (error) {
-					handleThesisError(error, THESIS_ERROR_CONFIGS.SUBMIT);
+			// Set loading state for this specific thesis
+			setSubmitLoadingThesisId(thesis.id);
+
+			try {
+				// Check for duplicate theses first
+				const duplicateResult = await aiDuplicateService.checkDuplicate(
+					thesis.id,
+				);
+
+				if (
+					duplicateResult.success &&
+					duplicateResult.data &&
+					duplicateResult.data.length > 0
+				) {
+					// Found duplicates - show duplicate confirmation modal
+					ThesisConfirmationModals.submitWithDuplicates(
+						thesis.englishName,
+						duplicateResult.data.length,
+						() => {
+							// Handle "Check my thesis" - navigate to thesis detail
+							setSubmitLoadingThesisId(null); // Clear loading state first
+							const viewPath = `/lecturer/thesis-management/${thesis.id}`;
+							navigateWithLoading(viewPath);
+						},
+						async () => {
+							// Handle "Confirm" - proceed with submission
+							try {
+								const success = await submitThesis(thesis.id);
+								if (success) {
+									handleThesisSuccess(THESIS_SUCCESS_CONFIGS.SUBMIT);
+								}
+							} catch (error) {
+								handleThesisError(error, THESIS_ERROR_CONFIGS.SUBMIT);
+							} finally {
+								setSubmitLoadingThesisId(null);
+							}
+						},
+					);
+				} else {
+					// No duplicates found - show normal confirmation modal
+					ThesisConfirmationModals.submit(thesis.englishName, async () => {
+						try {
+							const success = await submitThesis(thesis.id);
+							if (success) {
+								handleThesisSuccess(THESIS_SUCCESS_CONFIGS.SUBMIT);
+							}
+						} catch (error) {
+							handleThesisError(error, THESIS_ERROR_CONFIGS.SUBMIT);
+						} finally {
+							setSubmitLoadingThesisId(null);
+						}
+					});
 				}
-			});
+			} catch (error) {
+				console.error('Error checking duplicates:', error);
+				// If duplicate check fails, proceed with normal confirmation
+				ThesisConfirmationModals.submit(thesis.englishName, async () => {
+					try {
+						const success = await submitThesis(thesis.id);
+						if (success) {
+							handleThesisSuccess(THESIS_SUCCESS_CONFIGS.SUBMIT);
+						}
+					} catch (error) {
+						handleThesisError(error, THESIS_ERROR_CONFIGS.SUBMIT);
+					} finally {
+						setSubmitLoadingThesisId(null);
+					}
+				});
+			}
 		},
-		[submitThesis],
+		[submitThesis, navigateWithLoading],
 	);
 
 	// Type-safe color mapping for status
@@ -105,17 +176,43 @@ export default function ThesisTable({ data, loading }: Readonly<Props>) {
 		return STATUS_COLORS[status as ThesisStatus] ?? 'default';
 	}, []);
 
+	// Generate consistent color for semester based on semesterId
+	const getSemesterColor = useCallback((semesterId: string): string => {
+		const colors = [
+			'purple',
+			'blue',
+			'green',
+			'orange',
+			'red',
+			'cyan',
+			'magenta',
+			'volcano',
+			'geekblue',
+			'gold',
+		];
+		// Create a simple hash from semesterId to get consistent color
+		let hash = 0;
+		for (let i = 0; i < semesterId.length; i++) {
+			hash = semesterId.charCodeAt(i) + ((hash << 5) - hash);
+		}
+		return colors[Math.abs(hash) % colors.length];
+	}, []);
+
 	// Create dropdown menu items for each thesis with status rules
 	const getDropdownItems = useCallback(
 		(record: Thesis): MenuProps['items'] => {
 			// SECURITY: Check thesis ownership
 			const isThesisOwner = record.lecturerId === session?.user?.id;
-			const canEditOrDelete =
+			const canEdit =
 				isThesisOwner &&
 				(record.status === THESIS_STATUS.NEW ||
-					record.status === THESIS_STATUS.REJECTED);
+					record.status === THESIS_STATUS.REJECTED ||
+					record.status === THESIS_STATUS.APPROVED);
 
-			// Check if this specific record is being navigated to
+			const canDelete =
+				isThesisOwner &&
+				(record.status === THESIS_STATUS.NEW ||
+					record.status === THESIS_STATUS.REJECTED); // Check if this specific record is being navigated to
 			const editPath = `/lecturer/thesis-management/${record.id}/edit-thesis`;
 			const viewPath = `/lecturer/thesis-management/${record.id}`;
 			const isEditLoading = isNavigating && targetPath === editPath;
@@ -133,8 +230,8 @@ export default function ThesisTable({ data, loading }: Readonly<Props>) {
 					key: 'edit',
 					label: 'Edit Thesis',
 					icon: isEditLoading ? <LoadingOutlined spin /> : <EditOutlined />,
-					disabled: !canEditOrDelete || (isNavigating && !isEditLoading),
-					onClick: () => canEditOrDelete && handleEdit(record.id),
+					disabled: !canEdit || (isNavigating && !isEditLoading),
+					onClick: () => canEdit && handleEdit(record.id),
 				},
 				{
 					type: 'divider',
@@ -144,8 +241,8 @@ export default function ThesisTable({ data, loading }: Readonly<Props>) {
 					label: 'Delete',
 					icon: <DeleteOutlined />,
 					danger: true,
-					disabled: !canEditOrDelete || isNavigating,
-					onClick: () => canEditOrDelete && handleDelete(record),
+					disabled: !canDelete || isNavigating,
+					onClick: () => canDelete && handleDelete(record),
 				},
 			];
 		},
@@ -161,11 +258,16 @@ export default function ThesisTable({ data, loading }: Readonly<Props>) {
 
 	// Extract register submit click handler to reduce nesting
 	const handleRegisterSubmitClick = useCallback(
-		(record: Thesis, isDisabled: boolean) => {
+		async (record: Thesis, isDisabled: boolean) => {
 			if (!isDisabled) {
-				handleRegisterSubmit(record).catch(() => {
+				try {
+					await handleRegisterSubmit(record);
+				} catch {
 					// Error is already handled in handleRegisterSubmit
-				});
+				} finally {
+					// Always clear loading state
+					setSubmitLoadingThesisId(null);
+				}
 			}
 		},
 		[handleRegisterSubmit],
@@ -218,6 +320,7 @@ export default function ThesisTable({ data, loading }: Readonly<Props>) {
 			// SECURITY: Check thesis ownership
 			const isThesisOwner = record.lecturerId === session?.user?.id;
 			const submitProps = getRegisterSubmitProps(record, isThesisOwner);
+			const isSubmitLoading = submitLoadingThesisId === record.id;
 
 			return (
 				<div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
@@ -227,7 +330,8 @@ export default function ThesisTable({ data, loading }: Readonly<Props>) {
 							icon={<SendOutlined />}
 							type={submitProps.type}
 							size="small"
-							disabled={submitProps.disabled}
+							disabled={submitProps.disabled || isSubmitLoading}
+							loading={isSubmitLoading}
 							onClick={() =>
 								handleRegisterSubmitClick(record, submitProps.disabled)
 							}
@@ -250,6 +354,7 @@ export default function ThesisTable({ data, loading }: Readonly<Props>) {
 			getRegisterSubmitProps,
 			handleRegisterSubmitClick,
 			getDropdownItems,
+			submitLoadingThesisId,
 		],
 	);
 
@@ -313,37 +418,59 @@ export default function ThesisTable({ data, loading }: Readonly<Props>) {
 				},
 			},
 			{
-				title: 'Domain',
-				dataIndex: 'domain',
-				key: 'domain',
+				title: 'Semester',
+				dataIndex: 'semesterId',
+				key: 'semester',
 				width: UI_CONSTANTS.TABLE_WIDTHS.DOMAIN,
+				align: 'center' as const,
 				ellipsis: {
 					showTitle: false,
 				},
-				render: (domain: string | null | undefined) => {
-					if (!domain) {
+				render: (semesterId: string) => {
+					const semester = getSemesterById(semesterId);
+					const displayName = semester?.name ?? 'Unknown';
+					const color = getSemesterColor(semesterId);
+
+					// Show loading spinner while semesters are being fetched
+					if (semesterLoading && !semester) {
 						return (
-							<Tooltip title="No Domain specified">
-								<Tag color="default">No Domain</Tag>
-							</Tooltip>
+							<div
+								style={{
+									display: 'flex',
+									alignItems: 'center',
+									justifyContent: 'center',
+									height: '100%',
+								}}
+							>
+								<LoadingOutlined spin style={{ color: '#1890ff' }} />
+							</div>
 						);
 					}
 
 					return (
-						<Tooltip title={domain} placement="topLeft">
-							<Tag
-								color="blue"
-								style={{
-									maxWidth: '100%',
-									overflow: 'hidden',
-									textOverflow: 'ellipsis',
-									whiteSpace: 'nowrap',
-									display: 'inline-block',
-								}}
-							>
-								{domain}
-							</Tag>
-						</Tooltip>
+						<div
+							style={{
+								display: 'flex',
+								alignItems: 'center',
+								justifyContent: 'center',
+								height: '100%',
+							}}
+						>
+							<Tooltip title={displayName} placement="topLeft">
+								<Tag
+									color={color}
+									style={{
+										maxWidth: '100%',
+										overflow: 'hidden',
+										textOverflow: 'ellipsis',
+										whiteSpace: 'nowrap',
+										display: 'inline-block',
+									}}
+								>
+									{displayName}
+								</Tag>
+							</Tooltip>
+						</div>
 					);
 				},
 			},
@@ -352,15 +479,26 @@ export default function ThesisTable({ data, loading }: Readonly<Props>) {
 				dataIndex: 'status',
 				key: 'status',
 				width: UI_CONSTANTS.TABLE_WIDTHS.STATUS,
+				align: 'center' as const,
 				render: (status: string) => (
-					<Tag color={getStatusColor(status)}>{status}</Tag>
+					<div
+						style={{
+							display: 'flex',
+							alignItems: 'center',
+							justifyContent: 'center',
+							height: '100%',
+						}}
+					>
+						<Tag color={getStatusColor(status)}>{status}</Tag>
+					</div>
 				),
 			},
 			{
-				title: 'Submitted date',
+				title: 'Created date',
 				dataIndex: 'createdAt',
-				key: 'summitDate',
+				key: 'createdDate',
 				width: UI_CONSTANTS.TABLE_WIDTHS.DATE,
+				align: 'center' as const,
 				sorter: (a, b) =>
 					new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
 				render: (date: Date) => formatDate(date),
@@ -373,7 +511,14 @@ export default function ThesisTable({ data, loading }: Readonly<Props>) {
 				render: (_, record) => renderActionsColumn(record),
 			},
 		],
-		[getLecturerById, getStatusColor, renderActionsColumn],
+		[
+			getLecturerById,
+			getSemesterById,
+			getSemesterColor,
+			getStatusColor,
+			renderActionsColumn,
+			semesterLoading,
+		],
 	);
 
 	return (

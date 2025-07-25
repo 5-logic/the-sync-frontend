@@ -36,8 +36,6 @@ export default function ActionButtons({
 	}, [router]);
 	const handleRegisterThesis = useCallback(async () => {
 		await registerThesis(thesis.id, thesis.englishName, async () => {
-			console.log('Register success callback triggered');
-
 			// Immediately trigger thesis refresh for instant UI update
 			onThesisUpdate?.();
 
@@ -56,8 +54,6 @@ export default function ActionButtons({
 	]);
 	const handleUnregisterThesis = useCallback(async () => {
 		await unregisterThesis(thesis.englishName, async () => {
-			console.log('Unregister success callback triggered');
-
 			// Immediately trigger thesis refresh for instant UI update
 			onThesisUpdate?.();
 
@@ -78,21 +74,10 @@ export default function ActionButtons({
 	const isThesisAssignedToGroup = group?.id === thesis.groupId;
 
 	// Show register button only if user has group, is leader, and thesis is not assigned to any group
-	const showRegisterButton = hasGroup && isLeader && !thesis.groupId;
+	const showRegisterButton = hasGroup && isLeader && thesis.groupId == null; // Use == null to catch both null and undefined
 
 	// Show unregister button only if user has group, is leader, and this thesis is assigned to their group
 	const showUnregisterButton = hasGroup && isLeader && isThesisAssignedToGroup;
-
-	// Debug logging
-	console.log('ActionButtons state:', {
-		hasGroup,
-		isLeader,
-		thesisGroupId: thesis.groupId,
-		currentGroupId: group?.id,
-		showRegisterButton,
-		showUnregisterButton,
-		isThesisAssignedToGroup,
-	});
 
 	// Disable register button if semester is not in picking phase
 	const isRegisterDisabled =

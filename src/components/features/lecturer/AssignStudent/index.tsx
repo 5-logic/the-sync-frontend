@@ -20,10 +20,6 @@ export default function AssignStudentPage() {
 	const { semesters, fetchSemesters } = useSemesterStore();
 	const { refetch: refetchGroups } = useGroupsStore();
 
-	// Debug loading states
-	console.log('Student loading:', loading);
-	console.log('Major loading:', majorLoading);
-
 	const [studentSearch, setStudentSearch] = useState('');
 	const [studentMajor, setStudentMajor] = useState('All');
 

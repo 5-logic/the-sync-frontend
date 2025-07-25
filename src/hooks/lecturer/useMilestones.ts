@@ -51,7 +51,7 @@ export function useMilestones(): UseMilestonesReturn {
 			}
 
 			// Step 3: Fetch milestones for the ongoing semester
-			const milestoneResponse = await milestoneService.findBySemesterId(
+			const milestoneResponse = await milestoneService.findBySemester(
 				ongoingSemester.id,
 			);
 			const milestoneResult = handleApiResponse(milestoneResponse);
