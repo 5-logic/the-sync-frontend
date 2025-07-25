@@ -18,15 +18,12 @@ import { Header } from '@/components/common/Header';
 import { TablePagination } from '@/components/common/TablePagination';
 import { getColumns } from '@/components/features/admin/CapstoneProjectManagement/Columns';
 import { FilterBar } from '@/components/features/admin/CapstoneProjectManagement/FilterBar';
-import {
-	FullRowSpanItem,
-	calculateRowSpans,
-} from '@/components/features/admin/CapstoneProjectManagement/calculateRowSpan';
+import { FullRowSpanItem } from '@/components/features/admin/CapstoneProjectManagement/calculateRowSpan';
+import { useCapstoneManagement } from '@/hooks/admin/useCapstoneManagement';
+import { useSemesterExportValidation } from '@/hooks/admin/useSemesterExportValidation';
 import { useDebouncedSearch } from '@/hooks/ui/useDebounce';
 import { exportDefenseResultsToExcel } from '@/lib/utils/defenseResultsExporter';
 import { showNotification } from '@/lib/utils/notification';
-import { Semester } from '@/schemas/semester';
-import { type GroupTableData, useCapstoneManagementStore } from '@/store';
 import '@/styles/components.css';
 
 const { Text } = Typography;
@@ -40,95 +37,17 @@ const CapstoneDefenseResults = () => {
 		{},
 	);
 
-	// Use store instead of mock data
-	const {
+	// Use custom hooks to reduce duplication
+	const { semesters, filteredData, availableSemesters } = useCapstoneManagement(
+		selectedSemester,
+		debouncedSearchValue,
+	);
+
+	// Export validation
+	const exportValidation = useSemesterExportValidation(
+		selectedSemester,
 		semesters,
-		groups,
-		tableData,
-		fetchGroups,
-		fetchGroupDetails,
-		fetchSemesters,
-	} = useCapstoneManagementStore();
-
-	// Fetch data on component mount
-	React.useEffect(() => {
-		const initializeData = async () => {
-			await Promise.all([fetchGroups(), fetchSemesters()]);
-		};
-		initializeData();
-	}, [fetchGroups, fetchSemesters]);
-
-	// Fetch group details when groups are loaded
-	React.useEffect(() => {
-		if (groups.length > 0) {
-			const groupIds = groups.map((group) => group.id);
-			fetchGroupDetails(groupIds);
-		}
-	}, [groups, fetchGroupDetails]);
-
-	// Get available semesters for filter
-	const availableSemesters = useMemo(() => {
-		return semesters.map((semester: Semester) => semester.name);
-	}, [semesters]);
-
-	// Check if export is allowed based on semester status
-	const exportValidation = useMemo(() => {
-		if (selectedSemester !== 'all') {
-			const selectedSemesterData = semesters.find(
-				(s) => s.name === selectedSemester,
-			);
-			if (selectedSemesterData) {
-				const { status, ongoingPhase } = selectedSemesterData;
-
-				// Allow export for "End" status
-				if (status === 'End') {
-					return {
-						canExport: true,
-						reason: '',
-					};
-				}
-
-				// Allow export for "Ongoing" status with "ScopeLocked" phase
-				if (status === 'Ongoing' && ongoingPhase === 'ScopeLocked') {
-					return {
-						canExport: true,
-						reason: '',
-					};
-				}
-
-				// Block export for other cases
-				if (status === 'Ongoing' && ongoingPhase !== 'ScopeLocked') {
-					return {
-						canExport: false,
-						reason: `Export not allowed. Semester is in "Ongoing" status but phase is "${ongoingPhase}". Export requires "ScopeLocked" phase or "End" status.`,
-					};
-				}
-
-				return {
-					canExport: false,
-					reason: `Export not allowed for semester with status "${status}". Export is only allowed for "Ongoing" semesters with "ScopeLocked" phase or "End" status.`,
-				};
-			}
-		} else {
-			// When "all" is selected, check if there are any valid semesters
-			const validSemesters = semesters.filter(
-				(s) =>
-					s.status === 'End' ||
-					(s.status === 'Ongoing' && s.ongoingPhase === 'ScopeLocked'),
-			);
-			if (validSemesters.length === 0) {
-				return {
-					canExport: false,
-					reason:
-						'Export not allowed. No semesters with valid export conditions found. Export requires "End" status or "Ongoing" status with "ScopeLocked" phase.',
-				};
-			}
-		}
-		return {
-			canExport: true,
-			reason: '',
-		};
-	}, [selectedSemester, semesters]);
+	);
 
 	const handleSearch = (value: string) => {
 		setSearchValue(value);
@@ -267,32 +186,6 @@ const CapstoneDefenseResults = () => {
 		},
 		[statusUpdates],
 	);
-
-	const filteredData = useMemo(() => {
-		const filtered = tableData.filter((item: GroupTableData) => {
-			const matchesSearch =
-				!debouncedSearchValue.trim() ||
-				[
-					item.name,
-					item.studentId,
-					item.thesisName && item.thesisName !== 'Not assigned'
-						? item.thesisName
-						: '',
-					item.major,
-					item.status,
-					item.semester,
-				].some((field) =>
-					String(field ?? '')
-						.toLowerCase()
-						.includes(debouncedSearchValue.toLowerCase().trim()),
-				);
-			const matchesSemester =
-				selectedSemester === 'all' || item.semester === selectedSemester;
-			return matchesSearch && matchesSemester;
-		});
-
-		return calculateRowSpans(filtered);
-	}, [tableData, debouncedSearchValue, selectedSemester]);
 
 	const columns = useMemo(
 		() =>
