@@ -127,7 +127,7 @@ export default function AssignSupervisors() {
 	}, [data, search]);
 
 	/**
-	 * Handle bulk assignment of all draft assignments using intelligent assignment
+	 * Handle bulk assignment of all draft assignments using single API call
 	 */
 	const handleBulkAssignment = async (): Promise<void> => {
 		const drafts = getDraftsList();
@@ -142,48 +142,23 @@ export default function AssignSupervisors() {
 			return;
 		}
 
-		// Process each draft using intelligent assignment
-		let allSuccessful = true;
-		const successfulDrafts: typeof validDrafts = [];
+		// Prepare assignments for bulk API call
+		const assignments = validDrafts.map((draft) => ({
+			thesisId: draft.thesisId,
+			lecturerIds: draft.lecturerIds,
+		}));
 
-		for (const draft of validDrafts) {
-			const thesis = data.find((item) => item.thesisId === draft.thesisId);
-			if (!thesis) continue;
+		// Use store's bulk assignment function with single API call
+		const success = await bulkAssignSupervisors(assignments, false);
 
-			const currentSupervisorIds = thesis.supervisorDetails.map((s) => s.id);
-			const newSupervisorIds = draft.lecturerIds;
-
-			// Use intelligent assignment with silent mode for bulk operations
-			const success = await handleIntelligentAssignment(
-				currentSupervisorIds,
-				newSupervisorIds,
-				draft.thesisId,
-			);
-
-			if (success) {
-				successfulDrafts.push(draft);
-			} else {
-				allSuccessful = false;
-			}
-		}
-
-		// Clear only the successful drafts
-		successfulDrafts.forEach((draft) => {
-			removeDraftAssignment(draft.thesisId);
-		});
-
-		// Show notification about results
-		if (allSuccessful) {
-			notification.success({
-				message: 'Success',
-				description: `All ${validDrafts.length} assignments completed successfully`,
-			});
-		} else {
-			notification.warning({
-				message: 'Partial Success',
-				description: `${successfulDrafts.length}/${validDrafts.length} assignments completed successfully`,
+		if (success) {
+			// Clear all successful drafts
+			validDrafts.forEach((draft) => {
+				removeDraftAssignment(draft.thesisId);
 			});
 		}
+
+		// Note: Notifications are handled by the store
 	};
 
 	/**
