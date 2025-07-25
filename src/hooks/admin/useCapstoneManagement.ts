@@ -69,8 +69,7 @@ export const useCapstoneManagement = (
 					item.name.toLowerCase().includes(term) ||
 					item.studentId.toLowerCase().includes(term) ||
 					item.major.toLowerCase().includes(term) ||
-					(thesisNameForSearch &&
-						thesisNameForSearch.toLowerCase().includes(term)) ||
+					thesisNameForSearch?.toLowerCase().includes(term) ||
 					item.supervisor?.toLowerCase().includes(term)
 				);
 			});
