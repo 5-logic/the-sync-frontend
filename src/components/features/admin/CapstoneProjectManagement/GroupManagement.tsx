@@ -6,10 +6,16 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { TablePagination } from '@/components/common/TablePagination';
 import { getColumns } from '@/components/features/admin/CapstoneProjectManagement/Columns';
 import { FilterBar } from '@/components/features/admin/CapstoneProjectManagement/FilterBar';
-import { calculateRowSpans } from '@/components/features/admin/CapstoneProjectManagement/calculateRowSpan';
+import {
+	calculateRowSpans,
+	calculateRowSpansForExport,
+} from '@/components/features/admin/CapstoneProjectManagement/calculateRowSpan';
 import { useDebouncedSearch } from '@/hooks/ui/useDebounce';
 import { Group } from '@/lib/services/groups.service';
-import { exportToExcel } from '@/lib/utils/excelExporter';
+import {
+	GroupTableDataForExport,
+	exportToExcel,
+} from '@/lib/utils/excelExporter';
 import { Semester } from '@/schemas/semester';
 import { type GroupTableData, useCapstoneManagementStore } from '@/store';
 
@@ -60,7 +66,13 @@ const GroupManagement: React.FC = () => {
 
 		// Apply semester filter only if not 'all' or undefined
 		if (selectedSemester && selectedSemester !== 'all') {
-			filtered = filtered.filter((item) => item.semester === selectedSemester);
+			// Find the semester code based on the selected semester name
+			const semesterCode = semesters.find(
+				(s) => s.name === selectedSemester,
+			)?.code;
+			if (semesterCode) {
+				filtered = filtered.filter((item) => item.semester === semesterCode);
+			}
 		}
 
 		// Apply search filter
@@ -78,12 +90,33 @@ const GroupManagement: React.FC = () => {
 
 		// Recalculate rowSpans for filtered data
 		return calculateRowSpans(filtered) as GroupTableData[];
-	}, [debouncedSearchValue, selectedSemester, tableData]);
+	}, [debouncedSearchValue, selectedSemester, tableData, semesters]);
 
 	const handleExportExcel = () => {
+		// Prepare export data without semester column and with proper rowSpans
+		const exportData = calculateRowSpansForExport(
+			filteredData.map((item) => ({
+				groupId: item.groupId,
+				studentId: item.studentId,
+				name: item.name,
+				major: item.major,
+				thesisName: item.thesisName,
+				abbreviation: item.abbreviation,
+				supervisor: item.supervisor,
+			})),
+		) as GroupTableDataForExport[];
+
+		// Get semester display name
+		const semesterDisplayName =
+			selectedSemester === 'all'
+				? 'ALL SEMESTERS'
+				: semesters.find((s) => s.name === selectedSemester)?.name ||
+					selectedSemester.toUpperCase();
+
 		exportToExcel({
-			data: filteredData,
+			data: exportData,
 			selectedSemester,
+			semesterDisplayName,
 		});
 	};
 
