@@ -1,98 +1,60 @@
 'use client';
 
 import { Spin, Table, Typography } from 'antd';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 
 import { TablePagination } from '@/components/common/TablePagination';
 import { getColumns } from '@/components/features/admin/CapstoneProjectManagement/Columns';
 import { FilterBar } from '@/components/features/admin/CapstoneProjectManagement/FilterBar';
-import {
-	calculateRowSpans,
-	calculateRowSpansForExport,
-} from '@/components/features/admin/CapstoneProjectManagement/calculateRowSpan';
+import { calculateRowSpansForExport } from '@/components/features/admin/CapstoneProjectManagement/calculateRowSpan';
+import { useCapstoneManagement } from '@/hooks/admin/useCapstoneManagement';
+import { useSemesterExportValidation } from '@/hooks/admin/useSemesterExportValidation';
 import { useDebouncedSearch } from '@/hooks/ui/useDebounce';
-import { Group } from '@/lib/services/groups.service';
 import {
 	GroupTableDataForExport,
 	exportToExcel,
 } from '@/lib/utils/excelExporter';
-import { Semester } from '@/schemas/semester';
-import { type GroupTableData, useCapstoneManagementStore } from '@/store';
+import { showNotification } from '@/lib/utils/notification';
+import { getCleanThesisNameForExport } from '@/lib/utils/thesisUtils';
+import { type GroupTableData } from '@/store';
 
 const { Text } = Typography;
 
 const GroupManagement: React.FC = () => {
 	const { searchValue, debouncedSearchValue, setSearchValue } =
 		useDebouncedSearch('', 300);
-	const [selectedSemester, setSelectedSemester] = useState<string>('all');
+	const [selectedSemester, setSelectedSemester] = useState<string>('');
 
-	// Use store instead of mock data
+	// Use custom hooks to reduce duplication
 	const {
 		semesters,
+		filteredData,
+		availableSemesters,
 		loading,
 		loadingDetails,
-		groups,
-		tableData,
-		fetchGroups,
-		fetchGroupDetails,
-		fetchSemesters,
 		refresh,
-	} = useCapstoneManagementStore();
+	} = useCapstoneManagement(selectedSemester, debouncedSearchValue);
 
-	// Fetch data on component mount
-	useEffect(() => {
-		const initializeData = async () => {
-			await Promise.all([fetchGroups(), fetchSemesters()]);
-		};
-		initializeData();
-	}, [fetchGroups, fetchSemesters]);
-
-	// Fetch group details when groups are loaded
-	useEffect(() => {
-		if (groups.length > 0) {
-			const groupIds = groups.map((group: Group) => group.id);
-			fetchGroupDetails(groupIds);
+	// Set the first available semester as default when semesters are loaded
+	React.useEffect(() => {
+		if (availableSemesters.length > 0 && !selectedSemester) {
+			setSelectedSemester(availableSemesters[0]);
 		}
-	}, [groups, fetchGroupDetails]);
+	}, [availableSemesters, selectedSemester]);
 
-	// Get available semesters for filter
-	const availableSemesters = useMemo(() => {
-		return semesters.map((semester: Semester) => semester.name);
-	}, [semesters]);
-
-	// Get filtered data using direct filtering
-	const filteredData: GroupTableData[] = useMemo(() => {
-		let filtered = [...tableData]; // Start with all data from store
-
-		// Apply semester filter only if not 'all' or undefined
-		if (selectedSemester && selectedSemester !== 'all') {
-			// Find the semester code based on the selected semester name
-			const semesterCode = semesters.find(
-				(s) => s.name === selectedSemester,
-			)?.code;
-			if (semesterCode) {
-				filtered = filtered.filter((item) => item.semester === semesterCode);
-			}
-		}
-
-		// Apply search filter
-		if (debouncedSearchValue) {
-			const term = debouncedSearchValue.toLowerCase();
-			filtered = filtered.filter(
-				(item) =>
-					item.name.toLowerCase().includes(term) ||
-					item.studentId.toLowerCase().includes(term) ||
-					item.major.toLowerCase().includes(term) ||
-					item.thesisName.toLowerCase().includes(term) ||
-					item.supervisor?.toLowerCase().includes(term),
-			);
-		}
-
-		// Recalculate rowSpans for filtered data
-		return calculateRowSpans(filtered) as GroupTableData[];
-	}, [debouncedSearchValue, selectedSemester, tableData, semesters]);
+	// Export validation
+	const exportValidation = useSemesterExportValidation(
+		selectedSemester,
+		semesters,
+	);
 
 	const handleExportExcel = () => {
+		// Always check validation and show notification if not allowed
+		if (!exportValidation.canExport) {
+			showNotification.error('Export Not Allowed', exportValidation.reason);
+			return;
+		}
+
 		// Prepare export data without semester column and with proper rowSpans
 		const exportData = calculateRowSpansForExport(
 			filteredData.map((item) => ({
@@ -100,7 +62,7 @@ const GroupManagement: React.FC = () => {
 				studentId: item.studentId,
 				name: item.name,
 				major: item.major,
-				thesisName: item.thesisName,
+				thesisName: getCleanThesisNameForExport(item.thesisName),
 				abbreviation: item.abbreviation,
 				supervisor: item.supervisor,
 			})),

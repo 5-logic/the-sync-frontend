@@ -64,7 +64,14 @@ export const getColumns = (
 			key: 'thesisName',
 			align: 'center',
 			width: 300,
-			render: (text) => RowSpanCell(highlightText(text, searchText)),
+			render: (text) =>
+				RowSpanCell(
+					text && text !== 'Not assigned' ? (
+						highlightText(text, searchText)
+					) : (
+						<span style={{ color: '#999' }}>-</span>
+					),
+				),
 			onCell: (record) => ({ rowSpan: record.rowSpanGroup }),
 		},
 	];

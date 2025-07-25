@@ -33,10 +33,6 @@ export const FilterBar = ({
 	showExportExcel = false,
 	loading = false,
 }: Props) => {
-	const semesterOptions = availableSemesters.filter(
-		(semester) => semester !== 'all',
-	);
-
 	return (
 		<Row gutter={[16, 16]} align="middle" style={{ marginBottom: 16 }}>
 			<Col flex="auto">
@@ -59,8 +55,7 @@ export const FilterBar = ({
 					placeholder="Select Semester"
 					disabled={loading}
 				>
-					<Select.Option value="all">All Semesters</Select.Option>
-					{semesterOptions.map((semester) => (
+					{availableSemesters.map((semester) => (
 						<Select.Option key={semester} value={semester}>
 							{semester}
 						</Select.Option>
@@ -89,6 +84,7 @@ export const FilterBar = ({
 						style={{ width: '100%' }}
 						onClick={onExportExcel}
 						disabled={loading}
+						title="Export to Excel"
 					>
 						{exportExcelText}
 					</Button>

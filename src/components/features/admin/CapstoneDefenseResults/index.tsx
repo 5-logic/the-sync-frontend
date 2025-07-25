@@ -18,14 +18,12 @@ import { Header } from '@/components/common/Header';
 import { TablePagination } from '@/components/common/TablePagination';
 import { getColumns } from '@/components/features/admin/CapstoneProjectManagement/Columns';
 import { FilterBar } from '@/components/features/admin/CapstoneProjectManagement/FilterBar';
-import {
-	FullRowSpanItem,
-	calculateRowSpans,
-} from '@/components/features/admin/CapstoneProjectManagement/calculateRowSpan';
+import { FullRowSpanItem } from '@/components/features/admin/CapstoneProjectManagement/calculateRowSpan';
+import { useCapstoneManagement } from '@/hooks/admin/useCapstoneManagement';
+import { useSemesterExportValidation } from '@/hooks/admin/useSemesterExportValidation';
 import { useDebouncedSearch } from '@/hooks/ui/useDebounce';
 import { exportDefenseResultsToExcel } from '@/lib/utils/defenseResultsExporter';
-import { Semester } from '@/schemas/semester';
-import { type GroupTableData, useCapstoneManagementStore } from '@/store';
+import { showNotification } from '@/lib/utils/notification';
 import '@/styles/components.css';
 
 const { Text } = Typography;
@@ -33,48 +31,42 @@ const { Text } = Typography;
 const CapstoneDefenseResults = () => {
 	const { searchValue, debouncedSearchValue, setSearchValue } =
 		useDebouncedSearch('', 300);
-	const [selectedSemester, setSelectedSemester] = useState<string>('all');
+	const [selectedSemester, setSelectedSemester] = useState<string>('');
 	const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 	const [statusUpdates, setStatusUpdates] = useState<Record<string, string>>(
 		{},
 	);
 
-	// Use store instead of mock data
-	const {
-		semesters,
-		groups,
-		tableData,
-		fetchGroups,
-		fetchGroupDetails,
-		fetchSemesters,
-	} = useCapstoneManagementStore();
+	// Use custom hooks to reduce duplication
+	const { semesters, filteredData, availableSemesters } = useCapstoneManagement(
+		selectedSemester,
+		debouncedSearchValue,
+	);
 
-	// Fetch data on component mount
+	// Set the first available semester as default when semesters are loaded
 	React.useEffect(() => {
-		const initializeData = async () => {
-			await Promise.all([fetchGroups(), fetchSemesters()]);
-		};
-		initializeData();
-	}, [fetchGroups, fetchSemesters]);
-
-	// Fetch group details when groups are loaded
-	React.useEffect(() => {
-		if (groups.length > 0) {
-			const groupIds = groups.map((group) => group.id);
-			fetchGroupDetails(groupIds);
+		if (availableSemesters.length > 0 && !selectedSemester) {
+			setSelectedSemester(availableSemesters[0]);
 		}
-	}, [groups, fetchGroupDetails]);
+	}, [availableSemesters, selectedSemester]);
 
-	// Get available semesters for filter
-	const availableSemesters = useMemo(() => {
-		return semesters.map((semester: Semester) => semester.name);
-	}, [semesters]);
+	// Export validation
+	const exportValidation = useSemesterExportValidation(
+		selectedSemester,
+		semesters,
+	);
 
 	const handleSearch = (value: string) => {
 		setSearchValue(value);
 	};
 
 	const handleExportExcel = () => {
+		// Always check validation and show notification if not allowed
+		if (!exportValidation.canExport) {
+			showNotification.error('Export Not Allowed', exportValidation.reason);
+			return;
+		}
+
 		const selectedStudents = filteredData.filter((student) =>
 			selectedRowKeys.includes(`${student.studentId}-${student.groupId}`),
 		);
@@ -84,6 +76,10 @@ const CapstoneDefenseResults = () => {
 			selectedStudents.length > 0 ? selectedStudents : filteredData;
 		const dataForExport = dataToExport.map((item) => ({
 			...item,
+			thesisName:
+				item.thesisName && item.thesisName !== 'Not assigned'
+					? item.thesisName
+					: '',
 			rowSpanMajor: item.rowSpanMajor || 0,
 			rowSpanGroup: item.rowSpanGroup || 0,
 			rowSpanSemester: item.rowSpanSemester || 0,
@@ -197,30 +193,6 @@ const CapstoneDefenseResults = () => {
 		},
 		[statusUpdates],
 	);
-
-	const filteredData = useMemo(() => {
-		const filtered = tableData.filter((item: GroupTableData) => {
-			const matchesSearch =
-				!debouncedSearchValue.trim() ||
-				[
-					item.name,
-					item.studentId,
-					item.thesisName,
-					item.major,
-					item.status,
-					item.semester,
-				].some((field) =>
-					String(field ?? '')
-						.toLowerCase()
-						.includes(debouncedSearchValue.toLowerCase().trim()),
-				);
-			const matchesSemester =
-				selectedSemester === 'all' || item.semester === selectedSemester;
-			return matchesSearch && matchesSemester;
-		});
-
-		return calculateRowSpans(filtered);
-	}, [tableData, debouncedSearchValue, selectedSemester]);
 
 	const columns = useMemo(
 		() =>
