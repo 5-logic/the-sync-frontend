@@ -85,6 +85,11 @@ const DYNAMIC_ROUTE_PATTERNS: Array<{
 		getTitle: () => 'Edit Checklist',
 		getParentPath: () => '/lecturer/checklist-management',
 	},
+	{
+		pattern: /^\/lecturer\/group-management\/(.+)$/,
+		getTitle: () => 'Assign Student & Thesis',
+		getParentPath: () => '/lecturer/group-management',
+	},
 
 	// Student dynamic routes - add patterns for any dynamic routes here
 	{
