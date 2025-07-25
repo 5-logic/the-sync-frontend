@@ -59,6 +59,7 @@ export const getColumns = (
 			dataIndex: 'thesisName',
 			key: 'thesisName',
 			align: 'center',
+			width: 300,
 			render: (text) => RowSpanCell(highlightText(text, searchText)),
 			onCell: (record) => ({ rowSpan: record.rowSpanGroup }),
 		},
