@@ -44,7 +44,11 @@ export const getColumns = (
 			dataIndex: 'name',
 			key: 'name',
 			align: 'center',
-			render: (text) => highlightText(text, searchText),
+			render: (text) => (
+				<div style={{ textAlign: 'left' }}>
+					{highlightText(text, searchText)}
+				</div>
+			),
 		},
 		{
 			title: 'Major',
@@ -86,7 +90,7 @@ export const getColumns = (
 				render: (supervisor) =>
 					RowSpanCell(
 						supervisor ? (
-							<div style={{ textAlign: 'left' }}>
+							<div style={{ textAlign: 'center' }}>
 								{supervisor
 									.split(', ')
 									.map((sup: React.Key | null | undefined) => (
