@@ -2,7 +2,6 @@ import * as XLSX from 'xlsx-js-style';
 
 import {
 	addHeadersAndData,
-	applyCellStyling as applySharedCellStyling,
 	createMergesAndGroupBoundaries,
 	getHeaderStyle,
 	getDataRowStyle as getSharedDataRowStyle,
@@ -21,7 +20,6 @@ export interface ExcelExportData {
 	'Thesis Title': string;
 	Abbreviation: string;
 	Supervisor: string;
-	Semester: string;
 	[key: string]: string | number | boolean;
 }
 
@@ -33,30 +31,31 @@ export interface GroupTableDataForExport {
 	thesisName: string;
 	abbreviation?: string;
 	supervisor?: string;
-	semester: string;
 	rowSpanMajor: number;
 	rowSpanGroup: number;
-	rowSpanSemester: number;
 }
 
 export interface ExportExcelOptions {
 	data: GroupTableDataForExport[];
 	selectedSemester: string;
+	semesterDisplayName?: string;
 	filename?: string;
 }
 
 export const exportToExcel = ({
 	data,
 	selectedSemester,
+	semesterDisplayName,
 	filename,
 }: ExportExcelOptions) => {
 	try {
 		// Get semester text for title
 		const semesterText =
-			selectedSemester === 'all'
+			semesterDisplayName ||
+			(selectedSemester === 'all'
 				? 'ALL SEMESTERS'
-				: selectedSemester.toUpperCase();
-		const title = `LIST OF ASSIGNMENTS AND GUIDELINES FOR THESIS FOR ${semesterText}`;
+				: selectedSemester.toUpperCase());
+		const title = `LIST OF ASSIGNMENTS AND GUIDELINES FOR THESIS FOR ${semesterText.toUpperCase()}`;
 
 		// Initialize Excel workbook and worksheet with title and subtitle
 		const { wb, ws } = initializeExcelWorksheet(title);
@@ -69,8 +68,7 @@ export const exportToExcel = ({
 			Major: item.major,
 			'Thesis Title': item.thesisName,
 			Abbreviation: item.abbreviation || '',
-			Supervisor: item.supervisor || '',
-			Semester: item.semester,
+			Supervisor: item.supervisor ? item.supervisor.replace(/, /g, '\n') : '',
 		}));
 
 		// Add headers and data starting from row 4
@@ -84,8 +82,7 @@ export const exportToExcel = ({
 			{ wch: 25 }, // Major
 			{ wch: 40 }, // Thesis Title
 			{ wch: 15 }, // Abbreviation
-			{ wch: 30 }, // Supervisor
-			{ wch: 15 }, // Semester
+			{ wch: 20 }, // Supervisor - reduced width since names are on separate lines
 		];
 		ws['!cols'] = colWidths;
 
@@ -122,16 +119,43 @@ const applyMergesAndStyling = (
 	data: GroupTableDataForExport[],
 ) => {
 	// Create merge ranges and group boundaries using shared utility
-	const { merges, groupBoundaries } = createMergesAndGroupBoundaries(data, 8);
+	const { merges, groupBoundaries } = createMergesAndGroupBoundaries(data, 7);
 
 	// Apply merges to worksheet
 	ws['!merges'] = merges;
 
 	// Apply styling using shared utility
-	applySharedCellStyling(ws, groupBoundaries, 8, getCellStyle);
+	applyCustomCellStyling(ws, groupBoundaries, 7);
 };
 
-const getCellStyle = (rowIndex: number, groupBoundaries: number[]) => {
+const applyCustomCellStyling = (
+	ws: XLSX.WorkSheet,
+	groupBoundaries: number[],
+	totalColumns: number,
+) => {
+	const columnLetter = String.fromCharCode(65 + totalColumns - 1); // A=65, so A+6=G for 7 columns
+	const range = XLSX.utils.decode_range(ws['!ref'] || `A1:${columnLetter}1`);
+
+	for (let R = range.s.r; R <= range.e.r; ++R) {
+		for (let C = range.s.c; C <= range.e.c; ++C) {
+			const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
+
+			// Create cell if it doesn't exist
+			if (!ws[cellAddress]) {
+				ws[cellAddress] = { v: '', t: 's' };
+			}
+
+			// Apply styling based on row type and column
+			ws[cellAddress].s = getCellStyle(R, C, groupBoundaries);
+		}
+	}
+};
+
+const getCellStyle = (
+	rowIndex: number,
+	columnIndex: number,
+	groupBoundaries: number[],
+) => {
 	if (rowIndex === 0) {
 		return getTitleStyle('D6EAF8'); // Blue theme for group management
 	}
@@ -144,5 +168,34 @@ const getCellStyle = (rowIndex: number, groupBoundaries: number[]) => {
 	if (rowIndex === 3) {
 		return getHeaderStyle('E6F3FF'); // Light blue for header
 	}
-	return getSharedDataRowStyle(rowIndex, groupBoundaries);
+
+	// For data rows, apply custom alignment for specific columns
+	const baseStyle = getSharedDataRowStyle(rowIndex, groupBoundaries);
+
+	// Apply left alignment to Full Name column (column C, index 2)
+	if (columnIndex === 2) {
+		return {
+			...baseStyle,
+			alignment: {
+				...baseStyle.alignment,
+				horizontal: 'left',
+				wrapText: true,
+			},
+		};
+	}
+
+	// Apply text wrapping and center alignment to Supervisor column (column G, index 6)
+	if (columnIndex === 6) {
+		return {
+			...baseStyle,
+			alignment: {
+				...baseStyle.alignment,
+				horizontal: 'center',
+				vertical: 'center',
+				wrapText: true,
+			},
+		};
+	}
+
+	return baseStyle;
 };

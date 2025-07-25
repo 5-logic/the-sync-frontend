@@ -4,7 +4,7 @@ import React from 'react';
 
 import { highlightText } from '@/components/features/admin/CapstoneProjectManagement/HighlightText';
 import { RowSpanCell } from '@/components/features/admin/CapstoneProjectManagement/RowSpanCell';
-import { GroupTableData } from '@/components/features/admin/CapstoneProjectManagement/useGroupTableData';
+import { type GroupTableData } from '@/store';
 
 // Dùng chung cho cả bảng GroupResults và GroupManagement
 export const getColumns = (
@@ -44,7 +44,11 @@ export const getColumns = (
 			dataIndex: 'name',
 			key: 'name',
 			align: 'center',
-			render: (text) => highlightText(text, searchText),
+			render: (text) => (
+				<div style={{ textAlign: 'left' }}>
+					{highlightText(text, searchText)}
+				</div>
+			),
 		},
 		{
 			title: 'Major',
@@ -86,14 +90,12 @@ export const getColumns = (
 				render: (supervisor) =>
 					RowSpanCell(
 						supervisor ? (
-							<div style={{ textAlign: 'left' }}>
-								{supervisor
-									.split(', ')
-									.map((sup: React.Key | null | undefined) => (
-										<div key={sup}>
-											{highlightText(sup ? String(sup) : '', searchText)}
-										</div>
-									))}
+							<div style={{ textAlign: 'center' }}>
+								{supervisor.split(', ').map((sup: string) => (
+									<div key={sup.trim()}>
+										{highlightText(sup.trim(), searchText)}
+									</div>
+								))}
 							</div>
 						) : (
 							<span style={{ color: '#999' }}>-</span>

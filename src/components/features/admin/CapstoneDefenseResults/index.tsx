@@ -1,7 +1,16 @@
 'use client';
 
-import { Button, Col, Modal, Row, Space, Table, Typography } from 'antd';
-import type {} from 'antd/es/table';
+import {
+	Button,
+	Col,
+	Modal,
+	Row,
+	Space,
+	Table,
+	Typography,
+	message,
+} from 'antd';
+import type { ColumnsType } from 'antd/es/table';
 import { TableRowSelection } from 'antd/es/table/interface';
 import React, { useCallback, useMemo, useState } from 'react';
 
@@ -9,13 +18,14 @@ import { Header } from '@/components/common/Header';
 import { TablePagination } from '@/components/common/TablePagination';
 import { getColumns } from '@/components/features/admin/CapstoneProjectManagement/Columns';
 import { FilterBar } from '@/components/features/admin/CapstoneProjectManagement/FilterBar';
-import { calculateRowSpans } from '@/components/features/admin/CapstoneProjectManagement/calculateRowSpan';
 import {
-	GroupTableData,
-	useGroupTableData,
-} from '@/components/features/admin/CapstoneProjectManagement/useGroupTableData';
+	FullRowSpanItem,
+	calculateRowSpans,
+} from '@/components/features/admin/CapstoneProjectManagement/calculateRowSpan';
 import { useDebouncedSearch } from '@/hooks/ui/useDebounce';
 import { exportDefenseResultsToExcel } from '@/lib/utils/defenseResultsExporter';
+import { Semester } from '@/schemas/semester';
+import { type GroupTableData, useCapstoneManagementStore } from '@/store';
 import '@/styles/components.css';
 
 const { Text } = Typography;
@@ -28,23 +38,59 @@ const CapstoneDefenseResults = () => {
 	const [statusUpdates, setStatusUpdates] = useState<Record<string, string>>(
 		{},
 	);
-	const [baseDataState, setBaseDataState] = useState<GroupTableData[]>([]);
-	const { baseData, availableSemesters } = useGroupTableData();
 
-	// Initialize baseDataState when baseData changes
+	// Use store instead of mock data
+	const {
+		semesters,
+		groups,
+		tableData,
+		fetchGroups,
+		fetchGroupDetails,
+		fetchSemesters,
+	} = useCapstoneManagementStore();
+
+	// Fetch data on component mount
 	React.useEffect(() => {
-		setBaseDataState(baseData);
-	}, [baseData]);
+		const initializeData = async () => {
+			await Promise.all([fetchGroups(), fetchSemesters()]);
+		};
+		initializeData();
+	}, [fetchGroups, fetchSemesters]);
 
-	const dataToUse = baseDataState;
+	// Fetch group details when groups are loaded
+	React.useEffect(() => {
+		if (groups.length > 0) {
+			const groupIds = groups.map((group) => group.id);
+			fetchGroupDetails(groupIds);
+		}
+	}, [groups, fetchGroupDetails]);
+
+	// Get available semesters for filter
+	const availableSemesters = useMemo(() => {
+		return semesters.map((semester: Semester) => semester.name);
+	}, [semesters]);
 
 	const handleSearch = (value: string) => {
 		setSearchValue(value);
 	};
 
 	const handleExportExcel = () => {
+		const selectedStudents = filteredData.filter((student) =>
+			selectedRowKeys.includes(`${student.studentId}-${student.groupId}`),
+		);
+
+		// Convert FullRowSpanItem to the format expected by export function
+		const dataToExport =
+			selectedStudents.length > 0 ? selectedStudents : filteredData;
+		const dataForExport = dataToExport.map((item) => ({
+			...item,
+			rowSpanMajor: item.rowSpanMajor || 0,
+			rowSpanGroup: item.rowSpanGroup || 0,
+			rowSpanSemester: item.rowSpanSemester || 0,
+		}));
+
 		exportDefenseResultsToExcel({
-			data: filteredData,
+			data: dataForExport,
 			selectedSemester,
 			statusUpdates,
 		});
@@ -63,31 +109,17 @@ const CapstoneDefenseResults = () => {
 
 	const handleSaveChanges = () => {
 		console.log('Status updates to save:', statusUpdates);
-
-		// Update the baseDataState with new status values
-		setBaseDataState((prevData) =>
-			prevData.map((student) => {
-				if (statusUpdates[student.studentId]) {
-					return {
-						...student,
-						status: statusUpdates[student.studentId],
-					};
-				}
-				return student;
-			}),
-		);
-
 		// Clear the temporary updates and selection
 		setStatusUpdates({});
 		setSelectedRowKeys([]);
+		message.success('Cập nhật thành công!');
 	};
 
 	const handleBulkStatusUpdate = () => {
 		if (selectedRowKeys.length === 0) return;
 
-		const selectedStudents = filteredData.filter(
-			(student: { studentId: unknown; groupId: unknown }) =>
-				selectedRowKeys.includes(`${student.studentId}-${student.groupId}`),
+		const selectedStudents = filteredData.filter((student) =>
+			selectedRowKeys.includes(`${student.studentId}-${student.groupId}`),
 		);
 
 		Modal.confirm({
@@ -107,7 +139,7 @@ const CapstoneDefenseResults = () => {
 							marginTop: 16,
 						}}
 					>
-						{selectedStudents.map((student: GroupTableData) => (
+						{selectedStudents.map((student) => (
 							<div key={String(student.studentId)}>
 								<b>{student.studentId}</b> - {student.name}
 								<br />
@@ -167,7 +199,7 @@ const CapstoneDefenseResults = () => {
 	);
 
 	const filteredData = useMemo(() => {
-		const filtered = dataToUse.filter((item: GroupTableData) => {
+		const filtered = tableData.filter((item: GroupTableData) => {
 			const matchesSearch =
 				!debouncedSearchValue.trim() ||
 				[
@@ -188,7 +220,7 @@ const CapstoneDefenseResults = () => {
 		});
 
 		return calculateRowSpans(filtered);
-	}, [dataToUse, debouncedSearchValue, selectedSemester]);
+	}, [tableData, debouncedSearchValue, selectedSemester]);
 
 	const columns = useMemo(
 		() =>
@@ -198,11 +230,11 @@ const CapstoneDefenseResults = () => {
 				getDisplayStatus,
 				statusUpdates,
 				handleStatusChange,
-			}),
+			}) as ColumnsType<FullRowSpanItem>, // Type assertion for compatibility
 		[getDisplayStatus, debouncedSearchValue, statusUpdates],
 	);
 
-	const rowSelection: TableRowSelection<GroupTableData> = {
+	const rowSelection: TableRowSelection<FullRowSpanItem> = {
 		selectedRowKeys,
 		onChange: handleRowSelectionChange,
 	};

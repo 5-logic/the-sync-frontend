@@ -354,9 +354,9 @@ export const useCapstoneManagementStore = create<CapstoneManagementState>(
 						stt: stt++,
 						studentId: member.studentCode,
 						name: member.user.fullName,
-						major: member.major.code,
+						major: member.major.name,
 						thesisName: group.thesis?.englishName || 'Not assigned',
-						semester: group.semester.name,
+						semester: group.semester.code,
 						groupId: group.id,
 						rowSpanGroup: 0, // Will be calculated later
 						rowSpanMajor: 0, // Will be calculated later
