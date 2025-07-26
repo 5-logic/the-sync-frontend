@@ -87,9 +87,15 @@ export default function EditMilestoneDialog({
 			(currentValues.note || '') !== originalValues.note;
 
 		const originalDocuments = (originalValues.documents as string[]) || [];
+		const sortedCurrentDocuments = [...currentDocuments].sort((a, b) =>
+			a.localeCompare(b),
+		);
+		const sortedOriginalDocuments = [...originalDocuments].sort((a, b) =>
+			a.localeCompare(b),
+		);
 		const hasDocumentChanges =
-			JSON.stringify(currentDocuments.sort()) !==
-				JSON.stringify(originalDocuments.sort()) || newFiles.length > 0;
+			JSON.stringify(sortedCurrentDocuments) !==
+				JSON.stringify(sortedOriginalDocuments) || newFiles.length > 0;
 
 		const hasAnyChanges = hasFormChanges || hasDocumentChanges;
 		setHasChanges(hasAnyChanges);
@@ -204,9 +210,15 @@ export default function EditMilestoneDialog({
 				...newFiles.map(() => 'new-file'),
 			];
 			const originalDocuments = (originalValues.documents as string[]) || [];
+			const sortedCurrentDocuments = [...currentDocuments].sort((a, b) =>
+				a.localeCompare(b),
+			);
+			const sortedOriginalDocuments = [...originalDocuments].sort((a, b) =>
+				a.localeCompare(b),
+			);
 			const hasDocumentChanges =
-				JSON.stringify(currentDocuments.sort()) !==
-					JSON.stringify(originalDocuments.sort()) || newFiles.length > 0;
+				JSON.stringify(sortedCurrentDocuments) !==
+					JSON.stringify(sortedOriginalDocuments) || newFiles.length > 0;
 
 			if (hasDocumentChanges) {
 				// Process document updates
