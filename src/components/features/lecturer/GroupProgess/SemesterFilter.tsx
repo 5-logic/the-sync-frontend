@@ -36,14 +36,19 @@ export default function SemesterFilter({
 			semester.status !== 'NotYet' && semester.status !== 'End',
 	);
 
-	// Auto-select first available semester if none selected
+	// Auto-select first available semester if none selected and semesters are loaded
 	useEffect(() => {
 		if (
 			!selectedSemester &&
 			availableSemesters.length > 0 &&
 			!semestersLoading
 		) {
-			onSemesterChange(availableSemesters[0].id);
+			// Use a small delay to avoid state conflicts during initial render
+			const timer = setTimeout(() => {
+				onSemesterChange(availableSemesters[0].id);
+			}, 0);
+
+			return () => clearTimeout(timer);
 		}
 	}, [
 		selectedSemester,

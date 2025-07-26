@@ -154,14 +154,19 @@ export default function GroupSearchTable<
 				)}
 			</div>
 
-			{/* Show skeleton loading for initial load */}
+			{/* Skeleton ONLY for very first app load with no cached data */}
 			{isInitialLoad ? (
-				<div>
-					<Skeleton active paragraph={{ rows: 8 }} />
+				<div style={{ padding: '8px 0' }}>
+					<Skeleton
+						active
+						paragraph={{ rows: 1, width: ['100%'] }}
+						title={{ width: '40%' }}
+						avatar={false}
+					/>
 				</div>
 			) : (
-				/* Show table with spin loading for refreshes */
-				<Spin spinning={isRefreshing} tip="Refreshing...">
+				/* Show table with spin loading for all other cases */
+				<Spin spinning={isRefreshing || loading} tip="Loading...">
 					<Table
 						columns={columns}
 						dataSource={data}
@@ -171,6 +176,11 @@ export default function GroupSearchTable<
 						rowClassName={(record) =>
 							record.id === selectedGroup?.id ? 'ant-table-row-selected' : ''
 						}
+						size="middle"
+						tableLayout="fixed"
+						locale={{
+							emptyText: loading ? 'Loading...' : 'No data available',
+						}}
 					/>
 				</Spin>
 			)}
