@@ -3,8 +3,9 @@
 import { Button, Card, Spin, Timeline, Typography } from 'antd';
 import dayjs from 'dayjs';
 import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
-import { useMilestoneProgress } from '@/hooks/student';
+import { useMilestones } from '@/hooks/lecturer/useMilestones';
 import {
 	formatDate,
 	getMilestoneStatus,
@@ -18,14 +19,25 @@ type MilestoneStatus = 'Ended' | 'In Progress' | 'Upcoming';
 interface LecturerProgressOverviewCardProps {
 	readonly thesisId?: string;
 	readonly hideTrackMilestones?: boolean;
+	readonly semesterId?: string;
 }
 
 export default function LecturerProgressOverviewCard({
 	thesisId,
 	hideTrackMilestones = false,
+	semesterId,
 }: LecturerProgressOverviewCardProps) {
 	const router = useRouter();
-	const { milestones, loading } = useMilestoneProgress();
+	const { milestones, loading, fetchMilestones } = useMilestones();
+
+	// Fetch milestones when semester changes
+	useEffect(() => {
+		if (semesterId) {
+			fetchMilestones(semesterId);
+		} else {
+			fetchMilestones(); // Fetch default milestones
+		}
+	}, [semesterId, fetchMilestones]);
 
 	const handleTrackMilestones = () => {
 		router.push('/lecturer/group-progress');
