@@ -1,6 +1,7 @@
 'use client';
 
 import { Card, Col, Row, Space, Typography } from 'antd';
+import { memo } from 'react';
 
 import LecturerProgressOverviewCard from '@/components/features/lecturer/GroupProgess/LecturerProgressOverviewCard';
 import GroupInfoCard from '@/components/features/student/GroupDashboard/GroupInfoCard';
@@ -116,10 +117,7 @@ function convertSupervisedGroupToGroupDashboard(
 	};
 }
 
-export default function GroupDetailCard({
-	group,
-	loading = false,
-}: GroupDetailCardProps) {
+function GroupDetailCard({ group, loading = false }: GroupDetailCardProps) {
 	// Convert SupervisedGroup to GroupDashboard if needed
 	const groupDashboard: GroupDashboard =
 		'studentGroupParticipations' in group
@@ -186,3 +184,13 @@ export default function GroupDetailCard({
 		</Card>
 	);
 }
+
+// Memoize component để tránh unnecessary re-renders
+export default memo(GroupDetailCard, (prevProps, nextProps) => {
+	// Custom comparison để chỉ re-render khi cần thiết
+	return (
+		prevProps.loading === nextProps.loading &&
+		prevProps.group.id === nextProps.group.id &&
+		prevProps.group.updatedAt === nextProps.group.updatedAt
+	);
+});

@@ -7,9 +7,20 @@ interface UseSupervisedGroupsReturn {
 	groups: SupervisedGroup[];
 	loading: boolean;
 	error: string | null;
-	fetchGroupsBySemester: (semesterId: string) => Promise<void>;
+	fetchGroupsBySemester: (semesterId: string, force?: boolean) => Promise<void>;
 	clearGroups: () => void;
+	refreshCache: () => void;
 }
+
+// Simple cache với TTL
+interface CacheEntry {
+	data: SupervisedGroup[];
+	timestamp: number;
+	semesterId: string;
+}
+
+const CACHE_TTL = 5 * 60 * 1000; // 5 phút
+const groupsCache = new Map<string, CacheEntry>();
 
 export function useSupervisedGroups(): UseSupervisedGroupsReturn {
 	const [groups, setGroups] = useState<SupervisedGroup[]>([]);
@@ -19,16 +30,30 @@ export function useSupervisedGroups(): UseSupervisedGroupsReturn {
 		null,
 	);
 
+	// Check if cache is valid
+	const isCacheValid = (semesterId: string): boolean => {
+		const cached = groupsCache.get(semesterId);
+		if (!cached) {
+			return false;
+		}
+		return Date.now() - cached.timestamp < CACHE_TTL;
+	};
+
 	const fetchGroupsBySemester = useCallback(
-		async (semesterId: string) => {
-			// Tránh fetch lại nếu:
-			// 1. Đang loading cùng semester
-			// 2. Hoặc đã fetch thành công semester này rồi
-			if (
-				(lastFetchedSemester === semesterId && loading) ||
-				(lastFetchedSemester === semesterId && groups.length > 0 && !error)
-			) {
-				console.log('Skipping duplicate fetch for semester:', semesterId);
+		async (semesterId: string, force = false) => {
+			// Smart caching logic
+			if (!force && isCacheValid(semesterId)) {
+				const cached = groupsCache.get(semesterId)!;
+				console.log('📦 Using cached groups for semester:', semesterId);
+				setGroups(cached.data);
+				setLastFetchedSemester(semesterId);
+				setError(null);
+				return;
+			}
+
+			// Tránh duplicate fetch khi đang loading
+			if (lastFetchedSemester === semesterId && loading && !force) {
+				console.log('⏳ Already fetching groups for semester:', semesterId);
 				return;
 			}
 
@@ -49,6 +74,13 @@ export function useSupervisedGroups(): UseSupervisedGroupsReturn {
 
 				const data = result.data || [];
 				setGroups(data);
+
+				// Cache the result
+				groupsCache.set(semesterId, {
+					data,
+					timestamp: Date.now(),
+					semesterId,
+				});
 			} catch (error) {
 				const errorMessage =
 					error instanceof Error
@@ -60,13 +92,20 @@ export function useSupervisedGroups(): UseSupervisedGroupsReturn {
 				setLoading(false);
 			}
 		},
-		[loading, lastFetchedSemester, groups.length, error],
+		[loading, lastFetchedSemester],
 	);
 
 	const clearGroups = useCallback(() => {
 		setGroups([]);
 		setError(null);
 		setLastFetchedSemester(null);
+		// Clear cache khi clear groups
+		groupsCache.clear();
+	}, []);
+
+	const refreshCache = useCallback(() => {
+		groupsCache.clear();
+		console.log('🗑️ Groups cache cleared');
 	}, []);
 
 	return {
@@ -75,5 +114,6 @@ export function useSupervisedGroups(): UseSupervisedGroupsReturn {
 		error,
 		fetchGroupsBySemester,
 		clearGroups,
+		refreshCache,
 	};
 }
