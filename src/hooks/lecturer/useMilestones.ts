@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import milestoneService from '@/lib/services/milestones.service';
 import semesterService from '@/lib/services/semesters.service';
@@ -13,6 +13,7 @@ interface UseMilestonesReturn {
 	error: string | null;
 	fetchMilestones: (semesterId?: string) => Promise<void>;
 	selectMilestone: (milestone: Milestone | null) => void;
+	clearMilestones: () => void;
 }
 
 export function useMilestones(): UseMilestonesReturn {
@@ -22,9 +23,25 @@ export function useMilestones(): UseMilestonesReturn {
 	);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const [lastFetchedSemesterId, setLastFetchedSemesterId] = useState<
+		string | null
+	>(null);
 
 	const fetchMilestones = useCallback(
 		async (semesterId?: string) => {
+			// Tránh fetch duplicate nếu đã fetch semester này rồi
+			if (
+				semesterId &&
+				lastFetchedSemesterId === semesterId &&
+				milestones.length > 0
+			) {
+				console.log(
+					'Skipping duplicate milestone fetch for semester:',
+					semesterId,
+				);
+				return;
+			}
+
 			try {
 				setLoading(true);
 				setError(null);
@@ -74,11 +91,15 @@ export function useMilestones(): UseMilestonesReturn {
 				);
 
 				setMilestones(sortedMilestones);
+				setLastFetchedSemesterId(targetSemesterId);
 
-				// Auto-select the first milestone if none selected
-				if (!selectedMilestone && sortedMilestones.length > 0) {
-					setSelectedMilestone(sortedMilestones[0]);
-				}
+				// Auto-select the first milestone if none selected và chưa có milestone nào
+				setSelectedMilestone((currentSelected) => {
+					if (!currentSelected && sortedMilestones.length > 0) {
+						return sortedMilestones[0];
+					}
+					return currentSelected;
+				});
 			} catch (error) {
 				const errorMessage =
 					error instanceof Error ? error.message : 'Failed to fetch milestones';
@@ -88,17 +109,22 @@ export function useMilestones(): UseMilestonesReturn {
 				setLoading(false);
 			}
 		},
-		[selectedMilestone],
+		[lastFetchedSemesterId, milestones.length], // Dependencies để check duplicate
 	);
 
 	const selectMilestone = useCallback((milestone: Milestone | null) => {
 		setSelectedMilestone(milestone);
 	}, []);
 
-	// Fetch milestones on mount
-	useEffect(() => {
-		fetchMilestones();
-	}, [fetchMilestones]);
+	const clearMilestones = useCallback(() => {
+		setMilestones([]);
+		setSelectedMilestone(null);
+		setLastFetchedSemesterId(null);
+		setError(null);
+	}, []);
+
+	// Remove auto-fetch to prevent multiple API calls
+	// Components should explicitly call fetchMilestones when needed
 
 	return {
 		milestones,
@@ -107,5 +133,6 @@ export function useMilestones(): UseMilestonesReturn {
 		error,
 		fetchMilestones,
 		selectMilestone,
+		clearMilestones,
 	};
 }

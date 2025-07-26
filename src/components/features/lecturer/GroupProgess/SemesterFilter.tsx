@@ -36,7 +36,7 @@ export default function SemesterFilter({
 			semester.status !== 'NotYet' && semester.status !== 'End',
 	);
 
-	// Auto-select first available semester if none selected and semesters are loaded
+	// Auto-select first available semester if none selected
 	useEffect(() => {
 		if (
 			!selectedSemester &&

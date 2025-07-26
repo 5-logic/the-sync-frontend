@@ -53,12 +53,11 @@ export default function GroupProgressPage() {
 		selectMilestone,
 	} = useMilestones();
 
-	// Fetch cached data when component mounts
+	// Fetch cached data when component mounts (không fetch milestones ở đây)
 	useEffect(() => {
 		fetchLecturers();
 		fetchSemesters();
-		fetchMilestones();
-	}, [fetchLecturers, fetchSemesters, fetchMilestones]);
+	}, [fetchLecturers, fetchSemesters]);
 
 	// Fetch groups when semester changes
 	useEffect(() => {

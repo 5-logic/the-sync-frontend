@@ -30,14 +30,14 @@ export default function LecturerProgressOverviewCard({
 	const router = useRouter();
 	const { milestones, loading, fetchMilestones } = useMilestones();
 
-	// Fetch milestones when semester changes
+	// Fetch milestones when semester changes (chỉ fetch khi thực sự cần)
 	useEffect(() => {
-		if (semesterId) {
+		if (semesterId && milestones.length === 0) {
 			fetchMilestones(semesterId);
-		} else {
+		} else if (!semesterId && milestones.length === 0) {
 			fetchMilestones(); // Fetch default milestones
 		}
-	}, [semesterId, fetchMilestones]);
+	}, [semesterId, fetchMilestones, milestones.length]);
 
 	const handleTrackMilestones = () => {
 		router.push('/lecturer/group-progress');
