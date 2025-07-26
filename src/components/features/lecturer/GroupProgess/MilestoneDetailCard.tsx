@@ -1,18 +1,18 @@
 'use client';
 
-import { DownloadOutlined, SendOutlined } from '@ant-design/icons';
-import { Button, Card, Col, Grid, Input, Row, Typography } from 'antd';
+import { DownloadOutlined } from '@ant-design/icons';
+import { Button, Card, Col, Grid, Row, Typography } from 'antd';
 import { useEffect } from 'react';
 
 import type { FullMockGroup } from '@/data/group';
 import { useSubmission } from '@/hooks/lecturer/useSubmission';
-import { Group } from '@/lib/services/groups.service';
+import { Group, SupervisedGroup } from '@/lib/services/groups.service';
 import { GroupDashboard } from '@/schemas/group';
 import { Milestone } from '@/schemas/milestone';
 import { SubmissionDetail } from '@/schemas/submission';
 
 interface Props {
-	group: FullMockGroup | Group | GroupDashboard;
+	group: FullMockGroup | Group | GroupDashboard | SupervisedGroup;
 	milestone: Milestone | null;
 }
 
@@ -94,7 +94,7 @@ export default function MilestoneDetailCard({
 
 	// Type guards for different group types
 	const isFullMockGroup = (
-		g: FullMockGroup | Group | GroupDashboard,
+		g: FullMockGroup | Group | GroupDashboard | SupervisedGroup,
 	): g is FullMockGroup => {
 		try {
 			return (
@@ -116,9 +116,7 @@ export default function MilestoneDetailCard({
 
 	return (
 		<Card
-			title={
-				milestone?.name ? `Milestone - ${milestone.name}` : 'Select a Milestone'
-			}
+			title={milestone?.name ? `Milestone - ${milestone.name}` : 'Milestone'}
 			style={{
 				height: '100%',
 				display: 'flex',
@@ -304,27 +302,6 @@ export default function MilestoneDetailCard({
 						)}
 					</>
 				)}
-			</div>
-
-			<div
-				style={{
-					flexShrink: 0,
-					paddingTop: 16,
-					borderTop: '1px solid #f0f0f0',
-				}}
-			>
-				<Input.TextArea
-					rows={screens.xs ? 3 : 4}
-					placeholder="Enter feedback or notes"
-				/>
-				<Button
-					icon={<SendOutlined />}
-					type="primary"
-					block={screens.xs}
-					style={{ marginTop: 12 }}
-				>
-					Send Feedback
-				</Button>
 			</div>
 		</Card>
 	);
