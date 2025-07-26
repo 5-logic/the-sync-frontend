@@ -131,18 +131,23 @@ export const getColumns = (
 			render: (status, record) => {
 				const currentStatus = getDisplayStatus(status, record.studentId);
 				const isModified = statusUpdates[record.studentId] !== undefined;
+
+				// Show default status if no status is set initially
+				const displayStatus = currentStatus || '';
+
 				return (
 					<Select
-						value={currentStatus}
+						value={displayStatus}
 						onChange={(value) => handleStatusChange(record.studentId, value)}
 						style={{
 							width: 100,
 							border: isModified ? '2px solid #faad14' : undefined,
 						}}
 						size="small"
+						placeholder="Select"
 					>
-						<Select.Option value="Pass">
-							<span style={{ color: '#52c41a' }}>Pass</span>
+						<Select.Option value="Passed">
+							<span style={{ color: '#52c41a' }}>Passed</span>
 						</Select.Option>
 						<Select.Option value="Failed">
 							<span style={{ color: '#ff4d4f' }}>Failed</span>

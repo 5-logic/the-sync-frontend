@@ -3,9 +3,9 @@ import * as XLSX from 'xlsx-js-style';
 
 import {
 	addHeadersAndData,
-	applyCellStyling,
 	createMergesAndGroupBoundaries,
 	getDataRowStyle,
+	getDataRowStyleWithLeftAlign,
 	getHeaderStyle,
 	getSubtitleStyle,
 	getTitleStyle,
@@ -118,25 +118,77 @@ const applyDefenseResultsMergesAndStyling = (
 	// Apply merges to worksheet
 	ws['!merges'] = merges;
 
-	// Apply styling using shared utility
-	applyCellStyling(ws, groupBoundaries, 7, getDefenseResultsCellStyle);
+	// Apply styling using shared utility with special handling for Full Name column
+	applyDefenseResultsCellStyling(ws, groupBoundaries, 7);
 };
 
-const getDefenseResultsCellStyle = (
+/**
+ * Get cell style based on row index
+ * Reduces complexity by extracting row-based styling logic
+ */
+const getCellStyleByRow = (
 	rowIndex: number,
+	columnIndex: number,
 	groupBoundaries: number[],
+): object => {
+	switch (rowIndex) {
+		case 0:
+			return getTitleStyle('FFE6CC'); // Orange theme for defense results
+		case 1:
+			return getSubtitleStyle('FFF2E6'); // Light orange theme for subtitle
+		case 2:
+			return {}; // Empty row - no styling
+		case 3:
+			return getHeaderStyle('FFF2E6'); // Light orange for header
+		default:
+			return getDataRowStyleByColumn(rowIndex, columnIndex, groupBoundaries);
+	}
+};
+
+/**
+ * Get data row style based on column (Full Name gets left alignment)
+ * Further reduces complexity by separating column-specific logic
+ */
+const getDataRowStyleByColumn = (
+	rowIndex: number,
+	columnIndex: number,
+	groupBoundaries: number[],
+): object => {
+	const isFullNameColumn = columnIndex === 2;
+
+	return isFullNameColumn
+		? getDataRowStyleWithLeftAlign(rowIndex, groupBoundaries, '808080')
+		: getDataRowStyle(rowIndex, groupBoundaries, '808080');
+};
+
+/**
+ * Ensure cell exists in worksheet
+ * Extracted for clarity and reusability
+ */
+const ensureCellExists = (ws: XLSX.WorkSheet, cellAddress: string): void => {
+	if (!ws[cellAddress]) {
+		ws[cellAddress] = { v: '', t: 's' };
+	}
+};
+
+const applyDefenseResultsCellStyling = (
+	ws: XLSX.WorkSheet,
+	groupBoundaries: number[],
+	totalColumns: number,
 ) => {
-	if (rowIndex === 0) {
-		return getTitleStyle('FFE6CC'); // Orange theme for defense results
+	const columnLetter = String.fromCharCode(65 + totalColumns - 1); // A=65, so A+7=H for 8 columns
+	const range = XLSX.utils.decode_range(ws['!ref'] || `A1:${columnLetter}1`);
+
+	for (let R = range.s.r; R <= range.e.r; ++R) {
+		for (let C = range.s.c; C <= range.e.c; ++C) {
+			const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
+
+			// Ensure cell exists
+			ensureCellExists(ws, cellAddress);
+
+			// Apply styling based on row and column
+			const cellStyle = getCellStyleByRow(R, C, groupBoundaries);
+			ws[cellAddress].s = cellStyle;
+		}
 	}
-	if (rowIndex === 1) {
-		return getSubtitleStyle('FFF2E6'); // Light orange theme for subtitle
-	}
-	if (rowIndex === 2) {
-		return {}; // Empty row - no styling (white background, no borders)
-	}
-	if (rowIndex === 3) {
-		return getHeaderStyle('FFF2E6'); // Light orange for header
-	}
-	return getDataRowStyle(rowIndex, groupBoundaries, '808080');
 };

@@ -37,6 +37,12 @@ export const getBaseCellAlignment = () => ({
 	wrapText: true,
 });
 
+export const getLeftAlignedCellAlignment = () => ({
+	horizontal: 'left',
+	vertical: 'center',
+	wrapText: true,
+});
+
 export const getTitleStyle = (backgroundColor: string): CellStyle => ({
 	alignment: getBaseCellAlignment(),
 	font: {
@@ -104,6 +110,25 @@ export const getDataRowStyle = (
 
 	return {
 		alignment: getBaseCellAlignment(),
+		border: {
+			top: groupBoundaries.includes(rowIndex) ? separatorBorder : normalBorder,
+			bottom: normalBorder,
+			left: normalBorder,
+			right: normalBorder,
+		},
+	};
+};
+
+export const getDataRowStyleWithLeftAlign = (
+	rowIndex: number,
+	groupBoundaries: number[],
+	separatorColor = '808080',
+): CellStyle => {
+	const normalBorder = getBorderStyle('thin');
+	const separatorBorder = getBorderStyle('medium', separatorColor);
+
+	return {
+		alignment: getLeftAlignedCellAlignment(),
 		border: {
 			top: groupBoundaries.includes(rowIndex) ? separatorBorder : normalBorder,
 			bottom: normalBorder,

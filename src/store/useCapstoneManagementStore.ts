@@ -24,6 +24,7 @@ export interface GroupDetailWithMembers extends GroupDashboard {
 export interface GroupTableData {
 	stt: number;
 	studentId: string;
+	userId: string;
 	name: string;
 	major: string;
 	thesisName: string;
@@ -353,6 +354,7 @@ export const useCapstoneManagementStore = create<CapstoneManagementState>(
 					tableData.push({
 						stt: stt++,
 						studentId: member.studentCode,
+						userId: member.userId,
 						name: member.user.fullName,
 						major: member.major.name,
 						thesisName: group.thesis?.englishName || 'Not assigned',

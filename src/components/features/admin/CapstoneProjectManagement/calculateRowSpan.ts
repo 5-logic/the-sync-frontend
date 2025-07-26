@@ -7,6 +7,7 @@ interface BaseRowSpanItem {
 export interface FullRowSpanItem extends BaseRowSpanItem {
 	stt: number;
 	studentId: string;
+	userId: string;
 	name: string;
 	thesisName: string;
 	semester: string;
