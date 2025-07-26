@@ -169,6 +169,7 @@ export default function ThesisCard({
 
 				<Space align="center">
 					<Avatar size="small" icon={<UserOutlined />} />
+					<Typography.Text type="secondary">Lecturer:</Typography.Text>
 					<Typography.Text strong>
 						{thesis.lecturer.user.fullName}
 					</Typography.Text>
