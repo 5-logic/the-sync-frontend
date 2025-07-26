@@ -19,30 +19,19 @@ export default function GroupProgressPage() {
 		SupervisedGroup | undefined
 	>(undefined);
 	const [searchText, setSearchText] = useState<string>('');
+	const [selectedSemester, setSelectedSemester] = useState<string | null>(null);
 
-	// Initialize selectedSemester from sessionStorage
-	const [selectedSemester, setSelectedSemester] = useState<string | null>(
-		() => {
-			if (typeof window !== 'undefined') {
-				return sessionStorage.getItem('groupProgress_selectedSemester');
-			}
-			return null;
-		},
-	);
-
-	// Store hooks for cached data similar to ThesisManagement
+	// Store hooks for cached data
 	const { fetchLecturers } = useLecturerStore();
 	const { fetchSemesters } = useSemesterStore();
 
-	// Supervised groups hook with enhanced caching
+	// Supervised groups hook
 	const {
 		groups,
 		loading: groupsLoading,
 		error: groupsError,
 		fetchGroupsBySemester,
 		clearGroups,
-		isInitialLoad,
-		isRefreshing,
 	} = useSupervisedGroups();
 
 	// Group progress hook for detail
@@ -64,19 +53,21 @@ export default function GroupProgressPage() {
 		selectMilestone,
 	} = useMilestones();
 
-	// Fetch cached data when component mounts (similar to ThesisManagement)
+	// Fetch cached data when component mounts
 	useEffect(() => {
 		fetchLecturers();
 		fetchSemesters();
 		fetchMilestones();
 	}, [fetchLecturers, fetchSemesters, fetchMilestones]);
 
-	// Auto-load data for persisted semester
+	// Fetch groups when semester changes
 	useEffect(() => {
 		if (selectedSemester) {
 			fetchGroupsBySemester(selectedSemester);
+		} else {
+			clearGroups();
 		}
-	}, [selectedSemester, fetchGroupsBySemester]);
+	}, [selectedSemester, fetchGroupsBySemester, clearGroups]);
 
 	// Filter groups based on search
 	const filteredGroups = useMemo(() => {
@@ -98,15 +89,6 @@ export default function GroupProgressPage() {
 		});
 	}, [groups, searchText]);
 
-	// Fetch groups when semester changes
-	useEffect(() => {
-		if (selectedSemester) {
-			fetchGroupsBySemester(selectedSemester);
-		} else {
-			clearGroups();
-		}
-	}, [selectedSemester, fetchGroupsBySemester, clearGroups]);
-
 	// Memoized handlers to prevent unnecessary re-renders
 	const handleGroupSelect = useCallback(
 		(group: SupervisedGroup) => {
@@ -122,7 +104,7 @@ export default function GroupProgressPage() {
 
 	const handleRefresh = useCallback(() => {
 		if (selectedSemester) {
-			fetchGroupsBySemester(selectedSemester, true); // Force refresh
+			fetchGroupsBySemester(selectedSemester);
 		}
 		fetchMilestones();
 		if (selectedGroup) {
@@ -149,14 +131,6 @@ export default function GroupProgressPage() {
 
 	const handleSemesterChange = useCallback((semesterId: string | null) => {
 		setSelectedSemester(semesterId);
-		// Persist to sessionStorage
-		if (typeof window !== 'undefined') {
-			if (semesterId) {
-				sessionStorage.setItem('groupProgress_selectedSemester', semesterId);
-			} else {
-				sessionStorage.removeItem('groupProgress_selectedSemester');
-			}
-		}
 	}, []);
 
 	return (
@@ -210,8 +184,6 @@ export default function GroupProgressPage() {
 						selectedSemester={selectedSemester}
 						onSemesterChange={handleSemesterChange}
 						showSemesterFilter={true}
-						isInitialLoad={isInitialLoad}
-						isRefreshing={isRefreshing}
 					/>
 				</Space>
 

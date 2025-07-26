@@ -1,7 +1,7 @@
 'use client';
 
 import { EyeOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
-import { Button, Input, Skeleton, Space, Spin, Table } from 'antd';
+import { Button, Input, Space, Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 
 import { TablePagination } from '@/components/common/TablePagination';
@@ -24,9 +24,6 @@ interface Props<T extends GroupData = SupervisedGroup> {
 	selectedSemester?: string | null;
 	onSemesterChange?: (semesterId: string | null) => void;
 	showSemesterFilter?: boolean;
-	// Loading state props
-	isInitialLoad?: boolean;
-	isRefreshing?: boolean;
 }
 
 export default function GroupSearchTable<
@@ -42,8 +39,6 @@ export default function GroupSearchTable<
 	selectedSemester,
 	onSemesterChange,
 	showSemesterFilter = false,
-	isInitialLoad = false,
-	isRefreshing = false,
 }: Readonly<Props<T>>) {
 	const columns: ColumnsType<T> = [
 		{
@@ -146,7 +141,7 @@ export default function GroupSearchTable<
 					<Button
 						icon={<ReloadOutlined />}
 						onClick={onRefresh}
-						loading={isRefreshing}
+						loading={loading}
 						style={{ flexShrink: 0 }}
 					>
 						Refresh
@@ -154,36 +149,21 @@ export default function GroupSearchTable<
 				)}
 			</div>
 
-			{/* Skeleton ONLY for very first app load with no cached data */}
-			{isInitialLoad ? (
-				<div style={{ padding: '8px 0' }}>
-					<Skeleton
-						active
-						paragraph={{ rows: 1, width: ['100%'] }}
-						title={{ width: '40%' }}
-						avatar={false}
-					/>
-				</div>
-			) : (
-				/* Show table with spin loading for all other cases */
-				<Spin spinning={isRefreshing || loading} tip="Loading...">
-					<Table
-						columns={columns}
-						dataSource={data}
-						pagination={TablePagination}
-						rowKey="id"
-						loading={false} // Disable table's built-in loading since we use Spin
-						rowClassName={(record) =>
-							record.id === selectedGroup?.id ? 'ant-table-row-selected' : ''
-						}
-						size="middle"
-						tableLayout="fixed"
-						locale={{
-							emptyText: loading ? 'Loading...' : 'No data available',
-						}}
-					/>
-				</Spin>
-			)}
+			<Table
+				columns={columns}
+				dataSource={data}
+				pagination={TablePagination}
+				rowKey="id"
+				loading={loading}
+				rowClassName={(record) =>
+					record.id === selectedGroup?.id ? 'ant-table-row-selected' : ''
+				}
+				size="middle"
+				tableLayout="fixed"
+				locale={{
+					emptyText: loading ? 'Loading...' : 'No data available',
+				}}
+			/>
 		</Space>
 	);
 }
