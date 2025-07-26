@@ -140,7 +140,7 @@ function GroupDetailCard({
 			title={
 				<Space>
 					<Title level={4} style={{ margin: 0 }}>
-						Group Details: {groupDashboard.name}
+						Group Details
 					</Title>
 				</Space>
 			}
