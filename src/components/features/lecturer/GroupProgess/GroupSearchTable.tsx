@@ -5,13 +5,14 @@ import { Button, Input, Space, Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 
 import { TablePagination } from '@/components/common/TablePagination';
+import SemesterFilter from '@/components/features/lecturer/GroupProgess/SemesterFilter';
 import type { FullMockGroup } from '@/data/group';
-import { Group } from '@/lib/services/groups.service';
+import { Group, SupervisedGroup } from '@/lib/services/groups.service';
 
 // Union type to support both real API data and mock data
-type GroupData = Group | FullMockGroup;
+type GroupData = Group | FullMockGroup | SupervisedGroup;
 
-interface Props<T extends GroupData = Group> {
+interface Props<T extends GroupData = SupervisedGroup> {
 	data: T[];
 	searchText: string;
 	onSearchChange: (value: string) => void;
@@ -19,9 +20,15 @@ interface Props<T extends GroupData = Group> {
 	onGroupSelect: (group: T) => void;
 	loading?: boolean;
 	onRefresh?: () => void;
+	// Semester filter props
+	selectedSemester?: string | null;
+	onSemesterChange?: (semesterId: string | null) => void;
+	showSemesterFilter?: boolean;
 }
 
-export default function GroupSearchTable<T extends GroupData = Group>({
+export default function GroupSearchTable<
+	T extends GroupData = SupervisedGroup,
+>({
 	searchText,
 	onSearchChange,
 	data,
@@ -29,6 +36,9 @@ export default function GroupSearchTable<T extends GroupData = Group>({
 	onGroupSelect,
 	loading = false,
 	onRefresh,
+	selectedSemester,
+	onSemesterChange,
+	showSemesterFilter = false,
 }: Readonly<Props<T>>) {
 	const columns: ColumnsType<T> = [
 		{
@@ -44,8 +54,13 @@ export default function GroupSearchTable<T extends GroupData = Group>({
 		{
 			title: 'English Name',
 			key: 'englishName',
+			width: 500,
 			render: (_, record) => {
-				// Handle both Group and FullMockGroup types
+				// Handle SupervisedGroup type with thesis.englishName
+				if ('thesis' in record && record.thesis?.englishName) {
+					return record.thesis.englishName;
+				}
+				// Handle FullMockGroup type with englishName property
 				if ('englishName' in record && record.englishName) {
 					return record.englishName;
 				}
@@ -63,12 +78,20 @@ export default function GroupSearchTable<T extends GroupData = Group>({
 			title: 'Members',
 			key: 'memberCount',
 			render: (_, record) => {
-				// Handle both Group and FullMockGroup types
-				if ('memberCount' in record) {
-					return record.memberCount; // Group case
+				// Handle SupervisedGroup type with studentGroupParticipations
+				if (
+					'studentGroupParticipations' in record &&
+					Array.isArray(record.studentGroupParticipations)
+				) {
+					return record.studentGroupParticipations.length;
 				}
+				// Handle Group type with memberCount
+				if ('memberCount' in record) {
+					return record.memberCount;
+				}
+				// Handle FullMockGroup type with members array
 				if ('members' in record && Array.isArray(record.members)) {
-					return record.members.length; // FullMockGroup case
+					return record.members.length;
 				}
 				return '-';
 			},
@@ -96,6 +119,7 @@ export default function GroupSearchTable<T extends GroupData = Group>({
 					gap: 8,
 					marginBottom: 8,
 					flexWrap: 'wrap',
+					alignItems: 'center',
 				}}
 			>
 				<Input
@@ -106,6 +130,13 @@ export default function GroupSearchTable<T extends GroupData = Group>({
 					onChange={(e) => onSearchChange(e.target.value)}
 					style={{ flex: 1, minWidth: 200 }}
 				/>
+				{showSemesterFilter && onSemesterChange && (
+					<SemesterFilter
+						selectedSemester={selectedSemester || null}
+						onSemesterChange={onSemesterChange}
+						loading={loading}
+					/>
+				)}
 				{onRefresh && (
 					<Button
 						icon={<ReloadOutlined />}
