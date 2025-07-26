@@ -83,6 +83,36 @@ export default function AssignStudentsDetailPage() {
 		),
 	};
 
+	// Helper function to refresh group data and available theses
+	const refreshGroupAndTheses = async () => {
+		// Refresh group data
+		const groupResponse = await groupService.findOne(groupId);
+		const groupResult = handleApiResponse(groupResponse);
+		if (groupResult.success && groupResult.data) {
+			setGroup(groupResult.data);
+		}
+
+		// Refresh available theses
+		fetchAvailableTheses();
+	};
+
+	// Helper function to handle thesis operation errors
+	const handleThesisOperationError = (
+		error: unknown,
+		operation: 'assign' | 'unassign',
+	) => {
+		const operationText = operation === 'assign' ? 'assign' : 'unassign';
+		const titleText = operation === 'assign' ? 'Assignment' : 'Unassignment';
+
+		console.error(`Error ${operationText}ing thesis:`, error);
+		// Use handleApiError to extract proper error message
+		const { message } = handleApiError(
+			error,
+			`Failed to ${operationText} thesis ${operation === 'assign' ? 'to' : 'from'} group`,
+		);
+		showNotification.error(`${titleText} Failed`, message);
+	};
+
 	// Fetch available theses (approved and not assigned to any group)
 	const fetchAvailableTheses = async () => {
 		try {
@@ -325,13 +355,7 @@ export default function AssignStudentsDetailPage() {
 				setSelectedThesis(null);
 
 				// Refresh group data and available theses
-				const groupResponse = await groupService.findOne(groupId);
-				const groupResult = handleApiResponse(groupResponse);
-				if (groupResult.success && groupResult.data) {
-					setGroup(groupResult.data);
-				}
-
-				fetchAvailableTheses();
+				await refreshGroupAndTheses();
 			} else {
 				// Show error message from backend
 				showNotification.error(
@@ -340,13 +364,7 @@ export default function AssignStudentsDetailPage() {
 				);
 			}
 		} catch (error) {
-			console.error('Error assigning thesis:', error);
-			// Use handleApiError to extract proper error message
-			const { message } = handleApiError(
-				error,
-				'Failed to assign thesis to group',
-			);
-			showNotification.error('Assignment Failed', message);
+			handleThesisOperationError(error, 'assign');
 		} finally {
 			setAssignThesisLoading(false);
 		}
@@ -381,13 +399,7 @@ export default function AssignStudentsDetailPage() {
 						setViewingThesis(null);
 
 						// Refresh group data and available theses
-						const groupResponse = await groupService.findOne(groupId);
-						const groupResult = handleApiResponse(groupResponse);
-						if (groupResult.success && groupResult.data) {
-							setGroup(groupResult.data);
-						}
-
-						fetchAvailableTheses();
+						await refreshGroupAndTheses();
 					} else {
 						// Show error message from backend
 						showNotification.error(
@@ -396,13 +408,7 @@ export default function AssignStudentsDetailPage() {
 						);
 					}
 				} catch (error) {
-					console.error('Error unassigning thesis:', error);
-					// Use handleApiError to extract proper error message
-					const { message } = handleApiError(
-						error,
-						'Failed to unassign thesis from group',
-					);
-					showNotification.error('Unassignment Failed', message);
+					handleThesisOperationError(error, 'unassign');
 				} finally {
 					setUnassignThesisLoading(false);
 				}
