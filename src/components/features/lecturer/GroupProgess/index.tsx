@@ -220,6 +220,8 @@ export default function GroupProgressPage() {
 							<GroupDetailCard
 								group={selectedGroupDetail || selectedGroup}
 								loading={detailLoading}
+								milestones={milestones}
+								milestonesLoading={milestonesLoading}
 							/>
 
 							{/* Milestone Progress Section */}

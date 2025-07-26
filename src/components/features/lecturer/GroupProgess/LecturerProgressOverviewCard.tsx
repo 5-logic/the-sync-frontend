@@ -3,14 +3,13 @@
 import { Button, Card, Spin, Timeline, Typography } from 'antd';
 import dayjs from 'dayjs';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
 
-import { useMilestones } from '@/hooks/lecturer/useMilestones';
 import {
 	formatDate,
 	getMilestoneStatus,
 	getTimeRemaining,
 } from '@/lib/utils/dateFormat';
+import { Milestone } from '@/schemas/milestone';
 
 const { Text } = Typography;
 
@@ -19,25 +18,17 @@ type MilestoneStatus = 'Ended' | 'In Progress' | 'Upcoming';
 interface LecturerProgressOverviewCardProps {
 	readonly thesisId?: string;
 	readonly hideTrackMilestones?: boolean;
-	readonly semesterId?: string;
+	readonly milestones?: Milestone[];
+	readonly loading?: boolean;
 }
 
 export default function LecturerProgressOverviewCard({
 	thesisId,
 	hideTrackMilestones = false,
-	semesterId,
+	milestones = [],
+	loading = false,
 }: LecturerProgressOverviewCardProps) {
 	const router = useRouter();
-	const { milestones, loading, fetchMilestones } = useMilestones();
-
-	// Fetch milestones when semester changes (chỉ fetch khi thực sự cần)
-	useEffect(() => {
-		if (semesterId && milestones.length === 0) {
-			fetchMilestones(semesterId);
-		} else if (!semesterId && milestones.length === 0) {
-			fetchMilestones(); // Fetch default milestones
-		}
-	}, [semesterId, fetchMilestones, milestones.length]);
 
 	const handleTrackMilestones = () => {
 		router.push('/lecturer/group-progress');

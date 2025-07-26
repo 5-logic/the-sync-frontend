@@ -9,12 +9,15 @@ import SupervisorInfoCard from '@/components/features/student/GroupDashboard/Sup
 import ThesisStatusCard from '@/components/features/student/GroupDashboard/ThesisStatusCard';
 import { SupervisedGroup } from '@/lib/services/groups.service';
 import { GroupDashboard } from '@/schemas/group';
+import { Milestone } from '@/schemas/milestone';
 
 const { Title } = Typography;
 
 interface GroupDetailCardProps {
 	readonly group: SupervisedGroup | GroupDashboard;
 	readonly loading?: boolean;
+	readonly milestones?: Milestone[];
+	readonly milestonesLoading?: boolean;
 }
 
 /**
@@ -117,7 +120,12 @@ function convertSupervisedGroupToGroupDashboard(
 	};
 }
 
-function GroupDetailCard({ group, loading = false }: GroupDetailCardProps) {
+function GroupDetailCard({
+	group,
+	loading = false,
+	milestones = [],
+	milestonesLoading = false,
+}: GroupDetailCardProps) {
 	// Convert SupervisedGroup to GroupDashboard if needed
 	const groupDashboard: GroupDashboard =
 		'studentGroupParticipations' in group
@@ -176,7 +184,8 @@ function GroupDetailCard({ group, loading = false }: GroupDetailCardProps) {
 						<LecturerProgressOverviewCard
 							thesisId={thesisId}
 							hideTrackMilestones={true}
-							semesterId={groupDashboard.semester.id}
+							milestones={milestones}
+							loading={milestonesLoading}
 						/>
 					</Space>
 				</Col>
