@@ -2,7 +2,7 @@
 
 import { Card, Col, Row, Space, Typography } from 'antd';
 
-import ProgressOverviewCard from '@/components/common/ProgressOverview/ProgressOverviewCard';
+import LecturerProgressOverviewCard from '@/components/features/lecturer/GroupProgess/LecturerProgressOverviewCard';
 import GroupInfoCard from '@/components/features/student/GroupDashboard/GroupInfoCard';
 import SupervisorInfoCard from '@/components/features/student/GroupDashboard/SupervisorInfoCard';
 import ThesisStatusCard from '@/components/features/student/GroupDashboard/ThesisStatusCard';
@@ -175,7 +175,7 @@ export default function GroupDetailCard({
 						)}
 
 						{/* Progress Overview */}
-						<ProgressOverviewCard
+						<LecturerProgressOverviewCard
 							thesisId={thesisId}
 							hideTrackMilestones={true}
 						/>
