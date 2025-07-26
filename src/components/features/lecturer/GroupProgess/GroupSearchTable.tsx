@@ -42,12 +42,12 @@ export default function GroupSearchTable<T extends GroupData = Group>({
 			key: 'code',
 		},
 		{
-			title: 'Thesis Title',
-			key: 'thesisTitle',
+			title: 'English Name',
+			key: 'englishName',
 			render: (_, record) => {
 				// Handle both Group and FullMockGroup types
-				if ('title' in record && record.title) {
-					return record.title;
+				if ('englishName' in record && record.englishName) {
+					return record.englishName;
 				}
 				return '-';
 			},
@@ -58,26 +58,7 @@ export default function GroupSearchTable<T extends GroupData = Group>({
 			key: 'projectDirection',
 			render: (value: string) => value || '-',
 		},
-		{
-			title: 'Leader',
-			key: 'leader',
-			render: (_, record) => {
-				// Handle both Group and FullMockGroup types
-				if ('leader' in record) {
-					if (typeof record.leader === 'string') {
-						return record.leader; // FullMockGroup case
-					}
-					if (
-						record.leader &&
-						typeof record.leader === 'object' &&
-						'student' in record.leader
-					) {
-						return record.leader.student?.user?.fullName || '-'; // Group case
-					}
-				}
-				return '-';
-			},
-		},
+
 		{
 			title: 'Members',
 			key: 'memberCount',
