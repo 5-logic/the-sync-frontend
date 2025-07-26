@@ -1,10 +1,9 @@
 'use client';
 
-import { Alert, Card, Col, Row, Space, Steps, Typography } from 'antd';
+import { Alert, Col, Row, Space } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
 
 import { Header } from '@/components/common/Header';
-import { PageLoading } from '@/components/common/loading';
 import GroupSearchTable from '@/components/features/lecturer/GroupProgess/GroupSearchTable';
 import MilestoneDetailCard from '@/components/features/lecturer/GroupProgess/MilestoneDetailCard';
 import { useGroupProgress } from '@/hooks/lecturer/useGroupProgress';
@@ -12,9 +11,6 @@ import { useMilestones } from '@/hooks/lecturer/useMilestones';
 import { useSupervisedGroups } from '@/hooks/lecturer/useSupervisedGroups';
 import { SupervisedGroup } from '@/lib/services/groups.service';
 import { Milestone } from '@/schemas/milestone';
-
-const { Text } = Typography;
-const { Step } = Steps;
 
 export default function GroupProgressPage() {
 	const [selectedGroup, setSelectedGroup] = useState<
@@ -106,10 +102,10 @@ export default function GroupProgressPage() {
 		selectMilestone(milestone);
 	}
 
-	// Loading state
-	if (groupsLoading && groups.length === 0 && selectedSemester) {
-		return <PageLoading tip="Loading groups..." />;
-	}
+	// Loading state - Show skeleton for initial load, spin for refreshes
+	const isInitialLoad =
+		groupsLoading && groups.length === 0 && !!selectedSemester;
+	const isRefreshing = groupsLoading && groups.length > 0;
 
 	return (
 		<div
@@ -162,6 +158,8 @@ export default function GroupProgressPage() {
 						selectedSemester={selectedSemester}
 						onSemesterChange={setSelectedSemester}
 						showSemesterFilter={true}
+						isInitialLoad={isInitialLoad}
+						isRefreshing={isRefreshing}
 					/>
 				</Space>
 
@@ -178,45 +176,14 @@ export default function GroupProgressPage() {
 							/>
 						)}
 
-						<Card
-							loading={detailLoading || milestonesLoading}
-							title={
-								selectedGroupDetail
-									? `Group Name: ${selectedGroupDetail.name} | ${selectedGroupDetail.thesis?.vietnameseName || selectedGroupDetail.thesis?.englishName || 'No Thesis'}`
-									: `Group Name: ${selectedGroup.name} | ${selectedGroup.thesis?.vietnameseName || selectedGroup.thesis?.englishName || 'Loading...'}`
-							}
-						>
-							{selectedGroupDetail && (
-								<Text type="secondary">
-									Supervised by:{' '}
-									{selectedGroupDetail.supervisors.length > 0
-										? selectedGroupDetail.supervisors.join(', ')
-										: 'No supervisors assigned'}
-								</Text>
-							)}
-
-							<Steps
-								current={milestones.findIndex(
-									(m) => m.id === selectedMilestone?.id,
-								)}
-								style={{ marginTop: 16 }}
-							>
-								{milestones.map((milestone) => (
-									<Step
-										key={milestone.id}
-										title={milestone.name}
-										onClick={() => handleMilestoneChange(milestone)}
-										style={{ cursor: 'pointer' }}
-									/>
-								))}
-							</Steps>
-						</Card>
-
 						<Row gutter={16} style={{ flex: 1 }}>
 							<Col xs={24}>
 								<MilestoneDetailCard
 									group={selectedGroupDetail || selectedGroup}
 									milestone={selectedMilestone}
+									milestones={milestones}
+									onMilestoneChange={handleMilestoneChange}
+									loading={detailLoading || milestonesLoading}
 								/>
 							</Col>
 						</Row>
