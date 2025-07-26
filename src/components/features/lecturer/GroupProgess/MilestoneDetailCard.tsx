@@ -127,16 +127,7 @@ export default function MilestoneDetailCard({
 	}
 
 	return (
-		<Spin
-			spinning={externalLoading || submissionLoading}
-			tip={
-				externalLoading
-					? 'Loading milestone details...'
-					: submissionLoading
-						? 'Loading submission...'
-						: ''
-			}
-		>
+		<Spin spinning={externalLoading || submissionLoading}>
 			<Card
 				title={milestone?.name ? `Milestone - ${milestone.name}` : 'Milestone'}
 				style={{

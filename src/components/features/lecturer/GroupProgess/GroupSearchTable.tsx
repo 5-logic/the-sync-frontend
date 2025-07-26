@@ -161,7 +161,7 @@ export default function GroupSearchTable<
 				size="middle"
 				tableLayout="fixed"
 				locale={{
-					emptyText: loading ? 'Loading...' : 'No data available',
+					emptyText: loading ? '' : 'No data available',
 				}}
 			/>
 		</Space>
