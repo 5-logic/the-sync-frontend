@@ -7,29 +7,30 @@ import { Header } from '@/components/common/Header';
 import { PageLoading } from '@/components/common/loading';
 import GroupSearchTable from '@/components/features/lecturer/GroupProgess/GroupSearchTable';
 import MilestoneDetailCard from '@/components/features/lecturer/GroupProgess/MilestoneDetailCard';
-import ProgressOverviewCard from '@/components/features/lecturer/GroupProgess/ProgressOverviewCard';
 import { useGroupProgress } from '@/hooks/lecturer/useGroupProgress';
 import { useMilestones } from '@/hooks/lecturer/useMilestones';
-import { Group } from '@/lib/services/groups.service';
+import { useSupervisedGroups } from '@/hooks/lecturer/useSupervisedGroups';
+import { SupervisedGroup } from '@/lib/services/groups.service';
 import { Milestone } from '@/schemas/milestone';
-import { useGroupsStore } from '@/store/useGroupsStore';
 
 const { Text } = Typography;
 const { Step } = Steps;
 
 export default function GroupProgressPage() {
-	const [selectedGroup, setSelectedGroup] = useState<Group | undefined>(
-		undefined,
-	);
+	const [selectedGroup, setSelectedGroup] = useState<
+		SupervisedGroup | undefined
+	>(undefined);
 	const [searchText, setSearchText] = useState<string>('');
+	const [selectedSemester, setSelectedSemester] = useState<string | null>(null);
 
-	// Groups store for listing
+	// Supervised groups hook for new API
 	const {
 		groups,
 		loading: groupsLoading,
 		error: groupsError,
-		fetchGroups,
-	} = useGroupsStore();
+		fetchGroupsBySemester,
+		clearGroups,
+	} = useSupervisedGroups();
 
 	// Group progress hook for detail
 	const {
@@ -59,22 +60,28 @@ export default function GroupProgressPage() {
 			const name = group.name?.toLowerCase() || '';
 			const projectDirection = group.projectDirection?.toLowerCase() || '';
 			const code = group.code?.toLowerCase() || '';
+			const englishName = group.thesis?.englishName?.toLowerCase() || '';
 
 			return (
 				name.includes(keyword) ||
 				projectDirection.includes(keyword) ||
-				code.includes(keyword)
+				code.includes(keyword) ||
+				englishName.includes(keyword)
 			);
 		});
 	}, [groups, searchText]);
 
-	// Fetch groups on mount
+	// Fetch groups when semester changes
 	useEffect(() => {
-		fetchGroups();
-	}, [fetchGroups]);
+		if (selectedSemester) {
+			fetchGroupsBySemester(selectedSemester);
+		} else {
+			clearGroups();
+		}
+	}, [selectedSemester, fetchGroupsBySemester, clearGroups]);
 
 	// Handle group selection
-	function handleGroupSelect(group: Group) {
+	function handleGroupSelect(group: SupervisedGroup) {
 		setSelectedGroup(group);
 		// Reset to first milestone when selecting a new group
 		if (milestones.length > 0) {
@@ -85,7 +92,9 @@ export default function GroupProgressPage() {
 
 	// Handle refresh
 	function handleRefresh() {
-		fetchGroups(true);
+		if (selectedSemester) {
+			fetchGroupsBySemester(selectedSemester);
+		}
 		fetchMilestones();
 		if (selectedGroup) {
 			fetchGroupDetail(selectedGroup.id);
@@ -98,7 +107,7 @@ export default function GroupProgressPage() {
 	}
 
 	// Loading state
-	if (groupsLoading && groups.length === 0) {
+	if (groupsLoading && groups.length === 0 && selectedSemester) {
 		return <PageLoading tip="Loading groups..." />;
 	}
 
@@ -141,15 +150,20 @@ export default function GroupProgressPage() {
 					/>
 				)}
 
-				<GroupSearchTable
-					data={filteredGroups}
-					searchText={searchText}
-					onSearchChange={setSearchText}
-					selectedGroup={selectedGroup}
-					onGroupSelect={handleGroupSelect}
-					loading={groupsLoading}
-					onRefresh={handleRefresh}
-				/>
+				<Space direction="vertical" size="middle" style={{ width: '100%' }}>
+					<GroupSearchTable
+						data={filteredGroups}
+						searchText={searchText}
+						onSearchChange={setSearchText}
+						selectedGroup={selectedGroup}
+						onGroupSelect={handleGroupSelect}
+						loading={groupsLoading}
+						onRefresh={handleRefresh}
+						selectedSemester={selectedSemester}
+						onSemesterChange={setSelectedSemester}
+						showSemesterFilter={true}
+					/>
+				</Space>
 
 				{selectedGroup && (
 					<>
@@ -169,7 +183,7 @@ export default function GroupProgressPage() {
 							title={
 								selectedGroupDetail
 									? `Group Name: ${selectedGroupDetail.name} | ${selectedGroupDetail.thesis?.vietnameseName || selectedGroupDetail.thesis?.englishName || 'No Thesis'}`
-									: `Group Name: ${selectedGroup.name} | Loading...`
+									: `Group Name: ${selectedGroup.name} | ${selectedGroup.thesis?.vietnameseName || selectedGroup.thesis?.englishName || 'Loading...'}`
 							}
 						>
 							{selectedGroupDetail && (
@@ -199,14 +213,11 @@ export default function GroupProgressPage() {
 						</Card>
 
 						<Row gutter={16} style={{ flex: 1 }}>
-							<Col xs={24} md={16}>
+							<Col xs={24}>
 								<MilestoneDetailCard
 									group={selectedGroupDetail || selectedGroup}
 									milestone={selectedMilestone}
 								/>
-							</Col>
-							<Col xs={24} md={8}>
-								<ProgressOverviewCard />
 							</Col>
 						</Row>
 					</>
