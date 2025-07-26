@@ -4,6 +4,7 @@ import { Button, Card, Col, Row, Space, Spin, Tooltip } from 'antd';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
+import { ConfirmationModal } from '@/components/common/ConfirmModal';
 import { Header } from '@/components/common/Header';
 import AssignConfirmModal from '@/components/features/lecturer/AssignStudentDetail/AssignConfirmModal';
 import AssignThesisModal from '@/components/features/lecturer/AssignStudentDetail/AssignThesisModal';
@@ -54,6 +55,7 @@ export default function AssignStudentsDetailPage() {
 	const [isAssignThesisModalOpen, setIsAssignThesisModalOpen] = useState(false);
 	const [viewingThesis, setViewingThesis] = useState<Thesis | null>(null);
 	const [assignThesisLoading, setAssignThesisLoading] = useState(false);
+	const [unassignThesisLoading, setUnassignThesisLoading] = useState(false);
 
 	const {
 		students,
@@ -79,6 +81,36 @@ export default function AssignStudentsDetailPage() {
 			(acc, semester) => ({ ...acc, [semester.id]: semester.name }),
 			{},
 		),
+	};
+
+	// Helper function to refresh group data and available theses
+	const refreshGroupAndTheses = async () => {
+		// Refresh group data
+		const groupResponse = await groupService.findOne(groupId);
+		const groupResult = handleApiResponse(groupResponse);
+		if (groupResult.success && groupResult.data) {
+			setGroup(groupResult.data);
+		}
+
+		// Refresh available theses
+		fetchAvailableTheses();
+	};
+
+	// Helper function to handle thesis operation errors
+	const handleThesisOperationError = (
+		error: unknown,
+		operation: 'assign' | 'unassign',
+	) => {
+		const operationText = operation === 'assign' ? 'assign' : 'unassign';
+		const titleText = operation === 'assign' ? 'Assignment' : 'Unassignment';
+
+		console.error(`Error ${operationText}ing thesis:`, error);
+		// Use handleApiError to extract proper error message
+		const { message } = handleApiError(
+			error,
+			`Failed to ${operationText} thesis ${operation === 'assign' ? 'to' : 'from'} group`,
+		);
+		showNotification.error(`${titleText} Failed`, message);
 	};
 
 	// Fetch available theses (approved and not assigned to any group)
@@ -323,13 +355,7 @@ export default function AssignStudentsDetailPage() {
 				setSelectedThesis(null);
 
 				// Refresh group data and available theses
-				const groupResponse = await groupService.findOne(groupId);
-				const groupResult = handleApiResponse(groupResponse);
-				if (groupResult.success && groupResult.data) {
-					setGroup(groupResult.data);
-				}
-
-				fetchAvailableTheses();
+				await refreshGroupAndTheses();
 			} else {
 				// Show error message from backend
 				showNotification.error(
@@ -338,16 +364,57 @@ export default function AssignStudentsDetailPage() {
 				);
 			}
 		} catch (error) {
-			console.error('Error assigning thesis:', error);
-			// Use handleApiError to extract proper error message
-			const { message } = handleApiError(
-				error,
-				'Failed to assign thesis to group',
-			);
-			showNotification.error('Assignment Failed', message);
+			handleThesisOperationError(error, 'assign');
 		} finally {
 			setAssignThesisLoading(false);
 		}
+	};
+
+	// Handle unassign thesis
+	const handleUnassignThesis = () => {
+		if (!group?.thesis) return;
+
+		ConfirmationModal.show({
+			title: 'Unassign Thesis',
+			message: 'Are you sure you want to unassign this thesis from the group?',
+			details: `${group.thesis.englishName} (${group.thesis.abbreviation})`,
+			note: 'This action will remove the thesis assignment from the group. The thesis will become available for other groups.',
+			noteType: 'warning',
+			okText: 'Yes, Unassign',
+			okType: 'danger',
+			onOk: async () => {
+				try {
+					setUnassignThesisLoading(true);
+					const response = await groupService.unpickThesis(groupId);
+					const result = handleApiResponse(response);
+
+					if (result.success) {
+						showNotification.success(
+							'Thesis Unassigned',
+							'Thesis has been unassigned from the group successfully!',
+						);
+
+						// Close thesis detail modal if open
+						setIsThesisDetailModalOpen(false);
+						setViewingThesis(null);
+
+						// Refresh group data and available theses
+						await refreshGroupAndTheses();
+					} else {
+						// Show error message from backend
+						showNotification.error(
+							'Unassignment Failed',
+							result.error?.message || 'Failed to unassign thesis from group',
+						);
+					}
+				} catch (error) {
+					handleThesisOperationError(error, 'unassign');
+				} finally {
+					setUnassignThesisLoading(false);
+				}
+			},
+			loading: unassignThesisLoading,
+		});
 	};
 
 	return (
@@ -387,6 +454,7 @@ export default function AssignStudentsDetailPage() {
 									}
 								}
 							}}
+							onUnassignThesis={handleUnassignThesis}
 						/>
 					</Space>
 				</Col>
@@ -538,6 +606,7 @@ export default function AssignStudentsDetailPage() {
 				open={isThesisDetailModalOpen}
 				onCancel={() => setIsThesisDetailModalOpen(false)}
 				thesis={viewingThesis}
+				onUnassignThesis={handleUnassignThesis}
 			/>
 
 			{/* Assign Thesis Modal */}

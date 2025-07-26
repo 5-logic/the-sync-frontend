@@ -9,6 +9,92 @@ For more information about this project, see the [README](./README.md).
 
 ---
 
+## [0.6.3] - 2025-07-26
+
+### Added
+
+#### Student Thesis Management Enhancements
+
+- New StudentEditThesisModal component for students to edit thesis details directly from the group dashboard ([#285](https://github.com/5-logic/the-sync-frontend/pull/285))
+- Enhanced ThesisStatusCard with improved thesis editing capabilities and better user interface
+- Enhanced ProgressOverviewCard to always display 'View Thesis Details' button for better navigation
+- Added note field support to milestone management forms and related components
+
+#### Lecturer Thesis Assignment Features
+
+- Thesis unassignment functionality for lecturers in group management ([#285](https://github.com/5-logic/the-sync-frontend/pull/285))
+- Enhanced ThesisCard component with lecturer name display and improved assignment controls
+- Enhanced ThesisDetailModal with better thesis information presentation
+- Improved group assignment workflows with better error handling
+
+#### Administrative Enhancements
+
+- Enhanced milestone management with note field support for better tracking and documentation
+- Improved document change detection in EditMilestoneDialog with document array sorting
+- Enhanced user creation forms with better validation and error handling
+- Updated milestone table with note field display capabilities
+
+### Changed
+
+#### UI/UX Improvements
+
+- Enhanced CurrentSemesterTag component with improved status display and phase information
+- Updated semester constants to include ongoing phase text mapping for better status representation
+- Improved milestone detail cards with enhanced layout and information display
+- Enhanced group dashboard with better thesis status visualization
+
+#### Component Enhancements
+
+- Refactored SubmittedFilesView to display 'Reviewer' instead of 'Supervisor' for better role clarity
+- Enhanced ThesisInfoCard with improved thesis information layout
+- Streamlined ViewThesisDetail component by removing redundant code and improving performance
+- Improved thesis card components across student and lecturer interfaces
+
+#### Error Handling and Data Management
+
+- Enhanced group data refresh functionality with helper functions for better state management
+- Improved error handling for thesis operations throughout the application
+- Enhanced group deletion process with better error handling and user feedback
+- Better document change detection in milestone management
+
+### Fixed
+
+#### Semester Status Management
+
+- Updated semester status references to only include 'Preparing' status where appropriate
+- Fixed semester status consistency across components and services
+- Improved semester phase handling and display logic
+
+#### Form and Modal Improvements
+
+- Fixed document array sorting in EditMilestoneDialog for consistent change detection
+- Enhanced form validation and error handling in user creation and milestone management
+- Improved modal state management and data persistence
+- Fixed thesis assignment and unassignment workflows
+
+#### Performance and Stability
+
+- Optimized component rendering with reduced redundant code
+- Improved memory management in thesis and group management components
+- Enhanced data consistency across related components
+- Fixed potential state synchronization issues
+
+### Technical Details
+
+- **Schema Updates:** Added note field to MilestoneSchema for enhanced milestone tracking
+- **Constants Enhancement:** Added ONGOING_PHASE_TEXT mapping for better phase display
+- **Component Refactoring:** Enhanced thesis management components with better separation of concerns
+- **Error Handling:** Improved error boundaries and user feedback systems
+
+### Migration Notes
+
+- Milestone management now supports note field - existing milestones will have empty notes
+- Semester status handling has been refined - check custom status implementations
+- Thesis management interfaces have been enhanced - review custom thesis components
+- Document change detection improvements may affect custom milestone workflows
+
+---
+
 ## [0.6.2] - 2025-07-25
 
 ### Added
