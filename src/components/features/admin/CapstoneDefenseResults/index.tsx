@@ -45,6 +45,50 @@ const extractSuccessMessage = (
 	return defaultMessage;
 };
 
+// Helper function to determine default dropdown status based on semester
+const getDefaultDropdownStatus = (
+	currentSemester: { status: string; ongoingPhase?: string | null } | null,
+): string => {
+	if (!currentSemester) return 'NotYet';
+
+	const { status, ongoingPhase } = currentSemester;
+
+	// Defense phase: Only when Ongoing + ScopeLocked OR End status -> "Ongoing"
+	// All other statuses (NotYet, Preparing, Picking, Ongoing+ScopeAdjustable) -> "NotYet"
+	const isDefensePhase =
+		(status === 'Ongoing' && ongoingPhase === 'ScopeLocked') ||
+		status === 'End';
+
+	// Debug log to verify logic
+	console.log(
+		`Semester status: ${status}, phase: ${ongoingPhase}, isDefensePhase: ${isDefensePhase}, result: ${isDefensePhase ? 'Ongoing' : 'NotYet'}`,
+	);
+
+	return isDefensePhase ? 'Ongoing' : 'NotYet';
+};
+
+// Helper function to create detail message for confirmation
+const createSaveDetailsMessage = (
+	statusUpdates: Record<string, string>,
+): string => {
+	const passedCount = Object.values(statusUpdates).filter(
+		(status) => status === 'Passed',
+	).length;
+	const failedCount = Object.values(statusUpdates).filter(
+		(status) => status === 'Failed',
+	).length;
+
+	if (passedCount > 0 && failedCount > 0) {
+		return `${passedCount} student(s) will be marked as Passed, ${failedCount} student(s) will be marked as Failed`;
+	} else if (passedCount > 0) {
+		return `${passedCount} student(s) will be marked as Passed`;
+	} else if (failedCount > 0) {
+		return `${failedCount} student(s) will be marked as Failed`;
+	}
+
+	return '';
+};
+
 const CapstoneDefenseResults = () => {
 	const { searchValue, debouncedSearchValue, setSearchValue } =
 		useDebouncedSearch('', 300);
@@ -53,12 +97,15 @@ const CapstoneDefenseResults = () => {
 	const [statusUpdates, setStatusUpdates] = useState<Record<string, string>>(
 		{},
 	);
+	const [preConfirmStatusUpdates, setPreConfirmStatusUpdates] = useState<
+		Record<string, string>
+	>({});
 	const [saving, setSaving] = useState(false);
 	const [bulkUpdating, setBulkUpdating] = useState(false);
 	const [exporting, setExporting] = useState(false);
 
 	// Use custom hooks to reduce duplication
-	const { semesters, filteredData, availableSemesters, refresh } =
+	const { semesters, filteredData, availableSemesters, refresh, loading } =
 		useCapstoneManagement(selectedSemester, debouncedSearchValue);
 
 	// Set the first available semester as default when semesters are loaded
@@ -67,6 +114,15 @@ const CapstoneDefenseResults = () => {
 			setSelectedSemester(availableSemesters[0]);
 		}
 	}, [availableSemesters, selectedSemester]);
+
+	// Clear status updates when semester changes to ensure proper defaults
+	React.useEffect(() => {
+		if (selectedSemester) {
+			setStatusUpdates({});
+			setPreConfirmStatusUpdates({});
+			setSelectedRowKeys([]);
+		}
+	}, [selectedSemester]);
 
 	// Export validation
 	const exportValidation = useSemesterExportValidation(
@@ -139,26 +195,15 @@ const CapstoneDefenseResults = () => {
 	};
 
 	const handleSaveChanges = () => {
-		if (!selectedSemester || Object.keys(statusUpdates).length === 0) {
+		if (!selectedSemester || !hasActualChanges) {
 			return;
 		}
 
 		const updatesCount = Object.keys(statusUpdates).length;
-		const passedCount = Object.values(statusUpdates).filter(
-			(status) => status === 'Passed',
-		).length;
-		const failedCount = Object.values(statusUpdates).filter(
-			(status) => status === 'Failed',
-		).length;
+		const detailMessage = createSaveDetailsMessage(statusUpdates);
 
-		let detailMessage = '';
-		if (passedCount > 0 && failedCount > 0) {
-			detailMessage = `${passedCount} student(s) will be marked as Passed, ${failedCount} student(s) will be marked as Failed`;
-		} else if (passedCount > 0) {
-			detailMessage = `${passedCount} student(s) will be marked as Passed`;
-		} else if (failedCount > 0) {
-			detailMessage = `${failedCount} student(s) will be marked as Failed`;
-		}
+		// Store original values for potential restore (snapshot before confirm modal)
+		setPreConfirmStatusUpdates({ ...statusUpdates });
 
 		ConfirmationModal.show({
 			title: 'Save Defense Results',
@@ -169,11 +214,18 @@ const CapstoneDefenseResults = () => {
 			okText: 'Yes, Save Changes',
 			loading: saving,
 			onOk: performSaveChanges,
+			onCancel: handleSaveCancel,
 		});
 	};
 
+	const handleSaveCancel = () => {
+		// Restore original values when user cancels
+		setStatusUpdates(preConfirmStatusUpdates);
+		setPreConfirmStatusUpdates({});
+	};
+
 	const performSaveChanges = async () => {
-		if (!selectedSemester || Object.keys(statusUpdates).length === 0) {
+		if (!selectedSemester || !hasActualChanges) {
 			return;
 		}
 
@@ -187,48 +239,40 @@ const CapstoneDefenseResults = () => {
 			}
 
 			// Group updates by status and get userId values
-			const passedStudents: string[] = [];
-			const failedStudents: string[] = [];
+			const studentsByStatus = {
+				Passed: [] as string[],
+				Failed: [] as string[],
+			};
 
 			Object.entries(statusUpdates).forEach(([studentCode, status]) => {
 				// Find the user ID from the filtered data using studentCode
 				const student = filteredData.find(
 					(item) => item.studentId === studentCode,
 				);
-				if (student?.userId) {
-					if (status === 'Passed') {
-						passedStudents.push(student.userId);
-					} else if (status === 'Failed') {
-						failedStudents.push(student.userId);
-					}
+				if (student?.userId && (status === 'Passed' || status === 'Failed')) {
+					studentsByStatus[status].push(student.userId);
 				}
 			});
 
 			// Make API calls for each status group
 			const updatePromises: Promise<unknown>[] = [];
 
-			if (passedStudents.length > 0) {
-				updatePromises.push(
-					semesterService.updateEnrollments(semester.id, {
-						studentIds: passedStudents,
-						status: 'Passed',
-					}),
-				);
-			}
-
-			if (failedStudents.length > 0) {
-				updatePromises.push(
-					semesterService.updateEnrollments(semester.id, {
-						studentIds: failedStudents,
-						status: 'Failed',
-					}),
-				);
-			}
+			Object.entries(studentsByStatus).forEach(([status, studentIds]) => {
+				if (studentIds.length > 0) {
+					updatePromises.push(
+						semesterService.updateEnrollments(semester.id, {
+							studentIds,
+							status: status as 'Passed' | 'Failed',
+						}),
+					);
+				}
+			});
 
 			const responses = await Promise.all(updatePromises);
 
 			// Clear the temporary updates and selection
 			setStatusUpdates({});
+			setPreConfirmStatusUpdates({});
 			setSelectedRowKeys([]);
 
 			// Refresh data to show updated statuses
@@ -244,8 +288,13 @@ const CapstoneDefenseResults = () => {
 		} catch (error) {
 			console.error('Error updating defense results:', error);
 			showNotification.error('Error', extractErrorMessage(error));
+
+			// Restore original values when save fails
+			setStatusUpdates(preConfirmStatusUpdates);
 		} finally {
 			setSaving(false);
+			// Clear original status only after operation completes (success or error handled)
+			setPreConfirmStatusUpdates({});
 		}
 	};
 
@@ -384,13 +433,55 @@ const CapstoneDefenseResults = () => {
 		});
 	};
 
-	const hasUnsavedChanges = Object.keys(statusUpdates).length > 0;
+	// Check if any changes actually differ from current displayed status
+	const hasActualChanges = useMemo(() => {
+		return Object.entries(statusUpdates).some(([studentId, newStatus]) => {
+			const student = filteredData.find((item) => item.studentId === studentId);
+			if (!student) return false;
+
+			const currentDisplayedStatus =
+				student.status && student.status !== 'NotYet'
+					? student.status
+					: getDefaultDropdownStatus(
+							semesters.find((s) => s.name === selectedSemester) || null,
+						);
+
+			return newStatus !== currentDisplayedStatus;
+		});
+	}, [statusUpdates, filteredData, semesters, selectedSemester]);
 
 	const getDisplayStatus = useCallback(
 		(originalStatus: string, studentId: string) => {
-			return statusUpdates[studentId] || originalStatus;
+			// Priority 1: User pending changes
+			const pendingStatus = statusUpdates[studentId];
+			if (pendingStatus) return pendingStatus;
+
+			// Priority 2: Smart default based on current semester filter
+			const currentSemester = semesters.find(
+				(s) => s.name === selectedSemester,
+			);
+			const semesterBasedDefault = getDefaultDropdownStatus(
+				currentSemester || null,
+			);
+
+			// Debug log to see what's happening
+			console.log(
+				`Student ${studentId}: originalStatus=${originalStatus}, semester=${currentSemester?.status}/${currentSemester?.ongoingPhase}, semesterDefault=${semesterBasedDefault}`,
+			);
+
+			// Priority 3: Existing database status (only if it matches semester context)
+			if (originalStatus && originalStatus !== 'NotYet') {
+				// If semester suggests "NotYet" but DB has "Ongoing", prefer semester logic
+				if (semesterBasedDefault === 'NotYet' && originalStatus === 'Ongoing') {
+					return semesterBasedDefault;
+				}
+				return originalStatus;
+			}
+
+			// Priority 4: Semester-based default
+			return semesterBasedDefault;
 		},
-		[statusUpdates],
+		[statusUpdates, semesters, selectedSemester],
 	);
 
 	const columns = useMemo(
@@ -434,11 +525,11 @@ const CapstoneDefenseResults = () => {
 						<Button
 							type="primary"
 							onClick={handleSaveChanges}
-							disabled={!hasUnsavedChanges || saving || bulkUpdating}
+							disabled={!hasActualChanges || saving || bulkUpdating}
 							loading={saving}
 						>
 							Save Changes{' '}
-							{hasUnsavedChanges && `(${Object.keys(statusUpdates).length})`}
+							{hasActualChanges && `(${Object.keys(statusUpdates).length})`}
 						</Button>
 					</Col>
 				</Row>
@@ -466,6 +557,7 @@ const CapstoneDefenseResults = () => {
 				rowKey={(record) => `${record.studentId}-${record.groupId}`}
 				rowSelection={rowSelection}
 				pagination={TablePagination}
+				loading={loading || saving || bulkUpdating}
 				bordered
 			/>
 
