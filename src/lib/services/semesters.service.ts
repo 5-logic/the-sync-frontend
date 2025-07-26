@@ -2,6 +2,17 @@ import httpClient from '@/lib/services/_httpClient';
 import { ApiResponse } from '@/schemas/_common';
 import { Semester, SemesterCreate, SemesterUpdate } from '@/schemas/semester';
 
+// Types for enrollment update
+export interface UpdateEnrollmentsRequest {
+	studentIds: string[];
+	status: 'Passed' | 'Failed';
+}
+
+export interface UpdateEnrollmentsResponse {
+	updatedCount: number;
+	message: string;
+}
+
 class SemesterService {
 	private readonly baseUrl = '/semesters';
 
@@ -44,6 +55,16 @@ class SemesterService {
 		const response = await httpClient.delete<ApiResponse<void>>(
 			`${this.baseUrl}/${id}`,
 		);
+		return response.data;
+	}
+
+	async updateEnrollments(
+		id: string,
+		updateData: UpdateEnrollmentsRequest,
+	): Promise<ApiResponse<UpdateEnrollmentsResponse>> {
+		const response = await httpClient.put<
+			ApiResponse<UpdateEnrollmentsResponse>
+		>(`${this.baseUrl}/${id}/enrollments`, updateData);
 		return response.data;
 	}
 }
