@@ -4,7 +4,11 @@ import { Tag } from 'antd';
 import React from 'react';
 
 import { useCurrentSemester } from '@/hooks/semester';
-import { SEMESTER_STATUS_COLORS } from '@/lib/constants/semester';
+import {
+	ONGOING_PHASE_TEXT,
+	SEMESTER_STATUS_COLORS,
+	SEMESTER_STATUS_TEXT,
+} from '@/lib/constants/semester';
 
 export const CurrentSemesterTag: React.FC = () => {
 	const { currentSemester, loading } = useCurrentSemester();
@@ -12,6 +16,12 @@ export const CurrentSemesterTag: React.FC = () => {
 	if (loading || !currentSemester) {
 		return null;
 	}
+
+	// Build status text - include ongoing phase if available
+	const statusText =
+		currentSemester.status === 'Ongoing' && currentSemester.ongoingPhase
+			? `${SEMESTER_STATUS_TEXT[currentSemester.status]} - ${ONGOING_PHASE_TEXT[currentSemester.ongoingPhase]}`
+			: SEMESTER_STATUS_TEXT[currentSemester.status];
 
 	return (
 		<Tag
@@ -23,7 +33,7 @@ export const CurrentSemesterTag: React.FC = () => {
 				margin: 0,
 			}}
 		>
-			{currentSemester.name} - {currentSemester.status}
+			{currentSemester.name} - {statusText}
 		</Tag>
 	);
 };

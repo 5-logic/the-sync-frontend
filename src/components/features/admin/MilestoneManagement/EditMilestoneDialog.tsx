@@ -2,7 +2,7 @@
 
 import { Form, Modal } from 'antd';
 import dayjs from 'dayjs';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { DocumentEditSection } from '@/components/features/admin/MilestoneManagement/DocumentEditSection';
 import MilestoneForm from '@/components/features/admin/MilestoneManagement/MilestoneForm';
@@ -34,12 +34,20 @@ export default function EditMilestoneDialog({
 	const [existingDocuments, setExistingDocuments] = useState<string[]>([]);
 	const [newFiles, setNewFiles] = useState<File[]>([]);
 
+	// State for tracking form changes
+	const [hasChanges, setHasChanges] = useState(false);
+	const [originalValues, setOriginalValues] = useState<Record<string, unknown>>(
+		{},
+	);
+
 	// Reset form and documents when dialog closes
 	useEffect(() => {
 		if (!open) {
 			form.resetFields();
 			setExistingDocuments([]);
 			setNewFiles([]);
+			setHasChanges(false);
+			setOriginalValues({});
 		}
 	}, [open, form]);
 
@@ -51,7 +59,48 @@ export default function EditMilestoneDialog({
 			setExistingDocuments([]);
 		}
 		setNewFiles([]); // Reset new files when milestone changes
-	}, [milestone]);
+
+		// Set original values for comparison
+		if (milestone && open) {
+			const originalData = {
+				milestoneName: milestone.name,
+				note: milestone.note || '',
+				documents: milestone.documents || [],
+			};
+			setOriginalValues(originalData);
+			setHasChanges(false);
+		}
+	}, [milestone, open]);
+
+	// Function to check if form values have changed
+	const checkForChanges = useCallback(() => {
+		if (!milestone) return;
+
+		const currentValues = form.getFieldsValue();
+		const currentDocuments = [
+			...existingDocuments,
+			...newFiles.map(() => 'new-file'),
+		];
+
+		const hasFormChanges =
+			currentValues.milestoneName !== originalValues.milestoneName ||
+			(currentValues.note || '') !== originalValues.note;
+
+		const originalDocuments = (originalValues.documents as string[]) || [];
+		const hasDocumentChanges =
+			JSON.stringify(currentDocuments.sort()) !==
+				JSON.stringify(originalDocuments.sort()) || newFiles.length > 0;
+
+		const hasAnyChanges = hasFormChanges || hasDocumentChanges;
+		setHasChanges(hasAnyChanges);
+	}, [milestone, form, existingDocuments, newFiles, originalValues]);
+
+	// Check for changes when form values change
+	useEffect(() => {
+		if (milestone && open) {
+			checkForChanges();
+		}
+	}, [milestone, open, existingDocuments, newFiles, checkForChanges]);
 
 	// Helper function to validate milestone editing permissions
 	const validateEditPermissions = (): boolean => {
@@ -132,27 +181,44 @@ export default function EditMilestoneDialog({
 	};
 
 	const handleSubmit = async () => {
-		if (!validateEditPermissions()) {
+		if (!validateEditPermissions() || !hasChanges) {
 			return;
 		}
 
 		try {
 			const values = await form.validateFields();
+			const milestoneData: Partial<MilestoneUpdate> = {};
 
-			// Convert date range to individual dates
-			const duration = values.duration ?? [];
-			const [startDate, endDate] = duration;
+			// Only include changed fields
+			if (values.milestoneName !== originalValues.milestoneName) {
+				milestoneData.name = values.milestoneName;
+			}
 
-			// Process document updates
-			const finalDocuments = await processDocumentUpdates();
+			if ((values.note || '') !== originalValues.note) {
+				milestoneData.note = values.note || undefined;
+			}
 
-			const milestoneData: MilestoneUpdate = {
-				name: values.milestoneName,
-				startDate: startDate?.toDate(),
-				endDate: endDate?.toDate(),
-				documents: finalDocuments.length > 0 ? finalDocuments : undefined,
-				// Don't update semesterId since it's not editable
-			};
+			// Handle document changes
+			const currentDocuments = [
+				...existingDocuments,
+				...newFiles.map(() => 'new-file'),
+			];
+			const originalDocuments = (originalValues.documents as string[]) || [];
+			const hasDocumentChanges =
+				JSON.stringify(currentDocuments.sort()) !==
+					JSON.stringify(originalDocuments.sort()) || newFiles.length > 0;
+
+			if (hasDocumentChanges) {
+				// Process document updates
+				const finalDocuments = await processDocumentUpdates();
+				milestoneData.documents =
+					finalDocuments.length > 0 ? finalDocuments : undefined;
+			}
+
+			// Only proceed if there are actually changes to send
+			if (Object.keys(milestoneData).length === 0) {
+				return;
+			}
 
 			const success = await updateMilestone(milestone!.id, milestoneData);
 			if (success) {
@@ -191,7 +257,7 @@ export default function EditMilestoneDialog({
 			width={600}
 			destroyOnHidden
 			okButtonProps={{
-				disabled: isEditDisabled,
+				disabled: isEditDisabled || !hasChanges,
 			}}
 			centered
 		>
@@ -219,6 +285,7 @@ export default function EditMilestoneDialog({
 				milestone={milestone}
 				disabled={isEditDisabled}
 				showSemesterField={false}
+				onValuesChange={checkForChanges}
 				// Note: Files are not passed to edit mode for now
 			/>
 
@@ -226,8 +293,14 @@ export default function EditMilestoneDialog({
 			<DocumentEditSection
 				existingDocuments={existingDocuments}
 				newFiles={newFiles}
-				onExistingDocumentsChange={setExistingDocuments}
-				onNewFilesChange={setNewFiles}
+				onExistingDocumentsChange={(docs) => {
+					setExistingDocuments(docs);
+					checkForChanges();
+				}}
+				onNewFilesChange={(files) => {
+					setNewFiles(files);
+					checkForChanges();
+				}}
 				disabled={isEditDisabled}
 			/>
 		</Modal>
