@@ -63,6 +63,97 @@ export interface MilestoneSubmission {
 	reviews: unknown[];
 }
 
+// Interface for the new supervise API response
+export interface SupervisedGroup {
+	id: string;
+	code: string;
+	name: string;
+	projectDirection?: string;
+	semesterId: string;
+	thesisId: string;
+	createdAt: string;
+	updatedAt: string;
+	thesis: {
+		id: string;
+		englishName: string;
+		vietnameseName: string;
+		abbreviation: string;
+		description: string;
+		domain: string;
+		status: string;
+		isPublish: boolean;
+		groupId: string;
+		lecturerId: string;
+		semesterId: string;
+		createdAt: string;
+		updatedAt: string;
+		lecturer: {
+			userId: string;
+			isModerator: boolean;
+			user: {
+				id: string;
+				fullName: string;
+				email: string;
+				password: string;
+				gender: string;
+				phoneNumber: string;
+				isActive: boolean;
+				createdAt: string;
+				updatedAt: string;
+			};
+		};
+	};
+	semester: {
+		id: string;
+		name: string;
+		code: string;
+		maxGroup: number;
+		status: string;
+		ongoingPhase: string | null;
+		defaultThesesPerLecturer: number;
+		maxThesesPerLecturer: number;
+		createdAt: string;
+		updatedAt: string;
+	};
+	studentGroupParticipations: Array<{
+		studentId: string;
+		groupId: string;
+		semesterId: string;
+		isLeader: boolean;
+		student: {
+			userId: string;
+			studentCode: string;
+			majorId: string;
+			user: {
+				id: string;
+				fullName: string;
+				email: string;
+				password: string;
+				gender: string;
+				phoneNumber: string;
+				isActive: boolean;
+				createdAt: string;
+				updatedAt: string;
+			};
+			major: {
+				id: string;
+				name: string;
+				code: string;
+				createdAt: string;
+				updatedAt: string;
+			};
+		};
+	}>;
+	groupRequiredSkills: Array<{
+		groupId: string;
+		skillId: string;
+	}>;
+	groupExpectedResponsibilities: Array<{
+		groupId: string;
+		responsibilityId: string;
+	}>;
+}
+
 class GroupService {
 	private readonly baseUrl = '/groups';
 
@@ -216,6 +307,15 @@ class GroupService {
 	): Promise<ApiResponse<MilestoneSubmission[]>> {
 		const response = await httpClient.get<ApiResponse<MilestoneSubmission[]>>(
 			`${this.baseUrl}/${groupId}/submissions`,
+		);
+		return response.data;
+	}
+
+	async findSuperviseGroupsBySemester(
+		semesterId: string,
+	): Promise<ApiResponse<SupervisedGroup[]>> {
+		const response = await httpClient.get<ApiResponse<SupervisedGroup[]>>(
+			`${this.baseUrl}/supervise/semester/${semesterId}`,
 		);
 		return response.data;
 	}
