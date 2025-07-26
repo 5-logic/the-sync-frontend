@@ -9,6 +9,113 @@ For more information about this project, see the [README](./README.md).
 
 ---
 
+## [0.6.2] - 2025-07-25
+
+### Added
+
+#### Lecturer Group Management System
+
+- Complete group management feature for lecturers with student assignment capabilities ([#277](https://github.com/5-logic/the-sync-frontend/pull/277))
+- New group management page at `/lecturer/group-management` with comprehensive student and thesis assignment
+- Dynamic route for assigning students and thesis in group management (`/lecturer/group-management/[groupId]`)
+- Group deletion functionality with confirmation modal in GroupAssignTable
+- Group capacity notification system that disables student selection when groups are full
+
+#### Thesis Assignment and Management
+
+- Enhanced AssignStudentsDetailPage with thesis assignment functionality and advanced filtering
+- New ThesisFilterBar component for searching and filtering theses by semester
+- ThesisDetailModal component for displaying detailed thesis information
+- ThesisCard component for displaying group thesis details with visual indicators
+- AvailableThesesTable component for thesis selection and detailed viewing
+- AssignThesisModal component for thesis assignment confirmation workflows
+- Methods to retrieve theses with semester information and assign thesis to groups
+
+#### Enhanced Assignment Workflows
+
+- Improved supervisor assignment with bulk processing capabilities
+- Enhanced assignment result handling with dedicated notifications
+- Bulk assignment processing for supervisor updates with improved error handling
+- Single API call optimization for draft assignments
+- Better notification handling for assignment operations
+
+### Changed
+
+#### Architecture and Navigation
+
+- **Breaking Change:** Refactored lecturer assignment structure from `/assign-student` to `/group-management`
+- Updated sidebar navigation and breadcrumb components to reflect new group management structure
+- Enhanced route protection and authentication constants for new group management routes
+- Improved lecturer sidebar configuration with updated navigation paths
+
+#### Enhanced Component Structure
+
+- **Major Refactor:** Moved and renamed components from `AssignStudent` to `GroupManagement`
+  - `AssignStudent/GroupTable.tsx` → `GroupManagement/GroupTable.tsx`
+  - `AssignStudent/StudentTable.tsx` → `GroupManagement/StudentTable.tsx`
+  - `AssignStudent/StudentFilterBar.tsx` → `GroupManagement/StudentFilterBar.tsx`
+  - `AssignStudent/index.tsx` → `GroupManagement/index.tsx`
+- Enhanced GroupTable with improved filtering and assignment capabilities
+- Improved StudentTable with better group capacity handling and selection logic
+- Updated StudentFilterBar with enhanced search and filtering options
+
+#### Thesis Management Improvements
+
+- Enhanced thesis filtering with semester-based filtering and color-coded status indicators
+- Improved thesis table layout with better column organization and status alignment
+- Added semester color utility for consistent visual representation across components
+- Enhanced thesis service with new methods for group assignment and semester filtering
+- Improved thesis management components with better state management and error handling
+
+#### Store and State Management
+
+- **Major Refactor:** Enhanced `useAssignSupervisorStore` with improved bulk assignment logic (1267 lines changed)
+- Improved `useSupervisionStore` with better state management and error handling (501 lines changed)
+- Enhanced `usePublishThesesStore` with optimized thesis publishing workflows
+- Better caching strategies and state synchronization across stores
+- Improved error handling and notification systems in all stores
+
+### Fixed
+
+#### Error Handling and User Experience
+
+- Improved error handling for student and thesis assignment processes
+- Better type safety with correct Group type imports from groupService
+- Fixed typo in publishTheses API call parameter name for better reliability
+- Enhanced assignment result processing with proper error boundaries
+- Improved notification timing and messaging for assignment operations
+
+#### UI and Component Issues
+
+- Fixed student selection logic when groups reach capacity limits
+- Improved table rendering and pagination in group management components
+- Enhanced modal handling and confirmation dialogs
+- Better responsive design for group management interfaces
+- Fixed component re-rendering issues in assignment workflows
+
+### Technical Details
+
+- **Files Changed:** 34 files with 2,980 additions and 2,139 deletions
+- **New Components:** ThesisFilterBar, ThesisDetailModal, ThesisCard, AvailableThesesTable, AssignThesisModal, GroupAssignTable
+- **New Utilities:** Color utilities for semester status representation
+- **Enhanced Services:** Extended thesis service with group assignment capabilities
+- **Store Improvements:** Major refactoring of assignment and supervision stores
+
+### API Changes
+
+- Enhanced thesis service with new methods for semester-based filtering and group assignment
+- Improved bulk assignment API integration with better error handling
+- Updated group assignment endpoints with enhanced validation and capacity checking
+
+### Migration Notes
+
+- **Navigation Update:** Lecturer users should note the new group management URL structure
+- **Component References:** Any custom components referencing the old AssignStudent structure need updating
+- **Store Usage:** Applications using assignment stores may need to update method calls
+- Browser cache refresh recommended for updated UI components and navigation
+
+---
+
 ## [0.6.1] - 2025-07-24
 
 ### Added
