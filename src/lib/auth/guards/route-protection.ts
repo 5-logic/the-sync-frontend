@@ -15,7 +15,7 @@ export const ROUTE_CONFIGS: RouteConfig[] = [
 	{ path: DASHBOARD_PATHS.STUDENT, requiredRole: USER_ROLES.STUDENT },
 	{ path: DASHBOARD_PATHS.LECTURER, requiredRole: USER_ROLES.LECTURER },
 	{
-		path: DASHBOARD_PATHS.LECTURER_ASSIGN_STUDENT_LIST,
+		path: DASHBOARD_PATHS.LECTURER_GROUP_MANAGEMENT,
 		requiredRole: USER_ROLES.LECTURER,
 		requiresModerator: true,
 	},

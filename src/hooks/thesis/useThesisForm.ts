@@ -38,10 +38,9 @@ export const useThesisForm = ({
 	const getFormInitialValues = useCallback(() => {
 		if (mode === 'create' || !thesis) return undefined;
 
-		// Extract skill IDs from thesisRequiredSkills
+		// Extract skill IDs from thesisRequiredSkills - now skills are returned directly
 		const selectedSkillIds =
-			thesis.thesisRequiredSkills?.map((thesisSkill) => thesisSkill.skillId) ??
-			[];
+			thesis.thesisRequiredSkills?.map((skill) => skill.id) ?? [];
 
 		return {
 			englishName: thesis.englishName,

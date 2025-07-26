@@ -33,11 +33,13 @@ const { Text } = Typography;
 interface GroupMembersCardProps {
 	readonly group: GroupDashboard;
 	readonly viewOnly?: boolean;
+	readonly onRefresh?: () => Promise<void>;
 }
 
 export default function GroupMembersCard({
 	group,
 	viewOnly = false,
+	onRefresh,
 }: GroupMembersCardProps) {
 	const { session } = useSessionData();
 	const { refreshGroup } = useGroupDashboardStore();
@@ -53,6 +55,10 @@ export default function GroupMembersCard({
 		null,
 	);
 	const [profileDialogOpen, setProfileDialogOpen] = useState(false);
+
+	// Loading states for profile dialog actions
+	const [isRemovingMember, setIsRemovingMember] = useState(false);
+	const [isAssigningLeader, setIsAssigningLeader] = useState(false);
 
 	// Fetch selected member's profile data
 	const { data: memberProfile, loading: profileLoading } = useStudentProfile(
@@ -83,7 +89,12 @@ export default function GroupMembersCard({
 								'Success',
 								`${member.user.fullName} has been removed from the group.`,
 							);
-							await refreshGroup();
+							// Use onRefresh if provided, otherwise fall back to refreshGroup
+							if (onRefresh) {
+								await onRefresh();
+							} else {
+								await refreshGroup();
+							}
 						} else {
 							showNotification.error(
 								'Error',
@@ -112,6 +123,7 @@ export default function GroupMembersCard({
 								'Success',
 								`${member.user.fullName} is now the leader of the group.`,
 							);
+							// For assign leader, always use global refresh to update entire page
 							await refreshGroup();
 						} else {
 							showNotification.error(
@@ -131,6 +143,77 @@ export default function GroupMembersCard({
 		} catch (error) {
 			console.error('Error handling member action:', error);
 			showNotification.error('Error', 'An unexpected error occurred.');
+		}
+	};
+
+	// Handle direct member actions from profile dialog (already has Popconfirm, no need for additional modal)
+	const handleDirectMemberAction = async (
+		action: 'remove' | 'assign-leader',
+		member: GroupMember,
+	): Promise<void> => {
+		if (!group || !member) return;
+
+		try {
+			if (action === 'remove') {
+				setIsRemovingMember(true);
+				const response = await groupService.removeMember(
+					group.id,
+					member.userId,
+				);
+				if (response.success) {
+					showNotification.success(
+						'Success',
+						`${member.user.fullName} has been removed from the group.`,
+					);
+					// Use onRefresh if provided, otherwise fall back to refreshGroup
+					if (onRefresh) {
+						await onRefresh();
+					} else {
+						await refreshGroup();
+					}
+					setProfileDialogOpen(false);
+				} else {
+					showNotification.error(
+						'Error',
+						response.error || 'Failed to remove member.',
+					);
+					throw new Error(response.error || 'Failed to remove member.');
+				}
+			}
+
+			if (action === 'assign-leader') {
+				setIsAssigningLeader(true);
+				const response = await groupService.changeLeader(
+					group.id,
+					member.userId,
+				);
+				if (response.success) {
+					showNotification.success(
+						'Success',
+						`${member.user.fullName} is now the leader of the group.`,
+					);
+					// For assign leader, always use global refresh to update entire page
+					await refreshGroup();
+					setProfileDialogOpen(false);
+				} else {
+					showNotification.error(
+						'Error',
+						response.error || 'Failed to change leader.',
+					);
+					throw new Error(response.error || 'Failed to change leader.');
+				}
+			}
+		} catch (error) {
+			console.error('Error in direct member action:', error);
+			showNotification.error(
+				'Error',
+				'An unexpected error occurred. Please try again.',
+			);
+			throw error; // Re-throw to prevent Popconfirm from closing
+		} finally {
+			// Reset loading states
+			setIsRemovingMember(false);
+			setIsAssigningLeader(false);
 		}
 	};
 
@@ -247,13 +330,15 @@ export default function GroupMembersCard({
 									<Popconfirm
 										title="Remove Member"
 										description={`Are you sure you want to remove ${selectedMember.user.fullName} from the group?`}
-										onConfirm={() => {
-											handleMemberAction('remove-member', selectedMember);
-											setProfileDialogOpen(false);
-										}}
+										onConfirm={() =>
+											handleDirectMemberAction('remove', selectedMember)
+										}
 										okText="Yes, Remove"
 										cancelText="Cancel"
-										okButtonProps={{ danger: true }}
+										okButtonProps={{
+											danger: true,
+											loading: isRemovingMember,
+										}}
 									>
 										<Button danger icon={<DeleteOutlined />}>
 											Remove from Group
@@ -263,12 +348,14 @@ export default function GroupMembersCard({
 									<Popconfirm
 										title="Assign as Leader"
 										description={`Are you sure you want to make ${selectedMember.user.fullName} the leader of this group?`}
-										onConfirm={() => {
-											handleMemberAction('assign-leader', selectedMember);
-											setProfileDialogOpen(false);
-										}}
+										onConfirm={() =>
+											handleDirectMemberAction('assign-leader', selectedMember)
+										}
 										okText="Yes, Assign"
 										cancelText="Cancel"
+										okButtonProps={{
+											loading: isAssigningLeader,
+										}}
 									>
 										<Button type="primary" icon={<CrownOutlined />}>
 											Assign as Leader

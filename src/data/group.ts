@@ -1,5 +1,7 @@
 import { Group } from '@/schemas/group';
 
+import { mockStudentMembers } from './mockStudentMembers';
+
 export type ExtendedGroup = Group & {
 	thesisTitle: string;
 	supervisors: string[];
@@ -14,8 +16,8 @@ export type GroupWithPhase = ExtendedGroup & {
 export type FullMockGroup = Group & {
 	title: string;
 	supervisors: string[];
-	members: string[]; // Array of member names
-	leader: string; // ✅ thêm leader
+	members: StudentMember[];
+	leader: string;
 	status: 'Finalized' | 'Incomplete' | 'Unassigned';
 	phase?: string;
 	submissionFile?: string;
@@ -47,10 +49,10 @@ const createGroup = (
 
 // ===== Gốc: Dữ liệu group =====
 const mockGroups: Group[] = [
-	createGroup('g1', 'G1', 'Group A', '2023', 't1'),
-	createGroup('g2', 'G2', 'Group B', '2023', 't2'),
-	createGroup('g3', 'G3', 'Group C', '2023', 't3'),
-	createGroup('g4', 'G4', 'Group D', '2024', 't4'),
+	createGroup('g1', 'G1', 'Group A', 'Spring 2023', 't1'),
+	createGroup('g2', 'G2', 'Group B', 'Spring 2023', 't2'),
+	createGroup('g3', 'G3', 'Group C', 'Spring 2023', 't3'),
+	createGroup('g4', 'G4', 'Group D', 'Spring 2024', 't4'),
 ];
 
 // ===== Metadata bổ sung =====
@@ -80,49 +82,22 @@ const metaData: Record<string, GroupMeta> = {
 		members: 5,
 		status: 'Unassigned',
 	},
-	g5: {
-		thesisTitle: 'E-commerce Platform',
-		supervisors: ['Dr. Lisa Park'],
-		members: 4,
-		status: 'Finalized',
-	},
-	g6: {
-		thesisTitle: 'Machine Learning Analytics',
-		supervisors: ['Dr. Robert Kim'],
-		members: 3,
-		status: 'Incomplete',
-	},
-	g7: {
-		thesisTitle: 'Mobile App Development',
-		supervisors: ['Dr. Jennifer Lee'],
-		members: 4,
-		status: 'Finalized',
-	},
-	g8: {
-		thesisTitle: 'Cloud Computing Solution',
-		supervisors: ['Dr. Mark Wilson'],
-		members: 5,
-		status: 'Incomplete',
-	},
-	g9: {
-		thesisTitle: 'Data Science Project',
-		supervisors: ['Dr. Anna Smith'],
-		members: 3,
-		status: 'Finalized',
-	},
-	g10: {
-		thesisTitle: 'IoT Smart Home',
-		supervisors: ['Dr. Tom Brown'],
-		members: 4,
-		status: 'Incomplete',
-	},
+};
+
+// ===== Student data type =====
+export type StudentMember = {
+	id: string;
+	name: string;
+	major: 'Software Engineering' | 'Artificial Intelligence';
+	isLeader?: boolean;
+	defenseStatus?: 'Pass' | 'Failed';
 };
 
 // ===== Mock member data for FullMockGroup =====
 type FullGroupMeta = {
 	title: string;
 	supervisors: string[];
-	members: string[];
+	members: StudentMember[];
 	leader: string;
 	status: 'Finalized' | 'Incomplete' | 'Unassigned';
 	milestoneAlert?: string;
@@ -134,7 +109,12 @@ const fullGroupMetaData: Record<string, FullGroupMeta> = {
 	g1: {
 		title: 'AI-powered Healthcare System',
 		supervisors: ['Dr. Sarah Johnson', 'Dr. Davis'],
-		members: ['John Doe', 'Alice Wang', 'Bob Chen', 'Emily Zhang'],
+		members: [
+			mockStudentMembers.ST001,
+			mockStudentMembers.ST002,
+			mockStudentMembers.ST003,
+			mockStudentMembers.ST004,
+		],
 		leader: 'John Doe',
 		status: 'Finalized',
 		milestoneAlert: 'All milestones completed on time',
@@ -149,7 +129,12 @@ const fullGroupMetaData: Record<string, FullGroupMeta> = {
 	g2: {
 		title: 'Blockchain Supply Chain',
 		supervisors: ['Dr. Michael Chen', 'Dr. Martinez'],
-		members: ['Jane Smith', 'David Kim', 'Lisa Park', 'Tom Wilson'],
+		members: [
+			mockStudentMembers.ST005,
+			mockStudentMembers.ST006,
+			mockStudentMembers.ST007,
+			mockStudentMembers.ST008,
+		],
 		leader: 'Lisa Park',
 		status: 'Finalized',
 		milestoneAlert: 'Minor delay in final documentation',
@@ -165,13 +150,13 @@ const fullGroupMetaData: Record<string, FullGroupMeta> = {
 		title: 'Smart City IoT Platform',
 		supervisors: ['Dr. Emily Wong'],
 		members: [
-			'Mike Johnson',
-			'Sarah Lee',
-			'Chris Brown',
-			'Amy Liu',
-			'Kevin Chen',
+			mockStudentMembers.ST009,
+			mockStudentMembers.ST010,
+			mockStudentMembers.ST011,
+			mockStudentMembers.ST012,
+			mockStudentMembers.ST018,
 		],
-		leader: 'Mile Johnson',
+		leader: 'Mike Johnson',
 		status: 'Incomplete',
 		milestoneAlert: 'Behind schedule - requires attention',
 		progress: 60,
@@ -185,13 +170,13 @@ const fullGroupMetaData: Record<string, FullGroupMeta> = {
 	},
 	g4: {
 		title: 'Cybersecurity Framework',
-		supervisors: [],
+		supervisors: ['Dr. Michael Chen', 'Dr. Martinez'],
 		members: [
-			'Sarah Wilson',
-			'Mark Davis',
-			'Linda Garcia',
-			'Jason Taylor',
-			'Maria Rodriguez',
+			mockStudentMembers.ST013,
+			mockStudentMembers.ST014,
+			mockStudentMembers.ST015,
+			mockStudentMembers.ST016,
+			mockStudentMembers.ST017,
 		],
 		leader: 'Sarah Wilson',
 		status: 'Unassigned',
@@ -285,13 +270,13 @@ export const mockReviewGroups: Record<string, FullMockGroup[]> = {
 		createFullMockGroup('g2', 'Review 1'),
 	],
 	'Review 2': [createFullMockGroup('g3', 'Review 2')],
-	'Review 3': [createFullMockGroup('g3', 'Review 3')],
+	'Review 3': [],
 	'Final Review': [createFullMockGroup('g4', 'Final Review')],
 };
 
 // Gom tất cả nhóm thành 1 danh sách kèm phase
-export const allMockGroups: FullMockGroup[] = Object.values(
-	mockReviewGroups,
-).flatMap((groups) => groups);
+export const allMockGroups: FullMockGroup[] = Object.values(mockReviewGroups)
+	.flatMap((groups) => groups)
+	.filter((g): g is FullMockGroup => !!g); // <-- đảm bảo không có undefined
 
 export default mockGroups;

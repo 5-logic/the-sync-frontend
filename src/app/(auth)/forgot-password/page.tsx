@@ -69,8 +69,6 @@ export default function ForgotPasswordPage() {
 				values.otpCode,
 			);
 
-			// Log the complete response for debugging
-			console.log('OTP verification response:', response);
 			if (response.success) {
 				setCurrentStep('success');
 				// Use PasswordResetSuccessHandler for centralized success handling

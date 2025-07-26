@@ -14,9 +14,8 @@ type EnhancedThesis = Thesis & {
 		email: string;
 	};
 	thesisRequiredSkills?: Array<{
-		thesisId: string;
-		skillId: string;
-		skill: { id: string; name: string };
+		id: string;
+		name: string;
 	}>;
 	thesisVersions?: Array<{
 		id: string;
@@ -38,6 +37,7 @@ export default function ThesisInfoCard({ thesis }: Props) {
 		description: thesis.description,
 		domain: thesis.domain,
 		status: thesis.status,
+		semesterId: thesis.semesterId,
 		thesisRequiredSkills: thesis.thesisRequiredSkills,
 		thesisVersions: thesis.thesisVersions,
 	};

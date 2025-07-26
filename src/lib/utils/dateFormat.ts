@@ -62,3 +62,40 @@ export const parseDate = (dateString: string): dayjs.Dayjs | null => {
  * Date format constant for consistency
  */
 export const DATE_FORMAT = 'DD/MM/YYYY' as const;
+
+/**
+ * Get milestone status based on current date
+ * @param startDate - Milestone start date
+ * @param endDate - Milestone end date
+ * @returns Status string
+ */
+export const getMilestoneStatus = (
+	startDate: DateInput,
+	endDate: DateInput,
+): 'Upcoming' | 'In Progress' | 'Ended' => {
+	const now = dayjs();
+	const start = dayjs(startDate);
+	const end = dayjs(endDate);
+
+	if (now.isAfter(end)) return 'Ended';
+	if (now.isBefore(start)) return 'Upcoming';
+	return 'In Progress';
+};
+
+/**
+ * Calculate time remaining until a deadline
+ * @param targetDate - Target date
+ * @returns Formatted time remaining string
+ */
+export const getTimeRemaining = (targetDate: DateInput): string => {
+	if (!targetDate) return '';
+
+	const now = dayjs();
+	const target = dayjs(targetDate);
+	const diff = target.diff(now, 'day');
+
+	if (diff < 0) return 'Overdue';
+	if (diff === 0) return 'Due today';
+	if (diff === 1) return '1 day remaining';
+	return `${diff} days remaining`;
+};

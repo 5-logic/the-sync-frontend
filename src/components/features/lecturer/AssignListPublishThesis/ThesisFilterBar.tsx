@@ -7,12 +7,14 @@ interface Filters {
 	readonly searchText?: string;
 	readonly isPublish?: boolean;
 	readonly domain?: string;
+	readonly semesterId?: string;
 }
 
 interface Props {
 	readonly currentFilters: Filters;
 	readonly onFilterChange: (filters: Partial<Filters>) => void;
 	readonly domainOptions: string[];
+	readonly semesterOptions: Array<{ id: string; name: string; code: string }>;
 	readonly onRefresh?: () => void;
 	readonly loading?: boolean;
 }
@@ -22,6 +24,7 @@ export default function ThesisFilterBar({
 	onFilterChange,
 	onRefresh,
 	loading = false,
+	semesterOptions,
 }: Readonly<Props>) {
 	const handleNameChange = (value: string) => {
 		onFilterChange({
@@ -35,6 +38,12 @@ export default function ThesisFilterBar({
 		});
 	};
 
+	const handleSemesterChange = (value: string | undefined) => {
+		onFilterChange({
+			semesterId: value,
+		});
+	};
+
 	const isPublishValue =
 		typeof currentFilters.isPublish === 'boolean'
 			? currentFilters.isPublish
@@ -42,7 +51,7 @@ export default function ThesisFilterBar({
 
 	return (
 		<Row gutter={[16, 16]} className="mb-4">
-			<Col xs={24} md={16}>
+			<Col xs={24} md={12}>
 				<Input
 					placeholder="Search by thesis name or lecturer name..."
 					prefix={<SearchOutlined />}
@@ -53,7 +62,23 @@ export default function ThesisFilterBar({
 				/>
 			</Col>
 
-			<Col xs={16} md={5}>
+			<Col xs={12} md={4}>
+				<Select
+					placeholder="Filter by Semester"
+					allowClear
+					style={{ width: '100%' }}
+					value={currentFilters.semesterId}
+					onChange={(value) => handleSemesterChange(value)}
+				>
+					{semesterOptions.map((semester) => (
+						<Select.Option key={semester.id} value={semester.id}>
+							{semester.name}
+						</Select.Option>
+					))}
+				</Select>
+			</Col>
+
+			<Col xs={12} md={4}>
 				<Select
 					placeholder="Filter by Public Access"
 					allowClear
@@ -66,7 +91,7 @@ export default function ThesisFilterBar({
 				</Select>
 			</Col>
 
-			<Col xs={8} md={3}>
+			<Col xs={24} md={4}>
 				<Button
 					icon={<ReloadOutlined />}
 					onClick={onRefresh}

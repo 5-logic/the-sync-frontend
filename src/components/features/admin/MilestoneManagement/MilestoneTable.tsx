@@ -40,6 +40,13 @@ export default function MilestoneTable({
 
 	// Handle edit milestone
 	const handleEdit = (milestone: Milestone) => {
+		console.log('MilestoneTable - Edit button clicked:', {
+			id: milestone.id,
+			name: milestone.name,
+			note: milestone.note,
+			hasNoteField: 'note' in milestone,
+			fullMilestone: milestone,
+		});
 		setSelectedMilestone(milestone);
 		setEditDialogOpen(true);
 	};

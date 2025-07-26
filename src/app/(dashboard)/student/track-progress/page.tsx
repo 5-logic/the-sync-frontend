@@ -1,5 +1,5 @@
 import { createMetadata } from '@/app/metadata';
-import TrackProgress from '@/components/features/student/TrackProgress';
+import TrackProgressPageClient from '@/components/pages/student/TrackProgressPageClient';
 
 export const metadata = createMetadata({
 	title: 'Track Progress',
@@ -7,5 +7,5 @@ export const metadata = createMetadata({
 });
 
 export default function StudentTrackProgressPage() {
-	return <TrackProgress />;
+	return <TrackProgressPageClient />;
 }

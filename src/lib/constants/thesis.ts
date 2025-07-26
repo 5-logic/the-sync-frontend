@@ -18,10 +18,10 @@ export const UI_CONSTANTS = {
 	TABLE_WIDTHS: {
 		TITLE: '40%',
 		OWNER: '15%',
-		DOMAIN: '10%',
+		DOMAIN: '15%',
 		STATUS: '10%',
-		DATE: '15%',
-		ACTIONS: '15%',
+		DATE: '12%',
+		ACTIONS: '12%',
 	},
 	TEXT_DISPLAY: {
 		MAX_LINES: 3,

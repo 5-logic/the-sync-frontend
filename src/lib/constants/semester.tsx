@@ -1,6 +1,6 @@
 import { Tag } from 'antd';
 
-import { SemesterStatus } from '@/schemas/_enums';
+import { OngoingPhase, SemesterStatus } from '@/schemas/_enums';
 
 // Status tag mapping for semester status display
 export const SEMESTER_STATUS_TAGS: Record<SemesterStatus, JSX.Element> = {
@@ -27,4 +27,10 @@ export const SEMESTER_STATUS_TEXT: Record<SemesterStatus, string> = {
 	Picking: 'Picking',
 	Ongoing: 'Ongoing',
 	End: 'End',
+};
+
+// Ongoing phase display text mapping
+export const ONGOING_PHASE_TEXT: Record<OngoingPhase, string> = {
+	ScopeAdjustable: 'Scope Adjustable',
+	ScopeLocked: 'Scope Locked',
 };

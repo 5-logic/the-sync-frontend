@@ -109,7 +109,7 @@ export default function RequestsDialog({
 	const handleAcceptInvite = async (requestId: string) => {
 		const success = await updateRequestStatus(requestId, 'Approved');
 		if (success) {
-			showNotification.success('Invitation accepted successfully!');
+			showNotification.success('Success', 'Invitation accepted successfully!');
 			onRequestsUpdate?.();
 
 			// For student mode, refresh group status and redirect to dashboard
@@ -137,49 +137,52 @@ export default function RequestsDialog({
 				}
 			}
 		} else {
-			showNotification.error('Failed to accept invitation. Please try again.');
+			showNotification.error(
+				'Error',
+				'Failed to accept invitation. Please try again.',
+			);
 		}
 	};
 
 	const handleRejectInvite = async (requestId: string) => {
 		// Student rejecting invitation - use 'Rejected'
-		console.log('handleRejectInvite called - config.mode:', config.mode); // Debug
 		const status = 'Rejected';
-		console.log('Status to send:', status); // Debug
 		const success = await updateRequestStatus(requestId, status);
 		if (success) {
 			const message = 'Invitation rejected successfully!';
-			showNotification.success(message);
+			showNotification.success('Success', message);
 			onRequestsUpdate?.();
 		} else {
 			const message = 'Failed to reject invitation. Please try again.';
-			showNotification.error(message);
+			showNotification.error('Error', message);
 		}
 	};
 
 	const handleCancelInvite = async (requestId: string) => {
 		// Group leader cancelling invitation - use 'Cancelled'
-		console.log('handleCancelInvite called - config.mode:', config.mode); // Debug
 		const status = 'Cancelled';
-		console.log('Status to send:', status); // Debug
 		const success = await updateRequestStatus(requestId, status);
 		if (success) {
 			const message = 'Invitation cancelled successfully!';
-			showNotification.success(message);
+			showNotification.success('Success', message);
 			onRequestsUpdate?.();
 		} else {
 			const message = 'Failed to cancel invitation. Please try again.';
-			showNotification.error(message);
+			showNotification.error('Error', message);
 		}
 	};
 
 	const handleApproveJoinRequest = async (requestId: string) => {
 		const success = await updateRequestStatus(requestId, 'Approved');
 		if (success) {
-			showNotification.success('Join request approved successfully!');
+			showNotification.success(
+				'Success',
+				'Join request approved successfully!',
+			);
 			onRequestsUpdate?.();
 		} else {
 			showNotification.error(
+				'Error',
 				'Failed to approve join request. Please try again.',
 			);
 		}
@@ -188,10 +191,14 @@ export default function RequestsDialog({
 	const handleRejectJoinRequest = async (requestId: string) => {
 		const success = await updateRequestStatus(requestId, 'Rejected');
 		if (success) {
-			showNotification.success('Join request rejected successfully!');
+			showNotification.success(
+				'Success',
+				'Join request rejected successfully!',
+			);
 			onRequestsUpdate?.();
 		} else {
 			showNotification.error(
+				'Error',
 				'Failed to reject join request. Please try again.',
 			);
 		}
@@ -200,10 +207,14 @@ export default function RequestsDialog({
 	const handleCancelJoinRequest = async (requestId: string) => {
 		const success = await cancelRequest(requestId);
 		if (success) {
-			showNotification.success('Join request cancelled successfully!');
+			showNotification.success(
+				'Success',
+				'Join request cancelled successfully!',
+			);
 			onRequestsUpdate?.();
 		} else {
 			showNotification.error(
+				'Error',
 				'Failed to cancel join request. Please try again.',
 			);
 		}

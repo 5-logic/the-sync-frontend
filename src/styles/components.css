@@ -1,1 +1,105 @@
-/* NotYet */
+/* Milestone Header Responsive */
+@media (max-width: 768px) {
+	.desktop-milestone-header {
+		display: none !important;
+	}
+}
+
+@media (min-width: 769px) {
+	.mobile-milestone-header {
+		display: none !important;
+	}
+}
+
+/* Version Tag Animations */
+@keyframes rainbow-border {
+	0% {
+		border-color: #ff6b6b;
+		box-shadow: 0 0 10px rgba(255, 107, 107, 0.4);
+	}
+
+	16.66% {
+		border-color: #4ecdc4;
+		box-shadow: 0 0 10px rgba(78, 205, 196, 0.4);
+	}
+
+	33.32% {
+		border-color: #45b7d1;
+		box-shadow: 0 0 10px rgba(69, 183, 209, 0.4);
+	}
+
+	49.98% {
+		border-color: #96ceb4;
+		box-shadow: 0 0 10px rgba(150, 206, 180, 0.4);
+	}
+
+	66.64% {
+		border-color: #feca57;
+		box-shadow: 0 0 10px rgba(254, 202, 87, 0.4);
+	}
+
+	83.3% {
+		border-color: #ff9ff3;
+		box-shadow: 0 0 10px rgba(255, 159, 243, 0.4);
+	}
+
+	100% {
+		border-color: #ff6b6b;
+		box-shadow: 0 0 10px rgba(255, 107, 107, 0.4);
+	}
+}
+
+@keyframes rainbow-text {
+	0% {
+		background-position: 0% 50%;
+	}
+
+	25% {
+		background-position: 100% 50%;
+	}
+
+	50% {
+		background-position: 200% 50%;
+	}
+
+	75% {
+		background-position: 100% 50%;
+	}
+
+	100% {
+		background-position: 0% 50%;
+	}
+}
+
+/* GroupResults - Custom row selection highlighting for specific columns */
+/* Target columns: Checkbox, No., Student ID, Full Name (columns 1-4) */
+.group-results-table .ant-table-tbody > tr.ant-table-row-selected > td:nth-child(2),
+.group-results-table .ant-table-tbody > tr.ant-table-row-selected > td:nth-child(3),
+.group-results-table .ant-table-tbody > tr.ant-table-row-selected > td:nth-child(4) {
+  background-color: #e6f4ff !important;
+}
+
+/* Keep checkbox column with default selection color */
+.group-results-table .ant-table-tbody > tr.ant-table-row-selected > td:nth-child(1) {
+  background-color: #1890ff !important;
+}
+
+/* Remove background from other columns */
+.group-results-table .ant-table-tbody > tr.ant-table-row-selected > td:nth-child(n+5) {
+  background-color: transparent !important;
+}
+
+/* Hover states */
+.group-results-table .ant-table-tbody > tr.ant-table-row-selected:hover > td:nth-child(2),
+.group-results-table .ant-table-tbody > tr.ant-table-row-selected:hover > td:nth-child(3),
+.group-results-table .ant-table-tbody > tr.ant-table-row-selected:hover > td:nth-child(4) {
+  background-color: #bae0ff !important;
+}
+
+.group-results-table .ant-table-tbody > tr.ant-table-row-selected:hover > td:nth-child(1) {
+  background-color: #0d7cd1 !important;
+}
+
+.group-results-table .ant-table-tbody > tr.ant-table-row-selected:hover > td:nth-child(n+5) {
+  background-color: #fafafa !important;
+}

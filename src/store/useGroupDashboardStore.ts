@@ -33,7 +33,6 @@ export const useGroupDashboardStore = create<GroupDashboardState>()(
 					state.lastFetched && now - state.lastFetched < CACHE_DURATION;
 
 				if (!forceRefresh && isCacheValid) {
-					console.log('Using cached data, not making API call');
 					// Return cached data without making API call
 					return;
 				}

@@ -19,12 +19,13 @@ export default function ThesisInfoCard({ thesis }: Props) {
 		description: thesis.description,
 		domain: thesis.domain,
 		status: thesis.status,
+		semesterId: thesis.semesterId,
 		thesisRequiredSkills: thesis.thesisRequiredSkills,
 		thesisVersions: thesis.thesisVersions,
 	};
 
-	// Transform lecturer info to supervisor info
-	const supervisor: SupervisorInfo | undefined = thesis.lecturer
+	// Transform lecturer info to supervisor info with safety checks
+	const supervisor: SupervisorInfo | undefined = thesis.lecturer?.user
 		? {
 				name: thesis.lecturer.user.fullName,
 				email: thesis.lecturer.user.email,

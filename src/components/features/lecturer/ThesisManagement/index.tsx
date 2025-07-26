@@ -19,10 +19,12 @@ export default function ThesisManagement() {
 		searchText,
 		selectedStatus,
 		selectedOwned,
+		selectedSemester,
 		fetchTheses,
 		setSearchText,
 		setSelectedStatus,
 		setSelectedOwned,
+		setSelectedSemester,
 		setSessionLecturerId,
 		clearError,
 	} = useThesisStore();
@@ -70,6 +72,8 @@ export default function ThesisManagement() {
 				onStatusChange={setSelectedStatus}
 				owned={selectedOwned}
 				onOwnedChange={setSelectedOwned}
+				semester={selectedSemester}
+				onSemesterChange={setSelectedSemester}
 				onRefresh={handleRefresh}
 			/>
 			<ThesisTable data={filteredTheses} loading={loading} />

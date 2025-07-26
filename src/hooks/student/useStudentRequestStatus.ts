@@ -82,14 +82,20 @@ export function useStudentRequestStatus(
 			);
 
 			if (response.success) {
-				showNotification.success('Invitation sent successfully!');
+				showNotification.success('Success', 'Invitation sent successfully!');
 				await checkRequestStatus();
 			} else {
-				showNotification.error('Failed to send invitation. Please try again.');
+				showNotification.error(
+					'Error',
+					'Failed to send invitation. Please try again.',
+				);
 			}
 		} catch (error) {
 			console.error('Error sending invitation:', error);
-			showNotification.error('Failed to send invitation. Please try again.');
+			showNotification.error(
+				'Error',
+				'Failed to send invitation. Please try again.',
+			);
 		} finally {
 			setLoading(false);
 		}

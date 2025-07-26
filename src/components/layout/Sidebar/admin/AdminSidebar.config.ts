@@ -8,6 +8,8 @@ export const ADMIN_MENU_KEYS = {
 	STUDENTS_MANAGEMENT: '/admin/students-management',
 	LECTURER_MANAGEMENT: '/admin/lecturer-management',
 	MILESTONE_MANAGEMENT: '/admin/milestone-management',
+	CAPSTONE_DEFENSE: '/admin/capstone-defense-results',
+	PROJECT_MANAGEMENT: '/admin/capstone-project-management',
 	SEMESTER_SETTINGS: '/admin/semester-settings',
 } as const;
 
@@ -25,6 +27,8 @@ export const ADMIN_PATH_MAPPING = {
 		'/admin/create-new-lecturer',
 	],
 	[ADMIN_MENU_KEYS.MILESTONE_MANAGEMENT]: ['/admin/milestone-management'],
+	[ADMIN_MENU_KEYS.CAPSTONE_DEFENSE]: ['/admin/capstone-defense-results'],
+	[ADMIN_MENU_KEYS.PROJECT_MANAGEMENT]: ['/admin/capstone-project-management'],
 	[ADMIN_MENU_KEYS.SEMESTER_SETTINGS]: ['/admin/semester-settings'],
 } as const;
 

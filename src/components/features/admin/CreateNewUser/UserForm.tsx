@@ -72,10 +72,9 @@ const UserForm = ({ formType }: UserFormProps) => {
 		clearError: clearSemesterError,
 	} = useSemesterStore();
 
-	// Filter semesters for user creation (only Preparing and Picking status)
+	// Filter semesters for user creation (only Preparing status)
 	const availableSemesters = semesters.filter(
-		(semester) =>
-			semester.status === 'Preparing' || semester.status === 'Picking',
+		(semester) => semester.status === 'Preparing',
 	);
 
 	// Check if there are any available semesters
@@ -118,11 +117,11 @@ const UserForm = ({ formType }: UserFormProps) => {
 			);
 			if (
 				selectedSemester &&
-				!['Preparing', 'Picking'].includes(selectedSemester.status)
+				!['Preparing'].includes(selectedSemester.status)
 			) {
 				showNotification.error(
 					'Invalid Semester',
-					'Students can only be created for semesters with Preparing or Picking status',
+					'Students can only be created for semesters with Preparing status',
 				);
 				return;
 			}
@@ -209,7 +208,7 @@ const UserForm = ({ formType }: UserFormProps) => {
 						<div>
 							<p>
 								Students can only be created for semesters with{' '}
-								<strong>Preparing</strong> or <strong>Picking</strong> status.
+								<strong>Preparing</strong> status.
 							</p>
 							<p>
 								Currently, there are no semesters in these statuses available
@@ -232,10 +231,6 @@ const UserForm = ({ formType }: UserFormProps) => {
 							Student accounts can only be created for semesters with
 							<Tag color="orange" style={{ margin: '0 4px' }}>
 								Preparing
-							</Tag>
-							or
-							<Tag color="purple" style={{ margin: '0 4px' }}>
-								Picking
 							</Tag>
 							status.
 						</div>
@@ -271,14 +266,15 @@ const UserForm = ({ formType }: UserFormProps) => {
 								<Select
 									placeholder={
 										hasAvailableSemesters
-											? 'Select semester (Preparing or Picking status only)'
+											? 'Select semester (Preparing status only)'
 											: 'No available semesters for student creation'
 									}
 									loading={semestersLoading} // Use loading from semester store
-									disabled={creating ?? !hasAvailableSemesters}
+									// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+									disabled={creating || !hasAvailableSemesters}
 									notFoundContent={
 										!semestersLoading && !hasAvailableSemesters
-											? 'No semesters with Preparing or Picking status found'
+											? 'No semesters with Preparing status found'
 											: undefined
 									}
 								>

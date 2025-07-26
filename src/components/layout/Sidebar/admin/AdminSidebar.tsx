@@ -3,7 +3,9 @@
 import {
 	CalendarOutlined,
 	DashboardOutlined,
+	FundProjectionScreenOutlined,
 	LoadingOutlined,
+	ProjectOutlined,
 	SettingOutlined,
 	TeamOutlined,
 	UserOutlined,
@@ -74,6 +76,29 @@ export default function AdminSidebar() {
 			onClick: () => navigateWithLoading(ADMIN_MENU_KEYS.MILESTONE_MANAGEMENT),
 			disabled:
 				isNavigating && targetPath !== ADMIN_MENU_KEYS.MILESTONE_MANAGEMENT,
+		},
+		{
+			key: ADMIN_MENU_KEYS.PROJECT_MANAGEMENT,
+			icon: isMenuItemLoading(ADMIN_MENU_KEYS.PROJECT_MANAGEMENT) ? (
+				<LoadingOutlined spin />
+			) : (
+				<ProjectOutlined />
+			),
+			label: 'Project Management',
+			onClick: () => navigateWithLoading(ADMIN_MENU_KEYS.PROJECT_MANAGEMENT),
+			disabled:
+				isNavigating && targetPath !== ADMIN_MENU_KEYS.PROJECT_MANAGEMENT,
+		},
+		{
+			key: ADMIN_MENU_KEYS.CAPSTONE_DEFENSE,
+			icon: isMenuItemLoading(ADMIN_MENU_KEYS.CAPSTONE_DEFENSE) ? (
+				<LoadingOutlined spin />
+			) : (
+				<FundProjectionScreenOutlined />
+			),
+			label: 'Defense Results',
+			onClick: () => navigateWithLoading(ADMIN_MENU_KEYS.CAPSTONE_DEFENSE),
+			disabled: isNavigating && targetPath !== ADMIN_MENU_KEYS.CAPSTONE_DEFENSE,
 		},
 		{
 			key: ADMIN_MENU_KEYS.SEMESTER_SETTINGS,

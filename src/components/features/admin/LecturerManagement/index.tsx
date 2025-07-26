@@ -21,8 +21,9 @@ export default function LecturerManagement() {
 	} = useLecturerStore();
 	const router = useRouter();
 
+	// Fetch lecturers on mount but allow cache to handle if data exists
 	useEffect(() => {
-		fetchLecturers();
+		fetchLecturers(); // This will check cache first
 	}, [fetchLecturers]);
 	const handleTogglePermission = async (id: string) => {
 		const lecturer = useLecturerStore.getState().getLecturerById(id);
@@ -61,7 +62,6 @@ export default function LecturerManagement() {
 				data={filteredLecturers}
 				onTogglePermission={handleTogglePermission}
 				onToggleStatus={handleToggleStatus}
-				// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
 				loading={Boolean(loading || togglingStatus || togglingModerator)}
 			/>
 		</Space>

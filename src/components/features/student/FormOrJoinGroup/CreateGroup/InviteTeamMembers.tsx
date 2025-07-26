@@ -7,6 +7,7 @@ import { useStudentInviteHandlers } from '@/hooks/student/useStudentInviteHandle
 import { TEAM_CONFIG, TEAM_STYLES } from '@/lib/constants';
 import { showNotification } from '@/lib/utils/notification';
 import {
+	createNotFoundContent,
 	createStudentAutoCompleteOptions,
 	createStudentTableColumns,
 } from '@/lib/utils/studentInviteHelpers';
@@ -28,9 +29,11 @@ export default function InviteTeamMembers({
 }: InviteTeamMembersProps) {
 	const [searchText, setSearchText] = useState('');
 	const [searchResults, setSearchResults] = useState<Student[]>([]);
+	const [isSearching, setIsSearching] = useState(false);
 
 	// Fetch students from store
-	const { students, fetchStudentsWithoutGroupAuto } = useStudentStore();
+	const { students, loading, fetchStudentsWithoutGroupAuto } =
+		useStudentStore();
 
 	// Get current user session to exclude self from search
 	const { session } = useSessionData();
@@ -45,8 +48,12 @@ export default function InviteTeamMembers({
 	useEffect(() => {
 		if (!searchText.trim()) {
 			setSearchResults([]);
+			setIsSearching(false);
 			return;
 		}
+
+		// Set searching state immediately when user types
+		setIsSearching(true);
 
 		const timeoutId = setTimeout(() => {
 			const searchLower = searchText.toLowerCase();
@@ -79,9 +86,13 @@ export default function InviteTeamMembers({
 			});
 
 			setSearchResults(filtered);
+			setIsSearching(false);
 		}, TEAM_CONFIG.SEARCH_DEBOUNCE_MS);
 
-		return () => clearTimeout(timeoutId);
+		return () => {
+			clearTimeout(timeoutId);
+			setIsSearching(false);
+		};
 	}, [searchText, students, currentUserId, excludeUserIds]);
 
 	// Build options for AutoComplete
@@ -105,13 +116,19 @@ export default function InviteTeamMembers({
 				currentUserId &&
 				targetStudent.id === currentUserId
 			) {
-				showNotification.warning('You cannot add yourself to the group.');
+				showNotification.warning(
+					'Cannot Add Yourself',
+					'You cannot add yourself to the group.',
+				);
 				return;
 			}
 
 			// Prevent adding excluded users
 			if (targetStudent && excludeUserIds.includes(targetStudent.id)) {
-				showNotification.warning('This student is already a group member.');
+				showNotification.warning(
+					'Already a Member',
+					'This student is already a group member.',
+				);
 				return;
 			}
 
@@ -143,6 +160,7 @@ export default function InviteTeamMembers({
 
 			if (!targetStudent) {
 				showNotification.error(
+					'Student Not Found',
 					'Student not found. Please check email or Student ID.',
 				);
 				return;
@@ -152,7 +170,10 @@ export default function InviteTeamMembers({
 				(member) => member.id === targetStudent.id,
 			);
 			if (isAlreadyMember) {
-				showNotification.warning('This student is already in the group.');
+				showNotification.warning(
+					'Already Added',
+					'This student is already in the group.',
+				);
 				return;
 			}
 
@@ -168,14 +189,17 @@ export default function InviteTeamMembers({
 						? `Group would have ${totalMembersAfterAdd} members, exceeding limit of ${TEAM_CONFIG.MAX_MEMBERS}`
 						: `Group can have maximum ${TEAM_CONFIG.MAX_MEMBERS} members`;
 
-				showNotification.error(contextMessage);
+				showNotification.error('Member Limit Exceeded', contextMessage);
 				return;
 			}
 
 			const newMember: Student = targetStudent;
 
 			onMembersChange([...members, newMember]);
-			showNotification.success(`${targetStudent.fullName} added successfully!`);
+			showNotification.success(
+				'Success',
+				`${targetStudent.fullName} added successfully!`,
+			);
 			setSearchText('');
 		},
 		[
@@ -202,6 +226,16 @@ export default function InviteTeamMembers({
 		[handleRemoveMember],
 	);
 
+	// Use shared utility for notFoundContent
+	const renderNotFoundContent = useMemo(() => {
+		return createNotFoundContent(
+			searchText,
+			loading,
+			isSearching,
+			searchResults.length,
+		);
+	}, [searchText, loading, isSearching, searchResults.length]);
+
 	return (
 		<div style={{ marginTop: 24 }}>
 			<FormLabel text="Invite Team Members" isBold />
@@ -214,19 +248,7 @@ export default function InviteTeamMembers({
 							options={studentOptions}
 							onSearch={setSearchText}
 							onSelect={handleStudentSelect}
-							notFoundContent={
-								searchText.trim() && searchResults.length === 0 ? (
-									<div
-										style={{
-											padding: '8px',
-											textAlign: 'center',
-											color: '#999',
-										}}
-									>
-										No students found with &ldquo;{searchText}&rdquo;
-									</div>
-								) : null
-							}
+							notFoundContent={renderNotFoundContent}
 							style={{ width: '100%' }}
 							filterOption={false}
 							allowClear

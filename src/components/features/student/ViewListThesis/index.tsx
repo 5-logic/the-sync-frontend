@@ -45,8 +45,17 @@ const convertToThesisWithRelations = async (
 					email: lecturer.email,
 				},
 			},
-			thesisRequiredSkills: [], // Will be populated by API if available
-			thesisVersions: [], // Will be populated by API if available
+			thesisRequiredSkills:
+				((thesis as Record<string, unknown>).thesisRequiredSkills as Array<{
+					id: string;
+					name: string;
+				}>) || [], // Use actual data from thesis
+			thesisVersions:
+				((thesis as Record<string, unknown>).thesisVersions as Array<{
+					id: string;
+					version: number;
+					supportingDocument: string;
+				}>) || [], // Use actual data from thesis
 		};
 	} catch (error) {
 		console.error('Error converting thesis:', error);

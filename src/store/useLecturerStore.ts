@@ -3,6 +3,8 @@ import { devtools } from 'zustand/middleware';
 
 import { AuthService } from '@/lib/services/auth';
 import lecturerService from '@/lib/services/lecturers.service';
+import { showNotification } from '@/lib/utils';
+import { handleApiError } from '@/lib/utils/handleApi';
 import { PasswordChange } from '@/schemas/_common';
 import { Lecturer, LecturerCreate, LecturerUpdate } from '@/schemas/lecturer';
 import {
@@ -432,32 +434,33 @@ export const useLecturerStore = create<LecturerState>()(
 						// Invalidate cache
 						cacheInvalidation.invalidateEntity('lecturer');
 
+						showNotification.success(
+							'Success',
+							'Lecturer deleted successfully',
+						);
+
 						set({ deleting: false });
 						return true;
 					} else {
 						throw new Error(response.error ?? 'Failed to delete lecturer');
 					}
 				} catch (error: unknown) {
-					const errorMessage =
-						error instanceof Error
-							? error.message
-							: 'Failed to delete lecturer';
-					const statusCode =
-						error &&
-						typeof error === 'object' &&
-						'response' in error &&
-						error.response
-							? ((error.response as { status?: number }).status ?? 500)
-							: 500;
+					// Use handleApiError to get proper error message from backend
+					const apiError = handleApiError(error, 'Failed to delete lecturer');
 
 					set({
 						deleting: false,
 						lastError: {
-							message: errorMessage,
-							statusCode,
+							message: apiError.message,
+							statusCode: apiError.statusCode,
 							timestamp: new Date(),
 						},
 					});
+
+					// Show error notification to user with backend message
+					const { showNotification } = await import('@/lib/utils/notification');
+					showNotification.error('Error', apiError.message);
+
 					return false;
 				}
 			},

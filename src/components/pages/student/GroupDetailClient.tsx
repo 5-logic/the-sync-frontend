@@ -173,16 +173,21 @@ export default function GroupDetailClient({ groupId }: GroupDetailClientProps) {
 				try {
 					const success = await cancelRequest(pendingJoinRequest.id);
 					if (success) {
-						showNotification.success('Join request cancelled successfully!');
+						showNotification.success(
+							'Success',
+							'Join request cancelled successfully!',
+						);
 						// Refresh requests to update button state
 						await fetchStudentRequests(true);
 					} else {
 						showNotification.error(
+							'Error',
 							'Failed to cancel join request. Please try again.',
 						);
 					}
 				} catch {
 					showNotification.error(
+						'Error',
 						'Failed to cancel join request. Please try again.',
 					);
 				} finally {

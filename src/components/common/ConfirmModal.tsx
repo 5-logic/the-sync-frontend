@@ -219,6 +219,106 @@ export const ThesisConfirmationModals = {
 
 	// Generic show method for custom modals (backwards compatibility)
 	show: ConfirmationModal.show,
+
+	// New duplicate thesis confirmation modals
+	submitWithDuplicates: (
+		thesisTitle: string,
+		duplicateCount: number,
+		onCheckDuplicates: () => void,
+		onConfirmSubmit: () => void | Promise<void>,
+		loading = false,
+	) => {
+		Modal.confirm({
+			title: 'Duplicate Thesis Detected',
+			content: (
+				<Space direction="vertical" size="small">
+					<Typography.Text>
+						We found {duplicateCount} similar thesis(es) that might be related
+						to your submission.
+					</Typography.Text>
+					<Typography.Text>
+						<Typography.Text strong>Title:</Typography.Text> {thesisTitle}
+					</Typography.Text>
+					<Typography.Text strong style={{ color: '#faad14' }}>
+						Warning: We recommend checking the similar theses before submitting
+						to avoid duplication.
+					</Typography.Text>
+				</Space>
+			),
+			okText: 'Confirm Submit',
+			cancelText: 'Check Similar Theses',
+			centered: true,
+			okButtonProps: { loading },
+			onOk: onConfirmSubmit,
+			onCancel: onCheckDuplicates,
+		});
+	},
+
+	submitWithDuplicatesFromDetail: (
+		thesisTitle: string,
+		duplicateCount: number,
+		onCheckDuplicates: () => void,
+		onConfirmSubmit: () => void | Promise<void>,
+		loading = false,
+	) => {
+		Modal.confirm({
+			title: 'Duplicate Thesis Detected',
+			content: (
+				<Space direction="vertical" size="small">
+					<Typography.Text>
+						We found {duplicateCount} similar thesis(es) that might be related
+						to your submission.
+					</Typography.Text>
+					<Typography.Text>
+						<Typography.Text strong>Title:</Typography.Text> {thesisTitle}
+					</Typography.Text>
+					<Typography.Text strong style={{ color: '#faad14' }}>
+						Warning: We recommend checking the duplicate theses before
+						submitting to avoid duplication.
+					</Typography.Text>
+				</Space>
+			),
+			okText: 'Confirm Submit',
+			cancelText: 'Check Duplicate Theses',
+			centered: true,
+			okButtonProps: { loading },
+			onOk: onConfirmSubmit,
+			onCancel: onCheckDuplicates,
+		});
+	},
+
+	approveWithDuplicates: (
+		thesisTitle: string,
+		duplicateCount: number,
+		onCheckDuplicates: () => void,
+		onConfirmApprove: () => void | Promise<void>,
+		loading = false,
+	) => {
+		Modal.confirm({
+			title: 'Duplicate Thesis Detected',
+			content: (
+				<Space direction="vertical" size="small">
+					<Typography.Text>
+						We found {duplicateCount} similar thesis(es) that might be related
+						to this thesis.
+					</Typography.Text>
+					<Typography.Text>
+						<Typography.Text strong>Title:</Typography.Text> {thesisTitle}
+					</Typography.Text>
+					<Typography.Text strong style={{ color: '#faad14' }}>
+						Warning: We recommend checking the duplicate theses before approving
+						to avoid duplication.
+					</Typography.Text>
+				</Space>
+			),
+			okText: 'Confirm Approve',
+			cancelText: 'Check Duplicate Theses',
+			centered: true,
+			okButtonProps: { loading },
+			onOk: onConfirmApprove,
+			onCancel: onCheckDuplicates,
+		});
+	},
 };
 
 // Group-related confirmation modals

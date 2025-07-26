@@ -1,7 +1,7 @@
 'use client';
 
 import { EyeOutlined } from '@ant-design/icons';
-import { Button, Switch, Table, Tooltip } from 'antd';
+import { Button, Switch, Table, Tag, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { TableRowSelection } from 'antd/es/table/interface';
 import { useRouter } from 'next/navigation';
@@ -9,6 +9,7 @@ import { useEffect, useState } from 'react';
 
 import { ThesisConfirmationModals } from '@/components/common/ConfirmModal';
 import { TablePagination } from '@/components/common/TablePagination';
+import { getSemesterTagColor } from '@/lib/utils/colorUtils';
 import { showNotification } from '@/lib/utils/notification';
 import { ThesisWithLecturer } from '@/store/usePublishThesesStore';
 
@@ -208,15 +209,19 @@ export default function ThesisTable({
 			title: 'English Name',
 			dataIndex: 'englishName',
 			key: 'englishName',
-			width: '30%',
+			width: '40%',
 			render: (text: string) => renderThesisName(text),
 		},
 		{
-			title: 'Vietnamese Name',
-			dataIndex: 'vietnameseName',
-			key: 'vietnameseName',
-			width: '30%',
-			render: (text: string) => renderThesisName(text),
+			title: 'Semester',
+			key: 'semester',
+			render: (_, record) => {
+				const semesterName = record.semesterName || 'Unknown';
+				const color = getSemesterTagColor(semesterName);
+
+				return <Tag color={color}>{semesterName}</Tag>;
+			},
+			width: '15%',
 		},
 		{
 			title: 'Lecturer',

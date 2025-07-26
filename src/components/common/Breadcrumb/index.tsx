@@ -24,11 +24,11 @@ const ROUTE_TITLES: Record<string, string> = {
 	'/lecturer/checklist-detail': 'Checklist Detail',
 	'/lecturer/checklist-edit': 'Edit Checklist',
 	'/lecturer/create-checklist': 'Create Checklist',
-	'/lecturer/create-thesis': 'Create Thesis',
+	'/lecturer/thesis-management/create-thesis': 'Create Thesis',
 	'/lecturer/account-setting': 'Account Setting',
 	'/lecturer/assign-lecturer-review': 'Assign Lecturer Review',
 	'/lecturer/assign-list-publish-thesis': 'Assign List Publish Thesis',
-	'/lecturer/assign-student': 'Assign Student',
+	'/lecturer/group-management': 'Group Management',
 	'/lecturer/assign-supervisor': 'Assign Supervisor',
 	'/lecturer/thesis-version-control': 'Thesis Version Control',
 	'/lecturer/timeline-review': 'Timeline Review',
@@ -85,8 +85,18 @@ const DYNAMIC_ROUTE_PATTERNS: Array<{
 		getTitle: () => 'Edit Checklist',
 		getParentPath: () => '/lecturer/checklist-management',
 	},
+	{
+		pattern: /^\/lecturer\/group-management\/(.+)$/,
+		getTitle: () => 'Assign Student & Thesis',
+		getParentPath: () => '/lecturer/group-management',
+	},
 
 	// Student dynamic routes - add patterns for any dynamic routes here
+	{
+		pattern: /^\/student\/list-thesis\/(.+)$/,
+		getTitle: () => 'Thesis Detail',
+		getParentPath: () => '/student/list-thesis',
+	},
 	{
 		pattern: /^\/student\/group-detail\/(.+)$/,
 		getTitle: () => 'Group Detail',

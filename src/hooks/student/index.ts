@@ -2,3 +2,4 @@
 export * from '@/hooks/student/useStudentProfile';
 export * from '@/hooks/student/useStudentInvite';
 export * from '@/hooks/student/useStudentRequestStatus';
+export * from '@/hooks/student/useMilestoneProgress';

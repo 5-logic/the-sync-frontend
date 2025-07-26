@@ -1,11 +1,9 @@
 'use client';
 
-import { SearchOutlined } from '@ant-design/icons';
 import { Button, Col, Form, Input, Row, Select, TreeSelect } from 'antd';
 import { useEffect, useState } from 'react';
 
 import { FormLabel } from '@/components/common/FormLabel';
-import ThesisDuplicateList from '@/components/features/lecturer/CreateThesis/ThesisDuplicateList';
 import SupportingDocumentField from '@/components/features/lecturer/CreateThesis/ThesisFileUpload';
 import { getSortedDomains } from '@/lib/constants/domains';
 import { useSkillSetStore } from '@/store';
@@ -37,9 +35,9 @@ export default function ThesisForm({
 	loading = false,
 }: Props) {
 	const [form] = Form.useForm();
-	const [showDuplicateList, setShowDuplicateList] = useState(false);
 	const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>(null);
 	const [hasFileChanged, setHasFileChanged] = useState(false);
+	const [hasFormChanged, setHasFormChanged] = useState(false);
 
 	// Get sorted domain options
 	const domainOptions = getSortedDomains();
@@ -101,41 +99,129 @@ export default function ThesisForm({
 		}
 	}, [mode, initialValues, initialFile]);
 
+	// Initialize form change state after initial values are set
+	useEffect(() => {
+		if (mode === 'edit' && initialValues) {
+			// Reset change state when initial values are loaded
+			setHasFormChanged(false);
+			setHasFileChanged(false);
+		}
+	}, [mode, initialValues]);
+
+	// Function to check if form values have changed
+	const checkFormChanges = () => {
+		if (mode === 'create') {
+			setHasFormChanged(true);
+			return;
+		}
+
+		// Don't check changes if initial values haven't been set yet
+		if (!initialValues) {
+			return;
+		}
+
+		const currentValues = form.getFieldsValue();
+
+		// Compare current values with initial values
+		const fieldsToCompare = [
+			'englishName',
+			'vietnameseName',
+			'abbreviation',
+			'description',
+			'domain',
+			'skills',
+		];
+		const hasChanges = fieldsToCompare.some((field) => {
+			const currentValue = currentValues[field];
+			const initialValue = initialValues?.[field];
+
+			// Handle array comparison for skills
+			if (field === 'skills') {
+				const currentSkills = Array.isArray(currentValue)
+					? currentValue.toSorted((a: string, b: string) => a.localeCompare(b))
+					: [];
+				const initialSkills = Array.isArray(initialValue)
+					? initialValue.toSorted((a: string, b: string) => a.localeCompare(b))
+					: [];
+				return JSON.stringify(currentSkills) !== JSON.stringify(initialSkills);
+			}
+
+			// Handle other fields
+			return currentValue !== initialValue;
+		});
+
+		setHasFormChanged(hasChanges || hasFileChanged);
+	};
+
 	// Handle file change from upload component
 	const handleFileChange = (file: UploadedFile | null) => {
 		setUploadedFile(file);
 		setHasFileChanged(true); // Mark as changed when user uploads/deletes file
+		checkFormChanges(); // Check for overall changes
+	};
+
+	// Function to get only changed fields
+	const getChangedFields = (values: Record<string, unknown>) => {
+		if (mode === 'create') {
+			// For create mode, return all values
+			const selectedSkills = (values.skills as string[]) ?? [];
+			const semesterId = preparingSemester?.id;
+
+			// eslint-disable-next-line @typescript-eslint/no-unused-vars
+			const { supportingDocument, skills, ...restValues } = values;
+			return {
+				...restValues,
+				skillIds: selectedSkills,
+				semesterId,
+				supportingDocument: uploadedFile?.url ?? '',
+			};
+		}
+
+		// For edit mode, only include changed fields
+		const changedFields: Record<string, unknown> = {};
+		const currentValues = form.getFieldsValue();
+
+		// Check each field for changes
+		const fieldsToCheck = [
+			'englishName',
+			'vietnameseName',
+			'abbreviation',
+			'description',
+			'domain',
+		];
+		fieldsToCheck.forEach((field) => {
+			const currentValue = currentValues[field];
+			const initialValue = initialValues?.[field];
+			if (currentValue !== initialValue) {
+				changedFields[field] = currentValue;
+			}
+		});
+
+		// Handle skills separately
+		const currentSkills = Array.isArray(currentValues.skills)
+			? currentValues.skills.toSorted((a: string, b: string) =>
+					a.localeCompare(b),
+				)
+			: [];
+		const initialSkills = Array.isArray(initialValues?.skills)
+			? initialValues.skills.toSorted((a: string, b: string) =>
+					a.localeCompare(b),
+				)
+			: [];
+		if (JSON.stringify(currentSkills) !== JSON.stringify(initialSkills)) {
+			changedFields.skillIds = currentSkills;
+		}
+
+		// Include supporting document if file changed
+		if (hasFileChanged) {
+			changedFields.supportingDocument = uploadedFile?.url ?? '';
+		}
+
+		return changedFields;
 	};
 
 	const handleFormSubmit = (values: Record<string, unknown>) => {
-		// Convert selected skills to string array
-		const selectedSkills = (values.skills as string[]) ?? [];
-
-		// Get the preparing semester ID
-		const semesterId = preparingSemester?.id;
-		if (!semesterId) {
-			console.error(
-				'No preparing semester found. Available semesters:',
-				semesters,
-			);
-			// You might want to show a user-friendly error message here
-			return;
-		}
-
-		// Prepare the final form data to match backend DTO
-		// eslint-disable-next-line @typescript-eslint/no-unused-vars
-		const { supportingDocument, skills, ...restValues } = values;
-		const formData: Record<string, unknown> = {
-			...restValues,
-			skillIds: selectedSkills, // Pass skills as skillIds array for API
-			semesterId, // Add semesterId from preparing semester
-		};
-
-		// Only include supportingDocument if file changed (for edit mode) or always for create mode
-		if (mode === 'create' || hasFileChanged) {
-			formData.supportingDocument = uploadedFile?.url ?? '';
-		}
-
+		const formData = getChangedFields(values);
 		onSubmit(formData);
 	};
 
@@ -150,6 +236,9 @@ export default function ThesisForm({
 		if (loading) {
 			return mode === 'create' ? 'Creating...' : 'Updating...';
 		}
+		if (mode === 'edit' && !hasFormChanged) {
+			return 'No changes to update';
+		}
 		return mode === 'create' ? 'Create Thesis' : 'Update Thesis';
 	};
 
@@ -161,6 +250,7 @@ export default function ThesisForm({
 			style={{ width: '100%' }}
 			initialValues={initialValues}
 			onFinish={handleFormSubmit}
+			onValuesChange={checkFormChanges} // Detect changes when form values change
 		>
 			<Form.Item
 				name="englishName"
@@ -222,7 +312,7 @@ export default function ThesisForm({
 					placeholder="Describe your thesis..."
 					rows={4}
 					showCount
-					maxLength={1000}
+					maxLength={2000}
 				/>
 			</Form.Item>
 
@@ -265,28 +355,19 @@ export default function ThesisForm({
 				/>
 			</div>
 
-			{showDuplicateList && (
-				<div style={{ marginBottom: 24 }}>
-					<ThesisDuplicateList />
-				</div>
-			)}
-
-			<Row justify="space-between" align="middle">
-				<Col>
-					<Button
-						icon={<SearchOutlined />}
-						onClick={() => setShowDuplicateList(!showDuplicateList)}
-					>
-						{showDuplicateList ? 'Hide' : 'Check'} Similar Theses
-					</Button>
-				</Col>
+			<Row justify="end" align="middle">
 				<Col>
 					<Button
 						type="primary"
 						htmlType="submit"
 						size="large"
 						loading={loading || semestersLoading}
-						disabled={loading || semestersLoading || !preparingSemester}
+						disabled={
+							loading ||
+							semestersLoading ||
+							!preparingSemester ||
+							(mode === 'edit' && !hasFormChanged)
+						}
 					>
 						{getButtonText()}
 					</Button>
