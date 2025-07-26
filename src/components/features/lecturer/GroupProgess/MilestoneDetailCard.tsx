@@ -200,53 +200,94 @@ export default function MilestoneDetailCard({
 						marginBottom: 16,
 					}}
 				>
-					<Row
-						justify="space-between"
-						align="middle"
-						wrap
-						style={{ marginBottom: 8 }}
-					>
-						<Col span={screens.xs ? 24 : 'auto'}>
-							<Text>
-								Submission file:{' '}
-								{hasDocuments(submission)
-									? getFileNameFromUrl(getDocuments(submission)[0] || '')
-									: isFullMockGroup(group) && group.submissionFile
-										? group.submissionFile
-										: 'No submission yet'}
+					{/* Submission Files Section */}
+					{hasDocuments(submission) ? (
+						<div style={{ marginBottom: 16 }}>
+							<Text strong>
+								Submission Files ({getDocuments(submission).length} files):
 							</Text>
-						</Col>
-						<Col
-							span={screens.xs ? 24 : 'auto'}
-							style={{ marginTop: screens.xs ? 8 : 0 }}
-						>
-							<Button
-								type="link"
-								icon={<DownloadOutlined />}
-								size="small"
-								style={{ paddingLeft: 0 }}
-								disabled={!hasDocuments(submission)}
-								onClick={() => {
-									if (hasDocuments(submission)) {
-										const docs = getDocuments(submission);
-										if (docs[0]) {
-											window.open(docs[0], '_blank');
-										}
-									}
+							<div
+								style={{
+									background: '#fafafa',
+									border: '1px solid #f0f0f0',
+									borderRadius: '6px',
+									padding: '12px',
 								}}
 							>
-								Download File
-							</Button>
-						</Col>
-					</Row>
+								{getDocuments(submission).map((docUrl, index) => (
+									<div
+										key={index}
+										style={{
+											display: 'flex',
+											alignItems: 'center',
+											padding: '8px 0',
+											borderBottom:
+												index < getDocuments(submission).length - 1
+													? '1px solid #f0f0f0'
+													: 'none',
+										}}
+									>
+										<DownloadOutlined
+											style={{
+												color: '#1890ff',
+												marginRight: 8,
+												fontSize: '14px',
+											}}
+										/>
+										<Button
+											type="link"
+											size="small"
+											style={{
+												paddingLeft: 0,
+												color: '#1890ff',
+												fontSize: '14px',
+												textAlign: 'left',
+												height: 'auto',
+												display: 'flex',
+												alignItems: 'center',
+											}}
+											onClick={() => window.open(docUrl, '_blank')}
+										>
+											{getFileNameFromUrl(docUrl)}
+										</Button>
+									</div>
+								))}
+							</div>
+						</div>
+					) : (
+						<div style={{ marginBottom: 16 }}>
+							<Text
+								strong
+								style={{ fontSize: '16px', marginBottom: 8, display: 'block' }}
+							>
+								Submission Files:
+							</Text>
+							<div
+								style={{
+									background: '#fafafa',
+									border: '1px solid #f0f0f0',
+									borderRadius: '6px',
+									padding: '12px',
+									textAlign: 'center',
+								}}
+							>
+								<Text type="secondary">
+									{isFullMockGroup(group) && group.submissionFile
+										? group.submissionFile
+										: 'No submission files available'}
+								</Text>
+							</div>
+						</div>
+					)}
 
-					<Row justify="space-between" wrap style={{ marginTop: 8 }}>
+					{/* Submission Details */}
+					<Row justify="space-between" wrap style={{ marginBottom: 16 }}>
 						<Col
-							span={screens.xs ? 24 : 'auto'}
+							span={screens.xs ? 24 : 12}
 							style={{ marginBottom: screens.xs ? 8 : 0 }}
 						>
+							<Text strong>Submission Date: </Text>
 							<Text>
-								Submission Date:{' '}
 								{submission
 									? new Date(submission.createdAt).toLocaleDateString()
 									: isFullMockGroup(group) && group.submissionDate
@@ -254,9 +295,9 @@ export default function MilestoneDetailCard({
 										: 'No submission yet'}
 							</Text>
 						</Col>
-						<Col span={screens.xs ? 24 : 'auto'}>
+						<Col>
+							<Text strong>Uploaded by: </Text>
 							<Text type="secondary">
-								Uploaded by:{' '}
 								{submission && submission.group
 									? `Group ${submission.group.code}`
 									: isFullMockGroup(group) && group.uploadedBy
@@ -269,7 +310,7 @@ export default function MilestoneDetailCard({
 					{/* Additional submission info */}
 					{submission && (
 						<>
-							<Row style={{ marginTop: 16 }}>
+							<Row style={{ marginBottom: 16 }}>
 								<Col span={24}>
 									<Text strong>Status: </Text>
 									<Text
@@ -281,29 +322,6 @@ export default function MilestoneDetailCard({
 									</Text>
 								</Col>
 							</Row>
-
-							{hasDocuments(submission) &&
-								getDocuments(submission).length > 1 && (
-									<Row style={{ marginTop: 8 }}>
-										<Col span={24}>
-											<Text strong>Additional Files:</Text>
-											{getDocuments(submission)
-												.slice(1)
-												.map((docUrl, index) => (
-													<div key={index} style={{ marginTop: 4 }}>
-														<Button
-															type="link"
-															size="small"
-															style={{ paddingLeft: 0 }}
-															onClick={() => window.open(docUrl, '_blank')}
-														>
-															{getFileNameFromUrl(docUrl)}
-														</Button>
-													</div>
-												))}
-										</Col>
-									</Row>
-								)}
 
 							{hasAssignmentReviews(submission) && (
 								<Row style={{ marginTop: 16 }}>
