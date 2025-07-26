@@ -1,7 +1,7 @@
 'use client';
 
 import { EyeOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
-import { Button, Input, Space, Table } from 'antd';
+import { Button, Input, Skeleton, Space, Spin, Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 
 import { TablePagination } from '@/components/common/TablePagination';
@@ -24,6 +24,9 @@ interface Props<T extends GroupData = SupervisedGroup> {
 	selectedSemester?: string | null;
 	onSemesterChange?: (semesterId: string | null) => void;
 	showSemesterFilter?: boolean;
+	// Loading state props
+	isInitialLoad?: boolean;
+	isRefreshing?: boolean;
 }
 
 export default function GroupSearchTable<
@@ -39,6 +42,8 @@ export default function GroupSearchTable<
 	selectedSemester,
 	onSemesterChange,
 	showSemesterFilter = false,
+	isInitialLoad = false,
+	isRefreshing = false,
 }: Readonly<Props<T>>) {
 	const columns: ColumnsType<T> = [
 		{
@@ -141,7 +146,7 @@ export default function GroupSearchTable<
 					<Button
 						icon={<ReloadOutlined />}
 						onClick={onRefresh}
-						loading={loading}
+						loading={isRefreshing}
 						style={{ flexShrink: 0 }}
 					>
 						Refresh
@@ -149,16 +154,26 @@ export default function GroupSearchTable<
 				)}
 			</div>
 
-			<Table
-				columns={columns}
-				dataSource={data}
-				pagination={TablePagination}
-				rowKey="id"
-				loading={loading}
-				rowClassName={(record) =>
-					record.id === selectedGroup?.id ? 'ant-table-row-selected' : ''
-				}
-			/>
+			{/* Show skeleton loading for initial load */}
+			{isInitialLoad ? (
+				<div>
+					<Skeleton active paragraph={{ rows: 8 }} />
+				</div>
+			) : (
+				/* Show table with spin loading for refreshes */
+				<Spin spinning={isRefreshing} tip="Refreshing...">
+					<Table
+						columns={columns}
+						dataSource={data}
+						pagination={TablePagination}
+						rowKey="id"
+						loading={false} // Disable table's built-in loading since we use Spin
+						rowClassName={(record) =>
+							record.id === selectedGroup?.id ? 'ant-table-row-selected' : ''
+						}
+					/>
+				</Spin>
+			)}
 		</Space>
 	);
 }
