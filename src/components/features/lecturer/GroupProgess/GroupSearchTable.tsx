@@ -134,7 +134,6 @@ export default function GroupSearchTable<
 					<SemesterFilter
 						selectedSemester={selectedSemester || null}
 						onSemesterChange={onSemesterChange}
-						loading={loading}
 					/>
 				)}
 				{onRefresh && (

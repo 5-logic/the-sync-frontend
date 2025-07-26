@@ -2,7 +2,7 @@
 
 import { Alert, Space } from 'antd';
 import { useSession } from 'next-auth/react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Header } from '@/components/common/Header';
 import GroupDetailCard from '@/components/features/lecturer/GroupProgess/GroupDetailCard';
@@ -21,7 +21,7 @@ export default function GroupProgressPage() {
 	>(undefined);
 	const [searchText, setSearchText] = useState<string>('');
 	const [selectedSemester, setSelectedSemester] = useState<string | null>(null);
-	const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+	const currentUserIdRef = useRef<string | null>(null);
 
 	// Get current user session to track user changes
 	const { data: session } = useSession();
@@ -70,7 +70,10 @@ export default function GroupProgressPage() {
 		const newUserId = session?.user?.id || null;
 
 		// Nếu user thay đổi (bao gồm login/logout), clear tất cả cache
-		if (currentUserId !== null && currentUserId !== newUserId) {
+		if (
+			currentUserIdRef.current !== null &&
+			currentUserIdRef.current !== newUserId
+		) {
 			// Clear all cached data để tránh data leakage giữa users
 			clearGroups();
 			setSelectedGroup(undefined);
@@ -81,13 +84,13 @@ export default function GroupProgressPage() {
 		}
 
 		// Update current user ID
-		setCurrentUserId(newUserId);
-	}, [session?.user?.id, currentUserId, clearGroups, refreshCache]);
+		currentUserIdRef.current = newUserId;
+	}, [session?.user?.id, clearGroups, refreshCache]);
 
 	// Smart fetch groups và milestones khi semester changes - fetch mỗi lần thay đổi
 	useEffect(() => {
 		// Chỉ fetch khi đã có user ID (đã login) để tránh fetch với wrong user context
-		if (!currentUserId) return;
+		if (!currentUserIdRef.current) return;
 
 		if (selectedSemester) {
 			// Fetch groups và milestones cho semester mới
@@ -95,18 +98,9 @@ export default function GroupProgressPage() {
 			fetchMilestones(selectedSemester);
 		} else {
 			// Clear groups khi không có semester được chọn
-			if (groups.length > 0) {
-				clearGroups();
-			}
+			clearGroups();
 		}
-	}, [
-		selectedSemester,
-		currentUserId,
-		fetchGroupsBySemester,
-		clearGroups,
-		fetchMilestones,
-		groups.length,
-	]);
+	}, [selectedSemester, fetchGroupsBySemester, clearGroups, fetchMilestones]);
 
 	// Memoized filtered groups để tránh unnecessary re-computation
 	const filteredGroups = useMemo(() => {
@@ -144,7 +138,7 @@ export default function GroupProgressPage() {
 	// Memoized refresh handler với smart logic và user context validation
 	const handleRefresh = useCallback(() => {
 		// Chỉ refresh nếu có user context để tránh fetch với wrong user
-		if (!currentUserId) {
+		if (!currentUserIdRef.current) {
 			console.warn('Cannot refresh without valid user context');
 			return;
 		}
@@ -163,7 +157,6 @@ export default function GroupProgressPage() {
 		// Clear cache để đảm bảo data fresh
 		refreshCache();
 	}, [
-		currentUserId,
 		selectedSemester,
 		fetchGroupsBySemester,
 		fetchMilestones,
