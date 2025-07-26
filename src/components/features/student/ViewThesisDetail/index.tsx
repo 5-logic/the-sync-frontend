@@ -9,7 +9,6 @@ import ActionButtons from '@/components/features/student/ViewThesisDetail/Action
 import AssignedGroupCard from '@/components/features/student/ViewThesisDetail/AssignedGroupCard';
 import ThesisInfoCard from '@/components/features/student/ViewThesisDetail/ThesisInfoCard';
 import groupsService from '@/lib/services/groups.service';
-import lecturersService from '@/lib/services/lecturers.service';
 import thesesService from '@/lib/services/theses.service';
 import { handleApiResponse } from '@/lib/utils/handleApi';
 import { GroupDashboard } from '@/schemas/group';
@@ -32,85 +31,15 @@ export default function StudentThesisDetailPage() {
 			// Only set loading if not already loading (to avoid double loading state)
 			setLoading((prevLoading) => prevLoading || true);
 
-			// Fetch thesis data
-			const thesisResponse = await thesesService.findOne(thesisId);
+			// Fetch thesis data with relations
+			const thesisResponse = await thesesService.findOneWithRelations(thesisId);
 			const thesisResult = handleApiResponse(thesisResponse, 'Success');
 
 			if (thesisResult.success && thesisResult.data) {
 				const thesisData = thesisResult.data;
 
-				// Type guard for extended thesis data
-				const hasThesisVersions = (
-					data: unknown,
-				): data is {
-					thesisVersions?: Array<{
-						id: string;
-						version: number;
-						supportingDocument: string;
-					}>;
-				} => {
-					return (
-						typeof data === 'object' &&
-						data !== null &&
-						'thesisVersions' in data
-					);
-				};
-
-				const hasThesisSkills = (
-					data: unknown,
-				): data is {
-					thesisRequiredSkills?: Array<{
-						thesisId: string;
-						skillId: string;
-						skill: { id: string; name: string };
-					}>;
-				} => {
-					return (
-						typeof data === 'object' &&
-						data !== null &&
-						'thesisRequiredSkills' in data
-					);
-				};
-
-				// Fetch lecturer info
-				const lecturerResponse = await lecturersService.findOne(
-					thesisData.lecturerId,
-				);
-				const lecturerResult = handleApiResponse(lecturerResponse, 'Success');
-
-				// Create ThesisWithRelations object with real data
-				const thesisWithRelations: ThesisWithRelations = {
-					...thesisData,
-					semesterId: thesisData.lecturerId, // Use lecturerId as temporary semesterId
-					lecturer: {
-						userId: lecturerResult.data?.id || thesisData.lecturerId,
-						isModerator: lecturerResult.data?.isModerator || false,
-						user: {
-							id: lecturerResult.data?.id || thesisData.lecturerId,
-							fullName: lecturerResult.data?.fullName || 'Unknown',
-							email: lecturerResult.data?.email || 'No email',
-							// Add phone number from lecturer API
-							phoneNumber: lecturerResult.data?.phoneNumber,
-						} as {
-							id: string;
-							fullName: string;
-							email: string;
-							phoneNumber?: string;
-						},
-					},
-					// Map thesisRequiredSkills to the expected format
-					thesisRequiredSkills: hasThesisSkills(thesisData)
-						? (thesisData.thesisRequiredSkills || []).map((item) => ({
-								id: item.skill.id,
-								name: item.skill.name,
-							}))
-						: [],
-					thesisVersions: hasThesisVersions(thesisData)
-						? thesisData.thesisVersions || []
-						: [],
-				};
-
-				setThesis(thesisWithRelations);
+				// Since we're using findOneWithRelations, the data already has the correct structure
+				setThesis(thesisData);
 
 				// If thesis has a group assigned, fetch group details
 				if (thesisData.groupId) {
