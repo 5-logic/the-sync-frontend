@@ -36,13 +36,29 @@ export default function SemesterFilter({
 			semester.status !== 'NotYet' && semester.status !== 'End',
 	);
 
+	// Auto-select first available semester if none selected and semesters are loaded
+	useEffect(() => {
+		if (
+			!selectedSemester &&
+			availableSemesters.length > 0 &&
+			!semestersLoading
+		) {
+			onSemesterChange(availableSemesters[0].id);
+		}
+	}, [
+		selectedSemester,
+		availableSemesters,
+		semestersLoading,
+		onSemesterChange,
+	]);
+
 	return (
 		<Select
 			value={selectedSemester}
 			onChange={onSemesterChange}
 			placeholder="Select Semester"
 			loading={semestersLoading || loading}
-			allowClear={true}
+			allowClear={false}
 		>
 			{availableSemesters.map((semester) => (
 				<Option key={semester.id} value={semester.id}>
