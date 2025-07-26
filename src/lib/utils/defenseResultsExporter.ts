@@ -3,9 +3,9 @@ import * as XLSX from 'xlsx-js-style';
 
 import {
 	addHeadersAndData,
-	applyCellStyling,
 	createMergesAndGroupBoundaries,
 	getDataRowStyle,
+	getDataRowStyleWithLeftAlign,
 	getHeaderStyle,
 	getSubtitleStyle,
 	getTitleStyle,
@@ -118,25 +118,51 @@ const applyDefenseResultsMergesAndStyling = (
 	// Apply merges to worksheet
 	ws['!merges'] = merges;
 
-	// Apply styling using shared utility
-	applyCellStyling(ws, groupBoundaries, 7, getDefenseResultsCellStyle);
+	// Apply styling using shared utility with special handling for Full Name column
+	applyDefenseResultsCellStyling(ws, groupBoundaries, 7);
 };
 
-const getDefenseResultsCellStyle = (
-	rowIndex: number,
+const applyDefenseResultsCellStyling = (
+	ws: XLSX.WorkSheet,
 	groupBoundaries: number[],
+	totalColumns: number,
 ) => {
-	if (rowIndex === 0) {
-		return getTitleStyle('FFE6CC'); // Orange theme for defense results
+	const columnLetter = String.fromCharCode(65 + totalColumns - 1); // A=65, so A+7=H for 8 columns
+	const range = XLSX.utils.decode_range(ws['!ref'] || `A1:${columnLetter}1`);
+
+	for (let R = range.s.r; R <= range.e.r; ++R) {
+		for (let C = range.s.c; C <= range.e.c; ++C) {
+			const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
+
+			// Create cell if it doesn't exist
+			if (!ws[cellAddress]) {
+				ws[cellAddress] = { v: '', t: 's' };
+			}
+
+			// Apply styling based on row type and column
+			let cellStyle;
+			if (R === 0) {
+				cellStyle = getTitleStyle('FFE6CC'); // Orange theme for defense results
+			} else if (R === 1) {
+				cellStyle = getSubtitleStyle('FFF2E6'); // Light orange theme for subtitle
+			} else if (R === 2) {
+				cellStyle = {}; // Empty row - no styling (white background, no borders)
+			} else if (R === 3) {
+				cellStyle = getHeaderStyle('FFF2E6'); // Light orange for header
+			} else {
+				// Data rows - use left alignment for Full Name column (column index 2)
+				if (C === 2) {
+					cellStyle = getDataRowStyleWithLeftAlign(
+						R,
+						groupBoundaries,
+						'808080',
+					);
+				} else {
+					cellStyle = getDataRowStyle(R, groupBoundaries, '808080');
+				}
+			}
+
+			ws[cellAddress].s = cellStyle;
+		}
 	}
-	if (rowIndex === 1) {
-		return getSubtitleStyle('FFF2E6'); // Light orange theme for subtitle
-	}
-	if (rowIndex === 2) {
-		return {}; // Empty row - no styling (white background, no borders)
-	}
-	if (rowIndex === 3) {
-		return getHeaderStyle('FFF2E6'); // Light orange for header
-	}
-	return getDataRowStyle(rowIndex, groupBoundaries, '808080');
 };
