@@ -140,38 +140,14 @@ export default function GroupDetailCard({
 			}
 			loading={loading}
 		>
-			<Space direction="vertical" size="large" style={{ width: '100%' }}>
-				<Row gutter={[16, 16]}>
-					{/* Group Information */}
-					<Col xs={24} lg={12}>
+			<Row gutter={[16, 16]}>
+				{/* Left Column - Group Information and Supervisor Information */}
+				<Col xs={24} lg={12}>
+					<Space direction="vertical" size="middle" style={{ width: '100%' }}>
+						{/* Group Information */}
 						<GroupInfoCard group={groupDashboard} viewOnly={true} />
-					</Col>
 
-					{/* Thesis Status */}
-					<Col xs={24} lg={12}>
-						{hasThesis ? (
-							<ThesisStatusCard thesisId={thesisId!} />
-						) : (
-							<Card title="Thesis Status">
-								<div style={{ textAlign: 'center', color: '#999' }}>
-									No thesis assigned yet
-								</div>
-							</Card>
-						)}
-					</Col>
-				</Row>
-
-				<Row gutter={[16, 16]}>
-					{/* Progress Overview */}
-					<Col xs={24} lg={12}>
-						<ProgressOverviewCard
-							thesisId={thesisId}
-							hideTrackMilestones={true}
-						/>
-					</Col>
-
-					{/* Supervisor Information */}
-					<Col xs={24} lg={12}>
+						{/* Supervisor Information */}
 						{hasThesis ? (
 							<SupervisorInfoCard thesisId={thesisId!} />
 						) : (
@@ -181,9 +157,31 @@ export default function GroupDetailCard({
 								</div>
 							</Card>
 						)}
-					</Col>
-				</Row>
-			</Space>
+					</Space>
+				</Col>
+
+				{/* Right Column - Thesis Status and Progress Overview */}
+				<Col xs={24} lg={12}>
+					<Space direction="vertical" size="middle" style={{ width: '100%' }}>
+						{/* Thesis Status */}
+						{hasThesis ? (
+							<ThesisStatusCard thesisId={thesisId!} />
+						) : (
+							<Card title="Thesis Status">
+								<div style={{ textAlign: 'center', color: '#999' }}>
+									No thesis assigned yet
+								</div>
+							</Card>
+						)}
+
+						{/* Progress Overview */}
+						<ProgressOverviewCard
+							thesisId={thesisId}
+							hideTrackMilestones={true}
+						/>
+					</Space>
+				</Col>
+			</Row>
 		</Card>
 	);
 }
