@@ -64,10 +64,11 @@ export default function GroupProgressPage() {
 	useEffect(() => {
 		if (selectedSemester) {
 			fetchGroupsBySemester(selectedSemester);
+			fetchMilestones(selectedSemester); // Fetch milestones for selected semester
 		} else {
 			clearGroups();
 		}
-	}, [selectedSemester, fetchGroupsBySemester, clearGroups]);
+	}, [selectedSemester, fetchGroupsBySemester, clearGroups, fetchMilestones]);
 
 	// Filter groups based on search
 	const filteredGroups = useMemo(() => {
@@ -105,8 +106,10 @@ export default function GroupProgressPage() {
 	const handleRefresh = useCallback(() => {
 		if (selectedSemester) {
 			fetchGroupsBySemester(selectedSemester);
+			fetchMilestones(selectedSemester);
+		} else {
+			fetchMilestones(); // Fetch default milestones
 		}
-		fetchMilestones();
 		if (selectedGroup) {
 			fetchGroupDetail(selectedGroup.id);
 		}
