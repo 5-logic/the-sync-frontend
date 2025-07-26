@@ -195,7 +195,7 @@ const CapstoneDefenseResults = () => {
 				const student = filteredData.find(
 					(item) => item.studentId === studentCode,
 				);
-				if (student && student.userId) {
+				if (student?.userId) {
 					if (status === 'Passed') {
 						passedStudents.push(student.userId);
 					} else if (status === 'Failed') {
