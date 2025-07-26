@@ -122,6 +122,55 @@ const applyDefenseResultsMergesAndStyling = (
 	applyDefenseResultsCellStyling(ws, groupBoundaries, 7);
 };
 
+/**
+ * Get cell style based on row index
+ * Reduces complexity by extracting row-based styling logic
+ */
+const getCellStyleByRow = (
+	rowIndex: number,
+	columnIndex: number,
+	groupBoundaries: number[],
+): object => {
+	switch (rowIndex) {
+		case 0:
+			return getTitleStyle('FFE6CC'); // Orange theme for defense results
+		case 1:
+			return getSubtitleStyle('FFF2E6'); // Light orange theme for subtitle
+		case 2:
+			return {}; // Empty row - no styling
+		case 3:
+			return getHeaderStyle('FFF2E6'); // Light orange for header
+		default:
+			return getDataRowStyleByColumn(rowIndex, columnIndex, groupBoundaries);
+	}
+};
+
+/**
+ * Get data row style based on column (Full Name gets left alignment)
+ * Further reduces complexity by separating column-specific logic
+ */
+const getDataRowStyleByColumn = (
+	rowIndex: number,
+	columnIndex: number,
+	groupBoundaries: number[],
+): object => {
+	const isFullNameColumn = columnIndex === 2;
+
+	return isFullNameColumn
+		? getDataRowStyleWithLeftAlign(rowIndex, groupBoundaries, '808080')
+		: getDataRowStyle(rowIndex, groupBoundaries, '808080');
+};
+
+/**
+ * Ensure cell exists in worksheet
+ * Extracted for clarity and reusability
+ */
+const ensureCellExists = (ws: XLSX.WorkSheet, cellAddress: string): void => {
+	if (!ws[cellAddress]) {
+		ws[cellAddress] = { v: '', t: 's' };
+	}
+};
+
 const applyDefenseResultsCellStyling = (
 	ws: XLSX.WorkSheet,
 	groupBoundaries: number[],
@@ -134,34 +183,11 @@ const applyDefenseResultsCellStyling = (
 		for (let C = range.s.c; C <= range.e.c; ++C) {
 			const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
 
-			// Create cell if it doesn't exist
-			if (!ws[cellAddress]) {
-				ws[cellAddress] = { v: '', t: 's' };
-			}
+			// Ensure cell exists
+			ensureCellExists(ws, cellAddress);
 
-			// Apply styling based on row type and column
-			let cellStyle;
-			if (R === 0) {
-				cellStyle = getTitleStyle('FFE6CC'); // Orange theme for defense results
-			} else if (R === 1) {
-				cellStyle = getSubtitleStyle('FFF2E6'); // Light orange theme for subtitle
-			} else if (R === 2) {
-				cellStyle = {}; // Empty row - no styling (white background, no borders)
-			} else if (R === 3) {
-				cellStyle = getHeaderStyle('FFF2E6'); // Light orange for header
-			} else {
-				// Data rows - use left alignment for Full Name column (column index 2)
-				if (C === 2) {
-					cellStyle = getDataRowStyleWithLeftAlign(
-						R,
-						groupBoundaries,
-						'808080',
-					);
-				} else {
-					cellStyle = getDataRowStyle(R, groupBoundaries, '808080');
-				}
-			}
-
+			// Apply styling based on row and column
+			const cellStyle = getCellStyleByRow(R, C, groupBoundaries);
 			ws[cellAddress].s = cellStyle;
 		}
 	}
