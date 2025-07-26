@@ -1,9 +1,10 @@
 'use client';
 
-import { Alert, Col, Row, Space } from 'antd';
+import { Alert, Space } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
 
 import { Header } from '@/components/common/Header';
+import GroupDetailCard from '@/components/features/lecturer/GroupProgess/GroupDetailCard';
 import GroupSearchTable from '@/components/features/lecturer/GroupProgess/GroupSearchTable';
 import MilestoneDetailCard from '@/components/features/lecturer/GroupProgess/MilestoneDetailCard';
 import { useGroupProgress } from '@/hooks/lecturer/useGroupProgress';
@@ -176,17 +177,22 @@ export default function GroupProgressPage() {
 							/>
 						)}
 
-						<Row gutter={16} style={{ flex: 1 }}>
-							<Col xs={24}>
-								<MilestoneDetailCard
-									group={selectedGroupDetail || selectedGroup}
-									milestone={selectedMilestone}
-									milestones={milestones}
-									onMilestoneChange={handleMilestoneChange}
-									loading={detailLoading || milestonesLoading}
-								/>
-							</Col>
-						</Row>
+						<Space direction="vertical" size="large" style={{ width: '100%' }}>
+							{/* Group Details Section */}
+							<GroupDetailCard
+								group={selectedGroupDetail || selectedGroup}
+								loading={detailLoading}
+							/>
+
+							{/* Milestone Progress Section */}
+							<MilestoneDetailCard
+								group={selectedGroupDetail || selectedGroup}
+								milestone={selectedMilestone}
+								milestones={milestones}
+								onMilestoneChange={handleMilestoneChange}
+								loading={detailLoading || milestonesLoading}
+							/>
+						</Space>
 					</>
 				)}
 			</Space>
