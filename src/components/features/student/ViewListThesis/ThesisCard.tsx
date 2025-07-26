@@ -169,6 +169,7 @@ export default function ThesisCard({
 
 				<Space align="center">
 					<Avatar size="small" icon={<UserOutlined />} />
+					<Typography.Text type="secondary">Lecturer:</Typography.Text>
 					<Typography.Text strong>
 						{thesis.lecturer.user.fullName}
 					</Typography.Text>
@@ -190,21 +191,12 @@ export default function ThesisCard({
 					}}
 				>
 					{visibleSkills.map((skill) => (
-						<Tag
-							key={skill.id}
-							color="processing"
-							style={{ borderRadius: 6, border: '1px solid #91d5ff' }}
-						>
+						<Tag key={skill.id} style={{ borderRadius: 6 }}>
 							{skill.name}
 						</Tag>
 					))}
 					{extraSkillsCount > 0 && (
-						<Tag
-							color="default"
-							style={{ borderRadius: 6, border: '1px solid #d9d9d9' }}
-						>
-							+{extraSkillsCount} more
-						</Tag>
+						<Tag style={{ borderRadius: 6 }}>+{extraSkillsCount} more</Tag>
 					)}
 					{visibleSkills.length === 0 && (
 						<Typography.Text type="secondary">

@@ -1,16 +1,21 @@
 'use client';
 
-import { EyeOutlined } from '@ant-design/icons';
-import { Button, Card, Empty, Tooltip } from 'antd';
+import { DisconnectOutlined, EyeOutlined } from '@ant-design/icons';
+import { Button, Card, Empty, Space, Tooltip } from 'antd';
 
 import { GroupDashboard } from '@/schemas/group';
 
 interface Props {
 	readonly group: GroupDashboard;
 	readonly onViewDetail?: () => void;
+	readonly onUnassignThesis?: () => void;
 }
 
-export default function ThesisCard({ group, onViewDetail }: Props) {
+export default function ThesisCard({
+	group,
+	onViewDetail,
+	onUnassignThesis,
+}: Props) {
 	const { thesis } = group;
 
 	if (!thesis) {
@@ -45,14 +50,25 @@ export default function ThesisCard({ group, onViewDetail }: Props) {
 				paddingRight: '20px',
 			}}
 			extra={
-				<Tooltip title="View Thesis Details">
-					<Button
-						type="text"
-						icon={<EyeOutlined />}
-						size="small"
-						onClick={onViewDetail}
-					/>
-				</Tooltip>
+				<Space>
+					<Tooltip title="View Thesis Details">
+						<Button
+							type="text"
+							icon={<EyeOutlined />}
+							size="small"
+							onClick={onViewDetail}
+						/>
+					</Tooltip>
+					<Tooltip title="Unassign Thesis">
+						<Button
+							type="text"
+							icon={<DisconnectOutlined />}
+							size="small"
+							onClick={onUnassignThesis}
+							danger
+						/>
+					</Tooltip>
+				</Space>
 			}
 		>
 			<div className="space-y-3">

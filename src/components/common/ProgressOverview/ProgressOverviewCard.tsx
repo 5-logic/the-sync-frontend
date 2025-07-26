@@ -80,6 +80,18 @@ export default function ProgressOverviewCard({
 				<div style={{ textAlign: 'center', color: '#999' }}>
 					No milestones found for current semester
 				</div>
+
+				{/* Show View Thesis Details button even when no milestones */}
+				<div style={{ marginTop: 16 }}>
+					<Button
+						type="primary"
+						block
+						onClick={handleViewThesisDetails}
+						disabled={!thesisId}
+					>
+						View Thesis Details
+					</Button>
+				</div>
 			</Card>
 		);
 	}

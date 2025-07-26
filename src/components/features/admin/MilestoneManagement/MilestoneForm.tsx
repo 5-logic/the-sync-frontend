@@ -29,6 +29,7 @@ type Props = Readonly<{
 	showSemesterField?: boolean; // Control visibility of semester field
 	files?: File[]; // For files state
 	onFilesChange?: (files: File[]) => void; // Callback for files change
+	onValuesChange?: () => void; // Callback for form values change
 }>;
 
 export default function MilestoneForm({
@@ -41,6 +42,7 @@ export default function MilestoneForm({
 	showSemesterField = true,
 	files = [],
 	onFilesChange,
+	onValuesChange,
 }: Props) {
 	const isEditMode = !!milestone;
 
@@ -189,10 +191,19 @@ export default function MilestoneForm({
 	// Set form values when milestone changes and in edit mode
 	useEffect(() => {
 		if (isEditMode && milestone) {
+			console.log('MilestoneForm - Setting form values:', {
+				milestoneId: milestone.id,
+				milestoneName: milestone.name,
+				note: milestone.note,
+				hasNoteField: 'note' in milestone,
+				allKeys: Object.keys(milestone),
+			});
+
 			form.setFieldsValue({
 				milestoneName: milestone.name,
 				semesterId: milestone.semesterId,
 				duration: [dayjs(milestone.startDate), dayjs(milestone.endDate)],
+				note: milestone.note || '',
 			});
 
 			// Note: For files, we can't restore File objects from milestone.documents
@@ -217,6 +228,7 @@ export default function MilestoneForm({
 			layout="vertical"
 			requiredMark={false}
 			disabled={disabled}
+			onValuesChange={onValuesChange}
 		>
 			<Row gutter={isEditMode ? [0, 16] : 16}>
 				<Col xs={24} md={getNameFieldSpan()}>
@@ -286,6 +298,20 @@ export default function MilestoneForm({
 								// Disable past dates for all cases
 								return current && current < dayjs().startOf('day');
 							}}
+						/>
+					</Form.Item>
+				</Col>
+			</Row>
+
+			{/* Note Field - Optional */}
+			<Row style={{ marginTop: 8 }}>
+				<Col span={24}>
+					<Form.Item label={<FormLabel text="Note" />} name="note">
+						<Input.TextArea
+							placeholder="Enter optional note for this milestone..."
+							rows={3}
+							maxLength={500}
+							showCount
 						/>
 					</Form.Item>
 				</Col>
