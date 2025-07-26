@@ -8,11 +8,11 @@ import {
 } from '@/components/common/loading';
 import { useModeratorAuth } from '@/hooks/auth';
 
-const AssignStudent = lazy(
-	() => import('@/components/features/lecturer/AssignStudent'),
+const GroupManagement = lazy(
+	() => import('@/components/features/lecturer/GroupManagement'),
 );
 
-export default function LecturerAssignStudentClient() {
+export default function LecturerGroupManagementClient() {
 	const { isAuthorized, loading } = useModeratorAuth();
 
 	// Show loading skeleton while checking authorization
@@ -28,7 +28,7 @@ export default function LecturerAssignStudentClient() {
 	// Use Suspense for lazy loading the main component
 	return (
 		<Suspense fallback={<PageContentSkeleton />}>
-			<AssignStudent />
+			<GroupManagement />
 		</Suspense>
 	);
 }

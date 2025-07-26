@@ -385,7 +385,7 @@ export const useThesisStore = create<ThesisState>()(
 
 					// Use bulk API for single thesis toggle
 					const response = await thesisService.publishTheses({
-						thesesIds: [id],
+						thesisIds: [id],
 						isPublish: !currentThesis.isPublish,
 					});
 					const result = handleApiResponse(response);
