@@ -178,6 +178,7 @@ export default function GroupDetailCard({
 						<LecturerProgressOverviewCard
 							thesisId={thesisId}
 							hideTrackMilestones={true}
+							semesterId={groupDashboard.semester.id}
 						/>
 					</Space>
 				</Col>
