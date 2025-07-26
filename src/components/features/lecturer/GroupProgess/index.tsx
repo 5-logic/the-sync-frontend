@@ -21,9 +21,6 @@ export default function GroupProgressPage() {
 	>(undefined);
 	const [searchText, setSearchText] = useState<string>('');
 	const [selectedSemester, setSelectedSemester] = useState<string | null>(null);
-	const [lastFetchedSemester, setLastFetchedSemester] = useState<string | null>(
-		null,
-	);
 	const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
 	// Get current user session to track user changes
@@ -78,7 +75,6 @@ export default function GroupProgressPage() {
 			clearGroups();
 			setSelectedGroup(undefined);
 			setSelectedSemester(null);
-			setLastFetchedSemester(null);
 
 			// Clear store cache nếu có
 			refreshCache();
@@ -88,28 +84,23 @@ export default function GroupProgressPage() {
 		setCurrentUserId(newUserId);
 	}, [session?.user?.id, currentUserId, clearGroups, refreshCache]);
 
-	// Smart fetch groups và milestones khi semester changes - chỉ fetch khi thực sự cần thiết và user đã được xác định
+	// Smart fetch groups và milestones khi semester changes - fetch mỗi lần thay đổi
 	useEffect(() => {
 		// Chỉ fetch khi đã có user ID (đã login) để tránh fetch với wrong user context
 		if (!currentUserId) return;
 
 		if (selectedSemester) {
-			// Chỉ fetch nếu semester khác với lần trước để tránh reload không cần thiết
-			if (selectedSemester !== lastFetchedSemester) {
-				fetchGroupsBySemester(selectedSemester);
-				fetchMilestones(selectedSemester);
-				setLastFetchedSemester(selectedSemester);
-			}
+			// Fetch groups và milestones cho semester mới
+			fetchGroupsBySemester(selectedSemester);
+			fetchMilestones(selectedSemester);
 		} else {
-			// Chỉ clear khi thực sự cần thiết
+			// Clear groups khi không có semester được chọn
 			if (groups.length > 0) {
 				clearGroups();
 			}
-			setLastFetchedSemester(null);
 		}
 	}, [
 		selectedSemester,
-		lastFetchedSemester,
 		currentUserId,
 		fetchGroupsBySemester,
 		clearGroups,
@@ -150,7 +141,7 @@ export default function GroupProgressPage() {
 		[milestones, selectMilestone, fetchGroupDetail],
 	);
 
-	// Memoized refresh handler với smart logic, cache management và user context validation
+	// Memoized refresh handler với smart logic và user context validation
 	const handleRefresh = useCallback(() => {
 		// Chỉ refresh nếu có user context để tránh fetch với wrong user
 		if (!currentUserId) {
@@ -158,13 +149,10 @@ export default function GroupProgressPage() {
 			return;
 		}
 
-		// Background refresh: không chặn UI, force refresh cache
+		// Refresh data cho current semester
 		if (selectedSemester) {
-			// Force refresh với parameter true để bypass cache
-			fetchGroupsBySemester(selectedSemester, true);
+			fetchGroupsBySemester(selectedSemester);
 			fetchMilestones(selectedSemester);
-			// Update last fetched để maintain cache consistency
-			setLastFetchedSemester(selectedSemester);
 		} else {
 			fetchMilestones(); // Fetch default milestones
 		}
@@ -182,7 +170,6 @@ export default function GroupProgressPage() {
 		selectedGroup,
 		fetchGroupDetail,
 		refreshCache,
-		setLastFetchedSemester,
 	]);
 
 	// Memoized milestone change handler
