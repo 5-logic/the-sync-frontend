@@ -11,7 +11,7 @@ interface UseMilestonesReturn {
 	selectedMilestone: Milestone | null;
 	loading: boolean;
 	error: string | null;
-	fetchMilestones: () => Promise<void>;
+	fetchMilestones: (semesterId?: string) => Promise<void>;
 	selectMilestone: (milestone: Milestone | null) => void;
 }
 
@@ -23,66 +23,73 @@ export function useMilestones(): UseMilestonesReturn {
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
-	const fetchMilestones = useCallback(async () => {
-		try {
-			setLoading(true);
-			setError(null);
+	const fetchMilestones = useCallback(
+		async (semesterId?: string) => {
+			try {
+				setLoading(true);
+				setError(null);
 
-			// Step 1: Fetch all semesters
-			const semesterResponse = await semesterService.findAll();
-			const semesterResult = handleApiResponse(semesterResponse);
+				let targetSemesterId = semesterId;
 
-			if (!semesterResult.success || !semesterResult.data) {
-				throw new Error(
-					semesterResult.error?.message || 'Failed to fetch semesters',
+				// If no specific semester provided, find the ongoing semester
+				if (!targetSemesterId) {
+					const semesterResponse = await semesterService.findAll();
+					const semesterResult = handleApiResponse(semesterResponse);
+
+					if (!semesterResult.success || !semesterResult.data) {
+						throw new Error(
+							semesterResult.error?.message || 'Failed to fetch semesters',
+						);
+					}
+
+					const ongoingSemester = semesterResult.data.find(
+						(semester: Semester) => semester.status === 'Ongoing',
+					);
+
+					if (!ongoingSemester) {
+						// No ongoing semester found, set empty milestones
+						setMilestones([]);
+						setSelectedMilestone(null);
+						return;
+					}
+
+					targetSemesterId = ongoingSemester.id;
+				}
+
+				// Fetch milestones for the target semester
+				const milestoneResponse =
+					await milestoneService.findBySemester(targetSemesterId);
+				const milestoneResult = handleApiResponse(milestoneResponse);
+
+				if (!milestoneResult.success) {
+					throw new Error(
+						milestoneResult.error?.message || 'Failed to fetch milestones',
+					);
+				}
+
+				// Sort milestones by start date (ascending)
+				const sortedMilestones = (milestoneResult.data || []).sort(
+					(a: Milestone, b: Milestone) =>
+						new Date(a.startDate).getTime() - new Date(b.startDate).getTime(),
 				);
+
+				setMilestones(sortedMilestones);
+
+				// Auto-select the first milestone if none selected
+				if (!selectedMilestone && sortedMilestones.length > 0) {
+					setSelectedMilestone(sortedMilestones[0]);
+				}
+			} catch (error) {
+				const errorMessage =
+					error instanceof Error ? error.message : 'Failed to fetch milestones';
+				setError(errorMessage);
+				console.error('Error fetching milestones:', error);
+			} finally {
+				setLoading(false);
 			}
-
-			// Step 2: Find the ongoing semester
-			const ongoingSemester = semesterResult.data.find(
-				(semester: Semester) => semester.status === 'Ongoing',
-			);
-
-			if (!ongoingSemester) {
-				// No ongoing semester found, set empty milestones
-				setMilestones([]);
-				setSelectedMilestone(null);
-				return;
-			}
-
-			// Step 3: Fetch milestones for the ongoing semester
-			const milestoneResponse = await milestoneService.findBySemester(
-				ongoingSemester.id,
-			);
-			const milestoneResult = handleApiResponse(milestoneResponse);
-
-			if (!milestoneResult.success) {
-				throw new Error(
-					milestoneResult.error?.message || 'Failed to fetch milestones',
-				);
-			}
-
-			// Step 4: Sort milestones by start date (ascending)
-			const sortedMilestones = (milestoneResult.data || []).sort(
-				(a: Milestone, b: Milestone) =>
-					new Date(a.startDate).getTime() - new Date(b.startDate).getTime(),
-			);
-
-			setMilestones(sortedMilestones);
-
-			// Auto-select the first milestone if none selected
-			if (!selectedMilestone && sortedMilestones.length > 0) {
-				setSelectedMilestone(sortedMilestones[0]);
-			}
-		} catch (error) {
-			const errorMessage =
-				error instanceof Error ? error.message : 'Failed to fetch milestones';
-			setError(errorMessage);
-			console.error('Error fetching milestones:', error);
-		} finally {
-			setLoading(false);
-		}
-	}, [selectedMilestone]);
+		},
+		[selectedMilestone],
+	);
 
 	const selectMilestone = useCallback((milestone: Milestone | null) => {
 		setSelectedMilestone(milestone);
