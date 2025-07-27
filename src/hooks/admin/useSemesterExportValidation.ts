@@ -40,12 +40,12 @@ const validateSpecificSemester = (
 };
 
 export const useSemesterExportValidation = (
-	selectedSemester: string,
+	selectedSemesterId: string,
 	semesters: Semester[],
 ): ExportValidationResult => {
 	return useMemo(() => {
 		const selectedSemesterData = semesters.find(
-			(s) => s.name === selectedSemester,
+			(s) => s.id === selectedSemesterId,
 		);
 
 		if (!selectedSemesterData) {
@@ -56,5 +56,5 @@ export const useSemesterExportValidation = (
 		}
 
 		return validateSpecificSemester(selectedSemesterData);
-	}, [selectedSemester, semesters]);
+	}, [selectedSemesterId, semesters]);
 };
