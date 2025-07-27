@@ -388,26 +388,16 @@ export default function AssignSupervisorModal({
 	};
 
 	// Helper methods for determining field requirements
-	const isFieldRequiredInChangeMode = (): boolean => {
-		return true; // Make both supervisors required in change mode
-	};
-
-	const isFieldRequiredInAssignMode = (): boolean => {
-		return true; // Make both supervisors required in assign mode
+	const isBothSupervisorsRequired = (): boolean => {
+		return true; // Both supervisors required in all modes
 	};
 
 	const isSupervisor1Required = (): boolean => {
-		if (isChangeMode) {
-			return isFieldRequiredInChangeMode();
-		}
-		return isFieldRequiredInAssignMode();
+		return isBothSupervisorsRequired();
 	};
 
 	const isSupervisor2Required = (): boolean => {
-		if (isChangeMode) {
-			return isFieldRequiredInChangeMode(); // Also require supervisor2 in change mode
-		}
-		return isFieldRequiredInAssignMode(); // Also require supervisor2 in assign mode
+		return isBothSupervisorsRequired();
 	};
 
 	return (
