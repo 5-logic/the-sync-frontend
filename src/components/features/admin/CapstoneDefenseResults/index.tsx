@@ -16,10 +16,7 @@ import { useBulkUpdateModal } from '@/hooks/admin/useBulkUpdateModal';
 import { useCapstoneManagement } from '@/hooks/admin/useCapstoneManagement';
 import { useSemesterExportValidation } from '@/hooks/admin/useSemesterExportValidation';
 import { useDebouncedSearch } from '@/hooks/ui/useDebounce';
-import {
-	createStatusUpdateSummary,
-	getDefaultStatusBySemester,
-} from '@/lib/utils/defenseResultsApi';
+import { createStatusUpdateSummary } from '@/lib/utils/defenseResultsApi';
 import { exportDefenseResultsToExcel } from '@/lib/utils/defenseResultsExporter';
 import { showNotification } from '@/lib/utils/notification';
 import '@/styles/components.css';
@@ -54,7 +51,7 @@ const CapstoneDefenseResults = () => {
 		}
 	}, [availableSemesters, selectedSemester]);
 
-	// Clear status updates when semester changes to ensure proper defaults
+	// Clear status updates when semester changes
 	React.useEffect(() => {
 		if (selectedSemester) {
 			setStatusUpdates({});
@@ -216,16 +213,11 @@ const CapstoneDefenseResults = () => {
 			const student = filteredData.find((item) => item.studentId === studentId);
 			if (!student) return false;
 
-			const currentDisplayedStatus =
-				student.status && student.status !== 'NotYet'
-					? student.status
-					: getDefaultStatusBySemester(
-							semesters.find((s) => s.id === selectedSemester) || null,
-						);
-
-			return newStatus !== currentDisplayedStatus;
+			// Simply compare with the actual status from API
+			const currentStatus = student.status || '';
+			return newStatus !== currentStatus;
 		});
-	}, [statusUpdates, filteredData, semesters, selectedSemester]);
+	}, [statusUpdates, filteredData]);
 
 	const getDisplayStatus = useCallback(
 		(originalStatus: string, studentId: string) => {
@@ -233,25 +225,10 @@ const CapstoneDefenseResults = () => {
 			const pendingStatus = statusUpdates[studentId];
 			if (pendingStatus) return pendingStatus;
 
-			// Priority 2: Smart default based on current semester filter
-			const currentSemester = semesters.find((s) => s.id === selectedSemester);
-			const semesterBasedDefault = getDefaultStatusBySemester(
-				currentSemester || null,
-			);
-
-			// Priority 3: Existing database status (only if it matches semester context)
-			if (originalStatus && originalStatus !== 'NotYet') {
-				// If semester suggests "NotYet" but DB has "Ongoing", prefer semester logic
-				if (semesterBasedDefault === 'NotYet' && originalStatus === 'Ongoing') {
-					return semesterBasedDefault;
-				}
-				return originalStatus;
-			}
-
-			// Priority 4: Semester-based default
-			return semesterBasedDefault;
+			// Priority 2: Actual status from API
+			return originalStatus || '';
 		},
-		[statusUpdates, semesters, selectedSemester],
+		[statusUpdates],
 	);
 
 	const columns = useMemo(
