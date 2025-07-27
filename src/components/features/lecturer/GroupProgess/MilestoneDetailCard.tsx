@@ -294,16 +294,6 @@ export default function MilestoneDetailCard({
 										: 'No submission yet'}
 							</Text>
 						</Col>
-						<Col>
-							<Text strong>Uploaded by: </Text>
-							<Text type="secondary">
-								{submission && submission.group
-									? `Group ${submission.group.code}`
-									: isFullMockGroup(group) && group.uploadedBy
-										? group.uploadedBy
-										: 'N/A'}
-							</Text>
-						</Col>
 					</Row>
 
 					{/* Additional submission info */}
