@@ -579,7 +579,7 @@ export default function AssignSupervisors() {
 				lecturerOptions={lecturerOptions}
 				showAssignNow={true} // Always show assign now button
 				isChangeMode={
-					selectedGroup ? selectedGroup.supervisors.length >= 2 : false
+					selectedGroup ? selectedGroup.supervisors.length === 2 : false
 				}
 			/>
 		</Space>

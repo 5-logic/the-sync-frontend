@@ -150,8 +150,8 @@ export default function AssignSupervisorModal({
 					(id): id is string => Boolean(id),
 				);
 
-				// In change mode, require both supervisors
-				if (isChangeMode && selected.length < 2) {
+				// Both modes now require both supervisors
+				if (selected.length < 2) {
 					if (!values.supervisor1) {
 						form.setFields([
 							{
@@ -168,16 +168,6 @@ export default function AssignSupervisorModal({
 							},
 						]);
 					}
-					return;
-				}
-
-				if (!isChangeMode && selected.length === 0) {
-					form.setFields([
-						{
-							name: 'supervisor1',
-							errors: ['Please select at supervisor 1'],
-						},
-					]);
 					return;
 				}
 
@@ -403,7 +393,7 @@ export default function AssignSupervisorModal({
 	};
 
 	const isFieldRequiredInAssignMode = (): boolean => {
-		return true; // Make supervisor1 required in assign mode
+		return true; // Make both supervisors required in assign mode
 	};
 
 	const isSupervisor1Required = (): boolean => {
@@ -417,7 +407,7 @@ export default function AssignSupervisorModal({
 		if (isChangeMode) {
 			return isFieldRequiredInChangeMode(); // Also require supervisor2 in change mode
 		}
-		return false; // Not required in assign mode
+		return isFieldRequiredInAssignMode(); // Also require supervisor2 in assign mode
 	};
 
 	return (
