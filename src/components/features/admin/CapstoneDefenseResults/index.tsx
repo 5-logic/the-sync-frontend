@@ -41,8 +41,19 @@ const CapstoneDefenseResults = () => {
 	// Use new hooks for business logic
 	const { updateIndividualStatus } = useBulkDefenseUpdate();
 	const { showBulkUpdateModal } = useBulkUpdateModal();
-	const { semesters, filteredData, availableSemesters, refresh, loading } =
-		useCapstoneManagement(selectedSemester, debouncedSearchValue);
+	const {
+		semesters,
+		filteredData,
+		availableSemesters,
+		refresh,
+		loading,
+		clearSemesterCache,
+	} = useCapstoneManagement(selectedSemester, debouncedSearchValue);
+
+	// Clear semester cache on component mount to ensure fresh data
+	React.useEffect(() => {
+		clearSemesterCache();
+	}, [clearSemesterCache]); // Include dependency
 
 	// Set the first available semester as default when semesters are loaded
 	React.useEffect(() => {

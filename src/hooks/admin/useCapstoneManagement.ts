@@ -19,6 +19,7 @@ export const useCapstoneManagement = (
 		tableData,
 		fetchSemesters,
 		fetchGroupsBySemester,
+		clearSemesterCache,
 	} = useCapstoneManagementStore();
 
 	// Fetch semesters on component mount
@@ -95,5 +96,6 @@ export const useCapstoneManagement = (
 					? fetchGroupsBySemester(selectedSemesterId, true)
 					: Promise.resolve(),
 			]),
+		clearSemesterCache,
 	};
 };
