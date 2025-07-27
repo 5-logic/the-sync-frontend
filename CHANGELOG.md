@@ -9,6 +9,64 @@ For more information about this project, see the [README](./README.md).
 
 ---
 
+## [0.6.4] - 2025-07-27
+
+### Added
+
+#### Lecturer Moderator Dashboard
+
+- New moderator dashboard page for lecturers with comprehensive management capabilities ([#287](https://github.com/5-logic/the-sync-frontend/pull/287))
+- LecturerModeratorDashboardClient component with lazy loading and authentication
+- Enhanced sidebar navigation with dedicated moderator dashboard access
+- Updated auth constants to support moderator dashboard routing
+
+### Changed
+
+#### Supervisor Assignment Enhancements
+
+- **Breaking Change:** Now requires both supervisors in all assignment modes for improved thesis management
+- Enhanced AssignSupervisorModal with stricter validation for supervisor selection ([#287](https://github.com/5-logic/the-sync-frontend/pull/287))
+- Improved supervisor assignment workflow with both assign and change modes requiring dual supervision
+- Enhanced form validation to ensure complete supervisor assignment before submission
+
+#### Error Handling and User Experience
+
+- Improved error handling in thesis publishing by utilizing backend error messages
+- Enhanced supervision store integration for better error handling in supervisor assignment
+- Better error feedback and user notifications throughout supervisor assignment process
+- Improved state management for assignment operations with proper error boundaries
+
+#### Navigation and Accessibility
+
+- Updated lecturer sidebar configuration to include moderator dashboard menu item
+- Enhanced route protection and authentication for moderator-specific features
+- Improved navigation patterns for seamless transition between lecturer and moderator functions
+
+### Fixed
+
+#### Assignment and Publishing Issues
+
+- Fixed supervisor assignment validation to prevent incomplete assignments
+- Improved thesis publishing error handling with proper backend message integration
+- Enhanced assignment modal state management for better user experience
+- Fixed navigation issues in lecturer sidebar for moderator dashboard access
+
+### Technical Details
+
+- **Files Changed:** 11 files with 592 additions and 498 deletions
+- **New Components:** LecturerModeratorDashboardClient for dedicated moderator interface
+- **Enhanced Components:** AssignSupervisorModal, ThesisTable, LecturerSidebar configuration
+- **Store Improvements:** Enhanced usePublishThesesStore and useSupervisionStore for better error handling
+- **Authentication:** Extended auth constants for moderator dashboard routing
+
+### Migration Notes
+
+- Supervisor assignments now require both supervisors in all modes - review existing assignments
+- Moderator dashboard requires proper authentication - ensure user permissions are configured
+- Enhanced error handling may change error message display - review custom error components
+
+---
+
 ## [0.6.3] - 2025-07-26
 
 ### Added
