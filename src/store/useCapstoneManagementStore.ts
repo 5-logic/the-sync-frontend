@@ -45,7 +45,6 @@ interface CapstoneManagementState {
 	setSelectedSemester: (semesterId: string) => void;
 	transformGroupsToTableData: (groups: GroupWithDetails[]) => GroupTableData[];
 	refresh: () => Promise<void>;
-	clearSemesterCache: () => void;
 
 	// Helper methods
 	buildTableDataRows: (groups: GroupWithDetails[]) => GroupTableData[];
@@ -101,14 +100,11 @@ export const useCapstoneManagementStore = create<CapstoneManagementState>(
 
 		fetchGroupsBySemester: async (semesterId: string, forceRefresh = false) => {
 			const { groupsBySemseter, selectedSemesterId } = get();
-
-			// Always refresh if switching to a different semester
-			const shouldRefresh =
-				forceRefresh ||
-				selectedSemesterId !== semesterId ||
-				groupsBySemseter.length === 0;
-
-			if (!shouldRefresh) {
+			if (
+				!forceRefresh &&
+				groupsBySemseter.length > 0 &&
+				selectedSemesterId === semesterId
+			) {
 				return; // Use cached data
 			}
 
@@ -177,6 +173,15 @@ export const useCapstoneManagementStore = create<CapstoneManagementState>(
 						?.map((supervision) => supervision.lecturer.user.fullName)
 						.join(', ') || '';
 
+				// Try to find semester info from group data first, then fallback to selected semester
+				const groupSemester = semesters.find((s) => s.id === group.semesterId);
+				const semesterToUse = groupSemester || currentSemester;
+				const semesterDisplay =
+					semesterToUse?.code ||
+					semesterToUse?.name ||
+					selectedSemesterId ||
+					'Unknown';
+
 				group.studentGroupParticipations.forEach((participation) => {
 					const student = participation.student;
 					const enrollment = student.enrollments?.[0]; // Get first enrollment
@@ -188,11 +193,7 @@ export const useCapstoneManagementStore = create<CapstoneManagementState>(
 						name: student.user.fullName,
 						major: student.major.name,
 						thesisName: group.thesis?.englishName || 'Not assigned',
-						semester:
-							currentSemester?.code ||
-							currentSemester?.name ||
-							selectedSemesterId ||
-							'Unknown', // Fallback to name or ID if code is empty
+						semester: semesterDisplay,
 						groupId: group.id,
 						rowSpanGroup: 0, // Will be calculated later
 						rowSpanMajor: 0, // Will be calculated later
@@ -296,14 +297,6 @@ export const useCapstoneManagementStore = create<CapstoneManagementState>(
 					error instanceof Error ? error.message : 'Failed to refresh data';
 				showNotification.error('Failed to refresh data', errorMessage);
 			}
-		},
-
-		clearSemesterCache: () => {
-			set({
-				groupsBySemseter: [],
-				tableData: [],
-				selectedSemesterId: '',
-			});
 		},
 
 		clearError: () => {
