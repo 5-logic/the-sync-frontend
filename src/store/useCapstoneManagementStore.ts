@@ -1,25 +1,11 @@
 import { create } from 'zustand';
 
-import groupService, { Group } from '@/lib/services/groups.service';
-import lecturerService from '@/lib/services/lecturers.service';
-import semesterService from '@/lib/services/semesters.service';
-import supervisionService from '@/lib/services/supervisions.service';
+import semesterService, {
+	GroupWithDetails,
+} from '@/lib/services/semesters.service';
 import { handleApiResponse } from '@/lib/utils/handleApi';
 import { showNotification } from '@/lib/utils/notification';
-import { GroupDashboard } from '@/schemas/group';
 import { Semester as SemesterType } from '@/schemas/semester';
-
-export interface GroupDetailWithMembers extends GroupDashboard {
-	supervisions?: Array<{
-		id: string;
-		lecturerId: string;
-		lecturer: {
-			id: string;
-			fullName: string;
-			email: string;
-		};
-	}>;
-}
 
 export interface GroupTableData {
 	stt: number;
@@ -40,56 +26,28 @@ export interface GroupTableData {
 
 interface CapstoneManagementState {
 	// Data
-	groups: Group[];
-	groupsWithDetails: GroupDetailWithMembers[];
-	tableData: GroupTableData[];
 	semesters: SemesterType[];
-	selectedSemester: string;
+	groupsBySemseter: GroupWithDetails[];
+	tableData: GroupTableData[];
+	selectedSemesterId: string;
 
 	// UI State
 	loading: boolean;
-	loadingDetails: boolean;
+	loadingGroups: boolean;
 	lastError: string | null;
 
 	// Actions
-	fetchGroups: (forceRefresh?: boolean) => Promise<void>;
-	fetchGroupDetails: (
-		groupIds: string[],
+	fetchSemesters: (forceRefresh?: boolean) => Promise<void>;
+	fetchGroupsBySemester: (
+		semesterId: string,
 		forceRefresh?: boolean,
 	) => Promise<void>;
-	fetchSemesters: (forceRefresh?: boolean) => Promise<void>;
-	refresh: () => Promise<void>;
 	setSelectedSemester: (semesterId: string) => void;
-	transformGroupsToTableData: (
-		groups: GroupDetailWithMembers[],
-	) => GroupTableData[];
-	getFilteredTableData: (
-		searchTerm?: string,
-		semesterFilter?: string,
-	) => GroupTableData[];
+	transformGroupsToTableData: (groups: GroupWithDetails[]) => GroupTableData[];
+	refresh: () => Promise<void>;
 
-	// Helper methods for reducing complexity
-	processGroupResponses: (
-		responses: unknown[],
-	) => Promise<GroupDetailWithMembers[]>;
-	enrichGroupWithSupervisions: (
-		groupData: GroupDashboard,
-	) => Promise<GroupDetailWithMembers>;
-	fetchSupervisions: (
-		thesisId: string,
-	) => Promise<NonNullable<GroupDetailWithMembers['supervisions']>>;
-	fetchLecturerForSupervision: (supervision: {
-		lecturerId: string;
-	}) => Promise<{
-		id: string;
-		lecturerId: string;
-		lecturer: {
-			id: string;
-			fullName: string;
-			email: string;
-		};
-	} | null>;
-	buildTableDataRows: (groups: GroupDetailWithMembers[]) => GroupTableData[];
+	// Helper methods
+	buildTableDataRows: (groups: GroupWithDetails[]) => GroupTableData[];
 	calculateRowSpans: (tableData: GroupTableData[]) => void;
 
 	clearError: () => void;
@@ -99,33 +57,74 @@ interface CapstoneManagementState {
 export const useCapstoneManagementStore = create<CapstoneManagementState>(
 	(set, get) => ({
 		// Initial state
-		groups: [],
-		groupsWithDetails: [],
-		tableData: [],
 		semesters: [],
-		selectedSemester: '',
+		groupsBySemseter: [],
+		tableData: [],
+		selectedSemesterId: '',
 		loading: false,
-		loadingDetails: false,
+		loadingGroups: false,
 		lastError: null,
 
 		// Actions
-		fetchGroups: async (forceRefresh = false) => {
-			const { groups } = get();
-			if (!forceRefresh && groups.length > 0) {
+		fetchSemesters: async (forceRefresh = false) => {
+			const { semesters } = get();
+			if (!forceRefresh && semesters.length > 0) {
 				return; // Use cached data
 			}
 
 			set({ loading: true, lastError: null });
 			try {
-				const response = await groupService.findAll();
+				const response = await semesterService.findAll();
 
 				const result = handleApiResponse(response);
 				if (result.success && result.data) {
-					set({ groups: result.data, loading: false });
+					set({ semesters: result.data, loading: false });
+				} else {
+					set({
+						lastError: result.error?.message || 'Failed to fetch semesters',
+						loading: false,
+					});
+					showNotification.error(
+						'Failed to fetch semesters',
+						result.error?.message ||
+							'An error occurred while fetching semesters',
+					);
+				}
+			} catch (error) {
+				const errorMessage =
+					error instanceof Error ? error.message : 'Failed to fetch semesters';
+				set({ lastError: errorMessage, loading: false });
+				showNotification.error('Failed to fetch semesters', errorMessage);
+			}
+		},
+
+		fetchGroupsBySemester: async (semesterId: string, forceRefresh = false) => {
+			const { groupsBySemseter, selectedSemesterId } = get();
+			if (
+				!forceRefresh &&
+				groupsBySemseter.length > 0 &&
+				selectedSemesterId === semesterId
+			) {
+				return; // Use cached data
+			}
+
+			set({ loadingGroups: true, lastError: null });
+			try {
+				const response = await semesterService.getGroupsBySemester(semesterId);
+
+				const result = handleApiResponse(response);
+				if (result.success && result.data) {
+					const tableData = get().transformGroupsToTableData(result.data);
+					set({
+						groupsBySemseter: result.data,
+						tableData,
+						selectedSemesterId: semesterId,
+						loadingGroups: false,
+					});
 				} else {
 					set({
 						lastError: result.error?.message || 'Failed to fetch groups',
-						loading: false,
+						loadingGroups: false,
 					});
 					showNotification.error(
 						'Failed to fetch groups',
@@ -135,237 +134,73 @@ export const useCapstoneManagementStore = create<CapstoneManagementState>(
 			} catch (error) {
 				const errorMessage =
 					error instanceof Error ? error.message : 'Failed to fetch groups';
-				set({ lastError: errorMessage, loading: false });
+				set({ lastError: errorMessage, loadingGroups: false });
 				showNotification.error('Failed to fetch groups', errorMessage);
 			}
 		},
 
-		fetchGroupDetails: async (groupIds: string[], forceRefresh = false) => {
-			const { groupsWithDetails } = get();
-			if (!forceRefresh && groupsWithDetails.length > 0) {
-				return; // Use cached data
-			}
-
-			set({ loadingDetails: true, lastError: null });
-			try {
-				const responses = await Promise.all(
-					groupIds.map((groupId) => groupService.findOne(groupId)),
-				);
-
-				const groupDetails = await get().processGroupResponses(responses);
-				const tableData = get().transformGroupsToTableData(groupDetails);
-
-				set({
-					groupsWithDetails: groupDetails,
-					tableData,
-					loadingDetails: false,
-				});
-			} catch (error) {
-				const errorMessage =
-					error instanceof Error
-						? error.message
-						: 'Failed to fetch group details';
-				set({ lastError: errorMessage, loadingDetails: false });
-				showNotification.error('Failed to fetch group details', errorMessage);
-			}
-		},
-
-		processGroupResponses: async (responses: unknown[]) => {
-			const groupDetails: GroupDetailWithMembers[] = [];
-
-			for (const response of responses) {
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-				const result = handleApiResponse(response as any);
-				if (!result.success || !result.data) {
-					console.error('Failed to fetch group detail:', result.error);
-					continue;
-				}
-
-				const groupDetail = await get().enrichGroupWithSupervisions(
-					result.data as GroupDashboard,
-				);
-				groupDetails.push(groupDetail);
-			}
-
-			return groupDetails;
-		},
-
-		enrichGroupWithSupervisions: async (
-			groupData: GroupDashboard,
-		): Promise<GroupDetailWithMembers> => {
-			const groupDetail: GroupDetailWithMembers = {
-				...groupData,
-				supervisions: [],
-			};
-
-			if (!groupDetail.thesis?.id) {
-				return groupDetail;
-			}
-
-			try {
-				const supervisions = await get().fetchSupervisions(
-					groupDetail.thesis.id,
-				);
-				groupDetail.supervisions = supervisions;
-			} catch (error) {
-				console.error(
-					`Failed to fetch supervisions for thesis ${groupDetail.thesis.id}:`,
-					error,
-				);
-			}
-
-			return groupDetail;
-		},
-
-		fetchSupervisions: async (thesisId: string) => {
-			const supervisionResponse =
-				await supervisionService.getByThesisId(thesisId);
-			const supervisionResult = handleApiResponse(supervisionResponse);
-
-			if (!supervisionResult.success || !supervisionResult.data) {
-				return [];
-			}
-
-			const supervisionsWithLecturers = await Promise.all(
-				supervisionResult.data.map((supervision: { lecturerId: string }) =>
-					get().fetchLecturerForSupervision(supervision),
-				),
-			);
-
-			return supervisionsWithLecturers.filter(
-				(supervision): supervision is NonNullable<typeof supervision> =>
-					supervision !== null,
-			);
-		},
-
-		fetchLecturerForSupervision: async (supervision: {
-			lecturerId: string;
-		}) => {
-			try {
-				const lecturerResponse = await lecturerService.findOne(
-					supervision.lecturerId,
-				);
-				const lecturerResult = handleApiResponse(lecturerResponse);
-
-				if (!lecturerResult.success || !lecturerResult.data) {
-					return null;
-				}
-
-				return {
-					id: supervision.lecturerId,
-					lecturerId: supervision.lecturerId,
-					lecturer: {
-						id: lecturerResult.data.id,
-						fullName: lecturerResult.data.fullName,
-						email: lecturerResult.data.email,
-					},
-				};
-			} catch (error) {
-				console.error(
-					`Failed to fetch lecturer ${supervision.lecturerId}:`,
-					error,
-				);
-				return null;
-			}
-		},
-
-		fetchSemesters: async (forceRefresh = false) => {
-			const { semesters } = get();
-			if (!forceRefresh && semesters.length > 0) {
-				return; // Use cached data
-			}
-
-			try {
-				const response = await semesterService.findAll();
-
-				const result = handleApiResponse(response);
-				if (result.success && result.data) {
-					set({ semesters: result.data });
-				} else {
-					console.error('Failed to fetch semesters:', result.error);
-					showNotification.error(
-						'Failed to fetch semesters',
-						result.error?.message ||
-							'An error occurred while fetching semesters',
-					);
-				}
-			} catch (error) {
-				console.error('Failed to fetch semesters:', error);
-				const errorMessage =
-					error instanceof Error ? error.message : 'Failed to fetch semesters';
-				showNotification.error('Failed to fetch semesters', errorMessage);
-			}
-		},
-
-		refresh: async () => {
-			try {
-				await Promise.all([
-					get().fetchSemesters(true),
-					get().fetchGroups(true),
-				]);
-
-				// Re-fetch group details if groups exist
-				const currentGroups = get().groups;
-				if (currentGroups.length > 0) {
-					const groupIds = currentGroups.map((group: Group) => group.id);
-					await get().fetchGroupDetails(groupIds, true);
-				}
-			} catch (error) {
-				console.error('Failed to refresh data:', error);
-				const errorMessage =
-					error instanceof Error ? error.message : 'Failed to refresh data';
-				showNotification.error('Failed to refresh data', errorMessage);
-			}
-		},
-
 		setSelectedSemester: (semesterId: string) => {
-			set({ selectedSemester: semesterId });
+			set({ selectedSemesterId: semesterId });
 		},
 
 		transformGroupsToTableData: (
-			groups: GroupDetailWithMembers[],
+			groups: GroupWithDetails[],
 		): GroupTableData[] => {
 			const tableData = get().buildTableDataRows(groups);
 			get().calculateRowSpans(tableData);
 			return tableData;
 		},
 
-		buildTableDataRows: (
-			groups: GroupDetailWithMembers[],
-		): GroupTableData[] => {
+		buildTableDataRows: (groups: GroupWithDetails[]): GroupTableData[] => {
 			const tableData: GroupTableData[] = [];
 			let stt = 1;
 
-			// Sort groups by semester, then by group name
-			const sortedGroups = groups.toSorted((a, b) => {
-				const semesterCompare = a.semester.name.localeCompare(b.semester.name);
-				if (semesterCompare !== 0) return semesterCompare;
-				return a.name.localeCompare(b.name);
-			});
+			// Sort groups by group name
+			const sortedGroups = groups.toSorted((a, b) =>
+				a.name.localeCompare(b.name),
+			);
+
+			// Get current semester info to populate semester field
+			const { semesters, selectedSemesterId } = get();
+			const currentSemester = semesters.find(
+				(s) => s.id === selectedSemesterId,
+			);
 
 			sortedGroups.forEach((group) => {
-				// Get supervisors from supervisions - join multiple supervisors with comma
+				// Get supervisors from thesis supervisions - join multiple supervisors with comma
 				const supervisors =
-					group.supervisions
-						?.map((supervision) => supervision.lecturer.fullName)
+					group.thesis?.supervisions
+						?.map((supervision) => supervision.lecturer.user.fullName)
 						.join(', ') || '';
 
-				group.members.forEach((member) => {
+				// Try to find semester info from group data first, then fallback to selected semester
+				const groupSemester = semesters.find((s) => s.id === group.semesterId);
+				const semesterToUse = groupSemester || currentSemester;
+				const semesterDisplay =
+					semesterToUse?.code ||
+					semesterToUse?.name ||
+					selectedSemesterId ||
+					'Unknown';
+
+				group.studentGroupParticipations.forEach((participation) => {
+					const student = participation.student;
+					const enrollment = student.enrollments?.[0]; // Get first enrollment
+
 					tableData.push({
 						stt: stt++,
-						studentId: member.studentCode,
-						userId: member.userId,
-						name: member.user.fullName,
-						major: member.major.name,
+						studentId: student.studentCode,
+						userId: student.userId,
+						name: student.user.fullName,
+						major: student.major.name,
 						thesisName: group.thesis?.englishName || 'Not assigned',
-						semester: group.semester.code,
+						semester: semesterDisplay,
 						groupId: group.id,
 						rowSpanGroup: 0, // Will be calculated later
 						rowSpanMajor: 0, // Will be calculated later
 						rowSpanSemester: 0, // Will be calculated later
 						abbreviation: group.thesis?.abbreviation || group.code,
 						supervisor: supervisors,
-						status: 'Ongoing', // Default status
+						status: enrollment?.status || 'Ongoing', // Use enrollment status
 					});
 				});
 			});
@@ -447,33 +282,21 @@ export const useCapstoneManagementStore = create<CapstoneManagementState>(
 			}
 		},
 
-		getFilteredTableData: (
-			searchTerm?: string,
-			semesterFilter?: string,
-		): GroupTableData[] => {
-			const { tableData } = get();
+		refresh: async () => {
+			const { selectedSemesterId } = get();
+			try {
+				await get().fetchSemesters(true);
 
-			let filtered = [...tableData]; // Create a copy to avoid mutation
-
-			// Apply semester filter only if not 'all' or undefined
-			if (semesterFilter && semesterFilter !== 'all') {
-				filtered = filtered.filter((item) => item.semester === semesterFilter);
+				// Re-fetch groups if a semester is selected
+				if (selectedSemesterId) {
+					await get().fetchGroupsBySemester(selectedSemesterId, true);
+				}
+			} catch (error) {
+				console.error('Failed to refresh data:', error);
+				const errorMessage =
+					error instanceof Error ? error.message : 'Failed to refresh data';
+				showNotification.error('Failed to refresh data', errorMessage);
 			}
-
-			// Apply search filter
-			if (searchTerm) {
-				const term = searchTerm.toLowerCase();
-				filtered = filtered.filter(
-					(item) =>
-						item.name.toLowerCase().includes(term) ||
-						item.studentId.toLowerCase().includes(term) ||
-						item.major.toLowerCase().includes(term) ||
-						item.thesisName.toLowerCase().includes(term) ||
-						item.supervisor?.toLowerCase().includes(term),
-				);
-			}
-
-			return filtered;
 		},
 
 		clearError: () => {
@@ -482,13 +305,12 @@ export const useCapstoneManagementStore = create<CapstoneManagementState>(
 
 		reset: () => {
 			set({
-				groups: [],
-				groupsWithDetails: [],
-				tableData: [],
 				semesters: [],
-				selectedSemester: '',
+				groupsBySemseter: [],
+				tableData: [],
+				selectedSemesterId: '',
 				loading: false,
-				loadingDetails: false,
+				loadingGroups: false,
 				lastError: null,
 			});
 		},

@@ -14,14 +14,8 @@ import { FullRowSpanItem } from '@/components/features/admin/CapstoneProjectMana
 import { useBulkDefenseUpdate } from '@/hooks/admin/useBulkDefenseUpdate';
 import { useBulkUpdateModal } from '@/hooks/admin/useBulkUpdateModal';
 import { useCapstoneManagement } from '@/hooks/admin/useCapstoneManagement';
-import { useSemesterExportValidation } from '@/hooks/admin/useSemesterExportValidation';
 import { useDebouncedSearch } from '@/hooks/ui/useDebounce';
-import {
-	createStatusUpdateSummary,
-	getDefaultStatusBySemester,
-} from '@/lib/utils/defenseResultsApi';
-import { exportDefenseResultsToExcel } from '@/lib/utils/defenseResultsExporter';
-import { showNotification } from '@/lib/utils/notification';
+import { createStatusUpdateSummary } from '@/lib/utils/defenseResultsApi';
 import '@/styles/components.css';
 
 const { Text } = Typography;
@@ -39,7 +33,6 @@ const CapstoneDefenseResults = () => {
 	>({});
 	const [saving, setSaving] = useState(false);
 	const [bulkUpdating, setBulkUpdating] = useState(false);
-	const [exporting, setExporting] = useState(false);
 
 	// Use new hooks for business logic
 	const { updateIndividualStatus } = useBulkDefenseUpdate();
@@ -50,11 +43,11 @@ const CapstoneDefenseResults = () => {
 	// Set the first available semester as default when semesters are loaded
 	React.useEffect(() => {
 		if (availableSemesters.length > 0 && !selectedSemester) {
-			setSelectedSemester(availableSemesters[0]);
+			setSelectedSemester(availableSemesters[0].id);
 		}
 	}, [availableSemesters, selectedSemester]);
 
-	// Clear status updates when semester changes to ensure proper defaults
+	// Clear status updates when semester changes
 	React.useEffect(() => {
 		if (selectedSemester) {
 			setStatusUpdates({});
@@ -63,63 +56,12 @@ const CapstoneDefenseResults = () => {
 		}
 	}, [selectedSemester]);
 
-	// Export validation
-	const exportValidation = useSemesterExportValidation(
-		selectedSemester,
-		semesters,
-	);
-
 	const handleSearch = (value: string) => {
 		setSearchValue(value);
 	};
 
 	const handleRefresh = () => {
 		refresh();
-	};
-
-	const handleExportExcel = async () => {
-		// Always check validation and show notification if not allowed
-		if (!exportValidation.canExport) {
-			showNotification.error('Export Not Allowed', exportValidation.reason);
-			return;
-		}
-
-		setExporting(true);
-		try {
-			const selectedStudents = filteredData.filter((student) =>
-				selectedRowKeys.includes(`${student.studentId}-${student.groupId}`),
-			);
-
-			// Convert FullRowSpanItem to the format expected by export function
-			const dataToExport =
-				selectedStudents.length > 0 ? selectedStudents : filteredData;
-			const dataForExport = dataToExport.map((item) => ({
-				...item,
-				thesisName:
-					item.thesisName && item.thesisName !== 'Not assigned'
-						? item.thesisName
-						: '',
-				rowSpanMajor: item.rowSpanMajor || 0,
-				rowSpanGroup: item.rowSpanGroup || 0,
-				rowSpanSemester: item.rowSpanSemester || 0,
-			}));
-
-			exportDefenseResultsToExcel({
-				data: dataForExport,
-				selectedSemester,
-				statusUpdates,
-			});
-
-			showNotification.success('Success', 'Excel file exported successfully!');
-		} catch (error) {
-			console.error('Error exporting Excel:', error);
-			showNotification.error(
-				'Error',
-				'Failed to export Excel file. Please try again.',
-			);
-		} finally {
-			setExporting(false);
-		}
 	};
 
 	const handleRowSelectionChange = (newSelectedKeys: React.Key[]) => {
@@ -216,16 +158,11 @@ const CapstoneDefenseResults = () => {
 			const student = filteredData.find((item) => item.studentId === studentId);
 			if (!student) return false;
 
-			const currentDisplayedStatus =
-				student.status && student.status !== 'NotYet'
-					? student.status
-					: getDefaultStatusBySemester(
-							semesters.find((s) => s.name === selectedSemester) || null,
-						);
-
-			return newStatus !== currentDisplayedStatus;
+			// Simply compare with the actual status from API
+			const currentStatus = student.status || '';
+			return newStatus !== currentStatus;
 		});
-	}, [statusUpdates, filteredData, semesters, selectedSemester]);
+	}, [statusUpdates, filteredData]);
 
 	const getDisplayStatus = useCallback(
 		(originalStatus: string, studentId: string) => {
@@ -233,27 +170,10 @@ const CapstoneDefenseResults = () => {
 			const pendingStatus = statusUpdates[studentId];
 			if (pendingStatus) return pendingStatus;
 
-			// Priority 2: Smart default based on current semester filter
-			const currentSemester = semesters.find(
-				(s) => s.name === selectedSemester,
-			);
-			const semesterBasedDefault = getDefaultStatusBySemester(
-				currentSemester || null,
-			);
-
-			// Priority 3: Existing database status (only if it matches semester context)
-			if (originalStatus && originalStatus !== 'NotYet') {
-				// If semester suggests "NotYet" but DB has "Ongoing", prefer semester logic
-				if (semesterBasedDefault === 'NotYet' && originalStatus === 'Ongoing') {
-					return semesterBasedDefault;
-				}
-				return originalStatus;
-			}
-
-			// Priority 4: Semester-based default
-			return semesterBasedDefault;
+			// Priority 2: Actual status from API
+			return originalStatus || '';
 		},
-		[statusUpdates, semesters, selectedSemester],
+		[statusUpdates],
 	);
 
 	const columns = useMemo(
@@ -314,11 +234,10 @@ const CapstoneDefenseResults = () => {
 					selectedSemester={selectedSemester}
 					onSemesterChange={setSelectedSemester}
 					availableSemesters={availableSemesters}
-					onExportExcel={handleExportExcel}
 					onRefresh={handleRefresh}
 					searchPlaceholder="Search..."
-					showExportExcel={true}
-					loading={saving || bulkUpdating || exporting}
+					showExportExcel={false}
+					loading={saving || bulkUpdating}
 				/>
 			</div>
 
