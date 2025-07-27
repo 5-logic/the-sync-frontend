@@ -21,6 +21,7 @@ export default function GroupProgressPage() {
 	>(undefined);
 	const [searchText, setSearchText] = useState<string>('');
 	const [selectedSemester, setSelectedSemester] = useState<string | null>(null);
+	const [milestoneChanging, setMilestoneChanging] = useState<boolean>(false);
 	const currentUserIdRef = useRef<string | null>(null);
 
 	// Get current user session to track user changes
@@ -168,7 +169,10 @@ export default function GroupProgressPage() {
 	// Memoized milestone change handler
 	const handleMilestoneChange = useCallback(
 		(milestone: Milestone) => {
+			setMilestoneChanging(true);
 			selectMilestone(milestone);
+			// Reset milestone changing state after a short delay
+			setTimeout(() => setMilestoneChanging(false), 300);
 		},
 		[selectMilestone],
 	);
@@ -274,6 +278,7 @@ export default function GroupProgressPage() {
 								milestones={milestones}
 								onMilestoneChange={handleMilestoneChange}
 								loading={detailLoading || milestonesLoading}
+								milestoneLoading={milestoneChanging}
 							/>
 						</Space>
 					</>

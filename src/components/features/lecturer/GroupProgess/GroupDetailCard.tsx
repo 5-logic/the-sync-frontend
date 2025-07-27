@@ -3,6 +3,7 @@
 import { Card, Col, Row, Space, Typography } from 'antd';
 import { memo } from 'react';
 
+import CardLoadingSkeleton from '@/components/common/loading/CardLoadingSkeleton';
 import LecturerProgressOverviewCard from '@/components/features/lecturer/GroupProgess/LecturerProgressOverviewCard';
 import GroupInfoCard from '@/components/features/student/GroupDashboard/GroupInfoCard';
 import SupervisorInfoCard from '@/components/features/student/GroupDashboard/SupervisorInfoCard';
@@ -126,6 +127,11 @@ function GroupDetailCard({
 	milestones = [],
 	milestonesLoading = false,
 }: GroupDetailCardProps) {
+	// Show skeleton loading when loading
+	if (loading) {
+		return <CardLoadingSkeleton />;
+	}
+
 	// Convert SupervisedGroup to GroupDashboard if needed
 	const groupDashboard: GroupDashboard =
 		'studentGroupParticipations' in group
@@ -144,7 +150,6 @@ function GroupDetailCard({
 					</Title>
 				</Space>
 			}
-			loading={loading}
 		>
 			<Row gutter={[16, 16]}>
 				{/* Left Column - Group Information and Supervisor Information */}

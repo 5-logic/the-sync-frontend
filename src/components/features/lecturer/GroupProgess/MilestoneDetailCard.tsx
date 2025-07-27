@@ -4,6 +4,7 @@ import { DownloadOutlined } from '@ant-design/icons';
 import { Button, Card, Col, Grid, Row, Spin, Steps, Typography } from 'antd';
 import { useEffect } from 'react';
 
+import CardLoadingSkeleton from '@/components/common/loading/CardLoadingSkeleton';
 import type { FullMockGroup } from '@/data/group';
 import { useSubmission } from '@/hooks/lecturer/useSubmission';
 import { Group, SupervisedGroup } from '@/lib/services/groups.service';
@@ -16,7 +17,8 @@ interface Props {
 	milestone: Milestone | null;
 	milestones?: Milestone[];
 	onMilestoneChange?: (milestone: Milestone) => void;
-	loading?: boolean;
+	loading?: boolean; // Initial skeleton loading
+	milestoneLoading?: boolean; // Spin loading when changing milestone
 }
 
 const { Text } = Typography;
@@ -44,7 +46,8 @@ export default function MilestoneDetailCard({
 	milestone,
 	milestones = [],
 	onMilestoneChange,
-	loading: externalLoading = false,
+	loading: initialLoading = false,
+	milestoneLoading = false,
 }: Readonly<Props>) {
 	const screens = useBreakpoint();
 
@@ -126,8 +129,13 @@ export default function MilestoneDetailCard({
 		return <Card title="No Group Available" />;
 	}
 
+	// Show skeleton loading for initial load
+	if (initialLoading) {
+		return <CardLoadingSkeleton />;
+	}
+
 	return (
-		<Spin spinning={externalLoading || submissionLoading}>
+		<Spin spinning={milestoneLoading || submissionLoading}>
 			<Card
 				title={milestone?.name ? `Milestone - ${milestone.name}` : 'Milestone'}
 				style={{
