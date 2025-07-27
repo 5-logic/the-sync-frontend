@@ -83,8 +83,8 @@ export const useCapstoneManagement = (
 		availableSemesters,
 		selectedSemesterName,
 
-		// Loading states
-		loading,
+		// Loading states - should be true when either is loading
+		loading: loading || loadingGroups,
 		loadingGroups,
 
 		// Actions
