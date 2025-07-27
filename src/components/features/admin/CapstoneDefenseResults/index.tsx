@@ -50,7 +50,7 @@ const CapstoneDefenseResults = () => {
 	// Set the first available semester as default when semesters are loaded
 	React.useEffect(() => {
 		if (availableSemesters.length > 0 && !selectedSemester) {
-			setSelectedSemester(availableSemesters[0]);
+			setSelectedSemester(availableSemesters[0].id);
 		}
 	}, [availableSemesters, selectedSemester]);
 
@@ -220,7 +220,7 @@ const CapstoneDefenseResults = () => {
 				student.status && student.status !== 'NotYet'
 					? student.status
 					: getDefaultStatusBySemester(
-							semesters.find((s) => s.name === selectedSemester) || null,
+							semesters.find((s) => s.id === selectedSemester) || null,
 						);
 
 			return newStatus !== currentDisplayedStatus;
@@ -234,9 +234,7 @@ const CapstoneDefenseResults = () => {
 			if (pendingStatus) return pendingStatus;
 
 			// Priority 2: Smart default based on current semester filter
-			const currentSemester = semesters.find(
-				(s) => s.name === selectedSemester,
-			);
+			const currentSemester = semesters.find((s) => s.id === selectedSemester);
 			const semesterBasedDefault = getDefaultStatusBySemester(
 				currentSemester || null,
 			);
