@@ -14,11 +14,8 @@ import { FullRowSpanItem } from '@/components/features/admin/CapstoneProjectMana
 import { useBulkDefenseUpdate } from '@/hooks/admin/useBulkDefenseUpdate';
 import { useBulkUpdateModal } from '@/hooks/admin/useBulkUpdateModal';
 import { useCapstoneManagement } from '@/hooks/admin/useCapstoneManagement';
-import { useSemesterExportValidation } from '@/hooks/admin/useSemesterExportValidation';
 import { useDebouncedSearch } from '@/hooks/ui/useDebounce';
 import { createStatusUpdateSummary } from '@/lib/utils/defenseResultsApi';
-import { exportDefenseResultsToExcel } from '@/lib/utils/defenseResultsExporter';
-import { showNotification } from '@/lib/utils/notification';
 import '@/styles/components.css';
 
 const { Text } = Typography;
@@ -36,7 +33,6 @@ const CapstoneDefenseResults = () => {
 	>({});
 	const [saving, setSaving] = useState(false);
 	const [bulkUpdating, setBulkUpdating] = useState(false);
-	const [exporting, setExporting] = useState(false);
 
 	// Use new hooks for business logic
 	const { updateIndividualStatus } = useBulkDefenseUpdate();
@@ -60,63 +56,12 @@ const CapstoneDefenseResults = () => {
 		}
 	}, [selectedSemester]);
 
-	// Export validation
-	const exportValidation = useSemesterExportValidation(
-		selectedSemester,
-		semesters,
-	);
-
 	const handleSearch = (value: string) => {
 		setSearchValue(value);
 	};
 
 	const handleRefresh = () => {
 		refresh();
-	};
-
-	const handleExportExcel = async () => {
-		// Always check validation and show notification if not allowed
-		if (!exportValidation.canExport) {
-			showNotification.error('Export Not Allowed', exportValidation.reason);
-			return;
-		}
-
-		setExporting(true);
-		try {
-			const selectedStudents = filteredData.filter((student) =>
-				selectedRowKeys.includes(`${student.studentId}-${student.groupId}`),
-			);
-
-			// Convert FullRowSpanItem to the format expected by export function
-			const dataToExport =
-				selectedStudents.length > 0 ? selectedStudents : filteredData;
-			const dataForExport = dataToExport.map((item) => ({
-				...item,
-				thesisName:
-					item.thesisName && item.thesisName !== 'Not assigned'
-						? item.thesisName
-						: '',
-				rowSpanMajor: item.rowSpanMajor || 0,
-				rowSpanGroup: item.rowSpanGroup || 0,
-				rowSpanSemester: item.rowSpanSemester || 0,
-			}));
-
-			exportDefenseResultsToExcel({
-				data: dataForExport,
-				selectedSemester,
-				statusUpdates,
-			});
-
-			showNotification.success('Success', 'Excel file exported successfully!');
-		} catch (error) {
-			console.error('Error exporting Excel:', error);
-			showNotification.error(
-				'Error',
-				'Failed to export Excel file. Please try again.',
-			);
-		} finally {
-			setExporting(false);
-		}
 	};
 
 	const handleRowSelectionChange = (newSelectedKeys: React.Key[]) => {
@@ -289,11 +234,10 @@ const CapstoneDefenseResults = () => {
 					selectedSemester={selectedSemester}
 					onSemesterChange={setSelectedSemester}
 					availableSemesters={availableSemesters}
-					onExportExcel={handleExportExcel}
 					onRefresh={handleRefresh}
 					searchPlaceholder="Search..."
-					showExportExcel={true}
-					loading={saving || bulkUpdating || exporting}
+					showExportExcel={false}
+					loading={saving || bulkUpdating}
 				/>
 			</div>
 
