@@ -8,7 +8,6 @@ import { getColumns } from '@/components/features/admin/CapstoneProjectManagemen
 import { FilterBar } from '@/components/features/admin/CapstoneProjectManagement/FilterBar';
 import { calculateRowSpansForExport } from '@/components/features/admin/CapstoneProjectManagement/calculateRowSpan';
 import { useCapstoneManagement } from '@/hooks/admin/useCapstoneManagement';
-import { useSemesterExportValidation } from '@/hooks/admin/useSemesterExportValidation';
 import { useDebouncedSearch } from '@/hooks/ui/useDebounce';
 import {
 	GroupTableDataForExport,
@@ -16,48 +15,54 @@ import {
 } from '@/lib/utils/excelExporter';
 import { showNotification } from '@/lib/utils/notification';
 import { getCleanThesisNameForExport } from '@/lib/utils/thesisUtils';
-import { type GroupTableData } from '@/store';
+import { type GroupTableData } from '@/store/useCapstoneManagementStore';
 
 const { Text } = Typography;
 
 const GroupManagement: React.FC = () => {
 	const { searchValue, debouncedSearchValue, setSearchValue } =
 		useDebouncedSearch('', 300);
-	const [selectedSemester, setSelectedSemester] = useState<string>('');
+	const [selectedSemesterId, setSelectedSemesterId] = useState<string>('');
 
-	// Use custom hooks to reduce duplication
+	// Use the new hook with simplified API integration
 	const {
-		semesters,
 		filteredData,
 		availableSemesters,
+		selectedSemesterName,
 		loading,
-		loadingDetails,
+		loadingGroups,
 		refresh,
-	} = useCapstoneManagement(selectedSemester, debouncedSearchValue);
+	} = useCapstoneManagement(selectedSemesterId, debouncedSearchValue);
 
 	// Set the first available semester as default when semesters are loaded
 	React.useEffect(() => {
-		if (availableSemesters.length > 0 && !selectedSemester) {
-			setSelectedSemester(availableSemesters[0]);
+		if (availableSemesters.length > 0 && !selectedSemesterId) {
+			setSelectedSemesterId(availableSemesters[0].id);
 		}
-	}, [availableSemesters, selectedSemester]);
-
-	// Export validation
-	const exportValidation = useSemesterExportValidation(
-		selectedSemester,
-		semesters,
-	);
+	}, [availableSemesters, selectedSemesterId]);
 
 	const handleExportExcel = () => {
-		// Always check validation and show notification if not allowed
-		if (!exportValidation.canExport) {
-			showNotification.error('Export Not Allowed', exportValidation.reason);
+		// Check if semester is selected
+		if (!selectedSemesterId) {
+			showNotification.error(
+				'Export Not Allowed',
+				'Please select a semester first',
+			);
+			return;
+		}
+
+		// Check if there's data to export
+		if (filteredData.length === 0) {
+			showNotification.error(
+				'Export Not Allowed',
+				'No data available to export',
+			);
 			return;
 		}
 
 		// Prepare export data without semester column and with proper rowSpans
 		const exportData = calculateRowSpansForExport(
-			filteredData.map((item) => ({
+			filteredData.map((item: GroupTableData) => ({
 				groupId: item.groupId,
 				studentId: item.studentId,
 				name: item.name,
@@ -69,15 +74,11 @@ const GroupManagement: React.FC = () => {
 		) as GroupTableDataForExport[];
 
 		// Get semester display name
-		const semesterDisplayName =
-			selectedSemester === 'all'
-				? 'ALL SEMESTERS'
-				: semesters.find((s) => s.name === selectedSemester)?.name ||
-					selectedSemester.toUpperCase();
+		const semesterDisplayName = selectedSemesterName || selectedSemesterId;
 
 		exportToExcel({
 			data: exportData,
-			selectedSemester,
+			selectedSemester: selectedSemesterId,
 			semesterDisplayName,
 		});
 	};
@@ -90,22 +91,23 @@ const GroupManagement: React.FC = () => {
 		() =>
 			getColumns(debouncedSearchValue, {
 				showAbbreviationSupervisor: true,
+				showSemester: false, // Hide semester column since we're showing data for one semester
 			}),
 		[debouncedSearchValue],
 	);
 
 	return (
-		<Spin spinning={loading || loadingDetails}>
+		<Spin spinning={loading || loadingGroups}>
 			<FilterBar
 				searchText={searchValue}
 				onSearchChange={setSearchValue}
-				selectedSemester={selectedSemester}
-				onSemesterChange={setSelectedSemester}
+				selectedSemester={selectedSemesterId}
+				onSemesterChange={setSelectedSemesterId}
 				availableSemesters={availableSemesters}
 				onExportExcel={handleExportExcel}
 				onRefresh={handleRefresh}
 				showExportExcel={true}
-				loading={loading || loadingDetails}
+				loading={loading || loadingGroups}
 			/>
 
 			<Table
