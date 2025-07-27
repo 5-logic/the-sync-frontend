@@ -12,6 +12,7 @@ export const getColumns = (
 	options?: {
 		showAbbreviationSupervisor?: boolean;
 		showStatus?: boolean;
+		showSemester?: boolean; // Add option to show/hide semester column
 		getDisplayStatus?: (originalStatus: string, studentId: string) => string;
 		statusUpdates?: Record<string, string>;
 		handleStatusChange?: (studentId: string, newStatus: string) => void;
@@ -20,6 +21,7 @@ export const getColumns = (
 	const {
 		showAbbreviationSupervisor = false,
 		showStatus = false,
+		showSemester = true, // Default to true for backward compatibility
 		getDisplayStatus = () => '',
 		statusUpdates = {},
 		handleStatusChange = () => {},
@@ -113,14 +115,16 @@ export const getColumns = (
 		);
 	}
 
-	baseColumns.push({
-		title: 'Semester',
-		dataIndex: 'semester',
-		key: 'semester',
-		align: 'center',
-		render: (text) => RowSpanCell(highlightText(text, searchText)),
-		onCell: (record) => ({ rowSpan: record.rowSpanSemester }),
-	});
+	if (showSemester) {
+		baseColumns.push({
+			title: 'Semester',
+			dataIndex: 'semester',
+			key: 'semester',
+			align: 'center',
+			render: (text) => RowSpanCell(highlightText(text, searchText)),
+			onCell: (record) => ({ rowSpan: record.rowSpanSemester }),
+		});
+	}
 
 	if (showStatus) {
 		baseColumns.push({
