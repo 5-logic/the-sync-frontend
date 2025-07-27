@@ -78,7 +78,6 @@ export const useCapstoneManagementStore = create<CapstoneManagementState>(
 
 				const result = handleApiResponse(response);
 				if (result.success && result.data) {
-					console.log('Fetched semesters:', result.data);
 					set({ semesters: result.data, loading: false });
 				} else {
 					set({
@@ -116,14 +115,6 @@ export const useCapstoneManagementStore = create<CapstoneManagementState>(
 				const result = handleApiResponse(response);
 				if (result.success && result.data) {
 					const tableData = get().transformGroupsToTableData(result.data);
-					console.log(
-						'Fetched groups for semester:',
-						semesterId,
-						'Groups:',
-						result.data.length,
-						'TableData:',
-						tableData.length,
-					);
 					set({
 						groupsBySemseter: result.data,
 						tableData,

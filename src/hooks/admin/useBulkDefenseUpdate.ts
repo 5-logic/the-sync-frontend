@@ -54,7 +54,7 @@ export const useBulkDefenseUpdate = () => {
 
 			try {
 				// Validate semester
-				const semester = semesters.find((s) => s.name === selectedSemester);
+				const semester = semesters.find((s) => s.id === selectedSemester);
 				if (!semester) {
 					const errorMsg = 'Semester not found';
 					showNotification.error('Error', errorMsg);
@@ -119,7 +119,7 @@ export const useBulkDefenseUpdate = () => {
 
 			try {
 				// Validate semester
-				const semester = semesters.find((s) => s.name === selectedSemester);
+				const semester = semesters.find((s) => s.id === selectedSemester);
 				if (!semester) {
 					const errorMsg = 'Semester not found';
 					showNotification.error('Error', errorMsg);

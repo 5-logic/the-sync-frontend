@@ -44,23 +44,6 @@ const CapstoneDefenseResults = () => {
 	const { semesters, filteredData, availableSemesters, refresh, loading } =
 		useCapstoneManagement(selectedSemester, debouncedSearchValue);
 
-	// Debug logging
-	React.useEffect(() => {
-		console.log('CapstoneDefenseResults - Data state:', {
-			selectedSemester,
-			filteredDataLength: filteredData.length,
-			loading,
-			availableSemestersLength: availableSemesters.length,
-			semestersLength: semesters.length,
-		});
-	}, [
-		selectedSemester,
-		filteredData.length,
-		loading,
-		availableSemesters.length,
-		semesters.length,
-	]);
-
 	// Set the first available semester as default when semesters are loaded
 	React.useEffect(() => {
 		if (availableSemesters.length > 0 && !selectedSemester) {
