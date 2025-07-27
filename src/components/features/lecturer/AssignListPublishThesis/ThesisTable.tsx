@@ -111,17 +111,11 @@ export default function ThesisTable({
 							setSelectedRowKeys(newSelectedKeys);
 							onSelectionChange?.(newSelectedKeys.map(String));
 						}
-					} else {
-						showNotification.error(
-							'Update Failed',
-							'Failed to toggle publish status',
-						);
 					}
+					// Error handling is now done in the store with backend error messages
 				} catch {
-					showNotification.error(
-						'Update Error',
-						'An error occurred while updating publish status',
-					);
+					// Additional error handling if needed
+					// Store already handles the error notifications
 				} finally {
 					setToggleLoading((prev) => {
 						const newSet = new Set(prev);
