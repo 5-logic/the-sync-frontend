@@ -1,7 +1,8 @@
 import lecturerService from '@/lib/services/lecturers.service';
 import thesisService from '@/lib/services/theses.service';
 import { isTextMatch } from '@/lib/utils';
-import { handleApiResponse } from '@/lib/utils/handleApi';
+import { handleApiError, handleApiResponse } from '@/lib/utils/handleApi';
+import { showNotification } from '@/lib/utils/notification';
 import { Thesis } from '@/schemas/thesis';
 import { cacheUtils } from '@/store/helpers/cacheHelpers';
 import {
@@ -240,10 +241,18 @@ export const usePublishThesesStore = () => {
 				cacheUtils.set('publishTheses', 'all', updatedItems);
 
 				return true;
+			} else {
+				// Show error notification with backend error message
+				if (result.error) {
+					showNotification.error('Update Failed', result.error.message);
+				}
+				return false;
 			}
-			return false;
 		} catch (error) {
 			console.error('Failed to update publish status:', error);
+			// Handle API error and show backend error message
+			const apiError = handleApiError(error, 'Failed to update publish status');
+			showNotification.error('Update Error', apiError.message);
 			return false;
 		}
 	};

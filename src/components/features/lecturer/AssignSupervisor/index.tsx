@@ -19,6 +19,7 @@ import { useCurrentSemester } from '@/hooks/semester';
 import { type SupervisorAssignmentData } from '@/store/useAssignSupervisorStore';
 import { useDraftAssignmentStore } from '@/store/useDraftAssignmentStore';
 import { useSemesterStore } from '@/store/useSemesterStore';
+import { useSupervisionStore } from '@/store/useSupervisionStore';
 
 /**
  * Main component for assigning supervisors to thesis groups
@@ -51,6 +52,9 @@ export default function AssignSupervisors() {
 
 	// Semester store for real semester data
 	const { semesters, fetchSemesters } = useSemesterStore();
+
+	// Supervision store for getting change supervisor errors
+	const { lastError: supervisionError } = useSupervisionStore();
 
 	// Set default semester filter when current semester is available
 	useEffect(() => {
@@ -350,10 +354,12 @@ export default function AssignSupervisors() {
 					description: 'Supervisor assignment completed successfully',
 				});
 			} else {
-				// Show error notification for failed assignments
+				// Show error notification with the actual error from supervision store
+				const errorMessage =
+					supervisionError || error || 'Failed to change supervisor assignment';
 				notification.error({
 					message: 'Error',
-					description: 'Failed to change supervisor assignment',
+					description: errorMessage,
 				});
 			}
 		} catch {
@@ -398,10 +404,12 @@ export default function AssignSupervisors() {
 					description: 'Supervisor assignment completed successfully',
 				});
 			} else {
-				// Show error notification for failed assignments
+				// Show error notification with the actual error from supervision store
+				const errorMessage =
+					supervisionError || error || 'Failed to assign supervisors';
 				notification.error({
 					message: 'Error',
-					description: 'Failed to assign supervisors',
+					description: errorMessage,
 				});
 			}
 		} catch {
@@ -571,7 +579,7 @@ export default function AssignSupervisors() {
 				lecturerOptions={lecturerOptions}
 				showAssignNow={true} // Always show assign now button
 				isChangeMode={
-					selectedGroup ? selectedGroup.supervisors.length >= 2 : false
+					selectedGroup ? selectedGroup.supervisors.length === 2 : false
 				}
 			/>
 		</Space>
