@@ -92,8 +92,9 @@ const GroupManagement: React.FC = () => {
 			getColumns(debouncedSearchValue, {
 				showAbbreviationSupervisor: true,
 				showSemester: false, // Hide semester column since we're showing data for one semester
+				dataSource: filteredData, // Pass dataSource for major grouping logic
 			}),
-		[debouncedSearchValue],
+		[debouncedSearchValue, filteredData],
 	);
 
 	return (

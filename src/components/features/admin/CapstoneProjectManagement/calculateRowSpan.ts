@@ -51,9 +51,11 @@ const calculateMajorRowSpan = <T extends BaseRowSpanItem>(
 	const majorKey = `${item.groupId}-${item.major}`;
 	if (!seenMajorInGroups.has(majorKey)) {
 		seenMajorInGroups.add(majorKey);
-		return data.filter(
+		// Get all students in the same group with the same major
+		const sameGroupSameMajor = data.filter(
 			(d) => d.groupId === item.groupId && d.major === item.major,
-		).length;
+		);
+		return sameGroupSameMajor.length;
 	}
 	return 0;
 };
@@ -76,13 +78,27 @@ const calculateSemesterRowSpan = <T extends FullRowSpanItem>(
 export const calculateRowSpans = <T extends FullRowSpanItem>(
 	data: T[],
 ): T[] => {
+	// Sort data to ensure proper row spanning
+	// First by group, then by major within the group
+	const sortedData = [...data].sort((a, b) => {
+		if (a.groupId !== b.groupId) {
+			return a.groupId.localeCompare(b.groupId);
+		}
+		// Within the same group, sort by major to group same majors together
+		if (a.major !== b.major) {
+			return a.major.localeCompare(b.major);
+		}
+		// Finally sort by student name for consistency
+		return a.name.localeCompare(b.name);
+	});
+
 	const result: T[] = [];
-	const groupCounts = calculateGroupCounts(data);
+	const groupCounts = calculateGroupCounts(sortedData);
 	const seenGroups = new Set<string>();
 	const seenMajorInGroups = new Set<string>();
 	const seenSemesterInGroups = new Set<string>();
 
-	data.forEach((item) => {
+	sortedData.forEach((item) => {
 		const newItem = { ...item } as T & {
 			rowSpanGroup?: number;
 			rowSpanMajor?: number;
@@ -90,10 +106,14 @@ export const calculateRowSpans = <T extends FullRowSpanItem>(
 		};
 
 		newItem.rowSpanGroup = calculateGroupRowSpan(item, seenGroups, groupCounts);
-		newItem.rowSpanMajor = calculateMajorRowSpan(item, data, seenMajorInGroups);
+		newItem.rowSpanMajor = calculateMajorRowSpan(
+			item,
+			sortedData,
+			seenMajorInGroups,
+		);
 		newItem.rowSpanSemester = calculateSemesterRowSpan(
 			item,
-			data,
+			sortedData,
 			seenSemesterInGroups,
 		);
 
@@ -107,19 +127,32 @@ export const calculateRowSpans = <T extends FullRowSpanItem>(
 export const calculateRowSpansForExport = <T extends BaseRowSpanItem>(
 	data: T[],
 ): T[] => {
+	// Sort data to ensure proper row spanning
+	const sortedData = [...data].sort((a, b) => {
+		if (a.groupId !== b.groupId) {
+			return a.groupId.localeCompare(b.groupId);
+		}
+		// Within the same group, sort by major to group same majors together
+		return a.major.localeCompare(b.major);
+	});
+
 	const result: T[] = [];
-	const groupCounts = calculateGroupCounts(data);
+	const groupCounts = calculateGroupCounts(sortedData);
 	const seenGroups = new Set<string>();
 	const seenMajorInGroups = new Set<string>();
 
-	data.forEach((item) => {
+	sortedData.forEach((item) => {
 		const newItem = { ...item } as T & {
 			rowSpanGroup?: number;
 			rowSpanMajor?: number;
 		};
 
 		newItem.rowSpanGroup = calculateGroupRowSpan(item, seenGroups, groupCounts);
-		newItem.rowSpanMajor = calculateMajorRowSpan(item, data, seenMajorInGroups);
+		newItem.rowSpanMajor = calculateMajorRowSpan(
+			item,
+			sortedData,
+			seenMajorInGroups,
+		);
 
 		result.push(newItem);
 	});

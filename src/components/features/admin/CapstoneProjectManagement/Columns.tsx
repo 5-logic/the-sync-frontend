@@ -16,6 +16,7 @@ export const getColumns = (
 		getDisplayStatus?: (originalStatus: string, studentId: string) => string;
 		statusUpdates?: Record<string, string>;
 		handleStatusChange?: (studentId: string, newStatus: string) => void;
+		dataSource?: GroupTableData[]; // Add dataSource to access all records
 	},
 ): ColumnsType<GroupTableData> => {
 	const {
