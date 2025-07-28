@@ -66,6 +66,8 @@ export default function EditMilestoneDialog({
 				milestoneName: milestone.name,
 				note: milestone.note || '',
 				documents: milestone.documents || [],
+				startDate: milestone.startDate,
+				endDate: milestone.endDate,
 			};
 			setOriginalValues(originalData);
 			setHasChanges(false);
@@ -82,9 +84,32 @@ export default function EditMilestoneDialog({
 			...newFiles.map(() => 'new-file'),
 		];
 
+		// Check for form field changes
+		let hasDurationChanges = false;
+		if (
+			currentValues.duration &&
+			currentValues.duration[0] &&
+			currentValues.duration[1]
+		) {
+			const currentStartTime = currentValues.duration[0].toDate().getTime();
+			const currentEndTime = currentValues.duration[1].toDate().getTime();
+			const originalStartTime = new Date(
+				originalValues.startDate as string,
+			).getTime();
+			const originalEndTime = new Date(
+				originalValues.endDate as string,
+			).getTime();
+
+			hasDurationChanges =
+				currentStartTime !== originalStartTime ||
+				currentEndTime !== originalEndTime;
+		}
+
 		const hasFormChanges =
 			currentValues.milestoneName !== originalValues.milestoneName ||
-			(currentValues.note || '') !== originalValues.note;
+			(currentValues.note || '').trim() !==
+				((originalValues.note as string) || '').trim() ||
+			hasDurationChanges;
 
 		const originalDocuments = (originalValues.documents as string[]) || [];
 		const sortedCurrentDocuments = [...currentDocuments].sort((a, b) =>
@@ -98,6 +123,17 @@ export default function EditMilestoneDialog({
 				JSON.stringify(sortedOriginalDocuments) || newFiles.length > 0;
 
 		const hasAnyChanges = hasFormChanges || hasDocumentChanges;
+
+		// Debug logging
+		console.log('Change Detection:', {
+			hasFormChanges,
+			hasDocumentChanges,
+			hasAnyChanges,
+			currentValues: currentValues,
+			originalValues: originalValues,
+			hasDurationChanges,
+		});
+
 		setHasChanges(hasAnyChanges);
 	}, [milestone, form, existingDocuments, newFiles, originalValues]);
 
@@ -200,8 +236,26 @@ export default function EditMilestoneDialog({
 				milestoneData.name = values.milestoneName;
 			}
 
-			if ((values.note || '') !== originalValues.note) {
-				milestoneData.note = values.note || undefined;
+			if (
+				(values.note || '').trim() !==
+				((originalValues.note as string) || '').trim()
+			) {
+				milestoneData.note = values.note?.trim() || '';
+			}
+
+			// Handle duration changes
+			if (values.duration && values.duration[0] && values.duration[1]) {
+				const newStartDate = values.duration[0].toDate();
+				const newEndDate = values.duration[1].toDate();
+				const originalStartDate = new Date(originalValues.startDate as string);
+				const originalEndDate = new Date(originalValues.endDate as string);
+
+				if (newStartDate.getTime() !== originalStartDate.getTime()) {
+					milestoneData.startDate = newStartDate;
+				}
+				if (newEndDate.getTime() !== originalEndDate.getTime()) {
+					milestoneData.endDate = newEndDate;
+				}
 			}
 
 			// Handle document changes
@@ -223,12 +277,20 @@ export default function EditMilestoneDialog({
 			if (hasDocumentChanges) {
 				// Process document updates
 				const finalDocuments = await processDocumentUpdates();
-				milestoneData.documents =
-					finalDocuments.length > 0 ? finalDocuments : undefined;
+				milestoneData.documents = finalDocuments; // Always include, even if empty array
+				console.log('Document changes detected:', {
+					existingDocuments,
+					newFiles: newFiles.length,
+					finalDocuments,
+					documentsCleared: finalDocuments.length === 0,
+				});
 			}
 
 			// Only proceed if there are actually changes to send
+			console.log('Final milestoneData to send:', milestoneData);
+
 			if (Object.keys(milestoneData).length === 0) {
+				console.log('No changes detected, not sending update');
 				return;
 			}
 
