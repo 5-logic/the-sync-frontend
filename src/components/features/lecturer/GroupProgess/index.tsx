@@ -1,47 +1,178 @@
 'use client';
 
-import { Card, Col, Row, Space, Steps, Typography } from 'antd';
-import { useMemo, useState } from 'react';
+import { Alert, Space } from 'antd';
+import { useSession } from 'next-auth/react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Header } from '@/components/common/Header';
+import GroupDetailCard from '@/components/features/lecturer/GroupProgess/GroupDetailCard';
 import GroupSearchTable from '@/components/features/lecturer/GroupProgess/GroupSearchTable';
 import MilestoneDetailCard from '@/components/features/lecturer/GroupProgess/MilestoneDetailCard';
-import ProgressOverviewCard from '@/components/features/lecturer/GroupProgess/ProgressOverviewCard';
-import { FullMockGroup, allMockGroups, mockReviewGroups } from '@/data/group';
-
-const { Text } = Typography;
-const { Step } = Steps;
+import { useMilestones } from '@/hooks/lecturer/useMilestones';
+import { useSupervisedGroups } from '@/hooks/lecturer/useSupervisedGroups';
+import { SupervisedGroup } from '@/lib/services/groups.service';
+import { Milestone } from '@/schemas/milestone';
+import { useLecturerStore, useSemesterStore } from '@/store';
 
 export default function GroupProgressPage() {
-	const [selectedGroup, setSelectedGroup] = useState<FullMockGroup | undefined>(
-		undefined,
-	);
-	const [selectedPhase, setSelectedPhase] = useState<string>('Review 1');
+	const [selectedGroup, setSelectedGroup] = useState<
+		SupervisedGroup | undefined
+	>(undefined);
 	const [searchText, setSearchText] = useState<string>('');
+	const [selectedSemester, setSelectedSemester] = useState<string | null>(null);
+	const [milestoneChanging, setMilestoneChanging] = useState<boolean>(false);
+	const currentUserIdRef = useRef<string | null>(null);
 
-	const availablePhases = Object.keys(mockReviewGroups);
+	// Get current user session to track user changes
+	const { data: session } = useSession();
 
-	const groupList = useMemo(() => {
-		const uniqueGroups: Record<string, FullMockGroup> = {};
-		allMockGroups.forEach((group) => {
-			uniqueGroups[group.id] ??= group;
+	// Store hooks for cached data
+	const { fetchLecturers } = useLecturerStore();
+	const { fetchSemesters } = useSemesterStore();
+
+	// Supervised groups hook với smart caching
+	const {
+		groups,
+		loading: groupsLoading,
+		error: groupsError,
+		fetchGroupsBySemester,
+		clearGroups,
+		refreshCache,
+	} = useSupervisedGroups();
+
+	// Milestones hook for steps
+	const {
+		milestones,
+		selectedMilestone,
+		loading: milestonesLoading,
+		error: milestonesError,
+		fetchMilestones,
+		selectMilestone,
+	} = useMilestones();
+
+	// Fetch cached data khi component mount - chỉ fetch 1 lần
+	useEffect(() => {
+		fetchLecturers();
+		fetchSemesters();
+	}, [fetchLecturers, fetchSemesters]);
+
+	// Detect user change và clear cache khi cần thiết
+	useEffect(() => {
+		const newUserId = session?.user?.id || null;
+
+		// Nếu user thay đổi (bao gồm login/logout), clear tất cả cache
+		if (
+			currentUserIdRef.current !== null &&
+			currentUserIdRef.current !== newUserId
+		) {
+			// Clear all cached data để tránh data leakage giữa users
+			clearGroups();
+			setSelectedGroup(undefined);
+			setSelectedSemester(null);
+
+			// Clear store cache nếu có
+			refreshCache();
+		}
+
+		// Update current user ID
+		currentUserIdRef.current = newUserId;
+	}, [session?.user?.id, clearGroups, refreshCache]);
+
+	// Smart fetch groups và milestones khi semester changes - fetch mỗi lần thay đổi
+	useEffect(() => {
+		// Chỉ fetch khi đã có user ID (đã login) để tránh fetch với wrong user context
+		if (!currentUserIdRef.current) return;
+
+		if (selectedSemester) {
+			// Fetch groups và milestones cho semester mới
+			fetchGroupsBySemester(selectedSemester);
+			fetchMilestones(selectedSemester);
+		} else {
+			// Clear groups khi không có semester được chọn
+			clearGroups();
+		}
+	}, [selectedSemester, fetchGroupsBySemester, clearGroups, fetchMilestones]);
+
+	// Memoized filtered groups để tránh unnecessary re-computation
+	const filteredGroups = useMemo(() => {
+		if (!searchText.trim()) return groups;
+
+		const keyword = searchText.toLowerCase();
+		return groups.filter((group) => {
+			const name = group.name?.toLowerCase() || '';
+			const projectDirection = group.projectDirection?.toLowerCase() || '';
+			const code = group.code?.toLowerCase() || '';
+			const englishName = group.thesis?.englishName?.toLowerCase() || '';
+
+			return (
+				name.includes(keyword) ||
+				projectDirection.includes(keyword) ||
+				code.includes(keyword) ||
+				englishName.includes(keyword)
+			);
 		});
+	}, [groups, searchText]);
 
-		return Object.values(uniqueGroups).filter((group) => {
-			const keyword = (searchText ?? '').toLowerCase();
-			const name = group.name ?? '';
-			const title = group.title ?? '';
+	// Memoized handlers để prevent unnecessary re-renders
+	const handleGroupSelect = useCallback(
+		(group: SupervisedGroup) => {
+			setSelectedGroup(group);
+			// Reset to first milestone when selecting a new group
+			if (milestones.length > 0) {
+				selectMilestone(milestones[0]);
+			}
+		},
+		[milestones, selectMilestone],
+	);
 
-			const nameMatch = name.toLowerCase().includes(keyword);
-			const titleMatch = title.toLowerCase().includes(keyword);
-			return nameMatch || titleMatch;
-		});
-	}, [searchText]);
+	// Memoized refresh handler với smart logic và user context validation
+	const handleRefresh = useCallback(() => {
+		// Chỉ refresh nếu có user context để tránh fetch với wrong user
+		if (!currentUserIdRef.current) {
+			console.warn('Cannot refresh without valid user context');
+			return;
+		}
 
-	function handleSelect(group: FullMockGroup) {
-		setSelectedGroup(group);
-		setSelectedPhase(availablePhases[0]);
-	}
+		// Refresh data cho current semester
+		if (selectedSemester) {
+			fetchGroupsBySemester(selectedSemester);
+			fetchMilestones(selectedSemester);
+		} else {
+			fetchMilestones(); // Fetch default milestones
+		}
+
+		// Clear cache để đảm bảo data fresh
+		refreshCache();
+	}, [selectedSemester, fetchGroupsBySemester, fetchMilestones, refreshCache]);
+
+	// Memoized milestone change handler
+	const handleMilestoneChange = useCallback(
+		(milestone: Milestone) => {
+			setMilestoneChanging(true);
+			selectMilestone(milestone);
+			// Reset milestone changing state after a short delay
+			setTimeout(() => setMilestoneChanging(false), 300);
+		},
+		[selectMilestone],
+	);
+
+	// Memoized search change handler với debounce effect
+	const handleSearchChange = useCallback((value: string) => {
+		setSearchText(value);
+	}, []);
+
+	// Memoized semester change với state reset và cache check
+	const handleSemesterChange = useCallback(
+		(semesterId: string | null) => {
+			// Chỉ thay đổi nếu semester thực sự khác để tránh reload không cần thiết
+			if (semesterId !== selectedSemester) {
+				setSelectedSemester(semesterId);
+				// Clear selected group khi đổi semester để tránh stale data
+				setSelectedGroup(undefined);
+			}
+		},
+		[selectedSemester],
+	);
 
 	return (
 		<div
@@ -59,61 +190,64 @@ export default function GroupProgressPage() {
 			>
 				<Header
 					title="Group Progress"
-					description="The instructor monitors the groups progress, closely following important milestones to evaluate the group's performance."
+					description="Monitor group progress and track important milestones to evaluate group performance."
 				/>
 
-				<GroupSearchTable
-					data={groupList}
-					searchText={searchText}
-					onSearchChange={setSearchText}
-					selectedGroup={selectedGroup}
-					onGroupSelect={handleSelect}
-				/>
+				{groupsError && (
+					<Alert
+						message="Error Loading Groups"
+						description={groupsError}
+						type="error"
+						showIcon
+						closable
+					/>
+				)}
+
+				{milestonesError && (
+					<Alert
+						message="Error Loading Milestones"
+						description={milestonesError}
+						type="error"
+						showIcon
+						closable
+					/>
+				)}
+
+				<Space direction="vertical" size="middle" style={{ width: '100%' }}>
+					<GroupSearchTable
+						data={filteredGroups}
+						searchText={searchText}
+						onSearchChange={handleSearchChange}
+						selectedGroup={selectedGroup}
+						onGroupSelect={handleGroupSelect}
+						loading={groupsLoading}
+						onRefresh={handleRefresh}
+						selectedSemester={selectedSemester}
+						onSemesterChange={handleSemesterChange}
+						showSemesterFilter={true}
+					/>
+				</Space>
 
 				{selectedGroup && (
-					<>
-						<Card
-							title={`Group Name: ${selectedGroup.name} | ${selectedGroup.title}`}
-						>
-							<Text type="secondary">
-								Supervised by: {selectedGroup.supervisors.join(', ')}
-							</Text>
+					<Space direction="vertical" size="large" style={{ width: '100%' }}>
+						{/* Group Details Section */}
+						<GroupDetailCard
+							group={selectedGroup}
+							loading={false}
+							milestones={milestones}
+							milestonesLoading={milestonesLoading}
+						/>
 
-							<Steps
-								current={availablePhases.indexOf(selectedPhase)}
-								style={{ marginTop: 16 }}
-							>
-								{availablePhases.map((phase) => (
-									<Step
-										key={phase}
-										title={phase}
-										onClick={() => {
-											const match = mockReviewGroups[phase].find(
-												(g) => g.id === selectedGroup.id,
-											);
-											if (match) {
-												setSelectedGroup(match);
-												setSelectedPhase(phase);
-											}
-										}}
-									/>
-								))}
-							</Steps>
-						</Card>
-
-						<Row gutter={16} style={{ flex: 1 }}>
-							<Col xs={24} md={16}>
-								<MilestoneDetailCard
-									group={selectedGroup}
-									phase={selectedPhase}
-								/>
-							</Col>
-							<Col xs={24} md={8}>
-								{/* Không cần truyền group nữa */}
-								<ProgressOverviewCard />
-							</Col>
-						</Row>
-					</>
+						{/* Milestone Progress Section */}
+						<MilestoneDetailCard
+							group={selectedGroup}
+							milestone={selectedMilestone}
+							milestones={milestones}
+							onMilestoneChange={handleMilestoneChange}
+							loading={milestonesLoading}
+							milestoneLoading={milestoneChanging}
+						/>
+					</Space>
 				)}
 			</Space>
 		</div>

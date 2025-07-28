@@ -10,9 +10,11 @@ import {
 	Tag,
 	Typography,
 } from 'antd';
+import { useEffect } from 'react';
 
 import { StorageService } from '@/lib/services/storage.service';
 import { showNotification } from '@/lib/utils/notification';
+import { useSemesterStore } from '@/store';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -24,10 +26,10 @@ export interface BaseThesisInfo {
 	description: string;
 	domain?: string | null;
 	status: 'New' | 'Pending' | 'Approved' | 'Rejected';
+	semesterId?: string;
 	thesisRequiredSkills?: Array<{
-		thesisId: string;
-		skillId: string;
-		skill: { id: string; name: string };
+		id: string;
+		name: string;
 	}>;
 	thesisVersions?: Array<{
 		id: string;
@@ -62,6 +64,13 @@ function getStatusColor(status: string): string {
 }
 
 export default function BaseThesisInfoCard({ thesis, supervisor }: Props) {
+	const { getSemesterById, fetchSemesters } = useSemesterStore();
+
+	// Fetch semesters when component mounts
+	useEffect(() => {
+		fetchSemesters();
+	}, [fetchSemesters]);
+
 	// Helper function to handle empty values consistently
 	const getDisplayValue = (
 		value: string | undefined,
@@ -108,7 +117,12 @@ export default function BaseThesisInfoCard({ thesis, supervisor }: Props) {
 		<Card>
 			<Title level={4}>{thesis.englishName}</Title>
 			<Space wrap size={[8, 8]} style={{ marginBottom: 16 }}>
-				<Tag color="blue">{thesis.domain}</Tag>
+				{thesis.domain && <Tag color="blue">{thesis.domain}</Tag>}
+				{thesis.semesterId && (
+					<Tag color="purple">
+						{getSemesterById(thesis.semesterId)?.name || 'Unknown Semester'}
+					</Tag>
+				)}
 				<Tag color={getStatusColor(thesis.status)}>{thesis.status}</Tag>
 				<Tag color="gold">
 					Version {thesis.thesisVersions?.[0]?.version || '1.0'}
@@ -136,9 +150,13 @@ export default function BaseThesisInfoCard({ thesis, supervisor }: Props) {
 					Required Skills
 				</Title>
 				<Space wrap size={[8, 12]}>
-					{thesis.thesisRequiredSkills?.map((trs) => (
-						<Tag key={trs.skill.id}>{trs.skill.name}</Tag>
-					)) || <Text type="secondary">No skills specified</Text>}
+					{thesis.thesisRequiredSkills?.length ? (
+						thesis.thesisRequiredSkills.map((skill) => (
+							<Tag key={skill.id}>{skill.name}</Tag>
+						))
+					) : (
+						<Text type="secondary">No skills specified</Text>
+					)}
 				</Space>
 			</div>
 
@@ -156,13 +174,13 @@ export default function BaseThesisInfoCard({ thesis, supervisor }: Props) {
 			{supervisor && (
 				<div style={{ marginBottom: 24 }}>
 					<Title level={5} style={{ marginBottom: 12 }}>
-						Supervisor Information
+						Lecturer Creator Information
 					</Title>
 					<Space size={16}>
 						<Avatar size={48} icon={<UserOutlined />} />
 						<div>
 							<Text strong>
-								{getDisplayValue(supervisor.name, 'Unknown Supervisor')}
+								{getDisplayValue(supervisor.name, 'Unknown Lecturer Creator')}
 							</Text>
 							<Paragraph style={{ marginBottom: 0 }}>
 								{getDisplayValue(supervisor.email, 'No email provided')}

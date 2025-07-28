@@ -1,16 +1,42 @@
 import { z } from 'zod';
 
+import { SubmissionStatusSchema } from '@/schemas/_enums';
+import { AssignmentReviewDetailSchema } from '@/schemas/review';
+
 export const SubmissionSchema = z.object({
 	id: z.string().uuid(),
 	groupId: z.string().uuid(),
 	milestoneId: z.string().uuid(),
 	createdAt: z.date(),
 	updatedAt: z.date(),
+	documents: z.array(z.string()),
+	status: SubmissionStatusSchema,
 });
 
-export const AssignmentReviewSchema = z.object({
-	reviewerId: z.string().uuid(),
-	submissionId: z.string().uuid(),
+// Submission Detail schema với populated relations
+export const SubmissionDetailSchema = z.object({
+	id: z.string().uuid(),
+	groupId: z.string().uuid(),
+	milestoneId: z.string().uuid(),
+	createdAt: z.date(),
+	updatedAt: z.date(),
+	documents: z.array(z.string()),
+	status: SubmissionStatusSchema,
+	// Populated relations - sử dụng inline schema để tránh circular dependency
+	group: z.object({
+		id: z.string().uuid(),
+		code: z.string(),
+		name: z.string(),
+	}),
+	milestone: z
+		.object({
+			id: z.string().uuid(),
+			name: z.string(),
+			startDate: z.date(),
+			endDate: z.date(),
+		})
+		.optional(),
+	assignmentReviews: z.array(AssignmentReviewDetailSchema).optional(),
 });
 
 export const SubmissionCreateSchema = SubmissionSchema.omit({
@@ -28,8 +54,8 @@ export const SubmissionUpdateSchema = SubmissionSchema.omit({
 	milestoneId: true,
 });
 
-// Export inferred types
+// Export inferred types - chỉ những type liên quan đến submission
 export type Submission = z.infer<typeof SubmissionSchema>;
+export type SubmissionDetail = z.infer<typeof SubmissionDetailSchema>;
 export type SubmissionCreate = z.infer<typeof SubmissionCreateSchema>;
 export type SubmissionUpdate = z.infer<typeof SubmissionUpdateSchema>;
-export type AssignmentReview = z.infer<typeof AssignmentReviewSchema>;

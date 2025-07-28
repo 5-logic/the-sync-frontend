@@ -124,9 +124,9 @@ const createModeratorMenuItems = (
 				targetPath,
 			),
 			createMenuItem(
-				DASHBOARD_PATHS.LECTURER_ASSIGN_STUDENT_LIST,
+				DASHBOARD_PATHS.LECTURER_GROUP_MANAGEMENT,
 				<UserAddOutlined />,
-				'Assign Student',
+				'Group Management',
 				navigateWithLoading,
 				isNavigating,
 				targetPath,
@@ -148,7 +148,7 @@ const createModeratorMenuItems = (
 				targetPath,
 			),
 			createMenuItem(
-				LECTURER_MENU_KEYS.CHECKLIST_MANAGEMENT,
+				DASHBOARD_PATHS.LECTURER_CHECKLIST_MANAGEMENT,
 				<CheckSquareOutlined />,
 				'Checklist Management',
 				navigateWithLoading,

@@ -1,16 +1,22 @@
 import { Alert, Col, Empty, Row, Space, Spin } from 'antd';
+import { useSession } from 'next-auth/react';
 import { useEffect } from 'react';
 
+import { ProgressOverviewCard } from '@/components/common/ProgressOverview';
 import GroupDashboardHeader from '@/components/features/student/GroupDashboard/GroupDashboardHeader';
 import GroupInfoCard from '@/components/features/student/GroupDashboard/GroupInfoCard';
 import NoThesisCard from '@/components/features/student/GroupDashboard/NoThesisCard';
-import ProgressOverviewCard from '@/components/features/student/GroupDashboard/ProgressOverviewCard';
 import SupervisorInfoCard from '@/components/features/student/GroupDashboard/SupervisorInfoCard';
 import ThesisStatusCard from '@/components/features/student/GroupDashboard/ThesisStatusCard';
 import { useGroupDashboardStore } from '@/store/useGroupDashboardStore';
 
 export default function GroupDashboard() {
 	const { group, loading, error, fetchStudentGroup } = useGroupDashboardStore();
+	const { data: session } = useSession();
+
+	// Check if current user is the leader by comparing user IDs
+	const currentUserId = session?.user?.id;
+	const isLeader = group?.leader?.user?.id === currentUserId;
 
 	useEffect(() => {
 		fetchStudentGroup();
@@ -71,7 +77,10 @@ export default function GroupDashboard() {
 					{/* Right column - 40% desktop, 50% tablet, 100% mobile */}
 					<Col xs={24} md={12} xl={10}>
 						<Space direction="vertical" size="large" style={{ width: '100%' }}>
-							<ThesisStatusCard thesisId={group.thesis.id} />
+							<ThesisStatusCard
+								thesisId={group.thesis.id}
+								isLeader={isLeader}
+							/>
 							<ProgressOverviewCard thesisId={group.thesis.id} />
 						</Space>
 					</Col>

@@ -5,9 +5,10 @@ import { FormInstance } from 'antd/es/form';
 import dayjs, { Dayjs } from 'dayjs';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import { FormLabel } from '@/components/common/FormLabel';
+import { DocumentUploadSection } from '@/components/features/admin/MilestoneManagement/DocumentUploadSection';
 import { SEMESTER_STATUS_TAGS } from '@/lib/constants/semester';
 import { DATE_FORMAT } from '@/lib/utils/dateFormat';
 import { Milestone } from '@/schemas/milestone';
@@ -26,6 +27,9 @@ type Props = Readonly<{
 	milestone?: Milestone | null; // For edit mode
 	disabled?: boolean;
 	showSemesterField?: boolean; // Control visibility of semester field
+	files?: File[]; // For files state
+	onFilesChange?: (files: File[]) => void; // Callback for files change
+	onValuesChange?: () => void; // Callback for form values change
 }>;
 
 export default function MilestoneForm({
@@ -36,8 +40,18 @@ export default function MilestoneForm({
 	milestone = null,
 	disabled = false,
 	showSemesterField = true,
+	files = [],
+	onFilesChange,
+	onValuesChange,
 }: Props) {
 	const isEditMode = !!milestone;
+
+	// State for managing files locally if no callback provided
+	const [localFiles, setLocalFiles] = useState<File[]>(files);
+
+	// Use provided callback or local state handler
+	const handleFilesChange = onFilesChange || setLocalFiles;
+	const currentFiles = onFilesChange ? files : localFiles;
 
 	// Validation function to check date overlap
 	const checkDateOverlap = (
@@ -177,11 +191,23 @@ export default function MilestoneForm({
 	// Set form values when milestone changes and in edit mode
 	useEffect(() => {
 		if (isEditMode && milestone) {
+			console.log('MilestoneForm - Setting form values:', {
+				milestoneId: milestone.id,
+				milestoneName: milestone.name,
+				note: milestone.note,
+				hasNoteField: 'note' in milestone,
+				allKeys: Object.keys(milestone),
+			});
+
 			form.setFieldsValue({
 				milestoneName: milestone.name,
 				semesterId: milestone.semesterId,
 				duration: [dayjs(milestone.startDate), dayjs(milestone.endDate)],
+				note: milestone.note || '',
 			});
+
+			// Note: For files, we can't restore File objects from milestone.documents
+			// This would only be relevant for edit mode, which typically doesn't need file re-upload
 		}
 	}, [isEditMode, milestone, form]);
 
@@ -202,6 +228,7 @@ export default function MilestoneForm({
 			layout="vertical"
 			requiredMark={false}
 			disabled={disabled}
+			onValuesChange={onValuesChange}
 		>
 			<Row gutter={isEditMode ? [0, 16] : 16}>
 				<Col xs={24} md={getNameFieldSpan()}>
@@ -275,6 +302,33 @@ export default function MilestoneForm({
 					</Form.Item>
 				</Col>
 			</Row>
+
+			{/* Note Field - Optional */}
+			<Row style={{ marginTop: 8 }}>
+				<Col span={24}>
+					<Form.Item label={<FormLabel text="Note" />} name="note">
+						<Input.TextArea
+							placeholder="Enter optional note for this milestone..."
+							rows={3}
+							maxLength={500}
+							showCount
+						/>
+					</Form.Item>
+				</Col>
+			</Row>
+
+			{/* Document Upload Section - Only show in create mode */}
+			{onFilesChange && (
+				<Row style={{ marginTop: 16 }}>
+					<Col span={24}>
+						<DocumentUploadSection
+							files={currentFiles}
+							onFilesChange={handleFilesChange}
+							disabled={disabled}
+						/>
+					</Col>
+				</Row>
+			)}
 		</Form>
 	);
 }
