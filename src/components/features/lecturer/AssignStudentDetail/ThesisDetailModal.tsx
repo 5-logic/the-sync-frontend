@@ -11,6 +11,7 @@ interface Props {
 	readonly onCancel: () => void;
 	readonly thesis: Thesis | null;
 	readonly onUnassignThesis?: () => void;
+	readonly showUnassignButton?: boolean;
 }
 
 export default function ThesisDetailModal({
@@ -18,6 +19,7 @@ export default function ThesisDetailModal({
 	onCancel,
 	thesis,
 	onUnassignThesis,
+	showUnassignButton = false,
 }: Props) {
 	if (!thesis) return null;
 
@@ -29,14 +31,16 @@ export default function ThesisDetailModal({
 			footer={
 				<Space>
 					<Button onClick={onCancel}>Close</Button>
-					<Button
-						type="primary"
-						danger
-						icon={<DisconnectOutlined />}
-						onClick={onUnassignThesis}
-					>
-						Unassign Thesis
-					</Button>
+					{showUnassignButton && (
+						<Button
+							type="primary"
+							danger
+							icon={<DisconnectOutlined />}
+							onClick={onUnassignThesis}
+						>
+							Unassign Thesis
+						</Button>
+					)}
 				</Space>
 			}
 			width={800}
