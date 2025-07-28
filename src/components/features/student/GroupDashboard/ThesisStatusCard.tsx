@@ -17,7 +17,7 @@ type ThesisRequiredSkill =
 const { Title, Text } = Typography;
 
 interface ThesisStatusCardProps {
-	readonly thesisId: string;
+	readonly thesisId?: string;
 	readonly isLeader?: boolean;
 	readonly isDashboardView?: boolean;
 	readonly hideEditButton?: boolean; // Option to hide edit button for lecturer view
