@@ -6,6 +6,7 @@ import CreateGroupInviteMembersSimple from '@/components/features/student/FormOr
 import GroupFormFields from '@/components/features/student/FormOrJoinGroup/CreateGroup/GroupFormFields';
 import groupService from '@/lib/services/groups.service';
 import requestService from '@/lib/services/requests.service';
+import { handleApiError } from '@/lib/utils/handleApi';
 import { showNotification } from '@/lib/utils/notification';
 import { GroupCreateService as GroupCreate } from '@/schemas/group';
 import type { Student } from '@/schemas/student';
@@ -52,65 +53,91 @@ function CreateGroupForm() {
 				}
 
 				const createdGroup = groupResponse.data;
-				showNotification.success('Group created successfully!');
+				showNotification.success('Success', 'Group created successfully!');
 
-				// Step 2: Invite members if any
+				// Reset form immediately after successful creation
+				form.resetFields();
+
+				// Trigger group status update
+				refreshGroup();
+
+				// Navigate to dashboard immediately after group creation
+				router.push('/student/group-dashboard');
+
+				// Step 2: Invite members in background (if any)
 				if (members.length > 0) {
-					try {
-						const studentIds = members.map((member) => member.id);
-						const inviteResponse = await requestService.inviteMultipleStudents(
-							createdGroup.id,
-							studentIds,
-						);
+					// Show loading notification for invite process
+					const inviteLoadingKey = `invite-${Date.now()}`;
+					showNotification.loading(
+						'Sending invitations...',
+						`Inviting ${members.length} members to your group`,
+						{ key: inviteLoadingKey, duration: 0 },
+					);
 
-						if (inviteResponse.success && inviteResponse.data.length > 0) {
-							showNotification.success(
-								`Successfully invited ${inviteResponse.data.length}/${members.length} members`,
-							);
-						} else if (
-							inviteResponse.success &&
-							inviteResponse.data.length === 0
-						) {
-							showNotification.warning('No invitations were sent.');
-						} else {
+					// Don't await this - let it run in background
+					const inviteMembers = async () => {
+						try {
+							const studentIds = members.map((member) => member.id);
+							const inviteResponse =
+								await requestService.inviteMultipleStudents(
+									createdGroup.id,
+									studentIds,
+								);
+
+							// Dismiss loading notification
+							showNotification.destroy(inviteLoadingKey);
+
+							if (inviteResponse.success && inviteResponse.data.length > 0) {
+								showNotification.success(
+									'Invitations sent successfully!',
+									`Successfully invited ${inviteResponse.data.length}/${members.length} members`,
+									4.5,
+								);
+							} else if (
+								inviteResponse.success &&
+								inviteResponse.data.length === 0
+							) {
+								showNotification.warning(
+									'No invitations sent',
+									'No invitations were sent.',
+									4.5,
+								);
+							} else {
+								showNotification.warning(
+									'Partial invitation failure',
+									'Failed to send some invitations. You can invite members later from the group dashboard.',
+									6,
+								);
+							}
+						} catch (inviteError) {
+							console.error('Error inviting members:', inviteError);
+
+							// Dismiss loading notification
+							showNotification.destroy(inviteLoadingKey);
+
 							showNotification.warning(
-								'Group created successfully, but failed to send invitations.',
+								'Invitation failed',
+								'Failed to send invitations. You can invite members later from the group dashboard.',
+								6,
 							);
 						}
-					} catch (inviteError) {
-						console.error('Error inviting members:', inviteError);
-						showNotification.warning(
-							'Group created successfully, but failed to send some invitations.',
-						);
-					}
+					};
+
+					// Run invites in background
+					inviteMembers();
 				}
 
-				// Reset form and trigger group status update
-				form.resetFields();
+				// Reset members state
 				setMembers([]);
-
-				// Fetch updated group status - the GroupStatusGuard will handle redirect
-				await refreshGroup();
-
-				// Add a small delay to ensure API has processed the group creation
-				await new Promise((resolve) => setTimeout(resolve, 1000));
-				await refreshGroup();
-
-				// Since the GroupStatusGuard will handle redirect when group is available,
-				// we don't need to check group state here. Just redirect after delay.
-				setTimeout(() => {
-					router.push('/student/group-dashboard');
-				}, 500);
 			} catch (error) {
 				console.error('Error creating group:', error);
-				showNotification.error(
-					error instanceof Error ? error.message : 'Failed to create group',
-				);
+				const apiError = handleApiError(error, 'Failed to create group');
+				showNotification.error('Failed to Create Group', apiError.message);
 			} finally {
 				setLoading(false);
 			}
 		},
-		[members, form, refreshGroup, router], // Removed group dependency since not used in callback
+		[members, form, refreshGroup, router],
 	);
 
 	return (

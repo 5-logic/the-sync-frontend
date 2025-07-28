@@ -1,7 +1,8 @@
 import lecturerService from '@/lib/services/lecturers.service';
 import thesisService from '@/lib/services/theses.service';
 import { isTextMatch } from '@/lib/utils';
-import { handleApiResponse } from '@/lib/utils/handleApi';
+import { handleApiError, handleApiResponse } from '@/lib/utils/handleApi';
+import { showNotification } from '@/lib/utils/notification';
 import { Thesis } from '@/schemas/thesis';
 import { cacheUtils } from '@/store/helpers/cacheHelpers';
 import {
@@ -13,6 +14,8 @@ import {
 export interface ThesisWithLecturer extends Thesis {
 	lecturerName?: string;
 	lecturerEmail?: string;
+	semesterName?: string;
+	semesterCode?: string;
 	[key: string]: unknown;
 }
 
@@ -21,6 +24,7 @@ export interface PublishThesesFilters {
 	searchText: string;
 	isPublish?: boolean;
 	domain?: string;
+	semesterId?: string;
 }
 
 // Additional actions specific to publish theses
@@ -32,6 +36,7 @@ export interface PublishThesesActions {
 	togglePublishStatus: (thesisId: string) => Promise<boolean>;
 	publishMultiple: (thesisIds: string[]) => Promise<boolean>;
 	getDomainOptions: () => string[];
+	getSemesterOptions: () => Array<{ id: string; name: string; code: string }>;
 }
 
 // Full publish theses store type
@@ -41,32 +46,46 @@ export type PublishThesesStore = ExtendThesisStore<
 	PublishThesesActions
 >;
 
-// Fetch function to get approved theses enriched with lecturer data
+// Fetch function to get approved theses (all approved, regardless of publish status) enriched with lecturer data
 const fetchApprovedThesesWithLecturer = async (): Promise<
 	ThesisWithLecturer[]
 > => {
-	// Fetch both theses and lecturers in parallel
-	const [thesisResponse, lecturerResponse] = await Promise.all([
-		thesisService.findAll(),
-		lecturerService.findAll(),
-	]);
+	// Fetch theses, lecturers, and semesters in parallel
+	const [thesisResponse, lecturerResponse, semesterResponse] =
+		await Promise.all([
+			thesisService.findAll(),
+			lecturerService.findAll(),
+			import('@/lib/services/semesters.service').then((module) =>
+				module.default.findAll(),
+			),
+		]);
 
 	const thesisResult = handleApiResponse(thesisResponse);
 	const lecturerResult = handleApiResponse(lecturerResponse);
+	const semesterResult = handleApiResponse(semesterResponse);
 
-	if (!thesisResult.success || !lecturerResult.success) {
+	if (
+		!thesisResult.success ||
+		!lecturerResult.success ||
+		!semesterResult.success
+	) {
 		const thesisError = thesisResult.success
 			? ''
 			: (thesisResult.error?.message ?? '');
 		const lecturerError = lecturerResult.success
 			? ''
 			: (lecturerResult.error?.message ?? '');
+		const semesterError = semesterResult.success
+			? ''
+			: (semesterResult.error?.message ?? '');
 
 		let errorMessage = 'Failed to fetch data';
 		if (thesisError !== '') {
 			errorMessage = thesisError;
 		} else if (lecturerError !== '') {
 			errorMessage = lecturerError;
+		} else if (semesterError !== '') {
+			errorMessage = semesterError;
 		}
 
 		throw new Error(errorMessage);
@@ -74,10 +93,11 @@ const fetchApprovedThesesWithLecturer = async (): Promise<
 
 	const allTheses = thesisResult.data ?? [];
 	const allLecturers = lecturerResult.data ?? [];
+	const allSemesters = semesterResult.data ?? [];
 
-	// Filter only approved and published theses
-	const approvedAndPublishedTheses = allTheses.filter(
-		(thesis) => thesis.status === 'Approved' && thesis.isPublish === true,
+	// Filter only approved theses (regardless of publish status)
+	const approvedTheses = allTheses.filter(
+		(thesis) => thesis.status === 'Approved',
 	);
 
 	// Create lecturer lookup map for efficient matching
@@ -85,10 +105,16 @@ const fetchApprovedThesesWithLecturer = async (): Promise<
 		allLecturers.map((lecturer) => [lecturer.id, lecturer]),
 	);
 
-	// Enrich thesis data with lecturer information
-	const thesesWithLecturer: ThesisWithLecturer[] =
-		approvedAndPublishedTheses.map((thesis) => {
+	// Create semester lookup map for efficient matching
+	const semesterMap = new Map(
+		allSemesters.map((semester) => [semester.id, semester]),
+	);
+
+	// Enrich thesis data with lecturer and semester information
+	const thesesWithLecturer: ThesisWithLecturer[] = approvedTheses.map(
+		(thesis) => {
 			const lecturer = lecturerMap.get(thesis.lecturerId);
+			const semester = semesterMap.get(thesis.semesterId);
 			return {
 				...thesis,
 				lecturerName: (() => {
@@ -96,8 +122,11 @@ const fetchApprovedThesesWithLecturer = async (): Promise<
 					return trimmedName !== '' ? trimmedName : 'Unknown';
 				})(),
 				lecturerEmail: lecturer?.email,
+				semesterName: semester?.name,
+				semesterCode: semester?.code,
 			};
-		});
+		},
+	);
 
 	return thesesWithLecturer;
 };
@@ -128,7 +157,12 @@ const filterPublishTheses = (
 			? true
 			: thesis.domain === filters.domain;
 
-		return searchMatch && publishMatch && domainMatch;
+		// Semester filter
+		const semesterMatch = !filters.semesterId
+			? true
+			: thesis.semesterId === filters.semesterId;
+
+		return searchMatch && publishMatch && domainMatch && semesterMatch;
 	});
 };
 
@@ -181,7 +215,7 @@ export const usePublishThesesStore = () => {
 
 			// Call API
 			const response = await thesisService.publishTheses({
-				thesesIds: validTheses.map((thesis) => thesis.id),
+				thesisIds: validTheses.map((thesis) => thesis.id),
 				isPublish,
 			});
 
@@ -207,10 +241,18 @@ export const usePublishThesesStore = () => {
 				cacheUtils.set('publishTheses', 'all', updatedItems);
 
 				return true;
+			} else {
+				// Show error notification with backend error message
+				if (result.error) {
+					showNotification.error('Update Failed', result.error.message);
+				}
+				return false;
 			}
-			return false;
 		} catch (error) {
 			console.error('Failed to update publish status:', error);
+			// Handle API error and show backend error message
+			const apiError = handleApiError(error, 'Failed to update publish status');
+			showNotification.error('Update Error', apiError.message);
 			return false;
 		}
 	};
@@ -240,12 +282,36 @@ export const usePublishThesesStore = () => {
 		return Array.from(new Set(domains));
 	};
 
+	// Get unique semester options from current items
+	const getSemesterOptions = (): Array<{
+		id: string;
+		name: string;
+		code: string;
+	}> => {
+		const semesters = store.items
+			.filter((thesis) => thesis.semesterName && thesis.semesterCode)
+			.map((thesis) => ({
+				id: thesis.semesterId,
+				name: thesis.semesterName!,
+				code: thesis.semesterCode!,
+			}));
+
+		// Remove duplicates based on id
+		const uniqueSemesters = semesters.filter(
+			(semester, index, arr) =>
+				arr.findIndex((s) => s.id === semester.id) === index,
+		);
+
+		return uniqueSemesters;
+	};
+
 	return {
 		...store,
 		updatePublishStatus,
 		togglePublishStatus,
 		publishMultiple,
 		getDomainOptions,
+		getSemesterOptions,
 		// Alias for better API
 		theses: store.items,
 		filteredTheses: store.filteredItems,

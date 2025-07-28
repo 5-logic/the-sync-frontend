@@ -142,23 +142,40 @@ export default function AssignSupervisorModal({
 	};
 
 	const handleAssignNow = () => {
-		// For assign now, we need at least one supervisor
-		const values = form.getFieldsValue();
-		const selected = [values.supervisor1, values.supervisor2].filter(
-			(id): id is string => Boolean(id),
-		);
+		// Validate form before proceeding
+		form
+			.validateFields()
+			.then((values) => {
+				const selected = [values.supervisor1, values.supervisor2].filter(
+					(id): id is string => Boolean(id),
+				);
 
-		if (selected.length === 0) {
-			form.setFields([
-				{
-					name: 'supervisor1',
-					errors: ['Please select at least one supervisor'],
-				},
-			]);
-			return;
-		}
+				// Both modes now require both supervisors
+				if (selected.length < 2) {
+					if (!values.supervisor1) {
+						form.setFields([
+							{
+								name: 'supervisor1',
+								errors: ['Please select supervisor 1'],
+							},
+						]);
+					}
+					if (!values.supervisor2) {
+						form.setFields([
+							{
+								name: 'supervisor2',
+								errors: ['Please select supervisor 2'],
+							},
+						]);
+					}
+					return;
+				}
 
-		onAssignNow(selected);
+				onAssignNow(selected);
+			})
+			.catch(() => {
+				// Form validation failed, errors will be shown automatically
+			});
 	};
 
 	// Generate stable keys for Select components using watched values
@@ -175,6 +192,21 @@ export default function AssignSupervisorModal({
 	// Watch form values to compute options reactively
 	const supervisor1Value = Form.useWatch('supervisor1', form);
 	const supervisor2Value = Form.useWatch('supervisor2', form);
+
+	// Detect if there are changes from initial values
+	const hasChanges = useMemo(() => {
+		const currentValues = [supervisor1Value, supervisor2Value].filter(Boolean);
+		const initial = initialValues.filter(Boolean);
+
+		// Check if values are different
+		if (currentValues.length !== initial.length) return true;
+
+		// Check if any value changed
+		return (
+			currentValues.some((value, index) => value !== initial[index]) ||
+			initial.some((value, index) => value !== currentValues[index])
+		);
+	}, [supervisor1Value, supervisor2Value, initialValues]);
 
 	// Compute supervisor 1 options (exclude supervisor 2 if selected)
 	const supervisor1Options = useMemo((): LecturerOption[] => {
@@ -213,7 +245,7 @@ export default function AssignSupervisorModal({
 
 	// Extract placeholder logic for supervisor 2
 	const getSupervisor2Placeholder = (): string => {
-		return 'Select supervisor (optional)';
+		return 'Select supervisor';
 	};
 
 	// Extract placeholder logic for supervisor 1
@@ -299,7 +331,7 @@ export default function AssignSupervisorModal({
 			type="primary"
 			onClick={handleAssignNow}
 			loading={loading}
-			disabled={loading || saveDraftLoading}
+			disabled={loading || saveDraftLoading || !hasChanges}
 		>
 			Change
 		</Button>
@@ -356,19 +388,16 @@ export default function AssignSupervisorModal({
 	};
 
 	// Helper methods for determining field requirements
-	const isFieldRequiredInChangeMode = (): boolean => {
-		return false;
-	};
-
-	const isFieldRequiredInAssignMode = (): boolean => {
-		return true;
+	const isBothSupervisorsRequired = (): boolean => {
+		return true; // Both supervisors required in all modes
 	};
 
 	const isSupervisor1Required = (): boolean => {
-		if (isChangeMode) {
-			return isFieldRequiredInChangeMode();
-		}
-		return isFieldRequiredInAssignMode();
+		return isBothSupervisorsRequired();
+	};
+
+	const isSupervisor2Required = (): boolean => {
+		return isBothSupervisorsRequired();
 	};
 
 	return (
@@ -392,14 +421,8 @@ export default function AssignSupervisorModal({
 					required={false}
 					rules={[
 						{
-							validator: (_, value) => {
-								// Only require supervisor 1 for assign/change operations
-								// Save draft can be empty
-								if (!value) {
-									return Promise.resolve(); // Allow empty for save draft
-								}
-								return Promise.resolve();
-							},
+							required: isSupervisor1Required(),
+							message: 'Please select supervisor 1',
 						},
 					]}
 				>
@@ -418,10 +441,20 @@ export default function AssignSupervisorModal({
 				</Form.Item>
 
 				<Form.Item
-					label={<FormLabel text={getSupervisor2LabelText()} isBold />}
+					label={
+						<FormLabel
+							text={getSupervisor2LabelText()}
+							isRequired={isSupervisor2Required()}
+							isBold
+						/>
+					}
 					name="supervisor2"
 					required={false}
 					rules={[
+						{
+							required: isSupervisor2Required(),
+							message: 'Please select supervisor 2',
+						},
 						{
 							validator(_, value) {
 								const sup1 =

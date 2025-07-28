@@ -12,9 +12,8 @@ import { Thesis } from '@/schemas/thesis';
 // API response type for thesis data với thêm fields từ API
 type ThesisApiResponse = Thesis & {
 	thesisRequiredSkills?: Array<{
-		thesisId: string;
-		skillId: string;
-		skill: { id: string; name: string };
+		id: string;
+		name: string;
 	}>;
 	thesisVersions?: Array<{
 		id: string;
@@ -39,9 +38,9 @@ const transformThesisData = (
 	apiThesis: ThesisApiResponse,
 	lecturer?: Lecturer,
 ): EnhancedThesis => {
-	// Extract skills từ thesisRequiredSkills relationship
+	// Extract skills từ thesisRequiredSkills - API now returns skills directly
 	const skills =
-		apiThesis.thesisRequiredSkills?.map((trs) => trs.skill?.name ?? '') ?? [];
+		apiThesis.thesisRequiredSkills?.map((skill) => skill.name) ?? [];
 
 	// Get highest version từ thesisVersions array
 	const highestVersion = apiThesis.thesisVersions?.length

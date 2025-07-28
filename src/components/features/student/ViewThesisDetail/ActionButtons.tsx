@@ -74,7 +74,7 @@ export default function ActionButtons({
 	const isThesisAssignedToGroup = group?.id === thesis.groupId;
 
 	// Show register button only if user has group, is leader, and thesis is not assigned to any group
-	const showRegisterButton = hasGroup && isLeader && !thesis.groupId;
+	const showRegisterButton = hasGroup && isLeader && thesis.groupId == null; // Use == null to catch both null and undefined
 
 	// Show unregister button only if user has group, is leader, and this thesis is assigned to their group
 	const showUnregisterButton = hasGroup && isLeader && isThesisAssignedToGroup;

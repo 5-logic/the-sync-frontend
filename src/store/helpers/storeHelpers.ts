@@ -191,10 +191,10 @@ function handleCreateSuccess<T extends { id: string }>(
 	set: StoreApi<Record<string, unknown>>['setState'],
 	get: StoreApi<Record<string, unknown>>['getState'],
 ): void {
-	// Add to items array
+	// Add to items array - put new item at the beginning
 	set((state: Record<string, unknown>) => ({
 		...state,
-		[`${entityName}s`]: [...(state[`${entityName}s`] as T[]), data],
+		[`${entityName}s`]: [data, ...(state[`${entityName}s`] as T[])],
 	}));
 
 	// Update filtered items

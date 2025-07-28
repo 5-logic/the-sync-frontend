@@ -10,9 +10,11 @@ import {
 	Tag,
 	Typography,
 } from 'antd';
+import { useEffect } from 'react';
 
 import { StorageService } from '@/lib/services/storage.service';
 import { showNotification } from '@/lib/utils/notification';
+import { useSemesterStore } from '@/store';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -24,10 +26,10 @@ export interface BaseThesisInfo {
 	description: string;
 	domain?: string | null;
 	status: 'New' | 'Pending' | 'Approved' | 'Rejected';
+	semesterId?: string;
 	thesisRequiredSkills?: Array<{
-		thesisId: string;
-		skillId: string;
-		skill: { id: string; name: string };
+		id: string;
+		name: string;
 	}>;
 	thesisVersions?: Array<{
 		id: string;
@@ -62,6 +64,13 @@ function getStatusColor(status: string): string {
 }
 
 export default function BaseThesisInfoCard({ thesis, supervisor }: Props) {
+	const { getSemesterById, fetchSemesters } = useSemesterStore();
+
+	// Fetch semesters when component mounts
+	useEffect(() => {
+		fetchSemesters();
+	}, [fetchSemesters]);
+
 	// Helper function to handle empty values consistently
 	const getDisplayValue = (
 		value: string | undefined,
@@ -108,7 +117,12 @@ export default function BaseThesisInfoCard({ thesis, supervisor }: Props) {
 		<Card>
 			<Title level={4}>{thesis.englishName}</Title>
 			<Space wrap size={[8, 8]} style={{ marginBottom: 16 }}>
-				<Tag color="blue">{thesis.domain}</Tag>
+				{thesis.domain && <Tag color="blue">{thesis.domain}</Tag>}
+				{thesis.semesterId && (
+					<Tag color="purple">
+						{getSemesterById(thesis.semesterId)?.name || 'Unknown Semester'}
+					</Tag>
+				)}
 				<Tag color={getStatusColor(thesis.status)}>{thesis.status}</Tag>
 				<Tag color="gold">
 					Version {thesis.thesisVersions?.[0]?.version || '1.0'}
@@ -137,9 +151,9 @@ export default function BaseThesisInfoCard({ thesis, supervisor }: Props) {
 				</Title>
 				<Space wrap size={[8, 12]}>
 					{thesis.thesisRequiredSkills?.length ? (
-						thesis.thesisRequiredSkills
-							.filter((trs) => trs.skill) // Filter out undefined skills
-							.map((trs) => <Tag key={trs.skill.id}>{trs.skill.name}</Tag>)
+						thesis.thesisRequiredSkills.map((skill) => (
+							<Tag key={skill.id}>{skill.name}</Tag>
+						))
 					) : (
 						<Text type="secondary">No skills specified</Text>
 					)}

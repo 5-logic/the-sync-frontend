@@ -18,17 +18,25 @@ type MilestoneStatus = 'Ended' | 'In Progress' | 'Upcoming';
 interface ProgressOverviewCardProps {
 	readonly thesisId?: string;
 	readonly hideTrackMilestones?: boolean;
+	readonly isDashboardView?: boolean;
 }
 
 export default function ProgressOverviewCard({
 	thesisId,
 	hideTrackMilestones = false,
+	isDashboardView = false,
 }: ProgressOverviewCardProps) {
 	const router = useRouter();
 	const { milestones, loading } = useMilestoneProgress();
 
 	const handleTrackMilestones = () => {
 		router.push('/student/track-progress');
+	};
+
+	const handleCardClick = () => {
+		if (isDashboardView) {
+			router.push('/student/track-progress');
+		}
 	};
 
 	const handleViewThesisDetails = () => {
@@ -80,6 +88,18 @@ export default function ProgressOverviewCard({
 				<div style={{ textAlign: 'center', color: '#999' }}>
 					No milestones found for current semester
 				</div>
+
+				{/* Show View Thesis Details button even when no milestones */}
+				<div style={{ marginTop: 16 }}>
+					<Button
+						type="primary"
+						block
+						onClick={handleViewThesisDetails}
+						disabled={!thesisId}
+					>
+						View Thesis Details
+					</Button>
+				</div>
 			</Card>
 		);
 	}
@@ -103,7 +123,34 @@ export default function ProgressOverviewCard({
 
 	return (
 		<Card
-			title="Progress Overview"
+			title={
+				isDashboardView ? (
+					<button
+						type="button"
+						onClick={handleCardClick}
+						style={{
+							background: 'none',
+							border: 'none',
+							padding: 0,
+							font: 'inherit',
+							cursor: 'pointer',
+							color: 'inherit',
+							transition: 'color 0.2s ease',
+						}}
+						onMouseEnter={(e) => {
+							e.currentTarget.style.color = '#1890ff';
+						}}
+						onMouseLeave={(e) => {
+							e.currentTarget.style.color = '';
+						}}
+					>
+						Progress Overview
+					</button>
+				) : (
+					'Progress Overview'
+				)
+			}
+			hoverable={isDashboardView}
 			style={{
 				display: 'flex',
 				flexDirection: 'column',
@@ -161,19 +208,21 @@ export default function ProgressOverviewCard({
 			</div>
 
 			<div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-				{!hideTrackMilestones && (
+				{!isDashboardView && !hideTrackMilestones && (
 					<Button type="primary" block onClick={handleTrackMilestones}>
 						Track Milestones
 					</Button>
 				)}
-				<Button
-					type={hideTrackMilestones ? 'primary' : 'default'}
-					block
-					onClick={handleViewThesisDetails}
-					disabled={!thesisId}
-				>
-					View Thesis Details
-				</Button>
+				{!isDashboardView && (
+					<Button
+						type={hideTrackMilestones ? 'primary' : 'default'}
+						block
+						onClick={handleViewThesisDetails}
+						disabled={!thesisId}
+					>
+						View Thesis Details
+					</Button>
+				)}
 			</div>
 		</Card>
 	);

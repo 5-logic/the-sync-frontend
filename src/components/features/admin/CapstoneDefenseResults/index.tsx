@@ -1,7 +1,16 @@
 'use client';
 
-import { Button, Col, Modal, Row, Space, Table, Typography } from 'antd';
-import type {} from 'antd/es/table';
+import {
+	Button,
+	Col,
+	Modal,
+	Row,
+	Space,
+	Table,
+	Typography,
+	message,
+} from 'antd';
+import type { ColumnsType } from 'antd/es/table';
 import { TableRowSelection } from 'antd/es/table/interface';
 import React, { useCallback, useMemo, useState } from 'react';
 
@@ -9,13 +18,12 @@ import { Header } from '@/components/common/Header';
 import { TablePagination } from '@/components/common/TablePagination';
 import { getColumns } from '@/components/features/admin/CapstoneProjectManagement/Columns';
 import { FilterBar } from '@/components/features/admin/CapstoneProjectManagement/FilterBar';
-import { calculateRowSpans } from '@/components/features/admin/CapstoneProjectManagement/calculateRowSpan';
-import {
-	GroupTableData,
-	useGroupTableData,
-} from '@/components/features/admin/CapstoneProjectManagement/useGroupTableData';
+import { FullRowSpanItem } from '@/components/features/admin/CapstoneProjectManagement/calculateRowSpan';
+import { useCapstoneManagement } from '@/hooks/admin/useCapstoneManagement';
+import { useSemesterExportValidation } from '@/hooks/admin/useSemesterExportValidation';
 import { useDebouncedSearch } from '@/hooks/ui/useDebounce';
 import { exportDefenseResultsToExcel } from '@/lib/utils/defenseResultsExporter';
+import { showNotification } from '@/lib/utils/notification';
 import '@/styles/components.css';
 
 const { Text } = Typography;
@@ -23,28 +31,62 @@ const { Text } = Typography;
 const CapstoneDefenseResults = () => {
 	const { searchValue, debouncedSearchValue, setSearchValue } =
 		useDebouncedSearch('', 300);
-	const [selectedSemester, setSelectedSemester] = useState<string>('all');
+	const [selectedSemester, setSelectedSemester] = useState<string>('');
 	const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 	const [statusUpdates, setStatusUpdates] = useState<Record<string, string>>(
 		{},
 	);
-	const [baseDataState, setBaseDataState] = useState<GroupTableData[]>([]);
-	const { baseData, availableSemesters } = useGroupTableData();
 
-	// Initialize baseDataState when baseData changes
+	// Use custom hooks to reduce duplication
+	const { semesters, filteredData, availableSemesters } = useCapstoneManagement(
+		selectedSemester,
+		debouncedSearchValue,
+	);
+
+	// Set the first available semester as default when semesters are loaded
 	React.useEffect(() => {
-		setBaseDataState(baseData);
-	}, [baseData]);
+		if (availableSemesters.length > 0 && !selectedSemester) {
+			setSelectedSemester(availableSemesters[0]);
+		}
+	}, [availableSemesters, selectedSemester]);
 
-	const dataToUse = baseDataState;
+	// Export validation
+	const exportValidation = useSemesterExportValidation(
+		selectedSemester,
+		semesters,
+	);
 
 	const handleSearch = (value: string) => {
 		setSearchValue(value);
 	};
 
 	const handleExportExcel = () => {
+		// Always check validation and show notification if not allowed
+		if (!exportValidation.canExport) {
+			showNotification.error('Export Not Allowed', exportValidation.reason);
+			return;
+		}
+
+		const selectedStudents = filteredData.filter((student) =>
+			selectedRowKeys.includes(`${student.studentId}-${student.groupId}`),
+		);
+
+		// Convert FullRowSpanItem to the format expected by export function
+		const dataToExport =
+			selectedStudents.length > 0 ? selectedStudents : filteredData;
+		const dataForExport = dataToExport.map((item) => ({
+			...item,
+			thesisName:
+				item.thesisName && item.thesisName !== 'Not assigned'
+					? item.thesisName
+					: '',
+			rowSpanMajor: item.rowSpanMajor || 0,
+			rowSpanGroup: item.rowSpanGroup || 0,
+			rowSpanSemester: item.rowSpanSemester || 0,
+		}));
+
 		exportDefenseResultsToExcel({
-			data: filteredData,
+			data: dataForExport,
 			selectedSemester,
 			statusUpdates,
 		});
@@ -63,31 +105,17 @@ const CapstoneDefenseResults = () => {
 
 	const handleSaveChanges = () => {
 		console.log('Status updates to save:', statusUpdates);
-
-		// Update the baseDataState with new status values
-		setBaseDataState((prevData) =>
-			prevData.map((student) => {
-				if (statusUpdates[student.studentId]) {
-					return {
-						...student,
-						status: statusUpdates[student.studentId],
-					};
-				}
-				return student;
-			}),
-		);
-
 		// Clear the temporary updates and selection
 		setStatusUpdates({});
 		setSelectedRowKeys([]);
+		message.success('Cập nhật thành công!');
 	};
 
 	const handleBulkStatusUpdate = () => {
 		if (selectedRowKeys.length === 0) return;
 
-		const selectedStudents = filteredData.filter(
-			(student: { studentId: unknown; groupId: unknown }) =>
-				selectedRowKeys.includes(`${student.studentId}-${student.groupId}`),
+		const selectedStudents = filteredData.filter((student) =>
+			selectedRowKeys.includes(`${student.studentId}-${student.groupId}`),
 		);
 
 		Modal.confirm({
@@ -107,7 +135,7 @@ const CapstoneDefenseResults = () => {
 							marginTop: 16,
 						}}
 					>
-						{selectedStudents.map((student: GroupTableData) => (
+						{selectedStudents.map((student) => (
 							<div key={String(student.studentId)}>
 								<b>{student.studentId}</b> - {student.name}
 								<br />
@@ -166,30 +194,6 @@ const CapstoneDefenseResults = () => {
 		[statusUpdates],
 	);
 
-	const filteredData = useMemo(() => {
-		const filtered = dataToUse.filter((item: GroupTableData) => {
-			const matchesSearch =
-				!debouncedSearchValue.trim() ||
-				[
-					item.name,
-					item.studentId,
-					item.thesisName,
-					item.major,
-					item.status,
-					item.semester,
-				].some((field) =>
-					String(field ?? '')
-						.toLowerCase()
-						.includes(debouncedSearchValue.toLowerCase().trim()),
-				);
-			const matchesSemester =
-				selectedSemester === 'all' || item.semester === selectedSemester;
-			return matchesSearch && matchesSemester;
-		});
-
-		return calculateRowSpans(filtered);
-	}, [dataToUse, debouncedSearchValue, selectedSemester]);
-
 	const columns = useMemo(
 		() =>
 			getColumns(debouncedSearchValue, {
@@ -198,11 +202,11 @@ const CapstoneDefenseResults = () => {
 				getDisplayStatus,
 				statusUpdates,
 				handleStatusChange,
-			}),
+			}) as ColumnsType<FullRowSpanItem>, // Type assertion for compatibility
 		[getDisplayStatus, debouncedSearchValue, statusUpdates],
 	);
 
-	const rowSelection: TableRowSelection<GroupTableData> = {
+	const rowSelection: TableRowSelection<FullRowSpanItem> = {
 		selectedRowKeys,
 		onChange: handleRowSelectionChange,
 	};

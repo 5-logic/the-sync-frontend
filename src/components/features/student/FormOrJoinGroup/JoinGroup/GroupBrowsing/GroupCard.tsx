@@ -81,11 +81,13 @@ export default function GroupCard({
 				try {
 					await requestService.joinGroup(group.id);
 					showNotification.success(
+						'Success',
 						'Join request sent successfully! The group leader will review your request.',
 					);
 					onRequestSent?.();
 				} catch {
 					showNotification.error(
+						'Error',
 						'Failed to send join request. Please try again.',
 					);
 				} finally {
