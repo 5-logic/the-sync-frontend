@@ -2,6 +2,7 @@
 
 import { BookOutlined, EditOutlined } from '@ant-design/icons';
 import { Button, Card, Space, Tag, Tooltip, Typography } from 'antd';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import StudentEditThesisModal from '@/components/features/student/GroupDashboard/StudentEditThesisModal';
@@ -12,16 +13,19 @@ const { Title, Text } = Typography;
 
 interface ThesisStatusCardProps {
 	readonly thesisId: string;
-	readonly isLeader?: boolean; // Add isLeader prop
+	readonly isLeader?: boolean;
+	readonly isDashboardView?: boolean;
 }
 
 export default function ThesisStatusCard({
 	thesisId,
 	isLeader = false,
+	isDashboardView = false,
 }: ThesisStatusCardProps) {
 	const [thesis, setThesis] = useState<any>(null); // eslint-disable-line @typescript-eslint/no-explicit-any
 	const [loading, setLoading] = useState(true);
 	const [editModalVisible, setEditModalVisible] = useState(false);
+	const router = useRouter();
 	// Remove the hook that's causing infinite loading
 	// const { isLeader } = useStudentGroupStatus();
 
@@ -37,6 +41,12 @@ export default function ThesisStatusCard({
 		// Refresh thesis data after successful edit
 		if (thesisId) {
 			fetchThesis();
+		}
+	};
+
+	const handleCardClick = () => {
+		if (isDashboardView) {
+			router.push(`/student/thesis/${thesisId}`);
 		}
 	};
 
@@ -93,7 +103,23 @@ export default function ThesisStatusCard({
 		<>
 			<Card
 				title={
-					<Space>
+					<Space
+						onClick={handleCardClick}
+						style={{
+							cursor: isDashboardView ? 'pointer' : 'default',
+							transition: 'color 0.2s ease',
+						}}
+						onMouseEnter={(e) => {
+							if (isDashboardView) {
+								e.currentTarget.style.color = '#1890ff';
+							}
+						}}
+						onMouseLeave={(e) => {
+							if (isDashboardView) {
+								e.currentTarget.style.color = '';
+							}
+						}}
+					>
 						<BookOutlined />
 						<span>Thesis Status</span>
 					</Space>
@@ -110,6 +136,7 @@ export default function ThesisStatusCard({
 						</Tooltip>
 					)
 				}
+				hoverable={isDashboardView}
 			>
 				<Space direction="vertical" size="middle" style={{ width: '100%' }}>
 					<Space direction="vertical" size={4}>
