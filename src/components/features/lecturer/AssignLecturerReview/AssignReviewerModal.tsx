@@ -10,6 +10,7 @@ import {
 	ChangeReviewerResult,
 	Lecturer,
 } from '@/lib/services/review.service';
+import { showNotification } from '@/lib/utils/notification';
 import { useReviewStore } from '@/store/useReviewStore';
 
 interface LecturerOption {
@@ -73,6 +74,15 @@ export default function AssignReviewerModal({
 	const [previousInitialValues, setPreviousInitialValues] = useState<string[]>(
 		[],
 	);
+
+	// Internal loading states for better control
+	const [assignLoading, setAssignLoading] = useState(false);
+	const [changeLoading, setChangeLoading] = useState(false);
+
+	// Computed loading states
+	const isOperationLoading = assignLoading || changeLoading;
+	const isAnyLoading =
+		loading || saveDraftLoading || fetchLoading || isOperationLoading;
 
 	// Store actions
 	const assignBulkReviewers = useReviewStore((s) => s.assignBulkReviewers);
@@ -152,6 +162,7 @@ export default function AssignReviewerModal({
 				group.submissionId,
 			);
 			setFetchLoading(true);
+
 			getEligibleReviewers(group.submissionId)
 				.then((eligibleReviewersData) => {
 					console.log('Received eligible reviewers:', eligibleReviewersData);
@@ -189,10 +200,18 @@ export default function AssignReviewerModal({
 					if (!ignore) {
 						setEligibleLecturers([]);
 						setCurrentReviewers([]);
+
+						// Show error notification
+						showNotification.error(
+							'Failed to Load Reviewers',
+							'Unable to fetch eligible lecturers. Please try again.',
+						);
 					}
 				})
 				.finally(() => {
-					if (!ignore) setFetchLoading(false);
+					if (!ignore) {
+						setFetchLoading(false);
+					}
 				});
 		} else if (!open) {
 			setEligibleLecturers([]);
@@ -248,12 +267,12 @@ export default function AssignReviewerModal({
 
 	// Generate stable keys for Select components
 	const getReviewer1Key = (): string => {
-		if (loading || fetchLoading) return 'reviewer1-loading';
+		if (isAnyLoading) return 'reviewer1-loading';
 		return `reviewer1-${reviewer2Value || 'none'}-${renderKey}`;
 	};
 
 	const getReviewer2Key = (): string => {
-		if (loading || fetchLoading) return 'reviewer2-loading';
+		if (isAnyLoading) return 'reviewer2-loading';
 		return `reviewer2-${reviewer1Value || 'none'}-${renderKey}`;
 	};
 
@@ -337,7 +356,13 @@ export default function AssignReviewerModal({
 
 	// Handle form submission
 	const handleFinish = async () => {
-		if (!group?.submissionId) return;
+		if (!group?.submissionId) {
+			showNotification.error(
+				'Invalid Operation',
+				'No submission selected for reviewer assignment.',
+			);
+			return;
+		}
 
 		const values = form.getFieldsValue();
 		const selected = [values.reviewer1, values.reviewer2].filter(
@@ -367,67 +392,129 @@ export default function AssignReviewerModal({
 				await handleAssignReviewers(selected);
 			}
 		} catch (error) {
+			// Error is already handled in the specific handler methods
+			// No need to show notification here to avoid duplicates
 			console.error('Failed to assign/change reviewers:', error);
 		}
 	};
 
 	const handleChangeReviewers = async (selected: string[]) => {
-		if (!group?.submissionId || !changeReviewer) return;
-
-		const currentReviewerIds = getCurrentReviewerIds();
-		if (currentReviewerIds.length !== 2) return;
-
-		const results: ChangeReviewerResult[] = [];
-		for (let i = 0; i < 2; i++) {
-			if (currentReviewerIds[i] !== selected[i]) {
-				const result = await changeReviewer(group.submissionId, {
-					currentReviewerId: currentReviewerIds[i],
-					newReviewerId: selected[i],
-				});
-				if (result) results.push(result);
-			}
+		if (!group?.submissionId || !changeReviewer) {
+			showNotification.error(
+				'Operation Failed',
+				'Unable to change reviewers. Missing required data.',
+			);
+			return;
 		}
 
-		if (results.length > 0) {
-			if (onReloadSubmission) onReloadSubmission(group.submissionId);
-			onAssign(results[0]);
-		} else {
-			onAssign(null);
+		const currentReviewerIds = getCurrentReviewerIds();
+		if (currentReviewerIds.length !== 2) {
+			showNotification.error(
+				'Invalid Current State',
+				'Current reviewer assignment is incomplete.',
+			);
+			return;
+		}
+
+		setChangeLoading(true);
+
+		try {
+			const results: ChangeReviewerResult[] = [];
+			for (let i = 0; i < 2; i++) {
+				if (currentReviewerIds[i] !== selected[i]) {
+					const result = await changeReviewer(group.submissionId, {
+						currentReviewerId: currentReviewerIds[i],
+						newReviewerId: selected[i],
+					});
+					if (result) results.push(result);
+				}
+			}
+
+			if (results.length > 0) {
+				showNotification.success(
+					'Reviewers Changed Successfully',
+					`Successfully updated ${results.length} reviewer${results.length > 1 ? 's' : ''} for the group.`,
+				);
+
+				if (onReloadSubmission) onReloadSubmission(group.submissionId);
+				onAssign(results[0]);
+			} else {
+				showNotification.info(
+					'No Changes Made',
+					'The selected reviewers are the same as current assignments.',
+				);
+				onAssign(null);
+			}
+		} catch (error) {
+			console.error('Failed to change reviewers:', error);
+			const errorMessage =
+				error instanceof Error ? error.message : 'Failed to change reviewers';
+			showNotification.error('Change Reviewers Failed', errorMessage);
+			// Don't re-throw error to prevent double notifications
+		} finally {
+			setChangeLoading(false);
 		}
 	};
 
 	const handleAssignReviewers = async (selected: string[]) => {
-		if (!group?.submissionId || !assignBulkReviewers) return;
-
-		// Prepare reviewer assignments with main/secondary roles
-		const reviewerAssignments = [];
-		if (selected[0]) {
-			reviewerAssignments.push({
-				lecturerId: selected[0],
-				isMainReviewer: true,
-			});
-		}
-		if (selected[1]) {
-			reviewerAssignments.push({
-				lecturerId: selected[1],
-				isMainReviewer: false,
-			});
+		if (!group?.submissionId || !assignBulkReviewers) {
+			showNotification.error(
+				'Operation Failed',
+				'Unable to assign reviewers. Missing required data.',
+			);
+			return;
 		}
 
-		const result = await assignBulkReviewers({
-			assignments: [
-				{
-					submissionId: group.submissionId,
-					reviewerAssignments,
-				},
-			],
-		});
+		setAssignLoading(true);
 
-		if (result) {
-			if (onReloadSubmission) onReloadSubmission(group.submissionId);
-			onAssign(result);
-		} else {
-			onAssign(null);
+		try {
+			// Prepare reviewer assignments with main/secondary roles
+			const reviewerAssignments = [];
+			if (selected[0]) {
+				reviewerAssignments.push({
+					lecturerId: selected[0],
+					isMainReviewer: true,
+				});
+			}
+			if (selected[1]) {
+				reviewerAssignments.push({
+					lecturerId: selected[1],
+					isMainReviewer: false,
+				});
+			}
+
+			const result = await assignBulkReviewers({
+				assignments: [
+					{
+						submissionId: group.submissionId,
+						reviewerAssignments,
+					},
+				],
+			});
+
+			if (result) {
+				showNotification.success(
+					'Reviewers Assigned Successfully',
+					`Successfully assigned ${reviewerAssignments.length} reviewer${reviewerAssignments.length > 1 ? 's' : ''} to the group.`,
+				);
+
+				if (onReloadSubmission) onReloadSubmission(group.submissionId);
+				onAssign(result);
+			} else {
+				showNotification.error(
+					'Assignment Failed',
+					'Failed to assign reviewers. Please try again.',
+				);
+				onAssign(null);
+			}
+		} catch (error) {
+			console.error('Failed to assign reviewers:', error);
+			const errorMessage =
+				error instanceof Error ? error.message : 'Failed to assign reviewers';
+			showNotification.error('Assign Reviewers Failed', errorMessage);
+			// Don't re-throw error to prevent double notifications
+		} finally {
+			setAssignLoading(false);
 		}
 	};
 
@@ -459,6 +546,11 @@ export default function AssignReviewerModal({
 						: [],
 				},
 			]);
+
+			showNotification.warning(
+				'Incomplete Selection',
+				'Please select both main and secondary reviewers before saving draft.',
+			);
 			return;
 		}
 
@@ -474,6 +566,11 @@ export default function AssignReviewerModal({
 					errors: ['Secondary reviewer must be different from main reviewer'],
 				},
 			]);
+
+			showNotification.warning(
+				'Invalid Selection',
+				'Main and secondary reviewers must be different persons.',
+			);
 			return;
 		}
 
@@ -483,16 +580,13 @@ export default function AssignReviewerModal({
 			{ name: 'reviewer2', errors: [] },
 		]);
 
+		// Success notification will be handled by the parent component
 		onSaveDraft(mainReviewerId, secondaryReviewerId);
 	};
 
 	// Footer button methods
 	const getCancelButton = () => (
-		<Button
-			key="cancel"
-			onClick={handleCancel}
-			disabled={loading || saveDraftLoading}
-		>
+		<Button key="cancel" onClick={handleCancel} disabled={isAnyLoading}>
 			Cancel
 		</Button>
 	);
@@ -502,7 +596,7 @@ export default function AssignReviewerModal({
 			key="draft"
 			onClick={handleSaveDraft}
 			loading={saveDraftLoading}
-			disabled={loading || saveDraftLoading}
+			disabled={isAnyLoading}
 		>
 			Save Draft
 		</Button>
@@ -513,8 +607,8 @@ export default function AssignReviewerModal({
 			key="submit"
 			type="primary"
 			onClick={handleFinish}
-			loading={loading}
-			disabled={loading || saveDraftLoading}
+			loading={isChangeMode ? changeLoading : assignLoading}
+			disabled={isAnyLoading}
 		>
 			{isChangeMode ? 'Change' : 'Assign'}
 		</Button>
@@ -546,6 +640,8 @@ export default function AssignReviewerModal({
 			onCancel={handleCancel}
 			footer={getFooterButtons()}
 			centered
+			closable={!isAnyLoading}
+			maskClosable={!isAnyLoading}
 		>
 			<Form form={form} layout="vertical" requiredMark={false}>
 				<Form.Item
@@ -588,7 +684,7 @@ export default function AssignReviewerModal({
 							options={reviewer1Options}
 							allowClear
 							showSearch
-							disabled={loading || fetchLoading}
+							disabled={isAnyLoading}
 							filterOption={filterOption}
 							optionLabelProp="label"
 							notFoundContent={
@@ -643,7 +739,7 @@ export default function AssignReviewerModal({
 							options={reviewer2Options}
 							allowClear
 							showSearch
-							disabled={loading || fetchLoading}
+							disabled={isAnyLoading}
 							filterOption={filterOption}
 							optionLabelProp="label"
 							notFoundContent={

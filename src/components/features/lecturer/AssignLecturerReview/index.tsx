@@ -1,6 +1,6 @@
 'use client';
 
-import { Space, notification } from 'antd';
+import { Space } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
 
 import { Header } from '@/components/common/Header';
@@ -17,7 +17,7 @@ import {
 import SearchFilterBar from '@/components/features/lecturer/AssignLecturerReview/SearchFilterBar';
 import { mockReviews } from '@/data/review';
 import lecturerService from '@/lib/services/lecturers.service';
-import reviewService from '@/lib/services/review.service';
+import { showNotification } from '@/lib/utils/notification';
 import { Lecturer } from '@/schemas/lecturer';
 import {
 	useMilestoneStore,
@@ -25,6 +25,7 @@ import {
 	useSubmissionStore,
 } from '@/store';
 import { useDraftReviewerAssignmentStore } from '@/store/useDraftReviewerAssignmentStore';
+import { useReviewStore } from '@/store/useReviewStore';
 
 export default function AssignLecturerReview() {
 	// Draft reviewer store
@@ -35,6 +36,10 @@ export default function AssignLecturerReview() {
 		getDraftReviewerAssignment,
 		removeDraftReviewerAssignment,
 	} = useDraftReviewerAssignmentStore();
+
+	// Review store for bulk operations
+	const { assignBulkReviewers } = useReviewStore();
+
 	const [updating, setUpdating] = useState(false);
 	const [saveDraftLoading, setSaveDraftLoading] = useState(false);
 	const [selectedGroup, setSelectedGroup] = useState<GroupTableProps | null>(
@@ -277,10 +282,19 @@ export default function AssignLecturerReview() {
 					const drafts = getDraftReviewerAssignmentsList();
 					if (!drafts.length) {
 						setUpdating(false);
+						showNotification.warning(
+							'No Drafts to Assign',
+							'There are no draft reviewer assignments to process.',
+						);
 						return;
 					}
+
 					try {
-						await reviewService.assignBulkReviewers({
+						if (!assignBulkReviewers) {
+							throw new Error('Bulk assignment service is not available');
+						}
+
+						const result = await assignBulkReviewers({
 							assignments: drafts.map((draft) => {
 								const reviewerAssignments = [];
 								if (draft.mainReviewerId) {
@@ -301,11 +315,35 @@ export default function AssignLecturerReview() {
 								};
 							}),
 						});
-						clearAllDraftReviewerDrafts();
-					} catch (e) {
-						console.error('Failed to assign all draft reviewers:', e);
+
+						if (result) {
+							clearAllDraftReviewerDrafts();
+							showNotification.success(
+								'All Drafts Assigned Successfully',
+								`Successfully assigned reviewers for ${result.submissionCount} group${result.submissionCount > 1 ? 's' : ''} with ${result.totalAssignedCount} total reviewer assignment${result.totalAssignedCount > 1 ? 's' : ''}.`,
+							);
+
+							// Refresh the submissions to reflect the changes
+							if (milestone) {
+								await fetchByMilestone(milestone, true);
+							}
+						} else {
+							showNotification.error(
+								'Assignment Failed',
+								'Failed to assign draft reviewers. Please try again.',
+							);
+						}
+					} catch (error) {
+						console.error('Failed to assign all draft reviewers:', error);
+
+						const errorMessage =
+							error instanceof Error
+								? error.message
+								: 'An unexpected error occurred';
+						showNotification.error('Bulk Assignment Failed', errorMessage);
+					} finally {
+						setUpdating(false);
 					}
-					setUpdating(false);
 				}}
 				draftCount={getDraftReviewerAssignmentsList().length}
 				updating={updating}
@@ -360,10 +398,10 @@ export default function AssignLecturerReview() {
 					});
 
 					// Show success notification
-					notification.success({
-						message: 'Draft Saved',
-						description: 'Reviewer assignment saved as draft',
-					});
+					showNotification.success(
+						'Draft Saved Successfully',
+						'Reviewer assignment has been saved as draft and can be assigned later.',
+					);
 
 					setSaveDraftLoading(false);
 					setSelectedGroup(null);
