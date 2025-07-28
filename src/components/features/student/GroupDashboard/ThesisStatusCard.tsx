@@ -9,25 +9,32 @@ import StudentEditThesisModal from '@/components/features/student/GroupDashboard
 import { DOMAIN_COLOR_MAP } from '@/lib/constants/domains';
 import thesesService from '@/lib/services/theses.service';
 
+// Type for thesis required skills - handles both direct skill objects and skill relations
+type ThesisRequiredSkill =
+	| { id: string; name: string } // Direct skill object
+	| { skill: { id: string; name: string } }; // Skill relation object
+
 const { Title, Text } = Typography;
 
 interface ThesisStatusCardProps {
-	readonly thesisId: string;
+	readonly thesisId?: string;
 	readonly isLeader?: boolean;
 	readonly isDashboardView?: boolean;
+	readonly hideEditButton?: boolean; // Option to hide edit button for lecturer view
+	readonly thesisData?: any; // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
 export default function ThesisStatusCard({
 	thesisId,
+	thesisData,
 	isLeader = false,
 	isDashboardView = false,
+	hideEditButton = false,
 }: ThesisStatusCardProps) {
-	const [thesis, setThesis] = useState<any>(null); // eslint-disable-line @typescript-eslint/no-explicit-any
-	const [loading, setLoading] = useState(true);
+	const [thesis, setThesis] = useState<any>(thesisData || null); // eslint-disable-line @typescript-eslint/no-explicit-any
+	const [loading, setLoading] = useState(!thesisData);
 	const [editModalVisible, setEditModalVisible] = useState(false);
 	const router = useRouter();
-	// Remove the hook that's causing infinite loading
-	// const { isLeader } = useStudentGroupStatus();
 
 	const handleEditClick = () => {
 		setEditModalVisible(true);
@@ -38,7 +45,7 @@ export default function ThesisStatusCard({
 	};
 
 	const handleEditSuccess = () => {
-		// Refresh thesis data after successful edit
+		// Refresh thesis data after successful edit - only if we have thesisId
 		if (thesisId) {
 			fetchThesis();
 		}
@@ -51,6 +58,8 @@ export default function ThesisStatusCard({
 	};
 
 	const fetchThesis = async () => {
+		if (!thesisId) return;
+
 		try {
 			setLoading(true);
 			const response = await thesesService.findOne(thesisId);
@@ -64,12 +73,21 @@ export default function ThesisStatusCard({
 		}
 	};
 
+	// Fetch thesis data only if thesisData is not provided and thesisId exists
 	useEffect(() => {
-		if (thesisId) {
+		if (!thesisData && thesisId) {
 			fetchThesis();
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [thesisId]);
+	}, [thesisId, thesisData]);
+
+	// Update thesis state when thesisData prop changes
+	useEffect(() => {
+		if (thesisData) {
+			setThesis(thesisData);
+			setLoading(false);
+		}
+	}, [thesisData]);
 
 	if (loading || !thesis) {
 		return (
@@ -90,7 +108,7 @@ export default function ThesisStatusCard({
 		: 'default';
 
 	// Only render modal when actually needed to avoid unnecessary renders
-	const renderModal = editModalVisible && (
+	const renderModal = editModalVisible && thesisId && (
 		<StudentEditThesisModal
 			visible={editModalVisible}
 			thesisId={thesisId}
@@ -125,7 +143,8 @@ export default function ThesisStatusCard({
 					</Space>
 				}
 				extra={
-					isLeader && (
+					isLeader &&
+					!hideEditButton && (
 						<Tooltip title="Edit Thesis">
 							<Button
 								type="text"
@@ -185,11 +204,18 @@ export default function ThesisStatusCard({
 							thesis.thesisRequiredSkills.length > 0 ? (
 								<Space size={[4, 8]} wrap>
 									{thesis.thesisRequiredSkills.map(
-										(skill: { id: string; name: string }) => (
-											<Tag key={skill.id} color="blue">
-												{skill.name}
-											</Tag>
-										),
+										(skillRelation: ThesisRequiredSkill) => {
+											// Handle both direct skill objects and skill relation objects
+											const skill =
+												'skill' in skillRelation
+													? skillRelation.skill
+													: skillRelation;
+											return (
+												<Tag key={skill.id} color="blue">
+													{skill.name}
+												</Tag>
+											);
+										},
 									)}
 								</Space>
 							) : (

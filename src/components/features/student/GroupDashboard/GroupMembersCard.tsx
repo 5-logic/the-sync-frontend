@@ -268,41 +268,48 @@ export default function GroupMembersCard({
 		>
 			{' '}
 			<div className="space-y-3">
-				{group.members.map((member) => {
-					const menuItems = getMemberMenuItems(member, isCurrentUserLeader);
+				{group.members
+					.sort((a, b) => {
+						// Sort by isLeader first (leader comes first), then by name
+						if (a.isLeader && !b.isLeader) return -1;
+						if (!a.isLeader && b.isLeader) return 1;
+						return a.user.fullName.localeCompare(b.user.fullName);
+					})
+					.map((member) => {
+						const menuItems = getMemberMenuItems(member, isCurrentUserLeader);
 
-					return (
-						<div key={member.userId} className="flex items-center gap-3">
-							<Avatar icon={<UserOutlined />} />
-							<div className="flex-1">
-								<div className="flex items-center gap-2">
-									<Text strong>{member.user.fullName}</Text>
-									{member.isLeader && <Tag color="gold">Leader</Tag>}
+						return (
+							<div key={member.userId} className="flex items-center gap-3">
+								<Avatar icon={<UserOutlined />} />
+								<div className="flex-1">
+									<div className="flex items-center gap-2">
+										<Text strong>{member.user.fullName}</Text>
+										{member.isLeader && <Tag color="gold">Leader</Tag>}
+									</div>
+									<Text type="secondary" className="text-sm">
+										{member.studentCode} • {member.major.name}
+									</Text>
 								</div>
-								<Text type="secondary" className="text-sm">
-									{member.studentCode} • {member.major.name}
-								</Text>
+								{/* Only show dropdown if it's not the current user */}
+								{session?.user?.id !== member.userId && (
+									<Dropdown
+										menu={{
+											items: menuItems,
+										}}
+										placement="bottomRight"
+										trigger={['click']}
+									>
+										<Button
+											type="text"
+											size="small"
+											icon={<MoreOutlined />}
+											className="flex-shrink-0"
+										/>
+									</Dropdown>
+								)}
 							</div>
-							{/* Only show dropdown if it's not the current user */}
-							{session?.user?.id !== member.userId && (
-								<Dropdown
-									menu={{
-										items: menuItems,
-									}}
-									placement="bottomRight"
-									trigger={['click']}
-								>
-									<Button
-										type="text"
-										size="small"
-										icon={<MoreOutlined />}
-										className="flex-shrink-0"
-									/>
-								</Dropdown>
-							)}
-						</div>
-					);
-				})}
+						);
+					})}
 			</div>
 			{/* Member Profile Dialog */}
 			<Modal
