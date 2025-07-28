@@ -229,27 +229,25 @@ export default function GroupProgressPage() {
 				</Space>
 
 				{selectedGroup && (
-					<>
-						<Space direction="vertical" size="large" style={{ width: '100%' }}>
-							{/* Group Details Section */}
-							<GroupDetailCard
-								group={selectedGroup}
-								loading={false}
-								milestones={milestones}
-								milestonesLoading={milestonesLoading}
-							/>
+					<Space direction="vertical" size="large" style={{ width: '100%' }}>
+						{/* Group Details Section */}
+						<GroupDetailCard
+							group={selectedGroup}
+							loading={false}
+							milestones={milestones}
+							milestonesLoading={milestonesLoading}
+						/>
 
-							{/* Milestone Progress Section */}
-							<MilestoneDetailCard
-								group={selectedGroup}
-								milestone={selectedMilestone}
-								milestones={milestones}
-								onMilestoneChange={handleMilestoneChange}
-								loading={milestonesLoading}
-								milestoneLoading={milestoneChanging}
-							/>
-						</Space>
-					</>
+						{/* Milestone Progress Section */}
+						<MilestoneDetailCard
+							group={selectedGroup}
+							milestone={selectedMilestone}
+							milestones={milestones}
+							onMilestoneChange={handleMilestoneChange}
+							loading={milestonesLoading}
+							milestoneLoading={milestoneChanging}
+						/>
+					</Space>
 				)}
 			</Space>
 		</div>

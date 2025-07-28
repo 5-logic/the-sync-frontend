@@ -181,8 +181,8 @@ function GroupDetailCard({
 						<GroupInfoCard group={groupDashboard} viewOnly={true} />
 
 						{/* Supervisor Information */}
-						{hasThesis ? (
-							<SupervisorInfoCard thesisId={thesisId!} />
+						{hasThesis && thesisId ? (
+							<SupervisorInfoCard thesisId={thesisId} />
 						) : (
 							<Card title="Supervisor Information">
 								<div style={{ textAlign: 'center', color: '#999' }}>
