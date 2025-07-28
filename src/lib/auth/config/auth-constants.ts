@@ -13,6 +13,7 @@ export const DASHBOARD_PATHS = {
 	STUDENT: '/student',
 	LECTURER: '/lecturer',
 	ADMIN: '/admin',
+	LECTURER_DASHBOARD_MODERATOR: '/lecturer/dashboard-moderator',
 	LECTURER_GROUP_MANAGEMENT: '/lecturer/group-management',
 	LECTURER_ASSIGN_STUDENT_DETAIL: '/lecturer/assign-student-detail',
 	LECTURER_ASSIGN_SUPERVISOR: '/lecturer/assign-supervisor',

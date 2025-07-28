@@ -54,6 +54,7 @@ export default function AssignStudentsDetailPage() {
 	const [isThesisDetailModalOpen, setIsThesisDetailModalOpen] = useState(false);
 	const [isAssignThesisModalOpen, setIsAssignThesisModalOpen] = useState(false);
 	const [viewingThesis, setViewingThesis] = useState<Thesis | null>(null);
+	const [showUnassignButton, setShowUnassignButton] = useState(false);
 	const [assignThesisLoading, setAssignThesisLoading] = useState(false);
 	const [unassignThesisLoading, setUnassignThesisLoading] = useState(false);
 
@@ -324,6 +325,7 @@ export default function AssignStudentsDetailPage() {
 	// Handle view thesis detail
 	const handleViewThesisDetail = (thesis: Thesis) => {
 		setViewingThesis(thesis);
+		setShowUnassignButton(false); // From AvailableTheses table - don't show unassign button
 		setIsThesisDetailModalOpen(true);
 	};
 
@@ -443,6 +445,7 @@ export default function AssignStudentsDetailPage() {
 										const result = handleApiResponse(response);
 										if (result.success && result.data) {
 											setViewingThesis(result.data);
+											setShowUnassignButton(true); // From Group's Thesis card - show unassign button
 											setIsThesisDetailModalOpen(true);
 										}
 									} catch (error) {
@@ -607,6 +610,7 @@ export default function AssignStudentsDetailPage() {
 				onCancel={() => setIsThesisDetailModalOpen(false)}
 				thesis={viewingThesis}
 				onUnassignThesis={handleUnassignThesis}
+				showUnassignButton={showUnassignButton}
 			/>
 
 			{/* Assign Thesis Modal */}
