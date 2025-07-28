@@ -5,7 +5,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 
 import { FormLabel } from '@/components/common/FormLabel';
 import { GroupTableProps } from '@/components/features/lecturer/AssignLecturerReview/GroupTable';
-import lecturerService from '@/lib/services/lecturers.service';
 import {
 	AssignBulkReviewersResult,
 	ChangeReviewerResult,
@@ -26,7 +25,10 @@ export interface Props {
 	readonly onAssign: (
 		result: AssignBulkReviewersResult | ChangeReviewerResult | null,
 	) => void;
-	readonly onSaveDraft?: (values: string[]) => void;
+	readonly onSaveDraft?: (
+		mainReviewerId?: string,
+		secondaryReviewerId?: string,
+	) => void;
 	readonly initialValues?: string[];
 	readonly group: GroupTableProps | null;
 	readonly onReloadSubmission?: (submissionId: string) => void;
@@ -34,13 +36,21 @@ export interface Props {
 
 /**
  * Modal component for assigning reviewers to groups
- * Uses lecturerService.findAll() to fetch all lecturers and filters eligible ones
- * Supports both Save Draft and Assign/Change actions
- * Features:
- * - Displays fullName in dropdown but submits lecturer ID
- * - Prevents duplicate selections between reviewer1 and reviewer2
- * - Filters out lecturers already assigned as reviewers for the group
- * - Clean code with proper error handling and validation
+ *
+ * Key Features:
+ * - Uses eligible reviewers API (/reviews/{submissionId}/eligible-reviewers) for smart filtering
+ * - API automatically excludes supervisors and already assigned reviewers
+ * - Supports both new assignment and change reviewer operations
+ * - Main reviewer (isMainReviewer: true) and Secondary reviewer (isMainReviewer: false)
+ * - In change mode, shows currently assigned reviewers alongside eligible ones
+ * - Prevents duplicate selections between main and secondary reviewers
+ * - Save draft functionality with proper validation
+ *
+ * Business Logic:
+ * - Assign Mode: Uses eligible reviewers API to get available lecturers
+ * - Change Mode: Merges current reviewers with eligible reviewers for complete display
+ * - Validation: Ensures main and secondary reviewers are different
+ * - API Integration: Uses new bulk assignment format with reviewer roles
  */
 export default function AssignReviewerModal({
 	open,
@@ -54,7 +64,8 @@ export default function AssignReviewerModal({
 	onReloadSubmission,
 }: Props) {
 	const [form] = Form.useForm();
-	const [allLecturers, setAllLecturers] = useState<Lecturer[]>([]);
+	const [eligibleLecturers, setEligibleLecturers] = useState<Lecturer[]>([]);
+	const [currentReviewers, setCurrentReviewers] = useState<Lecturer[]>([]);
 	const [fetchLoading, setFetchLoading] = useState(false);
 	const [renderKey, setRenderKey] = useState(0);
 	const [isInitialized, setIsInitialized] = useState(false);
@@ -66,6 +77,7 @@ export default function AssignReviewerModal({
 	// Store actions
 	const assignBulkReviewers = useReviewStore((s) => s.assignBulkReviewers);
 	const changeReviewer = useReviewStore((s) => s.changeReviewer);
+	const getEligibleReviewers = useReviewStore((s) => s.getEligibleReviewers);
 
 	// Watch form values to compute options reactively
 	const reviewer1Value = Form.useWatch('reviewer1', form);
@@ -73,7 +85,9 @@ export default function AssignReviewerModal({
 
 	// Helper methods for form initialization
 	const shouldInitializeForm = (): boolean => {
-		return open && !isInitialized && allLecturers.length > 0 && !fetchLoading;
+		return (
+			open && !isInitialized && eligibleLecturers.length > 0 && !fetchLoading
+		);
 	};
 
 	const shouldResetForm = (): boolean => {
@@ -84,7 +98,7 @@ export default function AssignReviewerModal({
 		return (
 			open &&
 			isInitialized &&
-			allLecturers.length > 0 &&
+			eligibleLecturers.length > 0 &&
 			!fetchLoading &&
 			(initialValues[0] !== previousInitialValues[0] ||
 				initialValues[1] !== previousInitialValues[1])
@@ -124,31 +138,76 @@ export default function AssignReviewerModal({
 		setIsInitialized(false);
 	};
 
-	// Fetch all lecturers and filter eligible ones
+	// Determine if this is a change operation
+	const isChangeMode = Boolean(
+		group && group.reviewers && group.reviewers.length > 0,
+	);
+
+	// Fetch eligible reviewers for the submission
 	useEffect(() => {
 		let ignore = false;
-		if (open) {
+		if (open && group?.submissionId) {
+			console.log(
+				'Modal opened, fetching eligible reviewers for:',
+				group.submissionId,
+			);
 			setFetchLoading(true);
-			lecturerService
-				.findAll()
-				.then((response) => {
-					if (!ignore && response.success && response.data) {
-						setAllLecturers(response.data);
+			getEligibleReviewers(group.submissionId)
+				.then((eligibleReviewersData) => {
+					console.log('Received eligible reviewers:', eligibleReviewersData);
+					if (!ignore) {
+						setEligibleLecturers(eligibleReviewersData);
+
+						// In change mode, also extract current reviewers info
+						if (isChangeMode && group.reviewers) {
+							console.log('Change mode - current reviewers:', group.reviewers);
+							const currentReviewersData = group.reviewers.map((reviewer) => {
+								// If reviewer is already a Lecturer object
+								if (typeof reviewer === 'object' && reviewer.id) {
+									return reviewer;
+								}
+								// If reviewer is just an ID string, find it in eligible reviewers
+								const reviewerId =
+									typeof reviewer === 'string'
+										? reviewer
+										: (reviewer as unknown as string);
+								return (
+									eligibleReviewersData.find((l) => l.id === reviewerId) || {
+										id: reviewerId,
+										fullName: 'Unknown Lecturer',
+										email: '',
+										isModerator: false,
+									}
+								);
+							});
+							setCurrentReviewers(currentReviewersData);
+						}
 					}
 				})
-				.catch(() => {
-					if (!ignore) setAllLecturers([]);
+				.catch((error) => {
+					console.error('Failed to fetch eligible reviewers:', error);
+					if (!ignore) {
+						setEligibleLecturers([]);
+						setCurrentReviewers([]);
+					}
 				})
 				.finally(() => {
 					if (!ignore) setFetchLoading(false);
 				});
 		} else if (!open) {
-			setAllLecturers([]);
+			setEligibleLecturers([]);
+			setCurrentReviewers([]);
 		}
 		return () => {
 			ignore = true;
 		};
-	}, [open]);
+	}, [
+		open,
+		group?.submissionId,
+		getEligibleReviewers,
+		isChangeMode,
+		group?.reviewers,
+	]);
 
 	// Initialize form values
 	useEffect(() => {
@@ -173,7 +232,7 @@ export default function AssignReviewerModal({
 			setPreviousInitialValues([...initialValues]);
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [open, initialValues, group, allLecturers, fetchLoading]);
+	}, [open, initialValues, group, eligibleLecturers, fetchLoading]);
 
 	// Handle render key updates only when not loading
 	useEffect(() => {
@@ -181,13 +240,6 @@ export default function AssignReviewerModal({
 			setRenderKey((prev) => prev + 1);
 		}
 	}, [open, loading, isInitialized]);
-
-	// Determine if this is a change operation
-	const isChangeMode = Boolean(
-		group && group.reviewers && group.reviewers.length > 0,
-	);
-
-	// Get current reviewer IDs for change operations
 	const getCurrentReviewerIds = (): string[] => {
 		if (!isChangeMode) return [];
 		const { reviewer1Id, reviewer2Id } = getInitialReviewerValues();
@@ -205,57 +257,74 @@ export default function AssignReviewerModal({
 		return `reviewer2-${reviewer1Value || 'none'}-${renderKey}`;
 	};
 
-	// Get eligible lecturers (filter out those already assigned as reviewers)
-	const eligibleLecturers = useMemo((): Lecturer[] => {
-		if (!group || !allLecturers.length) return allLecturers;
+	// Get current reviewer IDs for change operations
+	// Compute all available lecturers for dropdowns
+	// In change mode, we need to merge current reviewers with eligible reviewers
+	const allAvailableLecturers = useMemo((): Lecturer[] => {
+		console.log('Computing allAvailableLecturers');
+		console.log('isChangeMode:', isChangeMode);
+		console.log('eligibleLecturers:', eligibleLecturers);
+		console.log('currentReviewers:', currentReviewers);
 
-		// In change mode, include current reviewers so they can be displayed
-		if (isChangeMode) {
-			return allLecturers;
+		if (!isChangeMode) {
+			console.log('Not change mode, returning eligible lecturers');
+			return eligibleLecturers;
 		}
 
-		// In assign mode, filter out lecturers who are already assigned as reviewers
-		const currentReviewerIds = (group.reviewers || []).map((reviewer) => {
-			return typeof reviewer === 'string' ? reviewer : reviewer.id;
+		// In change mode, include current reviewers so they can be displayed
+		const currentReviewerIds = currentReviewers.map((r) => r.id);
+
+		// Merge current reviewers with eligible reviewers, avoiding duplicates
+		const merged = [...currentReviewers];
+		eligibleLecturers.forEach((lecturer) => {
+			if (!currentReviewerIds.includes(lecturer.id)) {
+				merged.push(lecturer);
+			}
 		});
 
-		return allLecturers.filter(
-			(lecturer) => !currentReviewerIds.includes(lecturer.id),
-		);
-	}, [allLecturers, group, isChangeMode]);
+		console.log('Change mode merged result:', merged);
+		return merged;
+	}, [eligibleLecturers, currentReviewers, isChangeMode]);
 
-	// Compute reviewer options using useMemo for performance
 	const reviewer1Options = useMemo((): LecturerOption[] => {
+		console.log(
+			'Computing reviewer1Options, allAvailableLecturers:',
+			allAvailableLecturers,
+		);
 		const currentReviewer2 = reviewer2Value;
 		if (currentReviewer2) {
-			return eligibleLecturers
+			const filtered = allAvailableLecturers
 				.filter((lecturer) => lecturer.id !== currentReviewer2)
 				.map((lecturer) => ({
 					label: lecturer.fullName,
 					value: lecturer.id,
 				}));
+			console.log('Reviewer1Options (filtered):', filtered);
+			return filtered;
 		}
-		return eligibleLecturers.map((lecturer) => ({
+		const options = allAvailableLecturers.map((lecturer) => ({
 			label: lecturer.fullName,
 			value: lecturer.id,
 		}));
-	}, [reviewer2Value, eligibleLecturers]);
+		console.log('Reviewer1Options (all):', options);
+		return options;
+	}, [reviewer2Value, allAvailableLecturers]);
 
 	const reviewer2Options = useMemo((): LecturerOption[] => {
 		const currentReviewer1 = reviewer1Value;
 		if (currentReviewer1) {
-			return eligibleLecturers
+			return allAvailableLecturers
 				.filter((lecturer) => lecturer.id !== currentReviewer1)
 				.map((lecturer) => ({
 					label: lecturer.fullName,
 					value: lecturer.id,
 				}));
 		}
-		return eligibleLecturers.map((lecturer) => ({
+		return allAvailableLecturers.map((lecturer) => ({
 			label: lecturer.fullName,
 			value: lecturer.id,
 		}));
-	}, [reviewer1Value, eligibleLecturers]);
+	}, [reviewer1Value, allAvailableLecturers]);
 
 	// Common filter function for search functionality
 	const filterOption = (
@@ -294,13 +363,12 @@ export default function AssignReviewerModal({
 				{
 					name: 'reviewer1',
 					errors:
-						selected.length === 0
-							? ['Please select at least one reviewer']
-							: [],
+						selected.length === 0 ? ['Please select a main reviewer'] : [],
 				},
 				{
 					name: 'reviewer2',
-					errors: selected.length < 2 ? ['Please select second reviewer'] : [],
+					errors:
+						selected.length < 2 ? ['Please select a secondary reviewer'] : [],
 				},
 			]);
 			return;
@@ -345,11 +413,26 @@ export default function AssignReviewerModal({
 	const handleAssignReviewers = async (selected: string[]) => {
 		if (!group?.submissionId || !assignBulkReviewers) return;
 
+		// Prepare reviewer assignments with main/secondary roles
+		const reviewerAssignments = [];
+		if (selected[0]) {
+			reviewerAssignments.push({
+				lecturerId: selected[0],
+				isMainReviewer: true,
+			});
+		}
+		if (selected[1]) {
+			reviewerAssignments.push({
+				lecturerId: selected[1],
+				isMainReviewer: false,
+			});
+		}
+
 		const result = await assignBulkReviewers({
 			assignments: [
 				{
 					submissionId: group.submissionId,
-					lecturerIds: selected,
+					reviewerAssignments,
 				},
 			],
 		});
@@ -372,8 +455,9 @@ export default function AssignReviewerModal({
 		if (!onSaveDraft) return;
 
 		const values = form.getFieldsValue();
-		const selected = [values.reviewer1, values.reviewer2].filter(Boolean);
-		onSaveDraft(selected as string[]);
+		const mainReviewerId = values.reviewer1;
+		const secondaryReviewerId = values.reviewer2;
+		onSaveDraft(mainReviewerId, secondaryReviewerId);
 	};
 
 	// Footer button methods
@@ -423,12 +507,12 @@ export default function AssignReviewerModal({
 	};
 
 	// Placeholder methods
-	const getReviewer1Placeholder = (): string => 'Select reviewer';
-	const getReviewer2Placeholder = (): string => 'Select reviewer';
+	const getReviewer1Placeholder = (): string => 'Select main reviewer';
+	const getReviewer2Placeholder = (): string => 'Select secondary reviewer';
 
 	// Label methods
-	const getReviewer1LabelText = (): string => 'Reviewer 1';
-	const getReviewer2LabelText = (): string => 'Reviewer 2';
+	const getReviewer1LabelText = (): string => 'Main Reviewer';
+	const getReviewer2LabelText = (): string => 'Secondary Reviewer';
 
 	return (
 		<Modal
@@ -454,7 +538,9 @@ export default function AssignReviewerModal({
 									reviewer2Value || form.getFieldValue('reviewer2');
 								if (value && value === reviewer2) {
 									return Promise.reject(
-										new Error('Reviewer 1 must be different from Reviewer 2'),
+										new Error(
+											'Main reviewer must be different from secondary reviewer',
+										),
 									);
 								}
 
@@ -463,7 +549,7 @@ export default function AssignReviewerModal({
 						},
 					]}
 				>
-					{fetchLoading || allLecturers.length === 0 ? (
+					{fetchLoading ? (
 						<Select
 							placeholder="Loading lecturers..."
 							disabled={true}
@@ -479,6 +565,11 @@ export default function AssignReviewerModal({
 							disabled={loading || fetchLoading}
 							filterOption={filterOption}
 							optionLabelProp="label"
+							notFoundContent={
+								allAvailableLecturers.length === 0
+									? 'No eligible lecturers found'
+									: 'No options'
+							}
 							onChange={() => {
 								form.validateFields(['reviewer2']);
 							}}
@@ -498,7 +589,9 @@ export default function AssignReviewerModal({
 
 								if (value && value === reviewer1) {
 									return Promise.reject(
-										new Error('Reviewer 2 must be different from Reviewer 1'),
+										new Error(
+											'Secondary reviewer must be different from main reviewer',
+										),
 									);
 								}
 
@@ -507,7 +600,7 @@ export default function AssignReviewerModal({
 						},
 					]}
 				>
-					{fetchLoading || allLecturers.length === 0 ? (
+					{fetchLoading ? (
 						<Select
 							placeholder="Loading lecturers..."
 							disabled={true}
@@ -523,6 +616,11 @@ export default function AssignReviewerModal({
 							disabled={loading || fetchLoading}
 							filterOption={filterOption}
 							optionLabelProp="label"
+							notFoundContent={
+								allAvailableLecturers.length === 0
+									? 'No eligible lecturers found'
+									: 'No options'
+							}
 							onChange={() => {
 								form.validateFields(['reviewer1']);
 							}}

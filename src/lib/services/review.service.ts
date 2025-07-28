@@ -1,9 +1,14 @@
 import httpClient from '@/lib/services/_httpClient';
 import { ApiResponse } from '@/schemas/_common';
 
+export interface ReviewerAssignment {
+	lecturerId: string;
+	isMainReviewer: boolean;
+}
+
 export interface AssignBulkReviewerAssignment {
 	submissionId: string;
-	lecturerIds: string[];
+	reviewerAssignments: ReviewerAssignment[];
 }
 
 export interface AssignBulkReviewersDto {
@@ -36,7 +41,23 @@ export interface Lecturer {
 	isModerator: boolean;
 }
 
-export type GetEligibleReviewersResult = Lecturer[];
+export interface EligibleReviewerResponse {
+	userId: string;
+	isModerator: boolean;
+	user: {
+		id: string;
+		fullName: string;
+		email: string;
+		password: string;
+		gender: string;
+		phoneNumber: string;
+		isActive: boolean;
+		createdAt: string;
+		updatedAt: string;
+	};
+}
+
+export type GetEligibleReviewersResult = EligibleReviewerResponse[];
 
 class ReviewService {
 	private readonly baseUrl = '/reviews';

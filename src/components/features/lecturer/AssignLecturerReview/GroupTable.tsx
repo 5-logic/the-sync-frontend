@@ -44,6 +44,7 @@ export default function GroupTable({
 			title: 'English Name',
 			dataIndex: 'title',
 			key: 'title',
+			width: 500,
 		},
 		{
 			title: 'Supervisors',
@@ -75,6 +76,7 @@ export default function GroupTable({
 		{
 			title: 'Action',
 			key: 'action',
+			align: 'center',
 			render: (_, record) => (
 				<Button type="primary" onClick={() => onAssign(record)}>
 					{record.reviewers && record.reviewers.length > 0

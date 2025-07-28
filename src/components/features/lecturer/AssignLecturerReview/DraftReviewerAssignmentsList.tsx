@@ -79,7 +79,16 @@ const DraftReviewerAssignmentsList = memo<Props>(({ visible = true }) => {
 							description={
 								<Space>
 									<Text type="secondary">Reviewers:</Text>
-									<Text>{draft.reviewerNames.join(', ')}</Text>
+									<Text>
+										{[
+											draft.mainReviewerName &&
+												`Main: ${draft.mainReviewerName}`,
+											draft.secondaryReviewerName &&
+												`Secondary: ${draft.secondaryReviewerName}`,
+										]
+											.filter(Boolean)
+											.join(', ')}
+									</Text>
 								</Space>
 							}
 						/>

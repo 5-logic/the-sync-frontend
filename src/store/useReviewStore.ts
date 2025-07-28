@@ -43,10 +43,39 @@ export const useReviewStore = create<ReviewStoreState>(() => ({
 			);
 			if (cached) return cached;
 		}
-		const res = await reviewService.getEligibleReviewers(submissionId);
-		const data = res.success && res.data ? res.data : [];
-		cacheUtils.set('eligibleReviewers', submissionId, data);
-		return data;
+
+		try {
+			console.log('Fetching eligible reviewers for submission:', submissionId);
+			const res = await reviewService.getEligibleReviewers(submissionId);
+			console.log('API Response:', res);
+
+			// Check if response is successful
+			if (!res.success) {
+				console.error('API returned error:', res);
+				return [];
+			}
+
+			// Check if data exists
+			if (!res.data || !Array.isArray(res.data)) {
+				console.error('API returned invalid data:', res.data);
+				return [];
+			}
+
+			// Map the API response to the expected Lecturer format
+			const mappedData: Lecturer[] = res.data.map((item) => ({
+				id: item.userId,
+				fullName: item.user.fullName,
+				email: item.user.email,
+				isModerator: item.isModerator,
+			}));
+
+			console.log('Mapped data:', mappedData);
+			cacheUtils.set('eligibleReviewers', submissionId, mappedData);
+			return mappedData;
+		} catch (error) {
+			console.error('Error fetching eligible reviewers:', error);
+			return [];
+		}
 	},
 
 	clearEligibleReviewersCache() {

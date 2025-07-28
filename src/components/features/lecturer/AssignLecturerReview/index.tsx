@@ -214,10 +214,25 @@ export default function AssignLecturerReview() {
 					}
 					try {
 						await reviewService.assignBulkReviewers({
-							assignments: drafts.map((draft) => ({
-								submissionId: draft.submissionId,
-								lecturerIds: draft.reviewerIds,
-							})),
+							assignments: drafts.map((draft) => {
+								const reviewerAssignments = [];
+								if (draft.mainReviewerId) {
+									reviewerAssignments.push({
+										lecturerId: draft.mainReviewerId,
+										isMainReviewer: true,
+									});
+								}
+								if (draft.secondaryReviewerId) {
+									reviewerAssignments.push({
+										lecturerId: draft.secondaryReviewerId,
+										isMainReviewer: false,
+									});
+								}
+								return {
+									submissionId: draft.submissionId,
+									reviewerAssignments,
+								};
+							}),
 						});
 						clearAllDraftReviewerDrafts();
 					} catch (e) {
@@ -263,21 +278,28 @@ export default function AssignLecturerReview() {
 				onCancel={() => setSelectedGroup(null)}
 				onAssign={() => setSelectedGroup(null)}
 				onReloadSubmission={reloadSubmissionById}
-				onSaveDraft={(selectedReviewers) => {
+				onSaveDraft={(mainReviewerId, secondaryReviewerId) => {
 					if (!selectedGroup) return;
 					const submission = filteredGroups.find(
 						(g) => g.id === selectedGroup.id && g.phase === milestone,
 					);
 					if (!submission) return;
-					const reviewerNames = selectedReviewers.map(
-						(id) => lecturers.find((l) => l.id === id)?.fullName || id,
-					);
+
+					const mainReviewerName = mainReviewerId
+						? lecturers.find((l) => l.id === mainReviewerId)?.fullName
+						: undefined;
+					const secondaryReviewerName = secondaryReviewerId
+						? lecturers.find((l) => l.id === secondaryReviewerId)?.fullName
+						: undefined;
+
 					addDraftReviewerAssignment({
 						submissionId: submission.id,
 						thesisTitle: selectedGroup.title,
 						groupName: selectedGroup.name,
-						reviewerIds: selectedReviewers,
-						reviewerNames,
+						mainReviewerId,
+						mainReviewerName,
+						secondaryReviewerId,
+						secondaryReviewerName,
 					});
 					setSelectedGroup(null);
 				}}
