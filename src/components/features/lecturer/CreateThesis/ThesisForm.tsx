@@ -288,6 +288,7 @@ export default function ThesisForm({
 			>
 				<Select
 					showSearch
+					allowClear
 					placeholder="Select field of study"
 					filterOption={(input, option) =>
 						(option?.value as string)
