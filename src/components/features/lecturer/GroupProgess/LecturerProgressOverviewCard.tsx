@@ -15,6 +15,65 @@ const { Text } = Typography;
 
 type MilestoneStatus = 'Ended' | 'In Progress' | 'Upcoming';
 
+// Common styles to reduce duplication
+const styles = {
+	milestoneContainer: { marginBottom: 12 },
+	nextMilestoneContainer: { marginBottom: 16 },
+	timeContainer: { marginTop: 4 },
+	timeText: { fontSize: 12 },
+} as const;
+
+// Reusable component for milestone display
+interface MilestoneDisplayProps {
+	readonly milestone: Milestone;
+	readonly label: string;
+	readonly timeLabel: string;
+	readonly timeValue: string;
+	readonly textType: 'success' | 'warning';
+	readonly containerStyle?: React.CSSProperties;
+}
+
+const MilestoneDisplay: React.FC<MilestoneDisplayProps> = ({
+	milestone,
+	label,
+	timeLabel,
+	timeValue,
+	textType,
+	containerStyle = styles.milestoneContainer,
+}) => (
+	<div style={containerStyle}>
+		<Text type={textType}>
+			{label}: {milestone.name}
+		</Text>
+		<div style={styles.timeContainer}>
+			<Text type="secondary" style={styles.timeText}>
+				{timeValue} {timeLabel}
+			</Text>
+		</div>
+	</div>
+);
+
+// Reusable component for timeline item content
+interface TimelineItemContentProps {
+	readonly milestone: Milestone;
+	readonly status: MilestoneStatus;
+}
+
+const TimelineItemContent: React.FC<TimelineItemContentProps> = ({
+	milestone,
+	status,
+}) => (
+	<>
+		<div>
+			<Text strong>{milestone.name}</Text> –{' '}
+			<Text type="secondary">
+				{formatDate(milestone.startDate)} - {formatDate(milestone.endDate)}
+			</Text>
+		</div>
+		<Text>Status: {status}</Text>
+	</>
+);
+
 interface LecturerProgressOverviewCardProps {
 	readonly thesisId?: string;
 	readonly hideTrackMilestones?: boolean;
@@ -63,23 +122,26 @@ export default function LecturerProgressOverviewCard({
 		},
 	};
 
+	// Helper function for empty state cards
+	const renderEmptyCard = (content: React.ReactNode) => (
+		<Card {...cardProps}>
+			<div style={{ textAlign: 'center' }}>{content}</div>
+		</Card>
+	);
+
 	if (loading) {
-		return (
-			<Card {...cardProps}>
-				<div style={{ textAlign: 'center', padding: '20px 0' }}>
-					<Spin size="small" />
-				</div>
-			</Card>
+		return renderEmptyCard(
+			<div style={{ padding: '20px 0' }}>
+				<Spin size="small" />
+			</div>,
 		);
 	}
 
 	if (!milestones.length) {
-		return (
-			<Card {...cardProps}>
-				<div style={{ textAlign: 'center', color: '#999' }}>
-					No milestones found for current semester
-				</div>
-			</Card>
+		return renderEmptyCard(
+			<div style={{ color: '#999' }}>
+				No milestones found for current semester
+			</div>,
 		);
 	}
 
@@ -106,27 +168,24 @@ export default function LecturerProgressOverviewCard({
 		<Card {...cardProps}>
 			<div>
 				{currentMilestone && (
-					<div style={{ marginBottom: 12 }}>
-						<Text type="success">
-							Current milestone: {currentMilestone.name}
-						</Text>
-						<div style={{ marginTop: 4 }}>
-							<Text type="secondary" style={{ fontSize: 12 }}>
-								{getTimeRemaining(currentMilestone.endDate)} remaining
-							</Text>
-						</div>
-					</div>
+					<MilestoneDisplay
+						milestone={currentMilestone}
+						label="Current milestone"
+						timeLabel="remaining"
+						timeValue={getTimeRemaining(currentMilestone.endDate)}
+						textType="success"
+					/>
 				)}
 
 				{nextMilestone && (
-					<div style={{ marginBottom: 16 }}>
-						<Text type="warning">Next milestone: {nextMilestone.name}</Text>
-						<div style={{ marginTop: 4 }}>
-							<Text type="secondary" style={{ fontSize: 12 }}>
-								{getTimeRemaining(nextMilestone.startDate)} to start
-							</Text>
-						</div>
-					</div>
+					<MilestoneDisplay
+						milestone={nextMilestone}
+						label="Next milestone"
+						timeLabel="to start"
+						timeValue={getTimeRemaining(nextMilestone.startDate)}
+						textType="warning"
+						containerStyle={styles.nextMilestoneContainer}
+					/>
 				)}
 
 				<Timeline>
@@ -137,14 +196,7 @@ export default function LecturerProgressOverviewCard({
 								key={milestone.id}
 								color={getTimelineColor(status)}
 							>
-								<div>
-									<Text strong>{milestone.name}</Text> –{' '}
-									<Text type="secondary">
-										{formatDate(milestone.startDate)} -{' '}
-										{formatDate(milestone.endDate)}
-									</Text>
-								</div>
-								<Text>Status: {status}</Text>
+								<TimelineItemContent milestone={milestone} status={status} />
 							</Timeline.Item>
 						);
 					})}
