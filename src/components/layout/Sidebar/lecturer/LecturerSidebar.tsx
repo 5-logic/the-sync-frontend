@@ -116,6 +116,14 @@ const createModeratorMenuItems = (
 		type: 'group' as const,
 		children: [
 			createMenuItem(
+				DASHBOARD_PATHS.LECTURER_DASHBOARD_MODERATOR,
+				<DashboardOutlined />,
+				'Moderator Dashboard',
+				navigateWithLoading,
+				isNavigating,
+				targetPath,
+			),
+			createMenuItem(
 				DASHBOARD_PATHS.LECTURER_ASSIGN_LIST_PUBLISH_THESIS,
 				<BookOutlined />,
 				'Publish Thesis',

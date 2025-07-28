@@ -9,7 +9,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { ConfirmationModal } from '@/components/common/ConfirmModal';
 import groupService, { Group } from '@/lib/services/groups.service';
-import { handleApiResponse } from '@/lib/utils/handleApi';
+import { handleApiError, handleApiResponse } from '@/lib/utils/handleApi';
 import { showNotification } from '@/lib/utils/notification';
 import { isTextMatch } from '@/lib/utils/textNormalization';
 import { useGroupsStore } from '@/store/useGroupsStore';
@@ -49,14 +49,17 @@ export default function GroupAssignTable({ onView, onDelete }: Props) {
 					);
 					handleRefresh(); // Refresh the groups list
 					onDelete?.(group); // Call optional callback
+				} else {
+					// Handle API response error (when success: false)
+					showNotification.error(
+						'Delete Failed',
+						result.error?.message || 'Failed to delete group',
+					);
 				}
-				// handleApiResponse already shows error messages from backend
 			} catch (error) {
-				console.error('Error deleting group:', error);
-				showNotification.error(
-					'Delete Failed',
-					'An error occurred while deleting the group',
-				);
+				// Handle actual errors (network, server errors, etc.)
+				const { message } = handleApiError(error, 'Failed to delete group');
+				showNotification.error('Delete Failed', message);
 			} finally {
 				setDeleteLoading(null);
 			}

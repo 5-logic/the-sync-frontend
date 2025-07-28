@@ -101,17 +101,11 @@ export default function AssignListPublishThesisPage() {
 							`Published ${thesesToPublish.length} thesis(es) successfully`,
 						);
 						setSelectedIds([]);
-					} else {
-						showNotification.error(
-							'Bulk Publish Failed',
-							'Failed to publish some theses. Please try again.',
-						);
 					}
+					// Error handling is now done in the store with backend error messages
 				} catch {
-					showNotification.error(
-						'Bulk Publish Error',
-						'An error occurred while publishing theses.',
-					);
+					// Additional error handling if needed
+					// Store already handles the error notifications
 				} finally {
 					setBulkPublishLoading(false);
 				}

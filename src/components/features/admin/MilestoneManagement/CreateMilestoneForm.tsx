@@ -65,6 +65,7 @@ export default function CreateMilestoneForm({
 				startDate: startDate?.toDate(),
 				endDate: endDate?.toDate(),
 				semesterId: values.semesterId,
+				note: values.note || undefined,
 				documents: documentUrls.length > 0 ? documentUrls : undefined,
 			};
 

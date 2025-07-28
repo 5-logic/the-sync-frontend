@@ -9,6 +9,150 @@ For more information about this project, see the [README](./README.md).
 
 ---
 
+## [0.6.4] - 2025-07-27
+
+### Added
+
+#### Lecturer Moderator Dashboard
+
+- New moderator dashboard page for lecturers with comprehensive management capabilities ([#287](https://github.com/5-logic/the-sync-frontend/pull/287))
+- LecturerModeratorDashboardClient component with lazy loading and authentication
+- Enhanced sidebar navigation with dedicated moderator dashboard access
+- Updated auth constants to support moderator dashboard routing
+
+### Changed
+
+#### Supervisor Assignment Enhancements
+
+- **Breaking Change:** Now requires both supervisors in all assignment modes for improved thesis management
+- Enhanced AssignSupervisorModal with stricter validation for supervisor selection ([#287](https://github.com/5-logic/the-sync-frontend/pull/287))
+- Improved supervisor assignment workflow with both assign and change modes requiring dual supervision
+- Enhanced form validation to ensure complete supervisor assignment before submission
+
+#### Error Handling and User Experience
+
+- Improved error handling in thesis publishing by utilizing backend error messages
+- Enhanced supervision store integration for better error handling in supervisor assignment
+- Better error feedback and user notifications throughout supervisor assignment process
+- Improved state management for assignment operations with proper error boundaries
+
+#### Navigation and Accessibility
+
+- Updated lecturer sidebar configuration to include moderator dashboard menu item
+- Enhanced route protection and authentication for moderator-specific features
+- Improved navigation patterns for seamless transition between lecturer and moderator functions
+
+### Fixed
+
+#### Assignment and Publishing Issues
+
+- Fixed supervisor assignment validation to prevent incomplete assignments
+- Improved thesis publishing error handling with proper backend message integration
+- Enhanced assignment modal state management for better user experience
+- Fixed navigation issues in lecturer sidebar for moderator dashboard access
+
+### Technical Details
+
+- **Files Changed:** 11 files with 592 additions and 498 deletions
+- **New Components:** LecturerModeratorDashboardClient for dedicated moderator interface
+- **Enhanced Components:** AssignSupervisorModal, ThesisTable, LecturerSidebar configuration
+- **Store Improvements:** Enhanced usePublishThesesStore and useSupervisionStore for better error handling
+- **Authentication:** Extended auth constants for moderator dashboard routing
+
+### Migration Notes
+
+- Supervisor assignments now require both supervisors in all modes - review existing assignments
+- Moderator dashboard requires proper authentication - ensure user permissions are configured
+- Enhanced error handling may change error message display - review custom error components
+
+---
+
+## [0.6.3] - 2025-07-26
+
+### Added
+
+#### Student Thesis Management Enhancements
+
+- New StudentEditThesisModal component for students to edit thesis details directly from the group dashboard ([#285](https://github.com/5-logic/the-sync-frontend/pull/285))
+- Enhanced ThesisStatusCard with improved thesis editing capabilities and better user interface
+- Enhanced ProgressOverviewCard to always display 'View Thesis Details' button for better navigation
+- Added note field support to milestone management forms and related components
+
+#### Lecturer Thesis Assignment Features
+
+- Thesis unassignment functionality for lecturers in group management ([#285](https://github.com/5-logic/the-sync-frontend/pull/285))
+- Enhanced ThesisCard component with lecturer name display and improved assignment controls
+- Enhanced ThesisDetailModal with better thesis information presentation
+- Improved group assignment workflows with better error handling
+
+#### Administrative Enhancements
+
+- Enhanced milestone management with note field support for better tracking and documentation
+- Improved document change detection in EditMilestoneDialog with document array sorting
+- Enhanced user creation forms with better validation and error handling
+- Updated milestone table with note field display capabilities
+
+### Changed
+
+#### UI/UX Improvements
+
+- Enhanced CurrentSemesterTag component with improved status display and phase information
+- Updated semester constants to include ongoing phase text mapping for better status representation
+- Improved milestone detail cards with enhanced layout and information display
+- Enhanced group dashboard with better thesis status visualization
+
+#### Component Enhancements
+
+- Refactored SubmittedFilesView to display 'Reviewer' instead of 'Supervisor' for better role clarity
+- Enhanced ThesisInfoCard with improved thesis information layout
+- Streamlined ViewThesisDetail component by removing redundant code and improving performance
+- Improved thesis card components across student and lecturer interfaces
+
+#### Error Handling and Data Management
+
+- Enhanced group data refresh functionality with helper functions for better state management
+- Improved error handling for thesis operations throughout the application
+- Enhanced group deletion process with better error handling and user feedback
+- Better document change detection in milestone management
+
+### Fixed
+
+#### Semester Status Management
+
+- Updated semester status references to only include 'Preparing' status where appropriate
+- Fixed semester status consistency across components and services
+- Improved semester phase handling and display logic
+
+#### Form and Modal Improvements
+
+- Fixed document array sorting in EditMilestoneDialog for consistent change detection
+- Enhanced form validation and error handling in user creation and milestone management
+- Improved modal state management and data persistence
+- Fixed thesis assignment and unassignment workflows
+
+#### Performance and Stability
+
+- Optimized component rendering with reduced redundant code
+- Improved memory management in thesis and group management components
+- Enhanced data consistency across related components
+- Fixed potential state synchronization issues
+
+### Technical Details
+
+- **Schema Updates:** Added note field to MilestoneSchema for enhanced milestone tracking
+- **Constants Enhancement:** Added ONGOING_PHASE_TEXT mapping for better phase display
+- **Component Refactoring:** Enhanced thesis management components with better separation of concerns
+- **Error Handling:** Improved error boundaries and user feedback systems
+
+### Migration Notes
+
+- Milestone management now supports note field - existing milestones will have empty notes
+- Semester status handling has been refined - check custom status implementations
+- Thesis management interfaces have been enhanced - review custom thesis components
+- Document change detection improvements may affect custom milestone workflows
+
+---
+
 ## [0.6.2] - 2025-07-25
 
 ### Added
