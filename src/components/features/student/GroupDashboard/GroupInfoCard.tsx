@@ -21,11 +21,13 @@ const { Title, Text } = Typography;
 interface GroupInfoCardProps {
 	readonly group: GroupDashboard;
 	readonly viewOnly?: boolean;
+	readonly isDashboardView?: boolean;
 }
 
 export default memo(function GroupInfoCard({
 	group,
 	viewOnly = false,
+	isDashboardView = false,
 }: GroupInfoCardProps) {
 	const [isInviteDialogVisible, setIsInviteDialogVisible] = useState(false);
 	const [isEditDialogVisible, setIsEditDialogVisible] = useState(false);
@@ -234,12 +236,39 @@ export default memo(function GroupInfoCard({
 		);
 	};
 
+	const handleCardClick = () => {
+		if (isDashboardView) {
+			router.push('/student/group-dashboard');
+		}
+	};
+
 	return (
 		<Spin spinning={isRefreshing} tip="Refreshing group information...">
-			<Card className="bg-white border border-gray-200 rounded-md">
+			<Card
+				className="bg-white border border-gray-200 rounded-md"
+				hoverable={isDashboardView}
+			>
 				<div className="pb-4">
 					<div className="flex justify-between items-center">
-						<Title level={4} className="text-base font-bold text-gray-600 mb-3">
+						<Title
+							level={4}
+							className="text-base font-bold text-gray-600 mb-3"
+							onClick={handleCardClick}
+							style={{
+								cursor: isDashboardView ? 'pointer' : 'default',
+								transition: 'color 0.2s ease',
+							}}
+							onMouseEnter={(e) => {
+								if (isDashboardView) {
+									e.currentTarget.style.color = '#1890ff';
+								}
+							}}
+							onMouseLeave={(e) => {
+								if (isDashboardView) {
+									e.currentTarget.style.color = '';
+								}
+							}}
+						>
 							Group Information
 						</Title>
 						<div className="flex gap-2">
@@ -271,7 +300,9 @@ export default memo(function GroupInfoCard({
 					{/* Group Details */}
 					<div className="space-y-4">
 						{/* Basic Group Info */}
-						<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+						<div
+							className={`grid grid-cols-1 gap-4 ${isDashboardView ? 'md:grid-cols-2' : 'md:grid-cols-3'}`}
+						>
 							<div>
 								<Text className="text-sm text-gray-400 block font-semibold">
 									Group Name
@@ -284,16 +315,17 @@ export default memo(function GroupInfoCard({
 								</Text>
 								<Text className="text-sm text-gray-600">{localGroup.code}</Text>
 							</div>
-							<div>
-								<Text className="text-sm text-gray-400 block font-semibold">
-									Semester
-								</Text>
-								<Text className="text-sm text-gray-600">
-									{localGroup.semester.name}
-								</Text>
-							</div>
-						</div>
-
+							{!isDashboardView && (
+								<div>
+									<Text className="text-sm text-gray-400 block font-semibold">
+										Semester
+									</Text>
+									<Text className="text-sm text-gray-600">
+										{localGroup.semester.name}
+									</Text>
+								</div>
+							)}
+						</div>{' '}
 						{/* Project Direction */}
 						<div>
 							<Text className="text-sm text-gray-400 block font-semibold">
@@ -305,7 +337,6 @@ export default memo(function GroupInfoCard({
 								)}
 							</Text>
 						</div>
-
 						{/* Skills and Responsibilities - 2 columns */}
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 							{' '}
@@ -349,22 +380,26 @@ export default memo(function GroupInfoCard({
 								)}
 							</div>
 						</div>
-
 						{/* Members Section */}
 						<div>
 							<Text className="text-sm text-gray-400 block font-semibold">
 								Members
 							</Text>
+							{/* Members Display */}
+							{isDashboardView ? (
+								<Text className="text-sm text-gray-600">
+									{localGroup.members.length} member
+									{localGroup.members.length !== 1 ? 's' : ''}
+								</Text>
+							) : (
+								<GroupMembersCard
+									group={localGroup}
+									viewOnly={viewOnly}
+									onRefresh={handleRefreshGroup}
+								/>
+							)}
 						</div>
-					</div>
-
-					{/* Members Card */}
-					<GroupMembersCard
-						group={localGroup}
-						viewOnly={viewOnly}
-						onRefresh={handleRefreshGroup}
-					/>
-
+					</div>{' '}
 					{/* Created Date and Action Buttons */}
 					<div
 						className={`flex flex-col sm:flex-row sm:items-end ${viewOnly ? 'sm:justify-start' : 'sm:justify-between'} gap-4 pt-4`}
