@@ -168,7 +168,7 @@ export default function MilestoneDetailCard({
 					</Steps>
 				)}
 				{/* Milestone information */}
-				{milestone && milestone.startDate && milestone.endDate && (
+				{milestone?.startDate && milestone?.endDate && (
 					<div
 						style={{
 							marginBottom: 16,
@@ -287,11 +287,17 @@ export default function MilestoneDetailCard({
 						>
 							<Text strong>Submission Date: </Text>
 							<Text>
-								{submission
-									? new Date(submission.createdAt).toLocaleDateString()
-									: isFullMockGroup(group) && group.submissionDate
-										? group.submissionDate
-										: 'No submission yet'}
+								{(() => {
+									if (submission) {
+										return new Date(submission.createdAt).toLocaleDateString();
+									}
+
+									if (isFullMockGroup(group) && group.submissionDate) {
+										return group.submissionDate;
+									}
+
+									return 'No submission yet';
+								})()}
 							</Text>
 						</Col>
 					</Row>

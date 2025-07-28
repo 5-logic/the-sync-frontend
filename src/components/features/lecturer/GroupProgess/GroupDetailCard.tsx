@@ -197,25 +197,35 @@ function GroupDetailCard({
 				<Col xs={24} lg={12}>
 					<Space direction="vertical" size="middle" style={{ width: '100%' }}>
 						{/* Thesis Status - Use ThesisStatusCard with direct data */}
-						{isSupervisedGroup && hasThesis ? (
-							<ThesisStatusCard
-								thesisData={(group as SupervisedGroup).thesis}
-								isLeader={false} // Always false for lecturer view
-								hideEditButton={true} // Hide edit button for lecturer view
-							/>
-						) : hasThesis ? (
-							<Card title="Thesis Status">
-								<div style={{ textAlign: 'center', color: '#999' }}>
-									Thesis information not available
-								</div>
-							</Card>
-						) : (
-							<Card title="Thesis Status">
-								<div style={{ textAlign: 'center', color: '#999' }}>
-									No thesis assigned yet
-								</div>
-							</Card>
-						)}
+						{(() => {
+							if (isSupervisedGroup && hasThesis) {
+								return (
+									<ThesisStatusCard
+										thesisData={(group as SupervisedGroup).thesis}
+										isLeader={false} // Always false for lecturer view
+										hideEditButton={true} // Hide edit button for lecturer view
+									/>
+								);
+							}
+
+							if (hasThesis) {
+								return (
+									<Card title="Thesis Status">
+										<div style={{ textAlign: 'center', color: '#999' }}>
+											Thesis information not available
+										</div>
+									</Card>
+								);
+							}
+
+							return (
+								<Card title="Thesis Status">
+									<div style={{ textAlign: 'center', color: '#999' }}>
+										No thesis assigned yet
+									</div>
+								</Card>
+							);
+						})()}
 
 						{/* Progress Overview */}
 						<LecturerProgressOverviewCard
