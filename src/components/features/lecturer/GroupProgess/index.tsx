@@ -8,7 +8,6 @@ import { Header } from '@/components/common/Header';
 import GroupDetailCard from '@/components/features/lecturer/GroupProgess/GroupDetailCard';
 import GroupSearchTable from '@/components/features/lecturer/GroupProgess/GroupSearchTable';
 import MilestoneDetailCard from '@/components/features/lecturer/GroupProgess/MilestoneDetailCard';
-import { useGroupProgress } from '@/hooks/lecturer/useGroupProgress';
 import { useMilestones } from '@/hooks/lecturer/useMilestones';
 import { useSupervisedGroups } from '@/hooks/lecturer/useSupervisedGroups';
 import { SupervisedGroup } from '@/lib/services/groups.service';
@@ -40,15 +39,6 @@ export default function GroupProgressPage() {
 		clearGroups,
 		refreshCache,
 	} = useSupervisedGroups();
-
-	// Group progress hook for detail
-	const {
-		selectedGroupDetail,
-		loading: detailLoading,
-		error: detailError,
-		fetchGroupDetail,
-		clearSelectedGroup,
-	} = useGroupProgress();
 
 	// Milestones hook for steps
 	const {
@@ -131,9 +121,8 @@ export default function GroupProgressPage() {
 			if (milestones.length > 0) {
 				selectMilestone(milestones[0]);
 			}
-			fetchGroupDetail(group.id);
 		},
-		[milestones, selectMilestone, fetchGroupDetail],
+		[milestones, selectMilestone],
 	);
 
 	// Memoized refresh handler với smart logic và user context validation
@@ -151,20 +140,10 @@ export default function GroupProgressPage() {
 		} else {
 			fetchMilestones(); // Fetch default milestones
 		}
-		if (selectedGroup) {
-			fetchGroupDetail(selectedGroup.id);
-		}
 
 		// Clear cache để đảm bảo data fresh
 		refreshCache();
-	}, [
-		selectedSemester,
-		fetchGroupsBySemester,
-		fetchMilestones,
-		selectedGroup,
-		fetchGroupDetail,
-		refreshCache,
-	]);
+	}, [selectedSemester, fetchGroupsBySemester, fetchMilestones, refreshCache]);
 
 	// Memoized milestone change handler
 	const handleMilestoneChange = useCallback(
@@ -251,33 +230,22 @@ export default function GroupProgressPage() {
 
 				{selectedGroup && (
 					<>
-						{detailError && (
-							<Alert
-								message="Error Loading Group Detail"
-								description={detailError}
-								type="error"
-								showIcon
-								closable
-								onClose={clearSelectedGroup}
-							/>
-						)}
-
 						<Space direction="vertical" size="large" style={{ width: '100%' }}>
 							{/* Group Details Section */}
 							<GroupDetailCard
-								group={selectedGroupDetail || selectedGroup}
-								loading={detailLoading}
+								group={selectedGroup}
+								loading={false}
 								milestones={milestones}
 								milestonesLoading={milestonesLoading}
 							/>
 
 							{/* Milestone Progress Section */}
 							<MilestoneDetailCard
-								group={selectedGroupDetail || selectedGroup}
+								group={selectedGroup}
 								milestone={selectedMilestone}
 								milestones={milestones}
 								onMilestoneChange={handleMilestoneChange}
-								loading={detailLoading || milestonesLoading}
+								loading={milestonesLoading}
 								milestoneLoading={milestoneChanging}
 							/>
 						</Space>
