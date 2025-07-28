@@ -86,11 +86,7 @@ export default function EditMilestoneDialog({
 
 		// Check for form field changes
 		let hasDurationChanges = false;
-		if (
-			currentValues.duration &&
-			currentValues.duration[0] &&
-			currentValues.duration[1]
-		) {
+		if (currentValues.duration?.[0] && currentValues.duration?.[1]) {
 			const currentStartTime = currentValues.duration[0].toDate().getTime();
 			const currentEndTime = currentValues.duration[1].toDate().getTime();
 			const originalStartTime = new Date(
@@ -244,7 +240,7 @@ export default function EditMilestoneDialog({
 			}
 
 			// Handle duration changes
-			if (values.duration && values.duration[0] && values.duration[1]) {
+			if (values.duration?.[0] && values.duration?.[1]) {
 				const newStartDate = values.duration[0].toDate();
 				const newEndDate = values.duration[1].toDate();
 				const originalStartDate = new Date(originalValues.startDate as string);
