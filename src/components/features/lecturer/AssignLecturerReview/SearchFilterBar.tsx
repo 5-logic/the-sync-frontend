@@ -47,17 +47,6 @@ export default function SearchFilterBar(props: Readonly<Props>) {
 			justify="start"
 			style={{ marginBottom: 10 }}
 		>
-			<SemesterMilestoneSelect
-				semester={semester}
-				onSemesterChange={onSemesterChange}
-				milestone={noMilestone ? 'No Milestone' : (milestone ?? '')}
-				onMilestoneChange={onMilestoneChange}
-				semesters={semesters}
-				milestones={milestones}
-				loadingSemesters={loadingSemesters}
-				loadingMilestones={loadingMilestones}
-			/>
-
 			<Col flex="auto">
 				<Input
 					value={search}
@@ -66,6 +55,19 @@ export default function SearchFilterBar(props: Readonly<Props>) {
 					prefix={<SearchOutlined style={{ color: '#aaa' }} />}
 					style={{ width: '100%' }}
 					size="middle"
+				/>
+			</Col>
+
+			<Col>
+				<SemesterMilestoneSelect
+					semester={semester}
+					onSemesterChange={onSemesterChange}
+					milestone={noMilestone ? 'No Milestone' : (milestone ?? '')}
+					onMilestoneChange={onMilestoneChange}
+					semesters={semesters}
+					milestones={milestones}
+					loadingSemesters={loadingSemesters}
+					loadingMilestones={loadingMilestones}
 				/>
 			</Col>
 
@@ -81,7 +83,7 @@ export default function SearchFilterBar(props: Readonly<Props>) {
 					onClick={props.onAssignAllDrafts}
 					disabled={!props.draftCount}
 					loading={props.updating}
-					style={{ color: 'white' }}
+					style={{ color: '#d9d9d9' }}
 				>
 					Assign All Drafts ({props.draftCount || 0})
 				</Button>

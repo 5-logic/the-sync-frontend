@@ -443,6 +443,46 @@ export default function AssignReviewerModal({
 		const values = form.getFieldsValue();
 		const mainReviewerId = values.reviewer1;
 		const secondaryReviewerId = values.reviewer2;
+
+		// Validation for Save Draft: Must select both reviewers
+		// 1. Check if both reviewers are selected
+		if (!mainReviewerId || !secondaryReviewerId) {
+			form.setFields([
+				{
+					name: 'reviewer1',
+					errors: !mainReviewerId ? ['Please select a main reviewer'] : [],
+				},
+				{
+					name: 'reviewer2',
+					errors: !secondaryReviewerId
+						? ['Please select a secondary reviewer']
+						: [],
+				},
+			]);
+			return;
+		}
+
+		// 2. Check if both reviewers are the same
+		if (mainReviewerId === secondaryReviewerId) {
+			form.setFields([
+				{
+					name: 'reviewer1',
+					errors: ['Main reviewer must be different from secondary reviewer'],
+				},
+				{
+					name: 'reviewer2',
+					errors: ['Secondary reviewer must be different from main reviewer'],
+				},
+			]);
+			return;
+		}
+
+		// Clear any previous validation errors
+		form.setFields([
+			{ name: 'reviewer1', errors: [] },
+			{ name: 'reviewer2', errors: [] },
+		]);
+
 		onSaveDraft(mainReviewerId, secondaryReviewerId);
 	};
 
@@ -463,7 +503,6 @@ export default function AssignReviewerModal({
 			onClick={handleSaveDraft}
 			loading={saveDraftLoading}
 			disabled={loading || saveDraftLoading}
-			style={{ marginRight: 8 }}
 		>
 			Save Draft
 		</Button>
@@ -516,12 +555,13 @@ export default function AssignReviewerModal({
 					rules={[
 						{
 							validator: (_, value) => {
-								if (!value) {
-									return Promise.resolve(); // Allow empty for save draft
-								}
+								// For Save Draft: both reviewers are required
+								// For Assign/Change: validation is handled in handleFinish
 
 								const reviewer2 =
 									reviewer2Value || form.getFieldValue('reviewer2');
+
+								// Check for duplicates
 								if (value && value === reviewer2) {
 									return Promise.reject(
 										new Error(
@@ -569,10 +609,14 @@ export default function AssignReviewerModal({
 					required={false}
 					rules={[
 						{
-							validator(_, value) {
+							validator: (_, value) => {
+								// For Save Draft: both reviewers are required
+								// For Assign/Change: validation is handled in handleFinish
+
 								const reviewer1 =
 									reviewer1Value || form.getFieldValue('reviewer1');
 
+								// Check for duplicates
 								if (value && value === reviewer1) {
 									return Promise.reject(
 										new Error(

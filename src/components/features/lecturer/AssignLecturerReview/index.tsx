@@ -1,6 +1,6 @@
 'use client';
 
-import { Space } from 'antd';
+import { Space, notification } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
 
 import { Header } from '@/components/common/Header';
@@ -36,6 +36,7 @@ export default function AssignLecturerReview() {
 		removeDraftReviewerAssignment,
 	} = useDraftReviewerAssignmentStore();
 	const [updating, setUpdating] = useState(false);
+	const [saveDraftLoading, setSaveDraftLoading] = useState(false);
 	const [selectedGroup, setSelectedGroup] = useState<GroupTableProps | null>(
 		null,
 	);
@@ -320,6 +321,7 @@ export default function AssignLecturerReview() {
 			<AssignReviewerModal
 				open={!!selectedGroup}
 				group={selectedGroup}
+				saveDraftLoading={saveDraftLoading}
 				initialValues={
 					selectedGroup
 						? getReviewersForGroup(selectedGroup.id, selectedGroup.phase ?? '')
@@ -331,9 +333,14 @@ export default function AssignLecturerReview() {
 				onSaveDraft={(mainReviewerId, secondaryReviewerId) => {
 					if (!selectedGroup) return;
 
+					setSaveDraftLoading(true);
+
 					// Use selectedGroup's submissionId directly since it was set correctly in onAssign
 					const submissionId = selectedGroup.submissionId;
-					if (!submissionId) return;
+					if (!submissionId) {
+						setSaveDraftLoading(false);
+						return;
+					}
 
 					const mainReviewerName = mainReviewerId
 						? lecturers.find((l) => l.id === mainReviewerId)?.fullName
@@ -351,6 +358,14 @@ export default function AssignLecturerReview() {
 						secondaryReviewerId,
 						secondaryReviewerName,
 					});
+
+					// Show success notification
+					notification.success({
+						message: 'Draft Saved',
+						description: 'Reviewer assignment saved as draft',
+					});
+
+					setSaveDraftLoading(false);
 					setSelectedGroup(null);
 				}}
 			/>
