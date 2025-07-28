@@ -102,6 +102,23 @@ export interface SupervisedGroup {
 				updatedAt: string;
 			};
 		};
+		thesisRequiredSkills?: Array<{
+			thesisId: string;
+			skillId: string;
+			skill: {
+				id: string;
+				name: string;
+				skillSetId: string;
+				createdAt: string;
+				updatedAt: string;
+				skillSet: {
+					id: string;
+					name: string;
+					createdAt: string;
+					updatedAt: string;
+				};
+			};
+		}>;
 	};
 	semester: {
 		id: string;
@@ -144,13 +161,32 @@ export interface SupervisedGroup {
 			};
 		};
 	}>;
-	groupRequiredSkills: Array<{
+	groupRequiredSkills?: Array<{
 		groupId: string;
 		skillId: string;
+		skill: {
+			id: string;
+			name: string;
+			skillSetId: string;
+			createdAt: string;
+			updatedAt: string;
+			skillSet: {
+				id: string;
+				name: string;
+				createdAt: string;
+				updatedAt: string;
+			};
+		};
 	}>;
-	groupExpectedResponsibilities: Array<{
+	groupExpectedResponsibilities?: Array<{
 		groupId: string;
 		responsibilityId: string;
+		responsibility: {
+			id: string;
+			name: string;
+			createdAt: string;
+			updatedAt: string;
+		};
 	}>;
 }
 
