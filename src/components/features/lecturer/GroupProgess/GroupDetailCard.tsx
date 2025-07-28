@@ -99,8 +99,28 @@ function convertSupervisedGroupToGroupDashboard(
 				major: participation.student.major,
 				isLeader: participation.isLeader,
 			})) || [],
-		skills: [],
-		responsibilities: [],
+		skills:
+			supervisedGroup.groupRequiredSkills?.map((skillRelation) => ({
+				id: skillRelation.skill.id,
+				name: skillRelation.skill.name,
+				skillSetId: skillRelation.skill.skillSetId,
+				createdAt: new Date(skillRelation.skill.createdAt),
+				updatedAt: new Date(skillRelation.skill.updatedAt),
+				skillSet: {
+					...skillRelation.skill.skillSet,
+					createdAt: new Date(skillRelation.skill.skillSet.createdAt),
+					updatedAt: new Date(skillRelation.skill.skillSet.updatedAt),
+				},
+			})) || [],
+		responsibilities:
+			supervisedGroup.groupExpectedResponsibilities?.map(
+				(responsibilityRelation) => ({
+					id: responsibilityRelation.responsibility.id,
+					name: responsibilityRelation.responsibility.name,
+					createdAt: new Date(responsibilityRelation.responsibility.createdAt),
+					updatedAt: new Date(responsibilityRelation.responsibility.updatedAt),
+				}),
+			) || [],
 		participation: {
 			isLeader: leaderParticipation?.isLeader || false,
 			semester: {
@@ -132,11 +152,13 @@ function GroupDetailCard({
 		return <CardLoadingSkeleton />;
 	}
 
-	// Convert SupervisedGroup to GroupDashboard if needed
-	const groupDashboard: GroupDashboard =
-		'studentGroupParticipations' in group
-			? convertSupervisedGroupToGroupDashboard(group)
-			: (group as GroupDashboard);
+	// Check if it's a SupervisedGroup or regular GroupDashboard
+	const isSupervisedGroup = 'studentGroupParticipations' in group;
+
+	// Convert SupervisedGroup to GroupDashboard if needed for compatibility
+	const groupDashboard: GroupDashboard = isSupervisedGroup
+		? convertSupervisedGroupToGroupDashboard(group)
+		: (group as GroupDashboard);
 
 	const hasThesis = groupDashboard.thesis !== null;
 	const thesisId = groupDashboard.thesis?.id;
@@ -174,9 +196,19 @@ function GroupDetailCard({
 				{/* Right Column - Thesis Status and Progress Overview */}
 				<Col xs={24} lg={12}>
 					<Space direction="vertical" size="middle" style={{ width: '100%' }}>
-						{/* Thesis Status */}
-						{hasThesis ? (
-							<ThesisStatusCard thesisId={thesisId!} />
+						{/* Thesis Status - Use ThesisStatusCard with direct data */}
+						{isSupervisedGroup && hasThesis ? (
+							<ThesisStatusCard
+								thesisData={(group as SupervisedGroup).thesis}
+								isLeader={false} // Always false for lecturer view
+								hideEditButton={true} // Hide edit button for lecturer view
+							/>
+						) : hasThesis ? (
+							<Card title="Thesis Status">
+								<div style={{ textAlign: 'center', color: '#999' }}>
+									Thesis information not available
+								</div>
+							</Card>
 						) : (
 							<Card title="Thesis Status">
 								<div style={{ textAlign: 'center', color: '#999' }}>
