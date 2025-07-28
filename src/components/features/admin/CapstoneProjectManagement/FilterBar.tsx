@@ -1,4 +1,8 @@
-import { ExportOutlined, SearchOutlined } from '@ant-design/icons';
+import {
+	ExportOutlined,
+	ReloadOutlined,
+	SearchOutlined,
+} from '@ant-design/icons';
 import { Button, Col, Input, Row, Select } from 'antd';
 import React from 'react';
 
@@ -9,6 +13,7 @@ type Props = {
 	onSemesterChange: (semester: string) => void;
 	availableSemesters: string[];
 	onExportExcel?: () => void;
+	onRefresh?: () => void;
 	searchPlaceholder?: string;
 	exportExcelText?: string;
 	showExportExcel?: boolean;
@@ -22,15 +27,12 @@ export const FilterBar = ({
 	onSemesterChange,
 	availableSemesters,
 	onExportExcel,
+	onRefresh,
 	searchPlaceholder = 'Search...',
 	exportExcelText = 'Export Excel',
 	showExportExcel = false,
 	loading = false,
 }: Props) => {
-	const semesterOptions = availableSemesters.filter(
-		(semester) => semester !== 'all',
-	);
-
 	return (
 		<Row gutter={[16, 16]} align="middle" style={{ marginBottom: 16 }}>
 			<Col flex="auto">
@@ -53,14 +55,26 @@ export const FilterBar = ({
 					placeholder="Select Semester"
 					disabled={loading}
 				>
-					<Select.Option value="all">All Semesters</Select.Option>
-					{semesterOptions.map((semester) => (
+					{availableSemesters.map((semester) => (
 						<Select.Option key={semester} value={semester}>
 							{semester}
 						</Select.Option>
 					))}
 				</Select>
 			</Col>
+			{onRefresh && (
+				<Col>
+					<Button
+						icon={<ReloadOutlined />}
+						size="middle"
+						onClick={onRefresh}
+						disabled={loading}
+						title="Refresh data"
+					>
+						Refresh
+					</Button>
+				</Col>
+			)}
 			{showExportExcel && (
 				<Col style={{ width: 150 }}>
 					<Button
@@ -70,6 +84,7 @@ export const FilterBar = ({
 						style={{ width: '100%' }}
 						onClick={onExportExcel}
 						disabled={loading}
+						title="Export to Excel"
 					>
 						{exportExcelText}
 					</Button>

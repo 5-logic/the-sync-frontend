@@ -112,6 +112,10 @@ function GroupFormFields() {
 						options={projectAreas}
 						placeholder="Select project area"
 						allowClear
+						showSearch
+						filterOption={(input, option) =>
+							(option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+						}
 					/>
 				</Form.Item>
 			</Col>

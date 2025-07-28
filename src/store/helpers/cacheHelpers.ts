@@ -300,7 +300,17 @@ export function createCachedFetchAction<T extends { id: string }>(
 				return;
 			}
 
-			set({ loading: true, lastError: null });
+			// Only set loading if we don't have data or if it's a forced refresh
+			const currentState = get();
+			const currentData = currentState[`${entityName}s`] as T[] | undefined;
+			const shouldShowLoading =
+				force || !currentData || currentData.length === 0;
+
+			if (shouldShowLoading) {
+				set({ loading: true, lastError: null });
+			} else {
+				set({ lastError: null });
+			}
 
 			try {
 				const response = await service.findAll();
@@ -324,7 +334,10 @@ export function createCachedFetchAction<T extends { id: string }>(
 			} catch {
 				set({ lastError: cacheHelpers.createError(entityName) });
 			} finally {
-				set({ loading: false });
+				// Only set loading false if we previously set it to true
+				if (shouldShowLoading) {
+					set({ loading: false });
+				}
 			}
 		};
 }

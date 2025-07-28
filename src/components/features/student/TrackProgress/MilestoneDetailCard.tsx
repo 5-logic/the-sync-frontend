@@ -527,6 +527,35 @@ export default function MilestoneDetailCard() {
 							key={milestone.id}
 							header={<MilestoneHeader milestone={milestone} />}
 						>
+							{/* Milestone Note Section */}
+							{milestone.note && (
+								<div style={{ marginBottom: 16 }}>
+									<div
+										style={{
+											fontSize: 14,
+											fontWeight: 500,
+											color: '#333',
+											marginBottom: 8,
+										}}
+									>
+										📝 Note:
+									</div>
+									<div
+										style={{
+											backgroundColor: '#f9f9f9',
+											padding: '12px',
+											borderRadius: 6,
+											border: '1px solid #e8e8e8',
+											color: '#666',
+											lineHeight: 1.5,
+											whiteSpace: 'pre-wrap',
+										}}
+									>
+										{milestone.note}
+									</div>
+								</div>
+							)}
+
 							{/* Download Templates Section */}
 							{milestone.documents && milestone.documents.length > 0 && (
 								<div style={{ marginBottom: 16 }}>

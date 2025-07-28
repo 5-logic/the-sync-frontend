@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { ThesisConfirmationModals } from '@/components/common/ConfirmModal';
 import { TIMING } from '@/lib/constants/thesis';
 import { aiDuplicateService } from '@/lib/services/ai-duplicate.service';
-import { showNotification } from '@/lib/utils/notification';
 import {
 	THESIS_ERROR_CONFIGS,
 	THESIS_SUCCESS_CONFIGS,
@@ -13,7 +12,10 @@ import {
 } from '@/lib/utils/thesis-handlers';
 import { useThesisStore } from '@/store';
 
-export const useThesisActions = (thesisId: string) => {
+export const useThesisActions = (
+	thesisId: string,
+	onCheckDuplicates?: () => void,
+) => {
 	const router = useRouter();
 	const { submitThesis, deleteThesis, reviewThesis, theses } = useThesisStore();
 
@@ -41,53 +43,99 @@ export const useThesisActions = (thesisId: string) => {
 		const thesis = theses.find((t) => t.id === thesisId);
 		const thesisTitle = thesis?.englishName ?? 'this thesis';
 
-		// Set loading state for duplicate check
-		setSubmitLoading(true);
-
 		try {
-			// Check for duplicates first
-			const duplicateResponse =
-				await aiDuplicateService.checkDuplicate(thesisId);
+			// Set loading state before checking duplicates
+			setSubmitLoading(true);
+
+			// Check for duplicate theses first
+			const duplicateResult = await aiDuplicateService.checkDuplicate(thesisId);
+
 			if (
-				duplicateResponse.success &&
-				duplicateResponse.data &&
-				duplicateResponse.data.length > 0
+				duplicateResult.success &&
+				duplicateResult.data &&
+				duplicateResult.data.length > 0
 			) {
-				// Found duplicates - block submission
-				const duplicateCount = duplicateResponse.data.length;
-				showNotification.error(
-					'Cannot Submit Thesis',
-					`Found ${duplicateCount} similar thesis${duplicateCount > 1 ? 'es' : ''}. Please review and resolve the similarities before submitting.`,
+				// Clear loading state before showing modal
+				setSubmitLoading(false);
+
+				// Found duplicates - show duplicate confirmation modal
+				ThesisConfirmationModals.submitWithDuplicatesFromDetail(
+					thesisTitle,
+					duplicateResult.data.length,
+					() => {
+						// Handle "Check Duplicate Theses" - trigger the duplicate modal
+						if (onCheckDuplicates) {
+							onCheckDuplicates();
+						}
+					},
+					async () => {
+						// Handle "Confirm" - proceed with submission
+						try {
+							setSubmitLoading(true);
+							const success = await submitThesis(thesisId);
+
+							if (success) {
+								handleThesisSuccess(THESIS_SUCCESS_CONFIGS.SUBMIT, router);
+							} else {
+								throw new Error('Submit failed');
+							}
+						} catch (error) {
+							handleThesisError(
+								error,
+								THESIS_ERROR_CONFIGS.SUBMIT,
+								setSubmitLoading,
+							);
+						}
+					},
 				);
-				return; // Exit early, don't submit
+			} else {
+				// Clear loading state before showing modal
+				setSubmitLoading(false);
+
+				// No duplicates found - show normal confirmation modal
+				ThesisConfirmationModals.submit(thesisTitle, async () => {
+					try {
+						setSubmitLoading(true);
+						const success = await submitThesis(thesisId);
+
+						if (success) {
+							handleThesisSuccess(THESIS_SUCCESS_CONFIGS.SUBMIT, router);
+						} else {
+							throw new Error('Submit failed');
+						}
+					} catch (error) {
+						handleThesisError(
+							error,
+							THESIS_ERROR_CONFIGS.SUBMIT,
+							setSubmitLoading,
+						);
+					}
+				});
 			}
-		} catch (duplicateError) {
-			console.error('Duplicate check failed:', duplicateError);
-			showNotification.error(
-				'Duplicate Check Failed',
-				'Unable to check for duplicate theses. Please try again.',
-			);
-			return; // Exit early on error
-		} finally {
-			// Clear loading state after duplicate check
+		} catch (error) {
+			console.error('Error checking duplicates:', error);
+			// Clear loading state and proceed with normal confirmation
 			setSubmitLoading(false);
-		}
 
-		// No duplicates found, proceed with confirmation modal
-		ThesisConfirmationModals.submit(thesisTitle, async () => {
-			try {
-				setSubmitLoading(true);
-				const success = await submitThesis(thesisId);
+			ThesisConfirmationModals.submit(thesisTitle, async () => {
+				try {
+					setSubmitLoading(true);
+					const success = await submitThesis(thesisId);
 
-				if (success) {
-					handleThesisSuccess(THESIS_SUCCESS_CONFIGS.SUBMIT, router);
-				} else {
-					throw new Error('Submit failed');
+					if (success) {
+						handleThesisSuccess(THESIS_SUCCESS_CONFIGS.SUBMIT, router);
+					} else {
+						throw new Error('Submit failed');
+					}
+				} catch (error) {
+					handleThesisError(
+						error,
+						THESIS_ERROR_CONFIGS.SUBMIT,
+						setSubmitLoading,
+					);
 				}
-			} catch (error) {
-				handleThesisError(error, THESIS_ERROR_CONFIGS.SUBMIT, setSubmitLoading);
-			}
-		});
+			});
+		}
 	};
 
 	const handleDelete = async () => {
@@ -113,51 +161,98 @@ export const useThesisActions = (thesisId: string) => {
 	};
 
 	const handleApprove = async () => {
-		// Set loading state for duplicate check
-		setApproveLoading(true);
+		// Find thesis title for confirmation modal
+		const thesis = theses.find((t) => t.id === thesisId);
+		const thesisTitle = thesis?.englishName ?? 'this thesis';
 
 		try {
-			// Check for duplicates first
-			const duplicateResponse =
-				await aiDuplicateService.checkDuplicate(thesisId);
-			if (
-				duplicateResponse.success &&
-				duplicateResponse.data &&
-				duplicateResponse.data.length > 0
-			) {
-				// Found duplicates - block approval
-				const duplicateCount = duplicateResponse.data.length;
-				showNotification.error(
-					'Cannot Approve Thesis',
-					`Found ${duplicateCount} similar thesis${duplicateCount > 1 ? 'es' : ''}. Please review and resolve the similarities before approving.`,
-				);
-				return; // Exit early, don't approve
-			}
-		} catch (duplicateError) {
-			console.error('Duplicate check failed:', duplicateError);
-			showNotification.error(
-				'Duplicate Check Failed',
-				'Unable to check for duplicate theses. Please try again.',
-			);
-			return; // Exit early on error
-		} finally {
-			// Clear loading state after duplicate check
-			setApproveLoading(false);
-		}
-
-		// No duplicates found, proceed with actual approval
-		try {
+			// Set loading state before checking duplicates
 			setApproveLoading(true);
-			const success = await reviewThesis(thesisId, 'Approved');
 
-			if (success) {
-				setShowApproveConfirm(false);
-				handleThesisSuccess(THESIS_SUCCESS_CONFIGS.APPROVE, router);
+			// Check for duplicate theses first
+			const duplicateResult = await aiDuplicateService.checkDuplicate(thesisId);
+
+			if (
+				duplicateResult.success &&
+				duplicateResult.data &&
+				duplicateResult.data.length > 0
+			) {
+				// Clear loading state before showing modal
+				setApproveLoading(false);
+
+				// Found duplicates - show duplicate confirmation modal
+				ThesisConfirmationModals.approveWithDuplicates(
+					thesisTitle,
+					duplicateResult.data.length,
+					() => {
+						// Handle "Check Duplicate Theses" - trigger the duplicate modal
+						if (onCheckDuplicates) {
+							onCheckDuplicates();
+						}
+					},
+					async () => {
+						// Handle "Confirm" - proceed with approval
+						try {
+							setApproveLoading(true);
+							const success = await reviewThesis(thesisId, 'Approved');
+
+							if (success) {
+								setShowApproveConfirm(false);
+								handleThesisSuccess(THESIS_SUCCESS_CONFIGS.APPROVE, router);
+							} else {
+								throw new Error('Approve failed');
+							}
+						} catch (error) {
+							handleThesisError(
+								error,
+								THESIS_ERROR_CONFIGS.APPROVE,
+								setApproveLoading,
+							);
+						}
+					},
+				);
 			} else {
-				throw new Error('Approve failed');
+				// No duplicates found - proceed with approval directly
+				try {
+					setApproveLoading(true);
+					const success = await reviewThesis(thesisId, 'Approved');
+
+					if (success) {
+						setShowApproveConfirm(false);
+						handleThesisSuccess(THESIS_SUCCESS_CONFIGS.APPROVE, router);
+					} else {
+						throw new Error('Approve failed');
+					}
+				} catch (error) {
+					handleThesisError(
+						error,
+						THESIS_ERROR_CONFIGS.APPROVE,
+						setApproveLoading,
+					);
+				}
 			}
 		} catch (error) {
-			handleThesisError(error, THESIS_ERROR_CONFIGS.APPROVE, setApproveLoading);
+			console.error('Error checking duplicates:', error);
+			// Clear loading state and proceed with approval
+			setApproveLoading(false);
+
+			try {
+				setApproveLoading(true);
+				const success = await reviewThesis(thesisId, 'Approved');
+
+				if (success) {
+					setShowApproveConfirm(false);
+					handleThesisSuccess(THESIS_SUCCESS_CONFIGS.APPROVE, router);
+				} else {
+					throw new Error('Approve failed');
+				}
+			} catch (error) {
+				handleThesisError(
+					error,
+					THESIS_ERROR_CONFIGS.APPROVE,
+					setApproveLoading,
+				);
+			}
 		}
 	};
 

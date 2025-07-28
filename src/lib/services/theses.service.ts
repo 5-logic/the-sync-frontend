@@ -43,6 +43,16 @@ class ThesisService {
 	}
 
 	/**
+	 * Get all theses with semester information included
+	 */
+	async findAllWithSemester(): Promise<ApiResponse<Thesis[]>> {
+		const response = await httpClient.get<ApiResponse<Thesis[]>>(
+			`${this.baseUrl}?include=semester`,
+		);
+		return response.data;
+	}
+
+	/**
 	 * Get all theses with supervision and group information for assign supervisor page
 	 */
 	async findAllWithSupervision(): Promise<ApiResponse<ThesisWithGroup[]>> {
@@ -128,12 +138,24 @@ class ThesisService {
 
 	// Bulk publish theses
 	async publishTheses(data: {
-		thesesIds: string[];
+		thesisIds: string[];
 		isPublish: boolean;
 	}): Promise<ApiResponse<void>> {
-		const response = await httpClient.put<ApiResponse<void>>(
+		const response = await httpClient.post<ApiResponse<void>>(
 			`${this.baseUrl}/publish`,
 			data,
+		);
+		return response.data;
+	}
+
+	// Assign thesis to group
+	async assignToGroup(
+		id: string,
+		groupId: string,
+	): Promise<ApiResponse<Thesis>> {
+		const response = await httpClient.post<ApiResponse<Thesis>>(
+			`${this.baseUrl}/${id}/assign`,
+			{ groupId },
 		);
 		return response.data;
 	}

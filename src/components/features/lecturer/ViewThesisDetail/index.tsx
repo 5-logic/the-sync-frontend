@@ -34,7 +34,6 @@ export default function ViewThesisDetail({
 
 	// Use custom hooks for data and actions
 	const { thesis, loading, error, loadingMessage } = useThesisDetail(thesisId);
-	const { loadingStates, modalStates, actions } = useThesisActions(thesisId);
 	const {
 		loading: duplicateLoading,
 		duplicateTheses,
@@ -42,6 +41,17 @@ export default function ViewThesisDetail({
 		checkDuplicate,
 		closeModal: closeDuplicateModal,
 	} = useAiDuplicateCheck();
+
+	// Handle AI duplicate check callback
+	const handleDuplicateCheckFromAction = async () => {
+		if (!thesis) return;
+		await checkDuplicate(thesis.id);
+	};
+
+	const { loadingStates, modalStates, actions } = useThesisActions(
+		thesisId,
+		handleDuplicateCheckFromAction,
+	);
 
 	// Publish thesis functionality
 	const { updatePublishStatus } = usePublishThesesStore();
