@@ -53,16 +53,19 @@ export default function LecturerProgressOverviewCard({
 		}
 	};
 
+	// Common card props
+	const cardProps = {
+		title: 'Progress Overview',
+		style: {
+			display: 'flex',
+			flexDirection: 'column' as const,
+			justifyContent: 'space-between',
+		},
+	};
+
 	if (loading) {
 		return (
-			<Card
-				title="Progress Overview"
-				style={{
-					display: 'flex',
-					flexDirection: 'column',
-					justifyContent: 'space-between',
-				}}
-			>
+			<Card {...cardProps}>
 				<div style={{ textAlign: 'center', padding: '20px 0' }}>
 					<Spin size="small" />
 				</div>
@@ -72,14 +75,7 @@ export default function LecturerProgressOverviewCard({
 
 	if (!milestones.length) {
 		return (
-			<Card
-				title="Progress Overview"
-				style={{
-					display: 'flex',
-					flexDirection: 'column',
-					justifyContent: 'space-between',
-				}}
-			>
+			<Card {...cardProps}>
 				<div style={{ textAlign: 'center', color: '#999' }}>
 					No milestones found for current semester
 				</div>
@@ -92,27 +88,22 @@ export default function LecturerProgressOverviewCard({
 		dayjs(a.startDate).isBefore(dayjs(b.startDate)) ? -1 : 1,
 	);
 
+	// Helper function to get milestone status
+	const getMilestoneStatusHelper = (milestone: Milestone) =>
+		getMilestoneStatus(milestone.startDate, milestone.endDate);
+
 	// Find next upcoming milestone (not the current in-progress one)
 	const nextMilestone = sortedMilestones.find((milestone) => {
-		const status = getMilestoneStatus(milestone.startDate, milestone.endDate);
-		return status === 'Upcoming';
+		return getMilestoneStatusHelper(milestone) === 'Upcoming';
 	});
 
 	// Find current milestone if any
 	const currentMilestone = sortedMilestones.find((milestone) => {
-		const status = getMilestoneStatus(milestone.startDate, milestone.endDate);
-		return status === 'In Progress';
+		return getMilestoneStatusHelper(milestone) === 'In Progress';
 	});
 
 	return (
-		<Card
-			title="Progress Overview"
-			style={{
-				display: 'flex',
-				flexDirection: 'column',
-				justifyContent: 'space-between',
-			}}
-		>
+		<Card {...cardProps}>
 			<div>
 				{currentMilestone && (
 					<div style={{ marginBottom: 12 }}>
@@ -140,10 +131,7 @@ export default function LecturerProgressOverviewCard({
 
 				<Timeline>
 					{sortedMilestones.map((milestone) => {
-						const status = getMilestoneStatus(
-							milestone.startDate,
-							milestone.endDate,
-						);
+						const status = getMilestoneStatusHelper(milestone);
 						return (
 							<Timeline.Item
 								key={milestone.id}
