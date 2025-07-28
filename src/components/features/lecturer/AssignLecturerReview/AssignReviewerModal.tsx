@@ -3,7 +3,6 @@
 import { Button, Form, Modal, Select } from 'antd';
 import React, { useEffect, useMemo, useState } from 'react';
 
-import { ReviewerConfirmationModals } from '@/components/common/ConfirmModal';
 import { FormLabel } from '@/components/common/FormLabel';
 import { GroupTableProps } from '@/components/features/lecturer/AssignLecturerReview/GroupTable';
 import {
@@ -581,26 +580,8 @@ export default function AssignReviewerModal({
 			{ name: 'reviewer2', errors: [] },
 		]);
 
-		// Get lecturer names for confirmation
-		const mainReviewerName =
-			allAvailableLecturers.find((l) => l.id === mainReviewerId)?.fullName ||
-			'Unknown Lecturer';
-		const secondaryReviewerName =
-			allAvailableLecturers.find((l) => l.id === secondaryReviewerId)
-				?.fullName || 'Unknown Lecturer';
-		const groupName = group?.name || group?.code || 'Unknown Group';
-
-		// Show confirmation modal before saving draft
-		ReviewerConfirmationModals.saveDraft(
-			groupName,
-			mainReviewerName,
-			secondaryReviewerName,
-			() => {
-				// Success notification will be handled by the parent component
-				onSaveDraft(mainReviewerId, secondaryReviewerId);
-			},
-			saveDraftLoading,
-		);
+		// Success notification will be handled by the parent component
+		onSaveDraft(mainReviewerId, secondaryReviewerId);
 	};
 
 	// Footer button methods
