@@ -126,6 +126,14 @@ export default function ProgressOverviewCard({
 			title={
 				<span
 					onClick={handleCardClick}
+					onKeyDown={(e) => {
+						if (isDashboardView && (e.key === 'Enter' || e.key === ' ')) {
+							e.preventDefault();
+							handleCardClick();
+						}
+					}}
+					role={isDashboardView ? 'button' : undefined}
+					tabIndex={isDashboardView ? 0 : undefined}
 					style={{
 						cursor: isDashboardView ? 'pointer' : 'default',
 						transition: 'color 0.2s ease',
