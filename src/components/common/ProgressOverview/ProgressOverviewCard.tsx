@@ -124,33 +124,31 @@ export default function ProgressOverviewCard({
 	return (
 		<Card
 			title={
-				<span
-					onClick={handleCardClick}
-					onKeyDown={(e) => {
-						if (isDashboardView && (e.key === 'Enter' || e.key === ' ')) {
-							e.preventDefault();
-							handleCardClick();
-						}
-					}}
-					role={isDashboardView ? 'button' : undefined}
-					tabIndex={isDashboardView ? 0 : undefined}
-					style={{
-						cursor: isDashboardView ? 'pointer' : 'default',
-						transition: 'color 0.2s ease',
-					}}
-					onMouseEnter={(e) => {
-						if (isDashboardView) {
+				isDashboardView ? (
+					<button
+						type="button"
+						onClick={handleCardClick}
+						style={{
+							background: 'none',
+							border: 'none',
+							padding: 0,
+							font: 'inherit',
+							cursor: 'pointer',
+							color: 'inherit',
+							transition: 'color 0.2s ease',
+						}}
+						onMouseEnter={(e) => {
 							e.currentTarget.style.color = '#1890ff';
-						}
-					}}
-					onMouseLeave={(e) => {
-						if (isDashboardView) {
+						}}
+						onMouseLeave={(e) => {
 							e.currentTarget.style.color = '';
-						}
-					}}
-				>
-					Progress Overview
-				</span>
+						}}
+					>
+						Progress Overview
+					</button>
+				) : (
+					'Progress Overview'
+				)
 			}
 			hoverable={isDashboardView}
 			style={{
