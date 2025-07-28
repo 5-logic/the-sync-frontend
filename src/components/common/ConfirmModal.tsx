@@ -393,3 +393,44 @@ export const GroupConfirmationModals = {
 	// Generic show method for custom modals
 	show: ConfirmationModal.show,
 };
+
+// Reviewer-related confirmation modals
+export const ReviewerConfirmationModals = {
+	saveDraft: (
+		groupName: string,
+		mainReviewerName: string,
+		secondaryReviewerName: string,
+		onConfirm: () => void | Promise<void>,
+		loading = false,
+	) =>
+		ConfirmationModal.show({
+			title: 'Save Reviewer Draft',
+			message:
+				'Are you sure you want to save this reviewer assignment as draft?',
+			details: groupName,
+			note: `Main Reviewer: ${mainReviewerName}, Secondary Reviewer: ${secondaryReviewerName}. You can assign this draft later or modify it before final assignment.`,
+			noteType: 'info',
+			okText: 'Save Draft',
+			loading,
+			onOk: onConfirm,
+		}),
+
+	assignAllDrafts: (
+		draftCount: number,
+		onConfirm: () => void | Promise<void>,
+		loading = false,
+	) =>
+		ConfirmationModal.show({
+			title: 'Assign All Reviewer Drafts',
+			message: `Are you sure you want to assign reviewers for ${draftCount} group assignments?`,
+			details: `This will assign all pending draft reviewer assignments to their respective groups.`,
+			note: 'This action cannot be undone. All draft reviewer assignments will be processed immediately.',
+			noteType: 'danger',
+			okText: 'Yes, Assign All',
+			loading,
+			onOk: onConfirm,
+		}),
+
+	// Generic show method for custom modals
+	show: ConfirmationModal.show,
+};

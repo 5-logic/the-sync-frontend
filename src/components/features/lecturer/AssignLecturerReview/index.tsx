@@ -3,6 +3,7 @@
 import { Space } from 'antd';
 import { useState } from 'react';
 
+import { ReviewerConfirmationModals } from '@/components/common/ConfirmModal';
 import { Header } from '@/components/common/Header';
 import AssignReviewerModal from '@/components/features/lecturer/AssignLecturerReview/AssignReviewerModal';
 import GroupTable from '@/components/features/lecturer/AssignLecturerReview/GroupTable';
@@ -63,6 +64,17 @@ export default function AssignLecturerReview() {
 		},
 	);
 
+	/**
+	 * Handle bulk assignment confirmation for reviewer drafts
+	 */
+	const handleAssignAllDraftsConfirm = (): void => {
+		ReviewerConfirmationModals.assignAllDrafts(
+			draftCount,
+			() => handleAssignAllDrafts(milestone, handleRefresh),
+			updating,
+		);
+	};
+
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
 			<Header
@@ -84,9 +96,7 @@ export default function AssignLecturerReview() {
 				loadingMilestones={loadingMilestones}
 				noMilestone={milestone === 'NO_MILESTONE'}
 				onRefresh={handleRefresh}
-				onAssignAllDrafts={() =>
-					handleAssignAllDrafts(milestone, handleRefresh)
-				}
+				onAssignAllDrafts={handleAssignAllDraftsConfirm}
 				draftCount={draftCount}
 				updating={updating}
 			/>
@@ -104,11 +114,27 @@ export default function AssignLecturerReview() {
 				saveDraftLoading={saveDraftLoading}
 				initialValues={
 					selectedGroup
-						? getReviewersForGroup(
-								selectedGroup.id,
-								selectedGroup.phase ?? '',
-								filteredGroups,
-							)
+						? (() => {
+								// Check if there's a draft for this submission
+								const draft = getDraftReviewerAssignment(
+									selectedGroup.submissionId || '',
+								);
+
+								if (draft) {
+									// Use draft values if they exist
+									return [
+										draft.mainReviewerId,
+										draft.secondaryReviewerId,
+									].filter(Boolean) as string[];
+								}
+
+								// Fall back to current assigned reviewers
+								return getReviewersForGroup(
+									selectedGroup.id,
+									selectedGroup.phase ?? '',
+									filteredGroups,
+								);
+							})()
 						: []
 				}
 				onCancel={() => setSelectedGroup(null)}

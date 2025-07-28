@@ -131,6 +131,7 @@ export const useAssignReviewerDrafts = () => {
 		updating,
 		draftCount,
 		getDraftReviewerAssignment,
+		getDraftReviewerAssignmentsList,
 		removeDraftReviewerAssignment,
 		handleAssignAllDrafts,
 		saveDraftReviewerAssignment,
