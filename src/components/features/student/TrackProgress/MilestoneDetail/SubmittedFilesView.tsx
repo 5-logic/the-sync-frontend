@@ -114,7 +114,7 @@ export function SubmittedFilesView({
 			>
 				<Avatar icon={<UserOutlined />} />
 				<Space direction="vertical" size={4}>
-					<Typography.Text strong>Supervisor</Typography.Text>
+					<Typography.Text strong>Reviewer</Typography.Text>
 					<Typography.Paragraph style={{ margin: 0 }}>
 						Feedback will be displayed here
 					</Typography.Paragraph>

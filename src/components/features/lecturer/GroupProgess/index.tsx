@@ -1,47 +1,163 @@
 'use client';
 
-import { Card, Col, Row, Space, Steps, Typography } from 'antd';
-import { useMemo, useState } from 'react';
+import { Alert, Space } from 'antd';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { Header } from '@/components/common/Header';
-import ProgressOverviewCard from '@/components/common/ProgressOverview/ProgressOverviewCard';
+import GroupDetailCard from '@/components/features/lecturer/GroupProgess/GroupDetailCard';
 import GroupSearchTable from '@/components/features/lecturer/GroupProgess/GroupSearchTable';
 import MilestoneDetailCard from '@/components/features/lecturer/GroupProgess/MilestoneDetailCard';
-import { FullMockGroup, allMockGroups, mockReviewGroups } from '@/data/group';
-
-const { Text } = Typography;
-const { Step } = Steps;
+import { useGroupProgress } from '@/hooks/lecturer/useGroupProgress';
+import { useMilestones } from '@/hooks/lecturer/useMilestones';
+import { useSupervisedGroups } from '@/hooks/lecturer/useSupervisedGroups';
+import { SupervisedGroup } from '@/lib/services/groups.service';
+import { Milestone } from '@/schemas/milestone';
+import { useLecturerStore, useSemesterStore } from '@/store';
 
 export default function GroupProgressPage() {
-	const [selectedGroup, setSelectedGroup] = useState<FullMockGroup | undefined>(
-		undefined,
-	);
-	const [selectedPhase, setSelectedPhase] = useState<string>('Review 1');
+	const [selectedGroup, setSelectedGroup] = useState<
+		SupervisedGroup | undefined
+	>(undefined);
 	const [searchText, setSearchText] = useState<string>('');
 
-	const availablePhases = Object.keys(mockReviewGroups);
+	// Initialize selectedSemester from sessionStorage
+	const [selectedSemester, setSelectedSemester] = useState<string | null>(
+		() => {
+			if (typeof window !== 'undefined') {
+				return sessionStorage.getItem('groupProgress_selectedSemester');
+			}
+			return null;
+		},
+	);
 
-	const groupList = useMemo(() => {
-		const uniqueGroups: Record<string, FullMockGroup> = {};
-		allMockGroups.forEach((group) => {
-			uniqueGroups[group.id] ??= group;
+	// Store hooks for cached data similar to ThesisManagement
+	const { fetchLecturers } = useLecturerStore();
+	const { fetchSemesters } = useSemesterStore();
+
+	// Supervised groups hook with enhanced caching
+	const {
+		groups,
+		loading: groupsLoading,
+		error: groupsError,
+		fetchGroupsBySemester,
+		clearGroups,
+		isInitialLoad,
+		isRefreshing,
+	} = useSupervisedGroups();
+
+	// Group progress hook for detail
+	const {
+		selectedGroupDetail,
+		loading: detailLoading,
+		error: detailError,
+		fetchGroupDetail,
+		clearSelectedGroup,
+	} = useGroupProgress();
+
+	// Milestones hook for steps
+	const {
+		milestones,
+		selectedMilestone,
+		loading: milestonesLoading,
+		error: milestonesError,
+		fetchMilestones,
+		selectMilestone,
+	} = useMilestones();
+
+	// Fetch cached data when component mounts (similar to ThesisManagement)
+	useEffect(() => {
+		fetchLecturers();
+		fetchSemesters();
+		fetchMilestones();
+	}, [fetchLecturers, fetchSemesters, fetchMilestones]);
+
+	// Auto-load data for persisted semester
+	useEffect(() => {
+		if (selectedSemester) {
+			fetchGroupsBySemester(selectedSemester);
+		}
+	}, [selectedSemester, fetchGroupsBySemester]);
+
+	// Filter groups based on search
+	const filteredGroups = useMemo(() => {
+		if (!searchText.trim()) return groups;
+
+		const keyword = searchText.toLowerCase();
+		return groups.filter((group) => {
+			const name = group.name?.toLowerCase() || '';
+			const projectDirection = group.projectDirection?.toLowerCase() || '';
+			const code = group.code?.toLowerCase() || '';
+			const englishName = group.thesis?.englishName?.toLowerCase() || '';
+
+			return (
+				name.includes(keyword) ||
+				projectDirection.includes(keyword) ||
+				code.includes(keyword) ||
+				englishName.includes(keyword)
+			);
 		});
+	}, [groups, searchText]);
 
-		return Object.values(uniqueGroups).filter((group) => {
-			const keyword = (searchText ?? '').toLowerCase();
-			const name = group.name ?? '';
-			const title = group.title ?? '';
+	// Fetch groups when semester changes
+	useEffect(() => {
+		if (selectedSemester) {
+			fetchGroupsBySemester(selectedSemester);
+		} else {
+			clearGroups();
+		}
+	}, [selectedSemester, fetchGroupsBySemester, clearGroups]);
 
-			const nameMatch = name.toLowerCase().includes(keyword);
-			const titleMatch = title.toLowerCase().includes(keyword);
-			return nameMatch || titleMatch;
-		});
-	}, [searchText]);
+	// Memoized handlers to prevent unnecessary re-renders
+	const handleGroupSelect = useCallback(
+		(group: SupervisedGroup) => {
+			setSelectedGroup(group);
+			// Reset to first milestone when selecting a new group
+			if (milestones.length > 0) {
+				selectMilestone(milestones[0]);
+			}
+			fetchGroupDetail(group.id);
+		},
+		[milestones, selectMilestone, fetchGroupDetail],
+	);
 
-	function handleSelect(group: FullMockGroup) {
-		setSelectedGroup(group);
-		setSelectedPhase(availablePhases[0]);
-	}
+	const handleRefresh = useCallback(() => {
+		if (selectedSemester) {
+			fetchGroupsBySemester(selectedSemester, true); // Force refresh
+		}
+		fetchMilestones();
+		if (selectedGroup) {
+			fetchGroupDetail(selectedGroup.id);
+		}
+	}, [
+		selectedSemester,
+		fetchGroupsBySemester,
+		fetchMilestones,
+		selectedGroup,
+		fetchGroupDetail,
+	]);
+
+	const handleMilestoneChange = useCallback(
+		(milestone: Milestone) => {
+			selectMilestone(milestone);
+		},
+		[selectMilestone],
+	);
+
+	const handleSearchChange = useCallback((value: string) => {
+		setSearchText(value);
+	}, []);
+
+	const handleSemesterChange = useCallback((semesterId: string | null) => {
+		setSelectedSemester(semesterId);
+		// Persist to sessionStorage
+		if (typeof window !== 'undefined') {
+			if (semesterId) {
+				sessionStorage.setItem('groupProgress_selectedSemester', semesterId);
+			} else {
+				sessionStorage.removeItem('groupProgress_selectedSemester');
+			}
+		}
+	}, []);
 
 	return (
 		<div
@@ -59,60 +175,75 @@ export default function GroupProgressPage() {
 			>
 				<Header
 					title="Group Progress"
-					description="The instructor monitors the groups progress, closely following important milestones to evaluate the group's performance."
+					description="Monitor group progress and track important milestones to evaluate group performance."
 				/>
 
-				<GroupSearchTable
-					data={groupList}
-					searchText={searchText}
-					onSearchChange={setSearchText}
-					selectedGroup={selectedGroup}
-					onGroupSelect={handleSelect}
-				/>
+				{groupsError && (
+					<Alert
+						message="Error Loading Groups"
+						description={groupsError}
+						type="error"
+						showIcon
+						closable
+					/>
+				)}
+
+				{milestonesError && (
+					<Alert
+						message="Error Loading Milestones"
+						description={milestonesError}
+						type="error"
+						showIcon
+						closable
+					/>
+				)}
+
+				<Space direction="vertical" size="middle" style={{ width: '100%' }}>
+					<GroupSearchTable
+						data={filteredGroups}
+						searchText={searchText}
+						onSearchChange={handleSearchChange}
+						selectedGroup={selectedGroup}
+						onGroupSelect={handleGroupSelect}
+						loading={groupsLoading}
+						onRefresh={handleRefresh}
+						selectedSemester={selectedSemester}
+						onSemesterChange={handleSemesterChange}
+						showSemesterFilter={true}
+						isInitialLoad={isInitialLoad}
+						isRefreshing={isRefreshing}
+					/>
+				</Space>
 
 				{selectedGroup && (
 					<>
-						<Card
-							title={`Group Name: ${selectedGroup.name} | ${selectedGroup.title}`}
-						>
-							<Text type="secondary">
-								Supervised by: {selectedGroup.supervisors.join(', ')}
-							</Text>
+						{detailError && (
+							<Alert
+								message="Error Loading Group Detail"
+								description={detailError}
+								type="error"
+								showIcon
+								closable
+								onClose={clearSelectedGroup}
+							/>
+						)}
 
-							<Steps
-								current={availablePhases.indexOf(selectedPhase)}
-								style={{ marginTop: 16 }}
-							>
-								{availablePhases.map((phase) => (
-									<Step
-										key={phase}
-										title={phase}
-										onClick={() => {
-											const match = mockReviewGroups[phase].find(
-												(g) => g.id === selectedGroup.id,
-											);
-											if (match) {
-												setSelectedGroup(match);
-												setSelectedPhase(phase);
-											}
-										}}
-									/>
-								))}
-							</Steps>
-						</Card>
+						<Space direction="vertical" size="large" style={{ width: '100%' }}>
+							{/* Group Details Section */}
+							<GroupDetailCard
+								group={selectedGroupDetail || selectedGroup}
+								loading={detailLoading}
+							/>
 
-						<Row gutter={16} style={{ flex: 1 }}>
-							<Col xs={24} md={16}>
-								<MilestoneDetailCard
-									group={selectedGroup}
-									phase={selectedPhase}
-								/>
-							</Col>
-							<Col xs={24} md={8}>
-								{/* Không cần truyền group nữa */}
-								<ProgressOverviewCard />
-							</Col>
-						</Row>
+							{/* Milestone Progress Section */}
+							<MilestoneDetailCard
+								group={selectedGroupDetail || selectedGroup}
+								milestone={selectedMilestone}
+								milestones={milestones}
+								onMilestoneChange={handleMilestoneChange}
+								loading={detailLoading || milestonesLoading}
+							/>
+						</Space>
 					</>
 				)}
 			</Space>

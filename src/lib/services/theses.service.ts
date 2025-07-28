@@ -1,6 +1,11 @@
 import httpClient from '@/lib/services/_httpClient';
 import { ApiResponse } from '@/schemas/_common';
-import { Thesis, ThesisCreate, ThesisUpdate } from '@/schemas/thesis';
+import {
+	Thesis,
+	ThesisCreate,
+	ThesisUpdate,
+	ThesisWithRelations,
+} from '@/schemas/thesis';
 
 // Enhanced thesis interface with supervision and group information
 export interface ThesisWithGroup extends Thesis {
@@ -38,6 +43,16 @@ class ThesisService {
 	}
 
 	/**
+	 * Get all theses with semester information included
+	 */
+	async findAllWithSemester(): Promise<ApiResponse<Thesis[]>> {
+		const response = await httpClient.get<ApiResponse<Thesis[]>>(
+			`${this.baseUrl}?include=semester`,
+		);
+		return response.data;
+	}
+
+	/**
 	 * Get all theses with supervision and group information for assign supervisor page
 	 */
 	async findAllWithSupervision(): Promise<ApiResponse<ThesisWithGroup[]>> {
@@ -50,6 +65,15 @@ class ThesisService {
 	async findOne(id: string): Promise<ApiResponse<Thesis>> {
 		const response = await httpClient.get<ApiResponse<Thesis>>(
 			`${this.baseUrl}/${id}`,
+		);
+		return response.data;
+	}
+
+	async findOneWithRelations(
+		id: string,
+	): Promise<ApiResponse<ThesisWithRelations>> {
+		const response = await httpClient.get<ApiResponse<ThesisWithRelations>>(
+			`${this.baseUrl}/${id}?include=lecturer,skills`,
 		);
 		return response.data;
 	}
@@ -114,12 +138,24 @@ class ThesisService {
 
 	// Bulk publish theses
 	async publishTheses(data: {
-		thesesIds: string[];
+		thesisIds: string[];
 		isPublish: boolean;
 	}): Promise<ApiResponse<void>> {
-		const response = await httpClient.put<ApiResponse<void>>(
+		const response = await httpClient.post<ApiResponse<void>>(
 			`${this.baseUrl}/publish`,
 			data,
+		);
+		return response.data;
+	}
+
+	// Assign thesis to group
+	async assignToGroup(
+		id: string,
+		groupId: string,
+	): Promise<ApiResponse<Thesis>> {
+		const response = await httpClient.post<ApiResponse<Thesis>>(
+			`${this.baseUrl}/${id}/assign`,
+			{ groupId },
 		);
 		return response.data;
 	}

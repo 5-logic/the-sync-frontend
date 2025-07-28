@@ -6,31 +6,36 @@ import { useEffect, useMemo, useState } from 'react';
 import { ConfirmationModal } from '@/components/common/ConfirmModal';
 import { Header } from '@/components/common/Header';
 import AssignSupervisorModal from '@/components/features/lecturer/AssignSupervisor/AssignSupervisorModal';
-import GroupOverviewTable from '@/components/features/lecturer/AssignSupervisor/GroupOverviewTable';
 import {
+	TABLE_WIDTHS,
 	baseColumns,
 	createActionRenderer,
 	createSupervisorRenderer,
 } from '@/components/features/lecturer/AssignSupervisor/SupervisorColumns';
 import SupervisorFilterBar from '@/components/features/lecturer/AssignSupervisor/SupervisorFilterBar';
+import ThesisOverviewTable from '@/components/features/lecturer/AssignSupervisor/ThesisOverviewTable';
 import { useAssignSupervisor } from '@/hooks/lecturer/useAssignSupervisor';
+import { useCurrentSemester } from '@/hooks/semester';
 import { type SupervisorAssignmentData } from '@/store/useAssignSupervisorStore';
 import { useDraftAssignmentStore } from '@/store/useDraftAssignmentStore';
+import { useSemesterStore } from '@/store/useSemesterStore';
+import { useSupervisionStore } from '@/store/useSupervisionStore';
 
 /**
  * Main component for assigning supervisors to thesis groups
  */
 
 export default function AssignSupervisors() {
+	// Get current semester for default filter
+	const { currentSemester } = useCurrentSemester();
+
 	const [search, setSearch] = useState('');
 	const [selectedGroup, setSelectedGroup] =
 		useState<SupervisorAssignmentData | null>(null);
 	const [modalOpen, setModalOpen] = useState(false);
 	const [saveDraftLoading, setSaveDraftLoading] = useState(false);
 	const [assignNowLoading, setAssignNowLoading] = useState(false);
-	const [statusFilter, setStatusFilter] = useState<
-		'All' | 'Finalized' | 'Incomplete' | 'Unassigned'
-	>('All');
+	const [semesterFilter, setSemesterFilter] = useState<string>('All');
 
 	const {
 		data,
@@ -45,11 +50,34 @@ export default function AssignSupervisors() {
 		changeSupervisor,
 	} = useAssignSupervisor();
 
+	// Semester store for real semester data
+	const { semesters, fetchSemesters } = useSemesterStore();
+
+	// Supervision store for getting change supervisor errors
+	const { lastError: supervisionError } = useSupervisionStore();
+
+	// Set default semester filter when current semester is available
+	useEffect(() => {
+		if (currentSemester && semesterFilter === 'All') {
+			setSemesterFilter(currentSemester.id);
+		}
+	}, [currentSemester, semesterFilter]);
+
 	// Manual fetch on component mount
 	useEffect(() => {
-		// Always try to fetch data, but cache logic in store will determine if API call is needed
+		// Fetch semesters and initial data
+		fetchSemesters();
 		fetchData();
-	}, [fetchData]);
+	}, [fetchData, fetchSemesters]);
+
+	// Fetch data when semester filter changes
+	useEffect(() => {
+		if (semesterFilter === 'All') {
+			fetchData(true); // Force refresh for all semesters
+		} else {
+			fetchData(true, semesterFilter); // Force refresh for specific semester
+		}
+	}, [semesterFilter, fetchData]);
 
 	// Draft and bulk assignment stores
 	const {
@@ -82,76 +110,59 @@ export default function AssignSupervisors() {
 	// Helper function to get draft assignments list from state
 	const getDraftsList = () => Object.values(draftAssignments);
 
+	// Create semester options with "All" option
+	const semesterOptions = useMemo(() => {
+		const semesterChoices = semesters.map((semester) => ({
+			value: semester.id,
+			label: semester.name,
+		}));
+		return [{ value: 'All', label: 'All Semesters' }, ...semesterChoices];
+	}, [semesters]);
+
 	const filteredData = useMemo(() => {
 		return data.filter((item) => {
 			const searchText = search.toLowerCase();
-			const matchesSearch = [item.groupName, item.thesisTitle].some((field) =>
-				field.toLowerCase().includes(searchText),
+			const matchesSearch = [item.abbreviation, item.thesisTitle].some(
+				(field) => field.toLowerCase().includes(searchText),
 			);
-			const matchesStatus =
-				statusFilter === 'All' || item.status === statusFilter;
-			return matchesSearch && matchesStatus;
+			// Semester filtering is now handled server-side
+			return matchesSearch;
 		});
-	}, [data, search, statusFilter]);
+	}, [data, search]);
 
 	/**
-	 * Handle bulk assignment of all draft assignments using intelligent assignment
+	 * Handle bulk assignment of all draft assignments using single API call
 	 */
 	const handleBulkAssignment = async (): Promise<void> => {
 		const drafts = getDraftsList();
 
-		// Filter out drafts for finalized theses
+		// Filter out drafts for theses with 2 supervisors (finalized)
 		const validDrafts = drafts.filter((draft) => {
 			const thesis = data.find((item) => item.thesisId === draft.thesisId);
-			return thesis?.status !== 'Finalized';
+			return thesis && thesis.supervisors.length < 2;
 		});
 
 		if (validDrafts.length === 0) {
 			return;
 		}
 
-		// Process each draft using intelligent assignment
-		let allSuccessful = true;
-		const successfulDrafts: typeof validDrafts = [];
+		// Prepare assignments for bulk API call
+		const assignments = validDrafts.map((draft) => ({
+			thesisId: draft.thesisId,
+			lecturerIds: draft.lecturerIds,
+		}));
 
-		for (const draft of validDrafts) {
-			const thesis = data.find((item) => item.thesisId === draft.thesisId);
-			if (!thesis) continue;
+		// Use store's bulk assignment function with single API call
+		const success = await bulkAssignSupervisors(assignments, false);
 
-			const currentSupervisorIds = thesis.supervisorDetails.map((s) => s.id);
-			const newSupervisorIds = draft.lecturerIds;
-
-			// Use intelligent assignment with silent mode for bulk operations
-			const success = await handleIntelligentAssignment(
-				currentSupervisorIds,
-				newSupervisorIds,
-				draft.thesisId,
-			);
-
-			if (success) {
-				successfulDrafts.push(draft);
-			} else {
-				allSuccessful = false;
-			}
-		}
-
-		// Clear only the successful drafts
-		successfulDrafts.forEach((draft) => {
-			removeDraftAssignment(draft.thesisId);
-		});
-
-		// Show notification about results
-		if (allSuccessful) {
-			notification.success({
-				message: 'Success',
-				description: `All ${validDrafts.length} assignments completed successfully`,
-			});
-		} else {
-			notification.warning({
-				message: 'Partial Success',
-				description: `${successfulDrafts.length}/${validDrafts.length} assignments completed successfully`,
+		if (success) {
+			// Clear all successful drafts
+			validDrafts.forEach((draft) => {
+				removeDraftAssignment(draft.thesisId);
 			});
 		}
+
+		// Note: Notifications are handled by the store
 	};
 
 	/**
@@ -269,7 +280,7 @@ export default function AssignSupervisors() {
 		addDraftAssignment({
 			thesisId: selectedGroup.thesisId,
 			thesisTitle: selectedGroup.thesisTitle,
-			groupName: selectedGroup.groupName,
+			groupName: selectedGroup.abbreviation,
 			lecturerIds: supervisorIds,
 			lecturerNames,
 		});
@@ -283,8 +294,8 @@ export default function AssignSupervisors() {
 
 		setSaveDraftLoading(true);
 
-		// Don't allow drafts for finalized assignments
-		if (selectedGroup.status === 'Finalized') {
+		// Don't allow drafts for theses with 2 supervisors (finalized)
+		if (selectedGroup.supervisors.length >= 2) {
 			setSaveDraftLoading(false);
 			return;
 		}
@@ -343,10 +354,12 @@ export default function AssignSupervisors() {
 					description: 'Supervisor assignment completed successfully',
 				});
 			} else {
-				// Show error notification for failed assignments
+				// Show error notification with the actual error from supervision store
+				const errorMessage =
+					supervisionError || error || 'Failed to change supervisor assignment';
 				notification.error({
 					message: 'Error',
-					description: 'Failed to change supervisor assignment',
+					description: errorMessage,
 				});
 			}
 		} catch {
@@ -391,10 +404,12 @@ export default function AssignSupervisors() {
 					description: 'Supervisor assignment completed successfully',
 				});
 			} else {
-				// Show error notification for failed assignments
+				// Show error notification with the actual error from supervision store
+				const errorMessage =
+					supervisionError || error || 'Failed to assign supervisors';
 				notification.error({
 					message: 'Error',
-					description: 'Failed to assign supervisors',
+					description: errorMessage,
 				});
 			}
 		} catch {
@@ -410,10 +425,10 @@ export default function AssignSupervisors() {
 	const handleBulkAssignmentConfirm = (): void => {
 		const drafts = getDraftsList();
 
-		// Filter out drafts for finalized theses
+		// Filter out drafts for theses with 2 supervisors (finalized)
 		const validDrafts = drafts.filter((draft) => {
 			const thesis = data.find((item) => item.thesisId === draft.thesisId);
-			return thesis?.status !== 'Finalized';
+			return thesis && thesis.supervisors.length < 2;
 		});
 
 		ConfirmationModal.show({
@@ -429,12 +444,12 @@ export default function AssignSupervisors() {
 		});
 	};
 
-	// Calculate valid draft count (exclude finalized theses)
+	// Calculate valid draft count (exclude theses with 2 supervisors)
 	const validDraftCount = useMemo(() => {
 		const drafts = Object.values(draftAssignments);
 		const validCount = drafts.filter((draft) => {
 			const thesis = data.find((item) => item.thesisId === draft.thesisId);
-			return thesis?.status !== 'Finalized';
+			return thesis && thesis.supervisors.length < 2;
 		}).length;
 		return validCount;
 	}, [data, draftAssignments]);
@@ -474,6 +489,8 @@ export default function AssignSupervisors() {
 			{
 				title: 'Action',
 				key: 'action',
+				width: TABLE_WIDTHS.ACTIONS,
+				align: 'center' as const,
 				render: actionRenderer,
 			},
 		];
@@ -527,16 +544,17 @@ export default function AssignSupervisors() {
 			<SupervisorFilterBar
 				search={search}
 				onSearchChange={setSearch}
-				status={statusFilter}
-				onStatusChange={setStatusFilter}
+				semester={semesterFilter}
+				onSemesterChange={setSemesterFilter}
 				onRefresh={refreshData}
 				refreshing={refreshing}
 				onAssignAllDrafts={handleBulkAssignmentConfirm}
 				draftCount={validDraftCount}
 				updating={updating}
+				semesterOptions={semesterOptions}
 			/>
 
-			<GroupOverviewTable
+			<ThesisOverviewTable
 				data={filteredData}
 				columns={columns}
 				loading={loading}
@@ -554,13 +572,15 @@ export default function AssignSupervisors() {
 				initialValues={getModalInitialValues()}
 				onSaveDraft={handleSaveDraft}
 				onAssignNow={
-					selectedGroup?.status === 'Finalized'
+					selectedGroup && selectedGroup.supervisors.length >= 2
 						? handleAssignNow
 						: handleSingleAssignment
 				}
 				lecturerOptions={lecturerOptions}
 				showAssignNow={true} // Always show assign now button
-				isChangeMode={selectedGroup?.status === 'Finalized'}
+				isChangeMode={
+					selectedGroup ? selectedGroup.supervisors.length === 2 : false
+				}
 			/>
 		</Space>
 	);

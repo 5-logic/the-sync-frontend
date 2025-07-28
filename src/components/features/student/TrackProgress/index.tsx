@@ -9,8 +9,6 @@ import MilestoneStep from '@/components/features/student/TrackProgress/Milestone
 import { useGroupDashboardStore } from '@/store/useGroupDashboardStore';
 
 export default function ProjectProgressPage() {
-	console.log('🎯 TrackProgress component rendered');
-
 	const { group } = useGroupDashboardStore();
 	const thesisId = group?.thesis?.id;
 

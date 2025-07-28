@@ -14,11 +14,7 @@ import {
 export default function MilestoneStep() {
 	const { milestones, loading } = useMilestoneProgress();
 
-	console.log('📊 MilestoneStep - loading:', loading);
-	console.log('📊 MilestoneStep - milestones:', milestones);
-
 	if (loading) {
-		console.log('⏳ MilestoneStep showing loading spinner');
 		return (
 			<Card style={{ marginBottom: 16, textAlign: 'center' }}>
 				<Spin size="small" />
@@ -27,7 +23,6 @@ export default function MilestoneStep() {
 	}
 
 	if (!milestones.length) {
-		console.log('❌ MilestoneStep - no milestones found');
 		return (
 			<Card style={{ marginBottom: 16 }}>
 				<div style={{ textAlign: 'center', color: '#999' }}>

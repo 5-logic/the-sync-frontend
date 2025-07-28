@@ -453,8 +453,8 @@ function SemesterAlerts({
 					<div>
 						<p>
 							{userType === 'lecturer' ? 'Lecturer' : 'Student'} accounts can
-							only be created for semesters with <strong>Preparing</strong> or{' '}
-							<strong>Picking</strong> status.
+							only be created for semesters with <strong>Preparing</strong>{' '}
+							status.
 						</p>
 						<p>
 							Currently, there are no semesters in these statuses available for
@@ -479,10 +479,6 @@ function SemesterAlerts({
 						be created for semesters with
 						<Tag color="orange" style={{ margin: '0 4px' }}>
 							Preparing
-						</Tag>
-						or
-						<Tag color="purple" style={{ margin: '0 4px' }}>
-							Picking
 						</Tag>
 						status.
 					</div>
@@ -548,7 +544,7 @@ function SelectionForm({
 							<Select
 								placeholder={
 									hasAvailableSemesters
-										? 'Select semester (Preparing or Picking status only)'
+										? 'Select semester (Preparing status only)'
 										: 'No available semesters for user creation'
 								}
 								loading={semesterLoading}
@@ -557,7 +553,7 @@ function SelectionForm({
 								disabled={!hasAvailableSemesters}
 								notFoundContent={
 									!semesterLoading && !hasAvailableSemesters
-										? 'No semesters with Preparing or Picking status found'
+										? 'No semesters with Preparing status found'
 										: undefined
 								}
 							>
@@ -798,8 +794,7 @@ export default function ExcelImportForm<
 
 	// Computed values
 	const availableSemesters = semesters.filter(
-		(semester) =>
-			semester.status === 'Preparing' || semester.status === 'Picking',
+		(semester) => semester.status === 'Preparing',
 	);
 	const hasAvailableSemesters = availableSemesters.length > 0;
 
