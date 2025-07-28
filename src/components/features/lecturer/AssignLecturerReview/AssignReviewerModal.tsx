@@ -257,17 +257,10 @@ export default function AssignReviewerModal({
 		return `reviewer2-${reviewer1Value || 'none'}-${renderKey}`;
 	};
 
-	// Get current reviewer IDs for change operations
 	// Compute all available lecturers for dropdowns
 	// In change mode, we need to merge current reviewers with eligible reviewers
 	const allAvailableLecturers = useMemo((): Lecturer[] => {
-		console.log('Computing allAvailableLecturers');
-		console.log('isChangeMode:', isChangeMode);
-		console.log('eligibleLecturers:', eligibleLecturers);
-		console.log('currentReviewers:', currentReviewers);
-
 		if (!isChangeMode) {
-			console.log('Not change mode, returning eligible lecturers');
 			return eligibleLecturers;
 		}
 
@@ -282,15 +275,10 @@ export default function AssignReviewerModal({
 			}
 		});
 
-		console.log('Change mode merged result:', merged);
 		return merged;
 	}, [eligibleLecturers, currentReviewers, isChangeMode]);
 
 	const reviewer1Options = useMemo((): LecturerOption[] => {
-		console.log(
-			'Computing reviewer1Options, allAvailableLecturers:',
-			allAvailableLecturers,
-		);
 		const currentReviewer2 = reviewer2Value;
 		if (currentReviewer2) {
 			const filtered = allAvailableLecturers
@@ -299,14 +287,12 @@ export default function AssignReviewerModal({
 					label: lecturer.fullName,
 					value: lecturer.id,
 				}));
-			console.log('Reviewer1Options (filtered):', filtered);
 			return filtered;
 		}
 		const options = allAvailableLecturers.map((lecturer) => ({
 			label: lecturer.fullName,
 			value: lecturer.id,
 		}));
-		console.log('Reviewer1Options (all):', options);
 		return options;
 	}, [reviewer2Value, allAvailableLecturers]);
 

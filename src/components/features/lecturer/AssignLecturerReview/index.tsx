@@ -1,14 +1,19 @@
 'use client';
 
 import { Space } from 'antd';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { Header } from '@/components/common/Header';
 import AssignReviewerModal from '@/components/features/lecturer/AssignLecturerReview/AssignReviewerModal';
-import DraftReviewerAssignmentsList from '@/components/features/lecturer/AssignLecturerReview/DraftReviewerAssignmentsList';
 import GroupTable, {
 	GroupTableProps,
 } from '@/components/features/lecturer/AssignLecturerReview/GroupTable';
+import {
+	TABLE_WIDTHS,
+	baseColumns,
+	createActionRenderer,
+	createReviewerRenderer,
+} from '@/components/features/lecturer/AssignLecturerReview/ReviewerColumns';
 import SearchFilterBar from '@/components/features/lecturer/AssignLecturerReview/SearchFilterBar';
 import { mockReviews } from '@/data/review';
 import lecturerService from '@/lib/services/lecturers.service';
@@ -27,6 +32,8 @@ export default function AssignLecturerReview() {
 		addDraftReviewerAssignment,
 		getDraftReviewerAssignmentsList,
 		clearAllDraftReviewerDrafts,
+		getDraftReviewerAssignment,
+		removeDraftReviewerAssignment,
 	} = useDraftReviewerAssignmentStore();
 	const [updating, setUpdating] = useState(false);
 	const [selectedGroup, setSelectedGroup] = useState<GroupTableProps | null>(
@@ -184,6 +191,65 @@ export default function AssignLecturerReview() {
 		}
 	};
 
+	// Calculate draft count for force re-render
+	const draftCount = getDraftReviewerAssignmentsList().length;
+
+	// Memoized columns to prevent unnecessary re-renders
+	// Include draftCount to force re-render when drafts change
+	const columns = useMemo(() => {
+		// Create custom reviewer renderer with draft support
+		const reviewerRenderer = createReviewerRenderer(getDraftReviewerAssignment);
+
+		// Create custom action renderer with draft delete support
+		const actionRenderer = createActionRenderer(
+			(record) => {
+				// Find the full group object from submissions to match FullMockGroup type
+				const submission = submissions.find((s) => s.group.id === record.id);
+				if (submission) {
+					const submissionGroup = submission.group;
+					setSelectedGroup({
+						...submissionGroup,
+						title: submission.thesis?.englishName || '',
+						phase: String(submission.milestone),
+						supervisors: submission.thesis?.supervisors || [],
+						reviewers: submission.reviewLecturers,
+						submissionId: submission.id,
+					});
+				}
+			},
+			getDraftReviewerAssignment,
+			removeDraftReviewerAssignment,
+		);
+
+		// Filter base columns to replace reviewer column
+		const baseColumnsWithDrafts = baseColumns.map((column) => {
+			if (column.key === 'reviewers') {
+				return {
+					...column,
+					render: reviewerRenderer,
+				};
+			}
+			return column;
+		});
+
+		return [
+			...baseColumnsWithDrafts,
+			{
+				title: 'Action',
+				key: 'action',
+				width: TABLE_WIDTHS.ACTIONS,
+				align: 'center' as const,
+				render: actionRenderer,
+			},
+		];
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [
+		submissions,
+		getDraftReviewerAssignment,
+		removeDraftReviewerAssignment,
+		draftCount,
+	]);
+
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
 			<Header
@@ -244,25 +310,9 @@ export default function AssignLecturerReview() {
 				updating={updating}
 			/>
 
-			<DraftReviewerAssignmentsList />
-
 			<GroupTable
 				groups={filteredGroups}
-				onAssign={(group: GroupTableProps) => {
-					// Find the full group object from submissions to match FullMockGroup type
-					const submission = submissions.find((s) => s.group.id === group.id);
-					if (submission) {
-						const submissionGroup = submission.group;
-						setSelectedGroup({
-							...submissionGroup,
-							title: submission.thesis?.englishName || '',
-							phase: String(submission.milestone),
-							supervisors: submission.thesis?.supervisors || [],
-							reviewers: submission.reviewLecturers,
-							submissionId: submission.id,
-						});
-					}
-				}}
+				columns={columns}
 				loading={loadingSubmissions}
 				noMilestone={milestone === 'NO_MILESTONE'}
 			/>
@@ -280,10 +330,10 @@ export default function AssignLecturerReview() {
 				onReloadSubmission={reloadSubmissionById}
 				onSaveDraft={(mainReviewerId, secondaryReviewerId) => {
 					if (!selectedGroup) return;
-					const submission = filteredGroups.find(
-						(g) => g.id === selectedGroup.id && g.phase === milestone,
-					);
-					if (!submission) return;
+
+					// Use selectedGroup's submissionId directly since it was set correctly in onAssign
+					const submissionId = selectedGroup.submissionId;
+					if (!submissionId) return;
 
 					const mainReviewerName = mainReviewerId
 						? lecturers.find((l) => l.id === mainReviewerId)?.fullName
@@ -293,7 +343,7 @@ export default function AssignLecturerReview() {
 						: undefined;
 
 					addDraftReviewerAssignment({
-						submissionId: submission.id,
+						submissionId: submissionId,
 						thesisTitle: selectedGroup.title,
 						groupName: selectedGroup.name,
 						mainReviewerId,

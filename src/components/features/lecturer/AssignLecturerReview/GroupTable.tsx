@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Table } from 'antd';
+import { Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 
 import { TablePagination } from '@/components/common/TablePagination';
@@ -16,77 +16,20 @@ export interface GroupTableProps {
 	submissionId?: string;
 	phase?: string;
 }
+
 interface Props {
 	groups: GroupTableProps[];
-	onAssign: (group: GroupTableProps) => void;
+	columns: ColumnsType<GroupTableProps>;
 	loading?: boolean;
 	noMilestone?: boolean;
 }
 
 export default function GroupTable({
 	groups,
-	onAssign,
+	columns,
 	loading,
 	noMilestone,
 }: Readonly<Props>) {
-	const columns: ColumnsType<GroupTableProps> = [
-		{
-			title: 'Group Code',
-			dataIndex: 'code',
-			key: 'code',
-		},
-		{
-			title: 'Group Name',
-			dataIndex: 'name',
-			key: 'name',
-		},
-		{
-			title: 'English Name',
-			dataIndex: 'title',
-			key: 'title',
-			width: 500,
-		},
-		{
-			title: 'Supervisors',
-			key: 'supervisors',
-			render: (_, record) => (
-				<div>
-					{record.supervisors && record.supervisors.length > 0
-						? record.supervisors.map((lecturer, idx) => (
-								<div key={idx}>{lecturer.fullName}</div>
-							))
-						: ''}
-				</div>
-			),
-		},
-		{
-			title: 'Reviewers',
-			key: 'reviewers',
-			render: (_, record) => (
-				<div>
-					{record.reviewers && record.reviewers.length > 0
-						? record.reviewers.map((lecturer, idx) => (
-								<div key={idx}>{lecturer.fullName}</div>
-							))
-						: ''}
-				</div>
-			),
-		},
-
-		{
-			title: 'Action',
-			key: 'action',
-			align: 'center',
-			render: (_, record) => (
-				<Button type="primary" onClick={() => onAssign(record)}>
-					{record.reviewers && record.reviewers.length > 0
-						? 'Change'
-						: 'Assign'}
-				</Button>
-			),
-		},
-	];
-
 	return (
 		<Table<GroupTableProps>
 			rowKey="id"
