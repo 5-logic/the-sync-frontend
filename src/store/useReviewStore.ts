@@ -3,8 +3,6 @@ import { create } from 'zustand';
 import {
 	AssignBulkReviewersDto,
 	AssignBulkReviewersResult,
-	ChangeReviewerDto,
-	ChangeReviewerResult,
 	Lecturer,
 	reviewService,
 } from '@/lib/services/review.service';
@@ -20,10 +18,6 @@ export interface ReviewStoreState {
 	assignBulkReviewers?: (
 		dto: AssignBulkReviewersDto,
 	) => Promise<AssignBulkReviewersResult | null>;
-	changeReviewer?: (
-		submissionId: string,
-		dto: ChangeReviewerDto,
-	) => Promise<ChangeReviewerResult | null>;
 }
 
 // Initialize cache for eligible reviewers
@@ -114,42 +108,6 @@ export const useReviewStore = create<ReviewStoreState>(() => ({
 			}
 			// Handle other types of errors (network, etc.)
 			throw new Error('Failed to assign reviewers');
-		}
-	},
-
-	async changeReviewer(submissionId, dto) {
-		try {
-			const res = await reviewService.changeReviewer(submissionId, dto);
-			if (res.success && res.data) {
-				// Don't show notification here as it's handled in the component
-				return res.data;
-			} else {
-				// Handle error response - res is the error case with { success: false, statusCode: number, error: string }
-				const errorResponse = res as {
-					success: false;
-					statusCode: number;
-					error: string;
-				};
-				throw new Error(errorResponse.error || 'Failed to change reviewer');
-			}
-		} catch (error) {
-			// Check if it's an axios error with response data
-			if (error && typeof error === 'object' && 'response' in error) {
-				const axiosError = error as {
-					response?: { data?: { error?: string } };
-				};
-				if (axiosError.response?.data?.error) {
-					// Extract the actual backend error message
-					throw new Error(axiosError.response.data.error);
-				}
-			}
-
-			// If it's already an Error object, re-throw it
-			if (error instanceof Error) {
-				throw error;
-			}
-			// Handle other types of errors (network, etc.)
-			throw new Error('Failed to change reviewer');
 		}
 	},
 }));

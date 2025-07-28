@@ -7,7 +7,6 @@ import { FormLabel } from '@/components/common/FormLabel';
 import { GroupTableProps } from '@/components/features/lecturer/AssignLecturerReview/GroupTable';
 import {
 	AssignBulkReviewersResult,
-	ChangeReviewerResult,
 	Lecturer,
 } from '@/lib/services/review.service';
 import { showNotification } from '@/lib/utils/notification';
@@ -23,9 +22,7 @@ export interface Props {
 	readonly loading?: boolean;
 	readonly saveDraftLoading?: boolean;
 	readonly onCancel: () => void;
-	readonly onAssign: (
-		result: AssignBulkReviewersResult | ChangeReviewerResult | null,
-	) => void;
+	readonly onAssign: (result: AssignBulkReviewersResult | null) => void;
 	readonly onSaveDraft?: (
 		mainReviewerId?: string,
 		secondaryReviewerId?: string,
@@ -41,17 +38,18 @@ export interface Props {
  * Key Features:
  * - Uses eligible reviewers API (/reviews/{submissionId}/eligible-reviewers) for smart filtering
  * - API automatically excludes supervisors and already assigned reviewers
- * - Supports both new assignment and change reviewer operations
+ * - Supports both new assignment and change reviewer operations using bulk assign API
  * - Main reviewer (isMainReviewer: true) and Secondary reviewer (isMainReviewer: false)
  * - In change mode, shows currently assigned reviewers alongside eligible ones
  * - Prevents duplicate selections between main and secondary reviewers
  * - Save draft functionality with proper validation
  *
  * Business Logic:
+ * - Both Assign and Change Mode: Uses bulk assign API (POST /reviews/assign-reviewer) for all operations
  * - Assign Mode: Uses eligible reviewers API to get available lecturers
  * - Change Mode: Merges current reviewers with eligible reviewers for complete display
  * - Validation: Ensures main and secondary reviewers are different
- * - API Integration: Uses new bulk assignment format with reviewer roles
+ * - API Integration: Uses bulk assignment format with reviewer roles for both assign and change operations
  */
 export default function AssignReviewerModal({
 	open,
@@ -77,16 +75,14 @@ export default function AssignReviewerModal({
 
 	// Internal loading states for better control
 	const [assignLoading, setAssignLoading] = useState(false);
-	const [changeLoading, setChangeLoading] = useState(false);
 
 	// Computed loading states
-	const isOperationLoading = assignLoading || changeLoading;
+	const isOperationLoading = assignLoading;
 	const isAnyLoading =
 		loading || saveDraftLoading || fetchLoading || isOperationLoading;
 
 	// Store actions
 	const assignBulkReviewers = useReviewStore((s) => s.assignBulkReviewers);
-	const changeReviewer = useReviewStore((s) => s.changeReviewer);
 	const getEligibleReviewers = useReviewStore((s) => s.getEligibleReviewers);
 
 	// Watch form values to compute options reactively
@@ -259,11 +255,6 @@ export default function AssignReviewerModal({
 			setRenderKey((prev) => prev + 1);
 		}
 	}, [open, loading, isInitialized]);
-	const getCurrentReviewerIds = (): string[] => {
-		if (!isChangeMode) return [];
-		const { reviewer1Id, reviewer2Id } = getInitialReviewerValues();
-		return [reviewer1Id, reviewer2Id].filter(Boolean) as string[];
-	};
 
 	// Generate stable keys for Select components
 	const getReviewer1Key = (): string => {
@@ -385,75 +376,7 @@ export default function AssignReviewerModal({
 			return;
 		}
 
-		try {
-			if (isChangeMode && changeReviewer) {
-				await handleChangeReviewers(selected);
-			} else if (!isChangeMode && assignBulkReviewers) {
-				await handleAssignReviewers(selected);
-			}
-		} catch (error) {
-			// Error is already handled in the specific handler methods
-			// No need to show notification here to avoid duplicates
-			console.error('Failed to assign/change reviewers:', error);
-		}
-	};
-
-	const handleChangeReviewers = async (selected: string[]) => {
-		if (!group?.submissionId || !changeReviewer) {
-			showNotification.error(
-				'Operation Failed',
-				'Unable to change reviewers. Missing required data.',
-			);
-			return;
-		}
-
-		const currentReviewerIds = getCurrentReviewerIds();
-		if (currentReviewerIds.length !== 2) {
-			showNotification.error(
-				'Invalid Current State',
-				'Current reviewer assignment is incomplete.',
-			);
-			return;
-		}
-
-		setChangeLoading(true);
-
-		try {
-			const results: ChangeReviewerResult[] = [];
-			for (let i = 0; i < 2; i++) {
-				if (currentReviewerIds[i] !== selected[i]) {
-					const result = await changeReviewer(group.submissionId, {
-						currentReviewerId: currentReviewerIds[i],
-						newReviewerId: selected[i],
-					});
-					if (result) results.push(result);
-				}
-			}
-
-			if (results.length > 0) {
-				showNotification.success(
-					'Reviewers Changed Successfully',
-					`Successfully updated ${results.length} reviewer${results.length > 1 ? 's' : ''} for the group.`,
-				);
-
-				if (onReloadSubmission) onReloadSubmission(group.submissionId);
-				onAssign(results[0]);
-			} else {
-				showNotification.info(
-					'No Changes Made',
-					'The selected reviewers are the same as current assignments.',
-				);
-				onAssign(null);
-			}
-		} catch (error) {
-			console.error('Failed to change reviewers:', error);
-			const errorMessage =
-				error instanceof Error ? error.message : 'Failed to change reviewers';
-			showNotification.error('Change Reviewers Failed', errorMessage);
-			// Don't re-throw error to prevent double notifications
-		} finally {
-			setChangeLoading(false);
-		}
+		await handleAssignReviewers(selected);
 	};
 
 	const handleAssignReviewers = async (selected: string[]) => {
@@ -493,25 +416,37 @@ export default function AssignReviewerModal({
 			});
 
 			if (result) {
+				const operationType = isChangeMode ? 'changed' : 'assigned';
+				const operationTitle = isChangeMode
+					? 'Reviewers Changed Successfully'
+					: 'Reviewers Assigned Successfully';
+
 				showNotification.success(
-					'Reviewers Assigned Successfully',
-					`Successfully assigned ${reviewerAssignments.length} reviewer${reviewerAssignments.length > 1 ? 's' : ''} to the group.`,
+					operationTitle,
+					`Successfully ${operationType} ${reviewerAssignments.length} reviewer${reviewerAssignments.length > 1 ? 's' : ''} ${isChangeMode ? 'for' : 'to'} the group.`,
 				);
 
 				if (onReloadSubmission) onReloadSubmission(group.submissionId);
 				onAssign(result);
 			} else {
+				const operationType = isChangeMode ? 'change' : 'assign';
 				showNotification.error(
-					'Assignment Failed',
-					'Failed to assign reviewers. Please try again.',
+					`${operationType.charAt(0).toUpperCase() + operationType.slice(1)} Failed`,
+					`Failed to ${operationType} reviewers. Please try again.`,
 				);
 				onAssign(null);
 			}
 		} catch (error) {
-			console.error('Failed to assign reviewers:', error);
+			console.error('Failed to assign/change reviewers:', error);
+			const operationType = isChangeMode ? 'change' : 'assign';
 			const errorMessage =
-				error instanceof Error ? error.message : 'Failed to assign reviewers';
-			showNotification.error('Assign Reviewers Failed', errorMessage);
+				error instanceof Error
+					? error.message
+					: `Failed to ${operationType} reviewers`;
+			showNotification.error(
+				`${operationType.charAt(0).toUpperCase() + operationType.slice(1)} Reviewers Failed`,
+				errorMessage,
+			);
 			// Don't re-throw error to prevent double notifications
 		} finally {
 			setAssignLoading(false);
@@ -607,7 +542,7 @@ export default function AssignReviewerModal({
 			key="submit"
 			type="primary"
 			onClick={handleFinish}
-			loading={isChangeMode ? changeLoading : assignLoading}
+			loading={assignLoading}
 			disabled={isAnyLoading}
 		>
 			{isChangeMode ? 'Change' : 'Assign'}
