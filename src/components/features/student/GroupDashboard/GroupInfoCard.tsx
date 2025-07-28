@@ -84,6 +84,9 @@ export default memo(function GroupInfoCard({
 	const canModifyGroup =
 		localGroup.semester.status === 'Preparing' && !hasThesisOrSubmissions;
 
+	// Check if semester is in PREPARING status (can leave group and invite members even with thesis)
+	const canLeaveOrInvite = localGroup.semester.status === 'Preparing';
+
 	// Check if semester is NOT in PREPARING status - hide action buttons
 	const shouldHideActionButtons = localGroup.semester.status !== 'Preparing';
 
@@ -92,7 +95,7 @@ export default memo(function GroupInfoCard({
 
 	// Helper function to get Leave Group button title
 	const getLeaveGroupButtonTitle = () => {
-		if (!canModifyGroup) {
+		if (!canLeaveOrInvite) {
 			return 'Cannot leave group during this semester status';
 		}
 		if (isCurrentUserLeader && localGroup.members.length > 1) {
@@ -106,17 +109,19 @@ export default memo(function GroupInfoCard({
 
 	// Helper function to get Delete Group button title
 	const getDeleteGroupButtonTitle = () => {
-		if (!canModifyGroup) {
-			return 'Cannot delete group during this semester status';
-		}
+		// Check thesis/submissions first (more specific reason)
 		if (hasThesisOrSubmissions) {
 			return 'Cannot delete group with thesis or submissions';
+		}
+		// Then check semester status
+		if (localGroup.semester.status !== 'Preparing') {
+			return 'Cannot delete group during this semester status';
 		}
 		return 'Delete this group permanently';
 	};
 
 	const handleLeaveGroup = async () => {
-		if (!canModifyGroup) {
+		if (!canLeaveOrInvite) {
 			showNotification.error(
 				'Cannot Leave Group',
 				'Cannot leave group. Semester is not in PREPARING status.',
@@ -159,18 +164,20 @@ export default memo(function GroupInfoCard({
 	};
 
 	const handleDeleteGroup = async () => {
-		if (!canModifyGroup) {
-			showNotification.error(
-				'Cannot Delete Group',
-				'Cannot delete group. Semester is not in PREPARING status.',
-			);
-			return;
-		}
-
+		// Check thesis/submissions first (more specific reason)
 		if (hasThesisOrSubmissions) {
 			showNotification.error(
 				'Cannot Delete Group',
 				'Cannot delete group that has assigned thesis or submissions.',
+			);
+			return;
+		}
+
+		// Then check semester status
+		if (localGroup.semester.status !== 'Preparing') {
+			showNotification.error(
+				'Cannot Delete Group',
+				'Cannot delete group. Semester is not in PREPARING status.',
 			);
 			return;
 		}
@@ -195,7 +202,7 @@ export default memo(function GroupInfoCard({
 
 	// Helper function to get Invite Members button title
 	const getInviteMembersButtonTitle = () => {
-		if (!canModifyGroup) {
+		if (!canLeaveOrInvite) {
 			return 'Cannot invite members during this semester status';
 		}
 		if (hasReachedMaxMembers) {
@@ -206,7 +213,7 @@ export default memo(function GroupInfoCard({
 
 	const showLeaveGroupConfirm = () => {
 		const canLeave =
-			canModifyGroup &&
+			canLeaveOrInvite &&
 			!(isCurrentUserLeader && localGroup.members.length > 1) &&
 			!isOnlyMember;
 
@@ -215,7 +222,7 @@ export default memo(function GroupInfoCard({
 			canLeave,
 			isCurrentUserLeader,
 			isOnlyMember,
-			canModifyGroup,
+			canLeaveOrInvite,
 			handleLeaveGroup,
 			isLeaving,
 		);
@@ -386,7 +393,7 @@ export default memo(function GroupInfoCard({
 									danger
 									loading={isLeaving}
 									disabled={
-										!canModifyGroup ||
+										!canLeaveOrInvite ||
 										(isCurrentUserLeader && localGroup.members.length > 1) ||
 										isOnlyMember
 									}
@@ -414,7 +421,7 @@ export default memo(function GroupInfoCard({
 									<Button
 										type="primary"
 										onClick={() => setIsInviteDialogVisible(true)}
-										disabled={!canModifyGroup || hasReachedMaxMembers}
+										disabled={!canLeaveOrInvite || hasReachedMaxMembers}
 										title={getInviteMembersButtonTitle()}
 									>
 										Invite Members
