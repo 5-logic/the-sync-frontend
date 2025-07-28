@@ -45,16 +45,19 @@ export default function GroupSearchTable<
 			title: 'Group Name',
 			dataIndex: 'name',
 			key: 'name',
+			responsive: ['xs', 'sm', 'md', 'lg', 'xl'],
 		},
 		{
 			title: 'Group Code',
 			dataIndex: 'code',
 			key: 'code',
+			responsive: ['sm', 'md', 'lg', 'xl'],
 		},
 		{
 			title: 'English Name',
 			key: 'englishName',
 			width: 500,
+			responsive: ['md', 'lg', 'xl'],
 			render: (_, record) => {
 				// Handle SupervisedGroup type with thesis.englishName
 				if ('thesis' in record && record.thesis?.englishName) {
@@ -71,12 +74,14 @@ export default function GroupSearchTable<
 			title: 'Project Direction',
 			dataIndex: 'projectDirection',
 			key: 'projectDirection',
+			responsive: ['lg', 'xl'],
 			render: (value: string) => value || '-',
 		},
 
 		{
 			title: 'Members',
 			key: 'memberCount',
+			responsive: ['sm', 'md', 'lg', 'xl'],
 			render: (_, record) => {
 				// Handle SupervisedGroup type with studentGroupParticipations
 				if (
@@ -101,6 +106,8 @@ export default function GroupSearchTable<
 			title: 'Actions',
 			align: 'center',
 			key: 'actions',
+			responsive: ['xs', 'sm', 'md', 'lg', 'xl'],
+			width: 80,
 			render: (_, record) => (
 				<Button
 					type="link"
@@ -158,7 +165,7 @@ export default function GroupSearchTable<
 					record.id === selectedGroup?.id ? 'ant-table-row-selected' : ''
 				}
 				size="middle"
-				tableLayout="fixed"
+				scroll={{ x: 800 }} // Enable horizontal scroll on small screens
 				locale={{
 					emptyText: loading ? '' : 'No data available',
 				}}
