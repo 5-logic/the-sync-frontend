@@ -21,11 +21,13 @@ const { Title, Text } = Typography;
 interface GroupInfoCardProps {
 	readonly group: GroupDashboard;
 	readonly viewOnly?: boolean;
+	readonly isDashboardView?: boolean;
 }
 
 export default memo(function GroupInfoCard({
 	group,
 	viewOnly = false,
+	isDashboardView = false,
 }: GroupInfoCardProps) {
 	const [isInviteDialogVisible, setIsInviteDialogVisible] = useState(false);
 	const [isEditDialogVisible, setIsEditDialogVisible] = useState(false);
@@ -84,6 +86,9 @@ export default memo(function GroupInfoCard({
 	const canModifyGroup =
 		localGroup.semester.status === 'Preparing' && !hasThesisOrSubmissions;
 
+	// Check if semester is in PREPARING status (can leave group and invite members even with thesis)
+	const canLeaveOrInvite = localGroup.semester.status === 'Preparing';
+
 	// Check if semester is NOT in PREPARING status - hide action buttons
 	const shouldHideActionButtons = localGroup.semester.status !== 'Preparing';
 
@@ -92,7 +97,7 @@ export default memo(function GroupInfoCard({
 
 	// Helper function to get Leave Group button title
 	const getLeaveGroupButtonTitle = () => {
-		if (!canModifyGroup) {
+		if (!canLeaveOrInvite) {
 			return 'Cannot leave group during this semester status';
 		}
 		if (isCurrentUserLeader && localGroup.members.length > 1) {
@@ -106,17 +111,19 @@ export default memo(function GroupInfoCard({
 
 	// Helper function to get Delete Group button title
 	const getDeleteGroupButtonTitle = () => {
-		if (!canModifyGroup) {
-			return 'Cannot delete group during this semester status';
-		}
+		// Check thesis/submissions first (more specific reason)
 		if (hasThesisOrSubmissions) {
 			return 'Cannot delete group with thesis or submissions';
+		}
+		// Then check semester status
+		if (localGroup.semester.status !== 'Preparing') {
+			return 'Cannot delete group during this semester status';
 		}
 		return 'Delete this group permanently';
 	};
 
 	const handleLeaveGroup = async () => {
-		if (!canModifyGroup) {
+		if (!canLeaveOrInvite) {
 			showNotification.error(
 				'Cannot Leave Group',
 				'Cannot leave group. Semester is not in PREPARING status.',
@@ -159,18 +166,20 @@ export default memo(function GroupInfoCard({
 	};
 
 	const handleDeleteGroup = async () => {
-		if (!canModifyGroup) {
-			showNotification.error(
-				'Cannot Delete Group',
-				'Cannot delete group. Semester is not in PREPARING status.',
-			);
-			return;
-		}
-
+		// Check thesis/submissions first (more specific reason)
 		if (hasThesisOrSubmissions) {
 			showNotification.error(
 				'Cannot Delete Group',
 				'Cannot delete group that has assigned thesis or submissions.',
+			);
+			return;
+		}
+
+		// Then check semester status
+		if (localGroup.semester.status !== 'Preparing') {
+			showNotification.error(
+				'Cannot Delete Group',
+				'Cannot delete group. Semester is not in PREPARING status.',
 			);
 			return;
 		}
@@ -195,7 +204,7 @@ export default memo(function GroupInfoCard({
 
 	// Helper function to get Invite Members button title
 	const getInviteMembersButtonTitle = () => {
-		if (!canModifyGroup) {
+		if (!canLeaveOrInvite) {
 			return 'Cannot invite members during this semester status';
 		}
 		if (hasReachedMaxMembers) {
@@ -206,7 +215,7 @@ export default memo(function GroupInfoCard({
 
 	const showLeaveGroupConfirm = () => {
 		const canLeave =
-			canModifyGroup &&
+			canLeaveOrInvite &&
 			!(isCurrentUserLeader && localGroup.members.length > 1) &&
 			!isOnlyMember;
 
@@ -215,7 +224,7 @@ export default memo(function GroupInfoCard({
 			canLeave,
 			isCurrentUserLeader,
 			isOnlyMember,
-			canModifyGroup,
+			canLeaveOrInvite,
 			handleLeaveGroup,
 			isLeaving,
 		);
@@ -234,12 +243,39 @@ export default memo(function GroupInfoCard({
 		);
 	};
 
+	const handleCardClick = () => {
+		if (isDashboardView) {
+			router.push('/student/group-dashboard');
+		}
+	};
+
 	return (
 		<Spin spinning={isRefreshing} tip="Refreshing group information...">
-			<Card className="bg-white border border-gray-200 rounded-md">
+			<Card
+				className="bg-white border border-gray-200 rounded-md"
+				hoverable={isDashboardView}
+			>
 				<div className="pb-4">
 					<div className="flex justify-between items-center">
-						<Title level={4} className="text-base font-bold text-gray-600 mb-3">
+						<Title
+							level={4}
+							className="text-base font-bold text-gray-600 mb-3"
+							onClick={handleCardClick}
+							style={{
+								cursor: isDashboardView ? 'pointer' : 'default',
+								transition: 'color 0.2s ease',
+							}}
+							onMouseEnter={(e) => {
+								if (isDashboardView) {
+									e.currentTarget.style.color = '#1890ff';
+								}
+							}}
+							onMouseLeave={(e) => {
+								if (isDashboardView) {
+									e.currentTarget.style.color = '';
+								}
+							}}
+						>
 							Group Information
 						</Title>
 						<div className="flex gap-2">
@@ -271,7 +307,9 @@ export default memo(function GroupInfoCard({
 					{/* Group Details */}
 					<div className="space-y-4">
 						{/* Basic Group Info */}
-						<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+						<div
+							className={`grid grid-cols-1 gap-4 ${isDashboardView ? 'md:grid-cols-2' : 'md:grid-cols-3'}`}
+						>
 							<div>
 								<Text className="text-sm text-gray-400 block font-semibold">
 									Group Name
@@ -284,16 +322,17 @@ export default memo(function GroupInfoCard({
 								</Text>
 								<Text className="text-sm text-gray-600">{localGroup.code}</Text>
 							</div>
-							<div>
-								<Text className="text-sm text-gray-400 block font-semibold">
-									Semester
-								</Text>
-								<Text className="text-sm text-gray-600">
-									{localGroup.semester.name}
-								</Text>
-							</div>
-						</div>
-
+							{!isDashboardView && (
+								<div>
+									<Text className="text-sm text-gray-400 block font-semibold">
+										Semester
+									</Text>
+									<Text className="text-sm text-gray-600">
+										{localGroup.semester.name}
+									</Text>
+								</div>
+							)}
+						</div>{' '}
 						{/* Project Direction */}
 						<div>
 							<Text className="text-sm text-gray-400 block font-semibold">
@@ -305,7 +344,6 @@ export default memo(function GroupInfoCard({
 								)}
 							</Text>
 						</div>
-
 						{/* Skills and Responsibilities - 2 columns */}
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 							{' '}
@@ -349,22 +387,26 @@ export default memo(function GroupInfoCard({
 								)}
 							</div>
 						</div>
-
 						{/* Members Section */}
 						<div>
 							<Text className="text-sm text-gray-400 block font-semibold">
 								Members
 							</Text>
+							{/* Members Display */}
+							{isDashboardView ? (
+								<Text className="text-sm text-gray-600">
+									{localGroup.members.length} member
+									{localGroup.members.length !== 1 ? 's' : ''}
+								</Text>
+							) : (
+								<GroupMembersCard
+									group={localGroup}
+									viewOnly={viewOnly}
+									onRefresh={handleRefreshGroup}
+								/>
+							)}
 						</div>
-					</div>
-
-					{/* Members Card */}
-					<GroupMembersCard
-						group={localGroup}
-						viewOnly={viewOnly}
-						onRefresh={handleRefreshGroup}
-					/>
-
+					</div>{' '}
 					{/* Created Date and Action Buttons */}
 					<div
 						className={`flex flex-col sm:flex-row sm:items-end ${viewOnly ? 'sm:justify-start' : 'sm:justify-between'} gap-4 pt-4`}
@@ -386,7 +428,7 @@ export default memo(function GroupInfoCard({
 									danger
 									loading={isLeaving}
 									disabled={
-										!canModifyGroup ||
+										!canLeaveOrInvite ||
 										(isCurrentUserLeader && localGroup.members.length > 1) ||
 										isOnlyMember
 									}
@@ -414,7 +456,7 @@ export default memo(function GroupInfoCard({
 									<Button
 										type="primary"
 										onClick={() => setIsInviteDialogVisible(true)}
-										disabled={!canModifyGroup || hasReachedMaxMembers}
+										disabled={!canLeaveOrInvite || hasReachedMaxMembers}
 										title={getInviteMembersButtonTitle()}
 									>
 										Invite Members

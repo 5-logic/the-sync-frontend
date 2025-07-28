@@ -117,7 +117,7 @@ export const useSupervisionStore = create<SupervisionState>()(
 				}
 			},
 
-			// Change supervisor - now uses bulkAssignSupervisors API
+			// Change supervisor - uses bulkAssignSupervisors API
 			changeSupervisor: async (
 				thesisId: string,
 				data: ChangeSupervisorRequest,
@@ -151,6 +151,7 @@ export const useSupervisionStore = create<SupervisionState>()(
 							thesisId: string;
 							lecturerId: string;
 							status: string;
+							message?: string;
 						}>;
 
 						if (Array.isArray(responseData)) {
@@ -168,7 +169,17 @@ export const useSupervisionStore = create<SupervisionState>()(
 						if (hasSuccess) {
 							return true;
 						} else {
-							const errorMessage = 'Failed to change supervisor';
+							// Extract error messages from failed results
+							const failedResults = results.filter(
+								(r) => r.status !== 'success' && r.status !== 'already_exists',
+							);
+
+							// Use the first available error message from the results
+							const errorMessage =
+								failedResults.length > 0 && failedResults[0].message
+									? failedResults[0].message
+									: error?.message || 'Failed to change supervisor';
+
 							set({ lastError: errorMessage });
 							return false;
 						}

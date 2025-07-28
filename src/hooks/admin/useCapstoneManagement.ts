@@ -1,62 +1,50 @@
 import { useEffect, useMemo } from 'react';
 
 import { calculateRowSpans } from '@/components/features/admin/CapstoneProjectManagement/calculateRowSpan';
-import { Group } from '@/lib/services/groups.service';
 import { getCleanThesisNameForSearch } from '@/lib/utils/thesisUtils';
 import { Semester } from '@/schemas/semester';
-import { type GroupTableData, useCapstoneManagementStore } from '@/store';
+import {
+	type GroupTableData,
+	useCapstoneManagementStore,
+} from '@/store/useCapstoneManagementStore';
 
 export const useCapstoneManagement = (
-	selectedSemester: string,
+	selectedSemesterId: string,
 	debouncedSearchValue: string,
 ) => {
 	const {
 		semesters,
 		loading,
-		loadingDetails,
-		groups,
+		loadingGroups,
 		tableData,
-		fetchGroups,
-		fetchGroupDetails,
 		fetchSemesters,
-		refresh,
+		fetchGroupsBySemester,
 	} = useCapstoneManagementStore();
 
-	// Fetch data on component mount
+	// Fetch semesters on component mount
 	useEffect(() => {
-		const initializeData = async () => {
-			await Promise.all([fetchGroups(), fetchSemesters()]);
-		};
-		initializeData();
-	}, [fetchGroups, fetchSemesters]);
+		fetchSemesters();
+	}, [fetchSemesters]);
 
-	// Fetch group details when groups are loaded
+	// Fetch groups when semester is selected
 	useEffect(() => {
-		if (groups.length > 0) {
-			const groupIds = groups.map((group: Group) => group.id);
-			fetchGroupDetails(groupIds);
+		if (selectedSemesterId) {
+			fetchGroupsBySemester(selectedSemesterId);
 		}
-	}, [groups, fetchGroupDetails]);
+	}, [selectedSemesterId, fetchGroupsBySemester]);
 
-	// Get available semesters for filter
+	// Get available semesters for filter (return semester objects with id and name)
 	const availableSemesters = useMemo(() => {
-		return semesters.map((semester: Semester) => semester.name);
+		return semesters.map((semester: Semester) => ({
+			id: semester.id,
+			name: semester.name,
+			code: semester.code,
+		}));
 	}, [semesters]);
 
-	// Get filtered data using direct filtering
+	// Get filtered data using direct filtering and search
 	const filteredData: GroupTableData[] = useMemo(() => {
 		let filtered = [...tableData]; // Start with all data from store
-
-		// Apply semester filter - always filter by specific semester
-		if (selectedSemester) {
-			// Find the semester code based on the selected semester name
-			const semesterCode = semesters.find(
-				(s) => s.name === selectedSemester,
-			)?.code;
-			if (semesterCode) {
-				filtered = filtered.filter((item) => item.semester === semesterCode);
-			}
-		}
 
 		// Apply search filter
 		if (debouncedSearchValue) {
@@ -77,21 +65,35 @@ export const useCapstoneManagement = (
 
 		// Recalculate rowSpans for filtered data
 		return calculateRowSpans(filtered) as GroupTableData[];
-	}, [debouncedSearchValue, selectedSemester, tableData, semesters]);
+	}, [debouncedSearchValue, tableData]);
+
+	// Get semester name for display
+	const selectedSemesterName = useMemo(() => {
+		const semester = semesters.find(
+			(s: Semester) => s.id === selectedSemesterId,
+		);
+		return semester?.name || '';
+	}, [semesters, selectedSemesterId]);
 
 	return {
 		// Data
 		semesters,
-		groups,
 		tableData,
 		filteredData,
 		availableSemesters,
+		selectedSemesterName,
 
-		// Loading states
-		loading,
-		loadingDetails,
+		// Loading states - should be true when either is loading
+		loading: loading || loadingGroups,
+		loadingGroups,
 
 		// Actions
-		refresh,
+		refresh: () =>
+			Promise.all([
+				fetchSemesters(true),
+				selectedSemesterId
+					? fetchGroupsBySemester(selectedSemesterId, true)
+					: Promise.resolve(),
+			]),
 	};
 };

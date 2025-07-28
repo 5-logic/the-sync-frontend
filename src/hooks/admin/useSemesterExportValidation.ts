@@ -29,23 +29,23 @@ const validateSpecificSemester = (
 	) {
 		return {
 			canExport: false,
-			reason: `Export not allowed. Semester is in "Ongoing" status but phase is "${semester.ongoingPhase}". Export requires "ScopeLocked" phase or "End" status.`,
+			reason: `Export requires "ScopeLocked" phase or "End" status.`,
 		};
 	}
 
 	return {
 		canExport: false,
-		reason: `Export not allowed for semester with status "${semester.status}". Export is only allowed for "Ongoing" semesters with "ScopeLocked" phase or "End" status.`,
+		reason: `Export is only allowed for "Ongoing" semesters with "Scope Locked" phase or "End" status.`,
 	};
 };
 
 export const useSemesterExportValidation = (
-	selectedSemester: string,
+	selectedSemesterId: string,
 	semesters: Semester[],
 ): ExportValidationResult => {
 	return useMemo(() => {
 		const selectedSemesterData = semesters.find(
-			(s) => s.name === selectedSemester,
+			(s) => s.id === selectedSemesterId,
 		);
 
 		if (!selectedSemesterData) {
@@ -56,5 +56,5 @@ export const useSemesterExportValidation = (
 		}
 
 		return validateSpecificSemester(selectedSemesterData);
-	}, [selectedSemester, semesters]);
+	}, [selectedSemesterId, semesters]);
 };
