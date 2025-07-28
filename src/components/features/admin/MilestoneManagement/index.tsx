@@ -78,7 +78,6 @@ export default function MilestoneManagement() {
 	const handleRefresh = async () => {
 		try {
 			await fetchMilestones(true); // Force refresh to bypass cache
-			showNotification.success('Success', 'Milestones refreshed successfully');
 		} catch (error) {
 			// Error handling is already done in the fetchMilestones function
 			console.error('Error refreshing milestones:', error);
