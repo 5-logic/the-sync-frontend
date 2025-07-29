@@ -8,11 +8,11 @@ import React, { useEffect } from 'react';
 
 import StatCard from '@/components/common/Dashboard/StatCard';
 import { useCurrentSemester } from '@/hooks';
-import { useAuth } from '@/hooks/auth';
+import { useSessionData } from '@/hooks/auth';
 import { useLecturerDashboardStore } from '@/store';
 
 const DashboardStats: React.FC = () => {
-	const { user } = useAuth();
+	const { session } = useSessionData();
 	const { currentSemester } = useCurrentSemester();
 
 	const {
@@ -24,10 +24,10 @@ const DashboardStats: React.FC = () => {
 	} = useLecturerDashboardStore();
 
 	useEffect(() => {
-		if (user?.id && currentSemester?.id) {
-			fetchStats(user.id, currentSemester.id);
+		if (session?.user?.id && currentSemester?.id) {
+			fetchStats(session.user.id, currentSemester.id);
 		}
-	}, [user?.id, currentSemester?.id, fetchStats]);
+	}, [session?.user?.id, currentSemester?.id, fetchStats]);
 
 	const dashboardStats = [
 		{
