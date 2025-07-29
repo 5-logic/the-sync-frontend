@@ -95,7 +95,8 @@ export const useLecturerDashboardStore = create<LecturerDashboardState>(
 			set({ activeGroupsLoading: true });
 
 			try {
-				const response = await groupsService.getSupervisedGroups(semesterId);
+				const response =
+					await groupsService.findSuperviseGroupsBySemester(semesterId);
 				const result = handleApiResponse(response);
 
 				if (result.success) {
