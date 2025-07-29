@@ -63,12 +63,12 @@ export interface MilestoneSubmission {
 	reviews: unknown[];
 }
 
-// Interface for supervised groups response
+// Interface for the new supervise API response
 export interface SupervisedGroup {
 	id: string;
 	code: string;
 	name: string;
-	projectDirection: string;
+	projectDirection?: string;
 	semesterId: string;
 	thesisId: string;
 	createdAt: string;
@@ -94,9 +94,15 @@ export interface SupervisedGroup {
 				id: string;
 				fullName: string;
 				email: string;
+				password: string;
+				gender: string;
+				phoneNumber: string;
+				isActive: boolean;
+				createdAt: string;
+				updatedAt: string;
 			};
 		};
-		thesisRequiredSkills: Array<{
+		thesisRequiredSkills?: Array<{
 			thesisId: string;
 			skillId: string;
 			skill: {
@@ -139,6 +145,7 @@ export interface SupervisedGroup {
 				id: string;
 				fullName: string;
 				email: string;
+				password: string;
 				gender: string;
 				phoneNumber: string;
 				isActive: boolean;
@@ -154,7 +161,7 @@ export interface SupervisedGroup {
 			};
 		};
 	}>;
-	groupRequiredSkills: Array<{
+	groupRequiredSkills?: Array<{
 		groupId: string;
 		skillId: string;
 		skill: {
@@ -171,7 +178,7 @@ export interface SupervisedGroup {
 			};
 		};
 	}>;
-	groupExpectedResponsibilities: Array<{
+	groupExpectedResponsibilities?: Array<{
 		groupId: string;
 		responsibilityId: string;
 		responsibility: {
@@ -340,10 +347,7 @@ class GroupService {
 		return response.data;
 	}
 
-	/**
-	 * Get groups that lecturer is supervising in a specific semester
-	 */
-	async getSupervisedGroups(
+	async findSuperviseGroupsBySemester(
 		semesterId: string,
 	): Promise<ApiResponse<SupervisedGroup[]>> {
 		const response = await httpClient.get<ApiResponse<SupervisedGroup[]>>(
