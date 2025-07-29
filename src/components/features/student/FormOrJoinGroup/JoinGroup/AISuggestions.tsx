@@ -1,18 +1,9 @@
-import {
-	Button,
-	Card,
-	Col,
-	Pagination,
-	Progress,
-	Row,
-	Space,
-	Tag,
-	Typography,
-} from 'antd';
+import { Button, Card, Col, Progress, Row, Space, Tag, Typography } from 'antd';
 import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 
 import { GroupConfirmationModals } from '@/components/common/ConfirmModal';
+import { ListPagination } from '@/components/common/ListPagination';
 import { type GroupSuggestion } from '@/lib/services/ai.service';
 import requestService from '@/lib/services/requests.service';
 import { showNotification } from '@/lib/utils/notification';
@@ -214,7 +205,7 @@ export default function AISuggestions({
 	loading = false,
 }: AISuggestionsProps) {
 	const [currentPage, setCurrentPage] = useState(1);
-	const pageSize = 6;
+	const pageSize = 3;
 
 	// Memoize sorted suggestions by compatibility score
 	const sortedSuggestions = useMemo(() => {
@@ -264,19 +255,13 @@ export default function AISuggestions({
 				</Row>
 
 				{suggestions.length > pageSize && (
-					<div style={{ textAlign: 'center', marginTop: 16 }}>
-						<Pagination
-							current={currentPage}
-							total={suggestions.length}
-							pageSize={pageSize}
-							onChange={setCurrentPage}
-							showSizeChanger={false}
-							showQuickJumper={false}
-							showTotal={(total, range) =>
-								`${range[0]}-${range[1]} of ${total} groups`
-							}
-						/>
-					</div>
+					<ListPagination
+						current={currentPage}
+						total={suggestions.length}
+						pageSize={pageSize}
+						onChange={(page) => setCurrentPage(page)}
+						itemName="groups"
+					/>
 				)}
 			</Space>
 		</Card>
