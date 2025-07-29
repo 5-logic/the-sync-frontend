@@ -27,7 +27,7 @@ const BUTTON_STYLES = {
 } as const;
 
 interface JoinGroupFormProps {
-	onSuggestionsReceived?: (suggestions: GroupSuggestion[]) => void;
+	readonly onSuggestionsReceived?: (suggestions: GroupSuggestion[]) => void;
 }
 
 export default function JoinGroupForm({

@@ -20,8 +20,8 @@ import { showNotification } from '@/lib/utils/notification';
 const { Title, Text } = Typography;
 
 interface AISuggestionsProps {
-	suggestions: GroupSuggestion[];
-	loading?: boolean;
+	readonly suggestions: GroupSuggestion[];
+	readonly loading?: boolean;
 }
 
 interface AISuggestionCardProps {
