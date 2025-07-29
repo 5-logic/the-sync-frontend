@@ -105,6 +105,7 @@ const MyThesisSection: React.FC = () => {
 	const [semesters, setSemesters] = useState<Semester[]>([]);
 	const [selectedSemester, setSelectedSemester] = useState<string>('all');
 	const [loading, setLoading] = useState(true);
+	const [semestersLoading, setSemestersLoading] = useState(true);
 	const { session } = useSessionData();
 	const { currentSemester } = useCurrentSemester();
 	const router = useRouter();
@@ -120,6 +121,7 @@ const MyThesisSection: React.FC = () => {
 	useEffect(() => {
 		const fetchSemesters = async () => {
 			try {
+				setSemestersLoading(true);
 				const response = await semestersService.findAll();
 				const result = handleApiResponse(response);
 				if (result.success) {
@@ -127,6 +129,8 @@ const MyThesisSection: React.FC = () => {
 				}
 			} catch (error) {
 				console.error('Error fetching semesters:', error);
+			} finally {
+				setSemestersLoading(false);
 			}
 		};
 
@@ -161,16 +165,19 @@ const MyThesisSection: React.FC = () => {
 			? theses
 			: theses.filter((thesis) => thesis.semesterId === selectedSemester);
 
+	// Check if all data is ready for display (including semester name mapping)
+	const isDataReady = !loading && !semestersLoading && semesters.length > 0;
+
 	const handleCreateThesis = () => {
-		router.push('/lecturer/create-thesis');
+		router.push('/lecturer/thesis-management/create-thesis');
 	};
 
 	const handleViewDetails = (thesisId: string) => {
-		router.push(`/lecturer/thesis/${thesisId}`);
+		router.push(`/lecturer/thesis-management/${thesisId}`);
 	};
 
 	const handleEditThesis = (thesisId: string) => {
-		router.push(`/lecturer/edit-thesis/${thesisId}`);
+		router.push(`/lecturer/thesis-management/${thesisId}/edit-thesis`);
 	};
 	return (
 		<Card>
@@ -190,6 +197,7 @@ const MyThesisSection: React.FC = () => {
 							placeholder="Filter by semester"
 							allowClear
 							onClear={() => setSelectedSemester('all')}
+							loading={semestersLoading}
 						>
 							<Select.Option value="all">All Semesters</Select.Option>
 							{semesters.map((semester) => (
@@ -211,7 +219,7 @@ const MyThesisSection: React.FC = () => {
 				</Col>
 			</Row>
 
-			{loading ? (
+			{!isDataReady ? (
 				<div style={{ textAlign: 'center', padding: '40px 0' }}>
 					<Spin size="large" />
 				</div>
