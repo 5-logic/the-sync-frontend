@@ -97,7 +97,7 @@ export default function JoinGroupForm({
 						await callAISuggestAPI();
 					},
 					onCancel: () => {
-						router.push('/student/profile-setting');
+						router.push('/student/account-setting');
 					},
 				});
 			} else {
