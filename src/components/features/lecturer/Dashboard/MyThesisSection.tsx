@@ -195,6 +195,161 @@ const MyThesisSection: React.FC = () => {
 		}
 		return statusColor[thesis.status as keyof typeof statusColor] || 'default';
 	};
+
+	// Helper function to render main content
+	const renderMainContent = () => {
+		if (!isDataReady) {
+			return (
+				<div style={{ textAlign: 'center', padding: '40px 0' }}>
+					<Spin size="large" />
+				</div>
+			);
+		}
+
+		if (filteredTheses.length === 0) {
+			return (
+				<div style={{ textAlign: 'center', padding: '40px 0', color: '#999' }}>
+					{getEmptyMessage()}
+				</div>
+			);
+		}
+
+		return (
+			<Row gutter={[16, 16]}>
+				{filteredTheses.map((thesis) => {
+					// Get semester name from semester relation or find in semesters list
+					const semesterName =
+						thesis.semester?.name ||
+						semesters.find((s) => s.id === thesis.semesterId)?.name ||
+						'Unknown Semester';
+
+					// Determine status to display
+					const displayStatus = thesis.isPublish ? 'Published' : thesis.status;
+
+					return (
+						<Col xs={24} md={12} lg={8} key={thesis.id}>
+							<Card
+								hoverable
+								title={
+									<Row justify="space-between" align="middle">
+										<Col>
+											<Tag color="cyan">{semesterName}</Tag>
+										</Col>
+										<Col>
+											<Tag color={getThesisTagColor(thesis)}>
+												{displayStatus}
+											</Tag>
+										</Col>
+									</Row>
+								}
+								actions={[
+									<button
+										key="view"
+										style={{
+											color: '#000',
+											cursor: 'pointer',
+											transition: 'color 0.3s',
+											background: 'none',
+											border: 'none',
+											padding: 0,
+											font: 'inherit',
+										}}
+										onMouseEnter={(e) =>
+											((e.currentTarget as HTMLElement).style.color = '#1890ff')
+										}
+										onMouseLeave={(e) =>
+											((e.currentTarget as HTMLElement).style.color = '#000')
+										}
+										onClick={() => handleViewDetails(thesis.id)}
+									>
+										<EyeOutlined style={{ marginRight: 4 }} />
+										View Details
+									</button>,
+									<button
+										key="edit"
+										style={{
+											color: '#000',
+											cursor: 'pointer',
+											transition: 'color 0.3s',
+											background: 'none',
+											border: 'none',
+											padding: 0,
+											font: 'inherit',
+										}}
+										onMouseEnter={(e) =>
+											((e.currentTarget as HTMLElement).style.color = '#1890ff')
+										}
+										onMouseLeave={(e) =>
+											((e.currentTarget as HTMLElement).style.color = '#000')
+										}
+										onClick={() => handleEditThesis(thesis.id)}
+									>
+										<EditOutlined style={{ marginRight: 4 }} />
+										Edit
+									</button>,
+								]}
+								style={{ height: '100%' }}
+							>
+								<Flex vertical style={{ height: '100%' }}>
+									{/* Domain Tag */}
+									{thesis.domain && (
+										<div style={{ marginBottom: 8 }}>
+											<Tag color={DOMAIN_COLOR_MAP[thesis.domain] || 'blue'}>
+												{thesis.domain}
+											</Tag>
+										</div>
+									)}
+
+									{/* English Name */}
+									<div
+										style={{
+											fontSize: '16px',
+											fontWeight: 600,
+											color: '#1f2937',
+											marginBottom: 12,
+											lineHeight: '1.5',
+											height: '48px', // 2 lines * 1.5 * 16px
+											overflow: 'hidden',
+											display: '-webkit-box',
+											WebkitLineClamp: 2,
+											WebkitBoxOrient: 'vertical',
+											wordBreak: 'break-word',
+										}}
+									>
+										{thesis.englishName}
+									</div>
+
+									{/* Description */}
+									<div
+										style={{
+											color: '#6b7280',
+											lineHeight: '1.5',
+											marginBottom: 12,
+											fontSize: '14px',
+											height: '84px', // 4 lines * 1.5 * 14px = 84px
+											overflow: 'hidden',
+											display: '-webkit-box',
+											WebkitLineClamp: 4,
+											WebkitBoxOrient: 'vertical',
+											wordBreak: 'break-word',
+											textOverflow: 'ellipsis',
+										}}
+									>
+										{thesis.description}
+									</div>
+
+									{/* Skills */}
+									<div style={{ marginTop: 'auto' }}>
+										<SkillsDisplay skills={thesis.thesisRequiredSkills || []} />
+									</div>
+								</Flex>
+							</Card>
+						</Col>
+					);
+				})}
+			</Row>
+		);
+	};
 	return (
 		<Card>
 			<Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
@@ -235,155 +390,7 @@ const MyThesisSection: React.FC = () => {
 				</Col>
 			</Row>
 
-			{!isDataReady ? (
-				<div style={{ textAlign: 'center', padding: '40px 0' }}>
-					<Spin size="large" />
-				</div>
-			) : filteredTheses.length === 0 ? (
-				<div style={{ textAlign: 'center', padding: '40px 0', color: '#999' }}>
-					{getEmptyMessage()}
-				</div>
-			) : (
-				<Row gutter={[16, 16]}>
-					{filteredTheses.map((thesis) => {
-						// Get semester name from semester relation or find in semesters list
-						const semesterName =
-							thesis.semester?.name ||
-							semesters.find((s) => s.id === thesis.semesterId)?.name ||
-							'Unknown Semester';
-
-						// Determine status to display
-						const displayStatus = thesis.isPublish
-							? 'Published'
-							: thesis.status;
-
-						return (
-							<Col xs={24} md={12} lg={8} key={thesis.id}>
-								<Card
-									hoverable
-									title={
-										<Row justify="space-between" align="middle">
-											<Col>
-												<Tag color="cyan">{semesterName}</Tag>
-											</Col>
-											<Col>
-												<Tag color={getThesisTagColor(thesis)}>
-													{displayStatus}
-												</Tag>
-											</Col>
-										</Row>
-									}
-									actions={[
-										<button
-											key="view"
-											style={{
-												color: '#000',
-												cursor: 'pointer',
-												transition: 'color 0.3s',
-												background: 'none',
-												border: 'none',
-												padding: 0,
-												font: 'inherit',
-											}}
-											onMouseEnter={(e) =>
-												((e.currentTarget as HTMLElement).style.color =
-													'#1890ff')
-											}
-											onMouseLeave={(e) =>
-												((e.currentTarget as HTMLElement).style.color = '#000')
-											}
-											onClick={() => handleViewDetails(thesis.id)}
-										>
-											<EyeOutlined style={{ marginRight: 4 }} />
-											View Details
-										</button>,
-										<button
-											key="edit"
-											style={{
-												color: '#000',
-												cursor: 'pointer',
-												transition: 'color 0.3s',
-												background: 'none',
-												border: 'none',
-												padding: 0,
-												font: 'inherit',
-											}}
-											onMouseEnter={(e) =>
-												((e.currentTarget as HTMLElement).style.color =
-													'#1890ff')
-											}
-											onMouseLeave={(e) =>
-												((e.currentTarget as HTMLElement).style.color = '#000')
-											}
-											onClick={() => handleEditThesis(thesis.id)}
-										>
-											<EditOutlined style={{ marginRight: 4 }} />
-											Edit
-										</button>,
-									]}
-									style={{ height: '100%' }}
-								>
-									<Flex vertical style={{ height: '100%' }}>
-										{/* Domain Tag */}
-										{thesis.domain && (
-											<div style={{ marginBottom: 8 }}>
-												<Tag color={DOMAIN_COLOR_MAP[thesis.domain] || 'blue'}>
-													{thesis.domain}
-												</Tag>
-											</div>
-										)}
-
-										{/* English Name */}
-										<div
-											style={{
-												fontSize: '16px',
-												fontWeight: 600,
-												color: '#1f2937',
-												marginBottom: 12,
-												lineHeight: '1.5',
-												height: '48px', // 2 lines * 1.5 * 16px
-												overflow: 'hidden',
-												display: '-webkit-box',
-												WebkitLineClamp: 2,
-												WebkitBoxOrient: 'vertical',
-												wordBreak: 'break-word',
-											}}
-										>
-											{thesis.englishName}
-										</div>
-
-										{/* Description */}
-										<div
-											style={{
-												color: '#6b7280',
-												lineHeight: '1.5',
-												marginBottom: 12,
-												fontSize: '14px',
-												height: '84px', // 4 lines * 1.5 * 14px = 84px
-												overflow: 'hidden',
-												display: '-webkit-box',
-												WebkitLineClamp: 4,
-												WebkitBoxOrient: 'vertical',
-												wordBreak: 'break-word',
-												textOverflow: 'ellipsis',
-											}}
-										>
-											{thesis.description}
-										</div>
-
-										{/* Skills */}
-										<div style={{ marginTop: 'auto' }}>
-											<SkillsDisplay
-												skills={thesis.thesisRequiredSkills || []}
-											/>
-										</div>
-									</Flex>
-								</Card>
-							</Col>
-						);
-					})}
-				</Row>
-			)}
+			{renderMainContent()}
 		</Card>
 	);
 };
