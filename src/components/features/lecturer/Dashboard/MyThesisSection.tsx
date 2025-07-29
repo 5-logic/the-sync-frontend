@@ -179,6 +179,22 @@ const MyThesisSection: React.FC = () => {
 	const handleEditThesis = (thesisId: string) => {
 		router.push(`/lecturer/thesis-management/${thesisId}/edit-thesis`);
 	};
+
+	// Helper function to get empty message
+	const getEmptyMessage = () => {
+		if (selectedSemester === 'all') {
+			return 'No thesis topics found';
+		}
+		return 'No thesis topics found for selected semester';
+	};
+
+	// Helper function to get thesis tag color
+	const getThesisTagColor = (thesis: ThesisWithRelations) => {
+		if (thesis.isPublish) {
+			return 'green';
+		}
+		return statusColor[thesis.status as keyof typeof statusColor] || 'default';
+	};
 	return (
 		<Card>
 			<Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
@@ -225,9 +241,7 @@ const MyThesisSection: React.FC = () => {
 				</div>
 			) : filteredTheses.length === 0 ? (
 				<div style={{ textAlign: 'center', padding: '40px 0', color: '#999' }}>
-					{selectedSemester === 'all'
-						? 'No thesis topics found'
-						: 'No thesis topics found for selected semester'}
+					{getEmptyMessage()}
 				</div>
 			) : (
 				<Row gutter={[16, 16]}>
@@ -253,15 +267,7 @@ const MyThesisSection: React.FC = () => {
 												<Tag color="cyan">{semesterName}</Tag>
 											</Col>
 											<Col>
-												<Tag
-													color={
-														thesis.isPublish
-															? 'green'
-															: statusColor[
-																	thesis.status as keyof typeof statusColor
-																] || 'default'
-													}
-												>
+												<Tag color={getThesisTagColor(thesis)}>
 													{displayStatus}
 												</Tag>
 											</Col>
