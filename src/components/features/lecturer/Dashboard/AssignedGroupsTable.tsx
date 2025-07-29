@@ -1,4 +1,4 @@
-import { EyeOutlined, SearchOutlined } from '@ant-design/icons';
+import { EyeOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
 import {
 	Button,
 	Card,
@@ -130,6 +130,28 @@ const AssignedGroupsTable: React.FC = () => {
 		);
 	};
 
+	// Refresh data function
+	const handleRefresh = async () => {
+		if (selectedSemester === 'all') {
+			setGroups([]);
+			return;
+		}
+
+		try {
+			setLoading(true);
+			const response =
+				await groupsService.findSuperviseGroupsBySemester(selectedSemester);
+			const result = handleApiResponse(response);
+			if (result.success) {
+				setGroups(result.data || []);
+			}
+		} catch (error) {
+			console.error('Error refreshing assigned groups:', error);
+		} finally {
+			setLoading(false);
+		}
+	};
+
 	// Table columns
 	const columns = [
 		{
@@ -209,6 +231,18 @@ const AssignedGroupsTable: React.FC = () => {
 							</Option>
 						))}
 					</Select>
+				</Col>
+				<Col>
+					<Tooltip title="Refresh data">
+						<Button
+							icon={<ReloadOutlined />}
+							onClick={handleRefresh}
+							loading={loading}
+							disabled={selectedSemester === 'all'}
+						>
+							Refresh
+						</Button>
+					</Tooltip>
 				</Col>
 			</Row>
 
