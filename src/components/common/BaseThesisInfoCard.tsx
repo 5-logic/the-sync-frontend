@@ -174,13 +174,13 @@ export default function BaseThesisInfoCard({ thesis, supervisor }: Props) {
 			{supervisor && (
 				<div style={{ marginBottom: 24 }}>
 					<Title level={5} style={{ marginBottom: 12 }}>
-						Supervisor Information
+						Lecturer Creator Information
 					</Title>
 					<Space size={16}>
 						<Avatar size={48} icon={<UserOutlined />} />
 						<div>
 							<Text strong>
-								{getDisplayValue(supervisor.name, 'Unknown Supervisor')}
+								{getDisplayValue(supervisor.name, 'Unknown Lecturer Creator')}
 							</Text>
 							<Paragraph style={{ marginBottom: 0 }}>
 								{getDisplayValue(supervisor.email, 'No email provided')}
