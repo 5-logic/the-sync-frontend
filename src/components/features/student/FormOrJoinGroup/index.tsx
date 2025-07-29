@@ -8,16 +8,14 @@ import { Header } from '@/components/common/Header';
 import { RequestsButton } from '@/components/common/RequestsManagement';
 import CreateGroupForm from '@/components/features/student/FormOrJoinGroup/CreateGroup/CreateGroupForm';
 import FormOrJoinTabs from '@/components/features/student/FormOrJoinGroup/FormOrJoinTabs';
+import AISuggestions from '@/components/features/student/FormOrJoinGroup/JoinGroup/AISuggestions';
 import GroupListSection from '@/components/features/student/FormOrJoinGroup/JoinGroup/GroupBrowsing/GroupListSection';
 import JoinGroupForm from '@/components/features/student/FormOrJoinGroup/JoinGroup/JoinGroupForm';
-import { type ExtendedGroup, extendedGroups } from '@/data/group';
-import { mockTheses } from '@/data/thesis';
+import { type GroupSuggestion } from '@/lib/services/ai.service';
 import { type Group } from '@/lib/services/groups.service';
-import { Thesis } from '@/schemas/thesis';
 import { useRequestsStore } from '@/store';
 import { useGroupsStore } from '@/store/useGroupsStore';
 
-const SUGGESTED_GROUPS_COUNT = 3;
 const TAB_KEYS = {
 	JOIN: 'join',
 	CREATE: 'create',
@@ -45,22 +43,6 @@ const mapApiGroupsToUI = (apiGroups: Group[]): GroupUI[] =>
 		members: group.memberCount || 0, // Use memberCount from API
 	}));
 
-// Helper function to map mock data (for Suggested Groups by AI)
-const mapMockGroupsToUI = (
-	groups: readonly ExtendedGroup[],
-	theses: readonly Thesis[],
-): GroupUI[] =>
-	groups.map((group) => {
-		const thesis = theses.find((t) => t.id === group.thesisId);
-		return {
-			id: group.id,
-			name: thesis?.englishName ?? group.thesisTitle ?? group.name,
-			leader: 'AI Suggested', // For suggested groups, use placeholder
-			domain: thesis?.domain ?? 'Unknown',
-			members: group.members ?? 0,
-		};
-	});
-
 export default function FormOrJoinGroup() {
 	const searchParams = useSearchParams();
 	const { groups: apiGroups, loading, error, fetchGroups } = useGroupsStore();
@@ -68,12 +50,8 @@ export default function FormOrJoinGroup() {
 	const [tabKey, setTabKey] = useState<string>(TAB_KEYS.JOIN);
 	const [search, setSearch] = useState<string>('');
 	const [category, setCategory] = useState<string | undefined>(undefined);
-
-	// Suggested Groups (using mock data for AI suggestions)
-	const suggestedGroups = useMemo(() => {
-		const mockGroups = mapMockGroupsToUI(extendedGroups, mockTheses);
-		return mockGroups.slice(0, SUGGESTED_GROUPS_COUNT);
-	}, []);
+	const [aiSuggestions, setAiSuggestions] = useState<GroupSuggestion[]>([]);
+	const [aiSuggestionsLoading, setAiSuggestionsLoading] = useState(false);
 
 	// All Available Groups (using API data)
 	const allApiGroups = useMemo(() => mapApiGroupsToUI(apiGroups), [apiGroups]);
@@ -123,6 +101,15 @@ export default function FormOrJoinGroup() {
 	const handleRequestSent = useCallback(() => {
 		fetchStudentRequests(true); // Force refresh
 	}, [fetchStudentRequests]);
+
+	// Handle AI suggestions received
+	const handleAISuggestionsReceived = useCallback(
+		(suggestions: GroupSuggestion[]) => {
+			setAiSuggestions(suggestions);
+			setAiSuggestionsLoading(false);
+		},
+		[],
+	);
 
 	// Helper function to render All Available Groups section
 	const renderAllAvailableGroups = () => {
@@ -190,14 +177,13 @@ export default function FormOrJoinGroup() {
 
 					{tabKey === TAB_KEYS.JOIN && (
 						<>
-							<JoinGroupForm />
-							{/* Suggested Groups always shows mock data */}
-							<GroupListSection
-								title="Suggested Groups by AI"
-								groups={suggestedGroups}
-								enablePagination={false}
-								onRequestSent={handleRequestSent}
-								existingRequests={requests}
+							<JoinGroupForm
+								onSuggestionsReceived={handleAISuggestionsReceived}
+							/>
+							{/* AI Suggestions */}
+							<AISuggestions
+								suggestions={aiSuggestions}
+								loading={aiSuggestionsLoading}
 							/>
 							{/* All Available Groups uses API data with loading/error states */}
 							{renderAllAvailableGroups()}
