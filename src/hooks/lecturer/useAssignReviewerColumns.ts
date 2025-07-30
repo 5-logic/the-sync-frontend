@@ -40,7 +40,7 @@ export const useAssignReviewerColumns = ({
 			setSelectedGroup({
 				...submissionGroup,
 				title: submission.thesis?.englishName || '',
-				phase: String(submission.milestone),
+				phase: submission.milestone?.name || '',
 				supervisors: submission.thesis?.supervisors || [],
 				reviewers: submission.reviewLecturers,
 				submissionId: submission.id,
