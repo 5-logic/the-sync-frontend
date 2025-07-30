@@ -42,11 +42,11 @@ const SkillsDisplay: React.FC<{
 			return;
 		}
 
-		// Tạm thời hiển thị tất cả skills để đo kích thước
+		// Temporarily display all skills to measure size
 		setVisibleSkills(skills);
 		setHiddenCount(0);
 
-		// Sử dụng setTimeout để đảm bảo DOM đã render
+		// Use setTimeout to ensure DOM has rendered
 		const timeoutId = setTimeout(() => {
 			if (!containerRef.current) return;
 
@@ -61,10 +61,10 @@ const SkillsDisplay: React.FC<{
 				const tagRect = tagElement.getBoundingClientRect();
 				const containerRect = container.getBoundingClientRect();
 
-				// Tính toán vị trí tương đối với container
+				// Calculate relative position to container
 				const tagBottom = tagRect.bottom - containerRect.top;
 
-				// Nếu tag vượt quá chiều cao container thì dừng
+				// Stop if tag exceeds container height
 				if (tagBottom > containerHeight) {
 					break;
 				}
@@ -72,7 +72,7 @@ const SkillsDisplay: React.FC<{
 				visibleCount++;
 			}
 
-			// Nếu có tag bị cắt, trừ đi 1 để dành chỗ cho +{count} tag
+			// If there are cut off tags, subtract 1 to make room for +{count} tag
 			if (visibleCount < skills.length && visibleCount > 0) {
 				visibleCount = visibleCount - 1;
 			}
