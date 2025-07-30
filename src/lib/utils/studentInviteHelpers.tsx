@@ -136,7 +136,7 @@ export function createStudentTableColumns(
 			ellipsis: true,
 		});
 		baseColumns.push({
-			title: 'Student ID',
+			title: 'Student Code',
 			dataIndex: 'studentCode',
 			key: 'studentCode',
 			width: '20%',
