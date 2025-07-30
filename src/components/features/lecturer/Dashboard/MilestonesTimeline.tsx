@@ -101,14 +101,41 @@ const MilestonesTimeline: React.FC = () => {
 
 	const isDataReady = !loading && !semestersLoading;
 
+	// Render semester filter
+	const renderSemesterFilter = () => (
+		<Select
+			value={selectedSemester}
+			onChange={setSelectedSemester}
+			style={{ width: 200 }}
+			placeholder="Filter by semester"
+			allowClear
+			onClear={() => setSelectedSemester('all')}
+			loading={semestersLoading}
+		>
+			<Option value="all">All Semesters</Option>
+			{semesters.map((semester) => (
+				<Option key={semester.id} value={semester.id}>
+					{semester.name}
+				</Option>
+			))}
+		</Select>
+	);
+
 	return (
 		<Card
 			title="Milestones Timeline"
 			extra={
+				// Desktop filter - hide on small screens
+				<div className="hidden md:block">{renderSemesterFilter()}</div>
+			}
+		>
+			{/* Mobile filter - show only on small screens, inside card below title */}
+			<div className="block md:hidden mb-4">
+				<div className="text-base font-medium mb-2">Filter by semester:</div>
 				<Select
 					value={selectedSemester}
 					onChange={setSelectedSemester}
-					style={{ width: 200 }}
+					style={{ width: '100%' }}
 					placeholder="Filter by semester"
 					allowClear
 					onClear={() => setSelectedSemester('all')}
@@ -121,8 +148,8 @@ const MilestonesTimeline: React.FC = () => {
 						</Option>
 					))}
 				</Select>
-			}
-		>
+			</div>
+
 			{!isDataReady ? (
 				<div style={{ textAlign: 'center', padding: '40px 0' }}>
 					<Spin size="large" />
