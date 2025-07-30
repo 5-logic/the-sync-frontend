@@ -144,6 +144,30 @@ export default function AssignReviewerModal({
 		setIsInitialized(false);
 	};
 
+	// Helper function to process reviewer data
+	const processReviewerData = (
+		reviewer: unknown,
+		eligibleReviewersData: Lecturer[],
+	): Lecturer => {
+		// If reviewer is already a Lecturer object
+		if (typeof reviewer === 'object' && reviewer && 'id' in reviewer) {
+			return reviewer as Lecturer;
+		}
+
+		// If reviewer is just an ID string, find it in eligible reviewers
+		const reviewerId =
+			typeof reviewer === 'string' ? reviewer : String(reviewer);
+
+		return (
+			eligibleReviewersData.find((l) => l.id === reviewerId) || {
+				id: reviewerId,
+				fullName: 'Unknown Lecturer',
+				email: '',
+				isModerator: false,
+			}
+		);
+	};
+
 	// Determine if this is a change operation
 	const isChangeMode = Boolean(
 		group && group.reviewers && group.reviewers.length > 0,
@@ -152,67 +176,63 @@ export default function AssignReviewerModal({
 	// Fetch eligible reviewers for the submission
 	useEffect(() => {
 		let ignore = false;
-		if (open && group?.submissionId) {
-			console.log(
-				'Modal opened, fetching eligible reviewers for:',
-				group.submissionId,
+
+		// Helper function to handle change mode logic
+		const handleChangeModeReviewers = (eligibleReviewersData: Lecturer[]) => {
+			if (!isChangeMode || !group?.reviewers) return;
+
+			console.log('Change mode - current reviewers:', group.reviewers);
+			const currentReviewersData = group.reviewers.map((reviewer) =>
+				processReviewerData(reviewer, eligibleReviewersData),
 			);
-			setFetchLoading(true);
+			setCurrentReviewers(currentReviewersData);
+		};
 
-			getEligibleReviewers(group.submissionId)
-				.then((eligibleReviewersData) => {
-					console.log('Received eligible reviewers:', eligibleReviewersData);
-					if (!ignore) {
-						setEligibleLecturers(eligibleReviewersData);
+		// Helper function to handle successful data fetch
+		const handleSuccessfulFetch = (eligibleReviewersData: Lecturer[]) => {
+			if (ignore) return;
 
-						// In change mode, also extract current reviewers info
-						if (isChangeMode && group.reviewers) {
-							console.log('Change mode - current reviewers:', group.reviewers);
-							const currentReviewersData = group.reviewers.map((reviewer) => {
-								// If reviewer is already a Lecturer object
-								if (typeof reviewer === 'object' && reviewer.id) {
-									return reviewer;
-								}
-								// If reviewer is just an ID string, find it in eligible reviewers
-								const reviewerId =
-									typeof reviewer === 'string'
-										? reviewer
-										: (reviewer as unknown as string);
-								return (
-									eligibleReviewersData.find((l) => l.id === reviewerId) || {
-										id: reviewerId,
-										fullName: 'Unknown Lecturer',
-										email: '',
-										isModerator: false,
-									}
-								);
-							});
-							setCurrentReviewers(currentReviewersData);
-						}
-					}
-				})
-				.catch((error) => {
-					console.error('Failed to fetch eligible reviewers:', error);
-					if (!ignore) {
-						setEligibleLecturers([]);
-						setCurrentReviewers([]);
+			console.log('Received eligible reviewers:', eligibleReviewersData);
+			setEligibleLecturers(eligibleReviewersData);
+			handleChangeModeReviewers(eligibleReviewersData);
+		};
 
-						// Show error notification
-						showNotification.error(
-							'Failed to Load Reviewers',
-							'Unable to fetch eligible lecturers. Please try again.',
-						);
-					}
-				})
-				.finally(() => {
-					if (!ignore) {
-						setFetchLoading(false);
-					}
-				});
-		} else if (!open) {
+		// Helper function to handle fetch errors
+		const handleFetchError = (error: Error | unknown) => {
+			console.error('Failed to fetch eligible reviewers:', error);
+			if (ignore) return;
+
 			setEligibleLecturers([]);
 			setCurrentReviewers([]);
+			showNotification.error(
+				'Failed to Load Reviewers',
+				'Unable to fetch eligible lecturers. Please try again.',
+			);
+		};
+
+		if (!open || !group?.submissionId) {
+			setEligibleLecturers([]);
+			setCurrentReviewers([]);
+			return () => {
+				ignore = true;
+			};
 		}
+
+		console.log(
+			'Modal opened, fetching eligible reviewers for:',
+			group.submissionId,
+		);
+		setFetchLoading(true);
+
+		getEligibleReviewers(group.submissionId)
+			.then(handleSuccessfulFetch)
+			.catch(handleFetchError)
+			.finally(() => {
+				if (!ignore) {
+					setFetchLoading(false);
+				}
+			});
+
 		return () => {
 			ignore = true;
 		};
@@ -379,34 +399,89 @@ export default function AssignReviewerModal({
 		await handleAssignReviewers(selected);
 	};
 
-	const handleAssignReviewers = async (selected: string[]) => {
+	// Helper function to create reviewer assignments
+	const createReviewerAssignments = (selected: string[]) => {
+		const reviewerAssignments = [];
+
+		if (selected[0]) {
+			reviewerAssignments.push({
+				lecturerId: selected[0],
+				isMainReviewer: true,
+			});
+		}
+
+		if (selected[1]) {
+			reviewerAssignments.push({
+				lecturerId: selected[1],
+				isMainReviewer: false,
+			});
+		}
+
+		return reviewerAssignments;
+	};
+
+	// Helper function to show success notification
+	const showSuccessNotification = (
+		reviewerAssignments: Array<{ lecturerId: string; isMainReviewer: boolean }>,
+	) => {
+		const operationType = isChangeMode ? 'changed' : 'assigned';
+		const operationTitle = isChangeMode
+			? 'Reviewers Changed Successfully'
+			: 'Reviewers Assigned Successfully';
+
+		const reviewerCount = reviewerAssignments.length;
+		const reviewerText = reviewerCount > 1 ? 's' : '';
+		const preposition = isChangeMode ? 'for' : 'to';
+
+		showNotification.success(
+			operationTitle,
+			`Successfully ${operationType} ${reviewerCount} reviewer${reviewerText} ${preposition} the group.`,
+		);
+	};
+
+	// Helper function to show error notification
+	const showErrorNotification = (error?: Error | unknown) => {
+		const operationType = isChangeMode ? 'change' : 'assign';
+		const operationTitle = `${operationType.charAt(0).toUpperCase() + operationType.slice(1)}`;
+
+		if (error) {
+			const errorMessage =
+				error instanceof Error
+					? error.message
+					: `Failed to ${operationType} reviewers`;
+			showNotification.error(
+				`${operationTitle} Reviewers Failed`,
+				errorMessage,
+			);
+		} else {
+			showNotification.error(
+				`${operationTitle} Failed`,
+				`Failed to ${operationType} reviewers. Please try again.`,
+			);
+		}
+	};
+
+	// Helper function to validate assignment data
+	const validateAssignmentData = (): boolean => {
 		if (!group?.submissionId || !assignBulkReviewers) {
 			showNotification.error(
 				'Operation Failed',
 				'Unable to assign reviewers. Missing required data.',
 			);
-			return;
+			return false;
 		}
+		return true;
+	};
+
+	const handleAssignReviewers = async (selected: string[]) => {
+		if (!validateAssignmentData() || !group?.submissionId) return;
 
 		setAssignLoading(true);
 
 		try {
-			// Prepare reviewer assignments with main/secondary roles
-			const reviewerAssignments = [];
-			if (selected[0]) {
-				reviewerAssignments.push({
-					lecturerId: selected[0],
-					isMainReviewer: true,
-				});
-			}
-			if (selected[1]) {
-				reviewerAssignments.push({
-					lecturerId: selected[1],
-					isMainReviewer: false,
-				});
-			}
+			const reviewerAssignments = createReviewerAssignments(selected);
 
-			const result = await assignBulkReviewers({
+			const result = await assignBulkReviewers!({
 				assignments: [
 					{
 						submissionId: group.submissionId,
@@ -416,38 +491,16 @@ export default function AssignReviewerModal({
 			});
 
 			if (result) {
-				const operationType = isChangeMode ? 'changed' : 'assigned';
-				const operationTitle = isChangeMode
-					? 'Reviewers Changed Successfully'
-					: 'Reviewers Assigned Successfully';
-
-				showNotification.success(
-					operationTitle,
-					`Successfully ${operationType} ${reviewerAssignments.length} reviewer${reviewerAssignments.length > 1 ? 's' : ''} ${isChangeMode ? 'for' : 'to'} the group.`,
-				);
-
+				showSuccessNotification(reviewerAssignments);
 				if (onReloadSubmission) onReloadSubmission(group.submissionId);
 				onAssign(result);
 			} else {
-				const operationType = isChangeMode ? 'change' : 'assign';
-				showNotification.error(
-					`${operationType.charAt(0).toUpperCase() + operationType.slice(1)} Failed`,
-					`Failed to ${operationType} reviewers. Please try again.`,
-				);
+				showErrorNotification();
 				onAssign(null);
 			}
 		} catch (error) {
 			console.error('Failed to assign/change reviewers:', error);
-			const operationType = isChangeMode ? 'change' : 'assign';
-			const errorMessage =
-				error instanceof Error
-					? error.message
-					: `Failed to ${operationType} reviewers`;
-			showNotification.error(
-				`${operationType.charAt(0).toUpperCase() + operationType.slice(1)} Reviewers Failed`,
-				errorMessage,
-			);
-			// Don't re-throw error to prevent double notifications
+			showErrorNotification(error);
 		} finally {
 			setAssignLoading(false);
 		}
