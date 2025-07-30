@@ -1,4 +1,4 @@
-import { PlusOutlined, UserOutlined } from '@ant-design/icons';
+import { PlusOutlined } from '@ant-design/icons';
 import { Button, Card, Col, Flex, Progress, Row, Typography } from 'antd';
 
 import { TagList } from '@/components/common/TagList';
@@ -48,13 +48,31 @@ export default function SuggestedStudentCard({
 			<Row gutter={[12, 8]} align="middle">
 				{/* Student Info */}
 				<Col flex="auto">
-					<Flex align="center" gap={8} className="mb-2">
-						<UserOutlined style={{ color: '#1890ff' }} />
-						<div>
-							<Title level={5} className="mb-0 text-sm">
+					<Flex
+						align="center"
+						gap={8}
+						className="mb-2"
+						style={{ minHeight: '60px', maxHeight: '60px' }}
+					>
+						<div style={{ minHeight: '54px', maxHeight: '54px' }}>
+							<Title
+								level={5}
+								className="mb-0 text-sm"
+								style={{ lineHeight: '18px', height: '18px' }}
+							>
 								{student.fullName}
 							</Title>
-							<Text type="secondary" className="text-xs">
+							<Text
+								type="secondary"
+								className="text-xs"
+								style={{
+									lineHeight: '14px',
+									height: '42px',
+									display: 'block',
+									overflow: 'hidden',
+									textOverflow: 'ellipsis',
+								}}
+							>
 								{student.studentCode} • {student.email}
 							</Text>
 						</div>
@@ -72,42 +90,45 @@ export default function SuggestedStudentCard({
 								strokeColor={getProgressColor(student.matchPercentage)}
 								style={{ flex: 1, maxWidth: 100 }}
 							/>
-							<Text className="text-xs font-medium">
-								{student.matchPercentage}%
-							</Text>
 						</Flex>
 					</div>
 
 					{/* Skills */}
-					{student.skills.length > 0 && (
-						<div className="mb-2">
-							<Text className="text-xs text-gray-500 mb-1 block">Skills:</Text>
+					<div className="mb-2">
+						<Text className="text-xs text-gray-500 mb-1 block">Skills:</Text>
+						{student.skills.length > 0 ? (
 							<TagList
 								items={student.skills}
 								color="blue"
-								maxVisible={2}
+								maxVisible={3}
 								showLevel={true}
-								minHeight="32px"
-								maxHeight="32px"
+								minHeight="auto"
+								maxHeight="none"
 							/>
-						</div>
-					)}
+						) : (
+							<Text className="text-xs text-gray-400">No skills specified</Text>
+						)}
+					</div>
 
 					{/* Responsibilities */}
-					{student.responsibilities.length > 0 && (
-						<div>
-							<Text className="text-xs text-gray-500 mb-1 block">
-								Responsibilities:
-							</Text>
+					<div>
+						<Text className="text-xs text-gray-500 mb-1 block">
+							Responsibilities:
+						</Text>
+						{student.responsibilities.length > 0 ? (
 							<TagList
 								items={student.responsibilities}
 								color="green"
-								maxVisible={2}
-								minHeight="32px"
-								maxHeight="32px"
+								maxVisible={3}
+								minHeight="auto"
+								maxHeight="none"
 							/>
-						</div>
-					)}
+						) : (
+							<Text className="text-xs text-gray-400">
+								No responsibilities specified
+							</Text>
+						)}
+					</div>
 				</Col>
 			</Row>
 		</Card>

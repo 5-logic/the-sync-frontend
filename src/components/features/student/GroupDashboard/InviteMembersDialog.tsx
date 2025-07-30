@@ -291,7 +291,6 @@ export default function InviteMembersDialog({
 				showIcon
 				action={
 					<Button
-						size="small"
 						type="primary"
 						loading={suggestLoading}
 						onClick={handleSuggestStudents}
