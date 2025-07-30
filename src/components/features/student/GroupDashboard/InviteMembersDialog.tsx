@@ -245,6 +245,53 @@ export default function InviteMembersDialog({
 		onCancel();
 	};
 
+	// Render suggested students content based on loading and data state
+	const renderSuggestedStudentsContent = () => {
+		if (suggestLoading) {
+			return (
+				<div className="text-center py-4">
+					<Spin size="large" />
+				</div>
+			);
+		}
+
+		if (suggestedStudents.length > 0) {
+			return (
+				<>
+					{/* Students Grid */}
+					<Row gutter={[16, 16]} className="mb-4">
+						{paginatedStudents.map((student) => (
+							<Col xs={24} sm={12} lg={8} key={student.id}>
+								<SuggestedStudentCard
+									student={student}
+									onAdd={handleAddSuggestedStudent}
+								/>
+							</Col>
+						))}
+					</Row>
+
+					{/* Pagination */}
+					{suggestedStudents.length > pageSize && (
+						<ListPagination
+							total={suggestedStudents.length}
+							current={currentPage}
+							pageSize={pageSize}
+							onChange={handlePageChange}
+							itemName="students"
+							showSizeChanger={false}
+						/>
+					)}
+				</>
+			);
+		}
+
+		return (
+			<Text type="secondary" className="block text-center py-4">
+				No student suggestions available for your group.
+			</Text>
+		);
+	};
+
 	return (
 		<Modal
 			title="Invite Members to Group"
@@ -309,41 +356,7 @@ export default function InviteMembersDialog({
 							AI Suggested Students ({suggestedStudents.length})
 						</Text>
 					</Divider>
-					{suggestLoading ? (
-						<div className="text-center py-4">
-							<Spin size="large" />
-						</div>
-					) : suggestedStudents.length > 0 ? (
-						<>
-							{/* Students Grid */}
-							<Row gutter={[16, 16]} className="mb-4">
-								{paginatedStudents.map((student) => (
-									<Col xs={24} sm={12} lg={8} key={student.id}>
-										<SuggestedStudentCard
-											student={student}
-											onAdd={handleAddSuggestedStudent}
-										/>
-									</Col>
-								))}
-							</Row>
-
-							{/* Pagination */}
-							{suggestedStudents.length > pageSize && (
-								<ListPagination
-									total={suggestedStudents.length}
-									current={currentPage}
-									pageSize={pageSize}
-									onChange={handlePageChange}
-									itemName="students"
-									showSizeChanger={false}
-								/>
-							)}
-						</>
-					) : (
-						<Text type="secondary" className="block text-center py-4">
-							No student suggestions available for your group.
-						</Text>
-					)}
+					{renderSuggestedStudentsContent()}
 				</div>
 			)}
 
