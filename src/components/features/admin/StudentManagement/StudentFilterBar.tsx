@@ -137,7 +137,7 @@ export default function StudentFilterBar({
 
 					<Col flex="auto">
 						<Input
-							placeholder="Search by Name, Email, Student ID"
+							placeholder="Search by Name, Email, Student Code"
 							value={searchText}
 							onChange={(e) => setSearchText(e.target.value)}
 							prefix={<SearchOutlined />}

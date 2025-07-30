@@ -161,7 +161,7 @@ export default function InviteTeamMembers({
 			if (!targetStudent) {
 				showNotification.error(
 					'Student Not Found',
-					'Student not found. Please check email or Student ID.',
+					'Student not found. Please check email or Student Code.',
 				);
 				return;
 			}
@@ -243,7 +243,7 @@ export default function InviteTeamMembers({
 				<Row gutter={[8, 8]} align="middle">
 					<Col flex="auto">
 						<AutoComplete
-							placeholder="Enter student email, Student ID"
+							placeholder="Enter student email, Student Code"
 							value={searchText}
 							options={studentOptions}
 							onSearch={setSearchText}
