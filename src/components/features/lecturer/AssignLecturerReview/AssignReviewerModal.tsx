@@ -169,9 +169,7 @@ export default function AssignReviewerModal({
 	};
 
 	// Determine if this is a change operation
-	const isChangeMode = Boolean(
-		group && group.reviewers && group.reviewers.length > 0,
-	);
+	const isChangeMode = Boolean(group && group.reviewers?.length > 0);
 
 	// Fetch eligible reviewers for the submission
 	useEffect(() => {
