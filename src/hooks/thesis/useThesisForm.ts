@@ -48,7 +48,8 @@ export const useThesisForm = ({
 			abbreviation: thesis.abbreviation,
 			description: thesis.description,
 			domain: thesis.domain,
-			skills: selectedSkillIds,
+			// If skills array is empty, set undefined to show no selection in TreeSelect
+			skills: selectedSkillIds.length > 0 ? selectedSkillIds : undefined,
 		};
 	}, [mode, thesis]);
 

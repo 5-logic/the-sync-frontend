@@ -248,11 +248,19 @@ export default function ThesisForm({
 		fieldsToCheck.forEach((field) => {
 			const currentValue = currentValues[field];
 			const initialValue = initialValues?.[field];
-			if (currentValue !== initialValue) {
-				// Convert undefined to empty string for domain field
-				if (field === 'domain' && currentValue === undefined) {
-					changedFields[field] = '';
-				} else {
+
+			// Special handling for domain field: treat empty string and undefined as equivalent
+			if (field === 'domain') {
+				const normalizedCurrent =
+					currentValue === undefined ? '' : currentValue;
+				const normalizedInitial =
+					initialValue === undefined || initialValue === '' ? '' : initialValue;
+				if (normalizedCurrent !== normalizedInitial) {
+					changedFields[field] = normalizedCurrent;
+				}
+			} else {
+				// Regular comparison for other fields
+				if (currentValue !== initialValue) {
 					changedFields[field] = currentValue;
 				}
 			}
@@ -270,6 +278,7 @@ export default function ThesisForm({
 				)
 			: [];
 		if (JSON.stringify(currentSkills) !== JSON.stringify(initialSkills)) {
+			// Always send skillIds even if it's an empty array (when user clears all skills)
 			changedFields.skillIds = currentSkills;
 		}
 
