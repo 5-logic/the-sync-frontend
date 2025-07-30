@@ -119,7 +119,7 @@ export default function EditStudentDialog({
 					<PersonFormFields
 						fullNameRules={[
 							{ required: true, message: 'Please enter full name' },
-							{ min: 1, message: 'Full name cannot be empty' },
+							{ min: 2, message: 'Full name must be at least 2 characters' },
 							{ max: 100, message: 'Full name is too long' },
 						]}
 						emailRules={[
