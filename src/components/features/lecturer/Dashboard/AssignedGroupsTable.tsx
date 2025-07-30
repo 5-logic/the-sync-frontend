@@ -14,54 +14,28 @@ import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 
 import { TablePagination } from '@/components/common/TablePagination';
-import { useSessionData } from '@/hooks/auth/useAuth';
-import { useCurrentSemester } from '@/hooks/semester/useCurrentSemester';
+import { useLecturerSemesterFilter } from '@/hooks/lecturer/useLecturerSemesterFilter';
 import groupsService, {
 	type SupervisedGroup,
 } from '@/lib/services/groups.service';
-import semestersService from '@/lib/services/semesters.service';
 import { handleApiResponse } from '@/lib/utils/handleApi';
-import { Semester } from '@/schemas/semester';
 
 const { Option } = Select;
 
 const AssignedGroupsTable: React.FC = () => {
 	const [groups, setGroups] = useState<SupervisedGroup[]>([]);
-	const [semesters, setSemesters] = useState<Semester[]>([]);
 	const [searchText, setSearchText] = useState('');
-	const [selectedSemester, setSelectedSemester] = useState<string>('all');
 	const [loading, setLoading] = useState(true);
-	const [semestersLoading, setSemestersLoading] = useState(true);
-	const { session } = useSessionData();
-	const { currentSemester } = useCurrentSemester();
 	const router = useRouter();
 
-	// Set default semester to current semester when available
-	useEffect(() => {
-		if (currentSemester?.id && selectedSemester === 'all') {
-			setSelectedSemester(currentSemester.id);
-		}
-	}, [currentSemester?.id, selectedSemester]);
-
-	// Fetch semesters for filter
-	useEffect(() => {
-		const fetchSemesters = async () => {
-			try {
-				setSemestersLoading(true);
-				const response = await semestersService.findAll();
-				const result = handleApiResponse(response);
-				if (result.success) {
-					setSemesters(result.data || []);
-				}
-			} catch (error) {
-				console.error('Error fetching semesters:', error);
-			} finally {
-				setSemestersLoading(false);
-			}
-		};
-
-		fetchSemesters();
-	}, []);
+	// Use custom hook for semester filter logic
+	const {
+		semesters,
+		selectedSemester,
+		setSelectedSemester,
+		semestersLoading,
+		session,
+	} = useLecturerSemesterFilter();
 
 	// Fetch assigned groups
 	useEffect(() => {
