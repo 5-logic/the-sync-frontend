@@ -28,36 +28,22 @@ export const useMilestoneProgress = () => {
 
 	// Fetch milestones for current semester
 	const fetchMilestones = useCallback(async () => {
-		console.log(
-			'🚀 fetchMilestones called with group.semester.id:',
-			group?.semester?.id,
-		);
-
 		if (!group?.semester?.id) {
-			console.log('❌ No group semester ID, skipping fetch');
 			return;
 		}
 
 		setLoading(true);
-		console.log('⏳ Setting loading to true');
 
 		try {
-			console.log('📡 Calling milestoneService.findBySemester...');
 			const response = await milestoneService.findBySemester(group.semester.id);
-			console.log('📡 Milestone API response:', response);
 
 			if (response.success && response.data) {
-				console.log('✅ Setting milestones:', response.data);
 				setMilestones(response.data);
-			} else {
-				console.log('❌ API response unsuccessful or no data');
 			}
 		} catch (error) {
 			const apiError = handleApiError(error, 'Failed to fetch milestones');
 			showNotification.error('Error', apiError.message);
-			console.error('❌ Error fetching milestones:', error);
 		} finally {
-			console.log('✅ Setting loading to false');
 			setLoading(false);
 		}
 	}, [group?.semester?.id]);
@@ -96,9 +82,6 @@ export const useMilestoneProgress = () => {
 
 	// Initialize milestones and submissions on component mount
 	useEffect(() => {
-		console.log(
-			'🔄 useEffect triggered, calling fetchMilestones and fetchSubmissions',
-		);
 		fetchMilestones();
 		fetchSubmissions();
 	}, [fetchMilestones, fetchSubmissions]);
@@ -163,7 +146,6 @@ export const useMilestoneProgress = () => {
 		} catch (error) {
 			const apiError = handleApiError(error, 'Failed to submit milestone');
 			showNotification.error('Submission Failed', apiError.message);
-			console.error('Error submitting milestone:', error);
 		} finally {
 			// Update submitting state
 			setSubmissions((prev) => ({
@@ -241,7 +223,6 @@ export const useMilestoneProgress = () => {
 				'Failed to update milestone submission',
 			);
 			showNotification.error('Update Failed', apiError.message);
-			console.error('Error updating milestone submission:', error);
 		} finally {
 			// Update submitting state
 			setSubmissions((prev) => ({

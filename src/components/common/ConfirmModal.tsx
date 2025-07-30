@@ -219,6 +219,106 @@ export const ThesisConfirmationModals = {
 
 	// Generic show method for custom modals (backwards compatibility)
 	show: ConfirmationModal.show,
+
+	// New duplicate thesis confirmation modals
+	submitWithDuplicates: (
+		thesisTitle: string,
+		duplicateCount: number,
+		onCheckDuplicates: () => void,
+		onConfirmSubmit: () => void | Promise<void>,
+		loading = false,
+	) => {
+		Modal.confirm({
+			title: 'Duplicate Thesis Detected',
+			content: (
+				<Space direction="vertical" size="small">
+					<Typography.Text>
+						We found {duplicateCount} similar thesis(es) that might be related
+						to your submission.
+					</Typography.Text>
+					<Typography.Text>
+						<Typography.Text strong>Title:</Typography.Text> {thesisTitle}
+					</Typography.Text>
+					<Typography.Text strong style={{ color: '#faad14' }}>
+						Warning: We recommend checking the similar theses before submitting
+						to avoid duplication.
+					</Typography.Text>
+				</Space>
+			),
+			okText: 'Confirm Submit',
+			cancelText: 'Check Similar Theses',
+			centered: true,
+			okButtonProps: { loading },
+			onOk: onConfirmSubmit,
+			onCancel: onCheckDuplicates,
+		});
+	},
+
+	submitWithDuplicatesFromDetail: (
+		thesisTitle: string,
+		duplicateCount: number,
+		onCheckDuplicates: () => void,
+		onConfirmSubmit: () => void | Promise<void>,
+		loading = false,
+	) => {
+		Modal.confirm({
+			title: 'Duplicate Thesis Detected',
+			content: (
+				<Space direction="vertical" size="small">
+					<Typography.Text>
+						We found {duplicateCount} similar thesis(es) that might be related
+						to your submission.
+					</Typography.Text>
+					<Typography.Text>
+						<Typography.Text strong>Title:</Typography.Text> {thesisTitle}
+					</Typography.Text>
+					<Typography.Text strong style={{ color: '#faad14' }}>
+						Warning: We recommend checking the duplicate theses before
+						submitting to avoid duplication.
+					</Typography.Text>
+				</Space>
+			),
+			okText: 'Confirm Submit',
+			cancelText: 'Check Duplicate Theses',
+			centered: true,
+			okButtonProps: { loading },
+			onOk: onConfirmSubmit,
+			onCancel: onCheckDuplicates,
+		});
+	},
+
+	approveWithDuplicates: (
+		thesisTitle: string,
+		duplicateCount: number,
+		onCheckDuplicates: () => void,
+		onConfirmApprove: () => void | Promise<void>,
+		loading = false,
+	) => {
+		Modal.confirm({
+			title: 'Duplicate Thesis Detected',
+			content: (
+				<Space direction="vertical" size="small">
+					<Typography.Text>
+						We found {duplicateCount} similar thesis(es) that might be related
+						to this thesis.
+					</Typography.Text>
+					<Typography.Text>
+						<Typography.Text strong>Title:</Typography.Text> {thesisTitle}
+					</Typography.Text>
+					<Typography.Text strong style={{ color: '#faad14' }}>
+						Warning: We recommend checking the duplicate theses before approving
+						to avoid duplication.
+					</Typography.Text>
+				</Space>
+			),
+			okText: 'Confirm Approve',
+			cancelText: 'Check Duplicate Theses',
+			centered: true,
+			okButtonProps: { loading },
+			onOk: onConfirmApprove,
+			onCancel: onCheckDuplicates,
+		});
+	},
 };
 
 // Group-related confirmation modals
@@ -286,6 +386,47 @@ export const GroupConfirmationModals = {
 			note: 'You will no longer be the leader of this group and will not have access to leader-only functions.',
 			noteType: 'warning',
 			okText: 'Confirm',
+			loading,
+			onOk: onConfirm,
+		}),
+
+	// Generic show method for custom modals
+	show: ConfirmationModal.show,
+};
+
+// Reviewer-related confirmation modals
+export const ReviewerConfirmationModals = {
+	saveDraft: (
+		groupName: string,
+		mainReviewerName: string,
+		secondaryReviewerName: string,
+		onConfirm: () => void | Promise<void>,
+		loading = false,
+	) =>
+		ConfirmationModal.show({
+			title: 'Save Reviewer Draft',
+			message:
+				'Are you sure you want to save this reviewer assignment as draft?',
+			details: groupName,
+			note: `Main Reviewer: ${mainReviewerName}, Secondary Reviewer: ${secondaryReviewerName}. You can assign this draft later or modify it before final assignment.`,
+			noteType: 'info',
+			okText: 'Save Draft',
+			loading,
+			onOk: onConfirm,
+		}),
+
+	assignAllDrafts: (
+		draftCount: number,
+		onConfirm: () => void | Promise<void>,
+		loading = false,
+	) =>
+		ConfirmationModal.show({
+			title: 'Assign All Reviewer Drafts',
+			message: `Are you sure you want to assign reviewers for ${draftCount} group assignments?`,
+			details: `This will assign all pending draft reviewer assignments to their respective groups.`,
+			note: 'This action cannot be undone. All draft reviewer assignments will be processed immediately.',
+			noteType: 'danger',
+			okText: 'Yes, Assign All',
 			loading,
 			onOk: onConfirm,
 		}),

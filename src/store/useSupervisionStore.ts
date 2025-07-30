@@ -117,7 +117,7 @@ export const useSupervisionStore = create<SupervisionState>()(
 				}
 			},
 
-			// Change supervisor
+			// Change supervisor - uses bulkAssignSupervisors API
 			changeSupervisor: async (
 				thesisId: string,
 				data: ChangeSupervisorRequest,
@@ -125,21 +125,68 @@ export const useSupervisionStore = create<SupervisionState>()(
 				set({ changing: true, lastError: null });
 
 				try {
-					const response = await supervisionService.changeSupervisor(
-						thesisId,
-						data,
-					);
-					const { success, error } = handleApiResponse(response);
+					// Use bulkAssignSupervisors API for change supervisor
+					const bulkAssignData: BulkAssignmentRequest = {
+						assignments: [
+							{
+								thesisId: thesisId,
+								lecturerIds: [data.currentSupervisorId, data.newSupervisorId],
+							},
+						],
+					};
 
-					if (success) {
+					const response =
+						await supervisionService.bulkAssignSupervisors(bulkAssignData);
+					const {
+						success,
+						data: responseData,
+						error,
+					} = handleApiResponse(response);
+
+					if (success && responseData) {
 						set({ changing: false });
-						// Don't show notification here - let calling store handle it
-						return true;
+
+						// Check if the change was successful
+						let results: Array<{
+							thesisId: string;
+							lecturerId: string;
+							status: string;
+							message?: string;
+						}>;
+
+						if (Array.isArray(responseData)) {
+							results = responseData;
+						} else {
+							console.error('Unexpected response format:', responseData);
+							results = [];
+						}
+
+						// Check if at least one assignment was successful
+						const hasSuccess = results.some(
+							(r) => r.status === 'success' || r.status === 'already_exists',
+						);
+
+						if (hasSuccess) {
+							return true;
+						} else {
+							// Extract error messages from failed results
+							const failedResults = results.filter(
+								(r) => r.status !== 'success' && r.status !== 'already_exists',
+							);
+
+							// Use the first available error message from the results
+							const errorMessage =
+								failedResults.length > 0 && failedResults[0].message
+									? failedResults[0].message
+									: error?.message || 'Failed to change supervisor';
+
+							set({ lastError: errorMessage });
+							return false;
+						}
 					} else {
 						const errorMessage =
 							error?.message || 'Failed to change supervisor';
 						set({ lastError: errorMessage, changing: false });
-						// Don't show notification here - let calling store handle it
 						return false;
 					}
 				} catch (err) {
@@ -148,12 +195,9 @@ export const useSupervisionStore = create<SupervisionState>()(
 						'Failed to change supervisor',
 					);
 					set({ lastError: message, changing: false });
-					// Don't show notification here - let calling store handle it
 					return false;
 				}
-			},
-
-			// Clear error
+			}, // Clear error
 			clearError: (): void => set({ lastError: null }),
 
 			// Bulk assign supervisors
@@ -189,7 +233,7 @@ export const useSupervisionStore = create<SupervisionState>()(
 						// Calculate summary from actual results
 						const total = results.length;
 						const successful = results.filter(
-							(r) => r.status === 'success',
+							(r) => r.status === 'success' || r.status === 'already_exists',
 						).length;
 						const failed = total - successful;
 

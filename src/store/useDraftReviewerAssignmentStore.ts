@@ -5,8 +5,10 @@ export interface DraftReviewerAssignment {
 	submissionId: string;
 	thesisTitle: string;
 	groupName: string;
-	reviewerIds: string[];
-	reviewerNames: string[];
+	mainReviewerId?: string;
+	mainReviewerName?: string;
+	secondaryReviewerId?: string;
+	secondaryReviewerName?: string;
 }
 
 interface DraftReviewerAssignmentState {
@@ -15,8 +17,10 @@ interface DraftReviewerAssignmentState {
 	removeDraftReviewerAssignment: (submissionId: string) => void;
 	updateDraftReviewerAssignment: (
 		submissionId: string,
-		reviewerIds: string[],
-		reviewerNames: string[],
+		mainReviewerId?: string,
+		mainReviewerName?: string,
+		secondaryReviewerId?: string,
+		secondaryReviewerName?: string,
 	) => void;
 	clearAllDraftReviewerDrafts: () => void;
 	getDraftReviewerAssignmentsList: () => DraftReviewerAssignment[];
@@ -55,8 +59,10 @@ export const useDraftReviewerAssignmentStore =
 
 					updateDraftReviewerAssignment: (
 						submissionId: string,
-						reviewerIds: string[],
-						reviewerNames: string[],
+						mainReviewerId?: string,
+						mainReviewerName?: string,
+						secondaryReviewerId?: string,
+						secondaryReviewerName?: string,
 					): void => {
 						set((state) => {
 							const existing = state.draftReviewerAssignments[submissionId];
@@ -66,8 +72,10 @@ export const useDraftReviewerAssignmentStore =
 										...state.draftReviewerAssignments,
 										[submissionId]: {
 											...existing,
-											reviewerIds,
-											reviewerNames,
+											mainReviewerId,
+											mainReviewerName,
+											secondaryReviewerId,
+											secondaryReviewerName,
 										},
 									},
 								};

@@ -1,9 +1,14 @@
 import httpClient from '@/lib/services/_httpClient';
 import { ApiResponse } from '@/schemas/_common';
 
+export interface ReviewerAssignment {
+	lecturerId: string;
+	isMainReviewer: boolean;
+}
+
 export interface AssignBulkReviewerAssignment {
 	submissionId: string;
-	lecturerIds: string[];
+	reviewerAssignments: ReviewerAssignment[];
 }
 
 export interface AssignBulkReviewersDto {
@@ -20,15 +25,6 @@ export interface AssignBulkReviewersResult {
 	}>;
 }
 
-export interface ChangeReviewerDto {
-	currentReviewerId: string;
-	newReviewerId: string;
-}
-
-export interface ChangeReviewerResult {
-	reviewerId: string;
-	submissionId: string;
-}
 export interface Lecturer {
 	id: string;
 	fullName: string;
@@ -36,7 +32,23 @@ export interface Lecturer {
 	isModerator: boolean;
 }
 
-export type GetEligibleReviewersResult = Lecturer[];
+export interface EligibleReviewerResponse {
+	userId: string;
+	isModerator: boolean;
+	user: {
+		id: string;
+		fullName: string;
+		email: string;
+		password: string;
+		gender: string;
+		phoneNumber: string;
+		isActive: boolean;
+		createdAt: string;
+		updatedAt: string;
+	};
+}
+
+export type GetEligibleReviewersResult = EligibleReviewerResponse[];
 
 class ReviewService {
 	private readonly baseUrl = '/reviews';
@@ -63,20 +75,6 @@ class ReviewService {
 			ApiResponse<AssignBulkReviewersResult>
 		>(`${this.baseUrl}/assign-reviewer`, dto);
 		// BE returns { totalAssignedCount, submissionCount, results }
-		return response.data;
-	}
-	/**
-	 * Change reviewer assignment for a submission (returns updated assignment)
-	 */
-	async changeReviewer(
-		submissionId: string,
-		dto: ChangeReviewerDto,
-	): Promise<ApiResponse<ChangeReviewerResult>> {
-		const response = await httpClient.put<ApiResponse<ChangeReviewerResult>>(
-			`${this.baseUrl}/${submissionId}/change-reviewer`,
-			dto,
-		);
-		// BE returns updated assignment
 		return response.data;
 	}
 }

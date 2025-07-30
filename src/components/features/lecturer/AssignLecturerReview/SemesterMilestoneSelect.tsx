@@ -34,7 +34,7 @@ export default function SemesterMilestoneSelect({
 }: Readonly<Props>) {
 	return (
 		<Row gutter={[12, 12]} wrap>
-			<Col style={{ width: 160 }}>
+			<Col>
 				<Select
 					value={semester}
 					onChange={onSemesterChange}
@@ -52,7 +52,7 @@ export default function SemesterMilestoneSelect({
 				</Select>
 			</Col>
 
-			<Col style={{ width: 160 }}>
+			<Col>
 				<Select
 					value={milestone}
 					onChange={onMilestoneChange}

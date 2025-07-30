@@ -7,12 +7,16 @@ import { ThesisConfirmationModals } from '@/components/common/ConfirmModal';
 import { Header } from '@/components/common/Header';
 import ThesisFilterBar from '@/components/features/lecturer/AssignListPublishThesis/ThesisFilterBar';
 import ThesisTable from '@/components/features/lecturer/AssignListPublishThesis/ThesisTable';
+import { useCurrentSemester } from '@/hooks/semester/useCurrentSemester';
 import { showNotification } from '@/lib/utils/notification';
 import { usePublishThesesStore } from '@/store';
 
 export default function AssignListPublishThesisPage() {
 	const [selectedIds, setSelectedIds] = useState<string[]>([]);
 	const [bulkPublishLoading, setBulkPublishLoading] = useState(false);
+
+	// Get current semester for default filter
+	const { currentSemester } = useCurrentSemester();
 
 	// Use the new store for data management
 	const {
@@ -27,6 +31,7 @@ export default function AssignListPublishThesisPage() {
 		togglePublishStatus,
 		publishMultiple,
 		getDomainOptions,
+		getSemesterOptions,
 		clearError,
 	} = usePublishThesesStore();
 
@@ -35,19 +40,25 @@ export default function AssignListPublishThesisPage() {
 		fetchItems();
 	}, [fetchItems]);
 
-	// Initialize filters on mount
+	// Initialize filters on mount with current semester default
 	useEffect(() => {
 		setFilters({
 			searchText: '',
 			isPublish: undefined,
 			domain: undefined,
+			semesterId: currentSemester?.id,
 		});
-	}, [setFilters]);
+	}, [setFilters, currentSemester?.id]);
 
 	// ✅ Extract unique domain list for dropdown
 	const domainOptions = useMemo(() => {
 		return getDomainOptions();
 	}, [getDomainOptions]);
+
+	// ✅ Extract unique semester list for dropdown
+	const semesterOptions = useMemo(() => {
+		return getSemesterOptions();
+	}, [getSemesterOptions]);
 
 	const handleFilterChange = (newFilters: Partial<typeof filters>) => {
 		setFilters(newFilters);
@@ -90,17 +101,11 @@ export default function AssignListPublishThesisPage() {
 							`Published ${thesesToPublish.length} thesis(es) successfully`,
 						);
 						setSelectedIds([]);
-					} else {
-						showNotification.error(
-							'Bulk Publish Failed',
-							'Failed to publish some theses. Please try again.',
-						);
 					}
+					// Error handling is now done in the store with backend error messages
 				} catch {
-					showNotification.error(
-						'Bulk Publish Error',
-						'An error occurred while publishing theses.',
-					);
+					// Additional error handling if needed
+					// Store already handles the error notifications
 				} finally {
 					setBulkPublishLoading(false);
 				}
@@ -135,8 +140,8 @@ export default function AssignListPublishThesisPage() {
 				<Col>
 					<Header
 						title="Assign List Publish Thesis"
-						description="Manage the list of published thesis topics available for student
-						selection. Only approved theses are shown here."
+						description="Manage the list of thesis topics available for student
+						selection. All approved theses are shown here - you can toggle their publish status."
 						badgeText="Moderator Only"
 					/>
 				</Col>
@@ -159,6 +164,7 @@ export default function AssignListPublishThesisPage() {
 							currentFilters={filters}
 							onFilterChange={handleFilterChange}
 							domainOptions={domainOptions}
+							semesterOptions={semesterOptions}
 							onRefresh={refetch}
 							loading={refreshing}
 						/>

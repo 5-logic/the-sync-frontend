@@ -8,12 +8,7 @@ import ThesisForm from '@/components/features/lecturer/CreateThesis/ThesisForm';
 import { useThesisForm } from '@/hooks/thesis';
 import thesisService from '@/lib/services/theses.service';
 import { handleApiResponse } from '@/lib/utils/handleApi';
-import {
-	Thesis,
-	ThesisRequiredSkill,
-	ThesisVersion,
-	ThesisWithRelations,
-} from '@/schemas/thesis';
+import { Thesis, ThesisVersion, ThesisWithRelations } from '@/schemas/thesis';
 import { useSkillSetStore } from '@/store';
 
 interface Props {
@@ -44,7 +39,7 @@ export default function EditThesis({ thesisId }: Props) {
 	const convertToThesisWithRelations = (
 		thesisData: Thesis & {
 			semesterId?: string;
-			thesisRequiredSkills?: ThesisRequiredSkill[];
+			thesisRequiredSkills?: Array<{ id: string; name: string }>;
 			thesisVersions?: ThesisVersion[];
 		},
 	): ThesisWithRelations => {
@@ -60,12 +55,8 @@ export default function EditThesis({ thesisId }: Props) {
 					email: '',
 				},
 			},
-			thesisRequiredSkills:
-				(thesisData.thesisRequiredSkills as ThesisWithRelations['thesisRequiredSkills']) ||
-				[],
-			thesisVersions:
-				(thesisData.thesisVersions as ThesisWithRelations['thesisVersions']) ||
-				[],
+			thesisRequiredSkills: thesisData.thesisRequiredSkills || [],
+			thesisVersions: thesisData.thesisVersions || [],
 		};
 	};
 

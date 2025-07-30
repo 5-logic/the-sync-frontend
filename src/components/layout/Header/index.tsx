@@ -3,6 +3,7 @@ import { Button, Layout } from 'antd';
 import React from 'react';
 
 import { HeaderSectionProps } from '@/components/layout/CollapsibleLayout/CollapsibleLayout.types';
+import { CurrentSemesterTag } from '@/components/layout/Header/CurrentSemesterTag';
 import UserProfile from '@/components/layout/Header/UserProfile';
 
 const { Header } = Layout;
@@ -26,7 +27,7 @@ export const HeaderSection: React.FC<HeaderSectionProps> = ({
 				top: 0,
 			}}
 		>
-			<div style={{ display: 'flex', alignItems: 'center' }}>
+			<div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
 				<Button
 					type="text"
 					icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
@@ -37,6 +38,10 @@ export const HeaderSection: React.FC<HeaderSectionProps> = ({
 						height: 64,
 					}}
 				/>
+
+				{/* Current Semester Tag */}
+				<CurrentSemesterTag />
+
 				{/* Page Title Area */}
 				<div
 					style={{
