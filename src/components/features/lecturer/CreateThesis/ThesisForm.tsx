@@ -258,11 +258,9 @@ export default function ThesisForm({
 				if (normalizedCurrent !== normalizedInitial) {
 					changedFields[field] = normalizedCurrent;
 				}
-			} else {
+			} else if (currentValue !== initialValue) {
 				// Regular comparison for other fields
-				if (currentValue !== initialValue) {
-					changedFields[field] = currentValue;
-				}
+				changedFields[field] = currentValue;
 			}
 		});
 
