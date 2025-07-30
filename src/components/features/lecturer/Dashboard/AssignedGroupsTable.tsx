@@ -10,6 +10,7 @@ import {
 	Table,
 	Tooltip,
 } from 'antd';
+import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 
 import { TablePagination } from '@/components/common/TablePagination';
@@ -33,6 +34,7 @@ const AssignedGroupsTable: React.FC = () => {
 	const [semestersLoading, setSemestersLoading] = useState(true);
 	const { session } = useSessionData();
 	const { currentSemester } = useCurrentSemester();
+	const router = useRouter();
 
 	// Set default semester to current semester when available
 	useEffect(() => {
@@ -193,8 +195,8 @@ const AssignedGroupsTable: React.FC = () => {
 						type="link"
 						icon={<EyeOutlined />}
 						onClick={() => {
-							// Navigate to group details page
-							console.log('View group details:', record.id);
+							// Navigate to group progress page with group ID as query param
+							router.push(`/lecturer/group-progress?groupId=${record.id}`);
 						}}
 					/>
 				</Tooltip>

@@ -2,6 +2,7 @@
 
 import { Alert, Space } from 'antd';
 import { useSession } from 'next-auth/react';
+import { useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Header } from '@/components/common/Header';
@@ -25,6 +26,10 @@ export default function GroupProgressPage() {
 
 	// Get current user session to track user changes
 	const { data: session } = useSession();
+
+	// Get query params to auto-select group
+	const searchParams = useSearchParams();
+	const groupIdFromQuery = searchParams.get('groupId');
 
 	// Store hooks for cached data
 	const { fetchLecturers } = useLecturerStore();
@@ -155,6 +160,28 @@ export default function GroupProgressPage() {
 		},
 		[selectMilestone],
 	);
+
+	// Auto-select group from query param when groups are loaded
+	useEffect(() => {
+		if (groupIdFromQuery && groups.length > 0 && !selectedGroup) {
+			const targetGroup = groups.find((group) => group.id === groupIdFromQuery);
+			if (targetGroup) {
+				handleGroupSelect(targetGroup);
+				// Auto-scroll to the group detail card after selection
+				setTimeout(() => {
+					const groupDetailElement = document.querySelector(
+						'[data-testid="group-detail-card"]',
+					);
+					if (groupDetailElement) {
+						groupDetailElement.scrollIntoView({
+							behavior: 'smooth',
+							block: 'start',
+						});
+					}
+				}, 100);
+			}
+		}
+	}, [groupIdFromQuery, groups, selectedGroup, handleGroupSelect]);
 
 	// Memoized search change handler với debounce effect
 	const handleSearchChange = useCallback((value: string) => {
