@@ -30,6 +30,19 @@ const cardStyle = {
 const milestoneInfoStyle = { marginTop: 4 };
 const timeRemainingStyle = { fontSize: 12 };
 
+const getTimelineColor = (status: MilestoneStatus): string => {
+	switch (status) {
+		case 'Ended':
+			return 'green';
+		case 'In Progress':
+			return 'gold';
+		case 'Upcoming':
+			return '#d9d9d9';
+		default:
+			return 'gray';
+	}
+};
+
 // Reusable components
 const ProgressCard = ({ children }: { children: React.ReactNode }) => (
 	<Card title="Progress Overview" style={cardStyle}>
@@ -60,6 +73,57 @@ const MilestoneInfo = ({
 	</div>
 );
 
+const TimelineItem = ({
+	milestone,
+	status,
+}: {
+	milestone: {
+		id: string;
+		name: string;
+		startDate: Date | string;
+		endDate: Date | string;
+	};
+	status: MilestoneStatus;
+}) => (
+	<Timeline.Item key={milestone.id} color={getTimelineColor(status)}>
+		<div>
+			<Text strong>{milestone.name}</Text> –{' '}
+			<Text type="secondary">
+				{formatDate(milestone.startDate)} - {formatDate(milestone.endDate)}
+			</Text>
+		</div>
+		<Text>Status: {status}</Text>
+	</Timeline.Item>
+);
+
+const ButtonGroup = ({
+	hideTrackMilestones,
+	onTrackMilestones,
+	onViewThesisDetails,
+	thesisId,
+}: {
+	hideTrackMilestones: boolean;
+	onTrackMilestones: () => void;
+	onViewThesisDetails: () => void;
+	thesisId?: string;
+}) => (
+	<div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+		{!hideTrackMilestones && (
+			<Button type="primary" block onClick={onTrackMilestones}>
+				Track Milestones
+			</Button>
+		)}
+		<Button
+			type={hideTrackMilestones ? 'primary' : 'default'}
+			block
+			onClick={onViewThesisDetails}
+			disabled={!thesisId}
+		>
+			View Thesis Details
+		</Button>
+	</div>
+);
+
 export default function LecturerProgressOverviewCard({
 	thesisId,
 	hideTrackMilestones = false,
@@ -74,19 +138,6 @@ export default function LecturerProgressOverviewCard({
 	const handleViewThesisDetails = () => {
 		if (thesisId) {
 			router.push(`/lecturer/thesis-management/${thesisId}`);
-		}
-	};
-
-	const getTimelineColor = (status: MilestoneStatus): string => {
-		switch (status) {
-			case 'Ended':
-				return 'green';
-			case 'In Progress':
-				return 'gold';
-			case 'Upcoming':
-				return '#d9d9d9';
-			default:
-				return 'gray';
 		}
 	};
 
@@ -110,22 +161,20 @@ export default function LecturerProgressOverviewCard({
 		);
 	}
 
-	// Sort milestones by start date
-	const sortedMilestones = [...milestones].sort((a, b) =>
-		dayjs(a.startDate).isBefore(dayjs(b.startDate)) ? -1 : 1,
-	);
+	// Sort milestones by start date and add status to each
+	const sortedMilestones = [...milestones]
+		.sort((a, b) => (dayjs(a.startDate).isBefore(dayjs(b.startDate)) ? -1 : 1))
+		.map((milestone) => ({
+			...milestone,
+			status: getMilestoneStatus(milestone.startDate, milestone.endDate),
+		}));
 
-	// Find next upcoming milestone (not the current in-progress one)
-	const nextMilestone = sortedMilestones.find((milestone) => {
-		const status = getMilestoneStatus(milestone.startDate, milestone.endDate);
-		return status === 'Upcoming';
-	});
+	// Find milestones by status
+	const findMilestoneByStatus = (status: MilestoneStatus) =>
+		sortedMilestones.find((milestone) => milestone.status === status);
 
-	// Find current milestone if any
-	const currentMilestone = sortedMilestones.find((milestone) => {
-		const status = getMilestoneStatus(milestone.startDate, milestone.endDate);
-		return status === 'In Progress';
-	});
+	const currentMilestone = findMilestoneByStatus('In Progress');
+	const nextMilestone = findMilestoneByStatus('Upcoming');
 
 	return (
 		<ProgressCard>
@@ -149,45 +198,22 @@ export default function LecturerProgressOverviewCard({
 				)}
 
 				<Timeline>
-					{sortedMilestones.map((milestone) => {
-						const status = getMilestoneStatus(
-							milestone.startDate,
-							milestone.endDate,
-						);
-						return (
-							<Timeline.Item
-								key={milestone.id}
-								color={getTimelineColor(status)}
-							>
-								<div>
-									<Text strong>{milestone.name}</Text> –{' '}
-									<Text type="secondary">
-										{formatDate(milestone.startDate)} -{' '}
-										{formatDate(milestone.endDate)}
-									</Text>
-								</div>
-								<Text>Status: {status}</Text>
-							</Timeline.Item>
-						);
-					})}
+					{sortedMilestones.map((milestone) => (
+						<TimelineItem
+							key={milestone.id}
+							milestone={milestone}
+							status={milestone.status}
+						/>
+					))}
 				</Timeline>
 			</div>
 
-			<div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-				{!hideTrackMilestones && (
-					<Button type="primary" block onClick={handleTrackMilestones}>
-						Track Milestones
-					</Button>
-				)}
-				<Button
-					type={hideTrackMilestones ? 'primary' : 'default'}
-					block
-					onClick={handleViewThesisDetails}
-					disabled={!thesisId}
-				>
-					View Thesis Details
-				</Button>
-			</div>
+			<ButtonGroup
+				hideTrackMilestones={hideTrackMilestones}
+				onTrackMilestones={handleTrackMilestones}
+				onViewThesisDetails={handleViewThesisDetails}
+				thesisId={thesisId}
+			/>
 		</ProgressCard>
 	);
 }
