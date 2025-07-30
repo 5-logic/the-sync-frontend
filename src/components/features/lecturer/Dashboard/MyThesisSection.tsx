@@ -56,9 +56,9 @@ const SkillsDisplay: React.FC<{
 
 			let visibleCount = 0;
 
-			for (let i = 0; i < tags.length; i++) {
-				const tag = tags[i] as HTMLElement;
-				const tagRect = tag.getBoundingClientRect();
+			for (const tag of Array.from(tags)) {
+				const tagElement = tag as HTMLElement;
+				const tagRect = tagElement.getBoundingClientRect();
 				const containerRect = container.getBoundingClientRect();
 
 				// Tính toán vị trí tương đối với container
