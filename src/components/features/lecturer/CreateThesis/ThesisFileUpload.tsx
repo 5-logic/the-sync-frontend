@@ -49,59 +49,62 @@ export default function SupportingDocumentField({
 		setFileChangeState({ action: 'none' });
 	}, [initialFile]);
 
+	const handleCreateModeUpload = async (file: File) => {
+		try {
+			setUploading(true);
+
+			const fileUrl = await StorageService.uploadFile(file, 'support-doc');
+
+			const uploadedFileInfo = {
+				name: file.name,
+				size: file.size,
+				url: fileUrl,
+			};
+
+			setUploadedFile(uploadedFileInfo);
+			onFileChange(uploadedFileInfo);
+
+			showNotification.success('Upload Success', 'File uploaded successfully!');
+		} catch {
+			// Error notification is already shown in StorageService
+		} finally {
+			setUploading(false);
+		}
+	};
+
+	const handleEditModeUpload = (file: File) => {
+		const newState = {
+			action: 'replace' as const,
+			newFile: file,
+		};
+
+		setFileChangeState(newState);
+		onFileChangeStateUpdate?.(newState);
+
+		// Show the new file in UI
+		const newFileInfo = {
+			name: file.name,
+			size: file.size,
+			url: '', // No URL yet since we haven't uploaded
+		};
+
+		setUploadedFile(newFileInfo);
+
+		// Notify parent about the change (provide the File object for later upload)
+		onFileChange({
+			name: file.name,
+			size: file.size,
+			url: 'pending-upload', // Special marker to indicate pending upload
+		});
+
+		// No notification needed - UI already shows the change clearly
+	};
+
 	const handleFileUpload = async (file: File) => {
 		if (mode === 'create') {
-			// In create mode, upload immediately as before
-			try {
-				setUploading(true);
-
-				const fileUrl = await StorageService.uploadFile(file, 'support-doc');
-
-				const uploadedFileInfo = {
-					name: file.name,
-					size: file.size,
-					url: fileUrl,
-				};
-
-				setUploadedFile(uploadedFileInfo);
-				onFileChange(uploadedFileInfo);
-
-				showNotification.success(
-					'Upload Success',
-					'File uploaded successfully!',
-				);
-			} catch {
-				// Error notification is already shown in StorageService
-			} finally {
-				setUploading(false);
-			}
+			await handleCreateModeUpload(file);
 		} else {
-			// In edit mode, just track the change without uploading
-			const newState = {
-				action: 'replace' as const,
-				newFile: file,
-			};
-
-			setFileChangeState(newState);
-			onFileChangeStateUpdate?.(newState);
-
-			// Show the new file in UI
-			const newFileInfo = {
-				name: file.name,
-				size: file.size,
-				url: '', // No URL yet since we haven't uploaded
-			};
-
-			setUploadedFile(newFileInfo);
-
-			// Notify parent about the change (provide the File object for later upload)
-			onFileChange({
-				name: file.name,
-				size: file.size,
-				url: 'pending-upload', // Special marker to indicate pending upload
-			});
-
-			// No notification needed - UI already shows the change clearly
+			handleEditModeUpload(file);
 		}
 	};
 
@@ -198,6 +201,19 @@ export default function SupportingDocumentField({
 	// Create upload props using factory
 	const uploadProps = createUploadProps();
 	const newFileUploadProps = createUploadProps({ showUploadList: false });
+
+	// Helper function to get help text based on mode and file state
+	const getHelpText = () => {
+		if (mode === 'create') {
+			return 'Support for DOC, DOCX (Max: 10MB)';
+		}
+
+		if (fileChangeState.action === 'none') {
+			return 'Support for DOC, DOCX (Max: 10MB). Changes will be applied when you save the thesis.';
+		}
+
+		return 'File changes will be applied when you save the thesis.';
+	};
 
 	return (
 		<>
@@ -360,11 +376,7 @@ export default function SupportingDocumentField({
 							)}
 
 							<div style={{ fontSize: 12, color: '#999', marginTop: 4 }}>
-								{mode === 'create'
-									? 'Support for DOC, DOCX (Max: 10MB)'
-									: fileChangeState.action === 'none'
-										? 'Support for DOC, DOCX (Max: 10MB). Changes will be applied when you save the thesis.'
-										: 'File changes will be applied when you save the thesis.'}
+								{getHelpText()}
 							</div>
 						</div>
 					</div>
