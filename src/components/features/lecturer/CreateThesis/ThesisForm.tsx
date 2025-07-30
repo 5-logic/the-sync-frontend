@@ -248,13 +248,19 @@ export default function ThesisForm({
 		fieldsToCheck.forEach((field) => {
 			const currentValue = currentValues[field];
 			const initialValue = initialValues?.[field];
-			if (currentValue !== initialValue) {
-				// Convert undefined to empty string for domain field
-				if (field === 'domain' && currentValue === undefined) {
-					changedFields[field] = '';
-				} else {
-					changedFields[field] = currentValue;
+
+			// Special handling for domain field: treat empty string and undefined as equivalent
+			if (field === 'domain') {
+				const normalizedCurrent =
+					currentValue === undefined ? '' : currentValue;
+				const normalizedInitial =
+					initialValue === undefined || initialValue === '' ? '' : initialValue;
+				if (normalizedCurrent !== normalizedInitial) {
+					changedFields[field] = normalizedCurrent;
 				}
+			} else if (currentValue !== initialValue) {
+				// Regular comparison for other fields
+				changedFields[field] = currentValue;
 			}
 		});
 
@@ -270,6 +276,7 @@ export default function ThesisForm({
 				)
 			: [];
 		if (JSON.stringify(currentSkills) !== JSON.stringify(initialSkills)) {
+			// Always send skillIds even if it's an empty array (when user clears all skills)
 			changedFields.skillIds = currentSkills;
 		}
 
@@ -354,6 +361,8 @@ export default function ThesisForm({
 				// Convert empty string to undefined for domain field to show placeholder
 				domain:
 					initialValues?.domain === '' ? undefined : initialValues?.domain,
+				// Set proper initial value for supportingDocument field to prevent auto-reset
+				supportingDocument: initialFile ? [initialFile] : [],
 			}}
 			onFinish={handleFormSubmit}
 			onValuesChange={checkFormChanges} // Detect changes when form values change

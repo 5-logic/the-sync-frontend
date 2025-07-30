@@ -93,12 +93,12 @@ export function createBatchCreateAction<T extends { id: string }, TCreate>(
 					`List ${entityName}s have been imported successfully.`,
 				);
 				if (result.success && result.data) {
-					// Add all new items to the array
+					// Add all new items to the beginning of the array (consistent with single create)
 					set((state: Record<string, unknown>) => ({
 						...state,
 						[`${entityName}s`]: [
-							...(state[`${entityName}s`] as T[]),
 							...result.data!,
+							...(state[`${entityName}s`] as T[]),
 						],
 					}));
 

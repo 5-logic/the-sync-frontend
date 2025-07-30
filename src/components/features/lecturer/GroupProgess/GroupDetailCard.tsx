@@ -182,7 +182,7 @@ function GroupDetailCard({
 						<GroupInfoCard group={groupDashboard} viewOnly={true} />
 
 						{/* Supervisor Information */}
-						{hasThesis && thesisId ? (
+						{thesisId ? (
 							<SupervisorInfoCard thesisId={thesisId} />
 						) : (
 							<Card title="Supervisor Information">
