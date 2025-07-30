@@ -1,21 +1,21 @@
 'use client';
 
-import { Button, Col, Modal, Row, Space, Table, Typography } from 'antd';
-import type {} from 'antd/es/table';
+import { Button, Col, Row, Space, Table, Typography } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
 import { TableRowSelection } from 'antd/es/table/interface';
 import React, { useCallback, useMemo, useState } from 'react';
 
+import { ConfirmationModal } from '@/components/common/ConfirmModal';
 import { Header } from '@/components/common/Header';
 import { TablePagination } from '@/components/common/TablePagination';
 import { getColumns } from '@/components/features/admin/CapstoneProjectManagement/Columns';
 import { FilterBar } from '@/components/features/admin/CapstoneProjectManagement/FilterBar';
-import { calculateRowSpans } from '@/components/features/admin/CapstoneProjectManagement/calculateRowSpan';
-import {
-	GroupTableData,
-	useGroupTableData,
-} from '@/components/features/admin/CapstoneProjectManagement/useGroupTableData';
+import { FullRowSpanItem } from '@/components/features/admin/CapstoneProjectManagement/calculateRowSpan';
+import { useBulkDefenseUpdate } from '@/hooks/admin/useBulkDefenseUpdate';
+import { useBulkUpdateModal } from '@/hooks/admin/useBulkUpdateModal';
+import { useCapstoneManagement } from '@/hooks/admin/useCapstoneManagement';
 import { useDebouncedSearch } from '@/hooks/ui/useDebounce';
-import { exportDefenseResultsToExcel } from '@/lib/utils/defenseResultsExporter';
+import { createStatusUpdateSummary } from '@/lib/utils/defenseResultsApi';
 import '@/styles/components.css';
 
 const { Text } = Typography;
@@ -23,31 +23,45 @@ const { Text } = Typography;
 const CapstoneDefenseResults = () => {
 	const { searchValue, debouncedSearchValue, setSearchValue } =
 		useDebouncedSearch('', 300);
-	const [selectedSemester, setSelectedSemester] = useState<string>('all');
+	const [selectedSemester, setSelectedSemester] = useState<string>('');
 	const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 	const [statusUpdates, setStatusUpdates] = useState<Record<string, string>>(
 		{},
 	);
-	const [baseDataState, setBaseDataState] = useState<GroupTableData[]>([]);
-	const { baseData, availableSemesters } = useGroupTableData();
+	const [preConfirmStatusUpdates, setPreConfirmStatusUpdates] = useState<
+		Record<string, string>
+	>({});
+	const [saving, setSaving] = useState(false);
+	const [bulkUpdating, setBulkUpdating] = useState(false);
 
-	// Initialize baseDataState when baseData changes
+	// Use new hooks for business logic
+	const { updateIndividualStatus } = useBulkDefenseUpdate();
+	const { showBulkUpdateModal } = useBulkUpdateModal();
+	const { semesters, filteredData, availableSemesters, refresh, loading } =
+		useCapstoneManagement(selectedSemester, debouncedSearchValue);
+
+	// Set the first available semester as default when semesters are loaded
 	React.useEffect(() => {
-		setBaseDataState(baseData);
-	}, [baseData]);
+		if (availableSemesters.length > 0 && !selectedSemester) {
+			setSelectedSemester(availableSemesters[0].id);
+		}
+	}, [availableSemesters, selectedSemester]);
 
-	const dataToUse = baseDataState;
+	// Clear status updates when semester changes
+	React.useEffect(() => {
+		if (selectedSemester) {
+			setStatusUpdates({});
+			setPreConfirmStatusUpdates({});
+			setSelectedRowKeys([]);
+		}
+	}, [selectedSemester]);
 
 	const handleSearch = (value: string) => {
 		setSearchValue(value);
 	};
 
-	const handleExportExcel = () => {
-		exportDefenseResultsToExcel({
-			data: filteredData,
-			selectedSemester,
-			statusUpdates,
-		});
+	const handleRefresh = () => {
+		refresh();
 	};
 
 	const handleRowSelectionChange = (newSelectedKeys: React.Key[]) => {
@@ -62,133 +76,105 @@ const CapstoneDefenseResults = () => {
 	};
 
 	const handleSaveChanges = () => {
-		console.log('Status updates to save:', statusUpdates);
+		if (!selectedSemester || !hasActualChanges) {
+			return;
+		}
 
-		// Update the baseDataState with new status values
-		setBaseDataState((prevData) =>
-			prevData.map((student) => {
-				if (statusUpdates[student.studentId]) {
-					return {
-						...student,
-						status: statusUpdates[student.studentId],
-					};
-				}
-				return student;
-			}),
-		);
+		const updatesCount = Object.keys(statusUpdates).length;
+		const detailMessage = createStatusUpdateSummary(statusUpdates);
 
-		// Clear the temporary updates and selection
-		setStatusUpdates({});
-		setSelectedRowKeys([]);
+		// Store original values for potential restore (snapshot before confirm modal)
+		setPreConfirmStatusUpdates({ ...statusUpdates });
+
+		ConfirmationModal.show({
+			title: 'Save Defense Results',
+			message: `Are you sure you want to save changes for ${updatesCount} student(s)?`,
+			details: detailMessage,
+			note: 'Once saved, the defense results will be updated and cannot be easily undone.',
+			noteType: 'warning',
+			okText: 'Yes, Save Changes',
+			loading: saving,
+			onOk: performSaveChanges,
+			onCancel: handleSaveCancel,
+		});
+	};
+
+	const handleSaveCancel = () => {
+		// Restore original values when user cancels
+		setStatusUpdates(preConfirmStatusUpdates);
+		setPreConfirmStatusUpdates({});
+	};
+
+	const performSaveChanges = async () => {
+		if (!selectedSemester || !hasActualChanges) {
+			return;
+		}
+
+		setSaving(true);
+		try {
+			const result = await updateIndividualStatus(statusUpdates, {
+				filteredData,
+				selectedSemester,
+				semesters,
+				onStatusChange: handleStatusChange,
+				onSelectionClear: () => setSelectedRowKeys([]),
+				onRefresh: refresh,
+			});
+
+			if (result.success) {
+				// Clear the temporary updates and selection
+				setStatusUpdates({});
+				setPreConfirmStatusUpdates({});
+				setSelectedRowKeys([]);
+			} else {
+				// Restore original values when save fails
+				setStatusUpdates(preConfirmStatusUpdates);
+			}
+		} finally {
+			setSaving(false);
+			// Clear original status only after operation completes (success or error handled)
+			setPreConfirmStatusUpdates({});
+		}
 	};
 
 	const handleBulkStatusUpdate = () => {
-		if (selectedRowKeys.length === 0) return;
-
-		const selectedStudents = filteredData.filter(
-			(student: { studentId: unknown; groupId: unknown }) =>
-				selectedRowKeys.includes(`${student.studentId}-${student.groupId}`),
-		);
-
-		Modal.confirm({
-			title: 'Update Defense Results',
-			width: 500,
-			content: (
-				<div>
-					<p>
-						<strong>{selectedRowKeys.length}</strong> student(s) will be
-						updated:
-					</p>
-					<div
-						style={{
-							maxHeight: 200,
-							overflowY: 'auto',
-							marginBottom: 5,
-							marginTop: 16,
-						}}
-					>
-						{selectedStudents.map((student: GroupTableData) => (
-							<div key={String(student.studentId)}>
-								<b>{student.studentId}</b> - {student.name}
-								<br />
-								<small>
-									Current:{' '}
-									{getDisplayStatus(
-										student.status ?? '',
-										String(student.studentId),
-									)}
-								</small>
-							</div>
-						))}
-					</div>
-					<p>Choose status to apply:</p>
-				</div>
-			),
-			okText: 'PASS',
-			cancelText: 'FAILED',
-			okType: 'primary',
-			okButtonProps: {
-				style: {
-					backgroundColor: 'transparent',
-					borderColor: '#52c41a',
-					color: 'green',
-				},
-			},
-			cancelButtonProps: {
-				style: {
-					borderColor: '#ff4d4f',
-					color: 'red',
-				},
-			},
-			onOk: () => {
-				selectedRowKeys.forEach((key) => {
-					const studentId = String(key).split('-')[0];
-					handleStatusChange(studentId, 'Pass');
-				});
-				setSelectedRowKeys([]);
-			},
-			onCancel: () => {
-				selectedRowKeys.forEach((key) => {
-					const studentId = String(key).split('-')[0];
-					handleStatusChange(studentId, 'Failed');
-				});
-				setSelectedRowKeys([]);
-			},
+		showBulkUpdateModal({
+			selectedRowKeys,
+			filteredData,
+			selectedSemester,
+			semesters,
+			bulkUpdating,
+			setBulkUpdating,
+			onStatusChange: handleStatusChange,
+			onSelectionClear: () => setSelectedRowKeys([]),
+			onRefresh: refresh,
+			getDisplayStatus,
 		});
 	};
 
-	const hasUnsavedChanges = Object.keys(statusUpdates).length > 0;
+	// Check if any changes actually differ from current displayed status
+	const hasActualChanges = useMemo(() => {
+		return Object.entries(statusUpdates).some(([studentId, newStatus]) => {
+			const student = filteredData.find((item) => item.studentId === studentId);
+			if (!student) return false;
+
+			// Simply compare with the actual status from API
+			const currentStatus = student.status || '';
+			return newStatus !== currentStatus;
+		});
+	}, [statusUpdates, filteredData]);
 
 	const getDisplayStatus = useCallback(
 		(originalStatus: string, studentId: string) => {
-			return statusUpdates[studentId] || originalStatus;
+			// Priority 1: User pending changes
+			const pendingStatus = statusUpdates[studentId];
+			if (pendingStatus) return pendingStatus;
+
+			// Priority 2: Actual status from API
+			return originalStatus || '';
 		},
 		[statusUpdates],
 	);
-
-	const filteredData = useMemo(() => {
-		const filtered = dataToUse.filter((item: GroupTableData) => {
-			const matchesSearch =
-				!debouncedSearchValue.trim() ||
-				[
-					item.name,
-					item.studentId,
-					item.thesisName,
-					item.major,
-					item.status,
-					item.semester,
-				].some((field) =>
-					String(field ?? '')
-						.toLowerCase()
-						.includes(debouncedSearchValue.toLowerCase().trim()),
-				);
-			const matchesSemester =
-				selectedSemester === 'all' || item.semester === selectedSemester;
-			return matchesSearch && matchesSemester;
-		});
-
-		return calculateRowSpans(filtered);
-	}, [dataToUse, debouncedSearchValue, selectedSemester]);
 
 	const columns = useMemo(
 		() =>
@@ -198,11 +184,11 @@ const CapstoneDefenseResults = () => {
 				getDisplayStatus,
 				statusUpdates,
 				handleStatusChange,
-			}),
+			}) as ColumnsType<FullRowSpanItem>, // Type assertion for compatibility
 		[getDisplayStatus, debouncedSearchValue, statusUpdates],
 	);
 
-	const rowSelection: TableRowSelection<GroupTableData> = {
+	const rowSelection: TableRowSelection<FullRowSpanItem> = {
 		selectedRowKeys,
 		onChange: handleRowSelectionChange,
 	};
@@ -221,7 +207,8 @@ const CapstoneDefenseResults = () => {
 					<Col>
 						<Button
 							onClick={handleBulkStatusUpdate}
-							disabled={selectedRowKeys.length === 0}
+							disabled={selectedRowKeys.length === 0 || saving || bulkUpdating}
+							loading={bulkUpdating}
 						>
 							Update Defense Results
 						</Button>
@@ -230,10 +217,11 @@ const CapstoneDefenseResults = () => {
 						<Button
 							type="primary"
 							onClick={handleSaveChanges}
-							disabled={!hasUnsavedChanges}
+							disabled={!hasActualChanges || saving || bulkUpdating}
+							loading={saving}
 						>
 							Save Changes{' '}
-							{hasUnsavedChanges && `(${Object.keys(statusUpdates).length})`}
+							{hasActualChanges && `(${Object.keys(statusUpdates).length})`}
 						</Button>
 					</Col>
 				</Row>
@@ -246,9 +234,10 @@ const CapstoneDefenseResults = () => {
 					selectedSemester={selectedSemester}
 					onSemesterChange={setSelectedSemester}
 					availableSemesters={availableSemesters}
-					onExportExcel={handleExportExcel}
+					onRefresh={handleRefresh}
 					searchPlaceholder="Search..."
-					showExportExcel={true}
+					showExportExcel={false}
+					loading={saving || bulkUpdating}
 				/>
 			</div>
 
@@ -259,6 +248,7 @@ const CapstoneDefenseResults = () => {
 				rowKey={(record) => `${record.studentId}-${record.groupId}`}
 				rowSelection={rowSelection}
 				pagination={TablePagination}
+				loading={loading || saving || bulkUpdating}
 				bordered
 			/>
 

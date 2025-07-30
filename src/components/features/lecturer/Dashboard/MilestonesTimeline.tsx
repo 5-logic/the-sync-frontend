@@ -1,119 +1,192 @@
-import { Card, Select, Timeline } from 'antd';
+import { Card, Select, Spin, Steps, Typography } from 'antd';
 import dayjs from 'dayjs';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
-import { mockMilestoneDetails } from '@/data/milestone';
+import { useLecturerSemesterFilter } from '@/hooks/lecturer/useLecturerSemesterFilter';
+import milestonesService from '@/lib/services/milestones.service';
+import { formatDateRange, getMilestoneStatus } from '@/lib/utils/dateFormat';
+import { handleApiResponse } from '@/lib/utils/handleApi';
+import { Milestone } from '@/schemas/milestone';
 
+const { Text } = Typography;
 const { Option } = Select;
 
 const MilestonesTimeline: React.FC = () => {
-	const [semester, setSemester] = useState('All');
+	const [milestones, setMilestones] = useState<Milestone[]>([]);
+	const [loading, setLoading] = useState(true);
 
-	// Get unique semesters from milestone data
-	const uniqueSemesters = Array.from(
-		new Set(mockMilestoneDetails.map((milestone) => milestone.semesterId)),
-	).sort((a, b) => a.localeCompare(b));
+	// Use custom hook for semester filter logic
+	const { semesters, selectedSemester, setSelectedSemester, semestersLoading } =
+		useLecturerSemesterFilter();
 
-	// Filter milestones based on semester and sort by date
-	const filteredMilestones = mockMilestoneDetails
-		.filter((milestone) => {
-			if (semester === 'All') return true;
-			return milestone.semesterId === semester;
-		})
-		.sort((a, b) => dayjs(a.date).valueOf() - dayjs(b.date).valueOf());
-	const getColor = (status: string) => {
-		switch (status) {
-			case 'Ended':
-				return 'green';
-			case 'In Progress':
-				return 'blue';
-			case 'Upcoming':
-			default:
-				return 'gray';
-		}
+	// Fetch milestones when semester changes
+	useEffect(() => {
+		const fetchMilestones = async () => {
+			if (!selectedSemester || selectedSemester === 'all') {
+				setMilestones([]);
+				setLoading(false);
+				return;
+			}
+
+			try {
+				setLoading(true);
+				const response =
+					await milestonesService.findBySemester(selectedSemester);
+				const result = handleApiResponse(response);
+				if (result.success) {
+					// Sort milestones by start date
+					const sortedMilestones = (result.data || []).sort(
+						(a: Milestone, b: Milestone) =>
+							dayjs(a.startDate).valueOf() - dayjs(b.startDate).valueOf(),
+					);
+					setMilestones(sortedMilestones);
+				}
+			} catch (error) {
+				console.error('Error fetching milestones:', error);
+			} finally {
+				setLoading(false);
+			}
+		};
+
+		fetchMilestones();
+	}, [selectedSemester]);
+
+	// Get current milestone index (the one that is currently in progress)
+	const getCurrentMilestoneIndex = (): number => {
+		return milestones.findIndex((milestone) => {
+			const status = getMilestoneStatus(milestone.startDate, milestone.endDate);
+			return status === 'In Progress';
+		});
 	};
 
-	const getDueText = (date: string, status: string) => {
-		if (status === 'Ended') {
-			return null;
+	// Convert milestones to Steps format
+	const stepsData = milestones.map((milestone) => {
+		const status = getMilestoneStatus(milestone.startDate, milestone.endDate);
+		const dateRange = formatDateRange(milestone.startDate, milestone.endDate);
+
+		// Determine step status for Steps component
+		const getStepStatus = (): 'wait' | 'process' | 'finish' | 'error' => {
+			if (status === 'Ended') return 'finish';
+			if (status === 'In Progress') return 'process';
+			return 'wait';
+		};
+
+		// Get color based on status
+		const getStatusColor = (): string => {
+			if (status === 'Ended') return '#52c41a';
+			if (status === 'In Progress') return '#1890ff';
+			return '#8c8c8c';
+		};
+
+		return {
+			title: milestone.name,
+			description: (
+				<div>
+					<Text type="secondary" style={{ fontSize: '12px' }}>
+						{dateRange}
+					</Text>
+					<br />
+					<Text
+						style={{
+							fontSize: '11px',
+							color: getStatusColor(),
+						}}
+					>
+						{status}
+					</Text>
+				</div>
+			),
+			status: getStepStatus(),
+		};
+	});
+
+	const currentStep = getCurrentMilestoneIndex();
+
+	const isDataReady = !loading && !semestersLoading;
+
+	// Render main content based on state
+	const renderMainContent = () => {
+		if (!isDataReady) {
+			return (
+				<div style={{ textAlign: 'center', padding: '40px 0' }}>
+					<Spin size="large" />
+				</div>
+			);
 		}
 
-		const now = dayjs();
-		const dueDate = dayjs(date);
-		const diff = dueDate.diff(now, 'day');
+		if (milestones.length === 0) {
+			const emptyMessage =
+				selectedSemester === 'all'
+					? 'Please select a semester to view milestones'
+					: 'No milestones found for selected semester';
 
-		if (diff < 0) {
-			return `Overdue by ${Math.abs(diff)} day${Math.abs(diff) > 1 ? 's' : ''}`;
-		} else if (diff === 0) {
-			return 'Due today';
-		} else {
-			return `Due in ${diff} day${diff > 1 ? 's' : ''}`;
+			return (
+				<div style={{ textAlign: 'center', color: '#999', padding: '40px 0' }}>
+					{emptyMessage}
+				</div>
+			);
 		}
+
+		return (
+			<Steps
+				direction="horizontal"
+				current={currentStep >= 0 ? currentStep : milestones.length}
+				items={stepsData}
+				style={{ marginTop: '16px' }}
+			/>
+		);
 	};
 
-	const getDueColor = (date: string, status: string) => {
-		if (status === 'Ended') {
-			return '#666';
-		}
-
-		const now = dayjs();
-		const dueDate = dayjs(date);
-		const diff = dueDate.diff(now, 'day');
-
-		// Chỉ hiển thị màu đỏ cho những milestone có due in < 7 ngày hoặc quá hạn
-		if (diff < 7) {
-			return '#ff4d4f';
-		} else {
-			return '#333';
-		}
-	};
+	// Render semester filter
+	const renderSemesterFilter = () => (
+		<Select
+			value={selectedSemester}
+			onChange={setSelectedSemester}
+			style={{ width: 200 }}
+			placeholder="Filter by semester"
+			allowClear
+			onClear={() => setSelectedSemester('all')}
+			loading={semestersLoading}
+		>
+			<Option value="all">All Semesters</Option>
+			{semesters.map((semester) => (
+				<Option key={semester.id} value={semester.id}>
+					{semester.name}
+				</Option>
+			))}
+		</Select>
+	);
 
 	return (
 		<Card
 			title="Milestones Timeline"
 			extra={
-				<Select value={semester} onChange={setSemester} style={{ width: 180 }}>
-					<Option value="All">All Semesters</Option>
-					{uniqueSemesters.map((sem) => (
-						<Option key={sem} value={sem}>
-							{sem}
+				// Desktop filter - hide on small screens
+				<div className="hidden md:block">{renderSemesterFilter()}</div>
+			}
+		>
+			{/* Mobile filter - show only on small screens, inside card below title */}
+			<div className="block md:hidden mb-4">
+				<div className="text-base font-medium mb-2">Filter by semester:</div>
+				<Select
+					value={selectedSemester}
+					onChange={setSelectedSemester}
+					style={{ width: '100%' }}
+					placeholder="Filter by semester"
+					allowClear
+					onClear={() => setSelectedSemester('all')}
+					loading={semestersLoading}
+				>
+					<Option value="all">All Semesters</Option>
+					{semesters.map((semester) => (
+						<Option key={semester.id} value={semester.id}>
+							{semester.name}
 						</Option>
 					))}
 				</Select>
-			}
-		>
-			<Timeline>
-				{filteredMilestones.length > 0 ? (
-					filteredMilestones.map((item) => (
-						<Timeline.Item color={getColor(item.status)} key={item.id}>
-							<div>
-								<strong>{item.title}</strong> —{' '}
-								{dayjs(item.date).format('MMM DD, YYYY')}
-							</div>
-							<div style={{ marginTop: 4, fontSize: '12px', color: '#666' }}>
-								Status: {item.status}{' '}
-							</div>
-							{getDueText(item.date, item.status) && (
-								<div
-									style={{
-										marginTop: 4,
-										fontSize: '12px',
-										color: getDueColor(item.date, item.status),
-										fontWeight: 500,
-									}}
-								>
-									{getDueText(item.date, item.status)}
-								</div>
-							)}
-						</Timeline.Item>
-					))
-				) : (
-					<div style={{ textAlign: 'center', color: '#999', padding: '20px' }}>
-						No milestones found for{' '}
-						{semester === 'All' ? 'any semester' : semester}
-					</div>
-				)}
-			</Timeline>
+			</div>
+
+			{renderMainContent()}
 		</Card>
 	);
 };

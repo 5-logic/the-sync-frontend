@@ -93,7 +93,7 @@ const fieldValidators = {
 		return studentCodeRegex.test(value)
 			? []
 			: [
-					`Row ${rowNumber}: Student ID must be 2 letters followed by 6 digits (e.g., QE123456)`,
+					`Row ${rowNumber}: Student Code must be 2 letters followed by 6 digits (e.g., QE123456)`,
 				];
 	},
 
@@ -135,7 +135,7 @@ function checkDuplicates<
 >(item: T, validatedData: T[], rowNumber: number): string[] {
 	const errors: string[] = [];
 
-	// Check for duplicate student IDs
+	// Check for duplicate student codes
 	if ('studentCode' in item && item['studentCode']) {
 		const duplicateIndex = validatedData.findIndex(
 			(existingItem) =>
@@ -144,7 +144,7 @@ function checkDuplicates<
 		);
 		if (duplicateIndex !== -1) {
 			errors.push(
-				`Row ${rowNumber}: Duplicate Student ID '${item['studentCode']}' found in row ${duplicateIndex + 2}`,
+				`Row ${rowNumber}: Duplicate Student Code '${item['studentCode']}' found in row ${duplicateIndex + 2}`,
 			);
 		}
 	}
@@ -339,6 +339,62 @@ function validateUploadPrerequisites(
 	}
 
 	return true;
+}
+
+// Helper function to validate all data before import
+function validateDataBeforeImport<
+	T extends { id: string; email?: string; studentCode?: string },
+>(
+	data: T[],
+	fields: {
+		key: keyof T;
+		title: string;
+		required?: boolean;
+		type: string;
+		options?: { value: string }[];
+	}[],
+): { isValid: boolean; errors: string[] } {
+	const errors: string[] = [];
+
+	data.forEach((item, index) => {
+		const rowNumber = index + 1;
+
+		fields.forEach((field) => {
+			const value = item[field.key];
+			const stringValue = value ? String(value).trim() : '';
+
+			// Check if field is empty
+			if (!value || stringValue === '') {
+				errors.push(`Row ${rowNumber}: ${field.title} is required`);
+				return;
+			}
+
+			// Apply field-specific validation if validator exists
+			const fieldKey = field.key as string;
+			const validator =
+				fieldValidators[fieldKey as keyof typeof fieldValidators];
+
+			if (validator) {
+				const fieldErrors = validator(stringValue, rowNumber);
+				errors.push(...fieldErrors);
+			}
+
+			// Validate select fields
+			if (field.type === 'select' && field.options) {
+				const validOptions = field.options.map((opt) => opt.value);
+				if (!validOptions.includes(stringValue)) {
+					errors.push(
+						`Row ${rowNumber}: Invalid ${field.title}. Valid options: ${validOptions.join(', ')}`,
+					);
+				}
+			}
+		});
+	});
+
+	return {
+		isValid: errors.length === 0,
+		errors,
+	};
 }
 
 // Helper function to handle validation errors
@@ -643,6 +699,7 @@ function ImportedDataTable<
 	requireMajor,
 	selectedMajor,
 	userType = 'student',
+	hasValidationErrors = false,
 }: Readonly<{
 	data: T[];
 	columns: ColumnsType<T>;
@@ -655,6 +712,7 @@ function ImportedDataTable<
 	requireMajor: boolean;
 	selectedMajor: string;
 	userType?: 'student' | 'lecturer';
+	hasValidationErrors?: boolean;
 }>) {
 	if (data.length === 0) return null;
 
@@ -676,6 +734,15 @@ function ImportedDataTable<
 				}
 				style={{ borderColor: '#bbf7d0', color: '#15803d' }}
 			/>
+			{hasValidationErrors && (
+				<Alert
+					type="error"
+					showIcon
+					message="Validation Errors Found"
+					description="Please fill in all required fields (highlighted in red) before importing."
+					style={{ marginBottom: 16 }}
+				/>
+			)}
 			<Table
 				dataSource={data}
 				columns={columns}
@@ -709,7 +776,8 @@ function ImportedDataTable<
 							(requireSemester && !selectedSemester) ||
 							data.length === 0 ||
 							(requireMajor && !selectedMajor) ||
-							creatingMany
+							creatingMany ||
+							hasValidationErrors
 						}
 					>
 						{buttonText}
@@ -979,6 +1047,22 @@ export default function ExcelImportForm<
 			return;
 		}
 
+		// Validate all data before import
+		const validation = validateDataBeforeImport(data, fields);
+		if (!validation.isValid) {
+			const errorMessage =
+				validation.errors.slice(0, 10).join('\n') +
+				(validation.errors.length > 10
+					? `\n... and ${validation.errors.length - 10} more errors`
+					: '');
+
+			showNotification.error(
+				`Validation Failed (${validation.errors.length} errors)`,
+				errorMessage,
+			);
+			return;
+		}
+
 		const success =
 			userType === 'lecturer'
 				? await handleLecturerImport()
@@ -1002,6 +1086,13 @@ export default function ExcelImportForm<
 		if (requiredFields === 1) return 24;
 		return 12;
 	};
+
+	// Check if there are any validation errors in current data
+	const hasValidationErrors = (): boolean => {
+		const validation = validateDataBeforeImport(data, fields);
+		return !validation.isValid;
+	};
+
 	const columns = createTableColumns(fields, handleFieldChange, handleDelete);
 
 	// Helper function to validate file type
@@ -1126,6 +1217,7 @@ export default function ExcelImportForm<
 				requireMajor={requireMajor}
 				selectedMajor={selectedMajor}
 				userType={userType}
+				hasValidationErrors={hasValidationErrors()}
 			/>
 		</Space>
 	);
