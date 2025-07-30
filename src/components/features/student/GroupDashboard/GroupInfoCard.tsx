@@ -18,6 +18,42 @@ import { useGroupDashboardStore } from '@/store/useGroupDashboardStore';
 
 const { Title, Text } = Typography;
 
+// Helper component for displaying tags with max limit and overflow indicator
+const TagList = ({
+	items,
+	color,
+	maxVisible = 3,
+}: {
+	items: Array<{ id: string; name: string }>;
+	color: string;
+	maxVisible?: number;
+}) => {
+	if (!items || items.length === 0) {
+		return <Text className="text-gray-400 italic">Not specified</Text>;
+	}
+
+	const visibleItems = items.slice(0, maxVisible);
+	const remainingCount = items.length - maxVisible;
+
+	return (
+		<div className="flex flex-wrap gap-2 mt-1">
+			{visibleItems.map((item) => (
+				<Tag key={item.id} color={color} className="text-xs">
+					{item.name}
+				</Tag>
+			))}
+			{remainingCount > 0 && (
+				<Tag
+					className="text-xs border-dashed"
+					style={{ backgroundColor: '#f5f5f5', borderColor: '#d9d9d9' }}
+				>
+					+{remainingCount}
+				</Tag>
+			)}
+		</div>
+	);
+};
+
 interface GroupInfoCardProps {
 	readonly group: GroupDashboard;
 	readonly viewOnly?: boolean;
@@ -352,39 +388,22 @@ export default memo(function GroupInfoCard({
 								<Text className="text-sm text-gray-400 block font-semibold">
 									Required Skills
 								</Text>
-								{localGroup.skills && localGroup.skills.length > 0 ? (
-									<div className="flex flex-wrap gap-2 mt-1">
-										{localGroup.skills.map((skill) => (
-											<Tag key={skill.id} color="blue" className="text-xs">
-												{skill.name}
-											</Tag>
-										))}
-									</div>
-								) : (
-									<Text className="text-gray-400 italic">Not specified</Text>
-								)}
+								<TagList
+									items={localGroup.skills || []}
+									color="blue"
+									maxVisible={3}
+								/>
 							</div>
 							{/* Responsibilities */}
 							<div>
 								<Text className="text-sm text-gray-400 block font-semibold">
 									Expected Responsibilities
 								</Text>
-								{localGroup.responsibilities &&
-								localGroup.responsibilities.length > 0 ? (
-									<div className="flex flex-wrap gap-2 mt-1">
-										{localGroup.responsibilities.map((responsibility) => (
-											<Tag
-												key={responsibility.id}
-												color="green"
-												className="text-xs"
-											>
-												{responsibility.name}
-											</Tag>
-										))}
-									</div>
-								) : (
-									<Text className="text-gray-400 italic">Not specified</Text>
-								)}
+								<TagList
+									items={localGroup.responsibilities || []}
+									color="green"
+									maxVisible={3}
+								/>
 							</div>
 						</div>
 						{/* Members Section */}
