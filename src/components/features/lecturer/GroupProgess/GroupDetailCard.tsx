@@ -172,6 +172,7 @@ function GroupDetailCard({
 					</Title>
 				</Space>
 			}
+			data-testid="group-detail-card"
 		>
 			<Row gutter={[16, 16]}>
 				{/* Left Column - Group Information and Supervisor Information */}
