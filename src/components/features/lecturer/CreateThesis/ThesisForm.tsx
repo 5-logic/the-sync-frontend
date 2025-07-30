@@ -249,7 +249,12 @@ export default function ThesisForm({
 			const currentValue = currentValues[field];
 			const initialValue = initialValues?.[field];
 			if (currentValue !== initialValue) {
-				changedFields[field] = currentValue;
+				// Convert undefined to empty string for domain field
+				if (field === 'domain' && currentValue === undefined) {
+					changedFields[field] = '';
+				} else {
+					changedFields[field] = currentValue;
+				}
 			}
 		});
 
@@ -344,7 +349,12 @@ export default function ThesisForm({
 			layout="vertical"
 			requiredMark={false}
 			style={{ width: '100%' }}
-			initialValues={initialValues}
+			initialValues={{
+				...initialValues,
+				// Convert empty string to undefined for domain field to show placeholder
+				domain:
+					initialValues?.domain === '' ? undefined : initialValues?.domain,
+			}}
 			onFinish={handleFormSubmit}
 			onValuesChange={checkFormChanges} // Detect changes when form values change
 		>
