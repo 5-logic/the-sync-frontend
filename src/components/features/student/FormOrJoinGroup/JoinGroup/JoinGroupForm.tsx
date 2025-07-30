@@ -16,14 +16,10 @@ const FORM_CONFIG = {
 } as const;
 
 const BUTTON_STYLES = {
-	marginTop: 16,
-	minWidth: FORM_CONFIG.BUTTON_MIN_WIDTH,
-	fontSize: FORM_CONFIG.BUTTON_FONT_SIZE,
 	height: FORM_CONFIG.BUTTON_HEIGHT,
 	padding: '0 16px',
-	whiteSpace: 'nowrap' as const,
-	overflow: 'hidden',
-	textOverflow: 'ellipsis',
+	fontSize: FORM_CONFIG.BUTTON_FONT_SIZE,
+	minWidth: 'auto',
 } as const;
 
 interface JoinGroupFormProps {
@@ -112,22 +108,65 @@ export default function JoinGroupForm({
 	}, [session?.user?.id, currentSemester?.id, router, callAISuggestAPI]);
 
 	return (
-		<Alert
-			message="Having trouble finding a group?"
-			description="Use our AI-powered group suggestion feature to find groups that match your skills and preferences!"
-			type="info"
-			showIcon
-			action={
+		<div style={{ width: '100%' }}>
+			{/* Desktop/Tablet: Alert with action button inline */}
+			<div className="hidden sm:block">
+				<Alert
+					message="Having trouble finding a group?"
+					description="Use our AI-powered group suggestion feature to find groups that match your skills and preferences!"
+					type="info"
+					showIcon
+					action={
+						<Button
+							type="primary"
+							style={{
+								...BUTTON_STYLES,
+								width: '100%',
+								maxWidth: '200px',
+								whiteSpace: 'normal',
+								textAlign: 'center',
+								wordBreak: 'break-word',
+							}}
+							loading={loading}
+							onClick={handleSuggestGroups}
+						>
+							Suggest Groups by AI
+						</Button>
+					}
+					style={{ width: '100%' }}
+				/>
+			</div>
+
+			{/* Mobile only: Alert and Button separately */}
+			<div className="block sm:hidden">
+				<Alert
+					message="Having trouble finding a group?"
+					description="Use our AI-powered group suggestion feature to find groups that match your skills and preferences!"
+					type="info"
+					showIcon
+					style={{
+						width: '100%',
+						marginBottom: '16px',
+						wordBreak: 'break-word',
+						wordWrap: 'break-word',
+						overflowWrap: 'break-word',
+					}}
+				/>
 				<Button
 					type="primary"
-					style={BUTTON_STYLES}
+					style={{
+						...BUTTON_STYLES,
+						width: '100%',
+						whiteSpace: 'normal',
+						textAlign: 'center',
+						wordBreak: 'break-word',
+					}}
 					loading={loading}
 					onClick={handleSuggestGroups}
 				>
 					Suggest Groups by AI
 				</Button>
-			}
-			style={{ width: '100%' }}
-		/>
+			</div>
+		</div>
 	);
 }

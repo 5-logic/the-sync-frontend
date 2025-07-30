@@ -157,7 +157,7 @@ const AISuggestionCard: React.FC<AISuggestionCardProps> = ({ suggestion }) => {
 						marginTop: 16,
 						display: 'flex',
 						gap: 8,
-						flexWrap: 'wrap',
+						flexDirection: 'column',
 					}}
 				>
 					<Button
@@ -167,8 +167,7 @@ const AISuggestionCard: React.FC<AISuggestionCardProps> = ({ suggestion }) => {
 							fontWeight: 500,
 							fontSize: 12,
 							height: 40,
-							flex: '1 1 0',
-							minWidth: '120px',
+							width: '100%',
 						}}
 						title="View Group Detail"
 						onClick={handleViewDetail}
@@ -182,8 +181,7 @@ const AISuggestionCard: React.FC<AISuggestionCardProps> = ({ suggestion }) => {
 							fontWeight: 500,
 							fontSize: 12,
 							height: 40,
-							flex: '1 1 0',
-							minWidth: '120px',
+							width: '100%',
 						}}
 						title={
 							isGroupFull ? 'Group is full' : `Request to join ${group.name}`
@@ -242,13 +240,20 @@ export default function AISuggestions({
 					</Title>
 					<Text type="secondary">
 						Groups are ranked by compatibility score based on your skills and
-						preferences.
+						responsibilities.
 					</Text>
 				</div>
 
 				<Row gutter={[16, 16]}>
 					{paginatedSuggestions.map((suggestion) => (
-						<Col xs={24} md={12} lg={8} key={suggestion.group.id}>
+						<Col
+							xs={24}
+							sm={24}
+							md={12}
+							lg={8}
+							xl={8}
+							key={suggestion.group.id}
+						>
 							<AISuggestionCard suggestion={suggestion} />
 						</Col>
 					))}
