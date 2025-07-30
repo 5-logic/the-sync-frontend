@@ -3,12 +3,12 @@ import { Tag, Tooltip, Typography } from 'antd';
 const { Text } = Typography;
 
 interface TagListProps {
-	items: Array<{ id: string; name: string; level?: string }>;
-	color: string;
-	maxVisible?: number;
-	showLevel?: boolean;
-	minHeight?: string;
-	maxHeight?: string;
+	readonly items: Array<{ id: string; name: string; level?: string }>;
+	readonly color: string;
+	readonly maxVisible?: number;
+	readonly showLevel?: boolean;
+	readonly minHeight?: string;
+	readonly maxHeight?: string;
 }
 
 export default function TagList({
