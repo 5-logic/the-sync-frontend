@@ -73,6 +73,9 @@ export default function GroupCard({
 			request.status === 'Pending',
 	);
 
+	// Check if group is full (≥5 members)
+	const isGroupFull = group.members >= 5;
+
 	const handleJoinRequest = () => {
 		GroupConfirmationModals.requestToJoin(
 			group.name,
@@ -110,6 +113,9 @@ export default function GroupCard({
 		if (hasPendingJoinRequest) {
 			return 'Request already sent';
 		}
+		if (isGroupFull) {
+			return 'Group is full (5/5 members)';
+		}
 		return 'Request to Join';
 	};
 
@@ -119,6 +125,9 @@ export default function GroupCard({
 		}
 		if (hasPendingJoinRequest) {
 			return `Request already sent to ${group.name}`;
+		}
+		if (isGroupFull) {
+			return `${group.name} is full`;
 		}
 		return `Request to join ${group.name}`;
 	};
@@ -130,11 +139,20 @@ export default function GroupCard({
 		if (hasPendingJoinRequest) {
 			return 'Request Sent';
 		}
+		if (isGroupFull) {
+			return 'Group Full';
+		}
 		return 'Request to Join';
 	};
 
 	const getButtonClickHandler = () => {
-		return hasPendingInviteRequest ? handleViewDetail : handleJoinRequest;
+		if (hasPendingInviteRequest) {
+			return handleViewDetail;
+		}
+		if (isGroupFull) {
+			return undefined; // No action when group is full
+		}
+		return handleJoinRequest;
 	};
 
 	const getCardStyles = () => ({
@@ -257,7 +275,7 @@ export default function GroupCard({
 							aria-label={getButtonAriaLabel()}
 							onClick={getButtonClickHandler()}
 							loading={isRequesting}
-							disabled={isRequesting || hasPendingJoinRequest}
+							disabled={isRequesting || hasPendingJoinRequest || isGroupFull}
 						>
 							{getButtonText()}
 						</Button>

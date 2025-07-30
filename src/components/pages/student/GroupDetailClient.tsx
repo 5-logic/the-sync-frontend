@@ -263,10 +263,19 @@ export default function GroupDetailClient({ groupId }: GroupDetailClientProps) {
 	// Check if semester is in PREPARING status (when join requests are allowed)
 	const canJoinGroup = group.semester.status === 'Preparing';
 
+	// Check if group is full (≥5 members)
+	const isGroupFull = group.members.length >= 5;
+
+	// Check if user can actually send join request (both semester status and group capacity)
+	const canSendJoinRequest = canJoinGroup && !isGroupFull;
+
 	// Extract nested ternary operations into independent statements
 	const getJoinButtonTitle = () => {
 		if (!canJoinGroup) {
 			return 'Join requests are not allowed during this semester status';
+		}
+		if (isGroupFull) {
+			return `Group is full (${group.members.length}/5 members)`;
 		}
 		return 'Send a request to join this group';
 	};
@@ -314,10 +323,10 @@ export default function GroupDetailClient({ groupId }: GroupDetailClientProps) {
 				type="primary"
 				onClick={handleJoinRequest}
 				loading={isRequesting}
-				disabled={!canJoinGroup}
+				disabled={!canSendJoinRequest}
 				title={getJoinButtonTitle()}
 			>
-				Request to Join
+				{isGroupFull ? 'Group Full' : 'Request to Join'}
 			</Button>
 		);
 	};

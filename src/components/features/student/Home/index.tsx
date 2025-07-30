@@ -1,16 +1,29 @@
 'use client';
 
-import { Col, Row, Space, Typography } from 'antd';
+import { Col, Row, Space } from 'antd';
 
 import { Header } from '@/components/common/Header';
-import GroupInformationCard from '@/components/features/student/Home/GroupInformationCard';
-import ProjectMilestonesCard from '@/components/features/student/Home/ProjectMilestonesCard';
-import ThesisStatusCard from '@/components/features/student/Home/ThesisStatusCard';
-import { studentGroup } from '@/data/studentGroup';
+import ProgressOverviewCard from '@/components/common/ProgressOverview/ProgressOverviewCard';
+import { PageContentSkeleton } from '@/components/common/loading';
+import StudentFirstLoginDashboard from '@/components/features/student/FirstLoginDashboard';
+import GroupInfoCard from '@/components/features/student/GroupDashboard/GroupInfoCard';
+import ThesisStatusCard from '@/components/features/student/GroupDashboard/ThesisStatusCard';
+import { useStudentGroupStatus } from '@/hooks/student/useStudentGroupStatus';
 
 export default function StudentHomePage() {
-	const { Text } = Typography;
+	const { hasGroup, group, loading, isLeader } = useStudentGroupStatus();
 
+	// Show loading while fetching group status
+	if (loading) {
+		return <PageContentSkeleton />;
+	}
+
+	// If student doesn't have a group, show the FirstLoginDashboard
+	if (!hasGroup) {
+		return <StudentFirstLoginDashboard />;
+	}
+
+	// If student has a group, show the normal dashboard
 	return (
 		<Space direction="vertical" size="middle" style={{ width: '100%' }}>
 			<Header
@@ -19,25 +32,25 @@ export default function StudentHomePage() {
 						status, project milestones, and thesis progress."
 			/>
 
-			<Row justify="end" align="middle" style={{ marginBottom: 0 }}>
-				<Col>
-					<Text type="secondary">Semester Spring 2024</Text>
-				</Col>
-			</Row>
-
 			<Row gutter={[16, 16]}>
 				<Col xs={24} md={8} style={{ flex: 1 }}>
-					<GroupInformationCard group={studentGroup} />
-					{/* test with no group */}
-					{/* <ThesisStatusCard group={null} /> */}
+					{group && <GroupInfoCard group={group} viewOnly isDashboardView />}
 				</Col>
 				<Col xs={24} md={8} style={{ flex: 1 }}>
-					<ProjectMilestonesCard group={studentGroup} />
+					{group?.thesis?.id && (
+						<ProgressOverviewCard thesisId={group.thesis.id} isDashboardView />
+					)}
 				</Col>
 				<Col xs={24} md={8} style={{ flex: 1 }}>
-					<ThesisStatusCard group={studentGroup} />
-					{/* test with no group */}
-					{/* <ThesisStatusCard group={null} /> */}
+					{group?.thesis?.id ? (
+						<ThesisStatusCard
+							thesisId={group.thesis.id}
+							isLeader={isLeader}
+							isDashboardView
+						/>
+					) : (
+						<div>No thesis assigned yet</div>
+					)}
 				</Col>
 			</Row>
 		</Space>

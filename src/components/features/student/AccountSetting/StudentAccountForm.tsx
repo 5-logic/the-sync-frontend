@@ -482,9 +482,14 @@ const StudentAccountForm: React.FC = () => {
 			>
 				<Select
 					mode="multiple"
+					showSearch
 					options={responsibilityOptions}
 					placeholder="Select responsibility"
 					disabled={updatingProfile}
+					filterOption={(input, option) =>
+						(option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+					}
+					allowClear
 				/>
 			</Form.Item>
 

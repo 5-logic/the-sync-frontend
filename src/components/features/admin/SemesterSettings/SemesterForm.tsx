@@ -183,7 +183,26 @@ const SemesterForm = memo<SemesterFormProps>(({ form, onSuccess }) => {
 										text: 'Default Theses per Lecturer',
 										isBold: true,
 									})}
-									rules={[{ required: true, message: 'Required' }]}
+									rules={[
+										{ required: true, message: 'Required' },
+										({ getFieldValue }) => ({
+											validator(_, value) {
+												const maxTheses = getFieldValue('maxThesesPerLecturer');
+												if (!value || !maxTheses) {
+													return Promise.resolve();
+												}
+												if (Number(value) <= Number(maxTheses)) {
+													return Promise.resolve();
+												}
+												return Promise.reject(
+													new Error(
+														'Default theses must be less than or equal to max theses',
+													),
+												);
+											},
+										}),
+									]}
+									dependencies={['maxThesesPerLecturer']}
 								>
 									<InputNumber
 										min={1}
@@ -203,7 +222,28 @@ const SemesterForm = memo<SemesterFormProps>(({ form, onSuccess }) => {
 										text: 'Max Theses per Lecturer',
 										isBold: true,
 									})}
-									rules={[{ required: true, message: 'Required' }]}
+									rules={[
+										{ required: true, message: 'Required' },
+										({ getFieldValue }) => ({
+											validator(_, value) {
+												const defaultTheses = getFieldValue(
+													'defaultThesesPerLecturer',
+												);
+												if (!value || !defaultTheses) {
+													return Promise.resolve();
+												}
+												if (Number(value) >= Number(defaultTheses)) {
+													return Promise.resolve();
+												}
+												return Promise.reject(
+													new Error(
+														'Max theses must be greater than or equal to default theses',
+													),
+												);
+											},
+										}),
+									]}
+									dependencies={['defaultThesesPerLecturer']}
 								>
 									<InputNumber
 										min={1}

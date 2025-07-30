@@ -1,14 +1,25 @@
-import { ExportOutlined, SearchOutlined } from '@ant-design/icons';
+import {
+	ExportOutlined,
+	ReloadOutlined,
+	SearchOutlined,
+} from '@ant-design/icons';
 import { Button, Col, Input, Row, Select } from 'antd';
 import React from 'react';
+
+interface SemesterOption {
+	id: string;
+	name: string;
+	code: string;
+}
 
 type Props = {
 	searchText: string;
 	onSearchChange: (text: string) => void;
 	selectedSemester: string;
-	onSemesterChange: (semester: string) => void;
-	availableSemesters: string[];
+	onSemesterChange: (semesterId: string) => void;
+	availableSemesters: SemesterOption[];
 	onExportExcel?: () => void;
+	onRefresh?: () => void;
 	searchPlaceholder?: string;
 	exportExcelText?: string;
 	showExportExcel?: boolean;
@@ -22,15 +33,12 @@ export const FilterBar = ({
 	onSemesterChange,
 	availableSemesters,
 	onExportExcel,
+	onRefresh,
 	searchPlaceholder = 'Search...',
 	exportExcelText = 'Export Excel',
 	showExportExcel = false,
 	loading = false,
 }: Props) => {
-	const semesterOptions = availableSemesters.filter(
-		(semester) => semester !== 'all',
-	);
-
 	return (
 		<Row gutter={[16, 16]} align="middle" style={{ marginBottom: 16 }}>
 			<Col flex="auto">
@@ -52,15 +60,34 @@ export const FilterBar = ({
 					size="middle"
 					placeholder="Select Semester"
 					disabled={loading}
+					showSearch
+					optionFilterProp="children"
+					filterOption={(input, option) =>
+						String(option?.children || '')
+							.toLowerCase()
+							.includes(input.toLowerCase())
+					}
 				>
-					<Select.Option value="all">All Semesters</Select.Option>
-					{semesterOptions.map((semester) => (
-						<Select.Option key={semester} value={semester}>
-							{semester}
+					{availableSemesters.map((semester) => (
+						<Select.Option key={semester.id} value={semester.id}>
+							{semester.name}
 						</Select.Option>
 					))}
 				</Select>
 			</Col>
+			{onRefresh && (
+				<Col>
+					<Button
+						icon={<ReloadOutlined />}
+						size="middle"
+						onClick={onRefresh}
+						disabled={loading}
+						title="Refresh data"
+					>
+						Refresh
+					</Button>
+				</Col>
+			)}
 			{showExportExcel && (
 				<Col style={{ width: 150 }}>
 					<Button
@@ -70,6 +97,7 @@ export const FilterBar = ({
 						style={{ width: '100%' }}
 						onClick={onExportExcel}
 						disabled={loading}
+						title="Export to Excel"
 					>
 						{exportExcelText}
 					</Button>

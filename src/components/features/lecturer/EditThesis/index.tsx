@@ -180,6 +180,7 @@ export default function EditThesis({ thesisId }: Props) {
 				initialFile={getInitialFile()}
 				onSubmit={handleUpdate}
 				loading={updating}
+				thesis={thesis}
 			/>
 		</Space>
 	);

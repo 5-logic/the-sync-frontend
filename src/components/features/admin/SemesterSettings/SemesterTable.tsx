@@ -934,7 +934,24 @@ const SemesterTable = forwardRef<
 								message: 'Default theses per lecturer must be at least 1',
 								transform: (value) => (value ? Number(value) : undefined),
 							},
+							({ getFieldValue }) => ({
+								validator(_, value) {
+									const maxTheses = getFieldValue('maxThesesPerLecturer');
+									if (!value || !maxTheses) {
+										return Promise.resolve();
+									}
+									if (Number(value) <= Number(maxTheses)) {
+										return Promise.resolve();
+									}
+									return Promise.reject(
+										new Error(
+											'Default theses must be less than or equal to max theses',
+										),
+									);
+								},
+							}),
 						]}
+						dependencies={['maxThesesPerLecturer']}
 					>
 						<Input
 							placeholder="Enter default theses per lecturer"
@@ -963,7 +980,26 @@ const SemesterTable = forwardRef<
 								message: 'Max theses per lecturer must be at least 1',
 								transform: (value) => (value ? Number(value) : undefined),
 							},
+							({ getFieldValue }) => ({
+								validator(_, value) {
+									const defaultTheses = getFieldValue(
+										'defaultThesesPerLecturer',
+									);
+									if (!value || !defaultTheses) {
+										return Promise.resolve();
+									}
+									if (Number(value) >= Number(defaultTheses)) {
+										return Promise.resolve();
+									}
+									return Promise.reject(
+										new Error(
+											'Max theses must be greater than or equal to default theses',
+										),
+									);
+								},
+							}),
 						]}
+						dependencies={['defaultThesesPerLecturer']}
 					>
 						<Input
 							placeholder="Enter max theses per lecturer"

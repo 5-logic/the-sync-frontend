@@ -4,7 +4,7 @@ import React from 'react';
 
 import { highlightText } from '@/components/features/admin/CapstoneProjectManagement/HighlightText';
 import { RowSpanCell } from '@/components/features/admin/CapstoneProjectManagement/RowSpanCell';
-import { GroupTableData } from '@/components/features/admin/CapstoneProjectManagement/useGroupTableData';
+import { type GroupTableData } from '@/store';
 
 // Dùng chung cho cả bảng GroupResults và GroupManagement
 export const getColumns = (
@@ -12,14 +12,17 @@ export const getColumns = (
 	options?: {
 		showAbbreviationSupervisor?: boolean;
 		showStatus?: boolean;
+		showSemester?: boolean; // Add option to show/hide semester column
 		getDisplayStatus?: (originalStatus: string, studentId: string) => string;
 		statusUpdates?: Record<string, string>;
 		handleStatusChange?: (studentId: string, newStatus: string) => void;
+		dataSource?: GroupTableData[]; // Add dataSource to access all records
 	},
 ): ColumnsType<GroupTableData> => {
 	const {
 		showAbbreviationSupervisor = false,
 		showStatus = false,
+		showSemester = true, // Default to true for backward compatibility
 		getDisplayStatus = () => '',
 		statusUpdates = {},
 		handleStatusChange = () => {},
@@ -44,23 +47,35 @@ export const getColumns = (
 			dataIndex: 'name',
 			key: 'name',
 			align: 'center',
-			render: (text) => highlightText(text, searchText),
+			render: (text) => (
+				<div style={{ textAlign: 'left' }}>
+					{highlightText(text, searchText)}
+				</div>
+			),
 		},
 		{
 			title: 'Major',
 			dataIndex: 'major',
 			key: 'major',
 			align: 'center',
-			render: (text, record) =>
-				RowSpanCell(highlightText(text, searchText), record.rowSpanMajor),
+			render: (text) => RowSpanCell(highlightText(text, searchText)),
+			onCell: (record) => ({ rowSpan: record.rowSpanMajor }),
 		},
 		{
 			title: 'Thesis Title',
 			dataIndex: 'thesisName',
 			key: 'thesisName',
 			align: 'center',
-			render: (text, record) =>
-				RowSpanCell(highlightText(text, searchText), record.rowSpanGroup),
+			width: 300,
+			render: (text) =>
+				RowSpanCell(
+					text && text !== 'Not assigned' ? (
+						highlightText(text, searchText)
+					) : (
+						<span style={{ color: '#999' }}>-</span>
+					),
+				),
+			onCell: (record) => ({ rowSpan: record.rowSpanGroup }),
 		},
 	];
 
@@ -71,46 +86,46 @@ export const getColumns = (
 				dataIndex: 'abbreviation',
 				key: 'abbreviation',
 				align: 'center',
-				render: (abbreviation, record) =>
+				render: (abbreviation) =>
 					RowSpanCell(
 						<Tag color="blue">{highlightText(abbreviation, searchText)}</Tag>,
-						record.rowSpanGroup,
 					),
+				onCell: (record) => ({ rowSpan: record.rowSpanGroup }),
 			},
 			{
 				title: 'Supervisor',
 				dataIndex: 'supervisor',
 				key: 'supervisor',
 				align: 'center',
-				render: (supervisor, record) =>
+				render: (supervisor) =>
 					RowSpanCell(
 						supervisor ? (
-							<div style={{ textAlign: 'left' }}>
-								{supervisor
-									.split(', ')
-									.map((sup: React.Key | null | undefined) => (
-										<div key={sup}>
-											{highlightText(sup ? String(sup) : '', searchText)}
-										</div>
-									))}
+							<div style={{ textAlign: 'center' }}>
+								{supervisor.split(', ').map((sup: string) => (
+									<div key={sup.trim()}>
+										{highlightText(sup.trim(), searchText)}
+									</div>
+								))}
 							</div>
 						) : (
 							<span style={{ color: '#999' }}>-</span>
 						),
-						record.rowSpanGroup,
 					),
+				onCell: (record) => ({ rowSpan: record.rowSpanGroup }),
 			},
 		);
 	}
 
-	baseColumns.push({
-		title: 'Semester',
-		dataIndex: 'semester',
-		key: 'semester',
-		align: 'center',
-		render: (text, record) =>
-			RowSpanCell(highlightText(text, searchText), record.rowSpanSemester),
-	});
+	if (showSemester) {
+		baseColumns.push({
+			title: 'Semester',
+			dataIndex: 'semester',
+			key: 'semester',
+			align: 'center',
+			render: (text) => RowSpanCell(highlightText(text, searchText)),
+			onCell: (record) => ({ rowSpan: record.rowSpanSemester }),
+		});
+	}
 
 	if (showStatus) {
 		baseColumns.push({
@@ -121,18 +136,23 @@ export const getColumns = (
 			render: (status, record) => {
 				const currentStatus = getDisplayStatus(status, record.studentId);
 				const isModified = statusUpdates[record.studentId] !== undefined;
+
+				// Show default status if no status is set initially
+				const displayStatus = currentStatus || '';
+
 				return (
 					<Select
-						value={currentStatus}
+						value={displayStatus}
 						onChange={(value) => handleStatusChange(record.studentId, value)}
 						style={{
 							width: 100,
 							border: isModified ? '2px solid #faad14' : undefined,
 						}}
 						size="small"
+						placeholder="Select"
 					>
-						<Select.Option value="Pass">
-							<span style={{ color: '#52c41a' }}>Pass</span>
+						<Select.Option value="Passed">
+							<span style={{ color: '#52c41a' }}>Passed</span>
 						</Select.Option>
 						<Select.Option value="Failed">
 							<span style={{ color: '#ff4d4f' }}>Failed</span>

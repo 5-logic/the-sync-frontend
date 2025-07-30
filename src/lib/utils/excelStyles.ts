@@ -37,6 +37,12 @@ export const getBaseCellAlignment = () => ({
 	wrapText: true,
 });
 
+export const getLeftAlignedCellAlignment = () => ({
+	horizontal: 'left',
+	vertical: 'center',
+	wrapText: true,
+});
+
 export const getTitleStyle = (backgroundColor: string): CellStyle => ({
 	alignment: getBaseCellAlignment(),
 	font: {
@@ -113,6 +119,25 @@ export const getDataRowStyle = (
 	};
 };
 
+export const getDataRowStyleWithLeftAlign = (
+	rowIndex: number,
+	groupBoundaries: number[],
+	separatorColor = '808080',
+): CellStyle => {
+	const normalBorder = getBorderStyle('thin');
+	const separatorBorder = getBorderStyle('medium', separatorColor);
+
+	return {
+		alignment: getLeftAlignedCellAlignment(),
+		border: {
+			top: groupBoundaries.includes(rowIndex) ? separatorBorder : normalBorder,
+			bottom: normalBorder,
+			left: normalBorder,
+			right: normalBorder,
+		},
+	};
+};
+
 // Shared Excel export utilities
 export const generateSubtitle = () => {
 	const exportDate = new Date();
@@ -158,7 +183,6 @@ interface ExportDataItem {
 	groupId: string;
 	rowSpanMajor: number;
 	rowSpanGroup: number;
-	rowSpanSemester: number;
 }
 
 export const createMergesAndGroupBoundaries = (
@@ -207,20 +231,8 @@ export const createMergesAndGroupBoundaries = (
 			});
 		}
 
-		// Merge Semester column - different positions for different exporters
-		const semesterColumnIndex = totalColumns === 7 ? 5 : 7; // Defense results: 5, Group management: 7
-		if (item.rowSpanSemester > 1) {
-			merges.push({
-				s: { r: currentRow - 1, c: semesterColumnIndex },
-				e: {
-					r: currentRow - 1 + item.rowSpanSemester - 1,
-					c: semesterColumnIndex,
-				},
-			});
-		}
-
 		// For group management - merge Abbreviation and Supervisor columns
-		if (totalColumns === 8) {
+		if (totalColumns === 7) {
 			// Merge Abbreviation column (column F = index 5)
 			if (item.rowSpanGroup > 1) {
 				merges.push({
