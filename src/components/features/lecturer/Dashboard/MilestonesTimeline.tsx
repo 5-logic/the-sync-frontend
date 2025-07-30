@@ -1,4 +1,4 @@
-import { Card, Spin, Steps, Typography } from 'antd';
+import { Card, Select, Spin, Steps, Typography } from 'antd';
 import dayjs from 'dayjs';
 import React, { useEffect, useState } from 'react';
 
@@ -9,13 +9,15 @@ import { handleApiResponse } from '@/lib/utils/handleApi';
 import { Milestone } from '@/schemas/milestone';
 
 const { Text } = Typography;
+const { Option } = Select;
 
 const MilestonesTimeline: React.FC = () => {
 	const [milestones, setMilestones] = useState<Milestone[]>([]);
 	const [loading, setLoading] = useState(true);
 
 	// Use custom hook for semester filter logic
-	const { selectedSemester, semestersLoading } = useLecturerSemesterFilter();
+	const { semesters, selectedSemester, setSelectedSemester, semestersLoading } =
+		useLecturerSemesterFilter();
 
 	// Fetch milestones when semester changes
 	useEffect(() => {
@@ -100,7 +102,27 @@ const MilestonesTimeline: React.FC = () => {
 	const isDataReady = !loading && !semestersLoading;
 
 	return (
-		<Card title="Milestones Timeline">
+		<Card
+			title="Milestones Timeline"
+			extra={
+				<Select
+					value={selectedSemester}
+					onChange={setSelectedSemester}
+					style={{ width: 200 }}
+					placeholder="Filter by semester"
+					allowClear
+					onClear={() => setSelectedSemester('all')}
+					loading={semestersLoading}
+				>
+					<Option value="all">All Semesters</Option>
+					{semesters.map((semester) => (
+						<Option key={semester.id} value={semester.id}>
+							{semester.name}
+						</Option>
+					))}
+				</Select>
+			}
+		>
 			{!isDataReady ? (
 				<div style={{ textAlign: 'center', padding: '40px 0' }}>
 					<Spin size="large" />
