@@ -127,7 +127,6 @@ export default function GroupDetailCard({
 			: (group as GroupDashboard);
 
 	const thesis = groupDashboard.thesis;
-	const hasThesis = thesis !== null && thesis?.id !== undefined;
 	const thesisId = thesis?.id;
 
 	return (
@@ -149,8 +148,8 @@ export default function GroupDetailCard({
 						<GroupInfoCard group={groupDashboard} viewOnly={true} />
 
 						{/* Supervisor Information */}
-						{hasThesis ? (
-							<SupervisorInfoCard thesisId={thesisId!} />
+						{thesisId ? (
+							<SupervisorInfoCard thesisId={thesisId} />
 						) : (
 							<Card title="Supervisor Information">
 								<div style={{ textAlign: 'center', color: '#999' }}>
@@ -165,8 +164,8 @@ export default function GroupDetailCard({
 				<Col xs={24} lg={12}>
 					<Space direction="vertical" size="middle" style={{ width: '100%' }}>
 						{/* Thesis Status */}
-						{hasThesis ? (
-							<ThesisStatusCard thesisId={thesisId!} />
+						{thesisId ? (
+							<ThesisStatusCard thesisId={thesisId} />
 						) : (
 							<Card title="Thesis Status">
 								<div style={{ textAlign: 'center', color: '#999' }}>
