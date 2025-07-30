@@ -223,7 +223,7 @@ export const useMilestoneStore = create<MilestoneState>()(
 					}
 
 					// Fetch from API if not cached
-					const response = await milestoneService.findBySemester(semesterId);
+					const response = await milestoneService.findAllBySemester(semesterId);
 
 					if (response.success) {
 						const milestonesData = response.data;
