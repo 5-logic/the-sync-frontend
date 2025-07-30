@@ -113,7 +113,7 @@ export default function JoinGroupForm({
 			<div className="hidden sm:block">
 				<Alert
 					message="Having trouble finding a group?"
-					description="Use our AI-powered group suggestion feature to find groups that match your skills and preferences!"
+					description="Use our AI-powered group suggestion feature to find groups that match your skills and responsibilities!"
 					type="info"
 					showIcon
 					action={
@@ -141,7 +141,7 @@ export default function JoinGroupForm({
 			<div className="block sm:hidden">
 				<Alert
 					message="Having trouble finding a group?"
-					description="Use our AI-powered group suggestion feature to find groups that match your skills and preferences!"
+					description="Use our AI-powered group suggestion feature to find groups that match your skills and responsibilities!"
 					type="info"
 					showIcon
 					style={{

@@ -146,7 +146,7 @@ export default function FormOrJoinGroup() {
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
 			{/* Header Section */}
-			<Row align="middle" justify="space-between" wrap>
+			<Row align="middle" justify="space-between" wrap gutter={[0, 16]}>
 				<Col xs={24} sm={18} md={18} lg={20}>
 					<Header
 						title="Form or Join a Group"
@@ -163,6 +163,7 @@ export default function FormOrJoinGroup() {
 							alignItems: 'center',
 							height: '100%',
 						}}
+						className="flex justify-end sm:justify-end xs:justify-center xs:mt-2"
 					>
 						<RequestsButton config={requestsConfig} requests={requests}>
 							My Requests
