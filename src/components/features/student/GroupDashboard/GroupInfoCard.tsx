@@ -1,5 +1,14 @@
 import { ReloadOutlined } from '@ant-design/icons';
-import { Button, Card, Divider, Space, Spin, Tag, Typography } from 'antd';
+import {
+	Button,
+	Card,
+	Divider,
+	Space,
+	Spin,
+	Tag,
+	Tooltip,
+	Typography,
+} from 'antd';
 import { useRouter } from 'next/navigation';
 import { memo, useEffect, useState } from 'react';
 
@@ -34,6 +43,23 @@ const TagList = ({
 
 	const visibleItems = items.slice(0, maxVisible);
 	const remainingCount = items.length - maxVisible;
+	const remainingItems = items.slice(maxVisible);
+
+	// Create tooltip content for remaining items
+	const tooltipContent = remainingItems.length > 0 && (
+		<div style={{ maxWidth: 200 }}>
+			{remainingItems.map((item) => (
+				<Tag
+					key={item.id}
+					color={color}
+					className="text-xs"
+					style={{ margin: '2px' }}
+				>
+					{item.name}
+				</Tag>
+			))}
+		</div>
+	);
 
 	return (
 		<div className="flex flex-wrap gap-2 mt-1">
@@ -43,12 +69,21 @@ const TagList = ({
 				</Tag>
 			))}
 			{remainingCount > 0 && (
-				<Tag
-					className="text-xs border-dashed"
-					style={{ backgroundColor: '#f5f5f5', borderColor: '#d9d9d9' }}
+				<Tooltip
+					title={tooltipContent}
+					color="white"
+					overlayInnerStyle={{ color: '#000' }}
 				>
-					+{remainingCount}
-				</Tag>
+					<Tag
+						className="text-xs border-dashed cursor-pointer"
+						style={{
+							backgroundColor: '#f5f5f5',
+							borderColor: '#d9d9d9',
+						}}
+					>
+						+{remainingCount}
+					</Tag>
+				</Tooltip>
 			)}
 		</div>
 	);
