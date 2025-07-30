@@ -65,10 +65,18 @@ const MilestonesTimeline: React.FC = () => {
 		const dateRange = formatDateRange(milestone.startDate, milestone.endDate);
 
 		// Determine step status for Steps component
-		let stepStatus: 'wait' | 'process' | 'finish' | 'error' = 'wait';
-		if (status === 'Ended') stepStatus = 'finish';
-		else if (status === 'In Progress') stepStatus = 'process';
-		else stepStatus = 'wait';
+		const getStepStatus = (): 'wait' | 'process' | 'finish' | 'error' => {
+			if (status === 'Ended') return 'finish';
+			if (status === 'In Progress') return 'process';
+			return 'wait';
+		};
+
+		// Get color based on status
+		const getStatusColor = (): string => {
+			if (status === 'Ended') return '#52c41a';
+			if (status === 'In Progress') return '#1890ff';
+			return '#8c8c8c';
+		};
 
 		return {
 			title: milestone.name,
@@ -81,25 +89,53 @@ const MilestonesTimeline: React.FC = () => {
 					<Text
 						style={{
 							fontSize: '11px',
-							color:
-								status === 'Ended'
-									? '#52c41a'
-									: status === 'In Progress'
-										? '#1890ff'
-										: '#8c8c8c',
+							color: getStatusColor(),
 						}}
 					>
 						{status}
 					</Text>
 				</div>
 			),
-			status: stepStatus,
+			status: getStepStatus(),
 		};
 	});
 
 	const currentStep = getCurrentMilestoneIndex();
 
 	const isDataReady = !loading && !semestersLoading;
+
+	// Render main content based on state
+	const renderMainContent = () => {
+		if (!isDataReady) {
+			return (
+				<div style={{ textAlign: 'center', padding: '40px 0' }}>
+					<Spin size="large" />
+				</div>
+			);
+		}
+
+		if (milestones.length === 0) {
+			const emptyMessage =
+				selectedSemester === 'all'
+					? 'Please select a semester to view milestones'
+					: 'No milestones found for selected semester';
+
+			return (
+				<div style={{ textAlign: 'center', color: '#999', padding: '40px 0' }}>
+					{emptyMessage}
+				</div>
+			);
+		}
+
+		return (
+			<Steps
+				direction="horizontal"
+				current={currentStep >= 0 ? currentStep : milestones.length}
+				items={stepsData}
+				style={{ marginTop: '16px' }}
+			/>
+		);
+	};
 
 	// Render semester filter
 	const renderSemesterFilter = () => (
@@ -150,24 +186,7 @@ const MilestonesTimeline: React.FC = () => {
 				</Select>
 			</div>
 
-			{!isDataReady ? (
-				<div style={{ textAlign: 'center', padding: '40px 0' }}>
-					<Spin size="large" />
-				</div>
-			) : milestones.length === 0 ? (
-				<div style={{ textAlign: 'center', color: '#999', padding: '40px 0' }}>
-					{selectedSemester === 'all'
-						? 'Please select a semester to view milestones'
-						: 'No milestones found for selected semester'}
-				</div>
-			) : (
-				<Steps
-					direction="horizontal"
-					current={currentStep >= 0 ? currentStep : milestones.length}
-					items={stepsData}
-					style={{ marginTop: '16px' }}
-				/>
-			)}
+			{renderMainContent()}
 		</Card>
 	);
 };
