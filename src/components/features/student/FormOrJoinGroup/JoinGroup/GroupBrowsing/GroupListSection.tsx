@@ -143,12 +143,12 @@ const renderFilterControls = (props: FilterControlsProps) => {
 		onRefresh,
 	} = props;
 
-	// Mobile layout: stacked
-	if (screens.xs || screens.sm) {
+	// Mobile layout: stacked (only for extra small screens)
+	if (screens.xs) {
 		return (
 			<>
 				{/* Mobile: Search takes full width */}
-				<Col xs={24} sm={24}>
+				<Col xs={24}>
 					<Input
 						placeholder={MESSAGES.SEARCH_PLACEHOLDER}
 						prefix={<SearchOutlined />}
@@ -165,7 +165,7 @@ const renderFilterControls = (props: FilterControlsProps) => {
 					/>
 				</Col>
 				{/* Mobile: Category and Refresh in one row */}
-				<Col xs={24} sm={24}>
+				<Col xs={24}>
 					<Row gutter={8}>
 						<Col span={18}>
 							<Select
@@ -200,9 +200,7 @@ const renderFilterControls = (props: FilterControlsProps) => {
 									fontSize: fontSize - 2,
 								}}
 								size="small"
-							>
-								{screens.xs ? '' : 'Refresh'}
-							</Button>
+							/>
 						</Col>
 					</Row>
 				</Col>
@@ -210,7 +208,7 @@ const renderFilterControls = (props: FilterControlsProps) => {
 		);
 	}
 
-	// Desktop layout: all in one row
+	// Desktop/Tablet layout: all in one row (for sm and above)
 	return (
 		<>
 			<Col {...BREAKPOINT_CONFIGS.DESKTOP.SEARCH_WIDTH}>
