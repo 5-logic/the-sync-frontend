@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { FormLabel } from '@/components/common/FormLabel';
 import SupportingDocumentField from '@/components/features/lecturer/CreateThesis/ThesisFileUpload';
 import { getSortedDomains } from '@/lib/constants/domains';
+import { StorageService } from '@/lib/services/storage.service';
 import { useSkillSetStore } from '@/store';
 import { useSemesterStore } from '@/store/useSemesterStore';
 
@@ -31,6 +32,12 @@ interface UploadedFile {
 	url?: string;
 }
 
+interface FileChangeState {
+	action: 'none' | 'delete' | 'replace';
+	newFile?: File;
+	originalFileUrl?: string; // Store original file URL to delete later
+}
+
 export default function ThesisForm({
 	mode,
 	initialValues,
@@ -43,6 +50,10 @@ export default function ThesisForm({
 	const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>(null);
 	const [hasFileChanged, setHasFileChanged] = useState(false);
 	const [hasFormChanged, setHasFormChanged] = useState(false);
+	const [fileChangeState, setFileChangeState] = useState<FileChangeState>({
+		action: 'none',
+		originalFileUrl: initialFile?.url,
+	});
 
 	// Get sorted domain options
 	const domainOptions = getSortedDomains();
@@ -238,7 +249,12 @@ export default function ThesisForm({
 			const currentValue = currentValues[field];
 			const initialValue = initialValues?.[field];
 			if (currentValue !== initialValue) {
-				changedFields[field] = currentValue;
+				// Convert undefined to empty string for domain field
+				if (field === 'domain' && currentValue === undefined) {
+					changedFields[field] = '';
+				} else {
+					changedFields[field] = currentValue;
+				}
 			}
 		});
 
@@ -257,16 +273,52 @@ export default function ThesisForm({
 			changedFields.skillIds = currentSkills;
 		}
 
-		// Include supporting document if file changed
-		if (hasFileChanged) {
-			changedFields.supportingDocument = uploadedFile?.url ?? '';
-		}
+		// Note: supportingDocument will be handled in handleFormSubmit for edit mode
+		// to properly handle file upload/delete operations
 
 		return changedFields;
 	};
 
-	const handleFormSubmit = (values: Record<string, unknown>) => {
-		const formData = getChangedFields(values);
+	const handleFormSubmit = async (values: Record<string, unknown>) => {
+		let formData = getChangedFields(values);
+
+		// Handle file operations for edit mode only
+		if (
+			mode === 'edit' &&
+			hasFileChanged &&
+			fileChangeState.action !== 'none'
+		) {
+			try {
+				if (fileChangeState.action === 'delete') {
+					// Delete the original file
+					if (fileChangeState.originalFileUrl) {
+						await StorageService.deleteFile(fileChangeState.originalFileUrl);
+					}
+					formData = { ...formData, supportingDocument: '' };
+				} else if (
+					fileChangeState.action === 'replace' &&
+					fileChangeState.newFile
+				) {
+					// Upload new file
+					const newFileUrl = await StorageService.uploadFile(
+						fileChangeState.newFile,
+						'support-doc',
+					);
+
+					// Delete old file if exists
+					if (fileChangeState.originalFileUrl) {
+						await StorageService.deleteFile(fileChangeState.originalFileUrl);
+					}
+
+					formData = { ...formData, supportingDocument: newFileUrl };
+				}
+			} catch (error) {
+				console.error('Error handling file operations:', error);
+				// Continue with form submission even if file operations fail
+				// The error notification is already shown by StorageService
+			}
+		}
+
 		onSubmit(formData);
 	};
 
@@ -297,7 +349,12 @@ export default function ThesisForm({
 			layout="vertical"
 			requiredMark={false}
 			style={{ width: '100%' }}
-			initialValues={initialValues}
+			initialValues={{
+				...initialValues,
+				// Convert empty string to undefined for domain field to show placeholder
+				domain:
+					initialValues?.domain === '' ? undefined : initialValues?.domain,
+			}}
 			onFinish={handleFormSubmit}
 			onValuesChange={checkFormChanges} // Detect changes when form values change
 		>
@@ -402,6 +459,7 @@ export default function ThesisForm({
 						// Set form field for validation purposes, but we'll use the URL in submit
 						form.setFieldValue('supportingDocument', file ? [file] : []);
 					}}
+					onFileChangeStateUpdate={setFileChangeState}
 				/>
 			</div>
 

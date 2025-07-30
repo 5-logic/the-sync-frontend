@@ -379,27 +379,27 @@ const UserForm = ({ formType }: UserFormProps) => {
 						</Form.Item>
 					</Col>
 				</Row>
-				{/* Student ID and Gender - Two columns */}
+				{/* Student Code and Gender - Two columns */}
 				<Row gutter={16}>
 					{isStudent && (
 						<Col xs={24} sm={12}>
 							<Form.Item
 								name="studentCode"
 								label={FormLabel({
-									text: 'Student ID',
+									text: 'Student Code',
 									isRequired: true,
 									isBold: true,
 								})}
 								rules={[
-									{ required: true, message: 'Please enter Student ID' },
+									{ required: true, message: 'Please enter Student Code' },
 									{
 										pattern: /^[A-Za-z]{2}\d{6}$/,
 										message:
-											'Student ID must be 2 letters followed by 6 digits, e.g. QE123456',
+											'Student Code must be 2 letters followed by 6 digits, e.g. QE123456',
 									},
 								]}
 							>
-								<Input placeholder="Enter Student ID" disabled={creating} />
+								<Input placeholder="Enter Student Code" disabled={creating} />
 							</Form.Item>
 						</Col>
 					)}
