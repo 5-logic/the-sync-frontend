@@ -23,7 +23,7 @@ export const COMMON_FIELDS = {
 		options: COMMON_GENDER_OPTIONS,
 	},
 	studentCode: {
-		title: 'Student ID',
+		title: 'Student Code',
 		key: 'studentCode' as const,
 		type: 'text' as const,
 	},

@@ -93,7 +93,7 @@ const fieldValidators = {
 		return studentCodeRegex.test(value)
 			? []
 			: [
-					`Row ${rowNumber}: Student ID must be 2 letters followed by 6 digits (e.g., QE123456)`,
+					`Row ${rowNumber}: Student Code must be 2 letters followed by 6 digits (e.g., QE123456)`,
 				];
 	},
 
@@ -135,7 +135,7 @@ function checkDuplicates<
 >(item: T, validatedData: T[], rowNumber: number): string[] {
 	const errors: string[] = [];
 
-	// Check for duplicate student IDs
+	// Check for duplicate student codes
 	if ('studentCode' in item && item['studentCode']) {
 		const duplicateIndex = validatedData.findIndex(
 			(existingItem) =>
@@ -144,7 +144,7 @@ function checkDuplicates<
 		);
 		if (duplicateIndex !== -1) {
 			errors.push(
-				`Row ${rowNumber}: Duplicate Student ID '${item['studentCode']}' found in row ${duplicateIndex + 2}`,
+				`Row ${rowNumber}: Duplicate Student Code '${item['studentCode']}' found in row ${duplicateIndex + 2}`,
 			);
 		}
 	}

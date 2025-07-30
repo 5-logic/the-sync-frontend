@@ -10,7 +10,7 @@ import { Student } from '@/schemas/student';
 export default function StudentExcelImport() {
 	return (
 		<ExcelImportForm<Student>
-			note="Please fill the template including Student ID, Full Name, Email, Phone Number, and Gender."
+			note="Please fill the template including Student Code, Full Name, Email, Phone Number, and Gender."
 			fields={STUDENT_FIELDS}
 			onImport={createImportHandler('student')}
 			templateFileName="Create List Students Template.xlsx"
