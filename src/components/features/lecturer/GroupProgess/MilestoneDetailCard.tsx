@@ -152,7 +152,7 @@ const SubmissionFiles = ({
 				>
 					{documents.map((docUrl, index) => (
 						<div
-							key={index}
+							key={docUrl}
 							style={{
 								display: 'flex',
 								alignItems: 'center',
