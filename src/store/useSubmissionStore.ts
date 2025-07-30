@@ -56,7 +56,7 @@ export const useSubmissionStore = create<SubmissionState>((set, get) => ({
 
 		try {
 			const res = await submissionService.findByMilestone(milestoneId);
-			if (res && res.success) {
+			if (res?.success) {
 				const submissionsData = res.data;
 
 				// Cache the data

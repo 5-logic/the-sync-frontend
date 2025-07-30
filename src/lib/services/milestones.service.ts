@@ -88,12 +88,10 @@ class MilestoneService {
 
 	/**
 	 * Get milestones by semester ID
+	 * @deprecated Use findAllBySemester instead
 	 */
 	async findBySemester(semesterId: string): Promise<ApiResponse<Milestone[]>> {
-		const response = await httpClient.get<ApiResponse<Milestone[]>>(
-			`${this.baseUrl}/semester/${semesterId}`,
-		);
-		return response.data;
+		return this.findAllBySemester(semesterId);
 	}
 }
 
