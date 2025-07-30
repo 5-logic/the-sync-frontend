@@ -19,6 +19,10 @@ type Props = Readonly<{
 	} | null;
 	onSubmit: (values: Record<string, unknown>) => void;
 	loading?: boolean;
+	thesis?: {
+		status?: string;
+		semesterId?: string;
+	} | null;
 }>;
 
 interface UploadedFile {
@@ -33,6 +37,7 @@ export default function ThesisForm({
 	initialFile,
 	onSubmit,
 	loading = false,
+	thesis = null,
 }: Props) {
 	const [form] = Form.useForm();
 	const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>(null);
@@ -78,6 +83,46 @@ export default function ThesisForm({
 		(semester) =>
 			semester.status === 'Preparing' || semester.status === 'Picking',
 	);
+
+	// Get current semester (the one that thesis belongs to)
+	const currentSemester = thesis?.semesterId
+		? semesters.find((s) => s.id === thesis.semesterId)
+		: null;
+
+	// Check if editing is allowed
+	const isEditAllowed = () => {
+		if (mode === 'create') {
+			// For create mode, need preparing semester
+			return !!preparingSemester;
+		}
+
+		if (mode === 'edit') {
+			// For edit mode, check specific conditions
+			if (!currentSemester) return false;
+
+			// Don't allow if thesis status is pending
+			if (thesis?.status === 'Pending') return false;
+
+			// Allow if semester status is Preparing, Picking, or Ongoing with ScopeAdjustable
+			if (
+				currentSemester.status === 'Preparing' ||
+				currentSemester.status === 'Picking'
+			) {
+				return true;
+			}
+
+			if (
+				currentSemester.status === 'Ongoing' &&
+				currentSemester.ongoingPhase === 'ScopeAdjustable'
+			) {
+				return true;
+			}
+
+			return false;
+		}
+
+		return false;
+	};
 
 	useEffect(() => {
 		// Initialize uploaded file from initialFile prop (for edit mode)
@@ -230,8 +275,12 @@ export default function ThesisForm({
 		if (semestersLoading) {
 			return 'Loading semesters...';
 		}
-		if (!preparingSemester) {
-			return 'No preparing semester found';
+		if (!isEditAllowed()) {
+			if (mode === 'create') {
+				return 'No preparing semester found';
+			} else {
+				return 'Editing not allowed';
+			}
 		}
 		if (loading) {
 			return mode === 'create' ? 'Creating...' : 'Updating...';
@@ -288,6 +337,7 @@ export default function ThesisForm({
 			>
 				<Select
 					showSearch
+					allowClear
 					placeholder="Select field of study"
 					filterOption={(input, option) =>
 						(option?.value as string)
@@ -365,7 +415,7 @@ export default function ThesisForm({
 						disabled={
 							loading ||
 							semestersLoading ||
-							!preparingSemester ||
+							!isEditAllowed() ||
 							(mode === 'edit' && !hasFormChanged)
 						}
 					>

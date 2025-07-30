@@ -9,6 +9,84 @@ For more information about this project, see the [README](./README.md).
 
 ---
 
+## [0.6.5] - 2025-07-28
+
+### Added
+
+#### Enhanced Milestone Management
+
+- Start and end date tracking in milestone editing with improved change detection ([#290](https://github.com/5-logic/the-sync-frontend/pull/290))
+- Debug logging for milestone change detection to improve development experience
+- Comprehensive change tracking for milestone duration updates
+- Enhanced document change detection with proper logging for milestone management
+
+#### User Interface Improvements
+
+- Allow clearing selection in field of study dropdown in thesis form for better user experience
+- Conditional unassign button visibility in thesis detail modal based on context
+- Enhanced thesis detail modal with configurable unassign button display
+
+### Changed
+
+#### Group Permission Management
+
+- **Enhanced Group Actions:** Updated group action permissions to be based on semester status for more granular control
+- Improved group modification logic to distinguish between leave/invite actions and delete actions
+- Enhanced permission checks for group operations with better user feedback
+- Refined group action availability based on semester preparation status
+
+#### Milestone Change Detection
+
+- Simplified duration checks in milestone editing for better performance and reliability
+- Enhanced change detection algorithm to properly handle duration modifications
+- Improved form validation for milestone updates with comprehensive change tracking
+- Better handling of note field changes with proper trimming and validation
+
+#### User Experience Enhancements
+
+- Enhanced thesis detail modal to show unassign button only when contextually appropriate
+- Improved group permission messaging with more specific error descriptions
+- Better separation of concerns between thesis assignment and unassignment workflows
+- Enhanced user feedback for group operations with context-aware messaging
+
+### Fixed
+
+#### Group Management Issues
+
+- Fixed group action permissions to properly handle semester status restrictions
+- Improved group deletion logic to check thesis/submissions before semester status
+- Enhanced group leave and invite member functionality based on semester preparation status
+- Fixed group modification restrictions to be more contextually appropriate
+
+#### Milestone Management Fixes
+
+- Fixed duration change detection in milestone editing to properly track start and end date modifications
+- Improved milestone data submission to include only changed fields
+- Enhanced document handling in milestone updates with proper array management
+- Fixed change detection for note fields with proper string trimming and comparison
+
+#### UI and Component Fixes
+
+- Fixed thesis detail modal to conditionally show unassign button based on source context
+- Improved notification handling by removing redundant success messages
+- Enhanced form state management in milestone editing with better validation
+- Fixed component prop handling for conditional button visibility
+
+### Technical Details
+
+- **Files Changed:** 6 files with 101 additions and 28 deletions
+- **Enhanced Components:** EditMilestoneDialog, ThesisDetailModal, GroupInfoCard, ThesisForm
+- **Improved Logic:** Group permission handling, milestone change detection, thesis detail management
+- **Better UX:** Contextual button visibility, enhanced error messaging, improved form validation
+
+### Migration Notes
+
+- Group action permissions now respect semester status more granularly - review group management workflows
+- Milestone editing now tracks duration changes separately - existing milestone update logic may need review
+- Thesis detail modal button visibility is now context-dependent - check custom thesis detail implementations
+
+---
+
 ## [0.6.4] - 2025-07-27
 
 ### Added
