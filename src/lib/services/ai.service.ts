@@ -50,6 +50,35 @@ export interface SuggestGroupsResponse {
 	data: SuggestGroupsData;
 }
 
+// AI Suggest Students interfaces
+export interface SuggestedStudentSkill {
+	id: string;
+	name: string;
+	level: string;
+}
+
+export interface SuggestedStudentResponsibility {
+	id: string;
+	name: string;
+}
+
+export interface SuggestedStudent {
+	id: string;
+	studentCode: string;
+	fullName: string;
+	email: string;
+	skills: SuggestedStudentSkill[];
+	responsibilities: SuggestedStudentResponsibility[];
+	similarityScore: number;
+	matchPercentage: number;
+}
+
+export interface SuggestStudentsResponse {
+	success: boolean;
+	statusCode: number;
+	data: SuggestedStudent[];
+}
+
 class AIService {
 	private readonly baseUrl = '/ai';
 
@@ -62,6 +91,18 @@ class AIService {
 		const response = await httpClient.post<SuggestGroupsResponse>(
 			`${this.baseUrl}/students/suggest-groups-for-student`,
 			request,
+		);
+		return response.data;
+	}
+
+	/**
+	 * Suggest students for a group based on group's needs and student skills
+	 */
+	async suggestStudentsForGroup(
+		groupId: string,
+	): Promise<SuggestStudentsResponse> {
+		const response = await httpClient.get<SuggestStudentsResponse>(
+			`${this.baseUrl}/students/suggest-for-group/${groupId}`,
 		);
 		return response.data;
 	}
