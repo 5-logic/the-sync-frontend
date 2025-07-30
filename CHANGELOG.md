@@ -9,6 +9,212 @@ For more information about this project, see the [README](./README.md).
 
 ---
 
+## [0.7.0] - 2025-07-30
+
+### Added
+
+#### AI-Powered Features
+
+- **AI Student Suggestions:** Integrated AI-powered student suggestions in group invitation system ([#294](https://github.com/5-logic/the-sync-frontend/pull/294), [#303](https://github.com/5-logic/the-sync-frontend/pull/303))
+  - SuggestedStudentCard component for displaying student match percentages and details
+  - TagList component for displaying skills and responsibilities with overflow handling
+  - AI service integration for suggesting students based on group requirements
+  - Enhanced InviteMembersDialog with AI suggestions section and improved UI
+- **AI Group Recommendations:** Complete AI group suggestion system for students seeking groups ([#302](https://github.com/5-logic/the-sync-frontend/pull/302))
+  - AISuggestions component with compatibility scoring and pagination
+  - Group matching based on skills and responsibilities alignment
+  - JoinGroupForm integration with AI-powered recommendations
+
+#### Administrative Enhancements
+
+- **Capstone Defense Results Management:** Comprehensive defense results tracking and bulk update system ([#283](https://github.com/5-logic/the-sync-frontend/pull/283), [#284](https://github.com/5-logic/the-sync-frontend/pull/284))
+  - BulkUpdateModal for efficient status updates across multiple students
+  - Defense results export functionality with Excel integration
+  - Real-time status tracking with validation and error handling
+  - Enhanced filtering and search capabilities for defense management
+- **Capstone Project Management:** Advanced project management dashboard for administrators ([#276](https://github.com/5-logic/the-sync-frontend/pull/276), [#278](https://github.com/5-logic/the-sync-frontend/pull/278))
+  - CapstoneManagementStore for centralized data management
+  - Enhanced Excel export with rowspan calculations and styling
+  - Semester-based filtering and validation for data export
+  - Group table management with improved performance and UI
+
+#### Lecturer Dashboard & Progress Tracking
+
+- **Enhanced Lecturer Dashboard:** Comprehensive lecturer dashboard with statistics and progress tracking ([#295](https://github.com/5-logic/the-sync-frontend/pull/295))
+  - LecturerDashboardStore for centralized state management
+  - Real-time statistics fetching for theses, groups, and milestones
+  - MilestonesTimeline component with semester filtering capabilities
+  - Enhanced dashboard stats with loading states and error handling
+- **Group Progress Management:** Advanced group progress tracking system ([#265](https://github.com/5-logic/the-sync-frontend/pull/265), [#297](https://github.com/5-logic/the-sync-frontend/pull/297))
+  - GroupDetailCard with comprehensive group information display
+  - LecturerProgressOverviewCard for milestone and submission tracking
+  - SemesterFilter component for improved data filtering
+  - Enhanced MilestoneDetailCard with submission file handling
+
+#### User Interface & Experience
+
+- **Improved Component Architecture:** Enhanced reusability and maintainability across components ([#289](https://github.com/5-logic/the-sync-frontend/pull/289), [#293](https://github.com/5-logic/the-sync-frontend/pull/293))
+  - BaseThesisInfoCard for consistent thesis information display
+  - Enhanced ProgressOverviewCard with improved accessibility
+  - Standardized group member sorting and display logic
+  - Enhanced form validation and error handling patterns
+- **File Upload & Management:** Streamlined file handling across thesis and milestone management
+  - Optimized ThesisFileUpload component with better validation
+  - Enhanced file upload handling in forms with improved user feedback
+  - Better file validation and error messaging
+
+### Changed
+
+#### Terminology & Consistency Updates
+
+- **Student Code Standardization:** Updated terminology from "Student ID" to "Student Code" across all components for consistency ([#294](https://github.com/5-logic/the-sync-frontend/pull/294))
+  - Updated UserForm, SemesterForm, and all related components
+  - Enhanced validation rules and display labels
+  - Improved consistency in data import and export functionality
+
+#### Enhanced Data Management
+
+- **Thesis Management:** Improved thesis handling with better semester integration and validation
+  - Enhanced ThesisForm with dynamic field handling and validation
+  - Better integration with semester data and filtering
+  - Improved thesis editing and creation workflows
+- **Session Management:** Replaced useAuth with useSessionData for improved session handling across components
+  - Better authentication state management
+  - Enhanced security and user session tracking
+  - Improved error handling for authentication-related operations
+
+#### UI/UX Improvements
+
+- **Component Accessibility:** Enhanced accessibility features across key components ([#289](https://github.com/5-logic/the-sync-frontend/pull/289))
+  - Improved keyboard navigation for ProgressOverviewCard
+  - Enhanced button accessibility with proper ARIA labels
+  - Better focus management and screen reader support
+- **Table & Data Display:** Enhanced table rendering and data presentation
+  - Improved GroupSearchTable with loading states and skeleton components
+  - Better table pagination and filtering performance
+  - Enhanced data visualization with consistent styling
+
+### Fixed
+
+#### Performance & Optimization
+
+- **Component Optimization:** Streamlined component rendering and reduced unnecessary re-renders
+  - Optimized loop calculations in SkillsDisplay component
+  - Enhanced memory management in thesis and group components
+  - Improved state synchronization across related components
+- **Data Consistency:** Fixed various data synchronization and state management issues
+  - Enhanced error handling for API operations
+  - Improved cache management and loading state handling
+  - Better handling of concurrent operations and race conditions
+
+#### Form & Validation Improvements
+
+- **Enhanced Form Handling:** Improved form validation and error handling across components
+  - Better domain field value conversion in ThesisForm
+  - Enhanced file upload validation and error messaging
+  - Improved form state management and change detection
+
+### Technical Details
+
+- **Files Changed:** 72 files with 4,580 additions and 2,637 deletions
+- **New Components:** SuggestedStudentCard, TagList, AISuggestions, BulkUpdateModal, GroupDetailCard, LecturerProgressOverviewCard
+- **Enhanced Services:** AI service integration, enhanced semester service, improved file handling utilities
+- **Store Improvements:** New CapstoneManagementStore, enhanced LecturerDashboardStore with statistics tracking
+- **New Utilities:** Student invite helpers, defense results API utilities, Excel export enhancements
+
+### API Enhancements
+
+- **AI Integration:** New AI service endpoints for student and group suggestions
+- **Bulk Operations:** Enhanced bulk update APIs for defense results and student management
+- **Progress Tracking:** Improved APIs for lecturer dashboard statistics and progress monitoring
+
+### Migration Notes
+
+- **Component Updates:** Components using student identification should use "Student Code" terminology
+- **Session Management:** Applications using useAuth should migrate to useSessionData for consistency
+- **AI Features:** New AI-powered features require proper backend integration for optimal functionality
+- Enhanced Excel export functionality may require cache refresh for updated styling and formatting
+
+---
+
+## [0.6.5] - 2025-07-28
+
+### Added
+
+#### Enhanced Milestone Management
+
+- Start and end date tracking in milestone editing with improved change detection ([#290](https://github.com/5-logic/the-sync-frontend/pull/290))
+- Debug logging for milestone change detection to improve development experience
+- Comprehensive change tracking for milestone duration updates
+- Enhanced document change detection with proper logging for milestone management
+
+#### User Interface Improvements
+
+- Allow clearing selection in field of study dropdown in thesis form for better user experience
+- Conditional unassign button visibility in thesis detail modal based on context
+- Enhanced thesis detail modal with configurable unassign button display
+
+### Changed
+
+#### Group Permission Management
+
+- **Enhanced Group Actions:** Updated group action permissions to be based on semester status for more granular control
+- Improved group modification logic to distinguish between leave/invite actions and delete actions
+- Enhanced permission checks for group operations with better user feedback
+- Refined group action availability based on semester preparation status
+
+#### Milestone Change Detection
+
+- Simplified duration checks in milestone editing for better performance and reliability
+- Enhanced change detection algorithm to properly handle duration modifications
+- Improved form validation for milestone updates with comprehensive change tracking
+- Better handling of note field changes with proper trimming and validation
+
+#### User Experience Enhancements
+
+- Enhanced thesis detail modal to show unassign button only when contextually appropriate
+- Improved group permission messaging with more specific error descriptions
+- Better separation of concerns between thesis assignment and unassignment workflows
+- Enhanced user feedback for group operations with context-aware messaging
+
+### Fixed
+
+#### Group Management Issues
+
+- Fixed group action permissions to properly handle semester status restrictions
+- Improved group deletion logic to check thesis/submissions before semester status
+- Enhanced group leave and invite member functionality based on semester preparation status
+- Fixed group modification restrictions to be more contextually appropriate
+
+#### Milestone Management Fixes
+
+- Fixed duration change detection in milestone editing to properly track start and end date modifications
+- Improved milestone data submission to include only changed fields
+- Enhanced document handling in milestone updates with proper array management
+- Fixed change detection for note fields with proper string trimming and comparison
+
+#### UI and Component Fixes
+
+- Fixed thesis detail modal to conditionally show unassign button based on source context
+- Improved notification handling by removing redundant success messages
+- Enhanced form state management in milestone editing with better validation
+- Fixed component prop handling for conditional button visibility
+
+### Technical Details
+
+- **Files Changed:** 6 files with 101 additions and 28 deletions
+- **Enhanced Components:** EditMilestoneDialog, ThesisDetailModal, GroupInfoCard, ThesisForm
+- **Improved Logic:** Group permission handling, milestone change detection, thesis detail management
+- **Better UX:** Contextual button visibility, enhanced error messaging, improved form validation
+
+### Migration Notes
+
+- Group action permissions now respect semester status more granularly - review group management workflows
+- Milestone editing now tracks duration changes separately - existing milestone update logic may need review
+- Thesis detail modal button visibility is now context-dependent - check custom thesis detail implementations
+
+---
+
 ## [0.6.4] - 2025-07-27
 
 ### Added

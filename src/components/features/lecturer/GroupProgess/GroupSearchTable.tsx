@@ -1,7 +1,7 @@
 'use client';
 
 import { EyeOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
-import { Button, Input, Skeleton, Space, Spin, Table } from 'antd';
+import { Button, Input, Space, Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 
 import { TablePagination } from '@/components/common/TablePagination';
@@ -24,9 +24,6 @@ interface Props<T extends GroupData = SupervisedGroup> {
 	selectedSemester?: string | null;
 	onSemesterChange?: (semesterId: string | null) => void;
 	showSemesterFilter?: boolean;
-	// Loading state props
-	isInitialLoad?: boolean;
-	isRefreshing?: boolean;
 }
 
 export default function GroupSearchTable<
@@ -42,24 +39,25 @@ export default function GroupSearchTable<
 	selectedSemester,
 	onSemesterChange,
 	showSemesterFilter = false,
-	isInitialLoad = false,
-	isRefreshing = false,
 }: Readonly<Props<T>>) {
 	const columns: ColumnsType<T> = [
 		{
 			title: 'Group Name',
 			dataIndex: 'name',
 			key: 'name',
+			responsive: ['xs', 'sm', 'md', 'lg', 'xl'],
 		},
 		{
 			title: 'Group Code',
 			dataIndex: 'code',
 			key: 'code',
+			responsive: ['sm', 'md', 'lg', 'xl'],
 		},
 		{
 			title: 'English Name',
 			key: 'englishName',
 			width: 500,
+			responsive: ['md', 'lg', 'xl'],
 			render: (_, record) => {
 				// Handle SupervisedGroup type with thesis.englishName
 				if ('thesis' in record && record.thesis?.englishName) {
@@ -76,12 +74,14 @@ export default function GroupSearchTable<
 			title: 'Project Direction',
 			dataIndex: 'projectDirection',
 			key: 'projectDirection',
+			responsive: ['lg', 'xl'],
 			render: (value: string) => value || '-',
 		},
 
 		{
 			title: 'Members',
 			key: 'memberCount',
+			responsive: ['sm', 'md', 'lg', 'xl'],
 			render: (_, record) => {
 				// Handle SupervisedGroup type with studentGroupParticipations
 				if (
@@ -106,6 +106,8 @@ export default function GroupSearchTable<
 			title: 'Actions',
 			align: 'center',
 			key: 'actions',
+			responsive: ['xs', 'sm', 'md', 'lg', 'xl'],
+			width: 80,
 			render: (_, record) => (
 				<Button
 					type="link"
@@ -139,14 +141,13 @@ export default function GroupSearchTable<
 					<SemesterFilter
 						selectedSemester={selectedSemester || null}
 						onSemesterChange={onSemesterChange}
-						loading={loading}
 					/>
 				)}
 				{onRefresh && (
 					<Button
 						icon={<ReloadOutlined />}
 						onClick={onRefresh}
-						loading={isRefreshing}
+						loading={loading}
 						style={{ flexShrink: 0 }}
 					>
 						Refresh
@@ -154,36 +155,21 @@ export default function GroupSearchTable<
 				)}
 			</div>
 
-			{/* Skeleton ONLY for very first app load with no cached data */}
-			{isInitialLoad ? (
-				<div style={{ padding: '8px 0' }}>
-					<Skeleton
-						active
-						paragraph={{ rows: 1, width: ['100%'] }}
-						title={{ width: '40%' }}
-						avatar={false}
-					/>
-				</div>
-			) : (
-				/* Show table with spin loading for all other cases */
-				<Spin spinning={isRefreshing || loading} tip="Loading...">
-					<Table
-						columns={columns}
-						dataSource={data}
-						pagination={TablePagination}
-						rowKey="id"
-						loading={false} // Disable table's built-in loading since we use Spin
-						rowClassName={(record) =>
-							record.id === selectedGroup?.id ? 'ant-table-row-selected' : ''
-						}
-						size="middle"
-						tableLayout="fixed"
-						locale={{
-							emptyText: loading ? 'Loading...' : 'No data available',
-						}}
-					/>
-				</Spin>
-			)}
+			<Table
+				columns={columns}
+				dataSource={data}
+				pagination={TablePagination}
+				rowKey="id"
+				loading={loading}
+				rowClassName={(record) =>
+					record.id === selectedGroup?.id ? 'ant-table-row-selected' : ''
+				}
+				size="middle"
+				scroll={{ x: 800 }} // Enable horizontal scroll on small screens
+				locale={{
+					emptyText: loading ? '' : 'No data available',
+				}}
+			/>
 		</Space>
 	);
 }

@@ -1,19 +1,24 @@
 'use client';
 
 import { Card, Col, Row, Space, Typography } from 'antd';
+import { memo } from 'react';
 
+import CardLoadingSkeleton from '@/components/common/loading/CardLoadingSkeleton';
 import LecturerProgressOverviewCard from '@/components/features/lecturer/GroupProgess/LecturerProgressOverviewCard';
 import GroupInfoCard from '@/components/features/student/GroupDashboard/GroupInfoCard';
 import SupervisorInfoCard from '@/components/features/student/GroupDashboard/SupervisorInfoCard';
 import ThesisStatusCard from '@/components/features/student/GroupDashboard/ThesisStatusCard';
 import { SupervisedGroup } from '@/lib/services/groups.service';
 import { GroupDashboard } from '@/schemas/group';
+import { Milestone } from '@/schemas/milestone';
 
 const { Title } = Typography;
 
 interface GroupDetailCardProps {
 	readonly group: SupervisedGroup | GroupDashboard;
 	readonly loading?: boolean;
+	readonly milestones?: Milestone[];
+	readonly milestonesLoading?: boolean;
 }
 
 /**
@@ -94,8 +99,28 @@ function convertSupervisedGroupToGroupDashboard(
 				major: participation.student.major,
 				isLeader: participation.isLeader,
 			})) || [],
-		skills: [],
-		responsibilities: [],
+		skills:
+			supervisedGroup.groupRequiredSkills?.map((skillRelation) => ({
+				id: skillRelation.skill.id,
+				name: skillRelation.skill.name,
+				skillSetId: skillRelation.skill.skillSetId,
+				createdAt: new Date(skillRelation.skill.createdAt),
+				updatedAt: new Date(skillRelation.skill.updatedAt),
+				skillSet: {
+					...skillRelation.skill.skillSet,
+					createdAt: new Date(skillRelation.skill.skillSet.createdAt),
+					updatedAt: new Date(skillRelation.skill.skillSet.updatedAt),
+				},
+			})) || [],
+		responsibilities:
+			supervisedGroup.groupExpectedResponsibilities?.map(
+				(responsibilityRelation) => ({
+					id: responsibilityRelation.responsibility.id,
+					name: responsibilityRelation.responsibility.name,
+					createdAt: new Date(responsibilityRelation.responsibility.createdAt),
+					updatedAt: new Date(responsibilityRelation.responsibility.updatedAt),
+				}),
+			) || [],
 		participation: {
 			isLeader: leaderParticipation?.isLeader || false,
 			semester: {
@@ -116,29 +141,38 @@ function convertSupervisedGroupToGroupDashboard(
 	};
 }
 
-export default function GroupDetailCard({
+function GroupDetailCard({
 	group,
 	loading = false,
+	milestones = [],
+	milestonesLoading = false,
 }: GroupDetailCardProps) {
-	// Convert SupervisedGroup to GroupDashboard if needed
-	const groupDashboard: GroupDashboard =
-		'studentGroupParticipations' in group
-			? convertSupervisedGroupToGroupDashboard(group)
-			: (group as GroupDashboard);
+	// Show skeleton loading when loading
+	if (loading) {
+		return <CardLoadingSkeleton />;
+	}
 
-	const thesis = groupDashboard.thesis;
-	const thesisId = thesis?.id;
+	// Check if it's a SupervisedGroup or regular GroupDashboard
+	const isSupervisedGroup = 'studentGroupParticipations' in group;
+
+	// Convert SupervisedGroup to GroupDashboard if needed for compatibility
+	const groupDashboard: GroupDashboard = isSupervisedGroup
+		? convertSupervisedGroupToGroupDashboard(group)
+		: (group as GroupDashboard);
+
+	const hasThesis = groupDashboard.thesis !== null;
+	const thesisId = groupDashboard.thesis?.id;
 
 	return (
 		<Card
 			title={
 				<Space>
 					<Title level={4} style={{ margin: 0 }}>
-						Group Details: {groupDashboard.name}
+						Group Details
 					</Title>
 				</Space>
 			}
-			loading={loading}
+			data-testid="group-detail-card"
 		>
 			<Row gutter={[16, 16]}>
 				{/* Left Column - Group Information and Supervisor Information */}
@@ -163,21 +197,43 @@ export default function GroupDetailCard({
 				{/* Right Column - Thesis Status and Progress Overview */}
 				<Col xs={24} lg={12}>
 					<Space direction="vertical" size="middle" style={{ width: '100%' }}>
-						{/* Thesis Status */}
-						{thesisId ? (
-							<ThesisStatusCard thesisId={thesisId} />
-						) : (
-							<Card title="Thesis Status">
-								<div style={{ textAlign: 'center', color: '#999' }}>
-									No thesis assigned yet
-								</div>
-							</Card>
-						)}
+						{/* Thesis Status - Use ThesisStatusCard with direct data */}
+						{(() => {
+							if (isSupervisedGroup && hasThesis) {
+								return (
+									<ThesisStatusCard
+										thesisData={(group as SupervisedGroup).thesis}
+										isLeader={false} // Always false for lecturer view
+										hideEditButton={true} // Hide edit button for lecturer view
+									/>
+								);
+							}
+
+							if (hasThesis) {
+								return (
+									<Card title="Thesis Status">
+										<div style={{ textAlign: 'center', color: '#999' }}>
+											Thesis information not available
+										</div>
+									</Card>
+								);
+							}
+
+							return (
+								<Card title="Thesis Status">
+									<div style={{ textAlign: 'center', color: '#999' }}>
+										No thesis assigned yet
+									</div>
+								</Card>
+							);
+						})()}
 
 						{/* Progress Overview */}
 						<LecturerProgressOverviewCard
 							thesisId={thesisId}
 							hideTrackMilestones={true}
+							milestones={milestones}
+							loading={milestonesLoading}
 						/>
 					</Space>
 				</Col>
@@ -185,3 +241,13 @@ export default function GroupDetailCard({
 		</Card>
 	);
 }
+
+// Memoize component để tránh unnecessary re-renders
+export default memo(GroupDetailCard, (prevProps, nextProps) => {
+	// Custom comparison để chỉ re-render khi cần thiết
+	return (
+		prevProps.loading === nextProps.loading &&
+		prevProps.group.id === nextProps.group.id &&
+		prevProps.group.updatedAt === nextProps.group.updatedAt
+	);
+});

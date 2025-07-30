@@ -22,9 +22,17 @@ const { useBreakpoint } = Grid;
 
 // Constants to avoid magic numbers
 const BREAKPOINT_CONFIGS = {
-	SEARCH_WIDTH: { span: 15 }, // Reduced width for search
-	CATEGORY_WIDTH: { span: 6 }, // Reduced width for category
-	REFRESH_WIDTH: { span: 3 }, // Further reduced width for refresh button
+	// Desktop breakpoints
+	DESKTOP: {
+		SEARCH_WIDTH: { span: 15 },
+		CATEGORY_WIDTH: { span: 6 },
+		REFRESH_WIDTH: { span: 3 },
+	},
+	// Mobile breakpoints
+	MOBILE: {
+		SEARCH_WIDTH: { xs: 24, sm: 24 },
+		CONTROLS_WIDTH: { xs: 24, sm: 24 },
+	},
 	CARD_WIDTH: { xs: 24, sm: 24, md: 24, lg: 12, xl: 8, xxl: 8 },
 } as const;
 
@@ -135,9 +143,75 @@ const renderFilterControls = (props: FilterControlsProps) => {
 		onRefresh,
 	} = props;
 
+	// Mobile layout: stacked (only for extra small screens)
+	if (screens.xs) {
+		return (
+			<>
+				{/* Mobile: Search takes full width */}
+				<Col xs={24}>
+					<Input
+						placeholder={MESSAGES.SEARCH_PLACEHOLDER}
+						prefix={<SearchOutlined />}
+						value={search}
+						onChange={(e) => onSearchChange?.(e.target.value)}
+						style={{
+							width: '100%',
+							fontSize: fontSize - 1,
+							height: STYLE_CONSTANTS.INPUT_HEIGHT.xs,
+							marginBottom: '8px',
+						}}
+						allowClear
+						size="small"
+					/>
+				</Col>
+				{/* Mobile: Category and Refresh in one row */}
+				<Col xs={24}>
+					<Row gutter={8}>
+						<Col span={18}>
+							<Select
+								placeholder={MESSAGES.CATEGORY_PLACEHOLDER}
+								style={{
+									width: '100%',
+									fontSize: fontSize - 1,
+									height: STYLE_CONSTANTS.INPUT_HEIGHT.xs,
+								}}
+								dropdownStyle={{
+									fontSize: fontSize - 1,
+								}}
+								value={category}
+								onChange={onCategoryChange}
+								allowClear
+								size="small"
+								options={THESIS_DOMAINS.map((domain) => ({
+									label: domain,
+									value: domain,
+								}))}
+							/>
+						</Col>
+						<Col span={6}>
+							<Button
+								icon={<ReloadOutlined />}
+								onClick={onRefresh}
+								loading={loading}
+								style={{
+									width: '100%',
+									height: STYLE_CONSTANTS.INPUT_HEIGHT.xs,
+									padding: '0 4px',
+									fontSize: fontSize - 2,
+								}}
+								size="small"
+							/>
+						</Col>
+					</Row>
+				</Col>
+			</>
+		);
+	}
+
+	// Desktop/Tablet layout: all in one row (for sm and above)
 	return (
 		<>
-			<Col {...BREAKPOINT_CONFIGS.SEARCH_WIDTH}>
+			<Col {...BREAKPOINT_CONFIGS.DESKTOP.SEARCH_WIDTH}>
 				<Input
 					placeholder={MESSAGES.SEARCH_PLACEHOLDER}
 					prefix={<SearchOutlined />}
@@ -145,54 +219,48 @@ const renderFilterControls = (props: FilterControlsProps) => {
 					onChange={(e) => onSearchChange?.(e.target.value)}
 					style={{
 						width: '100%',
-						fontSize: screens.xs ? fontSize - 1 : fontSize,
-						height: screens.xs
-							? STYLE_CONSTANTS.INPUT_HEIGHT.xs
-							: STYLE_CONSTANTS.INPUT_HEIGHT.default,
+						fontSize,
+						height: STYLE_CONSTANTS.INPUT_HEIGHT.default,
 					}}
 					allowClear
-					size={screens.xs ? 'small' : 'middle'}
+					size="middle"
 				/>
 			</Col>
-			<Col {...BREAKPOINT_CONFIGS.CATEGORY_WIDTH}>
+			<Col {...BREAKPOINT_CONFIGS.DESKTOP.CATEGORY_WIDTH}>
 				<Select
 					placeholder={MESSAGES.CATEGORY_PLACEHOLDER}
 					style={{
 						width: '100%',
-						fontSize: screens.xs ? fontSize - 1 : fontSize,
-						height: screens.xs
-							? STYLE_CONSTANTS.INPUT_HEIGHT.xs
-							: STYLE_CONSTANTS.INPUT_HEIGHT.default,
+						fontSize,
+						height: STYLE_CONSTANTS.INPUT_HEIGHT.default,
 					}}
 					dropdownStyle={{
-						fontSize: screens.xs ? fontSize - 1 : fontSize,
+						fontSize,
 					}}
 					value={category}
 					onChange={onCategoryChange}
 					allowClear
-					size={screens.xs ? 'small' : 'middle'}
+					size="middle"
 					options={THESIS_DOMAINS.map((domain) => ({
 						label: domain,
 						value: domain,
 					}))}
 				/>
 			</Col>
-			<Col {...BREAKPOINT_CONFIGS.REFRESH_WIDTH}>
+			<Col {...BREAKPOINT_CONFIGS.DESKTOP.REFRESH_WIDTH}>
 				<Button
 					icon={<ReloadOutlined />}
 					onClick={onRefresh}
 					loading={loading}
 					style={{
 						width: '100%',
-						height: screens.xs
-							? STYLE_CONSTANTS.INPUT_HEIGHT.xs
-							: STYLE_CONSTANTS.INPUT_HEIGHT.default,
+						height: STYLE_CONSTANTS.INPUT_HEIGHT.default,
 						padding: '0 4px',
-						fontSize: screens.xs ? fontSize - 2 : fontSize - 1,
+						fontSize: fontSize - 1,
 					}}
-					size={screens.xs ? 'small' : 'middle'}
+					size="middle"
 				>
-					{screens.xs ? '' : 'Refresh'}
+					Refresh
 				</Button>
 			</Col>
 		</>

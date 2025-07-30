@@ -4,31 +4,89 @@ import { Button, Card, Spin, Timeline, Typography } from 'antd';
 import dayjs from 'dayjs';
 import { useRouter } from 'next/navigation';
 
-import { useMilestoneProgress } from '@/hooks/student';
 import {
 	formatDate,
 	getMilestoneStatus,
 	getTimeRemaining,
 } from '@/lib/utils/dateFormat';
+import { Milestone } from '@/schemas/milestone';
 
 const { Text } = Typography;
 
 type MilestoneStatus = 'Ended' | 'In Progress' | 'Upcoming';
 
+// Common styles to reduce duplication
+const styles = {
+	milestoneContainer: { marginBottom: 12 },
+	nextMilestoneContainer: { marginBottom: 16 },
+	timeContainer: { marginTop: 4 },
+	timeText: { fontSize: 12 },
+} as const;
+
+// Reusable component for milestone display
+interface MilestoneDisplayProps {
+	readonly milestone: Milestone;
+	readonly label: string;
+	readonly timeLabel: string;
+	readonly timeValue: string;
+	readonly textType: 'success' | 'warning';
+	readonly containerStyle?: React.CSSProperties;
+}
+
+const MilestoneDisplay: React.FC<MilestoneDisplayProps> = ({
+	milestone,
+	label,
+	timeLabel,
+	timeValue,
+	textType,
+	containerStyle = styles.milestoneContainer,
+}) => (
+	<div style={containerStyle}>
+		<Text type={textType}>
+			{label}: {milestone.name}
+		</Text>
+		<div style={styles.timeContainer}>
+			<Text type="secondary" style={styles.timeText}>
+				{timeValue} {timeLabel}
+			</Text>
+		</div>
+	</div>
+);
+
+// Reusable component for timeline item content
+interface TimelineItemContentProps {
+	readonly milestone: Milestone;
+	readonly status: MilestoneStatus;
+}
+
+const TimelineItemContent: React.FC<TimelineItemContentProps> = ({
+	milestone,
+	status,
+}) => (
+	<>
+		<div>
+			<Text strong>{milestone.name}</Text> –{' '}
+			<Text type="secondary">
+				{formatDate(milestone.startDate)} - {formatDate(milestone.endDate)}
+			</Text>
+		</div>
+		<Text>Status: {status}</Text>
+	</>
+);
+
 interface LecturerProgressOverviewCardProps {
 	readonly thesisId?: string;
 	readonly hideTrackMilestones?: boolean;
+	readonly milestones?: Milestone[];
+	readonly loading?: boolean;
 }
 
-// Shared styles
+// Shared styles and utilities
 const cardStyle = {
 	display: 'flex',
 	flexDirection: 'column',
 	justifyContent: 'space-between',
 } as const;
-
-const milestoneInfoStyle = { marginTop: 4 };
-const timeRemainingStyle = { fontSize: 12 };
 
 const getTimelineColor = (status: MilestoneStatus): string => {
 	switch (status) {
@@ -48,52 +106,6 @@ const ProgressCard = ({ children }: { children: React.ReactNode }) => (
 	<Card title="Progress Overview" style={cardStyle}>
 		{children}
 	</Card>
-);
-
-const MilestoneInfo = ({
-	type,
-	label,
-	name,
-	timeText,
-}: {
-	type: 'success' | 'warning';
-	label: string;
-	name: string;
-	timeText: string;
-}) => (
-	<div style={{ marginBottom: type === 'success' ? 12 : 16 }}>
-		<Text type={type}>
-			{label}: {name}
-		</Text>
-		<div style={milestoneInfoStyle}>
-			<Text type="secondary" style={timeRemainingStyle}>
-				{timeText}
-			</Text>
-		</div>
-	</div>
-);
-
-const TimelineItem = ({
-	milestone,
-	status,
-}: {
-	milestone: {
-		id: string;
-		name: string;
-		startDate: Date | string;
-		endDate: Date | string;
-	};
-	status: MilestoneStatus;
-}) => (
-	<Timeline.Item key={milestone.id} color={getTimelineColor(status)}>
-		<div>
-			<Text strong>{milestone.name}</Text> –{' '}
-			<Text type="secondary">
-				{formatDate(milestone.startDate)} - {formatDate(milestone.endDate)}
-			</Text>
-		</div>
-		<Text>Status: {status}</Text>
-	</Timeline.Item>
 );
 
 const ButtonGroup = ({
@@ -127,9 +139,10 @@ const ButtonGroup = ({
 export default function LecturerProgressOverviewCard({
 	thesisId,
 	hideTrackMilestones = false,
+	milestones = [],
+	loading = false,
 }: LecturerProgressOverviewCardProps) {
 	const router = useRouter();
-	const { milestones, loading } = useMilestoneProgress();
 
 	const handleTrackMilestones = () => {
 		router.push('/lecturer/group-progress');
@@ -170,40 +183,46 @@ export default function LecturerProgressOverviewCard({
 		}));
 
 	// Find milestones by status
-	const findMilestoneByStatus = (status: MilestoneStatus) =>
-		sortedMilestones.find((milestone) => milestone.status === status);
-
-	const currentMilestone = findMilestoneByStatus('In Progress');
-	const nextMilestone = findMilestoneByStatus('Upcoming');
+	const currentMilestone = sortedMilestones.find(
+		(m) => m.status === 'In Progress',
+	);
+	const nextMilestone = sortedMilestones.find((m) => m.status === 'Upcoming');
 
 	return (
 		<ProgressCard>
 			<div>
 				{currentMilestone && (
-					<MilestoneInfo
-						type="success"
+					<MilestoneDisplay
+						milestone={currentMilestone}
 						label="Current milestone"
-						name={currentMilestone.name}
-						timeText={`${getTimeRemaining(currentMilestone.endDate)} remaining`}
+						timeLabel="remaining"
+						timeValue={getTimeRemaining(currentMilestone.endDate)}
+						textType="success"
 					/>
 				)}
 
 				{nextMilestone && (
-					<MilestoneInfo
-						type="warning"
+					<MilestoneDisplay
+						milestone={nextMilestone}
 						label="Next milestone"
-						name={nextMilestone.name}
-						timeText={`${getTimeRemaining(nextMilestone.startDate)} to start`}
+						timeLabel="to start"
+						timeValue={getTimeRemaining(nextMilestone.startDate)}
+						textType="warning"
+						containerStyle={styles.nextMilestoneContainer}
 					/>
 				)}
 
 				<Timeline>
 					{sortedMilestones.map((milestone) => (
-						<TimelineItem
+						<Timeline.Item
 							key={milestone.id}
-							milestone={milestone}
-							status={milestone.status}
-						/>
+							color={getTimelineColor(milestone.status)}
+						>
+							<TimelineItemContent
+								milestone={milestone}
+								status={milestone.status}
+							/>
+						</Timeline.Item>
 					))}
 				</Timeline>
 			</div>

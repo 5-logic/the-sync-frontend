@@ -1,118 +1,172 @@
-import { Button, Col, Form, Row, Select, TreeSelect } from 'antd';
-import { useCallback, useEffect, useMemo } from 'react';
+import { Alert, Button } from 'antd';
+import { useRouter } from 'next/navigation';
+import { useCallback, useState } from 'react';
 
-import { FormLabel } from '@/components/common/FormLabel';
-import { useResponsibilityStore } from '@/store/useResponsibilityStore';
-import { useSkillSetStore } from '@/store/useSkillSetStore';
+import { ConfirmationModal } from '@/components/common/ConfirmModal';
+import { useSessionData } from '@/hooks/auth/useAuth';
+import { useCurrentSemester } from '@/hooks/semester/useCurrentSemester';
+import aiService, { type GroupSuggestion } from '@/lib/services/ai.service';
+import studentsService from '@/lib/services/students.service';
+import { handleApiResponse } from '@/lib/utils/handleApi';
 
 const FORM_CONFIG = {
-	TREE_SELECT_MAX_HEIGHT: 400,
 	BUTTON_HEIGHT: 40,
-	BUTTON_MIN_WIDTH: 120,
+	BUTTON_MIN_WIDTH: 180,
 	BUTTON_FONT_SIZE: 14,
 } as const;
 
 const BUTTON_STYLES = {
-	marginTop: 16,
-	minWidth: FORM_CONFIG.BUTTON_MIN_WIDTH,
-	fontSize: FORM_CONFIG.BUTTON_FONT_SIZE,
 	height: FORM_CONFIG.BUTTON_HEIGHT,
 	padding: '0 16px',
-	whiteSpace: 'nowrap' as const,
-	overflow: 'hidden',
-	textOverflow: 'ellipsis',
+	fontSize: FORM_CONFIG.BUTTON_FONT_SIZE,
+	minWidth: 'auto',
 } as const;
 
-interface FormValues {
-	readonly skills: string[];
-	readonly responsibility?: string[];
+interface JoinGroupFormProps {
+	readonly onSuggestionsReceived?: (suggestions: GroupSuggestion[]) => void;
 }
 
-export default function JoinGroupForm() {
-	// Fetch data from stores
-	const { skillSets, fetchSkillSets } = useSkillSetStore();
-	const { responsibilities, fetchResponsibilities } = useResponsibilityStore();
+export default function JoinGroupForm({
+	onSuggestionsReceived,
+}: JoinGroupFormProps) {
+	const [loading, setLoading] = useState(false);
+	const { session } = useSessionData();
+	const { currentSemester } = useCurrentSemester();
+	const router = useRouter();
 
-	// Fetch data on component mount
-	useEffect(() => {
-		fetchSkillSets();
-		fetchResponsibilities();
-	}, [fetchSkillSets, fetchResponsibilities]);
+	const callAISuggestAPI = useCallback(async () => {
+		if (!session?.user?.id || !currentSemester?.id) {
+			return;
+		}
 
-	// Build responsibility options from API data
-	const responsibilityOptions = useMemo(
-		() =>
-			responsibilities.map((responsibility) => ({
-				value: responsibility.id,
-				label: responsibility.name,
-			})),
-		[responsibilities],
-	);
+		try {
+			const response = await aiService.suggestGroupsForStudent({
+				studentId: session.user.id,
+				semesterId: currentSemester.id,
+			});
 
-	// Build skill tree data from API data
-	const skillTreeData = useMemo(() => {
-		return skillSets.map((skillSet) => ({
-			value: skillSet.id,
-			title: skillSet.name,
-			selectable: false,
-			children: skillSet.skills.map((skill) => ({
-				value: skill.id,
-				title: skill.name,
-			})),
-		}));
-	}, [skillSets]);
+			// Direct access since service already returns proper response format
+			if (response.success && response.data?.suggestions) {
+				onSuggestionsReceived?.(response.data.suggestions);
+			}
+		} catch (error) {
+			console.error('Error calling AI suggest API:', error);
+		}
+	}, [session?.user?.id, currentSemester?.id, onSuggestionsReceived]);
 
-	const handleFinish = useCallback((values: FormValues) => {
-		console.log('Suggest group values:', values);
-	}, []);
+	const handleSuggestGroups = useCallback(async () => {
+		if (!session?.user?.id || !currentSemester?.id) {
+			return;
+		}
+
+		try {
+			setLoading(true);
+
+			// First, get current student data to check if they have skills and responsibilities
+			const studentResponse = await studentsService.findOne(session.user.id);
+			const studentResult = handleApiResponse(studentResponse);
+
+			if (!studentResult.success) {
+				console.error('Failed to fetch student data');
+				return;
+			}
+
+			const student = studentResult.data;
+			const hasSkills =
+				student?.studentSkills && student.studentSkills.length > 0;
+			const hasResponsibilities =
+				student?.studentExpectedResponsibilities &&
+				student.studentExpectedResponsibilities.length > 0;
+
+			// Show modal if student doesn't have skills or responsibilities
+			if (!hasSkills || !hasResponsibilities) {
+				ConfirmationModal.show({
+					title: 'Set Up Your Profile',
+					message:
+						'To get the best group suggestions, please set up your skills and expected responsibilities in your profile first.',
+					details:
+						'This helps our AI algorithm find groups that match your expertise and preferences.',
+					okText: 'Continue Anyway',
+					cancelText: 'Go to Profile',
+					okType: 'primary',
+					onOk: async () => {
+						await callAISuggestAPI();
+					},
+					onCancel: () => {
+						router.push('/student/account-setting');
+					},
+				});
+			} else {
+				// If student has both skills and responsibilities, directly call API
+				await callAISuggestAPI();
+			}
+		} catch (error) {
+			console.error('Error in suggest groups:', error);
+		} finally {
+			setLoading(false);
+		}
+	}, [session?.user?.id, currentSemester?.id, router, callAISuggestAPI]);
 
 	return (
-		<Form layout="vertical" requiredMark={false} onFinish={handleFinish}>
-			<Row gutter={[16, 16]}>
-				<Col xs={24} md={12}>
-					<Form.Item
-						name="skills"
-						label={<FormLabel text="Skills" isBold />}
-						style={{ marginBottom: 0 }}
-					>
-						<TreeSelect
-							treeData={skillTreeData}
-							placeholder="Select skills"
-							showSearch
-							multiple
-							allowClear
-							treeCheckable={false}
-							showCheckedStrategy={TreeSelect.SHOW_CHILD}
-							style={{ width: '100%' }}
-							dropdownStyle={{
-								maxHeight: FORM_CONFIG.TREE_SELECT_MAX_HEIGHT,
-								overflow: 'auto',
+		<div style={{ width: '100%' }}>
+			{/* Desktop/Tablet: Alert with action button inline */}
+			<div className="hidden sm:block">
+				<Alert
+					message="Having trouble finding a group?"
+					description="Use our AI-powered group suggestion feature to find groups that match your skills and responsibilities!"
+					type="info"
+					showIcon
+					action={
+						<Button
+							type="primary"
+							style={{
+								...BUTTON_STYLES,
+								width: '100%',
+								maxWidth: '200px',
+								whiteSpace: 'normal',
+								textAlign: 'center',
+								wordBreak: 'break-word',
 							}}
-						/>
-					</Form.Item>
-				</Col>
-				<Col xs={24} md={12}>
-					<Form.Item
-						name="responsibility"
-						label={<FormLabel text="Responsibility" isBold />}
-						style={{ marginBottom: 0 }}
-					>
-						<Select
-							mode="multiple"
-							options={responsibilityOptions}
-							placeholder="Select responsibility"
-							style={{ width: '100%' }}
-						/>
-					</Form.Item>
-				</Col>
-			</Row>
-			<Row>
-				<Col>
-					<Button type="primary" htmlType="submit" style={BUTTON_STYLES}>
-						Suggest Groups
-					</Button>
-				</Col>
-			</Row>
-		</Form>
+							loading={loading}
+							onClick={handleSuggestGroups}
+						>
+							Suggest Groups by AI
+						</Button>
+					}
+					style={{ width: '100%' }}
+				/>
+			</div>
+
+			{/* Mobile only: Alert and Button separately */}
+			<div className="block sm:hidden">
+				<Alert
+					message="Having trouble finding a group?"
+					description="Use our AI-powered group suggestion feature to find groups that match your skills and responsibilities!"
+					type="info"
+					showIcon
+					style={{
+						width: '100%',
+						marginBottom: '16px',
+						wordBreak: 'break-word',
+						wordWrap: 'break-word',
+						overflowWrap: 'break-word',
+					}}
+				/>
+				<Button
+					type="primary"
+					style={{
+						...BUTTON_STYLES,
+						width: '100%',
+						whiteSpace: 'normal',
+						textAlign: 'center',
+						wordBreak: 'break-word',
+					}}
+					loading={loading}
+					onClick={handleSuggestGroups}
+				>
+					Suggest Groups by AI
+				</Button>
+			</div>
+		</div>
 	);
 }

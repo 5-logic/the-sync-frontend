@@ -99,24 +99,27 @@ export default function EditStudentDialog({
 				onValuesChange={handleFormChange}
 			>
 				<Space direction="vertical" size="small" style={{ width: '100%' }}>
-					{/* Student ID */}
+					{/* Student Code */}
 					<Form.Item
 						name="studentCode"
-						label={<FormLabel text="Student ID" isRequired isBold />}
+						label={<FormLabel text="Student Code" isRequired isBold />}
 						rules={[
-							{ required: true, message: 'Please enter student ID' },
-							{ min: 1, message: 'Student ID cannot be empty' },
-							{ max: 8, message: 'Student ID must be at most 8 characters' },
+							{ required: true, message: 'Please enter Student Code' },
+							{
+								pattern: /^[A-Za-z]{2}\d{6}$/,
+								message:
+									'Student Code must be 2 letters followed by 6 digits, e.g. QE123456',
+							},
 						]}
 					>
-						<Input placeholder="Enter student ID" />
+						<Input placeholder="Enter Student Code" />
 					</Form.Item>
 
 					{/* Common Person Fields */}
 					<PersonFormFields
 						fullNameRules={[
 							{ required: true, message: 'Please enter full name' },
-							{ min: 1, message: 'Full name cannot be empty' },
+							{ min: 2, message: 'Full name must be at least 2 characters' },
 							{ max: 100, message: 'Full name is too long' },
 						]}
 						emailRules={[

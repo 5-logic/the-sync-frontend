@@ -6,6 +6,7 @@ export { useChecklistStore } from '@/store/useChecklistStore';
 export { useGroupDashboardStore } from '@/store/useGroupDashboardStore';
 export { useGroupsStore } from '@/store/useGroupsStore';
 export { useLecturerStore } from '@/store/useLecturerStore';
+export { useLecturerDashboardStore } from '@/store/useLecturerDashboardStore';
 export { useMajorStore } from '@/store/useMajorStore';
 export { useMilestoneStore } from '@/store/useMilestoneStore';
 export { usePublishThesesStore } from '@/store/usePublishThesesStore';

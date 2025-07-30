@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { FormLabel } from '@/components/common/FormLabel';
 import SupportingDocumentField from '@/components/features/lecturer/CreateThesis/ThesisFileUpload';
 import { getSortedDomains } from '@/lib/constants/domains';
+import { StorageService } from '@/lib/services/storage.service';
 import { useSkillSetStore } from '@/store';
 import { useSemesterStore } from '@/store/useSemesterStore';
 
@@ -19,6 +20,10 @@ type Props = Readonly<{
 	} | null;
 	onSubmit: (values: Record<string, unknown>) => void;
 	loading?: boolean;
+	thesis?: {
+		status?: string;
+		semesterId?: string;
+	} | null;
 }>;
 
 interface UploadedFile {
@@ -27,17 +32,28 @@ interface UploadedFile {
 	url?: string;
 }
 
+interface FileChangeState {
+	action: 'none' | 'delete' | 'replace';
+	newFile?: File;
+	originalFileUrl?: string; // Store original file URL to delete later
+}
+
 export default function ThesisForm({
 	mode,
 	initialValues,
 	initialFile,
 	onSubmit,
 	loading = false,
+	thesis = null,
 }: Props) {
 	const [form] = Form.useForm();
 	const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>(null);
 	const [hasFileChanged, setHasFileChanged] = useState(false);
 	const [hasFormChanged, setHasFormChanged] = useState(false);
+	const [fileChangeState, setFileChangeState] = useState<FileChangeState>({
+		action: 'none',
+		originalFileUrl: initialFile?.url,
+	});
 
 	// Get sorted domain options
 	const domainOptions = getSortedDomains();
@@ -78,6 +94,46 @@ export default function ThesisForm({
 		(semester) =>
 			semester.status === 'Preparing' || semester.status === 'Picking',
 	);
+
+	// Get current semester (the one that thesis belongs to)
+	const currentSemester = thesis?.semesterId
+		? semesters.find((s) => s.id === thesis.semesterId)
+		: null;
+
+	// Check if editing is allowed
+	const isEditAllowed = () => {
+		if (mode === 'create') {
+			// For create mode, need preparing semester
+			return !!preparingSemester;
+		}
+
+		if (mode === 'edit') {
+			// For edit mode, check specific conditions
+			if (!currentSemester) return false;
+
+			// Don't allow if thesis status is pending
+			if (thesis?.status === 'Pending') return false;
+
+			// Allow if semester status is Preparing, Picking, or Ongoing with ScopeAdjustable
+			if (
+				currentSemester.status === 'Preparing' ||
+				currentSemester.status === 'Picking'
+			) {
+				return true;
+			}
+
+			if (
+				currentSemester.status === 'Ongoing' &&
+				currentSemester.ongoingPhase === 'ScopeAdjustable'
+			) {
+				return true;
+			}
+
+			return false;
+		}
+
+		return false;
+	};
 
 	useEffect(() => {
 		// Initialize uploaded file from initialFile prop (for edit mode)
@@ -192,7 +248,18 @@ export default function ThesisForm({
 		fieldsToCheck.forEach((field) => {
 			const currentValue = currentValues[field];
 			const initialValue = initialValues?.[field];
-			if (currentValue !== initialValue) {
+
+			// Special handling for domain field: treat empty string and undefined as equivalent
+			if (field === 'domain') {
+				const normalizedCurrent =
+					currentValue === undefined ? '' : currentValue;
+				const normalizedInitial =
+					initialValue === undefined || initialValue === '' ? '' : initialValue;
+				if (normalizedCurrent !== normalizedInitial) {
+					changedFields[field] = normalizedCurrent;
+				}
+			} else if (currentValue !== initialValue) {
+				// Regular comparison for other fields
 				changedFields[field] = currentValue;
 			}
 		});
@@ -209,19 +276,56 @@ export default function ThesisForm({
 				)
 			: [];
 		if (JSON.stringify(currentSkills) !== JSON.stringify(initialSkills)) {
+			// Always send skillIds even if it's an empty array (when user clears all skills)
 			changedFields.skillIds = currentSkills;
 		}
 
-		// Include supporting document if file changed
-		if (hasFileChanged) {
-			changedFields.supportingDocument = uploadedFile?.url ?? '';
-		}
+		// Note: supportingDocument will be handled in handleFormSubmit for edit mode
+		// to properly handle file upload/delete operations
 
 		return changedFields;
 	};
 
-	const handleFormSubmit = (values: Record<string, unknown>) => {
-		const formData = getChangedFields(values);
+	const handleFormSubmit = async (values: Record<string, unknown>) => {
+		let formData = getChangedFields(values);
+
+		// Handle file operations for edit mode only
+		if (
+			mode === 'edit' &&
+			hasFileChanged &&
+			fileChangeState.action !== 'none'
+		) {
+			try {
+				if (fileChangeState.action === 'delete') {
+					// Delete the original file
+					if (fileChangeState.originalFileUrl) {
+						await StorageService.deleteFile(fileChangeState.originalFileUrl);
+					}
+					formData = { ...formData, supportingDocument: '' };
+				} else if (
+					fileChangeState.action === 'replace' &&
+					fileChangeState.newFile
+				) {
+					// Upload new file
+					const newFileUrl = await StorageService.uploadFile(
+						fileChangeState.newFile,
+						'support-doc',
+					);
+
+					// Delete old file if exists
+					if (fileChangeState.originalFileUrl) {
+						await StorageService.deleteFile(fileChangeState.originalFileUrl);
+					}
+
+					formData = { ...formData, supportingDocument: newFileUrl };
+				}
+			} catch (error) {
+				console.error('Error handling file operations:', error);
+				// Continue with form submission even if file operations fail
+				// The error notification is already shown by StorageService
+			}
+		}
+
 		onSubmit(formData);
 	};
 
@@ -230,8 +334,12 @@ export default function ThesisForm({
 		if (semestersLoading) {
 			return 'Loading semesters...';
 		}
-		if (!preparingSemester) {
-			return 'No preparing semester found';
+		if (!isEditAllowed()) {
+			if (mode === 'create') {
+				return 'No preparing semester found';
+			} else {
+				return 'Editing not allowed';
+			}
 		}
 		if (loading) {
 			return mode === 'create' ? 'Creating...' : 'Updating...';
@@ -248,7 +356,14 @@ export default function ThesisForm({
 			layout="vertical"
 			requiredMark={false}
 			style={{ width: '100%' }}
-			initialValues={initialValues}
+			initialValues={{
+				...initialValues,
+				// Convert empty string to undefined for domain field to show placeholder
+				domain:
+					initialValues?.domain === '' ? undefined : initialValues?.domain,
+				// Set proper initial value for supportingDocument field to prevent auto-reset
+				supportingDocument: initialFile ? [initialFile] : [],
+			}}
 			onFinish={handleFormSubmit}
 			onValuesChange={checkFormChanges} // Detect changes when form values change
 		>
@@ -288,6 +403,7 @@ export default function ThesisForm({
 			>
 				<Select
 					showSearch
+					allowClear
 					placeholder="Select field of study"
 					filterOption={(input, option) =>
 						(option?.value as string)
@@ -352,6 +468,7 @@ export default function ThesisForm({
 						// Set form field for validation purposes, but we'll use the URL in submit
 						form.setFieldValue('supportingDocument', file ? [file] : []);
 					}}
+					onFileChangeStateUpdate={setFileChangeState}
 				/>
 			</div>
 
@@ -365,7 +482,7 @@ export default function ThesisForm({
 						disabled={
 							loading ||
 							semestersLoading ||
-							!preparingSemester ||
+							!isEditAllowed() ||
 							(mode === 'edit' && !hasFormChanged)
 						}
 					>

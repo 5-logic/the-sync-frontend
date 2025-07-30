@@ -6,12 +6,18 @@ import {
 import { Button, Col, Input, Row, Select } from 'antd';
 import React from 'react';
 
+interface SemesterOption {
+	id: string;
+	name: string;
+	code: string;
+}
+
 type Props = {
 	searchText: string;
 	onSearchChange: (text: string) => void;
 	selectedSemester: string;
-	onSemesterChange: (semester: string) => void;
-	availableSemesters: string[];
+	onSemesterChange: (semesterId: string) => void;
+	availableSemesters: SemesterOption[];
 	onExportExcel?: () => void;
 	onRefresh?: () => void;
 	searchPlaceholder?: string;
@@ -54,10 +60,17 @@ export const FilterBar = ({
 					size="middle"
 					placeholder="Select Semester"
 					disabled={loading}
+					showSearch
+					optionFilterProp="children"
+					filterOption={(input, option) =>
+						String(option?.children || '')
+							.toLowerCase()
+							.includes(input.toLowerCase())
+					}
 				>
 					{availableSemesters.map((semester) => (
-						<Select.Option key={semester} value={semester}>
-							{semester}
+						<Select.Option key={semester.id} value={semester.id}>
+							{semester.name}
 						</Select.Option>
 					))}
 				</Select>

@@ -1,13 +1,14 @@
 'use client';
 
 import { Alert, Space } from 'antd';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useSession } from 'next-auth/react';
+import { useSearchParams } from 'next/navigation';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Header } from '@/components/common/Header';
 import GroupDetailCard from '@/components/features/lecturer/GroupProgess/GroupDetailCard';
 import GroupSearchTable from '@/components/features/lecturer/GroupProgess/GroupSearchTable';
 import MilestoneDetailCard from '@/components/features/lecturer/GroupProgess/MilestoneDetailCard';
-import { useGroupProgress } from '@/hooks/lecturer/useGroupProgress';
 import { useMilestones } from '@/hooks/lecturer/useMilestones';
 import { useSupervisedGroups } from '@/hooks/lecturer/useSupervisedGroups';
 import { SupervisedGroup } from '@/lib/services/groups.service';
@@ -19,40 +20,30 @@ export default function GroupProgressPage() {
 		SupervisedGroup | undefined
 	>(undefined);
 	const [searchText, setSearchText] = useState<string>('');
+	const [selectedSemester, setSelectedSemester] = useState<string | null>(null);
+	const [milestoneChanging, setMilestoneChanging] = useState<boolean>(false);
+	const currentUserIdRef = useRef<string | null>(null);
 
-	// Initialize selectedSemester from sessionStorage
-	const [selectedSemester, setSelectedSemester] = useState<string | null>(
-		() => {
-			if (typeof window !== 'undefined') {
-				return sessionStorage.getItem('groupProgress_selectedSemester');
-			}
-			return null;
-		},
-	);
+	// Get current user session to track user changes
+	const { data: session } = useSession();
 
-	// Store hooks for cached data similar to ThesisManagement
+	// Get query params to auto-select group
+	const searchParams = useSearchParams();
+	const groupIdFromQuery = searchParams.get('groupId');
+
+	// Store hooks for cached data
 	const { fetchLecturers } = useLecturerStore();
 	const { fetchSemesters } = useSemesterStore();
 
-	// Supervised groups hook with enhanced caching
+	// Supervised groups hook với smart caching
 	const {
 		groups,
 		loading: groupsLoading,
 		error: groupsError,
 		fetchGroupsBySemester,
 		clearGroups,
-		isInitialLoad,
-		isRefreshing,
+		refreshCache,
 	} = useSupervisedGroups();
-
-	// Group progress hook for detail
-	const {
-		selectedGroupDetail,
-		loading: detailLoading,
-		error: detailError,
-		fetchGroupDetail,
-		clearSelectedGroup,
-	} = useGroupProgress();
 
 	// Milestones hook for steps
 	const {
@@ -64,21 +55,50 @@ export default function GroupProgressPage() {
 		selectMilestone,
 	} = useMilestones();
 
-	// Fetch cached data when component mounts (similar to ThesisManagement)
+	// Fetch cached data khi component mount - chỉ fetch 1 lần
 	useEffect(() => {
 		fetchLecturers();
 		fetchSemesters();
-		fetchMilestones();
-	}, [fetchLecturers, fetchSemesters, fetchMilestones]);
+	}, [fetchLecturers, fetchSemesters]);
 
-	// Auto-load data for persisted semester
+	// Detect user change và clear cache khi cần thiết
 	useEffect(() => {
-		if (selectedSemester) {
-			fetchGroupsBySemester(selectedSemester);
-		}
-	}, [selectedSemester, fetchGroupsBySemester]);
+		const newUserId = session?.user?.id || null;
 
-	// Filter groups based on search
+		// Nếu user thay đổi (bao gồm login/logout), clear tất cả cache
+		if (
+			currentUserIdRef.current !== null &&
+			currentUserIdRef.current !== newUserId
+		) {
+			// Clear all cached data để tránh data leakage giữa users
+			clearGroups();
+			setSelectedGroup(undefined);
+			setSelectedSemester(null);
+
+			// Clear store cache nếu có
+			refreshCache();
+		}
+
+		// Update current user ID
+		currentUserIdRef.current = newUserId;
+	}, [session?.user?.id, clearGroups, refreshCache]);
+
+	// Smart fetch groups và milestones khi semester changes - fetch mỗi lần thay đổi
+	useEffect(() => {
+		// Chỉ fetch khi đã có user ID (đã login) để tránh fetch với wrong user context
+		if (!currentUserIdRef.current) return;
+
+		if (selectedSemester) {
+			// Fetch groups và milestones cho semester mới
+			fetchGroupsBySemester(selectedSemester);
+			fetchMilestones(selectedSemester);
+		} else {
+			// Clear groups khi không có semester được chọn
+			clearGroups();
+		}
+	}, [selectedSemester, fetchGroupsBySemester, clearGroups, fetchMilestones]);
+
+	// Memoized filtered groups để tránh unnecessary re-computation
 	const filteredGroups = useMemo(() => {
 		if (!searchText.trim()) return groups;
 
@@ -98,16 +118,7 @@ export default function GroupProgressPage() {
 		});
 	}, [groups, searchText]);
 
-	// Fetch groups when semester changes
-	useEffect(() => {
-		if (selectedSemester) {
-			fetchGroupsBySemester(selectedSemester);
-		} else {
-			clearGroups();
-		}
-	}, [selectedSemester, fetchGroupsBySemester, clearGroups]);
-
-	// Memoized handlers to prevent unnecessary re-renders
+	// Memoized handlers để prevent unnecessary re-renders
 	const handleGroupSelect = useCallback(
 		(group: SupervisedGroup) => {
 			setSelectedGroup(group);
@@ -115,49 +126,80 @@ export default function GroupProgressPage() {
 			if (milestones.length > 0) {
 				selectMilestone(milestones[0]);
 			}
-			fetchGroupDetail(group.id);
 		},
-		[milestones, selectMilestone, fetchGroupDetail],
+		[milestones, selectMilestone],
 	);
 
+	// Memoized refresh handler với smart logic và user context validation
 	const handleRefresh = useCallback(() => {
-		if (selectedSemester) {
-			fetchGroupsBySemester(selectedSemester, true); // Force refresh
+		// Chỉ refresh nếu có user context để tránh fetch với wrong user
+		if (!currentUserIdRef.current) {
+			console.warn('Cannot refresh without valid user context');
+			return;
 		}
-		fetchMilestones();
-		if (selectedGroup) {
-			fetchGroupDetail(selectedGroup.id);
-		}
-	}, [
-		selectedSemester,
-		fetchGroupsBySemester,
-		fetchMilestones,
-		selectedGroup,
-		fetchGroupDetail,
-	]);
 
+		// Refresh data cho current semester
+		if (selectedSemester) {
+			fetchGroupsBySemester(selectedSemester);
+			fetchMilestones(selectedSemester);
+		} else {
+			fetchMilestones(); // Fetch default milestones
+		}
+
+		// Clear cache để đảm bảo data fresh
+		refreshCache();
+	}, [selectedSemester, fetchGroupsBySemester, fetchMilestones, refreshCache]);
+
+	// Memoized milestone change handler
 	const handleMilestoneChange = useCallback(
 		(milestone: Milestone) => {
+			setMilestoneChanging(true);
 			selectMilestone(milestone);
+			// Reset milestone changing state after a short delay
+			setTimeout(() => setMilestoneChanging(false), 300);
 		},
 		[selectMilestone],
 	);
 
+	// Auto-select group from query param when groups are loaded
+	useEffect(() => {
+		if (groupIdFromQuery && groups.length > 0 && !selectedGroup) {
+			const targetGroup = groups.find((group) => group.id === groupIdFromQuery);
+			if (targetGroup) {
+				handleGroupSelect(targetGroup);
+				// Auto-scroll to the group detail card after selection
+				setTimeout(() => {
+					const groupDetailElement = document.querySelector(
+						'[data-testid="group-detail-card"]',
+					);
+					if (groupDetailElement) {
+						groupDetailElement.scrollIntoView({
+							behavior: 'smooth',
+							block: 'start',
+						});
+					}
+				}, 100);
+			}
+		}
+	}, [groupIdFromQuery, groups, selectedGroup, handleGroupSelect]);
+
+	// Memoized search change handler với debounce effect
 	const handleSearchChange = useCallback((value: string) => {
 		setSearchText(value);
 	}, []);
 
-	const handleSemesterChange = useCallback((semesterId: string | null) => {
-		setSelectedSemester(semesterId);
-		// Persist to sessionStorage
-		if (typeof window !== 'undefined') {
-			if (semesterId) {
-				sessionStorage.setItem('groupProgress_selectedSemester', semesterId);
-			} else {
-				sessionStorage.removeItem('groupProgress_selectedSemester');
+	// Memoized semester change với state reset và cache check
+	const handleSemesterChange = useCallback(
+		(semesterId: string | null) => {
+			// Chỉ thay đổi nếu semester thực sự khác để tránh reload không cần thiết
+			if (semesterId !== selectedSemester) {
+				setSelectedSemester(semesterId);
+				// Clear selected group khi đổi semester để tránh stale data
+				setSelectedGroup(undefined);
 			}
-		}
-	}, []);
+		},
+		[selectedSemester],
+	);
 
 	return (
 		<div
@@ -210,41 +252,29 @@ export default function GroupProgressPage() {
 						selectedSemester={selectedSemester}
 						onSemesterChange={handleSemesterChange}
 						showSemesterFilter={true}
-						isInitialLoad={isInitialLoad}
-						isRefreshing={isRefreshing}
 					/>
 				</Space>
 
 				{selectedGroup && (
-					<>
-						{detailError && (
-							<Alert
-								message="Error Loading Group Detail"
-								description={detailError}
-								type="error"
-								showIcon
-								closable
-								onClose={clearSelectedGroup}
-							/>
-						)}
+					<Space direction="vertical" size="large" style={{ width: '100%' }}>
+						{/* Group Details Section */}
+						<GroupDetailCard
+							group={selectedGroup}
+							loading={false}
+							milestones={milestones}
+							milestonesLoading={milestonesLoading}
+						/>
 
-						<Space direction="vertical" size="large" style={{ width: '100%' }}>
-							{/* Group Details Section */}
-							<GroupDetailCard
-								group={selectedGroupDetail || selectedGroup}
-								loading={detailLoading}
-							/>
-
-							{/* Milestone Progress Section */}
-							<MilestoneDetailCard
-								group={selectedGroupDetail || selectedGroup}
-								milestone={selectedMilestone}
-								milestones={milestones}
-								onMilestoneChange={handleMilestoneChange}
-								loading={detailLoading || milestonesLoading}
-							/>
-						</Space>
-					</>
+						{/* Milestone Progress Section */}
+						<MilestoneDetailCard
+							group={selectedGroup}
+							milestone={selectedMilestone}
+							milestones={milestones}
+							onMilestoneChange={handleMilestoneChange}
+							loading={milestonesLoading}
+							milestoneLoading={milestoneChanging}
+						/>
+					</Space>
 				)}
 			</Space>
 		</div>
