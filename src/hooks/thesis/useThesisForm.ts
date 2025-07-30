@@ -5,9 +5,7 @@ import { useSessionData } from '@/hooks/auth/useAuth';
 import { TIMING } from '@/lib/constants/thesis';
 import { showNotification } from '@/lib/utils/notification';
 import {
-	THESIS_ERROR_CONFIGS,
 	THESIS_SUCCESS_CONFIGS,
-	handleThesisError,
 	handleThesisSuccess,
 } from '@/lib/utils/thesis-handlers';
 import {
@@ -77,15 +75,11 @@ export const useThesisForm = ({
 	// Helper functions to reduce cognitive complexity
 	const validateAuthentication = useCallback(() => {
 		if (!session?.user?.id) {
-			const errorConfig =
-				mode === 'create'
-					? THESIS_ERROR_CONFIGS.CREATE
-					: THESIS_ERROR_CONFIGS.UPDATE;
-			handleThesisError(new Error('User not authenticated'), errorConfig);
+			showNotification.error('Error', 'User not authenticated');
 			return false;
 		}
 		return true;
-	}, [session?.user?.id, mode]);
+	}, [session?.user?.id]);
 
 	const handleCreateThesis = useCallback(
 		async (values: Record<string, unknown>) => {
@@ -101,9 +95,10 @@ export const useThesisForm = ({
 					},
 					router,
 				);
-			} else {
-				throw new Error('Create thesis failed');
 			}
+			// Don't throw error here - let the store handle error notifications
+			// The store already shows specific error messages from backend
+			return success;
 		},
 		[createThesis, router],
 	);
@@ -117,26 +112,12 @@ export const useThesisForm = ({
 			if (success) {
 				showNotification.success('Success', 'Thesis updated successfully!');
 				router.push('/lecturer/thesis-management');
-			} else {
-				throw new Error('Update thesis failed');
 			}
+			// Don't throw error here - let the store handle error notifications
+			// The store already shows specific error messages from backend
+			return success;
 		},
 		[thesisId, updateThesis, router],
-	);
-
-	const handleError = useCallback(
-		(error: unknown) => {
-			if (mode === 'create') {
-				handleThesisError(error, THESIS_ERROR_CONFIGS.CREATE, setLoading);
-			} else {
-				showNotification.error(
-					'Error',
-					'Failed to update thesis. Please try again.',
-				);
-				setLoading(false);
-			}
-		},
-		[mode],
 	);
 
 	// Handle form submission for both create and edit
@@ -148,21 +129,25 @@ export const useThesisForm = ({
 				setLoading(true);
 
 				if (mode === 'create') {
-					await handleCreateThesis(values);
+					const success = await handleCreateThesis(values);
+					// Don't call handleError for create mode - store already handles errors
+					if (!success) {
+						setLoading(false);
+					}
 				} else {
-					await handleEditThesis(values);
+					const success = await handleEditThesis(values);
+					// Don't call handleError for edit mode either - store already handles errors
+					if (!success) {
+						setLoading(false);
+					}
 				}
 			} catch (error) {
-				handleError(error);
+				// Only handle unexpected errors (like missing thesisId)
+				console.error('Unexpected error in thesis form:', error);
+				setLoading(false);
 			}
 		},
-		[
-			validateAuthentication,
-			mode,
-			handleCreateThesis,
-			handleEditThesis,
-			handleError,
-		],
+		[validateAuthentication, mode, handleCreateThesis, handleEditThesis],
 	);
 
 	return {

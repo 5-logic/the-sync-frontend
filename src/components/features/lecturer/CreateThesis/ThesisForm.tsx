@@ -363,6 +363,8 @@ export default function ThesisForm({
 				// Convert empty string to undefined for domain field to show placeholder
 				domain:
 					initialValues?.domain === '' ? undefined : initialValues?.domain,
+				// Set proper initial value for supportingDocument field to prevent auto-reset
+				supportingDocument: initialFile ? [initialFile] : [],
 			}}
 			onFinish={handleFormSubmit}
 			onValuesChange={checkFormChanges} // Detect changes when form values change

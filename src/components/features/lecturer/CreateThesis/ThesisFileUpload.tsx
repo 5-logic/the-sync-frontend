@@ -43,11 +43,31 @@ export default function SupportingDocumentField({
 	const [fileChangeState, setFileChangeState] = useState<FileChangeState>({
 		action: 'none',
 	});
+	const [lastInitialFile, setLastInitialFile] = useState(initialFile);
+	const [userHasInteracted, setUserHasInteracted] = useState(false);
 
 	useEffect(() => {
-		setUploadedFile(initialFile || null);
-		setFileChangeState({ action: 'none' });
-	}, [initialFile]);
+		// Only reset state when initialFile actually changes to a different file
+		// Compare by URL and name to detect real changes, not just reference changes
+		const prevFileUrl = lastInitialFile?.url || '';
+		const prevFileName = lastInitialFile?.name || '';
+		const currentFileUrl = initialFile?.url || '';
+		const currentFileName = initialFile?.name || '';
+
+		const hasInitialFileChanged =
+			prevFileUrl !== currentFileUrl || prevFileName !== currentFileName;
+
+		// Don't reset if user has already performed delete/replace actions
+		const userHasChanges = fileChangeState.action !== 'none';
+
+		if (hasInitialFileChanged && !userHasChanges && !userHasInteracted) {
+			setLastInitialFile(initialFile);
+			// Reset to initial state only when initialFile content actually changes
+			// and user hasn't made any changes yet
+			setUploadedFile(initialFile || null);
+			setFileChangeState({ action: 'none' });
+		}
+	}, [initialFile, lastInitialFile, fileChangeState.action, userHasInteracted]);
 
 	const handleCreateModeUpload = async (file: File) => {
 		try {
@@ -101,6 +121,9 @@ export default function SupportingDocumentField({
 	};
 
 	const handleFileUpload = async (file: File) => {
+		// Mark that user has interacted with the component
+		setUserHasInteracted(true);
+
 		if (mode === 'create') {
 			await handleCreateModeUpload(file);
 		} else {
@@ -109,6 +132,9 @@ export default function SupportingDocumentField({
 	};
 
 	const handleFileDelete = async () => {
+		// Mark that user has interacted with the component
+		setUserHasInteracted(true);
+
 		if (mode === 'create') {
 			// In create mode, delete immediately as before
 			try {
@@ -239,11 +265,46 @@ export default function SupportingDocumentField({
 				name="supportingDocument"
 				valuePropName="fileList"
 				getValueFromEvent={(e) => (Array.isArray(e) ? e : e?.fileList)}
-				rules={
-					mode === 'create'
-						? [{ required: true, message: 'Please upload your document' }]
-						: []
-				}
+				rules={[
+					{
+						validator: (_, value) => {
+							// For create mode, file is always required
+							if (mode === 'create') {
+								if (!value || value.length === 0) {
+									return Promise.reject(
+										new Error('Please upload your document'),
+									);
+								}
+								return Promise.resolve();
+							}
+
+							// For edit mode, file is required unless there's an initial file and no deletion action
+							if (mode === 'edit') {
+								const hasCurrentFile = value && value.length > 0;
+								const hasInitialFile = initialFile;
+								const isDeleting = fileChangeState.action === 'delete';
+
+								// If user deleted the file and hasn't uploaded a new one, it's invalid
+								if (isDeleting && !hasCurrentFile) {
+									return Promise.reject(
+										new Error('Please upload a supporting document'),
+									);
+								}
+
+								// If no initial file and no current file, it's invalid
+								if (!hasInitialFile && !hasCurrentFile) {
+									return Promise.reject(
+										new Error('Please upload your document'),
+									);
+								}
+
+								return Promise.resolve();
+							}
+
+							return Promise.resolve();
+						},
+					},
+				]}
 			>
 				{!uploadedFile ? (
 					<Upload.Dragger
