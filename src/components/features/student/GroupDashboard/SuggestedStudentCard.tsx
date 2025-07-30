@@ -7,9 +7,9 @@ import type { SuggestedStudent } from '@/lib/services/ai.service';
 const { Text, Title } = Typography;
 
 interface SuggestedStudentCardProps {
-	student: SuggestedStudent;
-	onAdd: (student: SuggestedStudent) => void;
-	loading?: boolean;
+	readonly student: SuggestedStudent;
+	readonly onAdd: (student: SuggestedStudent) => void;
+	readonly loading?: boolean;
 }
 
 export default function SuggestedStudentCard({
