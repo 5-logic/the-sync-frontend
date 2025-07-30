@@ -20,6 +20,46 @@ interface LecturerProgressOverviewCardProps {
 	readonly hideTrackMilestones?: boolean;
 }
 
+// Shared styles
+const cardStyle = {
+	display: 'flex',
+	flexDirection: 'column',
+	justifyContent: 'space-between',
+} as const;
+
+const milestoneInfoStyle = { marginTop: 4 };
+const timeRemainingStyle = { fontSize: 12 };
+
+// Reusable components
+const ProgressCard = ({ children }: { children: React.ReactNode }) => (
+	<Card title="Progress Overview" style={cardStyle}>
+		{children}
+	</Card>
+);
+
+const MilestoneInfo = ({
+	type,
+	label,
+	name,
+	timeText,
+}: {
+	type: 'success' | 'warning';
+	label: string;
+	name: string;
+	timeText: string;
+}) => (
+	<div style={{ marginBottom: type === 'success' ? 12 : 16 }}>
+		<Text type={type}>
+			{label}: {name}
+		</Text>
+		<div style={milestoneInfoStyle}>
+			<Text type="secondary" style={timeRemainingStyle}>
+				{timeText}
+			</Text>
+		</div>
+	</div>
+);
+
 export default function LecturerProgressOverviewCard({
 	thesisId,
 	hideTrackMilestones = false,
@@ -52,35 +92,21 @@ export default function LecturerProgressOverviewCard({
 
 	if (loading) {
 		return (
-			<Card
-				title="Progress Overview"
-				style={{
-					display: 'flex',
-					flexDirection: 'column',
-					justifyContent: 'space-between',
-				}}
-			>
+			<ProgressCard>
 				<div style={{ textAlign: 'center', padding: '20px 0' }}>
 					<Spin size="small" />
 				</div>
-			</Card>
+			</ProgressCard>
 		);
 	}
 
 	if (!milestones.length) {
 		return (
-			<Card
-				title="Progress Overview"
-				style={{
-					display: 'flex',
-					flexDirection: 'column',
-					justifyContent: 'space-between',
-				}}
-			>
+			<ProgressCard>
 				<div style={{ textAlign: 'center', color: '#999' }}>
 					No milestones found for current semester
 				</div>
-			</Card>
+			</ProgressCard>
 		);
 	}
 
@@ -102,37 +128,24 @@ export default function LecturerProgressOverviewCard({
 	});
 
 	return (
-		<Card
-			title="Progress Overview"
-			style={{
-				display: 'flex',
-				flexDirection: 'column',
-				justifyContent: 'space-between',
-			}}
-		>
+		<ProgressCard>
 			<div>
 				{currentMilestone && (
-					<div style={{ marginBottom: 12 }}>
-						<Text type="success">
-							Current milestone: {currentMilestone.name}
-						</Text>
-						<div style={{ marginTop: 4 }}>
-							<Text type="secondary" style={{ fontSize: 12 }}>
-								{getTimeRemaining(currentMilestone.endDate)} remaining
-							</Text>
-						</div>
-					</div>
+					<MilestoneInfo
+						type="success"
+						label="Current milestone"
+						name={currentMilestone.name}
+						timeText={`${getTimeRemaining(currentMilestone.endDate)} remaining`}
+					/>
 				)}
 
 				{nextMilestone && (
-					<div style={{ marginBottom: 16 }}>
-						<Text type="warning">Next milestone: {nextMilestone.name}</Text>
-						<div style={{ marginTop: 4 }}>
-							<Text type="secondary" style={{ fontSize: 12 }}>
-								{getTimeRemaining(nextMilestone.startDate)} to start
-							</Text>
-						</div>
-					</div>
+					<MilestoneInfo
+						type="warning"
+						label="Next milestone"
+						name={nextMilestone.name}
+						timeText={`${getTimeRemaining(nextMilestone.startDate)} to start`}
+					/>
 				)}
 
 				<Timeline>
@@ -175,6 +188,6 @@ export default function LecturerProgressOverviewCard({
 					View Thesis Details
 				</Button>
 			</div>
-		</Card>
+		</ProgressCard>
 	);
 }
