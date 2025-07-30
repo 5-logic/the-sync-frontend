@@ -11,8 +11,10 @@ import { GroupDashboard } from '@/schemas/group';
 import { Milestone } from '@/schemas/milestone';
 import { SubmissionDetail } from '@/schemas/submission';
 
+type GroupType = FullMockGroup | Group | GroupDashboard | SupervisedGroup;
+
 interface Props {
-	group: FullMockGroup | Group | GroupDashboard | SupervisedGroup;
+	group: GroupType;
 	milestone: Milestone | null;
 	milestones?: Milestone[];
 	onMilestoneChange?: (milestone: Milestone) => void;
@@ -42,9 +44,7 @@ const getFileNameFromUrl = (url: string): string => {
 /**
  * Type guard to check if group is a FullMockGroup
  */
-const isFullMockGroup = (
-	g: FullMockGroup | Group | GroupDashboard | SupervisedGroup,
-): g is FullMockGroup => {
+const isFullMockGroup = (g: GroupType): g is FullMockGroup => {
 	try {
 		return (
 			g &&
@@ -115,7 +115,7 @@ const SubmissionFiles = ({
 	group,
 }: {
 	submission: SubmissionDetail | null;
-	group: FullMockGroup | Group | GroupDashboard | SupervisedGroup;
+	group: GroupType;
 }) => {
 	const hasDocuments = (sub: SubmissionDetail | null): boolean => {
 		try {
@@ -226,7 +226,7 @@ const SubmissionDetails = ({
 	screens,
 }: {
 	submission: SubmissionDetail | null;
-	group: FullMockGroup | Group | GroupDashboard | SupervisedGroup;
+	group: GroupType;
 	screens: Record<string, boolean>;
 }) => {
 	const getSubmissionDate = () => {

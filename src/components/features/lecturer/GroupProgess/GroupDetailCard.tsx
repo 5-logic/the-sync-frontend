@@ -126,8 +126,9 @@ export default function GroupDetailCard({
 			? convertSupervisedGroupToGroupDashboard(group)
 			: (group as GroupDashboard);
 
-	const hasThesis = groupDashboard.thesis !== null;
-	const thesisId = groupDashboard.thesis?.id;
+	const thesis = groupDashboard.thesis;
+	const hasThesis = thesis !== null && thesis?.id !== undefined;
+	const thesisId = thesis?.id;
 
 	return (
 		<Card

@@ -196,7 +196,7 @@ export default function AssignReviewerModal({
 		};
 
 		// Helper function to handle fetch errors
-		const handleFetchError = (error: Error | unknown) => {
+		const handleFetchError = (error: unknown) => {
 			console.error('Failed to fetch eligible reviewers:', error);
 			if (ignore) return;
 
@@ -438,7 +438,7 @@ export default function AssignReviewerModal({
 	};
 
 	// Helper function to show error notification
-	const showErrorNotification = (error?: Error | unknown) => {
+	const showErrorNotification = (error?: unknown) => {
 		const operationType = isChangeMode ? 'change' : 'assign';
 		const operationTitle = `${operationType.charAt(0).toUpperCase() + operationType.slice(1)}`;
 
