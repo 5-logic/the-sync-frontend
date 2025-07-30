@@ -29,40 +29,78 @@ const statusColor = {
 const SkillsDisplay: React.FC<{
 	skills: Array<{ id: string; name: string }>;
 }> = ({ skills }) => {
+	const containerRef = React.useRef<HTMLDivElement>(null);
 	const [visibleSkills, setVisibleSkills] = useState<
 		Array<{ id: string; name: string }>
 	>([]);
 	const [hiddenCount, setHiddenCount] = useState(0);
 
 	useEffect(() => {
-		const maxTagsPerRow = 6;
-		const maxRows = 2;
-		const maxVisibleTags = maxTagsPerRow * maxRows;
-
-		if (skills.length <= maxVisibleTags) {
+		if (!containerRef.current || skills.length === 0) {
 			setVisibleSkills(skills);
 			setHiddenCount(0);
-		} else {
-			const visible = maxVisibleTags - 1;
-			setVisibleSkills(skills.slice(0, visible));
-			setHiddenCount(skills.length - visible);
+			return;
 		}
+
+		// Tạm thời hiển thị tất cả skills để đo kích thước
+		setVisibleSkills(skills);
+		setHiddenCount(0);
+
+		// Sử dụng setTimeout để đảm bảo DOM đã render
+		const timeoutId = setTimeout(() => {
+			if (!containerRef.current) return;
+
+			const container = containerRef.current;
+			const containerHeight = container.clientHeight;
+			const tags = container.querySelectorAll('.skill-tag');
+
+			let visibleCount = 0;
+
+			for (let i = 0; i < tags.length; i++) {
+				const tag = tags[i] as HTMLElement;
+				const tagRect = tag.getBoundingClientRect();
+				const containerRect = container.getBoundingClientRect();
+
+				// Tính toán vị trí tương đối với container
+				const tagBottom = tagRect.bottom - containerRect.top;
+
+				// Nếu tag vượt quá chiều cao container thì dừng
+				if (tagBottom > containerHeight) {
+					break;
+				}
+
+				visibleCount++;
+			}
+
+			// Nếu có tag bị cắt, trừ đi 1 để dành chỗ cho +{count} tag
+			if (visibleCount < skills.length && visibleCount > 0) {
+				visibleCount = visibleCount - 1;
+			}
+
+			setVisibleSkills(skills.slice(0, visibleCount));
+			setHiddenCount(skills.length - visibleCount);
+		}, 50);
+
+		return () => clearTimeout(timeoutId);
 	}, [skills]);
 
 	return (
 		<div
+			ref={containerRef}
 			style={{
 				minHeight: '70px',
+				maxHeight: '70px',
 				display: 'flex',
 				flexWrap: 'wrap',
 				gap: '8px',
 				alignItems: 'flex-start',
-				maxHeight: '64px',
+				overflow: 'hidden',
 			}}
 		>
 			{visibleSkills.map((skill) => (
 				<Tag
 					key={skill.id}
+					className="skill-tag"
 					style={{
 						padding: '4px 8px',
 						borderRadius: '6px',
@@ -83,9 +121,10 @@ const SkillsDisplay: React.FC<{
 						backgroundColor: '#f0f0f0',
 						borderColor: '#d9d9d9',
 						color: '#666',
+						flexShrink: 0,
 					}}
 				>
-					+{hiddenCount} more
+					+{hiddenCount}
 				</Tag>
 			)}
 		</div>
