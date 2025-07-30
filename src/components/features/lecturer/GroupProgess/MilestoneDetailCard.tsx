@@ -39,6 +39,25 @@ const getFileNameFromUrl = (url: string): string => {
 	}
 };
 
+/**
+ * Type guard to check if group is a FullMockGroup
+ */
+const isFullMockGroup = (
+	g: FullMockGroup | Group | GroupDashboard | SupervisedGroup,
+): g is FullMockGroup => {
+	try {
+		return (
+			g &&
+			typeof g === 'object' &&
+			'submissionFile' in g &&
+			'submissionDate' in g &&
+			'uploadedBy' in g
+		);
+	} catch {
+		return false;
+	}
+};
+
 // Helper component for milestone steps
 const MilestoneSteps = ({
 	milestones,
@@ -115,22 +134,6 @@ const SubmissionFiles = ({
 			return sub?.documents || [];
 		} catch {
 			return [];
-		}
-	};
-
-	const isFullMockGroup = (
-		g: FullMockGroup | Group | GroupDashboard | SupervisedGroup,
-	): g is FullMockGroup => {
-		try {
-			return (
-				g &&
-				typeof g === 'object' &&
-				'submissionFile' in g &&
-				'submissionDate' in g &&
-				'uploadedBy' in g
-			);
-		} catch {
-			return false;
 		}
 	};
 
@@ -226,22 +229,6 @@ const SubmissionDetails = ({
 	group: FullMockGroup | Group | GroupDashboard | SupervisedGroup;
 	screens: Record<string, boolean>;
 }) => {
-	const isFullMockGroup = (
-		g: FullMockGroup | Group | GroupDashboard | SupervisedGroup,
-	): g is FullMockGroup => {
-		try {
-			return (
-				g &&
-				typeof g === 'object' &&
-				'submissionFile' in g &&
-				'submissionDate' in g &&
-				'uploadedBy' in g
-			);
-		} catch {
-			return false;
-		}
-	};
-
 	const getSubmissionDate = () => {
 		if (submission) {
 			return new Date(submission.createdAt).toLocaleDateString();

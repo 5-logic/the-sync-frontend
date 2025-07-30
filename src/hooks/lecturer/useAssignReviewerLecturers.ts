@@ -35,7 +35,7 @@ export const useAssignReviewerLecturers = () => {
 		const submission = filteredGroups.find(
 			(g) => g.id === groupId && g.phase === milestone,
 		);
-		if (!submission || !submission.submissionId) return [];
+		if (!submission?.submissionId) return [];
 
 		return mockReviews
 			.filter((r) => r.submissionId === submission.submissionId)

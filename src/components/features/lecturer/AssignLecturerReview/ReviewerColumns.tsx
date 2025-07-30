@@ -89,17 +89,23 @@ export const createReviewerRenderer = (
 			// Show draft reviewers with labels
 			const draftReviewers = [];
 			if (draft.mainReviewerName) {
-				draftReviewers.push(`Main: ${draft.mainReviewerName}`);
+				draftReviewers.push({
+					key: 'main',
+					text: `Main: ${draft.mainReviewerName}`,
+				});
 			}
 			if (draft.secondaryReviewerName) {
-				draftReviewers.push(`Secondary: ${draft.secondaryReviewerName}`);
+				draftReviewers.push({
+					key: 'secondary',
+					text: `Secondary: ${draft.secondaryReviewerName}`,
+				});
 			}
 
 			return (
 				<div>
-					{draftReviewers.map((reviewer, index) => (
-						<div key={index}>
-							{reviewer} <Text type="warning">(Draft)</Text>
+					{draftReviewers.map((reviewer) => (
+						<div key={reviewer.key}>
+							{reviewer.text} <Text type="warning">(Draft)</Text>
 						</div>
 					))}
 					{/* Show current reviewers if any exist */}
