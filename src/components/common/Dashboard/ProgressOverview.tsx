@@ -17,9 +17,14 @@ export function ProgressOverview() {
 					<Skeleton.Input active size="large" style={{ width: 200 }} />
 					<Skeleton.Input active size="small" style={{ width: 400 }} />
 					<div style={{ borderTop: '1px solid #e8e8e8', paddingTop: '16px' }}>
-						{Array.from({ length: 4 }).map((_, index) => (
+						{[
+							'students-grouped',
+							'groups-thesis',
+							'thesis-approved',
+							'supervisors-assigned',
+						].map((progressType) => (
 							<Space
-								key={`progress-skeleton-${index}`}
+								key={`progress-skeleton-${progressType}`}
 								direction="vertical"
 								size="small"
 								style={{ width: '100%', marginBottom: 16 }}

@@ -17,10 +17,16 @@ const DashboardStats: React.FC = () => {
 
 	// Show loading state
 	if (loading) {
+		const skeletonKeys = ['students', 'lecturers', 'theses', 'groups'];
 		return (
 			<Row gutter={[16, 16]}>
 				{Array.from({ length: 4 }).map((_, index) => (
-					<Col xs={24} sm={12} md={6} key={`stat-skeleton-${index}`}>
+					<Col
+						xs={24}
+						sm={12}
+						md={6}
+						key={`stat-skeleton-${skeletonKeys[index]}`}
+					>
 						<Skeleton.Button
 							active
 							size="large"
