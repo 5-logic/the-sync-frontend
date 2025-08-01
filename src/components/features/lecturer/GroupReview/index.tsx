@@ -37,7 +37,7 @@ export default function GroupReviewPage() {
 	// Helper function to fetch milestones for a semester
 	const fetchMilestonesForSemester = useCallback(async (semesterId: string) => {
 		try {
-			const response = await milestoneService.findBySemester(semesterId);
+			const response = await milestoneService.findAllBySemester(semesterId);
 			const result = handleApiResponse(response);
 
 			if (result.success && result.data) {

@@ -36,7 +36,8 @@ export default function MilestoneStepFilter({
 			try {
 				setMilestonesLoading(true);
 				onLoadingChange?.(true);
-				const response = await milestoneService.findBySemester(semesterIdParam);
+				const response =
+					await milestoneService.findAllBySemester(semesterIdParam);
 				const result = handleApiResponse(response);
 
 				if (result.success && result.data) {

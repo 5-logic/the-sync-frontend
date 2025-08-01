@@ -170,6 +170,74 @@ const renderReviewerStatusMessage = (
 	);
 };
 
+/**
+ * Render submission files section
+ */
+const renderSubmissionFiles = (reviewForm: { documents?: string[] } | null) => {
+	if (!reviewForm) {
+		return null;
+	}
+
+	const hasDocuments = reviewForm.documents && reviewForm.documents.length > 0;
+
+	if (hasDocuments) {
+		return (
+			<div>
+				<Text strong>
+					Submission Files ({reviewForm.documents!.length} files):
+				</Text>
+				<div style={{ ...commonStyles.containerBox, marginTop: 8 }}>
+					{reviewForm.documents!.map((docUrl: string, index: number) => (
+						<div
+							key={docUrl}
+							style={{
+								...commonStyles.fileItem,
+								borderBottom:
+									index < reviewForm.documents!.length - 1
+										? "1px solid #f0f0f0"
+										: "none",
+							}}
+						>
+							<DownloadOutlined style={commonStyles.downloadIcon} />
+							<Button
+								type="link"
+								size="small"
+								style={commonStyles.fileButton}
+								onClick={() => window.open(docUrl, "_blank")}
+							>
+								{getFileNameFromUrl(docUrl)}
+							</Button>
+						</div>
+					))}
+				</div>
+			</div>
+		);
+	}
+
+	return (
+		<div>
+			<Text
+				strong
+				style={{
+					fontSize: "14px",
+					marginBottom: 8,
+					display: "block",
+				}}
+			>
+				Submission Files:
+			</Text>
+			<div
+				style={{
+					...commonStyles.containerBox,
+					textAlign: "center",
+				}}
+			>
+				<Text type="secondary">No submission files available</Text>
+			</div>
+		</div>
+	);
+};
+
 export default function ReviewChecklistTable({
 	submissionId,
 	isMainReviewer,
@@ -459,70 +527,18 @@ export default function ReviewChecklistTable({
 	return (
 		<Space direction="vertical" size="large" style={{ width: "100%" }}>
 			{/* Submission Files Section with loading state */}
-			{reviewFormLoading ? (
+			{reviewFormLoading && (
 				<div>
 					<Text strong>Submission Files:</Text>
 					<div style={{ ...commonStyles.containerBox, marginTop: 8 }}>
 						<Skeleton active paragraph={{ rows: 2 }} />
 					</div>
 				</div>
-			) : reviewForm ? (
-				<div>
-					{/* Submission Files Section */}
-					{reviewForm.documents && reviewForm.documents.length > 0 ? (
-						<div>
-							<Text strong>
-								Submission Files ({reviewForm.documents.length} files):
-							</Text>
-							<div style={{ ...commonStyles.containerBox, marginTop: 8 }}>
-								{reviewForm.documents.map((docUrl: string, index: number) => (
-									<div
-										key={docUrl}
-										style={{
-											...commonStyles.fileItem,
-											borderBottom:
-												index < reviewForm.documents.length - 1
-													? "1px solid #f0f0f0"
-													: "none",
-										}}
-									>
-										<DownloadOutlined style={commonStyles.downloadIcon} />
-										<Button
-											type="link"
-											size="small"
-											style={commonStyles.fileButton}
-											onClick={() => window.open(docUrl, "_blank")}
-										>
-											{getFileNameFromUrl(docUrl)}
-										</Button>
-									</div>
-								))}
-							</div>
-						</div>
-					) : (
-						<div>
-							<Text
-								strong
-								style={{
-									fontSize: "14px",
-									marginBottom: 8,
-									display: "block",
-								}}
-							>
-								Submission Files:
-							</Text>
-							<div
-								style={{
-									...commonStyles.containerBox,
-									textAlign: "center",
-								}}
-							>
-								<Text type="secondary">No submission files available</Text>
-							</div>
-						</div>
-					)}
-				</div>
-			) : null}
+			)}
+
+			{!reviewFormLoading && reviewForm && (
+				<div>{renderSubmissionFiles(reviewForm)}</div>
+			)}
 
 			{/* Existing Reviews Section */}
 			<ExistingReviewsList
