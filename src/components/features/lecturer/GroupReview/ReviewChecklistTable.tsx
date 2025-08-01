@@ -46,11 +46,6 @@ interface ChecklistItemWithResponse {
 	notes?: string;
 }
 
-interface ChecklistResponse {
-	response?: ChecklistReviewAcceptance;
-	notes?: string;
-}
-
 const priorityColorMap = {
 	Mandatory: "red",
 	Optional: "blue",
