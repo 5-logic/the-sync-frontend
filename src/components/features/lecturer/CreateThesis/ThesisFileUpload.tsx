@@ -24,26 +24,55 @@ interface Props {
 	onFileChange: (
 		file: { name: string; size: number; url: string } | null,
 	) => void;
+	onFileChangeStateUpdate?: (state: FileChangeState) => void; // New prop for edit mode
+}
+
+interface FileChangeState {
+	action: 'none' | 'delete' | 'replace';
+	newFile?: File;
 }
 
 export default function SupportingDocumentField({
 	mode,
 	initialFile,
 	onFileChange,
+	onFileChangeStateUpdate,
 }: Readonly<Props>) {
 	const [uploadedFile, setUploadedFile] = useState(initialFile || null);
 	const [uploading, setUploading] = useState(false);
+	const [fileChangeState, setFileChangeState] = useState<FileChangeState>({
+		action: 'none',
+	});
+	const [lastInitialFile, setLastInitialFile] = useState(initialFile);
+	const [userHasInteracted, setUserHasInteracted] = useState(false);
 
 	useEffect(() => {
-		setUploadedFile(initialFile || null);
-	}, [initialFile]);
+		// Only reset state when initialFile actually changes to a different file
+		// Compare by URL and name to detect real changes, not just reference changes
+		const prevFileUrl = lastInitialFile?.url || '';
+		const prevFileName = lastInitialFile?.name || '';
+		const currentFileUrl = initialFile?.url || '';
+		const currentFileName = initialFile?.name || '';
 
-	const handleFileUpload = async (file: File) => {
+		const hasInitialFileChanged =
+			prevFileUrl !== currentFileUrl || prevFileName !== currentFileName;
+
+		// Don't reset if user has already performed delete/replace actions
+		const userHasChanges = fileChangeState.action !== 'none';
+
+		if (hasInitialFileChanged && !userHasChanges && !userHasInteracted) {
+			setLastInitialFile(initialFile);
+			// Reset to initial state only when initialFile content actually changes
+			// and user hasn't made any changes yet
+			setUploadedFile(initialFile || null);
+			setFileChangeState({ action: 'none' });
+		}
+	}, [initialFile, lastInitialFile, fileChangeState.action, userHasInteracted]);
+
+	const handleCreateModeUpload = async (file: File) => {
 		try {
 			setUploading(true);
 
-			// Upload new file to Supabase Storage with support-doc folder
-			// Note: We don't delete the old file in edit mode as it's kept for version history
 			const fileUrl = await StorageService.uploadFile(file, 'support-doc');
 
 			const uploadedFileInfo = {
@@ -63,16 +92,77 @@ export default function SupportingDocumentField({
 		}
 	};
 
+	const handleEditModeUpload = (file: File) => {
+		const newState = {
+			action: 'replace' as const,
+			newFile: file,
+		};
+
+		setFileChangeState(newState);
+		onFileChangeStateUpdate?.(newState);
+
+		// Show the new file in UI
+		const newFileInfo = {
+			name: file.name,
+			size: file.size,
+			url: '', // No URL yet since we haven't uploaded
+		};
+
+		setUploadedFile(newFileInfo);
+
+		// Notify parent about the change (provide the File object for later upload)
+		onFileChange({
+			name: file.name,
+			size: file.size,
+			url: 'pending-upload', // Special marker to indicate pending upload
+		});
+
+		// No notification needed - UI already shows the change clearly
+	};
+
+	const handleFileUpload = async (file: File) => {
+		// Mark that user has interacted with the component
+		setUserHasInteracted(true);
+
+		if (mode === 'create') {
+			await handleCreateModeUpload(file);
+		} else {
+			handleEditModeUpload(file);
+		}
+	};
+
 	const handleFileDelete = async () => {
-		try {
-			if (uploadedFile?.url) {
-				await StorageService.deleteFile(uploadedFile.url);
+		// Mark that user has interacted with the component
+		setUserHasInteracted(true);
+
+		if (mode === 'create') {
+			// In create mode, delete immediately as before
+			try {
+				if (uploadedFile?.url) {
+					await StorageService.deleteFile(uploadedFile.url);
+				}
+				setUploadedFile(null);
+				onFileChange(null);
+				showNotification.success(
+					'Delete Success',
+					'File deleted successfully!',
+				);
+			} catch {
+				// Error notification is already shown in StorageService
 			}
+		} else {
+			// In edit mode, just mark for deletion without actually deleting
+			const newState = {
+				action: 'delete' as const,
+			};
+
+			setFileChangeState(newState);
+			onFileChangeStateUpdate?.(newState);
+
 			setUploadedFile(null);
 			onFileChange(null);
-			showNotification.success('Delete Success', 'File deleted successfully!');
-		} catch {
-			// Error notification is already shown in StorageService
+
+			// No notification needed - UI already shows the change clearly
 		}
 	};
 
@@ -138,6 +228,19 @@ export default function SupportingDocumentField({
 	const uploadProps = createUploadProps();
 	const newFileUploadProps = createUploadProps({ showUploadList: false });
 
+	// Helper function to get help text based on mode and file state
+	const getHelpText = () => {
+		if (mode === 'create') {
+			return 'Support for DOC, DOCX (Max: 10MB)';
+		}
+
+		if (fileChangeState.action === 'none') {
+			return 'Support for DOC, DOCX (Max: 10MB). Changes will be applied when you save the thesis.';
+		}
+
+		return 'File changes will be applied when you save the thesis.';
+	};
+
 	return (
 		<>
 			<Row justify="space-between" align="middle" style={{ marginBottom: 8 }}>
@@ -162,11 +265,46 @@ export default function SupportingDocumentField({
 				name="supportingDocument"
 				valuePropName="fileList"
 				getValueFromEvent={(e) => (Array.isArray(e) ? e : e?.fileList)}
-				rules={
-					mode === 'create'
-						? [{ required: true, message: 'Please upload your document' }]
-						: []
-				}
+				rules={[
+					{
+						validator: (_, value) => {
+							// For create mode, file is always required
+							if (mode === 'create') {
+								if (!value || value.length === 0) {
+									return Promise.reject(
+										new Error('Please upload your document'),
+									);
+								}
+								return Promise.resolve();
+							}
+
+							// For edit mode, file is required unless there's an initial file and no deletion action
+							if (mode === 'edit') {
+								const hasCurrentFile = value && value.length > 0;
+								const hasInitialFile = initialFile;
+								const isDeleting = fileChangeState.action === 'delete';
+
+								// If user deleted the file and hasn't uploaded a new one, it's invalid
+								if (isDeleting && !hasCurrentFile) {
+									return Promise.reject(
+										new Error('Please upload a supporting document'),
+									);
+								}
+
+								// If no initial file and no current file, it's invalid
+								if (!hasInitialFile && !hasCurrentFile) {
+									return Promise.reject(
+										new Error('Please upload your document'),
+									);
+								}
+
+								return Promise.resolve();
+							}
+
+							return Promise.resolve();
+						},
+					},
+				]}
 			>
 				{!uploadedFile ? (
 					<Upload.Dragger
@@ -197,41 +335,109 @@ export default function SupportingDocumentField({
 							}}
 						>
 							<div>
-								<div style={{ fontWeight: 500 }}>{uploadedFile.name}</div>
+								<div style={{ fontWeight: 500 }}>
+									{uploadedFile.name}
+									{mode === 'edit' && fileChangeState.action === 'replace' && (
+										<span style={{ color: '#1890ff', marginLeft: 8 }}>
+											(New file selected)
+										</span>
+									)}
+								</div>
 								<div style={{ color: '#666', fontSize: 13 }}>
-									{(uploadedFile.size / 1024 / 1024).toFixed(1)} MB • Uploaded
-									on{' '}
-									{new Date().toLocaleDateString('en-US', {
-										month: 'short',
-										day: 'numeric',
-										year: 'numeric',
-									})}
+									{(uploadedFile.size / 1024 / 1024).toFixed(1)} MB
+									{mode === 'create' && (
+										<>
+											{' '}
+											• Uploaded on{' '}
+											{new Date().toLocaleDateString('en-US', {
+												month: 'short',
+												day: 'numeric',
+												year: 'numeric',
+											})}
+										</>
+									)}
+									{mode === 'edit' && fileChangeState.action === 'none' && (
+										<> • Current file</>
+									)}
+									{mode === 'edit' && fileChangeState.action === 'replace' && (
+										<> • Will replace current file when saved</>
+									)}
 								</div>
 							</div>
 							<DeleteOutlined
 								style={{ color: 'red', cursor: 'pointer', fontSize: 16 }}
 								onClick={handleFileDelete}
+								title={
+									mode === 'edit'
+										? 'Mark file for deletion (will be deleted when thesis is saved)'
+										: 'Delete file immediately'
+								}
 							/>
 						</div>
 
 						<div style={{ marginTop: 16 }}>
-							<Space>
-								<Upload {...newFileUploadProps}>
-									<Button icon={<UploadOutlined />} loading={uploading}>
-										{uploading ? 'Uploading...' : 'Upload New File'}
-									</Button>
-								</Upload>
+							{mode === 'create' ? (
+								<Space>
+									<Upload {...newFileUploadProps}>
+										<Button icon={<UploadOutlined />} loading={uploading}>
+											{uploading ? 'Uploading...' : 'Upload New File'}
+										</Button>
+									</Upload>
 
-								<Button
-									icon={<DownloadOutlined />}
-									onClick={handleFileDownload}
-								>
-									Download File
-								</Button>
-							</Space>
+									<Button
+										icon={<DownloadOutlined />}
+										onClick={handleFileDownload}
+									>
+										Download File
+									</Button>
+								</Space>
+							) : (
+								<Space>
+									{fileChangeState.action === 'none' && (
+										<>
+											<Upload {...newFileUploadProps}>
+												<Button icon={<UploadOutlined />}>Replace File</Button>
+											</Upload>
+
+											<Button
+												icon={<DownloadOutlined />}
+												onClick={handleFileDownload}
+											>
+												Download Current File
+											</Button>
+										</>
+									)}
+
+									{fileChangeState.action === 'replace' && (
+										<Button
+											icon={<UploadOutlined />}
+											onClick={() => {
+												// Reset to show original file
+												const resetState = { action: 'none' as const };
+												setFileChangeState(resetState);
+												onFileChangeStateUpdate?.(resetState);
+												setUploadedFile(initialFile || null);
+
+												// Only call onFileChange if initialFile has url
+												if (initialFile?.url) {
+													onFileChange({
+														name: initialFile.name,
+														size: initialFile.size,
+														url: initialFile.url,
+													});
+												} else {
+													onFileChange(null);
+												}
+											}}
+										>
+											Cancel File Change
+										</Button>
+									)}
+								</Space>
+							)}
 
 							<div style={{ fontSize: 12, color: '#999', marginTop: 4 }}>
-								Support for DOC, DOCX (Max: 10MB)
+								{getHelpText()}
 							</div>
 						</div>
 					</div>
