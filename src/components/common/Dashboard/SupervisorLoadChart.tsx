@@ -1,7 +1,19 @@
-import { Card, Col, Row, Space, Typography } from 'antd';
-import React, { useMemo } from 'react';
+import { SearchOutlined } from '@ant-design/icons';
+import {
+	Card,
+	Col,
+	Input,
+	Row,
+	Select,
+	Skeleton,
+	Space,
+	Typography,
+} from 'antd';
+import React, { useMemo, useState } from 'react';
 
-import { supervisorLoadData } from '@/data/moderatorStats';
+import type { SupervisorLoadDistribution } from '@/lib/services/dashboard.service';
+import { createSearchFilter } from '@/lib/utils/textNormalization';
+import { useDashboardStore } from '@/store';
 
 const { Text, Title } = Typography;
 
@@ -24,6 +36,14 @@ const CHART_CONSTANTS = {
 	},
 } as const;
 
+// Helper function to get category based on thesis count
+const getLoadCategory = (count: number): string => {
+	if (count >= 6) return 'Over Load';
+	if (count >= 4) return 'High Load';
+	if (count >= 2) return 'Moderate Load';
+	return 'Low Load';
+};
+
 // Kết hợp colors và gradients thành một object để dễ quản lý
 const CATEGORY_STYLES: Record<string, { color: string; gradient: string }> = {
 	'Over Load': {
@@ -45,13 +65,151 @@ const CATEGORY_STYLES: Record<string, { color: string; gradient: string }> = {
 } as const;
 
 const SupervisorLoadChart: React.FC = () => {
+	const { supervisorLoadDistribution, loading, error } = useDashboardStore();
+
+	// State for search and filter
+	const [searchTerm, setSearchTerm] = useState('');
+	const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+	// Transform API data to chart format with search and filter
+	const chartData = useMemo(() => {
+		if (
+			!supervisorLoadDistribution ||
+			supervisorLoadDistribution.length === 0
+		) {
+			return [];
+		}
+
+		let filteredData = supervisorLoadDistribution.map(
+			(item: SupervisorLoadDistribution) => ({
+				name: item.fullName,
+				count: item.thesisCount,
+				category: getLoadCategory(item.thesisCount),
+			}),
+		);
+
+		// Apply search filter
+		if (searchTerm.trim()) {
+			const searchFilter = createSearchFilter(
+				searchTerm,
+				(item: { name: string; count: number; category: string }) => [
+					item.name,
+					item.count.toString(),
+				],
+			);
+			filteredData = filteredData.filter(searchFilter);
+		}
+
+		// Apply category filter
+		if (selectedCategory) {
+			filteredData = filteredData.filter(
+				(item) => item.category === selectedCategory,
+			);
+		}
+
+		return filteredData;
+	}, [supervisorLoadDistribution, searchTerm, selectedCategory]);
+
 	// Memoize các giá trị tính toán để tối ưu performance
 	const chartConfig = useMemo(
 		() => ({
-			minHeight: supervisorLoadData.length * CHART_CONSTANTS.itemHeight + 80,
+			minHeight: chartData.length * CHART_CONSTANTS.itemHeight + 80,
 		}),
-		[],
+		[chartData.length],
 	);
+
+	// Show loading state
+	if (loading) {
+		return (
+			<Card>
+				<Space direction="vertical" size="middle" style={{ width: '100%' }}>
+					<Skeleton.Input active size="large" style={{ width: 300 }} />
+					<Skeleton.Input active size="small" style={{ width: 400 }} />
+					<div style={{ padding: '20px 0' }}>
+						{Array.from({ length: 5 }).map((_, index) => (
+							<div key={index} style={{ marginBottom: 16 }}>
+								<Skeleton.Button
+									active
+									size="large"
+									style={{ width: '100%', height: 40 }}
+								/>
+							</div>
+						))}
+					</div>
+				</Space>
+			</Card>
+		);
+	}
+
+	// Show empty state if no data after filtering
+	if (error || chartData.length === 0) {
+		const hasData =
+			supervisorLoadDistribution && supervisorLoadDistribution.length > 0;
+		const isFiltered = searchTerm.trim() || selectedCategory;
+
+		return (
+			<Card>
+				<Space direction="vertical" size="middle" style={{ width: '100%' }}>
+					<Space direction="vertical" size="small" style={{ width: '100%' }}>
+						<Title level={4} style={{ margin: 0 }}>
+							Supervisor Load Distribution
+						</Title>
+						<Text type="secondary">
+							Number of theses assigned to each supervisor (Max load: 5 theses)
+						</Text>
+					</Space>
+
+					{/* Show search and filter controls even when empty */}
+					{hasData && (
+						<Row gutter={[16, 16]} align="middle">
+							<Col xs={24} sm={16} md={14} lg={16}>
+								<Input
+									prefix={<SearchOutlined />}
+									placeholder="Search by lecturer name or thesis count..."
+									value={searchTerm}
+									onChange={(e) => setSearchTerm(e.target.value)}
+									allowClear
+								/>
+							</Col>
+							<Col xs={24} sm={8} md={6} lg={5}>
+								<Select
+									style={{ width: '100%' }}
+									placeholder="Filter category"
+									value={selectedCategory}
+									onChange={setSelectedCategory}
+									allowClear
+									options={[
+										{ label: 'Over Load', value: 'Over Load' },
+										{ label: 'High Load', value: 'High Load' },
+										{ label: 'Moderate Load', value: 'Moderate Load' },
+										{ label: 'Low Load', value: 'Low Load' },
+									]}
+								/>
+							</Col>
+							<Col xs={24} sm={24} md={4} lg={3}>
+								<Text
+									type="secondary"
+									style={{ fontSize: '12px', textAlign: 'right' }}
+								>
+									0/{supervisorLoadDistribution?.length || 0}
+								</Text>
+							</Col>
+						</Row>
+					)}
+
+					<div style={{ padding: '40px', textAlign: 'center' }}>
+						<Text type="secondary">
+							{error
+								? 'Error loading supervisor load data'
+								: hasData && isFiltered
+									? 'No supervisors match your search criteria'
+									: 'No supervisor load data available for this semester'}
+						</Text>
+					</div>
+				</Space>
+			</Card>
+		);
+	}
 
 	return (
 		<Card>
@@ -61,9 +219,45 @@ const SupervisorLoadChart: React.FC = () => {
 						Supervisor Load Distribution
 					</Title>
 					<Text type="secondary">
-						Number of groups assigned to each supervisor (Max load: 5 groups)
+						Number of theses assigned to each supervisor (Max load: 5 theses)
 					</Text>
 				</Space>
+
+				{/* Search and Filter Controls */}
+				<Row gutter={[16, 16]} align="middle">
+					<Col xs={24} sm={16} md={14} lg={16}>
+						<Input
+							prefix={<SearchOutlined />}
+							placeholder="Search by lecturer name or thesis count..."
+							value={searchTerm}
+							onChange={(e) => setSearchTerm(e.target.value)}
+							allowClear
+						/>
+					</Col>
+					<Col xs={24} sm={8} md={6} lg={5}>
+						<Select
+							style={{ width: '100%' }}
+							placeholder="Filter category"
+							value={selectedCategory}
+							onChange={setSelectedCategory}
+							allowClear
+							options={[
+								{ label: 'Over Load', value: 'Over Load' },
+								{ label: 'High Load', value: 'High Load' },
+								{ label: 'Moderate Load', value: 'Moderate Load' },
+								{ label: 'Low Load', value: 'Low Load' },
+							]}
+						/>
+					</Col>
+					<Col xs={24} sm={24} md={4} lg={3}>
+						<Text
+							type="secondary"
+							style={{ fontSize: '12px', textAlign: 'right' }}
+						>
+							{chartData.length}/{supervisorLoadDistribution?.length || 0}
+						</Text>
+					</Col>
+				</Row>
 
 				<div style={{ padding: '5px' }}>
 					{/* Chart container with grid */}
@@ -105,7 +299,7 @@ const SupervisorLoadChart: React.FC = () => {
 								/>
 							))}
 							{/* Horizontal grid lines */}
-							{supervisorLoadData.map((item, index) => (
+							{chartData.map((item, index) => (
 								<div
 									key={`h-${item.name}`}
 									style={{
@@ -131,7 +325,7 @@ const SupervisorLoadChart: React.FC = () => {
 								width: `${CHART_CONSTANTS.positions.yAxisWidth}px`,
 							}}
 						>
-							{supervisorLoadData.map((item, index) => (
+							{chartData.map((item, index) => (
 								<div
 									key={`y-label-${item.name}`}
 									style={{
@@ -160,7 +354,7 @@ const SupervisorLoadChart: React.FC = () => {
 								zIndex: 2,
 							}}
 						>
-							{supervisorLoadData.map((item, index) => (
+							{chartData.map((item, index) => (
 								<div
 									key={`bar-${item.name}`}
 									style={{
@@ -223,43 +417,43 @@ const SupervisorLoadChart: React.FC = () => {
 							))}
 						</div>
 					</div>
-				</div>
 
-				{/* Legend */}
-				<div
-					style={{
-						borderTop: '1px solid #e8e8e8',
-						paddingTop: '20px',
-						padding: `${CHART_CONSTANTS.padding.legend}px 20px`,
-					}}
-				>
-					<Row gutter={[32, 12]} justify="center">
-						{Object.entries(CATEGORY_STYLES).map(([label, style]) => (
-							<Col key={label}>
-								<Space size="small" align="center">
-									<div
-										style={{
-											width: '18px',
-											height: '14px',
-											background: style.gradient,
-											borderRadius: '7px',
-											boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-											border: '1px solid rgba(255,255,255,0.2)',
-										}}
-									/>
-									<Text
-										style={{
-											fontSize: '13px',
-											color: '#4a4a4a',
-											fontWeight: '500',
-										}}
-									>
-										{label}
-									</Text>
-								</Space>
-							</Col>
-						))}
-					</Row>
+					{/* Legend */}
+					<div
+						style={{
+							borderTop: '1px solid #e8e8e8',
+							paddingTop: '20px',
+							padding: `${CHART_CONSTANTS.padding.legend}px 20px`,
+						}}
+					>
+						<Row gutter={[32, 12]} justify="center">
+							{Object.entries(CATEGORY_STYLES).map(([label, style]) => (
+								<Col key={label}>
+									<Space size="small" align="center">
+										<div
+											style={{
+												width: '18px',
+												height: '14px',
+												background: style.gradient,
+												borderRadius: '7px',
+												boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+												border: '1px solid rgba(255,255,255,0.2)',
+											}}
+										/>
+										<Text
+											style={{
+												fontSize: '13px',
+												color: '#4a4a4a',
+												fontWeight: '500',
+											}}
+										>
+											{label}
+										</Text>
+									</Space>
+								</Col>
+							))}
+						</Row>
+					</div>
 				</div>
 			</Space>
 		</Card>
