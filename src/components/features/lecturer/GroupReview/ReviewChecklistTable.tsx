@@ -29,6 +29,41 @@ import ExistingReviewsList from "./ExistingReviewsList";
 
 const { Text } = Typography;
 
+// Common style objects to reduce duplication
+const commonStyles = {
+	containerBox: {
+		background: "#fafafa",
+		border: "1px solid #f0f0f0",
+		borderRadius: "6px",
+		padding: "12px",
+	},
+	reviewerInfoBox: {
+		padding: "16px",
+		textAlign: "center" as const,
+		borderRadius: "8px",
+		marginTop: "16px",
+	},
+	fileItem: {
+		display: "flex",
+		alignItems: "center",
+		padding: "8px 0",
+	},
+	fileButton: {
+		paddingLeft: 0,
+		color: "#1890ff",
+		fontSize: "14px",
+		textAlign: "left" as const,
+		height: "auto",
+		display: "flex",
+		alignItems: "center",
+	},
+	downloadIcon: {
+		color: "#1890ff",
+		marginRight: 8,
+		fontSize: "14px",
+	},
+};
+
 interface Props {
 	readonly submissionId: string;
 	readonly isMainReviewer: boolean;
@@ -66,6 +101,73 @@ const getFileNameFromUrl = (url: string): string => {
 	} catch {
 		return "Document";
 	}
+};
+
+/**
+ * Render reviewer status message with consistent styling
+ */
+const renderReviewerStatusMessage = (
+	isMainReviewer: boolean,
+	submitting: boolean,
+	reviewForm: unknown,
+	checklistItems: ChecklistItemWithResponse[],
+	getValidationStatus: { isValid: boolean },
+	handleSaveChecklist: () => void,
+) => {
+	if (isMainReviewer) {
+		return (
+			<div
+				style={{
+					...commonStyles.reviewerInfoBox,
+					background: "#fff7e6",
+					border: "1px solid #ffd591",
+				}}
+			>
+				<Text type="secondary" style={{ fontSize: "16px" }}>
+					📋 You are viewing as a <strong>Main Reviewer</strong>
+				</Text>
+				<br />
+				<Text type="secondary" style={{ fontSize: "14px", marginTop: "8px" }}>
+					You can review the checklist but cannot submit feedback. Only
+					secondary reviewers can submit reviews.
+				</Text>
+			</div>
+		);
+	}
+
+	return (
+		<div
+			style={{
+				...commonStyles.reviewerInfoBox,
+				background: "#f6ffed",
+				border: "1px solid #b7eb8f",
+				marginBottom: "16px",
+			}}
+		>
+			<Text type="secondary" style={{ fontSize: "16px" }}>
+				✅ You are reviewing as a <strong>Secondary Reviewer</strong>
+			</Text>
+			<br />
+			<Text type="secondary" style={{ fontSize: "14px", marginTop: "8px" }}>
+				You can submit your review and feedback for this submission.
+			</Text>
+			<Row justify="center" style={{ marginTop: "16px" }}>
+				<Button
+					type="primary"
+					onClick={handleSaveChecklist}
+					loading={submitting}
+					disabled={
+						!reviewForm ||
+						checklistItems.length === 0 ||
+						!getValidationStatus.isValid
+					}
+					size="large"
+				>
+					Submit Review
+				</Button>
+			</Row>
+		</div>
+	);
 };
 
 export default function ReviewChecklistTable({
@@ -155,6 +257,47 @@ export default function ReviewChecklistTable({
 		}));
 	};
 
+	const validateReviewSubmission = () => {
+		// Reset validation errors display
+		setShowValidationErrors(false);
+
+		// Validation: Check if feedback is provided
+		if (!feedback.trim()) {
+			setShowValidationErrors(true);
+			showNotification.error(
+				"Missing Feedback",
+				"Please provide general feedback before submitting your review",
+			);
+			return { isValid: false };
+		}
+
+		// Validation: Check if all mandatory questions are answered
+		const mandatoryItems = getMandatoryItems(checklistItems);
+		const unansweredMandatory = getUnansweredMandatory(mandatoryItems, answers);
+
+		if (unansweredMandatory.length > 0) {
+			setShowValidationErrors(true);
+			showNotification.error(
+				"Incomplete Required Questions",
+				`Please answer all mandatory questions. ${unansweredMandatory.length} mandatory question(s) remaining.`,
+			);
+			return { isValid: false };
+		}
+
+		// Validation: Check if at least some questions are answered
+		const answeredItems = getAnsweredItems(answers);
+		if (answeredItems.length === 0) {
+			setShowValidationErrors(true);
+			showNotification.error(
+				"No Responses Provided",
+				"Please answer at least one checklist question before submitting",
+			);
+			return { isValid: false };
+		}
+
+		return { isValid: true };
+	};
+
 	const handleSaveChecklist = async () => {
 		if (!reviewForm?.milestone?.checklist?.id) {
 			showNotification.error(
@@ -176,40 +319,11 @@ export default function ReviewChecklistTable({
 		// Reset validation errors display
 		setShowValidationErrors(false);
 
-		// Validation: Check if feedback is provided
-		if (!feedback.trim()) {
-			setShowValidationErrors(true);
-			showNotification.error(
-				"Missing Feedback",
-				"Please provide general feedback before submitting your review",
-			);
+		// Perform all validations
+		const validationResult = validateReviewSubmission();
+		if (!validationResult.isValid) {
 			return;
 		}
-
-		// Validation: Check if all mandatory questions are answered
-		const mandatoryItems = getMandatoryItems(checklistItems);
-		const unansweredMandatory = getUnansweredMandatory(mandatoryItems, answers);
-
-		if (unansweredMandatory.length > 0) {
-			setShowValidationErrors(true);
-			showNotification.error(
-				"Incomplete Required Questions",
-				`Please answer all mandatory questions. ${unansweredMandatory.length} mandatory question(s) remaining.`,
-			);
-			return;
-		}
-
-		// Validation: Check if at least some questions are answered
-		const answeredItems = getAnsweredItems(answers);
-		if (answeredItems.length === 0) {
-			setShowValidationErrors(true);
-			showNotification.error(
-				"No Responses Provided",
-				"Please answer at least one checklist question before submitting",
-			);
-			return;
-		}
-
 		try {
 			// Prepare review items
 			const reviewItems = Object.entries(answers)
@@ -348,15 +462,7 @@ export default function ReviewChecklistTable({
 			{reviewFormLoading ? (
 				<div>
 					<Text strong>Submission Files:</Text>
-					<div
-						style={{
-							background: "#fafafa",
-							border: "1px solid #f0f0f0",
-							borderRadius: "6px",
-							padding: "12px",
-							marginTop: 8,
-						}}
-					>
+					<div style={{ ...commonStyles.containerBox, marginTop: 8 }}>
 						<Skeleton active paragraph={{ rows: 2 }} />
 					</div>
 				</div>
@@ -368,47 +474,23 @@ export default function ReviewChecklistTable({
 							<Text strong>
 								Submission Files ({reviewForm.documents.length} files):
 							</Text>
-							<div
-								style={{
-									background: "#fafafa",
-									border: "1px solid #f0f0f0",
-									borderRadius: "6px",
-									padding: "12px",
-									marginTop: 8,
-								}}
-							>
+							<div style={{ ...commonStyles.containerBox, marginTop: 8 }}>
 								{reviewForm.documents.map((docUrl: string, index: number) => (
 									<div
 										key={docUrl}
 										style={{
-											display: "flex",
-											alignItems: "center",
-											padding: "8px 0",
+											...commonStyles.fileItem,
 											borderBottom:
 												index < reviewForm.documents.length - 1
 													? "1px solid #f0f0f0"
 													: "none",
 										}}
 									>
-										<DownloadOutlined
-											style={{
-												color: "#1890ff",
-												marginRight: 8,
-												fontSize: "14px",
-											}}
-										/>
+										<DownloadOutlined style={commonStyles.downloadIcon} />
 										<Button
 											type="link"
 											size="small"
-											style={{
-												paddingLeft: 0,
-												color: "#1890ff",
-												fontSize: "14px",
-												textAlign: "left",
-												height: "auto",
-												display: "flex",
-												alignItems: "center",
-											}}
+											style={commonStyles.fileButton}
 											onClick={() => window.open(docUrl, "_blank")}
 										>
 											{getFileNameFromUrl(docUrl)}
@@ -431,10 +513,7 @@ export default function ReviewChecklistTable({
 							</Text>
 							<div
 								style={{
-									background: "#fafafa",
-									border: "1px solid #f0f0f0",
-									borderRadius: "6px",
-									padding: "12px",
+									...commonStyles.containerBox,
 									textAlign: "center",
 								}}
 							>
@@ -512,67 +591,13 @@ export default function ReviewChecklistTable({
 					)}
 
 					{/* Show different content based on reviewer type */}
-					{isMainReviewer ? (
-						<div
-							style={{
-								padding: "16px",
-								textAlign: "center",
-								background: "#fff7e6",
-								borderRadius: "8px",
-								border: "1px solid #ffd591",
-								marginTop: "16px",
-							}}
-						>
-							<Text type="secondary" style={{ fontSize: "16px" }}>
-								📋 You are viewing as a <strong>Main Reviewer</strong>
-							</Text>
-							<br />
-							<Text
-								type="secondary"
-								style={{ fontSize: "14px", marginTop: "8px" }}
-							>
-								You can review the checklist but cannot submit feedback. Only
-								secondary reviewers can submit reviews.
-							</Text>
-						</div>
-					) : (
-						<div
-							style={{
-								padding: "16px",
-								textAlign: "center",
-								background: "#f6ffed",
-								borderRadius: "8px",
-								border: "1px solid #b7eb8f",
-								marginTop: "16px",
-								marginBottom: "16px",
-							}}
-						>
-							<Text type="secondary" style={{ fontSize: "16px" }}>
-								✅ You are reviewing as a <strong>Secondary Reviewer</strong>
-							</Text>
-							<br />
-							<Text
-								type="secondary"
-								style={{ fontSize: "14px", marginTop: "8px" }}
-							>
-								You can submit your review and feedback for this submission.
-							</Text>
-							<Row justify="center" style={{ marginTop: "16px" }}>
-								<Button
-									type="primary"
-									onClick={handleSaveChecklist}
-									loading={submitting}
-									disabled={
-										!reviewForm ||
-										checklistItems.length === 0 ||
-										!getValidationStatus.isValid
-									}
-									size="large"
-								>
-									Submit Review
-								</Button>
-							</Row>
-						</div>
+					{renderReviewerStatusMessage(
+						isMainReviewer,
+						submitting,
+						reviewForm,
+						checklistItems,
+						getValidationStatus,
+						handleSaveChecklist,
 					)}
 				</>
 			)}
@@ -581,12 +606,9 @@ export default function ReviewChecklistTable({
 			{submissionReviews.length > 0 && (
 				<div
 					style={{
-						padding: "16px",
-						textAlign: "center",
+						...commonStyles.reviewerInfoBox,
 						background: "#f0f9ff",
-						borderRadius: "8px",
 						border: "1px solid #91d5ff",
-						marginTop: "16px",
 					}}
 				>
 					<Text type="secondary" style={{ fontSize: "16px" }}>
