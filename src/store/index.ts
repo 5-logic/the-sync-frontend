@@ -3,6 +3,7 @@ export { useAdminStore } from '@/store/useAdminStore';
 export { useAppStore } from '@/store/useAppStore';
 export { useCapstoneManagementStore } from '@/store/useCapstoneManagementStore';
 export { useChecklistStore } from '@/store/useChecklistStore';
+export { useDashboardStore } from '@/store/useDashboardStore';
 export { useGroupDashboardStore } from '@/store/useGroupDashboardStore';
 export { useGroupsStore } from '@/store/useGroupsStore';
 export { useLecturerStore } from '@/store/useLecturerStore';
