@@ -4,6 +4,7 @@ import groupsService from '@/lib/services/groups.service';
 import milestoneService from '@/lib/services/milestones.service';
 import thesesService from '@/lib/services/theses.service';
 import { handleApiResponse } from '@/lib/utils/handleApi';
+import type { Milestone } from '@/schemas/milestone';
 
 interface DashboardStats {
 	totalThesis: number;
@@ -124,7 +125,15 @@ export const useLecturerDashboardStore = create<LecturerDashboardState>(
 				const result = handleApiResponse(response);
 
 				if (result.success) {
-					const pendingMilestones = result.data?.length || 0;
+					// Filter out expired milestones (only count milestones that haven't ended yet)
+					const currentDate = new Date();
+					const activeMilestones =
+						result.data?.filter((milestone: Milestone) => {
+							const endDate = new Date(milestone.endDate);
+							return endDate >= currentDate;
+						}) || [];
+
+					const pendingMilestones = activeMilestones.length;
 					set((state) => ({
 						stats: { ...state.stats, pendingMilestones },
 						pendingMilestonesLoading: false,
