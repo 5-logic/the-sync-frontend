@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { EyeOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
-import { Button, Input, Space, Table } from 'antd';
-import type { ColumnsType } from 'antd/es/table';
+import { EyeOutlined, ReloadOutlined, SearchOutlined } from "@ant-design/icons";
+import { Button, Input, Space, Table } from "antd";
+import type { ColumnsType } from "antd/es/table";
 
-import { TablePagination } from '@/components/common/TablePagination';
-import SemesterFilter from '@/components/features/lecturer/GroupProgess/SemesterFilter';
-import MilestoneStepFilter from '@/components/features/lecturer/GroupReview/MilestoneStepFilter';
-import { AssignmentReviewer } from '@/lib/services/reviews.service';
+import { TablePagination } from "@/components/common/TablePagination";
+import SemesterFilter from "@/components/features/lecturer/GroupProgess/SemesterFilter";
+import MilestoneStepFilter from "@/components/features/lecturer/GroupReview/MilestoneStepFilter";
+import { AssignmentReviewer } from "@/lib/services/reviews.service";
 
 /**
  * Check if current time (already in Vietnam timezone) is within milestone period
@@ -42,7 +42,7 @@ const isWithinMilestonePeriod = (
 		// Check if current time is within milestone period
 		return now >= startOfDay && now <= endOfDay;
 	} catch (error) {
-		console.error('Error checking milestone period:', error);
+		console.error("Error checking milestone period:", error);
 		return false; // Deny access on error
 	}
 };
@@ -52,14 +52,14 @@ const isWithinMilestonePeriod = (
  * Usage in browser console: window.testMilestonePeriod('2025-08-01T00:00:00Z', '2025-08-02T23:59:59Z')
  */
 const testMilestonePeriod = (startDate: string, endDate: string) => {
-	console.log('=== Manual Milestone Test ===');
-	console.log('Testing dates:', startDate, 'to', endDate);
-	console.log('Result:', isWithinMilestonePeriod(startDate, endDate));
-	console.log('=============================');
+	console.log("=== Manual Milestone Test ===");
+	console.log("Testing dates:", startDate, "to", endDate);
+	console.log("Result:", isWithinMilestonePeriod(startDate, endDate));
+	console.log("=============================");
 };
 
 // Make test function available globally for debugging
-if (typeof window !== 'undefined') {
+if (typeof window !== "undefined") {
 	(
 		window as typeof window & {
 			testMilestonePeriod: typeof testMilestonePeriod;
@@ -133,89 +133,43 @@ export default function ReviewGroupSearchTable({
 }: Readonly<Props>) {
 	const columns: ColumnsType<ReviewGroupData> = [
 		{
-			title: 'Group Name',
-			dataIndex: 'name',
-			key: 'name',
-			responsive: ['xs', 'sm', 'md', 'lg', 'xl'],
+			title: "Group Name",
+			dataIndex: "name",
+			key: "name",
+			responsive: ["xs", "sm", "md", "lg", "xl"],
 		},
 		{
-			title: 'Group Code',
-			dataIndex: 'code',
-			key: 'code',
-			responsive: ['sm', 'md', 'lg', 'xl'],
+			title: "Group Code",
+			dataIndex: "code",
+			key: "code",
+			responsive: ["sm", "md", "lg", "xl"],
 		},
 		{
-			title: 'English Name',
-			key: 'englishName',
+			title: "English Name",
+			key: "englishName",
 			width: 500,
-			responsive: ['md', 'lg', 'xl'],
-			render: (_, record) => record.englishName || '-',
+			responsive: ["md", "lg", "xl"],
+			render: (_, record) => record.englishName || "-",
 		},
 		{
-			title: 'Project Direction',
-			dataIndex: 'projectDirection',
-			key: 'projectDirection',
-			responsive: ['lg', 'xl'],
-			render: (value: string) => value || '-',
+			title: "Project Direction",
+			dataIndex: "projectDirection",
+			key: "projectDirection",
+			responsive: ["lg", "xl"],
+			render: (value: string) => value || "-",
 		},
 		{
-			title: 'Members',
-			key: 'memberCount',
-			responsive: ['sm', 'md', 'lg', 'xl'],
-			render: (_, record) => record.memberCount || '-',
-		},
-
-		{
-			title: 'Milestone Period',
-			key: 'milestonePeriod',
-			responsive: ['lg', 'xl'],
-			render: (_, record) => {
-				// Use selected milestone data if available, otherwise fallback to record milestone
-				const milestoneData =
-					selectedMilestone && selectedMilestoneData
-						? selectedMilestoneData
-						: record.milestone;
-
-				if (!milestoneData) return '-';
-
-				// Convert UTC dates to Vietnam timezone for display
-				const start = new Date(milestoneData.startDate);
-				const end = new Date(milestoneData.endDate);
-				const vietnamStart = new Date(start.getTime() + 7 * 60 * 60 * 1000);
-				const vietnamEnd = new Date(end.getTime() + 7 * 60 * 60 * 1000);
-
-				const isActive = isWithinMilestonePeriod(
-					milestoneData.startDate,
-					milestoneData.endDate,
-				);
-
-				return (
-					<div style={{ fontSize: '12px' }}>
-						<div>
-							{vietnamStart.toLocaleDateString('vi-VN')} -{' '}
-							{vietnamEnd.toLocaleDateString('vi-VN')}
-						</div>
-						<div style={{ fontSize: '10px', color: '#666' }}>
-							(Vietnam Time)
-						</div>
-						<div
-							style={{
-								color: isActive ? '#52c41a' : '#ff4d4f',
-								fontWeight: 'bold',
-							}}
-						>
-							{isActive ? 'Active' : 'Inactive'}
-						</div>
-					</div>
-				);
-			},
+			title: "Members",
+			key: "memberCount",
+			responsive: ["sm", "md", "lg", "xl"],
+			render: (_, record) => record.memberCount || "-",
 		},
 
 		{
-			title: 'Actions',
-			align: 'center',
-			key: 'actions',
-			responsive: ['xs', 'sm', 'md', 'lg', 'xl'],
+			title: "Actions",
+			align: "center",
+			key: "actions",
+			responsive: ["xs", "sm", "md", "lg", "xl"],
 			width: 80,
 			render: (_, record) => {
 				// Check if current time is within milestone period
@@ -247,12 +201,12 @@ export default function ReviewGroupSearchTable({
 						disabled={!canView}
 						title={
 							!canView
-								? 'Review is only available during the milestone period'
-								: 'View group review'
+								? "Review is only available during the milestone period"
+								: "View group review"
 						}
 						style={{
-							color: !canView ? '#d9d9d9' : undefined,
-							cursor: !canView ? 'not-allowed' : 'pointer',
+							color: !canView ? "#d9d9d9" : undefined,
+							cursor: !canView ? "not-allowed" : "pointer",
 						}}
 					/>
 				);
@@ -261,14 +215,14 @@ export default function ReviewGroupSearchTable({
 	];
 
 	return (
-		<Space direction="vertical" size="small" style={{ width: '100%' }}>
+		<Space direction="vertical" size="small" style={{ width: "100%" }}>
 			<div
 				style={{
-					display: 'flex',
+					display: "flex",
 					gap: 8,
 					marginBottom: 8,
-					flexWrap: 'wrap',
-					alignItems: 'center',
+					flexWrap: "wrap",
+					alignItems: "center",
 				}}
 			>
 				<Input
@@ -316,12 +270,12 @@ export default function ReviewGroupSearchTable({
 				rowKey="id"
 				loading={loading}
 				rowClassName={(record) =>
-					record.id === selectedGroup?.id ? 'ant-table-row-selected' : ''
+					record.id === selectedGroup?.id ? "ant-table-row-selected" : ""
 				}
 				size="middle"
 				scroll={{ x: 800 }}
 				locale={{
-					emptyText: loading ? '' : 'No data available',
+					emptyText: loading ? "" : "No data available",
 				}}
 			/>
 		</Space>
