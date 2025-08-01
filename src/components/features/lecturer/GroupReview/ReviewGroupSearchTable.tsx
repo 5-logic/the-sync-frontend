@@ -8,55 +8,10 @@ import { TablePagination } from "@/components/common/TablePagination";
 import SemesterFilter from "@/components/features/lecturer/GroupProgess/SemesterFilter";
 import MilestoneStepFilter from "@/components/features/lecturer/GroupReview/MilestoneStepFilter";
 import { AssignmentReviewer } from "@/lib/services/reviews.service";
-
-/**
- * Check if current time (already in Vietnam timezone) is within milestone period
- * @param startDate - Milestone start date string
- * @param endDate - Milestone end date string
- * @returns boolean - true if current time is within milestone period
- */
-const isWithinMilestonePeriod = (
-	startDate: string,
-	endDate: string,
-): boolean => {
-	try {
-		// Get current time (already in Vietnam timezone since user is in Vietnam)
-		const now = new Date();
-
-		// Parse milestone dates from backend (assumed to be in UTC)
-		const start = new Date(startDate);
-		const end = new Date(endDate);
-
-		// Convert milestone dates to Vietnam timezone (UTC+7)
-		const vietnamStart = new Date(start.getTime() + 7 * 60 * 60 * 1000);
-		const vietnamEnd = new Date(end.getTime() + 7 * 60 * 60 * 1000);
-
-		// Set start time to beginning of day
-		const startOfDay = new Date(vietnamStart);
-		startOfDay.setHours(0, 0, 0, 0);
-
-		// Set end time to end of day
-		const endOfDay = new Date(vietnamEnd);
-		endOfDay.setHours(23, 59, 59, 999);
-
-		// Check if current time is within milestone period
-		return now >= startOfDay && now <= endOfDay;
-	} catch (error) {
-		console.error("Error checking milestone period:", error);
-		return false; // Deny access on error
-	}
-};
-
-/**
- * Test function for debugging milestone period logic
- * Usage in browser console: window.testMilestonePeriod('2025-08-01T00:00:00Z', '2025-08-02T23:59:59Z')
- */
-const testMilestonePeriod = (startDate: string, endDate: string) => {
-	console.log("=== Manual Milestone Test ===");
-	console.log("Testing dates:", startDate, "to", endDate);
-	console.log("Result:", isWithinMilestonePeriod(startDate, endDate));
-	console.log("=============================");
-};
+import {
+	isWithinMilestonePeriod,
+	testMilestonePeriod,
+} from "@/lib/utils/milestoneUtils";
 
 // Make test function available globally for debugging
 if (typeof window !== "undefined") {

@@ -346,6 +346,7 @@ export default function ReviewChecklistTable({
 		{
 			title: "Priority",
 			key: "priority",
+			align: "center",
 			render: (_value, record) => {
 				const label = record.isRequired ? "Mandatory" : "Optional";
 				const color = priorityColorMap[label];

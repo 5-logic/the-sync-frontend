@@ -19,6 +19,7 @@ import {
 	UpdateReviewRequest,
 } from "@/lib/services/reviews.service";
 import { showNotification } from "@/lib/utils/notification";
+import { getPriorityConfig } from "@/lib/utils/uiConstants";
 import { ChecklistReviewAcceptance } from "@/schemas/_enums";
 
 const { Text } = Typography;
@@ -38,11 +39,6 @@ interface ReviewItemData {
 	acceptance: ChecklistReviewAcceptance;
 	note?: string;
 }
-
-const PRIORITY_COLOR_MAP = {
-	Mandatory: "red",
-	Optional: "blue",
-} as const;
 
 export default function EditReviewModal({
 	open,
@@ -235,9 +231,9 @@ export default function EditReviewModal({
 		{
 			title: "Priority",
 			key: "priority",
+			align: "center",
 			render: (_, record) => {
-				const label = record.isRequired ? "Mandatory" : "Optional";
-				const color = PRIORITY_COLOR_MAP[label];
+				const { label, color } = getPriorityConfig(record.isRequired);
 				return <Tag color={color}>{label}</Tag>;
 			},
 		},

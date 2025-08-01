@@ -5,47 +5,13 @@ import { useCallback, useEffect, useState } from "react";
 
 import milestoneService from "@/lib/services/milestones.service";
 import { handleApiResponse } from "@/lib/utils/handleApi";
+import {
+	convertToVietnamTime,
+	isWithinMilestonePeriod,
+} from "@/lib/utils/milestoneUtils";
 import { Milestone } from "@/schemas/milestone";
 
 const { Text } = Typography;
-
-/**
- * Check if current time (already in Vietnam timezone) is within milestone period
- * @param startDate - Milestone start date string
- * @param endDate - Milestone end date string
- * @returns boolean - true if current time is within milestone period
- */
-const isWithinMilestonePeriod = (
-	startDate: string,
-	endDate: string,
-): boolean => {
-	try {
-		// Get current time (already in Vietnam timezone since user is in Vietnam)
-		const now = new Date();
-
-		// Parse milestone dates from backend (assumed to be in UTC)
-		const start = new Date(startDate);
-		const end = new Date(endDate);
-
-		// Convert milestone dates to Vietnam timezone (UTC+7)
-		const vietnamStart = new Date(start.getTime() + 7 * 60 * 60 * 1000);
-		const vietnamEnd = new Date(end.getTime() + 7 * 60 * 60 * 1000);
-
-		// Set start time to beginning of day
-		const startOfDay = new Date(vietnamStart);
-		startOfDay.setHours(0, 0, 0, 0);
-
-		// Set end time to end of day
-		const endOfDay = new Date(vietnamEnd);
-		endOfDay.setHours(23, 59, 59, 999);
-
-		// Check if current time is within milestone period
-		return now >= startOfDay && now <= endOfDay;
-	} catch (error) {
-		console.error("Error checking milestone period:", error);
-		return false; // Deny access on error
-	}
-};
 
 interface Props {
 	selectedMilestone: string | null;
@@ -166,14 +132,12 @@ export default function MilestoneStepFilter({
 					>
 						<Text strong>Milestone Period: </Text>
 						<Text>
-							{new Date(
-								new Date(currentMilestone.startDate).getTime() +
-									7 * 60 * 60 * 1000,
+							{convertToVietnamTime(
+								currentMilestone.startDate,
 							).toLocaleDateString("vi-VN")}{" "}
 							-{" "}
-							{new Date(
-								new Date(currentMilestone.endDate).getTime() +
-									7 * 60 * 60 * 1000,
+							{convertToVietnamTime(
+								currentMilestone.endDate,
 							).toLocaleDateString("vi-VN")}
 						</Text>
 						<span
