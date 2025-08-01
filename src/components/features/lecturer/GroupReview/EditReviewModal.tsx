@@ -24,25 +24,25 @@ import { ChecklistReviewAcceptance } from "@/schemas/_enums";
 const { Text } = Typography;
 
 interface Props {
-	open: boolean;
-	onClose: () => void;
-	review: SubmissionReview | null;
-	onSuccess?: () => void;
+	readonly open: boolean;
+	readonly onClose: () => void;
+	readonly review: SubmissionReview | null;
+	readonly onSuccess?: () => void;
 }
 
 interface ReviewItemData {
-	checklistItemId: string;
-	name: string;
-	description: string;
-	isRequired: boolean;
+	readonly checklistItemId: string;
+	readonly name: string;
+	readonly description: string;
+	readonly isRequired: boolean;
 	acceptance: ChecklistReviewAcceptance;
 	note?: string;
 }
 
-const priorityColorMap = {
+const PRIORITY_COLOR_MAP = {
 	Mandatory: "red",
 	Optional: "blue",
-};
+} as const;
 
 export default function EditReviewModal({
 	open,
@@ -63,10 +63,6 @@ export default function EditReviewModal({
 	useEffect(() => {
 		if (review) {
 			const initialFeedback = review.feedback || "";
-			setFeedback(initialFeedback);
-			setOriginalFeedback(initialFeedback);
-
-			// Convert review items to editable format
 			const items: ReviewItemData[] = review.reviewItems.map((item) => ({
 				checklistItemId: item.checklistItemId,
 				name: item.checklistItem.name,
@@ -76,24 +72,29 @@ export default function EditReviewModal({
 				note: item.note,
 			}));
 
+			setFeedback(initialFeedback);
+			setOriginalFeedback(initialFeedback);
 			setReviewItems(items);
-			setOriginalReviewItems(items);
+			setOriginalReviewItems([...items]);
 		}
 	}, [review]);
 
+	// Reset state when modal closes
+	useEffect(() => {
+		if (!open && review) {
+			setFeedback(originalFeedback);
+			setReviewItems([...originalReviewItems]);
+		}
+	}, [open, originalFeedback, originalReviewItems, review]);
+
 	const handleAcceptanceChange = useCallback(
 		(checklistItemId: string, value: ChecklistReviewAcceptance) => {
-			setReviewItems((prev) =>
-				prev.map((item) => {
-					// Only update if the value has actually changed
-					if (
-						item.checklistItemId === checklistItemId &&
-						item.acceptance !== value
-					) {
-						return { ...item, acceptance: value };
-					}
-					return item;
-				}),
+			setReviewItems((prevItems) =>
+				prevItems.map((item) =>
+					item.checklistItemId === checklistItemId
+						? { ...item, acceptance: value }
+						: item,
+				),
 			);
 		},
 		[],
@@ -101,36 +102,22 @@ export default function EditReviewModal({
 
 	const handleNoteChange = useCallback(
 		(checklistItemId: string, value: string) => {
-			setReviewItems((prev) =>
-				prev.map((item) => {
-					// Only update if the value has actually changed
-					if (item.checklistItemId === checklistItemId && item.note !== value) {
-						return { ...item, note: value };
-					}
-					return item;
-				}),
+			setReviewItems((prevItems) =>
+				prevItems.map((item) =>
+					item.checklistItemId === checklistItemId
+						? { ...item, note: value }
+						: item,
+				),
 			);
 		},
 		[],
 	);
 
 	const handleFeedbackChange = useCallback((value: string) => {
-		setFeedback((prev) => {
-			// Only update if the value has actually changed
-			if (prev !== value) {
-				return value;
-			}
-			return prev;
-		});
+		setFeedback(value);
 	}, []);
 
-	// Clear any potential memory leaks on unmount
-	useEffect(() => {
-		return () => {
-			// Cleanup function - no timers to clear in this simplified version
-		};
-	}, []);
-
+	// Remove unnecessary cleanup effect
 	// Check if there are any changes made to the review
 	const hasChanges = useCallback(() => {
 		// Check feedback changes
@@ -144,19 +131,15 @@ export default function EditReviewModal({
 		}
 
 		// Check each review item for changes
-		for (let i = 0; i < reviewItems.length; i++) {
-			const current = reviewItems[i];
-			const original = originalReviewItems[i];
+		return reviewItems.some((current, index) => {
+			const original = originalReviewItems[index];
+			if (!original) return true;
 
-			if (
+			return (
 				current.acceptance !== original.acceptance ||
 				(current.note || "").trim() !== (original.note || "").trim()
-			) {
-				return true;
-			}
-		}
-
-		return false;
+			);
+		});
 	}, [feedback, originalFeedback, reviewItems, originalReviewItems]);
 
 	const handleSave = async () => {
@@ -174,7 +157,7 @@ export default function EditReviewModal({
 				reviewItems: reviewItems.map((item) => ({
 					checklistItemId: item.checklistItemId,
 					acceptance: item.acceptance,
-					note: item.note || undefined,
+					note: item.note?.trim() || undefined,
 				})),
 			};
 
@@ -196,27 +179,17 @@ export default function EditReviewModal({
 		} catch (error) {
 			console.error("Error updating review:", error);
 
-			// Extract error message from backend response if available
-			let errorMessage =
-				"An unexpected error occurred while updating the review";
-			let errorDescription =
-				"Please try again or contact support if the problem persists";
+			const errorMessage =
+				error instanceof Error
+					? error.message
+					: "An unexpected error occurred while updating the review";
 
-			if (error instanceof Error) {
-				errorMessage = error.message || errorMessage;
-				// If the error message contains detailed information, use it as description
-				if (error.message && error.message.length > 50) {
-					errorDescription = error.message;
-					errorMessage = "Update Failed";
-				}
-			}
-
-			showNotification.error(errorMessage, errorDescription);
+			showNotification.error("Update Failed", errorMessage);
 		}
 	};
 
 	const handleCancel = () => {
-		// Reset form data to original values
+		// Reset form data to original values when canceling
 		if (review) {
 			setFeedback(originalFeedback);
 			setReviewItems([...originalReviewItems]);
@@ -233,7 +206,7 @@ export default function EditReviewModal({
 		{
 			title: "Response",
 			key: "response",
-			render: (_value, record) => (
+			render: (_, record) => (
 				<Radio.Group
 					value={record.acceptance}
 					onChange={(e) =>
@@ -249,7 +222,7 @@ export default function EditReviewModal({
 		{
 			title: "Notes",
 			key: "notes",
-			render: (_value, record) => (
+			render: (_, record) => (
 				<Input
 					placeholder="Add notes..."
 					value={record.note}
@@ -262,13 +235,32 @@ export default function EditReviewModal({
 		{
 			title: "Priority",
 			key: "priority",
-			render: (_value, record) => {
+			render: (_, record) => {
 				const label = record.isRequired ? "Mandatory" : "Optional";
-				const color = priorityColorMap[label];
+				const color = PRIORITY_COLOR_MAP[label];
 				return <Tag color={color}>{label}</Tag>;
 			},
 		},
 	];
+
+	const modalFooter = [
+		<Button key="cancel" onClick={handleCancel} disabled={submitting}>
+			Cancel
+		</Button>,
+		<Button
+			key="save"
+			type="primary"
+			onClick={handleSave}
+			loading={submitting}
+			disabled={!hasChanges() || submitting}
+		>
+			Save Changes
+		</Button>,
+	];
+
+	if (!review) {
+		return null;
+	}
 
 	return (
 		<Modal
@@ -278,83 +270,68 @@ export default function EditReviewModal({
 			width={1000}
 			closable={!submitting}
 			maskClosable={!submitting}
-			footer={[
-				<Button key="cancel" onClick={handleCancel} disabled={submitting}>
-					Cancel
-				</Button>,
-				<Button
-					key="save"
-					type="primary"
-					onClick={handleSave}
-					loading={submitting}
-					disabled={!hasChanges() || submitting}
-				>
-					Save Changes
-				</Button>,
-			]}
+			footer={modalFooter}
 		>
-			{review && (
-				<div>
-					<Divider style={{ margin: "16px 0" }} />
-					{/* Review Info */}
-					<div style={{ marginBottom: 16 }}>
-						<div style={{ marginBottom: 8 }}>
-							<div
-								style={{
-									display: "flex",
-									alignItems: "center",
-									gap: 8,
-									marginTop: 4,
-								}}
-							>
-								<strong>Created by:</strong>
-								<Text strong>{review.lecturer.user.fullName}</Text>
-								{/* Ensure boolean type check for isMainReviewer */}
-								{review.isMainReviewer === true ? (
-									<Tag color="yellow">Main Reviewer</Tag>
-								) : (
-									<Tag color="blue">Secondary Reviewer</Tag>
-								)}
-							</div>
-							<div>
-								<Text type="secondary">
-									Created: {new Date(review.createdAt).toLocaleString()}
-								</Text>
-								{review.updatedAt !== review.createdAt && (
-									<>
-										<br />
-										<Text type="secondary">
-											Updated: {new Date(review.updatedAt).toLocaleString()}
-										</Text>
-									</>
-								)}
-							</div>
+			<div>
+				<Divider style={{ margin: "16px 0" }} />
+
+				{/* Review Info */}
+				<div style={{ marginBottom: 16 }}>
+					<div style={{ marginBottom: 8 }}>
+						<div
+							style={{
+								display: "flex",
+								alignItems: "center",
+								gap: 8,
+								marginTop: 4,
+							}}
+						>
+							<strong>Created by:</strong>
+							<Text strong>{review.lecturer.user.fullName}</Text>
+							{review.isMainReviewer === true ? (
+								<Tag color="yellow">Main Reviewer</Tag>
+							) : (
+								<Tag color="blue">Secondary Reviewer</Tag>
+							)}
+						</div>
+						<div>
+							<Text type="secondary">
+								Created: {new Date(review.createdAt).toLocaleString()}
+							</Text>
+							{review.updatedAt !== review.createdAt && (
+								<>
+									<br />
+									<Text type="secondary">
+										Updated: {new Date(review.updatedAt).toLocaleString()}
+									</Text>
+								</>
+							)}
 						</div>
 					</div>
-
-					{/* Feedback section */}
-					<div style={{ marginBottom: 24 }}>
-						<h4>General Feedback</h4>
-						<Input.TextArea
-							placeholder="Enter your general feedback for this submission..."
-							value={feedback}
-							onChange={(e) => handleFeedbackChange(e.target.value)}
-							rows={4}
-						/>
-					</div>
-
-					{/* Review Items Table */}
-					<div>
-						<Table
-							rowKey="checklistItemId"
-							dataSource={reviewItems}
-							columns={columns}
-							pagination={false}
-							size="small"
-						/>
-					</div>
 				</div>
-			)}
+
+				{/* Feedback section */}
+				<div style={{ marginBottom: 24 }}>
+					<h4>General Feedback</h4>
+					<Input.TextArea
+						placeholder="Enter your general feedback for this submission..."
+						value={feedback}
+						onChange={(e) => handleFeedbackChange(e.target.value)}
+						rows={4}
+					/>
+				</div>
+
+				{/* Review Items Table */}
+				<div>
+					<Table
+						rowKey="checklistItemId"
+						dataSource={reviewItems}
+						columns={columns}
+						pagination={false}
+						size="small"
+					/>
+				</div>
+			</div>
 		</Modal>
 	);
 }
