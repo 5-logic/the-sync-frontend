@@ -150,7 +150,7 @@ export default function ChecklistItemsTable({
 
 	return (
 		<Table
-			rowKey={(record) => record.id || `temp-${Date.now()}-${Math.random()}`}
+			rowKey={(record, index) => record.id || `temp-${index}`}
 			dataSource={items}
 			columns={columns}
 			pagination={false}
