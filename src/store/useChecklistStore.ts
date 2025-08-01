@@ -205,36 +205,10 @@ const addItemsToChecklist = (
 ) => {
 	const { currentChecklist, checklists } = get();
 
-	// Helper function to normalize items to ensure consistent typing
-	const normalizeItem = (
-		item: Partial<ChecklistItem> & { id: string },
-	): ChecklistItem => ({
-		id: item.id,
-		name: item.name || "",
-		description: item.description || null,
-		isRequired: item.isRequired || false,
-		acceptance: item.acceptance || ("NotAvailable" as const),
-		checklistId: item.checklistId || "",
-		createdAt: item.createdAt || new Date(),
-		updatedAt: item.updatedAt || new Date(),
-	});
-
-	// Helper function to merge items without duplicates and ensure consistent typing
-	const mergeItems = (
-		existingItems: (Partial<ChecklistItem> & { id: string })[],
-		newItems: ChecklistItem[],
-	): ChecklistItem[] => {
-		const normalizedExisting = existingItems.map(normalizeItem);
-		const existingIds = new Set(normalizedExisting.map((item) => item.id));
-		const uniqueNewItems = newItems.filter((item) => !existingIds.has(item.id));
-		const normalizedNewItems = uniqueNewItems.map(normalizeItem);
-		return [...normalizedExisting, ...normalizedNewItems];
-	};
-
 	// Update currentChecklist if it matches
 	if (currentChecklist && currentChecklist.id === checklistId) {
 		const existingItems = currentChecklist.checklistItems || [];
-		const updatedItems = mergeItems(existingItems, newItems);
+		const updatedItems = mergeChecklistItems(existingItems, newItems);
 
 		const updatedChecklist = {
 			...currentChecklist,
@@ -256,7 +230,7 @@ const addItemsToChecklist = (
 		checklistId,
 		(existingChecklist) => {
 			const existingItems = existingChecklist.checklistItems || [];
-			const updatedItems = mergeItems(existingItems, newItems);
+			const updatedItems = mergeChecklistItems(existingItems, newItems);
 			return {
 				...existingChecklist,
 				checklistItems: updatedItems,
@@ -357,6 +331,71 @@ const checklistSearchFilter = createSearchFilter<Checklist>((checklist) => [
 	checklist.description || "",
 	checklist.milestone?.name || "",
 ]);
+
+// Helper function to extract created items from API response - extracted to reduce nesting
+const extractCreatedItemsFromResponse = (data: unknown): ChecklistItem[] => {
+	let createdItems: ChecklistItem[] = [];
+
+	if (Array.isArray(data)) {
+		createdItems = data;
+	} else if (data && typeof data === "object") {
+		// Check if it has an items property
+		const dataObj = data as { items?: ChecklistItem[] };
+		if (dataObj.items && Array.isArray(dataObj.items)) {
+			createdItems = dataObj.items;
+		} else {
+			// Single item response
+			createdItems = [data as ChecklistItem];
+		}
+	}
+
+	return createdItems;
+};
+
+// Helper function to normalize items to ensure consistent typing - extracted to reduce nesting
+const normalizeChecklistItem = (
+	item: Partial<ChecklistItem> & { id: string },
+): ChecklistItem => ({
+	id: item.id,
+	name: item.name || "",
+	description: item.description || null,
+	isRequired: item.isRequired || false,
+	acceptance: item.acceptance || ("NotAvailable" as const),
+	checklistId: item.checklistId || "",
+	createdAt: item.createdAt || new Date(),
+	updatedAt: item.updatedAt || new Date(),
+});
+
+// Helper function to merge items without duplicates - extracted to reduce nesting
+const mergeChecklistItems = (
+	existingItems: (Partial<ChecklistItem> & { id: string })[],
+	newItems: ChecklistItem[],
+): ChecklistItem[] => {
+	const normalizedExisting = existingItems.map(normalizeChecklistItem);
+	const existingIds = new Set(normalizedExisting.map((item) => item.id));
+	const uniqueNewItems = newItems.filter((item) => !existingIds.has(item.id));
+	const normalizedNewItems = uniqueNewItems.map(normalizeChecklistItem);
+	return [...normalizedExisting, ...normalizedNewItems];
+};
+
+// Helper function to find target checklist ID - extracted to reduce nesting
+const findTargetChecklistId = (
+	currentChecklist: Checklist | null,
+	checklists: Checklist[],
+	itemId: string,
+): string => {
+	// Check current checklist first
+	if (currentChecklist?.checklistItems?.some((item) => item.id === itemId)) {
+		return currentChecklist.id;
+	}
+
+	// Search in main checklists array
+	const parentChecklist = checklists.find((checklist) =>
+		checklist.checklistItems?.some((item) => item.id === itemId),
+	);
+
+	return parentChecklist?.id || "";
+};
 
 // Initialize cache for checklist
 cacheUtils.initCache<Checklist[]>("checklist", {
@@ -673,21 +712,7 @@ export const useChecklistStore = create<ChecklistState>()(
 					const result = handleApiResponse(response);
 
 					if (result.success && result.data) {
-						// Handle different response formats
-						let createdItems: ChecklistItem[] = [];
-
-						if (Array.isArray(result.data)) {
-							createdItems = result.data;
-						} else if (result.data && typeof result.data === "object") {
-							// Check if it has an items property
-							const dataObj = result.data as { items?: ChecklistItem[] };
-							if (dataObj.items && Array.isArray(dataObj.items)) {
-								createdItems = dataObj.items;
-							} else {
-								// Single item response
-								createdItems = [result.data as ChecklistItem];
-							}
-						}
+						const createdItems = extractCreatedItemsFromResponse(result.data);
 
 						// Use helper function to add items
 						addItemsToChecklist(set, get, checklistId, createdItems);
@@ -732,27 +757,6 @@ export const useChecklistStore = create<ChecklistState>()(
 
 			// Delete checklist item
 			deleteChecklistItem: async (id: string) => {
-				// Helper function to find target checklist ID
-				const findTargetChecklistId = (
-					currentChecklist: Checklist | null,
-					checklists: Checklist[],
-					itemId: string,
-				): string => {
-					// Check current checklist first
-					if (
-						currentChecklist?.checklistItems?.some((item) => item.id === itemId)
-					) {
-						return currentChecklist.id;
-					}
-
-					// Search in main checklists array
-					const parentChecklist = checklists.find((checklist) =>
-						checklist.checklistItems?.some((item) => item.id === itemId),
-					);
-
-					return parentChecklist?.id || "";
-				};
-
 				return await withLoadingState(set, "deleting", async () => {
 					const response = await checklistItemService.delete(id);
 					const result = handleApiResponse(response);
