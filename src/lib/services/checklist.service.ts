@@ -1,14 +1,14 @@
-import httpClient from '@/lib/services/_httpClient';
-import { ApiResponse } from '@/schemas/_common';
+import httpClient from "@/lib/services/_httpClient";
+import { ApiResponse } from "@/schemas/_common";
 import {
 	Checklist,
 	ChecklistCreate,
 	ChecklistItem,
 	ChecklistUpdate,
-} from '@/schemas/checklist';
+} from "@/schemas/checklist";
 
 class ChecklistService {
-	private readonly baseUrl = '/checklists';
+	private readonly baseUrl = "/checklists";
 
 	async findAll(): Promise<ApiResponse<Checklist[]>> {
 		const response = await httpClient.get<ApiResponse<Checklist[]>>(
@@ -62,7 +62,7 @@ class ChecklistService {
 		}[],
 	): Promise<ApiResponse<ChecklistItem[]>> {
 		const response = await httpClient.put<ApiResponse<ChecklistItem[]>>(
-			`/checklist-items/checklist/${checklistId}/update-list`,
+			`/ChecklistItems/checklist/${checklistId}/update-list`,
 			{ items },
 		);
 		return response.data;
