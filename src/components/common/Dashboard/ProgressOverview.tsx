@@ -19,7 +19,7 @@ export function ProgressOverview() {
 					<div style={{ borderTop: '1px solid #e8e8e8', paddingTop: '16px' }}>
 						{Array.from({ length: 4 }).map((_, index) => (
 							<Space
-								key={index}
+								key={`progress-skeleton-${index}`}
 								direction="vertical"
 								size="small"
 								style={{ width: '100%', marginBottom: 16 }}
