@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { DownloadOutlined } from '@ant-design/icons';
+import { DownloadOutlined } from "@ant-design/icons";
 import {
 	Button,
 	Input,
@@ -11,15 +11,15 @@ import {
 	Table,
 	Tag,
 	Typography,
-} from 'antd';
-import type { ColumnsType } from 'antd/es/table';
-import { useEffect, useMemo, useState } from 'react';
+} from "antd";
+import type { ColumnsType } from "antd/es/table";
+import { useEffect, useMemo, useState } from "react";
 
-import { useReviews } from '@/hooks/lecturer/useReviews';
-import { showNotification } from '@/lib/utils/notification';
-import { ChecklistReviewAcceptance } from '@/schemas/_enums';
+import { useReviews } from "@/hooks/lecturer/useReviews";
+import { showNotification } from "@/lib/utils/notification";
+import { ChecklistReviewAcceptance } from "@/schemas/_enums";
 
-import ExistingReviewsList from './ExistingReviewsList';
+import ExistingReviewsList from "./ExistingReviewsList";
 
 const { Text } = Typography;
 
@@ -52,8 +52,8 @@ interface ChecklistResponse {
 }
 
 const priorityColorMap = {
-	Mandatory: 'red',
-	Optional: 'blue',
+	Mandatory: "red",
+	Optional: "blue",
 };
 
 /**
@@ -63,12 +63,12 @@ const priorityColorMap = {
  */
 const getFileNameFromUrl = (url: string): string => {
 	try {
-		const urlParts = url.split('/');
+		const urlParts = url.split("/");
 		const fileName = urlParts[urlParts.length - 1];
 		// Decode URI component to handle encoded characters
-		return decodeURIComponent(fileName) || 'Document';
+		return decodeURIComponent(fileName) || "Document";
 	} catch {
-		return 'Document';
+		return "Document";
 	}
 };
 
@@ -90,7 +90,7 @@ export default function ReviewChecklistTable({
 	} = useReviews();
 
 	const [answers, setAnswers] = useState<Record<string, ChecklistResponse>>({});
-	const [feedback, setFeedback] = useState<string>('');
+	const [feedback, setFeedback] = useState<string>("");
 	const [showValidationErrors, setShowValidationErrors] = useState(false);
 
 	// Fetch review form data when component mounts or submissionId changes
@@ -105,7 +105,7 @@ export default function ReviewChecklistTable({
 	useEffect(() => {
 		if (submissionReviews.length > 0) {
 			setAnswers({});
-			setFeedback('');
+			setFeedback("");
 		}
 	}, [submissionReviews]);
 
@@ -166,8 +166,8 @@ export default function ReviewChecklistTable({
 	const handleSaveChecklist = async () => {
 		if (!reviewForm?.milestone?.checklist?.id) {
 			showNotification.error(
-				'Missing Data',
-				'Checklist data is not available for review submission',
+				"Missing Data",
+				"Checklist data is not available for review submission",
 			);
 			return;
 		}
@@ -175,8 +175,8 @@ export default function ReviewChecklistTable({
 		// Check if there are already existing reviews
 		if (submissionReviews.length > 0) {
 			showNotification.error(
-				'Review Already Exists',
-				'A review already exists for this submission. Please edit the existing review instead.',
+				"Review Already Exists",
+				"A review already exists for this submission. Please edit the existing review instead.",
 			);
 			return;
 		}
@@ -188,8 +188,8 @@ export default function ReviewChecklistTable({
 		if (!feedback.trim()) {
 			setShowValidationErrors(true);
 			showNotification.error(
-				'Missing Feedback',
-				'Please provide general feedback before submitting your review',
+				"Missing Feedback",
+				"Please provide general feedback before submitting your review",
 			);
 			return;
 		}
@@ -203,7 +203,7 @@ export default function ReviewChecklistTable({
 		if (unansweredMandatory.length > 0) {
 			setShowValidationErrors(true);
 			showNotification.error(
-				'Incomplete Required Questions',
+				"Incomplete Required Questions",
 				`Please answer all mandatory questions. ${unansweredMandatory.length} mandatory question(s) remaining.`,
 			);
 			return;
@@ -216,8 +216,8 @@ export default function ReviewChecklistTable({
 		if (answeredItems.length === 0) {
 			setShowValidationErrors(true);
 			showNotification.error(
-				'No Responses Provided',
-				'Please answer at least one checklist question before submitting',
+				"No Responses Provided",
+				"Please answer at least one checklist question before submitting",
 			);
 			return;
 		}
@@ -229,7 +229,7 @@ export default function ReviewChecklistTable({
 				.map(([checklistItemId, response]) => ({
 					checklistItemId,
 					acceptance: response.response!,
-					note: response.notes || '',
+					note: response.notes || "",
 				}));
 
 			const reviewData = {
@@ -242,8 +242,8 @@ export default function ReviewChecklistTable({
 
 			if (result) {
 				showNotification.success(
-					'Review Submitted',
-					'Your review has been submitted successfully!',
+					"Review Submitted",
+					"Your review has been submitted successfully!",
 				);
 				// Clear validation errors on success
 				setShowValidationErrors(false);
@@ -252,24 +252,24 @@ export default function ReviewChecklistTable({
 				onSubmitSuccess?.();
 			} else {
 				showNotification.error(
-					'Submission Failed',
-					'Failed to submit review. Please try again.',
+					"Submission Failed",
+					"Failed to submit review. Please try again.",
 				);
 			}
 		} catch (error) {
-			console.error('Error submitting review:', error);
+			console.error("Error submitting review:", error);
 
 			// Extract error message from backend response if available
-			let errorMessage = 'Submission Failed';
+			let errorMessage = "Submission Failed";
 			let errorDescription =
-				'An unexpected error occurred while submitting the review';
+				"An unexpected error occurred while submitting the review";
 
 			if (error instanceof Error) {
 				errorMessage = error.message || errorMessage;
 				// If the error message contains detailed information, use it as description
 				if (error.message && error.message.length > 50) {
 					errorDescription = error.message;
-					errorMessage = 'Submission Failed';
+					errorMessage = "Submission Failed";
 				}
 			}
 
@@ -287,15 +287,15 @@ export default function ReviewChecklistTable({
 
 	const columns: ColumnsType<ChecklistItemWithResponse> = [
 		{
-			title: 'Question',
-			dataIndex: 'name',
-			key: 'name',
+			title: "Question",
+			dataIndex: "name",
+			key: "name",
 			render: (value, record) => (
 				<div>
 					<Text strong={record.isRequired}>
 						{value}
 						{record.isRequired && (
-							<Text type="danger" style={{ marginLeft: '4px' }}>
+							<Text type="danger" style={{ marginLeft: "4px" }}>
 								*
 							</Text>
 						)}
@@ -304,7 +304,7 @@ export default function ReviewChecklistTable({
 						!answers[record.id]?.response &&
 						showValidationErrors && (
 							<div>
-								<Text type="danger" style={{ fontSize: '11px' }}>
+								<Text type="danger" style={{ fontSize: "11px" }}>
 									Required question - please answer
 								</Text>
 							</div>
@@ -313,8 +313,8 @@ export default function ReviewChecklistTable({
 			),
 		},
 		{
-			title: 'Response',
-			key: 'response',
+			title: "Response",
+			key: "response",
 			render: (_value, record) => (
 				<Radio.Group
 					value={answers[record.id]?.response}
@@ -328,14 +328,14 @@ export default function ReviewChecklistTable({
 			),
 		},
 		{
-			title: 'Notes',
-			key: 'notes',
+			title: "Notes",
+			key: "notes",
 			render: (_value, record) => (
 				<Input
 					placeholder={
 						isMainReviewer
-							? 'Notes field (read-only for main reviewers)'
-							: 'Add notes...'
+							? "Notes field (read-only for main reviewers)"
+							: "Add notes..."
 					}
 					value={answers[record.id]?.notes}
 					onChange={(e) => handleNotesChange(record.id, e.target.value)}
@@ -344,10 +344,10 @@ export default function ReviewChecklistTable({
 			),
 		},
 		{
-			title: 'Priority',
-			key: 'priority',
+			title: "Priority",
+			key: "priority",
 			render: (_value, record) => {
-				const label = record.isRequired ? 'Mandatory' : 'Optional';
+				const label = record.isRequired ? "Mandatory" : "Optional";
 				const color = priorityColorMap[label];
 				return <Tag color={color}>{label}</Tag>;
 			},
@@ -355,35 +355,17 @@ export default function ReviewChecklistTable({
 	];
 
 	return (
-		<Space direction="vertical" size="large" style={{ width: '100%' }}>
-			{/* Milestone Information */}
-			{reviewForm?.milestone?.startDate && reviewForm?.milestone?.endDate && (
-				<div
-					style={{
-						marginBottom: 16,
-						padding: '12px',
-						background: '#f5f5f5',
-						borderRadius: '6px',
-					}}
-				>
-					<Text strong>Milestone Period: </Text>
-					<Text>
-						{new Date(reviewForm.milestone.startDate).toLocaleDateString()} -{' '}
-						{new Date(reviewForm.milestone.endDate).toLocaleDateString()}
-					</Text>
-				</div>
-			)}
-
+		<Space direction="vertical" size="large" style={{ width: "100%" }}>
 			{/* Submission Files Section with loading state */}
 			{reviewFormLoading ? (
 				<div>
 					<Text strong>Submission Files:</Text>
 					<div
 						style={{
-							background: '#fafafa',
-							border: '1px solid #f0f0f0',
-							borderRadius: '6px',
-							padding: '12px',
+							background: "#fafafa",
+							border: "1px solid #f0f0f0",
+							borderRadius: "6px",
+							padding: "12px",
 							marginTop: 8,
 						}}
 					>
@@ -400,10 +382,10 @@ export default function ReviewChecklistTable({
 							</Text>
 							<div
 								style={{
-									background: '#fafafa',
-									border: '1px solid #f0f0f0',
-									borderRadius: '6px',
-									padding: '12px',
+									background: "#fafafa",
+									border: "1px solid #f0f0f0",
+									borderRadius: "6px",
+									padding: "12px",
 									marginTop: 8,
 								}}
 							>
@@ -411,20 +393,20 @@ export default function ReviewChecklistTable({
 									<div
 										key={docUrl}
 										style={{
-											display: 'flex',
-											alignItems: 'center',
-											padding: '8px 0',
+											display: "flex",
+											alignItems: "center",
+											padding: "8px 0",
 											borderBottom:
 												index < reviewForm.documents.length - 1
-													? '1px solid #f0f0f0'
-													: 'none',
+													? "1px solid #f0f0f0"
+													: "none",
 										}}
 									>
 										<DownloadOutlined
 											style={{
-												color: '#1890ff',
+												color: "#1890ff",
 												marginRight: 8,
-												fontSize: '14px',
+												fontSize: "14px",
 											}}
 										/>
 										<Button
@@ -432,14 +414,14 @@ export default function ReviewChecklistTable({
 											size="small"
 											style={{
 												paddingLeft: 0,
-												color: '#1890ff',
-												fontSize: '14px',
-												textAlign: 'left',
-												height: 'auto',
-												display: 'flex',
-												alignItems: 'center',
+												color: "#1890ff",
+												fontSize: "14px",
+												textAlign: "left",
+												height: "auto",
+												display: "flex",
+												alignItems: "center",
 											}}
-											onClick={() => window.open(docUrl, '_blank')}
+											onClick={() => window.open(docUrl, "_blank")}
 										>
 											{getFileNameFromUrl(docUrl)}
 										</Button>
@@ -452,20 +434,20 @@ export default function ReviewChecklistTable({
 							<Text
 								strong
 								style={{
-									fontSize: '14px',
+									fontSize: "14px",
 									marginBottom: 8,
-									display: 'block',
+									display: "block",
 								}}
 							>
 								Submission Files:
 							</Text>
 							<div
 								style={{
-									background: '#fafafa',
-									border: '1px solid #f0f0f0',
-									borderRadius: '6px',
-									padding: '12px',
-									textAlign: 'center',
+									background: "#fafafa",
+									border: "1px solid #f0f0f0",
+									borderRadius: "6px",
+									padding: "12px",
+									textAlign: "center",
 								}}
 							>
 								<Text type="secondary">No submission files available</Text>
@@ -498,12 +480,12 @@ export default function ReviewChecklistTable({
 
 					{/* Feedback section */}
 					<div>
-						<h4 style={{ marginBottom: '8px' }}>
+						<h4 style={{ marginBottom: "8px" }}>
 							General Feedback
 							{showValidationErrors && !getValidationStatus.hasFeedback && (
 								<Text
 									type="danger"
-									style={{ fontSize: '12px', marginLeft: '8px' }}
+									style={{ fontSize: "12px", marginLeft: "8px" }}
 								>
 									*Required
 								</Text>
@@ -512,8 +494,8 @@ export default function ReviewChecklistTable({
 						<Input.TextArea
 							placeholder={
 								isMainReviewer
-									? 'You can view the feedback requirements here (read-only for main reviewers)'
-									: 'Enter your general feedback for this submission...'
+									? "You can view the feedback requirements here (read-only for main reviewers)"
+									: "Enter your general feedback for this submission..."
 							}
 							value={feedback}
 							onChange={(e) => setFeedback(e.target.value)}
@@ -523,14 +505,14 @@ export default function ReviewChecklistTable({
 								showValidationErrors &&
 								!getValidationStatus.hasFeedback &&
 								feedback.length === 0
-									? 'error'
+									? "error"
 									: undefined
 							}
 						/>
 						{showValidationErrors &&
 							!getValidationStatus.hasFeedback &&
 							feedback.length === 0 && (
-								<Text type="danger" style={{ fontSize: '12px' }}>
+								<Text type="danger" style={{ fontSize: "12px" }}>
 									Please provide general feedback
 								</Text>
 							)}
@@ -538,28 +520,28 @@ export default function ReviewChecklistTable({
 
 					{/* Error display */}
 					{error && (
-						<div style={{ color: 'red', marginTop: 8 }}>Error: {error}</div>
+						<div style={{ color: "red", marginTop: 8 }}>Error: {error}</div>
 					)}
 
 					{/* Show different content based on reviewer type */}
 					{isMainReviewer ? (
 						<div
 							style={{
-								padding: '16px',
-								textAlign: 'center',
-								background: '#fff7e6',
-								borderRadius: '8px',
-								border: '1px solid #ffd591',
-								marginTop: '16px',
+								padding: "16px",
+								textAlign: "center",
+								background: "#fff7e6",
+								borderRadius: "8px",
+								border: "1px solid #ffd591",
+								marginTop: "16px",
 							}}
 						>
-							<Text type="secondary" style={{ fontSize: '16px' }}>
+							<Text type="secondary" style={{ fontSize: "16px" }}>
 								📋 You are viewing as a <strong>Main Reviewer</strong>
 							</Text>
 							<br />
 							<Text
 								type="secondary"
-								style={{ fontSize: '14px', marginTop: '8px' }}
+								style={{ fontSize: "14px", marginTop: "8px" }}
 							>
 								You can review the checklist but cannot submit feedback. Only
 								secondary reviewers can submit reviews.
@@ -568,26 +550,26 @@ export default function ReviewChecklistTable({
 					) : (
 						<div
 							style={{
-								padding: '16px',
-								textAlign: 'center',
-								background: '#f6ffed',
-								borderRadius: '8px',
-								border: '1px solid #b7eb8f',
-								marginTop: '16px',
-								marginBottom: '16px',
+								padding: "16px",
+								textAlign: "center",
+								background: "#f6ffed",
+								borderRadius: "8px",
+								border: "1px solid #b7eb8f",
+								marginTop: "16px",
+								marginBottom: "16px",
 							}}
 						>
-							<Text type="secondary" style={{ fontSize: '16px' }}>
+							<Text type="secondary" style={{ fontSize: "16px" }}>
 								✅ You are reviewing as a <strong>Secondary Reviewer</strong>
 							</Text>
 							<br />
 							<Text
 								type="secondary"
-								style={{ fontSize: '14px', marginTop: '8px' }}
+								style={{ fontSize: "14px", marginTop: "8px" }}
 							>
 								You can submit your review and feedback for this submission.
 							</Text>
-							<Row justify="center" style={{ marginTop: '16px' }}>
+							<Row justify="center" style={{ marginTop: "16px" }}>
 								<Button
 									type="primary"
 									onClick={handleSaveChecklist}
@@ -611,19 +593,19 @@ export default function ReviewChecklistTable({
 			{submissionReviews.length > 0 && (
 				<div
 					style={{
-						padding: '16px',
-						textAlign: 'center',
-						background: '#f0f9ff',
-						borderRadius: '8px',
-						border: '1px solid #91d5ff',
-						marginTop: '16px',
+						padding: "16px",
+						textAlign: "center",
+						background: "#f0f9ff",
+						borderRadius: "8px",
+						border: "1px solid #91d5ff",
+						marginTop: "16px",
 					}}
 				>
-					<Text type="secondary" style={{ fontSize: '16px' }}>
+					<Text type="secondary" style={{ fontSize: "16px" }}>
 						📝 <strong>Reviews Completed</strong>
 					</Text>
 					<br />
-					<Text type="secondary" style={{ fontSize: '14px', marginTop: '8px' }}>
+					<Text type="secondary" style={{ fontSize: "14px", marginTop: "8px" }}>
 						Reviews have been submitted by secondary reviewers. You can view and
 						update them using the edit buttons above.
 					</Text>
