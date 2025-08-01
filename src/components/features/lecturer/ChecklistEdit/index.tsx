@@ -86,8 +86,8 @@ export default function ChecklistEditPage() {
 			}
 
 			// Preserve temporary items (user is adding new items)
-			const tempItems = prevItems.filter(
-				(item) => item.id && item.id.startsWith("temp-"),
+			const tempItems = prevItems.filter((item) =>
+				item.id?.startsWith("temp-"),
 			);
 
 			// Merge server items with preserved temp items
@@ -150,7 +150,7 @@ export default function ChecklistEditPage() {
 		const existingItems: ChecklistItem[] = [];
 
 		for (const item of checklistItems) {
-			if (item.id && item.id.startsWith("temp-")) {
+			if (item.id?.startsWith("temp-")) {
 				temporaryItems.push(item);
 			} else {
 				existingItems.push(item);
@@ -299,7 +299,7 @@ export default function ChecklistEditPage() {
 	const handleDeleteItem = useCallback(
 		async (item: ChecklistItem) => {
 			// Check if it's a temporary item (starts with 'temp-')
-			const isTemporaryItem = item.id && item.id.startsWith("temp-");
+			const isTemporaryItem = item.id?.startsWith("temp-");
 
 			if (isTemporaryItem) {
 				// For temporary items, just remove from local state

@@ -732,29 +732,38 @@ export const useChecklistStore = create<ChecklistState>()(
 
 			// Delete checklist item
 			deleteChecklistItem: async (id: string) => {
+				// Helper function to find target checklist ID
+				const findTargetChecklistId = (
+					currentChecklist: Checklist | null,
+					checklists: Checklist[],
+					itemId: string,
+				): string => {
+					// Check current checklist first
+					if (
+						currentChecklist?.checklistItems?.some((item) => item.id === itemId)
+					) {
+						return currentChecklist.id;
+					}
+
+					// Search in main checklists array
+					const parentChecklist = checklists.find((checklist) =>
+						checklist.checklistItems?.some((item) => item.id === itemId),
+					);
+
+					return parentChecklist?.id || "";
+				};
+
 				return await withLoadingState(set, "deleting", async () => {
 					const response = await checklistItemService.delete(id);
 					const result = handleApiResponse(response);
 
 					if (result.success) {
-						// Find which checklist this item belongs to
 						const { currentChecklist, checklists } = get();
-						let targetChecklistId = "";
-
-						if (
-							currentChecklist &&
-							currentChecklist.checklistItems?.some((item) => item.id === id)
-						) {
-							targetChecklistId = currentChecklist.id;
-						} else {
-							// Search in main checklists array
-							const parentChecklist = checklists.find((checklist) =>
-								checklist.checklistItems?.some((item) => item.id === id),
-							);
-							if (parentChecklist) {
-								targetChecklistId = parentChecklist.id;
-							}
-						}
+						const targetChecklistId = findTargetChecklistId(
+							currentChecklist,
+							checklists,
+							id,
+						);
 
 						if (targetChecklistId) {
 							removeItemFromChecklist(set, get, targetChecklistId, id);
