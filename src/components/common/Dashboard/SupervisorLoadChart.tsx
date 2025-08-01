@@ -64,6 +64,55 @@ const CATEGORY_STYLES: Record<string, { color: string; gradient: string }> = {
 	},
 } as const;
 
+// Search and Filter Controls Component to avoid code duplication
+const SearchFilterControls: React.FC<{
+	searchTerm: string;
+	setSearchTerm: (value: string) => void;
+	selectedCategory: string | null;
+	setSelectedCategory: (value: string | null) => void;
+	currentCount: number;
+	totalCount: number;
+}> = ({
+	searchTerm,
+	setSearchTerm,
+	selectedCategory,
+	setSelectedCategory,
+	currentCount,
+	totalCount,
+}) => (
+	<Row gutter={[16, 16]} align="middle">
+		<Col xs={24} sm={16} md={14} lg={16}>
+			<Input
+				prefix={<SearchOutlined />}
+				placeholder="Search by lecturer name or thesis count..."
+				value={searchTerm}
+				onChange={(e) => setSearchTerm(e.target.value)}
+				allowClear
+			/>
+		</Col>
+		<Col xs={24} sm={8} md={6} lg={5}>
+			<Select
+				style={{ width: '100%' }}
+				placeholder="Filter category"
+				value={selectedCategory}
+				onChange={setSelectedCategory}
+				allowClear
+				options={[
+					{ label: 'Over Load', value: 'Over Load' },
+					{ label: 'High Load', value: 'High Load' },
+					{ label: 'Moderate Load', value: 'Moderate Load' },
+					{ label: 'Low Load', value: 'Low Load' },
+				]}
+			/>
+		</Col>
+		<Col xs={24} sm={24} md={4} lg={3}>
+			<Text type="secondary" style={{ fontSize: '12px', textAlign: 'right' }}>
+				{currentCount}/{totalCount}
+			</Text>
+		</Col>
+	</Row>
+);
+
 const SupervisorLoadChart: React.FC = () => {
 	const { supervisorLoadDistribution, loading, error } = useDashboardStore();
 
@@ -161,40 +210,14 @@ const SupervisorLoadChart: React.FC = () => {
 
 					{/* Show search and filter controls even when empty */}
 					{hasData && (
-						<Row gutter={[16, 16]} align="middle">
-							<Col xs={24} sm={16} md={14} lg={16}>
-								<Input
-									prefix={<SearchOutlined />}
-									placeholder="Search by lecturer name or thesis count..."
-									value={searchTerm}
-									onChange={(e) => setSearchTerm(e.target.value)}
-									allowClear
-								/>
-							</Col>
-							<Col xs={24} sm={8} md={6} lg={5}>
-								<Select
-									style={{ width: '100%' }}
-									placeholder="Filter category"
-									value={selectedCategory}
-									onChange={setSelectedCategory}
-									allowClear
-									options={[
-										{ label: 'Over Load', value: 'Over Load' },
-										{ label: 'High Load', value: 'High Load' },
-										{ label: 'Moderate Load', value: 'Moderate Load' },
-										{ label: 'Low Load', value: 'Low Load' },
-									]}
-								/>
-							</Col>
-							<Col xs={24} sm={24} md={4} lg={3}>
-								<Text
-									type="secondary"
-									style={{ fontSize: '12px', textAlign: 'right' }}
-								>
-									0/{supervisorLoadDistribution?.length || 0}
-								</Text>
-							</Col>
-						</Row>
+						<SearchFilterControls
+							searchTerm={searchTerm}
+							setSearchTerm={setSearchTerm}
+							selectedCategory={selectedCategory}
+							setSelectedCategory={setSelectedCategory}
+							currentCount={0}
+							totalCount={supervisorLoadDistribution?.length || 0}
+						/>
 					)}
 
 					<div style={{ padding: '40px', textAlign: 'center' }}>
@@ -224,40 +247,14 @@ const SupervisorLoadChart: React.FC = () => {
 				</Space>
 
 				{/* Search and Filter Controls */}
-				<Row gutter={[16, 16]} align="middle">
-					<Col xs={24} sm={16} md={14} lg={16}>
-						<Input
-							prefix={<SearchOutlined />}
-							placeholder="Search by lecturer name or thesis count..."
-							value={searchTerm}
-							onChange={(e) => setSearchTerm(e.target.value)}
-							allowClear
-						/>
-					</Col>
-					<Col xs={24} sm={8} md={6} lg={5}>
-						<Select
-							style={{ width: '100%' }}
-							placeholder="Filter category"
-							value={selectedCategory}
-							onChange={setSelectedCategory}
-							allowClear
-							options={[
-								{ label: 'Over Load', value: 'Over Load' },
-								{ label: 'High Load', value: 'High Load' },
-								{ label: 'Moderate Load', value: 'Moderate Load' },
-								{ label: 'Low Load', value: 'Low Load' },
-							]}
-						/>
-					</Col>
-					<Col xs={24} sm={24} md={4} lg={3}>
-						<Text
-							type="secondary"
-							style={{ fontSize: '12px', textAlign: 'right' }}
-						>
-							{chartData.length}/{supervisorLoadDistribution?.length || 0}
-						</Text>
-					</Col>
-				</Row>
+				<SearchFilterControls
+					searchTerm={searchTerm}
+					setSearchTerm={setSearchTerm}
+					selectedCategory={selectedCategory}
+					setSelectedCategory={setSelectedCategory}
+					currentCount={chartData.length}
+					totalCount={supervisorLoadDistribution?.length || 0}
+				/>
 
 				<div style={{ padding: '5px' }}>
 					{/* Chart container with grid */}
