@@ -4,16 +4,10 @@ import React, { useMemo, useState } from 'react';
 import { TablePagination } from '@/components/common/TablePagination';
 import { getColumns } from '@/components/features/admin/CapstoneProjectManagement/Columns';
 import { FilterBar } from '@/components/features/admin/CapstoneProjectManagement/FilterBar';
-import { calculateRowSpansForExport } from '@/components/features/admin/CapstoneProjectManagement/calculateRowSpan';
 import { useCapstoneManagement } from '@/hooks/admin/useCapstoneManagement';
+import { useExportGroups } from '@/hooks/admin/useExportGroups';
 import { useSessionData } from '@/hooks/auth/useAuth';
 import { useDebouncedSearch } from '@/hooks/ui/useDebounce';
-import {
-	GroupTableDataForExport,
-	exportToExcel,
-} from '@/lib/utils/excelExporter';
-import { showNotification } from '@/lib/utils/notification';
-import { getCleanThesisNameForExport } from '@/lib/utils/thesisUtils';
 import { type GroupTableData } from '@/store/useCapstoneManagementStore';
 
 const { Title, Text } = Typography;
@@ -26,6 +20,9 @@ export function GroupInfo() {
 	// Get user session to check role
 	const { session } = useSessionData();
 	const isAdmin = session?.user?.role === 'admin';
+
+	// Use export hook
+	const { handleExportExcel } = useExportGroups();
 
 	// Use the same hook as CapstoneProjectManagement
 	const {
@@ -48,52 +45,9 @@ export function GroupInfo() {
 		await refresh();
 	};
 
-	const handleExportExcel = () => {
-		// Check if semester is selected
-		if (!selectedSemesterId) {
-			showNotification.error(
-				'Export Not Allowed',
-				'Please select a semester first',
-			);
-			return;
-		}
-
-		// Check if there's data to export
-		if (filteredData.length === 0) {
-			showNotification.error(
-				'Export Not Allowed',
-				'No data available to export',
-			);
-			return;
-		}
-
-		// Prepare export data without semester column and with proper rowSpans
-		const exportData = calculateRowSpansForExport(
-			filteredData.map((item: GroupTableData) => ({
-				groupId: item.groupId,
-				studentId: item.studentId,
-				name: item.name,
-				major: item.major,
-				thesisName: getCleanThesisNameForExport(item.thesisName),
-				abbreviation: item.abbreviation,
-				supervisor: item.supervisor,
-			})),
-		) as GroupTableDataForExport[];
-
-		// Get semester display name
-		const semesterDisplayName = selectedSemesterName || selectedSemesterId;
-
-		exportToExcel({
-			data: exportData,
-			selectedSemester: selectedSemesterId,
-			semesterDisplayName: semesterDisplayName,
-			filename: `Groups_${semesterDisplayName}_${new Date().toISOString().split('T')[0]}`,
-		});
-
-		showNotification.success(
-			'Export Successful',
-			'Data has been exported to Excel successfully',
-		);
+	// Wrapper function to match FilterBar expected signature
+	const handleExportClick = () => {
+		handleExportExcel(selectedSemesterId, filteredData, selectedSemesterName);
 	};
 
 	// Use the same column configuration but simplified for dashboard
@@ -127,7 +81,7 @@ export function GroupInfo() {
 						selectedSemester={selectedSemesterId}
 						onSemesterChange={setSelectedSemesterId}
 						availableSemesters={availableSemesters}
-						onExportExcel={isAdmin ? handleExportExcel : undefined}
+						onExportExcel={isAdmin ? handleExportClick : undefined}
 						onRefresh={handleRefresh}
 						showExportExcel={isAdmin} // Only show export button for admin
 						loading={loading || loadingGroups}
