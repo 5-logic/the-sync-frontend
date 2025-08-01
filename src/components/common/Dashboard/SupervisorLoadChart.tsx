@@ -176,7 +176,7 @@ const SupervisorLoadChart: React.FC = () => {
 					<Skeleton.Input active size="small" style={{ width: 400 }} />
 					<div style={{ padding: '20px 0' }}>
 						{Array.from({ length: 5 }).map((_, index) => (
-							<div key={index} style={{ marginBottom: 16 }}>
+							<div key={`skeleton-bar-${index}`} style={{ marginBottom: 16 }}>
 								<Skeleton.Button
 									active
 									size="large"
