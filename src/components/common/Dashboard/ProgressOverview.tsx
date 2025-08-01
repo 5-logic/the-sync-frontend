@@ -1,12 +1,138 @@
 'use client';
 
-import { Card, Progress, Space, Typography } from 'antd';
+import { Card, Progress, Skeleton, Space, Tooltip, Typography } from 'antd';
 
-import { progressOverview } from '@/data/moderatorStats';
+import { useDashboardStore } from '@/store';
 
 const { Title, Text } = Typography;
 
 export function ProgressOverview() {
+	const { progressOverview, summaryCard, loading, error } = useDashboardStore();
+
+	// Show loading state
+	if (loading) {
+		return (
+			<Card>
+				<Space direction="vertical" size="middle" style={{ width: '100%' }}>
+					<Skeleton.Input active size="large" style={{ width: 200 }} />
+					<Skeleton.Input active size="small" style={{ width: 400 }} />
+					<div style={{ borderTop: '1px solid #e8e8e8', paddingTop: '16px' }}>
+						{Array.from({ length: 4 }).map((_, index) => (
+							<Space
+								key={index}
+								direction="vertical"
+								size="small"
+								style={{ width: '100%', marginBottom: 16 }}
+							>
+								<Skeleton.Input active size="small" style={{ width: 150 }} />
+								<Skeleton.Button
+									active
+									size="small"
+									style={{ width: '100%', height: 6 }}
+								/>
+							</Space>
+						))}
+					</div>
+				</Space>
+			</Card>
+		);
+	}
+
+	// Calculate percentages from API data
+	const getProgressData = () => {
+		if (error || !progressOverview || !summaryCard) {
+			return [
+				{
+					label: 'Students Grouped',
+					percent: 0,
+					color: '#1890ff',
+					tooltip: '0 of 0 students grouped',
+				},
+				{
+					label: 'Groups with Picked Thesis',
+					percent: 0,
+					color: '#52c41a',
+					tooltip: '0 of 0 groups picked thesis',
+				},
+				{
+					label: 'Thesis Approved',
+					percent: 0,
+					color: '#faad14',
+					tooltip: '0 of 0 theses approved',
+				},
+				{
+					label: 'Assigned Supervisors',
+					percent: 0,
+					color: '#722ed1',
+					tooltip: '0 of 0 supervisors assigned',
+				},
+			];
+		}
+
+		// Calculate percentages based on API data with proper business logic
+		const studentsGroupedPercent =
+			summaryCard.totalStudents > 0
+				? Math.round(
+						(progressOverview.totalStudentGrouped / summaryCard.totalStudents) *
+							100,
+					)
+				: 0;
+
+		const groupsPickedThesisPercent =
+			summaryCard.totalGroups > 0
+				? Math.round(
+						(progressOverview.totalGroupPickedThesis /
+							summaryCard.totalGroups) *
+							100,
+					)
+				: 0;
+
+		const thesesApprovedPercent =
+			summaryCard.totalTheses > 0
+				? Math.round(
+						(progressOverview.thesisApproved / summaryCard.totalTheses) * 100,
+					)
+				: 0;
+
+		const assignedSupervisorsPercent =
+			summaryCard.totalLecturers > 0
+				? Math.round(
+						(progressOverview.totalAssignedSupervisors /
+							summaryCard.totalLecturers) *
+							100,
+					)
+				: 0;
+
+		return [
+			{
+				label: 'Students Grouped',
+				percent: studentsGroupedPercent,
+				color: '#1890ff',
+				tooltip: `${progressOverview.totalStudentGrouped} of ${summaryCard.totalStudents} students grouped`,
+			},
+			{
+				label: 'Groups with Picked Thesis',
+				percent: groupsPickedThesisPercent,
+				color: '#52c41a',
+				tooltip: `${progressOverview.totalGroupPickedThesis} of ${summaryCard.totalGroups} groups picked thesis`,
+			},
+			{
+				label: 'Thesis Approved',
+				percent: thesesApprovedPercent,
+				color: '#faad14',
+				tooltip: `${progressOverview.thesisApproved} of ${summaryCard.totalTheses} theses approved`,
+			},
+			{
+				label: 'Assigned Supervisors',
+				percent: assignedSupervisorsPercent,
+				color: '#722ed1',
+				tooltip: `${progressOverview.totalAssignedSupervisors} of ${summaryCard.totalLecturers} supervisors assigned`,
+			},
+		];
+	};
+
+	const progressData = getProgressData();
+
 	return (
 		<Card>
 			<Space direction="vertical" size="middle" style={{ width: '100%' }}>
@@ -28,7 +154,7 @@ export function ProgressOverview() {
 						paddingTop: '16px',
 					}}
 				>
-					{progressOverview.map((item) => (
+					{progressData.map((item) => (
 						<Space
 							key={item.label}
 							direction="vertical"
@@ -43,11 +169,13 @@ export function ProgressOverview() {
 									{item.percent}%
 								</Text>
 							</Space>
-							<Progress
-								percent={item.percent}
-								strokeColor={item.color}
-								showInfo={false}
-							/>
+							<Tooltip title={item.tooltip} placement="top">
+								<Progress
+									percent={item.percent}
+									strokeColor={item.color}
+									showInfo={false}
+								/>
+							</Tooltip>
 						</Space>
 					))}
 				</Space>
