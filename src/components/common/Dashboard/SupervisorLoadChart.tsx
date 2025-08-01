@@ -222,11 +222,15 @@ const SupervisorLoadChart: React.FC = () => {
 
 					<div style={{ padding: '40px', textAlign: 'center' }}>
 						<Text type="secondary">
-							{error
-								? 'Error loading supervisor load data'
-								: hasData && isFiltered
-									? 'No supervisors match your search criteria'
-									: 'No supervisor load data available for this semester'}
+							{(() => {
+								if (error) {
+									return 'Error loading supervisor load data';
+								}
+								if (hasData && isFiltered) {
+									return 'No supervisors match your search criteria';
+								}
+								return 'No supervisor load data available for this semester';
+							})()}
 						</Text>
 					</div>
 				</Space>
