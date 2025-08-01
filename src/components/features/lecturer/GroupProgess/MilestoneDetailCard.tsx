@@ -12,8 +12,21 @@ import { GroupDashboard } from '@/schemas/group';
 import { Milestone } from '@/schemas/milestone';
 import { SubmissionDetail } from '@/schemas/submission';
 
+type GroupType = FullMockGroup | Group | GroupDashboard | SupervisedGroup;
+
+type AssignmentReviewDetail = {
+	reviewerId: string;
+	submissionId: string;
+	reviewer: {
+		id: string;
+		user: {
+			fullName: string;
+		};
+	};
+};
+
 interface Props {
-	group: FullMockGroup | Group | GroupDashboard | SupervisedGroup;
+	group: GroupType;
 	milestone: Milestone | null;
 	milestones?: Milestone[];
 	onMilestoneChange?: (milestone: Milestone) => void;
@@ -41,12 +54,29 @@ const getFileNameFromUrl = (url: string): string => {
 	}
 };
 
+/**
+ * Type guard to check if group is a FullMockGroup
+ */
+const isFullMockGroup = (g: GroupType): g is FullMockGroup => {
+	try {
+		return (
+			g &&
+			typeof g === 'object' &&
+			'submissionFile' in g &&
+			'submissionDate' in g &&
+			'uploadedBy' in g
+		);
+	} catch {
+		return false;
+	}
+};
+
 export default function MilestoneDetailCard({
 	group,
 	milestone,
 	milestones = [],
 	onMilestoneChange,
-	loading: initialLoading = false,
+	loading: externalLoading = false,
 	milestoneLoading = false,
 }: Readonly<Props>) {
 	const screens = useBreakpoint();
@@ -59,7 +89,14 @@ export default function MilestoneDetailCard({
 		fetchSubmission,
 	} = useSubmission();
 
-	// Helper functions for safe data access
+	// Fetch submission when group and milestone change
+	useEffect(() => {
+		if (group?.id && milestone?.id) {
+			fetchSubmission(group.id, milestone.id);
+		}
+	}, [group?.id, milestone?.id, fetchSubmission]);
+
+	// Helper functions
 	const hasDocuments = (sub: SubmissionDetail | null): boolean => {
 		try {
 			return Boolean(
@@ -69,6 +106,14 @@ export default function MilestoneDetailCard({
 			);
 		} catch {
 			return false;
+		}
+	};
+
+	const getDocuments = (sub: SubmissionDetail | null): string[] => {
+		try {
+			return sub?.documents || [];
+		} catch {
+			return [];
 		}
 	};
 
@@ -84,15 +129,9 @@ export default function MilestoneDetailCard({
 		}
 	};
 
-	const getDocuments = (sub: SubmissionDetail | null): string[] => {
-		try {
-			return sub?.documents || [];
-		} catch {
-			return [];
-		}
-	};
-
-	const getAssignmentReviews = (sub: SubmissionDetail | null) => {
+	const getAssignmentReviews = (
+		sub: SubmissionDetail | null,
+	): AssignmentReviewDetail[] => {
 		try {
 			return sub?.assignmentReviews || [];
 		} catch {
@@ -100,28 +139,15 @@ export default function MilestoneDetailCard({
 		}
 	};
 
-	// Fetch submission when group and milestone change
-	useEffect(() => {
-		if (group?.id && milestone?.id) {
-			fetchSubmission(group.id, milestone.id);
+	const getCardTitle = () => {
+		if (milestone) {
+			return `${milestone.name} - Submission Details`;
 		}
-	}, [group?.id, milestone?.id, fetchSubmission]);
+		return 'Submission Details';
+	};
 
-	// Type guards for different group types
-	const isFullMockGroup = (
-		g: FullMockGroup | Group | GroupDashboard | SupervisedGroup,
-	): g is FullMockGroup => {
-		try {
-			return (
-				g &&
-				typeof g === 'object' &&
-				'submissionFile' in g &&
-				'submissionDate' in g &&
-				'uploadedBy' in g
-			);
-		} catch {
-			return false;
-		}
+	const getCardPadding = () => {
+		return screens.xs ? '12px' : '24px';
 	};
 
 	// Early safety checks after hooks
@@ -130,14 +156,14 @@ export default function MilestoneDetailCard({
 	}
 
 	// Show skeleton loading for initial load
-	if (initialLoading) {
+	if (externalLoading) {
 		return <CardLoadingSkeleton />;
 	}
 
 	return (
 		<Spin spinning={milestoneLoading || submissionLoading}>
 			<Card
-				title={milestone?.name ? `Milestone - ${milestone.name}` : 'Milestone'}
+				title={getCardTitle()}
 				style={{
 					height: '100%',
 					display: 'flex',
@@ -147,7 +173,7 @@ export default function MilestoneDetailCard({
 					flex: 1,
 					display: 'flex',
 					flexDirection: 'column',
-					padding: screens.xs ? '12px' : '16px',
+					padding: getCardPadding(),
 					overflow: 'hidden',
 				}}
 			>
@@ -191,7 +217,7 @@ export default function MilestoneDetailCard({
 						</Typography.Text>
 					</div>
 				)}
-				{/* Phần nội dung có thể scroll */}
+
 				<div
 					style={{
 						flex: 1,
@@ -213,44 +239,46 @@ export default function MilestoneDetailCard({
 									padding: '12px',
 								}}
 							>
-								{getDocuments(submission).map((docUrl, index) => (
-									<div
-										key={docUrl}
-										style={{
-											display: 'flex',
-											alignItems: 'center',
-											padding: '8px 0',
-											borderBottom:
-												index < getDocuments(submission).length - 1
-													? '1px solid #f0f0f0'
-													: 'none',
-										}}
-									>
-										<DownloadOutlined
+								{getDocuments(submission).map(
+									(docUrl: string, index: number) => (
+										<div
+											key={docUrl}
 											style={{
-												color: '#1890ff',
-												marginRight: 8,
-												fontSize: '14px',
-											}}
-										/>
-										<Button
-											type="link"
-											size="small"
-											style={{
-												paddingLeft: 0,
-												color: '#1890ff',
-												fontSize: '14px',
-												textAlign: 'left',
-												height: 'auto',
 												display: 'flex',
 												alignItems: 'center',
+												padding: '8px 0',
+												borderBottom:
+													index < getDocuments(submission).length - 1
+														? '1px solid #f0f0f0'
+														: 'none',
 											}}
-											onClick={() => window.open(docUrl, '_blank')}
 										>
-											{getFileNameFromUrl(docUrl)}
-										</Button>
-									</div>
-								))}
+											<DownloadOutlined
+												style={{
+													color: '#1890ff',
+													marginRight: 8,
+													fontSize: '14px',
+												}}
+											/>
+											<Button
+												type="link"
+												size="small"
+												style={{
+													paddingLeft: 0,
+													color: '#1890ff',
+													fontSize: '14px',
+													textAlign: 'left',
+													height: 'auto',
+													display: 'flex',
+													alignItems: 'center',
+												}}
+												onClick={() => window.open(docUrl, '_blank')}
+											>
+												{getFileNameFromUrl(docUrl)}
+											</Button>
+										</div>
+									),
+								)}
 							</div>
 						</div>
 					) : (
@@ -322,13 +350,15 @@ export default function MilestoneDetailCard({
 								<Row style={{ marginTop: 16 }}>
 									<Col span={24}>
 										<Text strong>Reviewers:</Text>
-										{getAssignmentReviews(submission).map((review, index) => (
-											<div key={review.reviewerId} style={{ marginTop: 4 }}>
-												<Text type="secondary">
-													{index + 1}. {review.reviewer.user.fullName}
-												</Text>
-											</div>
-										))}
+										{getAssignmentReviews(submission).map(
+											(review: AssignmentReviewDetail, index: number) => (
+												<div key={review.reviewerId} style={{ marginTop: 4 }}>
+													<Text type="secondary">
+														{index + 1}. {review.reviewer.user.fullName}
+													</Text>
+												</div>
+											),
+										)}
 									</Col>
 								</Row>
 							)}

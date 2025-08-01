@@ -1,9 +1,9 @@
-import httpClient from '@/lib/services/_httpClient';
-import { ApiResponse } from '@/schemas/_common';
-import { ChecklistItem, ChecklistItemCreate } from '@/schemas/checklist';
+import httpClient from "@/lib/services/_httpClient";
+import { ApiResponse } from "@/schemas/_common";
+import { ChecklistItem, ChecklistItemCreate } from "@/schemas/checklist";
 
 class ChecklistItemService {
-	private readonly baseUrl = '/checklist-items';
+	private readonly baseUrl = "/ChecklistItems";
 
 	async create(
 		createChecklistItemDto: ChecklistItemCreate,
