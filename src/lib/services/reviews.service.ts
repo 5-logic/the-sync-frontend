@@ -1,5 +1,7 @@
-import httpClient from '@/lib/services/_httpClient';
-import { ApiResponse } from '@/schemas/_common';
+import httpClient from "@/lib/services/_httpClient";
+import { ApiResponse } from "@/schemas/_common";
+
+export type ReviewAcceptance = "Yes" | "No" | "NotAvailable";
 
 export interface ReviewSubmission {
 	id: string;
@@ -101,7 +103,7 @@ export interface AssignmentReviewer {
 }
 
 class ReviewsService {
-	private readonly baseUrl = '/reviews';
+	private readonly baseUrl = "/reviews";
 
 	/**
 	 * Get assigned reviews for lecturer
@@ -219,7 +221,7 @@ export interface SubmitReviewRequest {
 	feedback: string;
 	reviewItems: {
 		checklistItemId: string;
-		acceptance: 'Yes' | 'No' | 'NotAvailable';
+		acceptance: ReviewAcceptance;
 		note?: string;
 	}[];
 }
@@ -228,7 +230,7 @@ export interface UpdateReviewRequest {
 	feedback: string;
 	reviewItems: {
 		checklistItemId: string;
-		acceptance: 'Yes' | 'No' | 'NotAvailable';
+		acceptance: ReviewAcceptance;
 		note?: string;
 	}[];
 }
@@ -260,7 +262,7 @@ export interface SubmissionReview {
 	reviewItems: {
 		reviewId: string;
 		checklistItemId: string;
-		acceptance: 'Yes' | 'No' | 'NotAvailable';
+		acceptance: ReviewAcceptance;
 		note?: string;
 		checklistItem: {
 			id: string;
@@ -294,7 +296,7 @@ export interface SubmittedReview {
 		id: string;
 		reviewId: string;
 		checklistItemId: string;
-		acceptance: 'Yes' | 'No' | 'NotAvailable';
+		acceptance: ReviewAcceptance;
 		note?: string;
 		createdAt: string;
 		updatedAt: string;

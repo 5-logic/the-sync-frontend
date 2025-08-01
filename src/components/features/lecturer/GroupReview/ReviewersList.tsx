@@ -1,13 +1,13 @@
-import { UserOutlined } from '@ant-design/icons';
-import { Space, Tag, Typography } from 'antd';
-import React from 'react';
+import { UserOutlined } from "@ant-design/icons";
+import { Space, Tag, Typography } from "antd";
+import React from "react";
 
-import { AssignmentReviewer } from '@/lib/services/reviews.service';
+import { AssignmentReviewer } from "@/lib/services/reviews.service";
 
 const { Text } = Typography;
 
 interface ReviewersListProps {
-	assignmentReviews: AssignmentReviewer[];
+	readonly assignmentReviews: AssignmentReviewer[];
 }
 
 export default function ReviewersList({
@@ -29,8 +29,8 @@ export default function ReviewersList({
 	});
 
 	return (
-		<Space direction="vertical" size="small" style={{ width: '100%' }}>
-			<Text strong style={{ fontSize: '14px' }}>
+		<Space direction="vertical" size="small" style={{ width: "100%" }}>
+			<Text strong style={{ fontSize: "14px" }}>
 				<UserOutlined style={{ marginRight: 4 }} />
 				Assigned Reviewers:
 			</Text>
@@ -39,8 +39,8 @@ export default function ReviewersList({
 					<div
 						key={reviewer.reviewerId}
 						style={{
-							display: 'flex',
-							alignItems: 'center',
+							display: "flex",
+							alignItems: "center",
 							gap: 8,
 						}}
 					>

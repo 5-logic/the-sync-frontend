@@ -1,19 +1,19 @@
-'use client';
+"use client";
 
-import { EditOutlined } from '@ant-design/icons';
-import { Button, Card, List, Tag, Typography } from 'antd';
-import { useEffect, useState } from 'react';
+import { EditOutlined } from "@ant-design/icons";
+import { Button, Card, List, Tag, Typography } from "antd";
+import { useEffect, useState } from "react";
 
-import { SubmissionReview } from '@/lib/services/reviews.service';
+import { SubmissionReview } from "@/lib/services/reviews.service";
 
-import EditReviewModal from './EditReviewModal';
+import EditReviewModal from "./EditReviewModal";
 
 const { Text } = Typography;
 
 interface Props {
-	reviews: SubmissionReview[];
-	loading?: boolean;
-	onReviewUpdated?: () => void;
+	readonly reviews: SubmissionReview[];
+	readonly loading?: boolean;
+	readonly onReviewUpdated?: () => void;
 }
 
 export default function ExistingReviewsList({
@@ -29,7 +29,7 @@ export default function ExistingReviewsList({
 	// Debug: Log reviews data to check isMainReviewer values
 	useEffect(() => {
 		if (reviews.length > 0) {
-			console.log('🔍 ExistingReviewsList - Review data check:');
+			console.log("🔍 ExistingReviewsList - Review data check:");
 			reviews.forEach((review, index) => {
 				console.log(`Review ${index + 1}:`, {
 					id: review.id,
@@ -80,7 +80,7 @@ export default function ExistingReviewsList({
 							<List.Item.Meta
 								title={
 									<div
-										style={{ display: 'flex', alignItems: 'center', gap: 8 }}
+										style={{ display: "flex", alignItems: "center", gap: 8 }}
 									>
 										<strong>Created by:</strong>
 										<Text strong>{review.lecturer.user.fullName}</Text>
