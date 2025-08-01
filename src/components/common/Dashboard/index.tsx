@@ -15,7 +15,7 @@ export default function Dashboard() {
 			<Header
 				title="Dashboard"
 				description="Welcome to your dashboard. Here you can track student progress, manage milestones, and provide timely feedback to guide thesis development."
-				badgeText="Moderator Only"
+				badgeText="Admin & Moderator Only"
 			/>
 			<SemesterFilter />
 			<Row gutter={[16, 16]}>
