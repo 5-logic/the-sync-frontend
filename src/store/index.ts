@@ -15,9 +15,9 @@ export { useResponsibilityStore } from '@/store/useResponsibilityStore';
 export { useSemesterStore } from '@/store/useSemesterStore';
 export { useSkillSetStore } from '@/store/useSkillSetStore';
 export { useStudentStore } from '@/store/useStudentStore';
-export { useThesisStore } from '@/store/useThesisStore';
+export { useSubmissionStore } from '@/store/useSubmissionStore';
 export { useSupervisionStore } from '@/store/useSupervisionStore';
-export { useAssignSupervisorStore } from '@/store/useAssignSupervisorStore';
+export { useThesisStore } from '@/store/useThesisStore';
 
 // Types
 export type { GroupTableData } from '@/store/useCapstoneManagementStore';
