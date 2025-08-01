@@ -2,6 +2,8 @@
  * UI Constants and utilities
  */
 
+import { ChecklistReviewAcceptance } from "@/schemas/_enums";
+
 /**
  * Priority color mapping for checklist items
  */
@@ -19,6 +21,55 @@ export const getPriorityConfig = (isRequired: boolean) => {
 	const label = isRequired ? "Mandatory" : "Optional";
 	const color = PRIORITY_COLORS[label];
 	return { label, color };
+};
+
+/**
+ * Review validation utilities
+ */
+
+interface ChecklistItem {
+	id: string;
+	isRequired: boolean;
+}
+
+interface ChecklistResponse {
+	response?: ChecklistReviewAcceptance;
+	notes?: string;
+}
+
+/**
+ * Get mandatory items from checklist
+ * @param checklistItems - Array of checklist items
+ * @returns Array of mandatory items
+ */
+export const getMandatoryItems = <T extends ChecklistItem>(
+	checklistItems: T[],
+): T[] => {
+	return checklistItems.filter((item) => item.isRequired);
+};
+
+/**
+ * Get unanswered mandatory items
+ * @param mandatoryItems - Array of mandatory items
+ * @param answers - Record of answers
+ * @returns Array of unanswered mandatory items
+ */
+export const getUnansweredMandatory = <T extends ChecklistItem>(
+	mandatoryItems: T[],
+	answers: Record<string, ChecklistResponse>,
+): T[] => {
+	return mandatoryItems.filter((item) => !answers[item.id]?.response);
+};
+
+/**
+ * Get answered items from answers record
+ * @param answers - Record of answers
+ * @returns Array of answered items
+ */
+export const getAnsweredItems = (
+	answers: Record<string, ChecklistResponse>,
+): Array<[string, ChecklistResponse]> => {
+	return Object.entries(answers).filter(([, response]) => response.response);
 };
 
 /**

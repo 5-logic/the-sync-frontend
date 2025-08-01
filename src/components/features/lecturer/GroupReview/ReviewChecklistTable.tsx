@@ -17,6 +17,12 @@ import { useEffect, useMemo, useState } from "react";
 
 import { useReviews } from "@/hooks/lecturer/useReviews";
 import { showNotification } from "@/lib/utils/notification";
+import {
+	getPriorityConfig,
+	getMandatoryItems,
+	getUnansweredMandatory,
+	getAnsweredItems,
+} from "@/lib/utils/uiConstants";
 import { ChecklistReviewAcceptance } from "@/schemas/_enums";
 
 import ExistingReviewsList from "./ExistingReviewsList";
@@ -45,11 +51,6 @@ interface ChecklistItemWithResponse {
 	response?: ChecklistReviewAcceptance;
 	notes?: string;
 }
-
-const priorityColorMap = {
-	Mandatory: "red",
-	Optional: "blue",
-};
 
 /**
  * Extract filename from URL
@@ -119,13 +120,9 @@ export default function ReviewChecklistTable({
 
 	// Validation helper functions
 	const getValidationStatus = useMemo(() => {
-		const mandatoryItems = checklistItems.filter((item) => item.isRequired);
-		const unansweredMandatory = mandatoryItems.filter(
-			(item) => !answers[item.id]?.response,
-		);
-		const answeredItems = Object.entries(answers).filter(
-			([, response]) => response.response,
-		);
+		const mandatoryItems = getMandatoryItems(checklistItems);
+		const unansweredMandatory = getUnansweredMandatory(mandatoryItems, answers);
+		const answeredItems = getAnsweredItems(answers);
 		const hasFeedback = feedback.trim().length > 0;
 
 		return {
@@ -190,10 +187,8 @@ export default function ReviewChecklistTable({
 		}
 
 		// Validation: Check if all mandatory questions are answered
-		const mandatoryItems = checklistItems.filter((item) => item.isRequired);
-		const unansweredMandatory = mandatoryItems.filter(
-			(item) => !answers[item.id]?.response,
-		);
+		const mandatoryItems = getMandatoryItems(checklistItems);
+		const unansweredMandatory = getUnansweredMandatory(mandatoryItems, answers);
 
 		if (unansweredMandatory.length > 0) {
 			setShowValidationErrors(true);
@@ -205,9 +200,7 @@ export default function ReviewChecklistTable({
 		}
 
 		// Validation: Check if at least some questions are answered
-		const answeredItems = Object.entries(answers).filter(
-			([, response]) => response.response,
-		);
+		const answeredItems = getAnsweredItems(answers);
 		if (answeredItems.length === 0) {
 			setShowValidationErrors(true);
 			showNotification.error(
@@ -343,8 +336,7 @@ export default function ReviewChecklistTable({
 			key: "priority",
 			align: "center",
 			render: (_value, record) => {
-				const label = record.isRequired ? "Mandatory" : "Optional";
-				const color = priorityColorMap[label];
+				const { label, color } = getPriorityConfig(record.isRequired);
 				return <Tag color={color}>{label}</Tag>;
 			},
 		},
