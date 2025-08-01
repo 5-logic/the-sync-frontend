@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { DeleteOutlined } from '@ant-design/icons';
-import { Input, Switch, Table, Tag, Tooltip } from 'antd';
-import type { ColumnType } from 'antd/es/table';
+import { DeleteOutlined } from "@ant-design/icons";
+import { Input, Switch, Table, Tag, Tooltip } from "antd";
+import type { ColumnType } from "antd/es/table";
 
-import { formatDate } from '@/lib/utils/dateFormat';
-import { ChecklistItem } from '@/schemas/checklist';
+import { formatDate } from "@/lib/utils/dateFormat";
+import { ChecklistItem } from "@/schemas/checklist";
 
 interface Props {
 	items: ChecklistItem[];
@@ -20,47 +20,47 @@ interface Props {
 }
 
 const priorityColorMap = {
-	Mandatory: 'red',
-	Optional: 'blue',
+	Mandatory: "red",
+	Optional: "blue",
 };
 
 const getEditableColumns = (
-	onChangeField?: Props['onChangeField'],
-	onDelete?: Props['onDelete'],
+	onChangeField?: Props["onChangeField"],
+	onDelete?: Props["onDelete"],
 	loading?: boolean,
 ): ColumnType<ChecklistItem>[] => [
 	{
-		title: 'Question',
-		dataIndex: 'name',
-		key: 'name',
+		title: "Question",
+		dataIndex: "name",
+		key: "name",
 		render: (text, record) => (
 			<Input
 				placeholder="Enter item name"
-				value={text?.trim() === '' ? '' : text || ''}
-				onChange={(e) => onChangeField?.(record.id, 'name', e.target.value)}
+				value={text?.trim() === "" ? "" : text || ""}
+				onChange={(e) => onChangeField?.(record.id, "name", e.target.value)}
 				disabled={loading}
 			/>
 		),
 	},
 	{
-		title: 'Description',
-		dataIndex: 'description',
-		key: 'description',
+		title: "Description",
+		dataIndex: "description",
+		key: "description",
 		render: (text, record) => (
 			<Input
 				placeholder="Enter description"
-				value={text ?? ''}
+				value={text ?? ""}
 				onChange={(e) =>
-					onChangeField?.(record.id, 'description', e.target.value)
+					onChangeField?.(record.id, "description", e.target.value)
 				}
 				disabled={loading}
 			/>
 		),
 	},
 	{
-		title: 'Priority',
-		key: 'priority',
-		align: 'center' as const,
+		title: "Priority",
+		key: "priority",
+		align: "center" as const,
 		width: 120,
 		render: (_, record) => (
 			<Switch
@@ -68,23 +68,23 @@ const getEditableColumns = (
 				checkedChildren="Mandatory"
 				unCheckedChildren="Optional"
 				onChange={(checked) =>
-					onChangeField?.(record.id, 'isRequired', checked)
+					onChangeField?.(record.id, "isRequired", checked)
 				}
 				disabled={loading}
 			/>
 		),
 	},
 	{
-		title: 'Action',
-		key: 'action',
+		title: "Action",
+		key: "action",
 		width: 80,
-		align: 'center' as const,
+		align: "center" as const,
 		render: (_, record) => (
 			<Tooltip title="Delete">
 				<DeleteOutlined
 					style={{
-						color: loading ? '#d9d9d9' : '#ff4d4f',
-						cursor: loading ? 'not-allowed' : 'pointer',
+						color: loading ? "#d9d9d9" : "#ff4d4f",
+						cursor: loading ? "not-allowed" : "pointer",
 					}}
 					onClick={() => !loading && onDelete?.(record)}
 				/>
@@ -96,38 +96,38 @@ const getEditableColumns = (
 const getViewColumns = (): ColumnType<ChecklistItem>[] => {
 	const columns: ColumnType<ChecklistItem>[] = [
 		{
-			title: 'Question',
-			dataIndex: 'name',
-			key: 'name',
-			sorter: (a, b) => (a.name || '').localeCompare(b.name || ''),
+			title: "Question",
+			dataIndex: "name",
+			key: "name",
+			sorter: (a, b) => (a.name || "").localeCompare(b.name || ""),
 		},
 		{
-			title: 'Description',
-			dataIndex: 'description',
-			key: 'description',
+			title: "Description",
+			dataIndex: "description",
+			key: "description",
 			render: (text) => text ?? <i>No description</i>,
 		},
 		{
-			title: 'Priority',
-			key: 'priority',
+			title: "Priority",
+			key: "priority",
 			render: (_, record) => {
-				const label = record.isRequired ? 'Mandatory' : 'Optional';
+				const label = record.isRequired ? "Mandatory" : "Optional";
 				const color = priorityColorMap[label];
 				return <Tag color={color}>{label}</Tag>;
 			},
 		},
 		{
-			title: 'Created At',
-			dataIndex: 'createdAt',
-			key: 'createdAt',
+			title: "Created At",
+			dataIndex: "createdAt",
+			key: "createdAt",
 			render: (value: Date) => formatDate(value),
 			sorter: (a, b) =>
 				new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
 		},
 		{
-			title: 'Updated At',
-			dataIndex: 'updatedAt',
-			key: 'updatedAt',
+			title: "Updated At",
+			dataIndex: "updatedAt",
+			key: "updatedAt",
 			render: (value: Date) => formatDate(value),
 			sorter: (a, b) =>
 				new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime(),
@@ -150,7 +150,7 @@ export default function ChecklistItemsTable({
 
 	return (
 		<Table
-			rowKey="id"
+			rowKey={(record) => record.id || `temp-${Date.now()}-${Math.random()}`}
 			dataSource={items}
 			columns={columns}
 			pagination={false}

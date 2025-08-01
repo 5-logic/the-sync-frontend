@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
 import {
 	PlusOutlined,
 	ReloadOutlined,
 	SearchOutlined,
-} from '@ant-design/icons';
-import { Button, Col, Input, Row, Select } from 'antd';
-import { useEffect, useState } from 'react';
+} from "@ant-design/icons";
+import { Button, Col, Input, Row, Select } from "antd";
+import { useEffect, useState } from "react";
 
-import { useMilestoneStore } from '@/store';
+import { useMilestoneStore } from "@/store";
 
 interface Props {
 	readonly onSearchChange: (val: string) => void;
@@ -25,14 +25,12 @@ export default function ChecklistToolbar({
 	onMilestoneChange,
 	onCreate,
 	onRefresh,
-	buttonLabel = 'Create New Checklist',
+	buttonLabel = "Create New Checklist",
 	hideButton = false,
 	loading = false,
 }: Props) {
-	const [searchValue, setSearchValue] = useState('');
-	const [selectedMilestone, setSelectedMilestone] = useState<string | null>(
-		null,
-	);
+	const [searchValue, setSearchValue] = useState("");
+	const [selectedMilestone, setSelectedMilestone] = useState<string | null>("");
 
 	const {
 		milestones,
@@ -51,7 +49,8 @@ export default function ChecklistToolbar({
 
 	const handleMilestoneChange = (value: string | null) => {
 		setSelectedMilestone(value);
-		onMilestoneChange?.(value);
+		// Convert empty string to null for the parent component
+		onMilestoneChange?.(value === "" ? null : value);
 	};
 
 	return (
@@ -75,11 +74,11 @@ export default function ChecklistToolbar({
 					value={selectedMilestone}
 					onChange={handleMilestoneChange}
 					allowClear
-					style={{ width: '100%' }}
+					style={{ width: "100%" }}
 					loading={milestonesLoading}
 					size="middle"
 				>
-					<Select.Option value={null}>All Milestones</Select.Option>
+					<Select.Option value="">All Milestones</Select.Option>
 					{milestones.map((milestone) => (
 						<Select.Option key={milestone.id} value={milestone.id}>
 							{milestone.name}
