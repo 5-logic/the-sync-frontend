@@ -36,7 +36,11 @@ export default function ChecklistEditPage() {
 		fetchChecklists,
 	} = useChecklistStore();
 
-	const { isLoading, error } = useChecklistDetail(checklistId || "");
+	const { isLoading, error } = useChecklistDetail(
+		checklistId || "",
+		true,
+		true,
+	);
 	const { milestones, fetchMilestones } = useMilestoneStore();
 
 	const [name, setName] = useState("");
