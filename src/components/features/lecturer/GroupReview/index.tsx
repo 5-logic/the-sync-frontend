@@ -34,27 +34,31 @@ export default function GroupReviewPage() {
 		Record<string, string[]>
 	>({});
 
+	// Helper function to fetch milestones for a semester
+	const fetchMilestonesForSemester = useCallback(async (semesterId: string) => {
+		try {
+			const response = await milestoneService.findBySemester(semesterId);
+			const result = handleApiResponse(response);
+
+			if (result.success && result.data) {
+				setMilestones(result.data);
+			} else {
+				setMilestones([]);
+			}
+		} catch (error) {
+			console.error("Error fetching milestones for time check:", error);
+			setMilestones([]);
+		}
+	}, []);
+
 	// Fetch milestones when semester changes
 	useEffect(() => {
 		if (selectedSemester) {
-			const fetchMilestones = async () => {
-				try {
-					const response =
-						await milestoneService.findBySemester(selectedSemester);
-					const result = handleApiResponse(response);
-					if (result.success && result.data) {
-						setMilestones(result.data);
-					}
-				} catch (error) {
-					console.error("Error fetching milestones for time check:", error);
-					setMilestones([]);
-				}
-			};
-			fetchMilestones();
+			fetchMilestonesForSemester(selectedSemester);
 		} else {
 			setMilestones([]);
 		}
-	}, [selectedSemester]);
+	}, [selectedSemester, fetchMilestonesForSemester]);
 
 	// Get selected milestone data for time checking
 	const selectedMilestoneData = useMemo(() => {
@@ -83,50 +87,66 @@ export default function GroupReviewPage() {
 		fetchAssignedReviews();
 	}, [fetchAssignedReviews]);
 
+	// Helper function to fetch supervisors for a single thesis
+	const fetchSupervisorsForThesis = useCallback(
+		async (thesisId: string) => {
+			try {
+				const supervisors = await fetchSupervisors(thesisId);
+				const supervisorNames = supervisors.map(
+					(supervisor) => supervisor.fullName,
+				);
+				return { thesisId, supervisorNames };
+			} catch (error) {
+				console.error(`Error fetching supervisors for ${thesisId}:`, error);
+				return { thesisId, supervisorNames: [] };
+			}
+		},
+		[fetchSupervisors],
+	);
+
+	// Helper function to update supervisor cache
+	const updateSupervisorCache = useCallback(
+		(results: Array<{ thesisId: string; supervisorNames: string[] }>) => {
+			setSupervisorCache((prev) => {
+				const newCache = { ...prev };
+				results.forEach(({ thesisId, supervisorNames }) => {
+					newCache[thesisId] = supervisorNames;
+				});
+				return newCache;
+			});
+		},
+		[],
+	);
+
 	// Fetch supervisors for all theses when reviews change
 	useEffect(() => {
-		if (reviews.length > 0) {
-			const uniqueThesisIds = Array.from(
-				new Set(reviews.map((review) => review.submission.group.thesisId)),
-			);
+		if (reviews.length === 0) return;
 
-			// Fetch supervisors for theses that aren't cached yet
-			const uncachedThesisIds = uniqueThesisIds.filter(
-				(thesisId) => !supervisorCache[thesisId],
-			);
+		const uniqueThesisIds = Array.from(
+			new Set(reviews.map((review) => review.submission.group.thesisId)),
+		);
 
-			if (uncachedThesisIds.length > 0) {
-				// Use Promise.all to avoid race conditions
-				Promise.all(
-					uncachedThesisIds.map(async (thesisId) => {
-						try {
-							const supervisors = await fetchSupervisors(thesisId);
-							const supervisorNames = supervisors.map(
-								(supervisor) => supervisor.fullName,
-							);
-							return { thesisId, supervisorNames };
-						} catch (error) {
-							console.error(
-								`Error fetching supervisors for ${thesisId}:`,
-								error,
-							);
-							// Return empty array to prevent retry
-							return { thesisId, supervisorNames: [] };
-						}
-					}),
-				).then((results) => {
-					// Update cache with all results at once
-					setSupervisorCache((prev) => {
-						const newCache = { ...prev };
-						results.forEach(({ thesisId, supervisorNames }) => {
-							newCache[thesisId] = supervisorNames;
-						});
-						return newCache;
-					});
-				});
-			}
-		}
-	}, [reviews, fetchSupervisors, supervisorCache]);
+		const uncachedThesisIds = uniqueThesisIds.filter(
+			(thesisId) => !supervisorCache[thesisId],
+		);
+
+		if (uncachedThesisIds.length === 0) return;
+
+		const fetchAllSupervisors = async () => {
+			const supervisorPromises = uncachedThesisIds.map(
+				fetchSupervisorsForThesis,
+			);
+			const results = await Promise.all(supervisorPromises);
+			updateSupervisorCache(results);
+		};
+
+		fetchAllSupervisors();
+	}, [
+		reviews,
+		supervisorCache,
+		fetchSupervisorsForThesis,
+		updateSupervisorCache,
+	]);
 
 	// Transform API data to component format with supervisor integration
 	const groupList = useMemo(() => {
