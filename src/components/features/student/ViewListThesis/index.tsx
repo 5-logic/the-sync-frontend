@@ -1,20 +1,24 @@
-'use client';
+"use client";
 
-import { ReloadOutlined, SearchOutlined } from '@ant-design/icons';
-import { Button, Col, Empty, Input, Row, Select, Space, Spin } from 'antd';
-import { useSession } from 'next-auth/react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { ReloadOutlined, SearchOutlined } from "@ant-design/icons";
+import { Button, Col, Empty, Input, Row, Select, Space, Spin } from "antd";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { Header } from '@/components/common/Header';
-import { ListPagination } from '@/components/common/ListPagination';
-import ThesisCard from '@/components/features/student/ViewListThesis/ThesisCard';
-import { useStudentGroupStatus } from '@/hooks/student/useStudentGroupStatus';
-import { getSortedDomains } from '@/lib/constants/domains';
-import lecturersService from '@/lib/services/lecturers.service';
-import studentsService from '@/lib/services/students.service';
-import thesesService from '@/lib/services/theses.service';
-import { handleApiResponse } from '@/lib/utils/handleApi';
-import { Thesis, ThesisWithRelations } from '@/schemas/thesis';
+import { ConfirmationModal } from "@/components/common/ConfirmModal";
+import { Header } from "@/components/common/Header";
+import { ListPagination } from "@/components/common/ListPagination";
+import AISuggestThesisCard from "@/components/features/student/ViewListThesis/AISuggestThesisCard";
+import ThesisCard from "@/components/features/student/ViewListThesis/ThesisCard";
+import { useStudentGroupStatus } from "@/hooks/student/useStudentGroupStatus";
+import { getSortedDomains } from "@/lib/constants/domains";
+import aiService, { ThesisSuggestion } from "@/lib/services/ai.service";
+import lecturersService from "@/lib/services/lecturers.service";
+import studentsService from "@/lib/services/students.service";
+import thesesService from "@/lib/services/theses.service";
+import { handleApiResponse } from "@/lib/utils/handleApi";
+import { Thesis, ThesisWithRelations } from "@/schemas/thesis";
 
 const { Option } = Select;
 
@@ -25,7 +29,7 @@ const convertToThesisWithRelations = async (
 	try {
 		// Fetch lecturer info for this thesis
 		const lecturerResponse = await lecturersService.findOne(thesis.lecturerId);
-		const lecturerResult = handleApiResponse(lecturerResponse, 'Success');
+		const lecturerResult = handleApiResponse(lecturerResponse, "Success");
 
 		if (!lecturerResult.success || !lecturerResult.data) {
 			return null;
@@ -58,16 +62,17 @@ const convertToThesisWithRelations = async (
 				}>) || [], // Use actual data from thesis
 		};
 	} catch (error) {
-		console.error('Error converting thesis:', error);
+		console.error("Error converting thesis:", error);
 		return null;
 	}
 };
 
 export default function ViewListThesis() {
 	const { data: session } = useSession();
-	const { isLeader } = useStudentGroupStatus();
+	const { isLeader, hasGroup, group } = useStudentGroupStatus();
+	const router = useRouter();
 	const [currentPage, setCurrentPage] = useState(1);
-	const [searchText, setSearchText] = useState('');
+	const [searchText, setSearchText] = useState("");
 	const [selectedDomain, setSelectedDomain] = useState<string | undefined>(
 		undefined,
 	);
@@ -77,6 +82,12 @@ export default function ViewListThesis() {
 	const [theses, setTheses] = useState<ThesisWithRelations[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [refreshing, setRefreshing] = useState(false);
+
+	// AI Suggest states
+	const [showAISuggestions, setShowAISuggestions] = useState(false);
+	const [aiSuggestions, setAISuggestions] = useState<ThesisSuggestion[]>([]);
+	const [aiLoading, setAILoading] = useState(false);
+	const [aiCurrentPage, setAICurrentPage] = useState(1);
 
 	const pageSize = 6;
 
@@ -97,17 +108,17 @@ export default function ViewListThesis() {
 
 				// First, get student profile to get semester info
 				const studentResponse = await studentsService.findOne(studentId);
-				const studentResult = handleApiResponse(studentResponse, 'Success');
+				const studentResult = handleApiResponse(studentResponse, "Success");
 
 				if (!studentResult.success || !studentResult.data) {
-					console.error('Failed to fetch student profile');
+					console.error("Failed to fetch student profile");
 					return;
 				}
 
 				// Get the semester from student's enrollment
 				const enrollment = studentResult.data.enrollments?.[0];
 				if (!enrollment?.semester?.id) {
-					console.error('No enrollment or semester found for student');
+					console.error("No enrollment or semester found for student");
 					return;
 				}
 
@@ -115,12 +126,12 @@ export default function ViewListThesis() {
 				const thesesResponse = await thesesService.findBySemester(
 					enrollment.semester.id,
 				);
-				const thesesResult = handleApiResponse(thesesResponse, 'Success');
+				const thesesResult = handleApiResponse(thesesResponse, "Success");
 
 				if (thesesResult.success && thesesResult.data) {
 					// Filter only published theses
 					const publishedTheses = thesesResult.data.filter(
-						(thesis) => thesis.isPublish && thesis.status === 'Approved',
+						(thesis) => thesis.isPublish && thesis.status === "Approved",
 					);
 
 					// Convert each thesis to ThesisWithRelations format
@@ -135,7 +146,7 @@ export default function ViewListThesis() {
 					setTheses(validTheses);
 				}
 			} catch (error) {
-				console.error('Error fetching theses:', error);
+				console.error("Error fetching theses:", error);
 			} finally {
 				setLoading(false);
 				setRefreshing(false);
@@ -154,6 +165,81 @@ export default function ViewListThesis() {
 	// Handle refresh button
 	const handleRefresh = () => {
 		fetchThesesData(true);
+	};
+
+	// Check if group has required information for AI suggestions
+	const isGroupInfoComplete = () => {
+		if (!group) return false;
+		return !!(
+			group.projectDirection &&
+			group.skills &&
+			group.skills.length > 0 &&
+			group.responsibilities &&
+			group.responsibilities.length > 0
+		);
+	};
+
+	// Handle AI Suggest button click
+	const handleAISuggest = () => {
+		if (!hasGroup || !group) {
+			// Should not happen if button is properly disabled, but just in case
+			return;
+		}
+
+		if (!isGroupInfoComplete()) {
+			// Show confirmation modal for incomplete group info
+			ConfirmationModal.show({
+				title: "Group Information Incomplete",
+				message:
+					"Your group is missing some important information for better AI recommendations.",
+				details:
+					"Project direction, required skills, and expected responsibilities are needed for accurate suggestions.",
+				note: "You can continue anyway, but the suggestions might be less accurate.",
+				noteType: "warning",
+				okText: "Continue Anyway",
+				cancelText: "Go to Group",
+				okType: "primary",
+				onOk: () => {
+					fetchAISuggestions();
+				},
+				onCancel: () => {
+					router.push("/student/group-dashboard");
+				},
+			});
+		} else {
+			// Group info is complete, directly fetch suggestions
+			fetchAISuggestions();
+		}
+	};
+
+	// Fetch AI suggestions
+	const fetchAISuggestions = async () => {
+		if (!group) return;
+
+		try {
+			setAILoading(true);
+			const response = await aiService.suggestThesesForGroup(group.id);
+
+			if (response.success && response.data) {
+				setAISuggestions(response.data.suggestions);
+				setShowAISuggestions(true);
+				setAICurrentPage(1); // Reset to first page
+			}
+		} catch (error) {
+			console.error("Error fetching AI suggestions:", error);
+		} finally {
+			setAILoading(false);
+		}
+	};
+
+	// Handle toggle between normal list and AI suggestions
+	const handleToggleView = () => {
+		setShowAISuggestions(!showAISuggestions);
+		if (!showAISuggestions) {
+			setCurrentPage(1); // Reset normal page when switching to AI
+		} else {
+			setAICurrentPage(1); // Reset AI page when switching to normal
+		}
 	};
 
 	// Get domain options from the constants
@@ -194,9 +280,15 @@ export default function ViewListThesis() {
 		currentPage * pageSize,
 	);
 
+	// Paginated AI suggestions
+	const paginatedAISuggestions = aiSuggestions.slice(
+		(aiCurrentPage - 1) * pageSize,
+		aiCurrentPage * pageSize,
+	);
+
 	if (loading) {
 		return (
-			<div style={{ textAlign: 'center', padding: '50px' }}>
+			<div style={{ textAlign: "center", padding: "50px" }}>
 				<Spin size="large" tip="Loading theses..." />
 			</div>
 		);
@@ -206,21 +298,21 @@ export default function ViewListThesis() {
 		<Space
 			direction="vertical"
 			size="large"
-			style={{ width: '100%', position: 'relative' }}
+			style={{ width: "100%", position: "relative" }}
 		>
 			{/* Refresh Loading Overlay */}
 			{refreshing && (
 				<div
 					style={{
-						position: 'absolute',
+						position: "absolute",
 						top: 0,
 						left: 0,
 						right: 0,
 						bottom: 0,
-						backgroundColor: 'rgba(255, 255, 255, 0.8)',
-						display: 'flex',
-						justifyContent: 'center',
-						alignItems: 'center',
+						backgroundColor: "rgba(255, 255, 255, 0.8)",
+						display: "flex",
+						justifyContent: "center",
+						alignItems: "center",
 						zIndex: 1000,
 					}}
 				>
@@ -231,78 +323,120 @@ export default function ViewListThesis() {
 			<Row justify="space-between" align="top" gutter={[16, 16]}>
 				<Col flex="auto">
 					<Header
-						title="List Thesis"
-						description="Browse available thesis topics proposed and published by lecturers.
-				You can view details and register once your group is ready."
+						title={showAISuggestions ? "AI Suggested Thesis" : "List Thesis"}
+						description={
+							showAISuggestions
+								? "AI-recommended thesis topics based on your group's project direction, skills, and responsibilities."
+								: "Browse available thesis topics proposed and published by lecturers. You can view details and register once your group is ready."
+						}
 					/>
 				</Col>
 				<Col style={{ marginTop: 20 }}>
-					<Button type="primary">AI Suggest</Button>
+					<Space>
+						{showAISuggestions && (
+							<Button onClick={handleToggleView}>Back to All Thesis</Button>
+						)}
+						{!showAISuggestions && hasGroup && isLeader && (
+							<Button
+								type="primary"
+								onClick={handleAISuggest}
+								loading={aiLoading}
+							>
+								AI Suggest
+							</Button>
+						)}
+					</Space>
 				</Col>
 			</Row>
 
-			{/* Search & Filters */}
-			<Row gutter={[16, 16]}>
-				<Col flex="auto">
-					<Input
-						placeholder="Search by name or description"
-						allowClear
-						value={searchText}
-						onChange={(e) => setSearchText(e.target.value)}
-						prefix={<SearchOutlined />}
-					/>
-				</Col>
+			{/* Search & Filters - Only show for normal thesis list */}
+			{!showAISuggestions && (
+				<Row gutter={[16, 16]}>
+					<Col flex="auto">
+						<Input
+							placeholder="Search by name or description"
+							allowClear
+							value={searchText}
+							onChange={(e) => setSearchText(e.target.value)}
+							prefix={<SearchOutlined />}
+						/>
+					</Col>
 
-				<Col style={{ minWidth: 200 }}>
-					<Select
-						placeholder="Filter by Domain"
-						allowClear
-						style={{ width: '100%' }}
-						value={selectedDomain}
-						onChange={(value) => setSelectedDomain(value)}
-					>
-						{domainOptions.map((domain) => (
-							<Option key={domain} value={domain}>
-								{domain}
-							</Option>
-						))}
-					</Select>
-				</Col>
-				<Col style={{ minWidth: 200 }}>
-					<Select
-						placeholder="Filter by Supervisor"
-						allowClear
-						style={{ width: '100%' }}
-						value={selectedSupervisor}
-						onChange={(value) => setSelectedSupervisor(value)}
-					>
-						{supervisorOptions.map((name) => (
-							<Option key={name} value={name}>
-								{name}
-							</Option>
-						))}
-					</Select>
-				</Col>
-				<Col>
-					<Button
-						icon={<ReloadOutlined />}
-						onClick={handleRefresh}
-						loading={refreshing}
-						title="Refresh theses"
-					>
-						Refresh
-					</Button>
-				</Col>
-			</Row>
+					<Col style={{ minWidth: 200 }}>
+						<Select
+							placeholder="Filter by Domain"
+							allowClear
+							style={{ width: "100%" }}
+							value={selectedDomain}
+							onChange={(value) => setSelectedDomain(value)}
+						>
+							{domainOptions.map((domain) => (
+								<Option key={domain} value={domain}>
+									{domain}
+								</Option>
+							))}
+						</Select>
+					</Col>
+					<Col style={{ minWidth: 200 }}>
+						<Select
+							placeholder="Filter by Supervisor"
+							allowClear
+							style={{ width: "100%" }}
+							value={selectedSupervisor}
+							onChange={(value) => setSelectedSupervisor(value)}
+						>
+							{supervisorOptions.map((name) => (
+								<Option key={name} value={name}>
+									{name}
+								</Option>
+							))}
+						</Select>
+					</Col>
+					<Col>
+						<Button
+							icon={<ReloadOutlined />}
+							onClick={handleRefresh}
+							loading={refreshing}
+							title="Refresh theses"
+						>
+							Refresh
+						</Button>
+					</Col>
+				</Row>
+			)}
 
 			{/* Danh sách Thesis */}
 			<Row gutter={[16, 16]}>
-				{paginatedTheses.length > 0 ? (
+				{showAISuggestions ? (
+					// AI Suggestions View
+					aiLoading ? (
+						<Col span={24}>
+							<div style={{ textAlign: "center", padding: "50px" }}>
+								<Spin size="large" tip="Getting AI recommendations..." />
+							</div>
+						</Col>
+					) : paginatedAISuggestions.length > 0 ? (
+						paginatedAISuggestions.map((suggestion) => (
+							<Col xs={24} sm={12} md={8} key={suggestion.thesis.id}>
+								<AISuggestThesisCard
+									suggestion={suggestion}
+									studentRole={isLeader ? "leader" : "member"}
+									onThesisUpdate={handleRefresh}
+								/>
+							</Col>
+						))
+					) : (
+						<Col span={24}>
+							<Empty description="No AI suggestions available. Try updating your group information." />
+						</Col>
+					)
+				) : // Normal Thesis List View
+				paginatedTheses.length > 0 ? (
 					paginatedTheses.map((thesis) => (
 						<Col xs={24} sm={12} md={8} key={thesis.id}>
 							<ThesisCard
 								thesis={thesis}
-								studentRole={isLeader ? 'leader' : 'member'}
+								studentRole={isLeader ? "leader" : "member"}
 								onThesisUpdate={handleRefresh}
 							/>
 						</Col>
@@ -315,13 +449,27 @@ export default function ViewListThesis() {
 			</Row>
 
 			{/* Phân trang */}
-			<ListPagination
-				current={currentPage}
-				pageSize={pageSize}
-				total={filteredTheses.length}
-				onChange={(page) => setCurrentPage(page)}
-				itemName="thesis"
-			/>
+			{showAISuggestions ? (
+				// AI Suggestions Pagination
+				aiSuggestions.length > 0 && (
+					<ListPagination
+						current={aiCurrentPage}
+						pageSize={pageSize}
+						total={aiSuggestions.length}
+						onChange={(page) => setAICurrentPage(page)}
+						itemName="suggestion"
+					/>
+				)
+			) : (
+				// Normal Thesis Pagination
+				<ListPagination
+					current={currentPage}
+					pageSize={pageSize}
+					total={filteredTheses.length}
+					onChange={(page) => setCurrentPage(page)}
+					itemName="thesis"
+				/>
+			)}
 		</Space>
 	);
 }
