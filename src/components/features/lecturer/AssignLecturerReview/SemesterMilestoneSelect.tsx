@@ -2,7 +2,8 @@
 
 import { Col, Row, Select } from 'antd';
 
-import { mockSemesters } from '@/data/semester';
+import { Milestone } from '@/schemas/milestone';
+import { Semester } from '@/schemas/semester';
 
 const { Option } = Select;
 
@@ -11,6 +12,10 @@ interface Props {
 	onSemesterChange: (val: string) => void;
 	milestone: string;
 	onMilestoneChange: (val: string) => void;
+	semesters: Semester[];
+	milestones: Milestone[];
+	loadingSemesters?: boolean;
+	loadingMilestones?: boolean;
 	disabledSemester?: boolean;
 	disabledMilestone?: boolean;
 }
@@ -20,43 +25,48 @@ export default function SemesterMilestoneSelect({
 	onSemesterChange,
 	milestone,
 	onMilestoneChange,
+	semesters,
+	milestones,
+	loadingSemesters = false,
+	loadingMilestones = false,
 	disabledSemester = false,
 	disabledMilestone = false,
 }: Readonly<Props>) {
 	return (
 		<Row gutter={[12, 12]} wrap>
-			<Col style={{ width: 160 }}>
+			<Col>
 				<Select
 					value={semester}
 					onChange={onSemesterChange}
 					placeholder="Select Semester"
 					style={{ width: '100%' }}
 					size="middle"
-					disabled={disabledSemester}
+					disabled={disabledSemester || loadingSemesters}
+					loading={loadingSemesters}
 				>
-					<Option value="">All Semesters</Option>
-					{mockSemesters.map((s) => (
-						<Option key={s.value} value={s.value}>
-							{s.label}
+					{semesters.map((s) => (
+						<Option key={s.id} value={s.id}>
+							{s.name}
 						</Option>
 					))}
 				</Select>
 			</Col>
 
-			<Col style={{ width: 160 }}>
+			<Col>
 				<Select
 					value={milestone}
 					onChange={onMilestoneChange}
 					placeholder="Select Milestone"
 					style={{ width: '100%' }}
 					size="middle"
-					disabled={disabledMilestone}
+					disabled={disabledMilestone || loadingMilestones}
+					loading={loadingMilestones}
 				>
-					<Option value="">All Milestones</Option>
-					<Option value="Review 1">Review 1</Option>
-					<Option value="Review 2">Review 2</Option>
-					<Option value="Review 3">Review 3</Option>
-					<Option value="Final Review">Final Review</Option>
+					{milestones.map((m) => (
+						<Option key={m.id} value={m.id}>
+							{m.name}
+						</Option>
+					))}
 				</Select>
 			</Col>
 		</Row>

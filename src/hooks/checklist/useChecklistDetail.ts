@@ -1,16 +1,18 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo } from "react";
 
-import { useChecklistStore } from '@/store/useChecklistStore';
+import { useChecklistStore } from "@/store/useChecklistStore";
 
 /**
  * Custom hook for managing checklist details
  * @param checklistId - The ID of the checklist to fetch
  * @param autoFetch - Whether to automatically fetch the checklist on mount (default: true)
+ * @param forceRefresh - Whether to force refresh data ignoring cache (default: false)
  * @returns Object containing checklist data, loading state, and utility functions
  */
 export const useChecklistDetail = (
 	checklistId: string,
 	autoFetch: boolean = true,
+	forceRefresh: boolean = false,
 ) => {
 	const {
 		currentChecklist,
@@ -28,12 +30,12 @@ export const useChecklistDetail = (
 
 	// Fetch checklist details when component mounts or checklistId changes
 	useEffect(() => {
-		if (autoFetch && checklistId && checklistId.trim() !== '') {
-			fetchChecklistById(checklistId).catch((error) => {
-				console.error('Failed to fetch checklist details:', error);
+		if (autoFetch && checklistId && checklistId.trim() !== "") {
+			fetchChecklistById(checklistId, forceRefresh).catch((error) => {
+				console.error("Failed to fetch checklist details:", error);
 			});
 		}
-	}, [checklistId, autoFetch, fetchChecklistById]);
+	}, [checklistId, autoFetch, forceRefresh, fetchChecklistById]);
 
 	// Clear current checklist on unmount
 	useEffect(() => {

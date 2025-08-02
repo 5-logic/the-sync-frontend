@@ -12,7 +12,7 @@ import {
 const { Text } = Typography;
 
 interface SupervisorInfoCardProps {
-	readonly thesisId: string;
+	readonly thesisId: string | undefined;
 }
 
 export default function SupervisorInfoCard({

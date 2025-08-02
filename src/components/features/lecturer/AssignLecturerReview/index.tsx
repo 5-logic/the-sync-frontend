@@ -3,52 +3,77 @@
 import { Space } from 'antd';
 import { useState } from 'react';
 
+import { ReviewerConfirmationModals } from '@/components/common/ConfirmModal';
 import { Header } from '@/components/common/Header';
 import AssignReviewerModal from '@/components/features/lecturer/AssignLecturerReview/AssignReviewerModal';
 import GroupTable from '@/components/features/lecturer/AssignLecturerReview/GroupTable';
 import SearchFilterBar from '@/components/features/lecturer/AssignLecturerReview/SearchFilterBar';
-import mockGroups, { FullMockGroup, createFullMockGroup } from '@/data/group';
-import { mockLecturers } from '@/data/lecturers';
-import { mockReviews } from '@/data/review';
-import { mockSubmissions } from '@/data/submission';
+import {
+	useAssignReviewerColumns,
+	useAssignReviewerDrafts,
+	useAssignReviewerLecturers,
+	useAssignReviewerSearch,
+	useAssignReviewerSemesterMilestone,
+	useAssignReviewerSubmissions,
+} from '@/hooks/lecturer';
 
 export default function AssignLecturerReview() {
-	const [selectedGroup, setSelectedGroup] = useState<FullMockGroup | null>(
-		null,
+	const [saveDraftLoading, setSaveDraftLoading] = useState(false);
+
+	// Custom hooks for organized logic
+	const {
+		semester,
+		setSemester,
+		milestone,
+		setMilestone,
+		semesters,
+		milestones,
+		loadingSemesters,
+		loadingMilestones,
+	} = useAssignReviewerSemesterMilestone();
+
+	const {
+		submissions,
+		groupsInSemester,
+		loadingSubmissions,
+		handleRefresh,
+		reloadSubmissionById,
+	} = useAssignReviewerSubmissions(milestone);
+
+	const { getReviewersForGroup, getLecturerNameById } =
+		useAssignReviewerLecturers();
+
+	const { search, setSearch, filteredGroups } =
+		useAssignReviewerSearch(groupsInSemester);
+
+	const {
+		updating,
+		draftCount,
+		getDraftReviewerAssignment,
+		removeDraftReviewerAssignment,
+		handleAssignAllDrafts,
+		saveDraftReviewerAssignment,
+	} = useAssignReviewerDrafts();
+
+	const { columns, selectedGroup, setSelectedGroup } = useAssignReviewerColumns(
+		{
+			submissions,
+			draftCount,
+			getDraftReviewerAssignment,
+			removeDraftReviewerAssignment,
+		},
 	);
-	const [search, setSearch] = useState('');
-	const [semester, setSemester] = useState('');
-	const [milestone, setMilestone] = useState('Review 1');
 
-	// Tạo danh sách nhóm theo semester, gán phase = milestone hiện tại
-	const groupsInSemester: FullMockGroup[] = mockGroups
-		.filter((g) => semester === '' || g.semesterId === semester)
-		.map((g) => createFullMockGroup(g.id, milestone));
-
-	// Search theo group name/code
-	const filteredGroups = groupsInSemester.filter((group) => {
-		const term = search.toLowerCase();
-		return (
-			group.name.toLowerCase().includes(term) || //NOSONAR
-			group.code.toLowerCase().includes(term)
+	/**
+	 * Handle bulk assignment confirmation for reviewer drafts
+	 */
+	const handleAssignAllDraftsConfirm = (): void => {
+		ReviewerConfirmationModals.assignAllDrafts(
+			draftCount,
+			() => handleAssignAllDrafts(milestone, handleRefresh),
+			updating,
 		);
-	});
-
-	// Hàm lấy reviewer hiện tại từ groupId + milestone
-	function getReviewersForGroup(groupId: string, milestone: string): string[] {
-		const submission = mockSubmissions.find(
-			(s) => s.groupId === groupId && s.milestone === milestone,
-		);
-		if (!submission) return [];
-
-		return mockReviews
-			.filter((r) => r.submissionId === submission.id)
-			.map((r) => {
-				const lecturer = mockLecturers.find((l) => l.id === r.lecturerId);
-				return lecturer?.fullName;
-			})
-			.filter(Boolean) as string[];
-	}
+	};
 
 	return (
 		<Space direction="vertical" size="large" style={{ width: '100%' }}>
@@ -65,26 +90,85 @@ export default function AssignLecturerReview() {
 				onSemesterChange={setSemester}
 				milestone={milestone}
 				onMilestoneChange={setMilestone}
+				semesters={semesters}
+				milestones={milestones}
+				loadingSemesters={loadingSemesters}
+				loadingMilestones={loadingMilestones}
+				noMilestone={milestone === 'NO_MILESTONE'}
+				onRefresh={handleRefresh}
+				onAssignAllDrafts={handleAssignAllDraftsConfirm}
+				draftCount={draftCount}
+				updating={updating}
 			/>
 
 			<GroupTable
 				groups={filteredGroups}
-				onAssign={(group) => setSelectedGroup(group)}
+				columns={columns}
+				loading={loadingSubmissions}
+				noMilestone={milestone === 'NO_MILESTONE'}
 			/>
 
 			<AssignReviewerModal
 				open={!!selectedGroup}
 				group={selectedGroup}
+				saveDraftLoading={saveDraftLoading}
 				initialValues={
 					selectedGroup
-						? getReviewersForGroup(selectedGroup.id, selectedGroup.phase ?? '')
+						? (() => {
+								// Check if there's a draft for this submission
+								const draft = getDraftReviewerAssignment(
+									selectedGroup.submissionId || '',
+								);
+
+								if (draft) {
+									// Use draft values if they exist
+									return [
+										draft.mainReviewerId,
+										draft.secondaryReviewerId,
+									].filter(Boolean) as string[];
+								}
+
+								// Fall back to current assigned reviewers
+								return getReviewersForGroup(
+									selectedGroup.id,
+									selectedGroup.phase ?? '',
+									filteredGroups,
+								);
+							})()
 						: []
 				}
-				lecturerOptions={mockLecturers.map((l) => l.fullName)}
 				onCancel={() => setSelectedGroup(null)}
-				onSubmit={(selectedReviewers) => {
-					// handle update reviewer logic
-					console.log('Assigned reviewers:', selectedReviewers);
+				onAssign={() => setSelectedGroup(null)}
+				onReloadSubmission={reloadSubmissionById}
+				onSaveDraft={(mainReviewerId, secondaryReviewerId) => {
+					if (!selectedGroup) return;
+
+					setSaveDraftLoading(true);
+
+					const submissionId = selectedGroup.submissionId;
+					if (!submissionId) {
+						setSaveDraftLoading(false);
+						return;
+					}
+
+					const mainReviewerName = mainReviewerId
+						? getLecturerNameById(mainReviewerId)
+						: undefined;
+					const secondaryReviewerName = secondaryReviewerId
+						? getLecturerNameById(secondaryReviewerId)
+						: undefined;
+
+					saveDraftReviewerAssignment(
+						submissionId,
+						selectedGroup.name,
+						selectedGroup.title,
+						mainReviewerId,
+						mainReviewerName,
+						secondaryReviewerId,
+						secondaryReviewerName,
+					);
+
+					setSaveDraftLoading(false);
 					setSelectedGroup(null);
 				}}
 			/>
