@@ -286,6 +286,59 @@ export default function ViewListThesis() {
 		aiCurrentPage * pageSize,
 	);
 
+	// Render thesis list content based on current view mode
+	const renderThesisContent = () => {
+		if (showAISuggestions) {
+			// AI Suggestions View
+			if (aiLoading) {
+				return (
+					<Col span={24}>
+						<div style={{ textAlign: "center", padding: "50px" }}>
+							<Spin size="large" tip="Getting AI recommendations..." />
+						</div>
+					</Col>
+				);
+			}
+
+			if (paginatedAISuggestions.length > 0) {
+				return paginatedAISuggestions.map((suggestion) => (
+					<Col xs={24} sm={12} md={8} key={suggestion.thesis.id}>
+						<AISuggestThesisCard
+							suggestion={suggestion}
+							studentRole={isLeader ? "leader" : "member"}
+							onThesisUpdate={handleRefresh}
+						/>
+					</Col>
+				));
+			}
+
+			return (
+				<Col span={24}>
+					<Empty description="No AI suggestions available. Try updating your group information." />
+				</Col>
+			);
+		}
+
+		// Normal Thesis List View
+		if (paginatedTheses.length > 0) {
+			return paginatedTheses.map((thesis) => (
+				<Col xs={24} sm={12} md={8} key={thesis.id}>
+					<ThesisCard
+						thesis={thesis}
+						studentRole={isLeader ? "leader" : "member"}
+						onThesisUpdate={handleRefresh}
+					/>
+				</Col>
+			));
+		}
+
+		return (
+			<Col span={24}>
+				<Empty description="No thesis available." />
+			</Col>
+		);
+	};
+
 	if (loading) {
 		return (
 			<div style={{ textAlign: "center", padding: "50px" }}>
@@ -406,47 +459,7 @@ export default function ViewListThesis() {
 			)}
 
 			{/* Danh sách Thesis */}
-			<Row gutter={[16, 16]}>
-				{showAISuggestions ? (
-					// AI Suggestions View
-					aiLoading ? (
-						<Col span={24}>
-							<div style={{ textAlign: "center", padding: "50px" }}>
-								<Spin size="large" tip="Getting AI recommendations..." />
-							</div>
-						</Col>
-					) : paginatedAISuggestions.length > 0 ? (
-						paginatedAISuggestions.map((suggestion) => (
-							<Col xs={24} sm={12} md={8} key={suggestion.thesis.id}>
-								<AISuggestThesisCard
-									suggestion={suggestion}
-									studentRole={isLeader ? "leader" : "member"}
-									onThesisUpdate={handleRefresh}
-								/>
-							</Col>
-						))
-					) : (
-						<Col span={24}>
-							<Empty description="No AI suggestions available. Try updating your group information." />
-						</Col>
-					)
-				) : // Normal Thesis List View
-				paginatedTheses.length > 0 ? (
-					paginatedTheses.map((thesis) => (
-						<Col xs={24} sm={12} md={8} key={thesis.id}>
-							<ThesisCard
-								thesis={thesis}
-								studentRole={isLeader ? "leader" : "member"}
-								onThesisUpdate={handleRefresh}
-							/>
-						</Col>
-					))
-				) : (
-					<Col span={24}>
-						<Empty description="No thesis available." />
-					</Col>
-				)}
-			</Row>
+			<Row gutter={[16, 16]}>{renderThesisContent()}</Row>
 
 			{/* Phân trang */}
 			{showAISuggestions ? (
