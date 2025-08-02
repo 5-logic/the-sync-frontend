@@ -293,7 +293,7 @@ export default function AISuggestThesisCard({
 				<Space direction="vertical" size="middle" style={{ width: "100%" }}>
 					{matchingFactors.map((factor, index) => (
 						<div
-							key={index}
+							key={`factor-${thesis.id}-${factor.substring(0, 20).replace(/\s+/g, "-")}-${index}`}
 							style={{
 								padding: "12px",
 								backgroundColor: "#f9f9f9",
