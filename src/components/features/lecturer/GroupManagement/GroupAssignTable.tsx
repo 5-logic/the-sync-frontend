@@ -27,8 +27,10 @@ export default function GroupAssignTable({ onView, onDelete }: Props) {
 	const { groups, loading, fetchGroups } = useGroupsStore();
 
 	useEffect(() => {
+		// Fetch groups data when component mounts
 		fetchGroups();
-	}, [fetchGroups]);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []); // Only run once on mount
 
 	const handleRefresh = () => {
 		useGroupsStore.getState().refetch(); // Use refetch method for forced refresh

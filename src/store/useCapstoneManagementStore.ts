@@ -198,7 +198,7 @@ export const useCapstoneManagementStore = create<CapstoneManagementState>(
 						rowSpanGroup: 0, // Will be calculated later
 						rowSpanMajor: 0, // Will be calculated later
 						rowSpanSemester: 0, // Will be calculated later
-						abbreviation: group.thesis?.abbreviation || group.code,
+						abbreviation: group.thesis?.abbreviation || '-',
 						supervisor: supervisors,
 						status: enrollment?.status || 'Ongoing', // Use enrollment status
 					});

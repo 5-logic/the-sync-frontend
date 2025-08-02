@@ -9,6 +9,56 @@ For more information about this project, see the [README](./README.md).
 
 ---
 
+## [0.7.1] - 2025-08-01
+
+### Fixed
+
+#### Performance & User Experience Improvements
+
+- **Group Management Optimization:** Improved group fetching logic to utilize cached data and prevent unnecessary loading states ([#304](https://github.com/5-logic/the-sync-frontend/pull/304))
+  - Enhanced GroupAssignTable with better caching mechanisms
+  - Streamlined group management index with reduced redundant API calls
+  - Optimized useGroupsStore for better state management and performance
+
+#### Dashboard & Statistics Enhancements
+
+- **Dashboard Statistics Clarity:** Updated dashboard stats titles for better clarity and filtered out expired milestones
+  - Enhanced DashboardStats component with more descriptive labels
+  - Improved milestone filtering logic in LecturerDashboardStore
+  - Better handling of milestone expiration in statistics calculations
+
+#### Form Handling & Validation Improvements
+
+- **Thesis Form Enhancement:** Streamlined field change detection logic and improved file upload handling
+  - Enhanced ThesisForm component with better change detection algorithms
+  - Improved ThesisFileUpload with enhanced file handling and validation
+  - Fixed file upload reset issues to prevent unintended form resets
+  - Normalized domain field comparison and better handling of empty skills arrays
+  - Enhanced useThesisForm hook with optimized form state management
+
+#### Data Management & UI Fixes
+
+- **Student Management:** Updated validation message for full name to require at least 2 characters in EditStudentDialog
+- **Group Table:** Fixed abbreviation fallback in group table data to use proper default values
+- **Batch Operations:** Updated batch create action to add new items to the beginning of arrays for consistency
+  - Enhanced storeHelpers with improved batch operation handling
+  - Better array management in useCapstoneManagementStore
+
+### Technical Details
+
+- **Files Changed:** 11 files with 150 additions and 84 deletions
+- **Enhanced Components:** ThesisForm, ThesisFileUpload, DashboardStats, GroupAssignTable, EditStudentDialog
+- **Store Improvements:** Enhanced useGroupsStore, useLecturerDashboardStore, and useCapstoneManagementStore for better performance
+- **Hook Optimization:** Improved useThesisForm with better state management and validation logic
+
+### Migration Notes
+
+- Group management operations now utilize improved caching - existing cached data will be refreshed automatically
+- Dashboard statistics now filter expired milestones - ensure milestone date handling is up to date
+- Form validation improvements may affect custom validation implementations
+
+---
+
 ## [0.7.0] - 2025-07-30
 
 ### Added

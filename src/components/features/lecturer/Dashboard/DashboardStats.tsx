@@ -31,13 +31,13 @@ const DashboardStats: React.FC = () => {
 
 	const dashboardStats = [
 		{
-			title: 'Total Thesis Topics',
+			title: 'Total Created Theses',
 			value: stats.totalThesis,
 			icon: <FileTextOutlined style={{ fontSize: 24, color: '#1890ff' }} />,
 			loading: totalThesisLoading,
 		},
 		{
-			title: 'Active Groups',
+			title: 'Supervised Groups',
 			value: stats.activeGroups,
 			icon: <TeamOutlined style={{ fontSize: 24, color: '#52c41a' }} />,
 			loading: activeGroupsLoading,

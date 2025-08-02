@@ -47,27 +47,15 @@ export default function GroupManagementPage() {
 		}
 	}, [preparingSemester, fetchStudentsWithoutGroup]);
 
-	// Refresh data when page becomes visible (when user navigates back from detail page)
-	useEffect(() => {
-		const handleVisibilityChange = () => {
-			if (!document.hidden) {
-				// Page became visible, refresh groups to get updated member counts
-				refetchGroups();
-			}
-		};
-
-		document.addEventListener('visibilitychange', handleVisibilityChange);
-
-		return () => {
-			document.removeEventListener('visibilitychange', handleVisibilityChange);
-		};
-	}, [refetchGroups]);
-
 	// Refresh data when component mounts (handles browser back button)
 	useEffect(() => {
-		// Refresh groups data when component mounts to ensure fresh data
-		refetchGroups();
-	}, [refetchGroups]);
+		// Only refresh if we don't have groups data already
+		const { groups } = useGroupsStore.getState();
+		if (groups.length === 0) {
+			refetchGroups();
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []); // Only run once on mount
 
 	// Handle refresh
 	const handleRefresh = () => {

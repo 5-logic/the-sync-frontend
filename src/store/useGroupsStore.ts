@@ -27,18 +27,23 @@ export const useGroupsStore = create<GroupsState>((set, get) => ({
 	fetchGroups: async (force = false) => {
 		const { loading } = get();
 
-		// Prevent multiple simultaneous fetches unless forced
-		if (loading && !force) return;
-
+		// Check for cached data first
 		const cachedGroups = cacheUtils.get<Group[]>('groups', 'all');
+
+		// If we have cache and it's not forced, use cache immediately without loading
 		if (!force && cachedGroups) {
-			// Use cached data
 			set({ groups: cachedGroups });
 			return;
 		}
 
+		// Prevent multiple simultaneous fetches unless forced
+		if (loading && !force) return;
+
 		try {
-			set({ loading: true, error: null });
+			// Only show loading if we don't have cached data
+			if (!cachedGroups) {
+				set({ loading: true, error: null });
+			}
 
 			const response = await groupService.findAll();
 
@@ -62,6 +67,12 @@ export const useGroupsStore = create<GroupsState>((set, get) => ({
 	},
 
 	refetch: async () => {
+		// Force refresh but use cached data to avoid loading state if possible
+		const cachedGroups = cacheUtils.get<Group[]>('groups', 'all');
+		if (cachedGroups) {
+			// Set cached data first to avoid loading flash
+			set({ groups: cachedGroups });
+		}
 		await get().fetchGroups(true);
 	},
 

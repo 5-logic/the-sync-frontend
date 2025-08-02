@@ -1,120 +1,111 @@
-import { ExportOutlined, SearchOutlined } from '@ant-design/icons';
-import {
-	Button,
-	Card,
-	Col,
-	Input,
-	Row,
-	Select,
-	Space,
-	Table,
-	Typography,
-} from 'antd';
-import { useMemo, useState } from 'react';
+import { Card, Space, Spin, Table, Typography } from 'antd';
+import React, { useMemo, useState } from 'react';
 
 import { TablePagination } from '@/components/common/TablePagination';
-import { extendedGroups } from '@/data/group';
-
-const columns = [
-	{ title: 'Group Name', dataIndex: 'groupName' },
-	{ title: 'Topic Title', dataIndex: 'topicTitle' },
-	{ title: 'Supervisor', dataIndex: 'supervisor' },
-	{ title: 'Semester', dataIndex: 'semester' },
-];
+import { getColumns } from '@/components/features/admin/CapstoneProjectManagement/Columns';
+import { FilterBar } from '@/components/features/admin/CapstoneProjectManagement/FilterBar';
+import { useCapstoneManagement } from '@/hooks/admin/useCapstoneManagement';
+import { useExportGroups } from '@/hooks/admin/useExportGroups';
+import { useSessionData } from '@/hooks/auth/useAuth';
+import { useDebouncedSearch } from '@/hooks/ui/useDebounce';
+import { type GroupTableData } from '@/store/useCapstoneManagementStore';
 
 const { Title, Text } = Typography;
 
 export function GroupInfo() {
-	const [searchTerm, setSearchTerm] = useState('');
-	const [selectedSemester, setSelectedSemester] =
-		useState<string>('All semester');
+	const { searchValue, debouncedSearchValue, setSearchValue } =
+		useDebouncedSearch('', 300);
+	const [selectedSemesterId, setSelectedSemesterId] = useState<string>('');
 
-	// Get unique semesters from the data
-	const availableSemesters = useMemo(() => {
-		const semesters = Array.from(
-			new Set(extendedGroups.map((group) => group.semesterId)),
-		);
-		return ['All semester', ...semesters];
-	}, []);
+	// Get user session to check role
+	const { session } = useSessionData();
+	const isAdmin = session?.user?.role === 'admin';
 
-	// Filter and search data
-	const filteredData = useMemo(() => {
-		return extendedGroups
-			.filter((group) => {
-				if (
-					selectedSemester !== 'All semester' &&
-					group.semesterId !== selectedSemester
-				) {
-					return false;
-				}
+	// Use export hook
+	const { handleExportExcel } = useExportGroups();
 
-				if (searchTerm) {
-					const searchLower = searchTerm.toLowerCase();
-					return (
-						group.name.toLowerCase().includes(searchLower) ||
-						group.thesisTitle.toLowerCase().includes(searchLower) ||
-						group.supervisors.some((supervisor) =>
-							supervisor.toLowerCase().includes(searchLower),
-						)
-					);
-				}
+	// Use the same hook as CapstoneProjectManagement
+	const {
+		filteredData,
+		availableSemesters,
+		loading,
+		loadingGroups,
+		refresh,
+		selectedSemesterName,
+	} = useCapstoneManagement(selectedSemesterId, debouncedSearchValue);
 
-				return true;
-			})
-			.map((group) => ({
-				groupName: group.name,
-				topicTitle: group.thesisTitle,
-				supervisor: group.supervisors.join(', ') || 'Not assigned',
-				semester: group.semesterId,
-			}));
-	}, [searchTerm, selectedSemester]);
+	// Set the first available semester as default when semesters are loaded
+	React.useEffect(() => {
+		if (availableSemesters.length > 0 && !selectedSemesterId) {
+			setSelectedSemesterId(availableSemesters[0].id);
+		}
+	}, [availableSemesters, selectedSemesterId]);
+
+	const handleRefresh = async () => {
+		await refresh();
+	};
+
+	// Wrapper function to match FilterBar expected signature
+	const handleExportClick = () => {
+		handleExportExcel(selectedSemesterId, filteredData, selectedSemesterName);
+	};
+
+	// Use the same column configuration but simplified for dashboard
+	const columns = useMemo(
+		() =>
+			getColumns(debouncedSearchValue, {
+				showAbbreviationSupervisor: true,
+				showSemester: false, // Hide semester since we show for one semester
+				dataSource: filteredData,
+			}),
+		[debouncedSearchValue, filteredData],
+	);
 
 	return (
 		<Card>
-			<Space direction="vertical" size="small" style={{ width: '100%' }}>
-				<Title level={4} style={{ margin: 0 }}>
-					Groups Table
-				</Title>
-				<Text type="secondary">
-					List of student groups that have selected and been assigned thesis
-					topics.
-				</Text>
-			</Space>
+			<Space direction="vertical" size="large" style={{ width: '100%' }}>
+				<div>
+					<Title level={4} style={{ margin: 0, marginBottom: 8 }}>
+						Groups Table
+					</Title>
+					<Text type="secondary">
+						List of student groups that have selected and been assigned thesis
+						topics.
+					</Text>
+				</div>
 
-			<Row gutter={16} style={{ marginTop: 20, marginBottom: 16 }}>
-				<Col flex="auto">
-					<Input
-						placeholder="Search thesis, group, supervisor"
-						prefix={<SearchOutlined />}
-						value={searchTerm}
-						onChange={(e) => setSearchTerm(e.target.value)}
+				<Spin spinning={loading || loadingGroups}>
+					<FilterBar
+						searchText={searchValue}
+						onSearchChange={setSearchValue}
+						selectedSemester={selectedSemesterId}
+						onSemesterChange={setSelectedSemesterId}
+						availableSemesters={availableSemesters}
+						onExportExcel={isAdmin ? handleExportClick : undefined}
+						onRefresh={handleRefresh}
+						showExportExcel={isAdmin} // Only show export button for admin
+						loading={loading || loadingGroups}
+						searchPlaceholder="Search thesis, group, supervisor"
 					/>
-				</Col>
-				<Col flex="200px">
-					<Select
-						value={selectedSemester}
-						onChange={setSelectedSemester}
-						style={{ width: '100%' }}
-					>
-						{availableSemesters.map((semester) => (
-							<Select.Option key={semester} value={semester}>
-								{semester}
-							</Select.Option>
-						))}
-					</Select>
-				</Col>
-				<Col flex="200px">
-					<Button icon={<ExportOutlined />} style={{ width: '100%' }}>
-						Export Statistic
-					</Button>
-				</Col>
-			</Row>
-			<Table
-				columns={columns}
-				dataSource={filteredData}
-				pagination={TablePagination}
-				rowKey="groupName"
-			/>
+
+					<Table
+						columns={columns}
+						dataSource={filteredData}
+						rowKey="studentId"
+						pagination={TablePagination}
+						bordered
+					/>
+
+					<Text type="secondary" style={{ marginTop: 16, display: 'block' }}>
+						List includes {filteredData.length} students and{' '}
+						{
+							new Set(filteredData.map((item: GroupTableData) => item.groupId))
+								.size
+						}{' '}
+						thesis projects
+					</Text>
+				</Spin>
+			</Space>
 		</Card>
 	);
 }
