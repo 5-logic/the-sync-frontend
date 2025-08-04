@@ -69,6 +69,10 @@ interface Props {
 	readonly submissionId: string;
 	readonly isMainReviewer: boolean;
 	readonly onSubmitSuccess?: () => void;
+	readonly milestoneData?: {
+		startDate: string;
+		endDate: string;
+	} | null;
 }
 
 interface ChecklistResponse {
@@ -114,6 +118,7 @@ const renderReviewerStatusMessage = (
 	checklistItems: ChecklistItemWithResponse[],
 	getValidationStatus: { isValid: boolean },
 	handleSaveChecklist: () => void,
+	isWithinMilestonePeriodCheck: boolean,
 ) => {
 	if (isMainReviewer) {
 		return (
@@ -160,9 +165,15 @@ const renderReviewerStatusMessage = (
 					disabled={
 						!reviewForm ||
 						checklistItems.length === 0 ||
-						!getValidationStatus.isValid
+						!getValidationStatus.isValid ||
+						!isWithinMilestonePeriodCheck
 					}
 					size="large"
+					title={
+						!isWithinMilestonePeriodCheck
+							? "Review submission is only available after the milestone start date"
+							: undefined
+					}
 				>
 					Submit Review
 				</Button>
@@ -243,6 +254,7 @@ export default function ReviewChecklistTable({
 	submissionId,
 	isMainReviewer,
 	onSubmitSuccess,
+	milestoneData,
 }: Props) {
 	const {
 		reviewForm,
@@ -288,6 +300,19 @@ export default function ReviewChecklistTable({
 			notes: answers[item.id]?.notes,
 		}));
 	}, [reviewForm, answers]);
+
+	// Check if current time is after milestone start date (enable submission once milestone starts)
+	const isWithinMilestonePeriodCheck = useMemo(() => {
+		if (!milestoneData) {
+			// If no milestone data provided, allow submission (backward compatibility)
+			return true;
+		}
+
+		// Allow submission if current time is after start date
+		const now = new Date();
+		const startDate = new Date(milestoneData.startDate);
+		return now >= startDate;
+	}, [milestoneData]);
 
 	// Validation helper functions
 	const getValidationStatus = useMemo(() => {
@@ -632,6 +657,7 @@ export default function ReviewChecklistTable({
 						checklistItems,
 						getValidationStatus,
 						handleSaveChecklist,
+						isWithinMilestonePeriodCheck,
 					)}
 				</>
 			)}

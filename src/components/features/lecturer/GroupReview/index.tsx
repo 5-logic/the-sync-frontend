@@ -302,7 +302,6 @@ export default function GroupReviewPage() {
 				onMilestoneChange={handleMilestoneChange}
 				onMilestoneLoadingChange={handleMilestoneLoadingChange}
 				showFilters={true}
-				selectedMilestoneData={selectedMilestoneData}
 			/>
 
 			{currentSelectedGroup && (
@@ -349,6 +348,7 @@ export default function GroupReviewPage() {
 						<ReviewChecklistTable
 							submissionId={currentSelectedGroup.submissionId}
 							isMainReviewer={currentSelectedGroup.isMainReviewer}
+							milestoneData={selectedMilestoneData}
 							onSubmitSuccess={() => {
 								// Refresh the reviews after successful submission
 								fetchAssignedReviews();
