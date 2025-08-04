@@ -1,14 +1,13 @@
 "use client";
 
 import { EditOutlined } from "@ant-design/icons";
-import { Button, Card, List, Tag, Typography } from "antd";
+import { Button, Card, List } from "antd";
 import { useEffect, useState } from "react";
 
 import { SubmissionReview } from "@/lib/services/reviews.service";
+import { ReviewerInfo, ReviewDates } from "@/components/common/ReviewComponents";
 
 import EditReviewModal from "./EditReviewModal";
-
-const { Text } = Typography;
 
 interface Props {
 	readonly reviews: SubmissionReview[];
@@ -78,35 +77,12 @@ export default function ExistingReviewsList({
 							]}
 						>
 							<List.Item.Meta
-								title={
-									<div
-										style={{ display: "flex", alignItems: "center", gap: 8 }}
-									>
-										<strong>Created by:</strong>
-										<Text strong>{review.lecturer.user.fullName}</Text>
-										{/* Ensure boolean type check for isMainReviewer */}
-										{review.isMainReviewer === true ? (
-											<Tag color="yellow">Main Reviewer</Tag>
-										) : (
-											<Tag color="blue">Secondary Reviewer</Tag>
-										)}
-									</div>
-								}
+								title={<ReviewerInfo review={review} label="Created by" />}
 								description={
-									<div>
-										<Text type="secondary">
-											Created: {new Date(review.createdAt).toLocaleDateString()}
-										</Text>
-										{review.updatedAt !== review.createdAt && (
-											<>
-												<br />
-												<Text type="secondary">
-													Updated:{" "}
-													{new Date(review.updatedAt).toLocaleDateString()}
-												</Text>
-											</>
-										)}
-									</div>
+									<ReviewDates
+										createdAt={review.createdAt}
+										updatedAt={review.updatedAt}
+									/>
 								}
 							/>
 						</List.Item>

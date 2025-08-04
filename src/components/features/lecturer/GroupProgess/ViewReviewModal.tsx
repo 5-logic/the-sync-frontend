@@ -1,10 +1,14 @@
 "use client";
 
-import { Modal, Table, Tag, Typography, Divider } from "antd";
-import type { ColumnsType } from "antd/es/table";
+import { Modal, Typography, Divider } from "antd";
 
 import { SubmissionReview } from "@/lib/services/reviews.service";
-import { getPriorityConfig } from "@/lib/utils/uiConstants";
+import { 
+	ReviewerInfo, 
+	ReviewDates, 
+	ReviewItemsTable,
+	ReviewItemData 
+} from "@/components/common/ReviewComponents";
 
 const { Text } = Typography;
 
@@ -12,15 +16,6 @@ interface Props {
 	readonly open: boolean;
 	readonly onClose: () => void;
 	readonly review: SubmissionReview | null;
-}
-
-interface ReviewItemData {
-	readonly checklistItemId: string;
-	readonly name: string;
-	readonly description: string;
-	readonly isRequired: boolean;
-	readonly acceptance: string;
-	readonly note?: string;
 }
 
 export default function ViewReviewModal({ open, onClose, review }: Props) {
@@ -37,51 +32,6 @@ export default function ViewReviewModal({ open, onClose, review }: Props) {
 		note: item.note,
 	}));
 
-	const columns: ColumnsType<ReviewItemData> = [
-		{
-			title: "Question",
-			dataIndex: "name",
-			key: "name",
-			width: "25%",
-		},
-		{
-			title: "Description",
-			dataIndex: "description",
-			key: "description",
-			width: "25%",
-		},
-		{
-			title: "Response",
-			key: "response",
-			width: "10%",
-			render: (_, record) => {
-				let color = "default";
-				if (record.acceptance === "Yes") color = "green";
-				else if (record.acceptance === "No") color = "red";
-				else if (record.acceptance === "NotAvailable") color = "orange";
-
-				return <Tag color={color}>{record.acceptance}</Tag>;
-			},
-		},
-		{
-			title: "Notes",
-			dataIndex: "note",
-			key: "notes",
-			width: "30%",
-			render: (note) => note || <Text type="secondary">No notes</Text>,
-		},
-		{
-			title: "Priority",
-			key: "priority",
-			align: "center",
-			width: "10%",
-			render: (_, record) => {
-				const { label, color } = getPriorityConfig(record.isRequired);
-				return <Tag color={color}>{label}</Tag>;
-			},
-		},
-	];
-
 	return (
 		<Modal
 			title="Review Details"
@@ -94,35 +44,12 @@ export default function ViewReviewModal({ open, onClose, review }: Props) {
 				{/* Review Info */}
 				<div style={{ marginBottom: 16 }}>
 					<div style={{ marginBottom: 8 }}>
-						<div
-							style={{
-								display: "flex",
-								alignItems: "center",
-								gap: 8,
-								marginBottom: 8,
-							}}
-						>
-							<strong>Reviewer:</strong>
-							<Text strong>{review.lecturer.user.fullName}</Text>
-							{review.isMainReviewer === true ? (
-								<Tag color="yellow">Main Reviewer</Tag>
-							) : (
-								<Tag color="blue">Secondary Reviewer</Tag>
-							)}
-						</div>
-
-						<div>
-							<Text type="secondary">
-								Created: {new Date(review.createdAt).toLocaleDateString()}
-							</Text>
-							{review.updatedAt !== review.createdAt && (
-								<>
-									<br />
-									<Text type="secondary">
-										Updated: {new Date(review.updatedAt).toLocaleDateString()}
-									</Text>
-								</>
-							)}
+						<ReviewerInfo review={review} label="Reviewer" />
+						<div style={{ marginTop: 8 }}>
+							<ReviewDates
+								createdAt={review.createdAt}
+								updatedAt={review.updatedAt}
+							/>
 						</div>
 					</div>
 				</div>
@@ -147,13 +74,9 @@ export default function ViewReviewModal({ open, onClose, review }: Props) {
 				{/* Review Items Table */}
 				<div>
 					<h4>Review Items</h4>
-					<Table
-						rowKey="checklistItemId"
-						dataSource={reviewItems}
-						columns={columns}
-						pagination={false}
-						size="small"
-						scroll={{ x: 800 }}
+					<ReviewItemsTable 
+						reviewItems={reviewItems}
+						showDescription={true}
 					/>
 				</div>
 			</div>
