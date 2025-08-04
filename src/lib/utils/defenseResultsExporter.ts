@@ -95,8 +95,13 @@ export const exportDefenseResultsToExcel = ({
 		// Generate filename
 		const currentDate = new Date();
 		const dateString = currentDate.toISOString().split('T')[0];
-		const finalFilename =
+		let finalFilename =
 			filename || `Capstone_Defense_Results_${dateString}.xlsx`;
+		
+		// Ensure filename ends with .xlsx
+		if (!finalFilename.endsWith('.xlsx')) {
+			finalFilename += '.xlsx';
+		}
 
 		// Write file
 		XLSX.writeFile(wb, finalFilename);

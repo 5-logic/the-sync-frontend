@@ -1,4 +1,4 @@
-import * as XLSX from 'xlsx-js-style';
+import * as XLSX from "xlsx-js-style";
 
 import {
 	addHeadersAndData,
@@ -8,16 +8,16 @@ import {
 	getSubtitleStyle,
 	getTitleStyle,
 	initializeExcelWorksheet,
-} from '@/lib/utils/excelStyles';
+} from "@/lib/utils/excelStyles";
 
-import { showNotification } from './notification';
+import { showNotification } from "./notification";
 
 export interface ExcelExportData {
-	'No.': number;
-	'Student ID': string;
-	'Full Name': string;
+	"No.": number;
+	"Student ID": string;
+	"Full Name": string;
 	Major: string;
-	'Thesis Title': string;
+	"Thesis Title": string;
 	Abbreviation: string;
 	Supervisor: string;
 	[key: string]: string | number | boolean;
@@ -52,8 +52,8 @@ export const exportToExcel = ({
 		// Get semester text for title
 		const semesterText =
 			semesterDisplayName ||
-			(selectedSemester === 'all'
-				? 'ALL SEMESTERS'
+			(selectedSemester === "all"
+				? "ALL SEMESTERS"
 				: selectedSemester.toUpperCase());
 		const title = `LIST OF ASSIGNMENTS AND GUIDELINES FOR THESIS IN ${semesterText.toUpperCase()}`;
 
@@ -62,13 +62,13 @@ export const exportToExcel = ({
 
 		// Prepare data for Excel export
 		const exportData: ExcelExportData[] = data.map((item, index) => ({
-			'No.': index + 1,
-			'Student ID': item.studentId,
-			'Full Name': item.name,
+			"No.": index + 1,
+			"Student ID": item.studentId,
+			"Full Name": item.name,
 			Major: item.major,
-			'Thesis Title': item.thesisName,
-			Abbreviation: item.abbreviation || '',
-			Supervisor: item.supervisor ? item.supervisor.replace(/, /g, '\n') : '',
+			"Thesis Title": item.thesisName,
+			Abbreviation: item.abbreviation || "-",
+			Supervisor: item.supervisor ? item.supervisor.replace(/, /g, "\n") : "-",
 		}));
 
 		// Add headers and data starting from row 4
@@ -84,32 +84,37 @@ export const exportToExcel = ({
 			{ wch: 15 }, // Abbreviation
 			{ wch: 20 }, // Supervisor - reduced width since names are on separate lines
 		];
-		ws['!cols'] = colWidths;
+		ws["!cols"] = colWidths;
 
 		// Create merge ranges and apply styling
 		applyMergesAndStyling(ws, data);
 
 		// Add worksheet to workbook
-		XLSX.utils.book_append_sheet(wb, ws, 'Group Management');
+		XLSX.utils.book_append_sheet(wb, ws, "Group Management");
 
 		// Generate filename
 		const currentDate = new Date();
-		const dateString = currentDate.toISOString().split('T')[0];
-		const finalFilename = filename || `Capstone_Project_${dateString}.xlsx`;
+		const dateString = currentDate.toISOString().split("T")[0];
+		let finalFilename = filename || `Capstone_Project_${dateString}.xlsx`;
+		
+		// Ensure filename ends with .xlsx
+		if (!finalFilename.endsWith('.xlsx')) {
+			finalFilename += '.xlsx';
+		}
 
 		// Write file
 		XLSX.writeFile(wb, finalFilename);
 
 		showNotification.success(
-			'Excel file exported successfully!',
-			'Your file has been saved.',
+			"Excel file exported successfully!",
+			"Your file has been saved.",
 		);
 	} catch (error) {
-		console.error('Error exporting Excel:', error);
+		console.error("Error exporting Excel:", error);
 
 		showNotification.error(
-			'Export failed!',
-			'An error occurred while exporting Excel file.',
+			"Export failed!",
+			"An error occurred while exporting Excel file.",
 		);
 	}
 };
@@ -122,7 +127,7 @@ const applyMergesAndStyling = (
 	const { merges, groupBoundaries } = createMergesAndGroupBoundaries(data, 7);
 
 	// Apply merges to worksheet
-	ws['!merges'] = merges;
+	ws["!merges"] = merges;
 
 	// Apply styling using shared utility
 	applyCustomCellStyling(ws, groupBoundaries, 7);
@@ -134,7 +139,7 @@ const applyCustomCellStyling = (
 	totalColumns: number,
 ) => {
 	const columnLetter = String.fromCharCode(65 + totalColumns - 1); // A=65, so A+6=G for 7 columns
-	const range = XLSX.utils.decode_range(ws['!ref'] || `A1:${columnLetter}1`);
+	const range = XLSX.utils.decode_range(ws["!ref"] || `A1:${columnLetter}1`);
 
 	for (let R = range.s.r; R <= range.e.r; ++R) {
 		for (let C = range.s.c; C <= range.e.c; ++C) {
@@ -142,7 +147,7 @@ const applyCustomCellStyling = (
 
 			// Create cell if it doesn't exist
 			if (!ws[cellAddress]) {
-				ws[cellAddress] = { v: '', t: 's' };
+				ws[cellAddress] = { v: "", t: "s" };
 			}
 
 			// Apply styling based on row type and column
@@ -157,16 +162,16 @@ const getCellStyle = (
 	groupBoundaries: number[],
 ) => {
 	if (rowIndex === 0) {
-		return getTitleStyle('D6EAF8'); // Blue theme for group management
+		return getTitleStyle("D6EAF8"); // Blue theme for group management
 	}
 	if (rowIndex === 1) {
-		return getSubtitleStyle('F0F8FF'); // Light blue theme for subtitle
+		return getSubtitleStyle("F0F8FF"); // Light blue theme for subtitle
 	}
 	if (rowIndex === 2) {
 		return {}; // Empty row - no styling
 	}
 	if (rowIndex === 3) {
-		return getHeaderStyle('E6F3FF'); // Light blue for header
+		return getHeaderStyle("E6F3FF"); // Light blue for header
 	}
 
 	// For data rows, apply custom alignment for specific columns
@@ -178,7 +183,7 @@ const getCellStyle = (
 			...baseStyle,
 			alignment: {
 				...baseStyle.alignment,
-				horizontal: 'left',
+				horizontal: "left",
 				wrapText: true,
 			},
 		};
@@ -190,8 +195,8 @@ const getCellStyle = (
 			...baseStyle,
 			alignment: {
 				...baseStyle.alignment,
-				horizontal: 'center',
-				vertical: 'center',
+				horizontal: "center",
+				vertical: "center",
 				wrapText: true,
 			},
 		};
