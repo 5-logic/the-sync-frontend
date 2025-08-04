@@ -1,7 +1,17 @@
 "use client";
 
 import { DownloadOutlined } from "@ant-design/icons";
-import { Button, Card, Col, Grid, Row, Spin, Steps, Typography } from "antd";
+import {
+	Button,
+	Card,
+	Col,
+	Divider,
+	Grid,
+	Row,
+	Spin,
+	Steps,
+	Typography,
+} from "antd";
 import { useEffect } from "react";
 
 import CardLoadingSkeleton from "@/components/common/loading/CardLoadingSkeleton";
@@ -350,28 +360,16 @@ export default function MilestoneDetailCard({
 					{/* Additional submission info */}
 					{submission && (
 						<>
-							<Row style={{ marginBottom: 16 }}>
-								<Col span={24}>
-									<Text strong>Status: </Text>
-									<Text
-										type={
-											submission.status === "Submitted" ? "success" : "warning"
-										}
-									>
-										{submission.status}
-									</Text>
-								</Col>
-							</Row>
-
+							<Divider style={{ margin: "16px 0" }} />
 							{hasAssignmentReviews(submission) && (
 								<Row style={{ marginTop: 16 }}>
 									<Col span={24}>
 										<Text strong>Reviewers:</Text>
 										{getAssignmentReviews(submission).map(
-											(review: AssignmentReviewDetail, index: number) => (
+											(review: AssignmentReviewDetail) => (
 												<div key={review.reviewerId} style={{ marginTop: 4 }}>
 													<Text type="secondary">
-														{index + 1}. {review.reviewer.user.fullName}
+														{review.reviewer.user.fullName}
 													</Text>
 												</div>
 											),
