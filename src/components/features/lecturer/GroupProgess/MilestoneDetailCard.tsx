@@ -5,6 +5,7 @@ import {
 	Button,
 	Card,
 	Col,
+	Divider,
 	Empty,
 	Grid,
 	Row,
@@ -338,7 +339,7 @@ export default function MilestoneDetailCard({
 					)}
 
 					{/* Submission Details */}
-					<Row justify="space-between" wrap style={{ marginBottom: 16 }}>
+					<Row justify="space-between" wrap>
 						<Col
 							span={screens.xs ? 24 : 12}
 							style={{ marginBottom: screens.xs ? 8 : 0 }}
@@ -365,13 +366,14 @@ export default function MilestoneDetailCard({
 						<>
 							{hasAssignmentReviews(submission) && (
 								<Row>
+									<Divider style={{ margin: "16px 0" }} />
 									<Col span={24}>
 										<Text strong>Reviewers:</Text>
 										{getAssignmentReviews(submission).map(
-											(review: AssignmentReviewDetail, index: number) => (
+											(review: AssignmentReviewDetail) => (
 												<div key={review.reviewerId} style={{ marginTop: 4 }}>
 													<Text type="secondary">
-														{index + 1}. {review.reviewer.user.fullName}
+														{review.reviewer.user.fullName}
 													</Text>
 												</div>
 											),
