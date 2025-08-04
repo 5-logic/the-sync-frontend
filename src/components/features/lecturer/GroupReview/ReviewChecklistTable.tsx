@@ -547,6 +547,15 @@ export default function ReviewChecklistTable({
 				onReviewUpdated={handleReviewUpdated}
 			/>
 
+			{/* Show loading skeleton while loading reviews */}
+			{submissionReviewsLoading && (
+				<div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+					<div style={{ ...commonStyles.containerBox }}>
+						<Skeleton active avatar={false} paragraph={{ rows: 2 }} />
+					</div>
+				</div>
+			)}
+
 			{/* Only show new review form if no existing reviews and not loading */}
 			{submissionReviews.length === 0 && !submissionReviewsLoading && (
 				<>
@@ -619,7 +628,7 @@ export default function ReviewChecklistTable({
 			)}
 
 			{/* Show enhanced message when there are existing reviews */}
-			{submissionReviews.length > 0 && (
+			{submissionReviews.length > 0 && !submissionReviewsLoading && (
 				<div
 					style={{
 						...commonStyles.reviewerInfoBox,
