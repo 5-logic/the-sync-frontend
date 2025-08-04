@@ -390,6 +390,9 @@ export default function MilestoneDetailCard() {
 				<SubmittedFilesView
 					documents={submission?.documents || []}
 					canSubmit={submissionCanSubmit}
+					reviews={
+						currentSubmissionId === submission?.id ? submissionReviews : []
+					}
 					onUpdateMode={() => {
 						// Enable update mode and initialize with existing documents
 						setUpdateMode((prev) => ({
