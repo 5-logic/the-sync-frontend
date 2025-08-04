@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import { Button, Form, Modal, Select } from 'antd';
-import React, { useEffect, useMemo, useState } from 'react';
+import { Button, Form, Modal, Select } from "antd";
+import React, { useEffect, useMemo, useState } from "react";
 
-import { FormLabel } from '@/components/common/FormLabel';
-import { GroupTableProps } from '@/components/features/lecturer/AssignLecturerReview/GroupTable';
+import { FormLabel } from "@/components/common/FormLabel";
+import { GroupTableProps } from "@/components/features/lecturer/AssignLecturerReview/GroupTable";
 import {
 	AssignBulkReviewersResult,
 	Lecturer,
-} from '@/lib/services/review.service';
-import { showNotification } from '@/lib/utils/notification';
-import { useReviewStore } from '@/store/useReviewStore';
+} from "@/lib/services/reviews.service";
+import { showNotification } from "@/lib/utils/notification";
+import { useReviewStore } from "@/store/useReviewStore";
 
 interface LecturerOption {
 	label: string;
@@ -86,8 +86,8 @@ export default function AssignReviewerModal({
 	const getEligibleReviewers = useReviewStore((s) => s.getEligibleReviewers);
 
 	// Watch form values to compute options reactively
-	const reviewer1Value = Form.useWatch('reviewer1', form);
-	const reviewer2Value = Form.useWatch('reviewer2', form);
+	const reviewer1Value = Form.useWatch("reviewer1", form);
+	const reviewer2Value = Form.useWatch("reviewer2", form);
 
 	// Helper methods for form initialization
 	const shouldInitializeForm = (): boolean => {
@@ -118,11 +118,11 @@ export default function AssignReviewerModal({
 				: initialValues || [];
 
 		const reviewer1Id =
-			typeof reviewerVals[0] === 'string'
+			typeof reviewerVals[0] === "string"
 				? reviewerVals[0]
 				: reviewerVals[0]?.id;
 		const reviewer2Id =
-			typeof reviewerVals[1] === 'string'
+			typeof reviewerVals[1] === "string"
 				? reviewerVals[1]
 				: reviewerVals[1]?.id;
 
@@ -150,19 +150,19 @@ export default function AssignReviewerModal({
 		eligibleReviewersData: Lecturer[],
 	): Lecturer => {
 		// If reviewer is already a Lecturer object
-		if (typeof reviewer === 'object' && reviewer && 'id' in reviewer) {
+		if (typeof reviewer === "object" && reviewer && "id" in reviewer) {
 			return reviewer as Lecturer;
 		}
 
 		// If reviewer is just an ID string, find it in eligible reviewers
 		const reviewerId =
-			typeof reviewer === 'string' ? reviewer : String(reviewer);
+			typeof reviewer === "string" ? reviewer : String(reviewer);
 
 		return (
 			eligibleReviewersData.find((l) => l.id === reviewerId) || {
 				id: reviewerId,
-				fullName: 'Unknown Lecturer',
-				email: '',
+				fullName: "Unknown Lecturer",
+				email: "",
 				isModerator: false,
 			}
 		);
@@ -179,7 +179,7 @@ export default function AssignReviewerModal({
 		const handleChangeModeReviewers = (eligibleReviewersData: Lecturer[]) => {
 			if (!isChangeMode || !group?.reviewers) return;
 
-			console.log('Change mode - current reviewers:', group.reviewers);
+			console.log("Change mode - current reviewers:", group.reviewers);
 			const currentReviewersData = group.reviewers.map((reviewer) =>
 				processReviewerData(reviewer, eligibleReviewersData),
 			);
@@ -190,21 +190,21 @@ export default function AssignReviewerModal({
 		const handleSuccessfulFetch = (eligibleReviewersData: Lecturer[]) => {
 			if (ignore) return;
 
-			console.log('Received eligible reviewers:', eligibleReviewersData);
+			console.log("Received eligible reviewers:", eligibleReviewersData);
 			setEligibleLecturers(eligibleReviewersData);
 			handleChangeModeReviewers(eligibleReviewersData);
 		};
 
 		// Helper function to handle fetch errors
 		const handleFetchError = (error: unknown) => {
-			console.error('Failed to fetch eligible reviewers:', error);
+			console.error("Failed to fetch eligible reviewers:", error);
 			if (ignore) return;
 
 			setEligibleLecturers([]);
 			setCurrentReviewers([]);
 			showNotification.error(
-				'Failed to Load Reviewers',
-				'Unable to fetch eligible lecturers. Please try again.',
+				"Failed to Load Reviewers",
+				"Unable to fetch eligible lecturers. Please try again.",
 			);
 		};
 
@@ -217,7 +217,7 @@ export default function AssignReviewerModal({
 		}
 
 		console.log(
-			'Modal opened, fetching eligible reviewers for:',
+			"Modal opened, fetching eligible reviewers for:",
 			group.submissionId,
 		);
 		setFetchLoading(true);
@@ -276,13 +276,13 @@ export default function AssignReviewerModal({
 
 	// Generate stable keys for Select components
 	const getReviewer1Key = (): string => {
-		if (isAnyLoading) return 'reviewer1-loading';
-		return `reviewer1-${reviewer2Value || 'none'}-${renderKey}`;
+		if (isAnyLoading) return "reviewer1-loading";
+		return `reviewer1-${reviewer2Value || "none"}-${renderKey}`;
 	};
 
 	const getReviewer2Key = (): string => {
-		if (isAnyLoading) return 'reviewer2-loading';
-		return `reviewer2-${reviewer1Value || 'none'}-${renderKey}`;
+		if (isAnyLoading) return "reviewer2-loading";
+		return `reviewer2-${reviewer1Value || "none"}-${renderKey}`;
 	};
 
 	// Compute all available lecturers for dropdowns
@@ -356,7 +356,7 @@ export default function AssignReviewerModal({
 
 	// Modal title methods
 	const getModalTitle = (): string => {
-		const groupCode = group?.code ?? '';
+		const groupCode = group?.code ?? "";
 		if (isChangeMode) {
 			return `Change Reviewers for Group: ${groupCode}`;
 		}
@@ -367,8 +367,8 @@ export default function AssignReviewerModal({
 	const handleFinish = async () => {
 		if (!group?.submissionId) {
 			showNotification.error(
-				'Invalid Operation',
-				'No submission selected for reviewer assignment.',
+				"Invalid Operation",
+				"No submission selected for reviewer assignment.",
 			);
 			return;
 		}
@@ -381,14 +381,14 @@ export default function AssignReviewerModal({
 		if (selected.length < 2) {
 			form.setFields([
 				{
-					name: 'reviewer1',
+					name: "reviewer1",
 					errors:
-						selected.length === 0 ? ['Please select a main reviewer'] : [],
+						selected.length === 0 ? ["Please select a main reviewer"] : [],
 				},
 				{
-					name: 'reviewer2',
+					name: "reviewer2",
 					errors:
-						selected.length < 2 ? ['Please select a secondary reviewer'] : [],
+						selected.length < 2 ? ["Please select a secondary reviewer"] : [],
 				},
 			]);
 			return;
@@ -422,14 +422,14 @@ export default function AssignReviewerModal({
 	const showSuccessNotification = (
 		reviewerAssignments: Array<{ lecturerId: string; isMainReviewer: boolean }>,
 	) => {
-		const operationType = isChangeMode ? 'changed' : 'assigned';
+		const operationType = isChangeMode ? "changed" : "assigned";
 		const operationTitle = isChangeMode
-			? 'Reviewers Changed Successfully'
-			: 'Reviewers Assigned Successfully';
+			? "Reviewers Changed Successfully"
+			: "Reviewers Assigned Successfully";
 
 		const reviewerCount = reviewerAssignments.length;
-		const reviewerText = reviewerCount > 1 ? 's' : '';
-		const preposition = isChangeMode ? 'for' : 'to';
+		const reviewerText = reviewerCount > 1 ? "s" : "";
+		const preposition = isChangeMode ? "for" : "to";
 
 		showNotification.success(
 			operationTitle,
@@ -439,7 +439,7 @@ export default function AssignReviewerModal({
 
 	// Helper function to show error notification
 	const showErrorNotification = (error?: unknown) => {
-		const operationType = isChangeMode ? 'change' : 'assign';
+		const operationType = isChangeMode ? "change" : "assign";
 		const operationTitle = `${operationType.charAt(0).toUpperCase() + operationType.slice(1)}`;
 
 		if (error) {
@@ -463,8 +463,8 @@ export default function AssignReviewerModal({
 	const validateAssignmentData = (): boolean => {
 		if (!group?.submissionId || !assignBulkReviewers) {
 			showNotification.error(
-				'Operation Failed',
-				'Unable to assign reviewers. Missing required data.',
+				"Operation Failed",
+				"Unable to assign reviewers. Missing required data.",
 			);
 			return false;
 		}
@@ -497,7 +497,7 @@ export default function AssignReviewerModal({
 				onAssign(null);
 			}
 		} catch (error) {
-			console.error('Failed to assign/change reviewers:', error);
+			console.error("Failed to assign/change reviewers:", error);
 			showErrorNotification(error);
 		} finally {
 			setAssignLoading(false);
@@ -522,20 +522,20 @@ export default function AssignReviewerModal({
 		if (!mainReviewerId || !secondaryReviewerId) {
 			form.setFields([
 				{
-					name: 'reviewer1',
-					errors: !mainReviewerId ? ['Please select a main reviewer'] : [],
+					name: "reviewer1",
+					errors: !mainReviewerId ? ["Please select a main reviewer"] : [],
 				},
 				{
-					name: 'reviewer2',
+					name: "reviewer2",
 					errors: !secondaryReviewerId
-						? ['Please select a secondary reviewer']
+						? ["Please select a secondary reviewer"]
 						: [],
 				},
 			]);
 
 			showNotification.warning(
-				'Incomplete Selection',
-				'Please select both main and secondary reviewers before saving draft.',
+				"Incomplete Selection",
+				"Please select both main and secondary reviewers before saving draft.",
 			);
 			return;
 		}
@@ -544,26 +544,26 @@ export default function AssignReviewerModal({
 		if (mainReviewerId === secondaryReviewerId) {
 			form.setFields([
 				{
-					name: 'reviewer1',
-					errors: ['Main reviewer must be different from secondary reviewer'],
+					name: "reviewer1",
+					errors: ["Main reviewer must be different from secondary reviewer"],
 				},
 				{
-					name: 'reviewer2',
-					errors: ['Secondary reviewer must be different from main reviewer'],
+					name: "reviewer2",
+					errors: ["Secondary reviewer must be different from main reviewer"],
 				},
 			]);
 
 			showNotification.warning(
-				'Invalid Selection',
-				'Main and secondary reviewers must be different persons.',
+				"Invalid Selection",
+				"Main and secondary reviewers must be different persons.",
 			);
 			return;
 		}
 
 		// Clear any previous validation errors
 		form.setFields([
-			{ name: 'reviewer1', errors: [] },
-			{ name: 'reviewer2', errors: [] },
+			{ name: "reviewer1", errors: [] },
+			{ name: "reviewer2", errors: [] },
 		]);
 
 		// Success notification will be handled by the parent component
@@ -596,7 +596,7 @@ export default function AssignReviewerModal({
 			loading={assignLoading}
 			disabled={isAnyLoading}
 		>
-			{isChangeMode ? 'Change' : 'Assign'}
+			{isChangeMode ? "Change" : "Assign"}
 		</Button>
 	);
 
@@ -612,12 +612,12 @@ export default function AssignReviewerModal({
 	};
 
 	// Placeholder methods
-	const getReviewer1Placeholder = (): string => 'Select main reviewer';
-	const getReviewer2Placeholder = (): string => 'Select secondary reviewer';
+	const getReviewer1Placeholder = (): string => "Select main reviewer";
+	const getReviewer2Placeholder = (): string => "Select secondary reviewer";
 
 	// Label methods
-	const getReviewer1LabelText = (): string => 'Main Reviewer';
-	const getReviewer2LabelText = (): string => 'Secondary Reviewer';
+	const getReviewer1LabelText = (): string => "Main Reviewer";
+	const getReviewer2LabelText = (): string => "Secondary Reviewer";
 
 	return (
 		<Modal
@@ -641,13 +641,13 @@ export default function AssignReviewerModal({
 								// For Assign/Change: validation is handled in handleFinish
 
 								const reviewer2 =
-									reviewer2Value || form.getFieldValue('reviewer2');
+									reviewer2Value || form.getFieldValue("reviewer2");
 
 								// Check for duplicates
 								if (value && value === reviewer2) {
 									return Promise.reject(
 										new Error(
-											'Main reviewer must be different from secondary reviewer',
+											"Main reviewer must be different from secondary reviewer",
 										),
 									);
 								}
@@ -675,11 +675,11 @@ export default function AssignReviewerModal({
 							optionLabelProp="label"
 							notFoundContent={
 								allAvailableLecturers.length === 0
-									? 'No eligible lecturers found'
-									: 'No options'
+									? "No eligible lecturers found"
+									: "No options"
 							}
 							onChange={() => {
-								form.validateFields(['reviewer2']);
+								form.validateFields(["reviewer2"]);
 							}}
 						/>
 					)}
@@ -696,13 +696,13 @@ export default function AssignReviewerModal({
 								// For Assign/Change: validation is handled in handleFinish
 
 								const reviewer1 =
-									reviewer1Value || form.getFieldValue('reviewer1');
+									reviewer1Value || form.getFieldValue("reviewer1");
 
 								// Check for duplicates
 								if (value && value === reviewer1) {
 									return Promise.reject(
 										new Error(
-											'Secondary reviewer must be different from main reviewer',
+											"Secondary reviewer must be different from main reviewer",
 										),
 									);
 								}
@@ -730,11 +730,11 @@ export default function AssignReviewerModal({
 							optionLabelProp="label"
 							notFoundContent={
 								allAvailableLecturers.length === 0
-									? 'No eligible lecturers found'
-									: 'No options'
+									? "No eligible lecturers found"
+									: "No options"
 							}
 							onChange={() => {
-								form.validateFields(['reviewer1']);
+								form.validateFields(["reviewer1"]);
 							}}
 						/>
 					)}

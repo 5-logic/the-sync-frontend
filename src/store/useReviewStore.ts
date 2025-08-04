@@ -1,12 +1,12 @@
-import { create } from 'zustand';
+import { create } from "zustand";
 
 import {
 	AssignBulkReviewersDto,
 	AssignBulkReviewersResult,
 	Lecturer,
 	reviewService,
-} from '@/lib/services/review.service';
-import { cacheUtils } from '@/store/helpers/cacheHelpers';
+} from "@/lib/services/reviews.service";
+import { cacheUtils } from "@/store/helpers/cacheHelpers";
 
 export interface ReviewStoreState {
 	getEligibleReviewers: (
@@ -21,7 +21,7 @@ export interface ReviewStoreState {
 }
 
 // Initialize cache for eligible reviewers
-cacheUtils.initCache<Lecturer[]>('eligibleReviewers', {
+cacheUtils.initCache<Lecturer[]>("eligibleReviewers", {
 	ttl: 10 * 60 * 1000, // 10 minutes
 	maxSize: 1000,
 	enableLocalStorage: true,
@@ -31,26 +31,26 @@ export const useReviewStore = create<ReviewStoreState>(() => ({
 	async getEligibleReviewers(submissionId: string, force = false) {
 		if (!force) {
 			const cached = cacheUtils.get<Lecturer[]>(
-				'eligibleReviewers',
+				"eligibleReviewers",
 				submissionId,
 			);
 			if (cached) return cached;
 		}
 
 		try {
-			console.log('Fetching eligible reviewers for submission:', submissionId);
+			console.log("Fetching eligible reviewers for submission:", submissionId);
 			const res = await reviewService.getEligibleReviewers(submissionId);
-			console.log('API Response:', res);
+			console.log("API Response:", res);
 
 			// Check if response is successful
 			if (!res.success) {
-				console.error('API returned error:', res);
+				console.error("API returned error:", res);
 				return [];
 			}
 
 			// Check if data exists
 			if (!res.data || !Array.isArray(res.data)) {
-				console.error('API returned invalid data:', res.data);
+				console.error("API returned invalid data:", res.data);
 				return [];
 			}
 
@@ -62,17 +62,17 @@ export const useReviewStore = create<ReviewStoreState>(() => ({
 				isModerator: item.isModerator,
 			}));
 
-			console.log('Mapped data:', mappedData);
-			cacheUtils.set('eligibleReviewers', submissionId, mappedData);
+			console.log("Mapped data:", mappedData);
+			cacheUtils.set("eligibleReviewers", submissionId, mappedData);
 			return mappedData;
 		} catch (error) {
-			console.error('Error fetching eligible reviewers:', error);
+			console.error("Error fetching eligible reviewers:", error);
 			return [];
 		}
 	},
 
 	clearEligibleReviewersCache() {
-		cacheUtils.clear('eligibleReviewers');
+		cacheUtils.clear("eligibleReviewers");
 	},
 
 	async assignBulkReviewers(dto) {
@@ -88,11 +88,11 @@ export const useReviewStore = create<ReviewStoreState>(() => ({
 					statusCode: number;
 					error: string;
 				};
-				throw new Error(errorResponse.error || 'Failed to assign reviewers');
+				throw new Error(errorResponse.error || "Failed to assign reviewers");
 			}
 		} catch (error) {
 			// Check if it's an axios error with response data
-			if (error && typeof error === 'object' && 'response' in error) {
+			if (error && typeof error === "object" && "response" in error) {
 				const axiosError = error as {
 					response?: { data?: { error?: string } };
 				};
@@ -107,7 +107,7 @@ export const useReviewStore = create<ReviewStoreState>(() => ({
 				throw error;
 			}
 			// Handle other types of errors (network, etc.)
-			throw new Error('Failed to assign reviewers');
+			throw new Error("Failed to assign reviewers");
 		}
 	},
 }));
