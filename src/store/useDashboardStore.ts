@@ -1,12 +1,16 @@
-import { create } from 'zustand';
+import { create } from "zustand";
 
+import {
+	AIStatisticsData,
+	AIStatisticsService,
+} from "@/lib/services/ai-statistics.service";
 import {
 	DashboardService,
 	DashboardStatistics,
 	ProgressOverview,
 	SummaryCard,
 	SupervisorLoadDistribution,
-} from '@/lib/services/dashboard.service';
+} from "@/lib/services/dashboard.service";
 
 interface DashboardState {
 	// Data
@@ -14,15 +18,19 @@ interface DashboardState {
 	summaryCard: SummaryCard | null;
 	progressOverview: ProgressOverview | null;
 	supervisorLoadDistribution: SupervisorLoadDistribution[];
+	aiStatistics: AIStatisticsData | null;
 
 	// UI State
 	loading: boolean;
+	aiLoading: boolean;
 	error: string | null;
+	aiError: string | null;
 	selectedSemesterId: string | null;
 
 	// Actions
 	setSelectedSemesterId: (semesterId: string | null) => void;
 	fetchDashboardStatistics: (semesterId: string) => Promise<void>;
+	fetchAIStatistics: (semesterId: string) => Promise<void>;
 	clearError: () => void;
 	reset: () => void;
 }
@@ -32,8 +40,11 @@ const initialState = {
 	summaryCard: null,
 	progressOverview: null,
 	supervisorLoadDistribution: [],
+	aiStatistics: null,
 	loading: false,
+	aiLoading: false,
 	error: null,
+	aiError: null,
 	selectedSemesterId: null,
 };
 
@@ -44,12 +55,14 @@ export const useDashboardStore = create<DashboardState>()((set, get) => ({
 		set({ selectedSemesterId: semesterId });
 		if (semesterId) {
 			get().fetchDashboardStatistics(semesterId);
+			get().fetchAIStatistics(semesterId);
 		} else {
 			set({
 				statistics: null,
 				summaryCard: null,
 				progressOverview: null,
 				supervisorLoadDistribution: [],
+				aiStatistics: null,
 			});
 		}
 	},
@@ -72,7 +85,7 @@ export const useDashboardStore = create<DashboardState>()((set, get) => ({
 			const errorMessage =
 				error instanceof Error
 					? error.message
-					: 'Failed to fetch dashboard statistics';
+					: "Failed to fetch dashboard statistics";
 
 			set({
 				error: errorMessage,
@@ -85,7 +98,32 @@ export const useDashboardStore = create<DashboardState>()((set, get) => ({
 		}
 	},
 
-	clearError: () => set({ error: null }),
+	fetchAIStatistics: async (semesterId: string) => {
+		try {
+			set({ aiLoading: true, aiError: null });
+
+			const aiStatistics =
+				await AIStatisticsService.getSemesterAIStatistics(semesterId);
+
+			set({
+				aiStatistics,
+				aiLoading: false,
+			});
+		} catch (error) {
+			const errorMessage =
+				error instanceof Error
+					? error.message
+					: "Failed to fetch AI statistics";
+
+			set({
+				aiError: errorMessage,
+				aiLoading: false,
+				aiStatistics: null,
+			});
+		}
+	},
+
+	clearError: () => set({ error: null, aiError: null }),
 
 	reset: () => set(initialState),
 }));

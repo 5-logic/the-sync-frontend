@@ -1,53 +1,54 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
-import { useSessionData } from '@/hooks/auth/useAuth';
-import { useCurrentSemester } from '@/hooks/semester/useCurrentSemester';
-import semestersService from '@/lib/services/semesters.service';
-import { handleApiResponse } from '@/lib/utils/handleApi';
-import { Semester } from '@/schemas/semester';
+import { useSessionData } from "@/hooks/auth/useAuth";
+import { useCurrentSemester } from "@/hooks/semester/useCurrentSemester";
+import { useSemesterStore } from "@/store";
 
 /**
  * Custom hook for managing semester filtering in lecturer dashboard components
  * Handles semester data fetching, default semester selection, and state management
+ * Now uses centralized semester store like admin dashboard
  */
 export function useLecturerSemesterFilter() {
-	const [semesters, setSemesters] = useState<Semester[]>([]);
-	const [selectedSemester, setSelectedSemester] = useState<string>('all');
-	const [semestersLoading, setSemestersLoading] = useState(true);
+	const [selectedSemester, setSelectedSemester] = useState<string>("all");
+	const [isInitialized, setIsInitialized] = useState(false);
 	const { session } = useSessionData();
 	const { currentSemester } = useCurrentSemester();
 
-	// Set default semester to current semester when available
-	useEffect(() => {
-		if (currentSemester?.id && selectedSemester === 'all') {
-			setSelectedSemester(currentSemester.id);
-		}
-	}, [currentSemester?.id, selectedSemester]);
+	// Use centralized semester store instead of local state
+	const {
+		semesters,
+		loading: semestersLoading,
+		fetchSemesters,
+	} = useSemesterStore();
 
-	// Fetch semesters for filter
+	// Fetch semesters on component mount
 	useEffect(() => {
-		const fetchSemesters = async () => {
-			try {
-				setSemestersLoading(true);
-				const response = await semestersService.findAll();
-				const result = handleApiResponse(response);
-				if (result.success) {
-					setSemesters(result.data || []);
-				}
-			} catch (error) {
-				console.error('Error fetching semesters:', error);
-			} finally {
-				setSemestersLoading(false);
-			}
-		};
-
 		fetchSemesters();
-	}, []);
+	}, [fetchSemesters]);
+
+	// Set default semester to current semester when available (only on initial load)
+	useEffect(() => {
+		if (currentSemester?.id && selectedSemester === "all" && !isInitialized) {
+			setSelectedSemester(currentSemester.id);
+			setIsInitialized(true);
+		}
+	}, [currentSemester?.id, selectedSemester, isInitialized]);
+
+	// Wrapper function to handle clear behavior
+	const handleSemesterChange = (value: string | null) => {
+		if (value === null || value === undefined) {
+			// When cleared, set to "all"
+			setSelectedSemester("all");
+		} else {
+			setSelectedSemester(value);
+		}
+	};
 
 	return {
 		semesters,
 		selectedSemester,
-		setSelectedSemester,
+		setSelectedSemester: handleSemesterChange,
 		semestersLoading,
 		session,
 		currentSemester,

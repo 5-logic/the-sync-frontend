@@ -395,7 +395,7 @@ export default function ViewListThesis() {
 								onClick={handleAISuggest}
 								loading={aiLoading}
 							>
-								AI Suggest
+								{aiLoading ? "Getting AI Suggestions..." : "AI Suggest"}
 							</Button>
 						)}
 					</Space>

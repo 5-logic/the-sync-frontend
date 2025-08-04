@@ -1,13 +1,13 @@
-import { Alert, Button } from 'antd';
-import { useRouter } from 'next/navigation';
-import { useCallback, useState } from 'react';
+import { Alert, Button } from "antd";
+import { useRouter } from "next/navigation";
+import { useCallback, useState } from "react";
 
-import { ConfirmationModal } from '@/components/common/ConfirmModal';
-import { useSessionData } from '@/hooks/auth/useAuth';
-import { useCurrentSemester } from '@/hooks/semester/useCurrentSemester';
-import aiService, { type GroupSuggestion } from '@/lib/services/ai.service';
-import studentsService from '@/lib/services/students.service';
-import { handleApiResponse } from '@/lib/utils/handleApi';
+import { ConfirmationModal } from "@/components/common/ConfirmModal";
+import { useSessionData } from "@/hooks/auth/useAuth";
+import { useCurrentSemester } from "@/hooks/semester/useCurrentSemester";
+import aiService, { type GroupSuggestion } from "@/lib/services/ai.service";
+import studentsService from "@/lib/services/students.service";
+import { handleApiResponse } from "@/lib/utils/handleApi";
 
 const FORM_CONFIG = {
 	BUTTON_HEIGHT: 40,
@@ -17,9 +17,9 @@ const FORM_CONFIG = {
 
 const BUTTON_STYLES = {
 	height: FORM_CONFIG.BUTTON_HEIGHT,
-	padding: '0 16px',
+	padding: "0 16px",
 	fontSize: FORM_CONFIG.BUTTON_FONT_SIZE,
-	minWidth: 'auto',
+	minWidth: "auto",
 } as const;
 
 interface JoinGroupFormProps {
@@ -50,7 +50,7 @@ export default function JoinGroupForm({
 				onSuggestionsReceived?.(response.data.suggestions);
 			}
 		} catch (error) {
-			console.error('Error calling AI suggest API:', error);
+			console.error("Error calling AI suggest API:", error);
 		}
 	}, [session?.user?.id, currentSemester?.id, onSuggestionsReceived]);
 
@@ -67,7 +67,7 @@ export default function JoinGroupForm({
 			const studentResult = handleApiResponse(studentResponse);
 
 			if (!studentResult.success) {
-				console.error('Failed to fetch student data');
+				console.error("Failed to fetch student data");
 				return;
 			}
 
@@ -81,19 +81,19 @@ export default function JoinGroupForm({
 			// Show modal if student doesn't have skills or responsibilities
 			if (!hasSkills || !hasResponsibilities) {
 				ConfirmationModal.show({
-					title: 'Set Up Your Profile',
+					title: "Set Up Your Profile",
 					message:
-						'To get the best group suggestions, please set up your skills and expected responsibilities in your profile first.',
+						"To get the best group suggestions, please set up your skills and expected responsibilities in your profile first.",
 					details:
-						'This helps our AI algorithm find groups that match your expertise and preferences.',
-					okText: 'Continue Anyway',
-					cancelText: 'Go to Profile',
-					okType: 'primary',
+						"This helps our AI algorithm find groups that match your expertise and preferences.",
+					okText: "Continue Anyway",
+					cancelText: "Go to Profile",
+					okType: "primary",
 					onOk: async () => {
 						await callAISuggestAPI();
 					},
 					onCancel: () => {
-						router.push('/student/account-setting');
+						router.push("/student/account-setting");
 					},
 				});
 			} else {
@@ -101,14 +101,14 @@ export default function JoinGroupForm({
 				await callAISuggestAPI();
 			}
 		} catch (error) {
-			console.error('Error in suggest groups:', error);
+			console.error("Error in suggest groups:", error);
 		} finally {
 			setLoading(false);
 		}
 	}, [session?.user?.id, currentSemester?.id, router, callAISuggestAPI]);
 
 	return (
-		<div style={{ width: '100%' }}>
+		<div style={{ width: "100%" }}>
 			{/* Desktop/Tablet: Alert with action button inline */}
 			<div className="hidden sm:block">
 				<Alert
@@ -121,19 +121,19 @@ export default function JoinGroupForm({
 							type="primary"
 							style={{
 								...BUTTON_STYLES,
-								width: '100%',
-								maxWidth: '200px',
-								whiteSpace: 'normal',
-								textAlign: 'center',
-								wordBreak: 'break-word',
+								width: "100%",
+								maxWidth: "200px",
+								whiteSpace: "normal",
+								textAlign: "center",
+								wordBreak: "break-word",
 							}}
 							loading={loading}
 							onClick={handleSuggestGroups}
 						>
-							Suggest Groups by AI
+							{loading ? "Finding Groups..." : "Suggest Groups by AI"}
 						</Button>
 					}
-					style={{ width: '100%' }}
+					style={{ width: "100%" }}
 				/>
 			</div>
 
@@ -145,26 +145,26 @@ export default function JoinGroupForm({
 					type="info"
 					showIcon
 					style={{
-						width: '100%',
-						marginBottom: '16px',
-						wordBreak: 'break-word',
-						wordWrap: 'break-word',
-						overflowWrap: 'break-word',
+						width: "100%",
+						marginBottom: "16px",
+						wordBreak: "break-word",
+						wordWrap: "break-word",
+						overflowWrap: "break-word",
 					}}
 				/>
 				<Button
 					type="primary"
 					style={{
 						...BUTTON_STYLES,
-						width: '100%',
-						whiteSpace: 'normal',
-						textAlign: 'center',
-						wordBreak: 'break-word',
+						width: "100%",
+						whiteSpace: "normal",
+						textAlign: "center",
+						wordBreak: "break-word",
 					}}
 					loading={loading}
 					onClick={handleSuggestGroups}
 				>
-					Suggest Groups by AI
+					{loading ? "Finding Groups..." : "Suggest Groups by AI"}
 				</Button>
 			</div>
 		</div>

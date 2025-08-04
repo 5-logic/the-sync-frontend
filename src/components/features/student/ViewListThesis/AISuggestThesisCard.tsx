@@ -35,7 +35,7 @@ export default function AISuggestThesisCard({
 }: Props) {
 	const { thesis, relevanceScore, matchingFactors } = suggestion;
 	const { hasGroup, group, resetInitialization } = useStudentGroupStatus();
-	const { isPicking, loading: semesterLoading } = useSemesterStatus();
+	const { canRegisterThesis, loading: semesterLoading } = useSemesterStatus();
 	const { registerThesis, isRegistering } = useThesisRegistration();
 	const router = useRouter();
 
@@ -53,7 +53,7 @@ export default function AISuggestThesisCard({
 
 	// Disable register button if semester is not in picking phase
 	const isRegisterDisabled =
-		!canRegister || !isPicking || isRegistering || semesterLoading;
+		!canRegister || !canRegisterThesis || isRegistering || semesterLoading;
 
 	// Handle view details navigation
 	const handleViewDetails = () => {
@@ -85,10 +85,10 @@ export default function AISuggestThesisCard({
 		if (studentRole !== "leader") {
 			return "Only group leaders can register thesis";
 		}
-		if (!isPicking) {
-			return "Thesis registration is not available in current semester phase";
+		if (!canRegisterThesis) {
+			return 'Registration is only available during the "Picking" phase or "Ongoing - Scope Adjustable" phase';
 		}
-		return "";
+		return "Register for this thesis";
 	};
 
 	// Get progress color based on relevance score
