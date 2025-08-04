@@ -2,7 +2,7 @@
 
 import { Modal, Typography, Divider } from "antd";
 
-import { SubmissionReview } from "@/lib/services/reviews.service";
+import { SubmissionReviewWithReviewer } from "@/lib/services/reviews.service";
 import {
 	ReviewerInfo,
 	ReviewDates,
@@ -15,7 +15,7 @@ const { Text } = Typography;
 interface Props {
 	readonly open: boolean;
 	readonly onClose: () => void;
-	readonly review: SubmissionReview | null;
+	readonly review: SubmissionReviewWithReviewer | null;
 }
 
 export default function ViewReviewModal({ open, onClose, review }: Props) {

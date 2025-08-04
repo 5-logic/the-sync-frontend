@@ -4,7 +4,7 @@ import { EyeOutlined } from "@ant-design/icons";
 import { Button, Card, List, Skeleton } from "antd";
 import { useState } from "react";
 
-import { SubmissionReview } from "@/lib/services/reviews.service";
+import { SubmissionReviewWithReviewer } from "@/lib/services/reviews.service";
 import {
 	ReviewerInfo,
 	ReviewDates,
@@ -13,17 +13,16 @@ import {
 import ViewReviewModal from "@/components/features/lecturer/GroupProgess/ViewReviewModal";
 
 interface Props {
-	readonly reviews: SubmissionReview[];
+	readonly reviews: SubmissionReviewWithReviewer[];
 	readonly loading?: boolean;
 }
 
 export default function ExistingReviewsList({ reviews, loading }: Props) {
-	const [viewingReview, setViewingReview] = useState<SubmissionReview | null>(
-		null,
-	);
+	const [viewingReview, setViewingReview] =
+		useState<SubmissionReviewWithReviewer | null>(null);
 	const [viewModalOpen, setViewModalOpen] = useState(false);
 
-	const handleViewReview = (review: SubmissionReview) => {
+	const handleViewReview = (review: SubmissionReviewWithReviewer) => {
 		setViewingReview(review);
 		setViewModalOpen(true);
 	};

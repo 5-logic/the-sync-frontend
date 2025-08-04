@@ -4,7 +4,7 @@ import { EditOutlined } from "@ant-design/icons";
 import { Button, Card, List } from "antd";
 import { useEffect, useState } from "react";
 
-import { SubmissionReview } from "@/lib/services/reviews.service";
+import { SubmissionReviewWithReviewer } from "@/lib/services/reviews.service";
 import {
 	ReviewerInfo,
 	ReviewDates,
@@ -13,7 +13,7 @@ import {
 import EditReviewModal from "./EditReviewModal";
 
 interface Props {
-	readonly reviews: SubmissionReview[];
+	readonly reviews: SubmissionReviewWithReviewer[];
 	readonly loading?: boolean;
 	readonly onReviewUpdated?: () => void;
 }
@@ -23,9 +23,8 @@ export default function ExistingReviewsList({
 	loading,
 	onReviewUpdated,
 }: Props) {
-	const [editingReview, setEditingReview] = useState<SubmissionReview | null>(
-		null,
-	);
+	const [editingReview, setEditingReview] =
+		useState<SubmissionReviewWithReviewer | null>(null);
 	const [editModalOpen, setEditModalOpen] = useState(false);
 
 	// Debug: Log reviews data to check isMainReviewer values
@@ -43,7 +42,7 @@ export default function ExistingReviewsList({
 		}
 	}, [reviews]);
 
-	const handleEditReview = (review: SubmissionReview) => {
+	const handleEditReview = (review: SubmissionReviewWithReviewer) => {
 		setEditingReview(review);
 		setEditModalOpen(true);
 	};

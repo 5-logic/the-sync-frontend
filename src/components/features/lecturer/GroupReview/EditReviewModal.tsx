@@ -6,7 +6,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { useReviews } from "@/hooks/lecturer/useReviews";
 import {
-	SubmissionReview,
+	SubmissionReviewWithReviewer,
 	UpdateReviewRequest,
 } from "@/lib/services/reviews.service";
 import { showNotification } from "@/lib/utils/notification";
@@ -20,7 +20,7 @@ import {
 interface Props {
 	readonly open: boolean;
 	readonly onClose: () => void;
-	readonly review: SubmissionReview | null;
+	readonly review: SubmissionReviewWithReviewer | null;
 	readonly onSuccess?: () => void;
 }
 

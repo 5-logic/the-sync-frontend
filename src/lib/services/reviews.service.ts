@@ -196,11 +196,59 @@ class ReviewsService {
 	 */
 	async getSubmissionReviews(
 		submissionId: string,
-	): Promise<ApiResponse<SubmissionReview[]>> {
-		const response = await httpClient.get<ApiResponse<SubmissionReview[]>>(
-			`${this.baseUrl}/submissions/${submissionId}/reviews`,
-		);
-		return response.data;
+	): Promise<ApiResponse<SubmissionReviewWithReviewer[]>> {
+		const response = await httpClient.get<
+			ApiResponse<SubmissionReviewsResponse>
+		>(`${this.baseUrl}/submissions/${submissionId}/reviews`);
+
+		// Transform the new API response to match the expected format
+		if (response.data.success && response.data.data) {
+			const { assignmentReviews, reviews } = response.data.data;
+
+			// Create a map of reviewers by their ID for quick lookup
+			const reviewerMap = new Map(
+				assignmentReviews.map((assignment) => [
+					assignment.reviewerId,
+					{
+						reviewer: assignment.reviewer,
+						isMainReviewer: assignment.isMainReviewer,
+					},
+				]),
+			);
+
+			// Merge reviews with reviewer information
+			const mergedReviews: SubmissionReviewWithReviewer[] = reviews.map(
+				(review) => {
+					const reviewerInfo = reviewerMap.get(review.lecturerId);
+					return {
+						...review,
+						lecturer: reviewerInfo?.reviewer || {
+							userId: review.lecturerId,
+							isModerator: false,
+							user: {
+								id: review.lecturerId,
+								fullName: "Unknown Reviewer",
+								email: "",
+								password: "",
+								gender: "",
+								phoneNumber: "",
+								isActive: true,
+								createdAt: "",
+								updatedAt: "",
+							},
+						},
+						isMainReviewer: reviewerInfo?.isMainReviewer || false,
+					};
+				},
+			);
+
+			return {
+				...response.data,
+				data: mergedReviews,
+			};
+		}
+
+		return response.data as ApiResponse<SubmissionReviewWithReviewer[]>;
 	}
 
 	/**
@@ -317,24 +365,8 @@ export interface SubmissionReview {
 	lecturerId: string;
 	checklistId: string;
 	submissionId: string;
-	isMainReviewer: boolean;
 	createdAt: string;
 	updatedAt: string;
-	lecturer: {
-		userId: string;
-		isModerator: boolean;
-		user: {
-			id: string;
-			fullName: string;
-			email: string;
-			password: string;
-			gender: string;
-			phoneNumber: string;
-			isActive: boolean;
-			createdAt: string;
-			updatedAt: string;
-		};
-	};
 	reviewItems: {
 		reviewId: string;
 		checklistItemId: string;
@@ -359,6 +391,53 @@ export interface SubmissionReview {
 		updatedAt: string;
 	};
 }
+
+export interface SubmissionReviewsResponse {
+	assignmentReviews: {
+		reviewerId: string;
+		submissionId: string;
+		isMainReviewer: boolean;
+		reviewer: {
+			userId: string;
+			isModerator: boolean;
+			user: {
+				id: string;
+				fullName: string;
+				email: string;
+				password: string;
+				gender: string;
+				phoneNumber: string;
+				isActive: boolean;
+				createdAt: string;
+				updatedAt: string;
+			};
+		};
+	}[];
+	reviews: SubmissionReview[];
+}
+
+// Enhanced interface with reviewer info for backward compatibility
+export interface SubmissionReviewWithReviewer extends SubmissionReview {
+	lecturer: {
+		userId: string;
+		isModerator: boolean;
+		user: {
+			id: string;
+			fullName: string;
+			email: string;
+			password: string;
+			gender: string;
+			phoneNumber: string;
+			isActive: boolean;
+			createdAt: string;
+			updatedAt: string;
+		};
+	};
+	isMainReviewer: boolean;
+}
+
+// Type alias for backward compatibility
+export type SubmissionReviewLegacy = SubmissionReviewWithReviewer;
 
 export interface SubmittedReview {
 	id: string;

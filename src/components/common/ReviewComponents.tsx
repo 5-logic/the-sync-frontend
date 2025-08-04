@@ -1,12 +1,12 @@
 import { Tag, Typography, Table, Radio } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { SubmissionReview } from "@/lib/services/reviews.service";
+import { SubmissionReviewWithReviewer } from "@/lib/services/reviews.service";
 import { getPriorityConfig } from "@/lib/utils/uiConstants";
 
 const { Text } = Typography;
 
 interface ReviewerInfoProps {
-	readonly review: SubmissionReview;
+	readonly review: SubmissionReviewWithReviewer;
 	readonly label?: string;
 }
 

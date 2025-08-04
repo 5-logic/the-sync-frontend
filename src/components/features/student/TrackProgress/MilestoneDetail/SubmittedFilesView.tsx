@@ -8,13 +8,13 @@ import {
 import { Avatar, Button, Flex, Space, Typography } from "antd";
 
 import { StorageService } from "@/lib/services/storage.service";
-import { SubmissionReview } from "@/lib/services/reviews.service";
+import { SubmissionReviewWithReviewer } from "@/lib/services/reviews.service";
 
 interface SubmittedFilesViewProps {
 	readonly documents: string[];
 	readonly canSubmit: boolean;
 	readonly onUpdateMode: () => void;
-	readonly reviews?: SubmissionReview[];
+	readonly reviews?: SubmissionReviewWithReviewer[];
 }
 
 export function SubmittedFilesView({
