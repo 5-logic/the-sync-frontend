@@ -364,7 +364,7 @@ export default function MilestoneDetailCard({
 					{submission && (
 						<>
 							{hasAssignmentReviews(submission) && (
-								<Row style={{ marginTop: 16 }}>
+								<Row>
 									<Col span={24}>
 										<Text strong>Reviewers:</Text>
 										{getAssignmentReviews(submission).map(
@@ -385,7 +385,7 @@ export default function MilestoneDetailCard({
 
 				{/* Existing Reviews Section */}
 				{submission && (
-					<div style={{ marginBottom: 16 }}>
+					<div>
 						<ExistingReviewsList
 							reviews={submissionReviews}
 							loading={submissionReviewsLoading}

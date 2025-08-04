@@ -1,10 +1,9 @@
 "use client";
 
 import { EyeOutlined } from "@ant-design/icons";
-import { Button, Card, List, Tag, Typography } from "antd";
+import { Button, Card, List, Skeleton, Tag, Typography } from "antd";
 import { useState } from "react";
 
-import CardLoadingSkeleton from "@/components/common/loading/CardLoadingSkeleton";
 import { SubmissionReview } from "@/lib/services/reviews.service";
 
 import ViewReviewModal from "@/components/features/lecturer/GroupProgess/ViewReviewModal";
@@ -40,9 +39,9 @@ export default function ExistingReviewsList({ reviews, loading }: Props) {
 	// Render skeleton loading state
 	if (loading) {
 		return (
-			<>
-				<CardLoadingSkeleton />
-			</>
+			<Card size="small">
+				<Skeleton active avatar={false} paragraph={{ rows: 2 }} />
+			</Card>
 		);
 	}
 
