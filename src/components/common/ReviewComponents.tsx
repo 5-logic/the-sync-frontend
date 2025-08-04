@@ -1,4 +1,4 @@
-import { Tag, Typography, Table } from "antd";
+import { Tag, Typography, Table, Radio } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { SubmissionReview } from "@/lib/services/reviews.service";
 import { getPriorityConfig } from "@/lib/utils/uiConstants";
@@ -88,21 +88,20 @@ export function ReviewItemsTable({
 		{
 			title: "Response",
 			key: "response",
-			width: "10%",
-			render: (_, record) => {
-				let color = "default";
-				if (record.acceptance === "Yes") color = "green";
-				else if (record.acceptance === "No") color = "red";
-				else if (record.acceptance === "NotAvailable") color = "orange";
-
-				return <Tag color={color}>{record.acceptance}</Tag>;
-			},
+			width: "20%",
+			render: (_, record) => (
+				<Radio.Group value={record.acceptance} disabled>
+					<Radio value="Yes">Yes</Radio>
+					<Radio value="No">No</Radio>
+					<Radio value="NotAvailable">N/A</Radio>
+				</Radio.Group>
+			),
 		},
 		{
 			title: "Notes",
 			dataIndex: "note",
 			key: "notes",
-			width: "30%",
+			width: "20%",
 			render: (note) => note || <Text type="secondary">No notes</Text>,
 		},
 		{
