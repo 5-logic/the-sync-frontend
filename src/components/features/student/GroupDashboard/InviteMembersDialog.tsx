@@ -7,18 +7,18 @@ import {
 	Row,
 	Spin,
 	Typography,
-} from 'antd';
-import { useEffect, useMemo, useState } from 'react';
+} from "antd";
+import { useEffect, useMemo, useState } from "react";
 
-import { ListPagination } from '@/components/common/ListPagination';
-import InviteTeamMembers from '@/components/features/student/FormOrJoinGroup/CreateGroup/InviteTeamMembers';
-import SuggestedStudentCard from '@/components/features/student/GroupDashboard/SuggestedStudentCard';
-import aiService, { type SuggestedStudent } from '@/lib/services/ai.service';
-import requestService from '@/lib/services/requests.service';
-import { showNotification } from '@/lib/utils/notification';
-import { GroupDashboard } from '@/schemas/group';
-import type { Student } from '@/schemas/student';
-import { useRequestsStore, useStudentStore } from '@/store';
+import { ListPagination } from "@/components/common/ListPagination";
+import InviteTeamMembers from "@/components/features/student/FormOrJoinGroup/CreateGroup/InviteTeamMembers";
+import SuggestedStudentCard from "@/components/features/student/GroupDashboard/SuggestedStudentCard";
+import aiService, { type SuggestedStudent } from "@/lib/services/ai.service";
+import requestService from "@/lib/services/requests.service";
+import { showNotification } from "@/lib/utils/notification";
+import { GroupDashboard } from "@/schemas/group";
+import type { Student } from "@/schemas/student";
+import { useRequestsStore, useStudentStore } from "@/store";
 
 const { Text } = Typography;
 
@@ -64,13 +64,13 @@ export default function InviteMembersDialog({
 
 	// Helper function to get user IDs by request type and status
 	const getUserIdsByRequestType = useMemo(() => {
-		return (type: 'Join' | 'Invite') => {
+		return (type: "Join" | "Invite") => {
 			return requests
 				.filter(
 					(request) =>
 						request.groupId === groupId &&
 						request.type === type &&
-						request.status === 'Pending',
+						request.status === "Pending",
 				)
 				.map((request) => request.student.userId);
 		};
@@ -78,12 +78,12 @@ export default function InviteMembersDialog({
 
 	// Get user IDs who have pending join requests for this group
 	const pendingJoinRequestUserIds = useMemo(() => {
-		return getUserIdsByRequestType('Join');
+		return getUserIdsByRequestType("Join");
 	}, [getUserIdsByRequestType]);
 
 	// Get user IDs who have pending invite requests from this group
 	const pendingInviteRequestUserIds = useMemo(() => {
-		return getUserIdsByRequestType('Invite');
+		return getUserIdsByRequestType("Invite");
 	}, [getUserIdsByRequestType]);
 
 	// Combine existing members, pending join requests, and pending invite requests to exclude
@@ -116,20 +116,20 @@ export default function InviteMembersDialog({
 				setSuggestedStudents(response.data);
 				setShowSuggestions(true);
 				showNotification.success(
-					'Students Suggested',
+					"Students Suggested",
 					`Found ${response.data.length} suggested students for your group.`,
 				);
 			} else {
 				showNotification.error(
-					'Failed to Get Suggestions',
-					'Unable to get student suggestions. Please try again.',
+					"Failed to Get Suggestions",
+					"Unable to get student suggestions. Please try again.",
 				);
 			}
 		} catch (error) {
-			console.error('Error getting student suggestions:', error);
+			console.error("Error getting student suggestions:", error);
 			showNotification.error(
-				'Failed to Get Suggestions',
-				'Unable to get student suggestions. Please try again.',
+				"Failed to Get Suggestions",
+				"Unable to get student suggestions. Please try again.",
 			);
 		} finally {
 			setSuggestLoading(false);
@@ -143,14 +143,14 @@ export default function InviteMembersDialog({
 			id: suggestedStudent.id,
 			fullName: suggestedStudent.fullName,
 			email: suggestedStudent.email,
-			password: '', // Not needed for invite
-			gender: 'Male', // Default value
-			phoneNumber: '', // Default value
+			password: "", // Not needed for invite
+			gender: "Male", // Default value
+			phoneNumber: "", // Default value
 			isActive: true,
 			createdAt: new Date(),
 			updatedAt: new Date(),
 			studentCode: suggestedStudent.studentCode,
-			majorId: '', // Default value
+			majorId: "", // Default value
 		};
 
 		// Check if student is already in selected members
@@ -160,8 +160,8 @@ export default function InviteMembersDialog({
 
 		if (isAlreadySelected) {
 			showNotification.warning(
-				'Student Already Selected',
-				'This student is already in your invite list.',
+				"Student Already Selected",
+				"This student is already in your invite list.",
 			);
 			return;
 		}
@@ -169,15 +169,15 @@ export default function InviteMembersDialog({
 		// Add to selected members
 		setSelectedMembers((prev) => [...prev, studentToAdd]);
 		showNotification.success(
-			'Student Added',
+			"Student Added",
 			`${suggestedStudent.fullName} has been added to your invite list.`,
 		);
 	};
 
 	// Debug log in development mode
 	useEffect(() => {
-		if (process.env.NODE_ENV === 'development' && visible) {
-			console.log('Exclude user IDs:', {
+		if (process.env.NODE_ENV === "development" && visible) {
+			console.log("Exclude user IDs:", {
 				existingMembers: existingMemberIds,
 				pendingJoinRequests: pendingJoinRequestUserIds,
 				pendingInviteRequests: pendingInviteRequestUserIds,
@@ -195,8 +195,8 @@ export default function InviteMembersDialog({
 	const handleSendInvites = async () => {
 		if (selectedMembers.length === 0) {
 			showNotification.warning(
-				'No Students Selected',
-				'Please select at least one student to invite.',
+				"No Students Selected",
+				"Please select at least one student to invite.",
 			);
 			return;
 		}
@@ -211,7 +211,7 @@ export default function InviteMembersDialog({
 
 			if (response.success) {
 				showNotification.success(
-					'Invitations Sent',
+					"Invitations Sent",
 					`Successfully sent ${selectedMembers.length} invitation(s)!`,
 				);
 				setSelectedMembers([]);
@@ -222,15 +222,15 @@ export default function InviteMembersDialog({
 				onSuccess();
 			} else {
 				showNotification.error(
-					'Failed to Send Invitations',
-					'Failed to send invitations. Please try again.',
+					"Failed to Send Invitations",
+					"Failed to send invitations. Please try again.",
 				);
 			}
 		} catch (error) {
-			console.error('Error sending invitations:', error);
+			console.error("Error sending invitations:", error);
 			showNotification.error(
-				'Failed to Send Invitations',
-				'Failed to send invitations. Please try again.',
+				"Failed to Send Invitations",
+				"Failed to send invitations. Please try again.",
 			);
 		} finally {
 			setLoading(false);
@@ -309,7 +309,7 @@ export default function InviteMembersDialog({
 					onClick={handleSendInvites}
 					disabled={selectedMembers.length === 0}
 				>
-					Send Invitation{selectedMembers.length > 1 ? 's' : ''} (
+					Send Invitation{selectedMembers.length > 1 ? "s" : ""} (
 					{selectedMembers.length})
 				</Button>,
 			]}
@@ -342,7 +342,7 @@ export default function InviteMembersDialog({
 						loading={suggestLoading}
 						onClick={handleSuggestStudents}
 					>
-						Get Suggestions
+						{suggestLoading ? "Finding Students..." : "Get Suggestions"}
 					</Button>
 				}
 				className="mb-4"
