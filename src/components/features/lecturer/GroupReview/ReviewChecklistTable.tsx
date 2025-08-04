@@ -681,6 +681,33 @@ export default function ReviewChecklistTable({
 					</Text>
 				</div>
 			)}
+
+			{/* Show milestone timing message when Submit Review button is disabled due to start date */}
+			{!isMainReviewer &&
+				submissionReviews.length === 0 &&
+				!submissionReviewsLoading &&
+				!isWithinMilestonePeriodCheck &&
+				milestoneData && (
+					<div
+						style={{
+							...commonStyles.reviewerInfoBox,
+							background: "#fff7e6",
+							border: "1px solid #ffd591",
+						}}
+					>
+						<Text type="secondary" style={{ fontSize: "16px" }}>
+							⏰ <strong>Review Period Not Started</strong>
+						</Text>
+						<br />
+						<Text
+							type="secondary"
+							style={{ fontSize: "14px", marginTop: "8px" }}
+						>
+							Review submission is only available after the milestone start
+							date. You can preview the checklist but cannot submit reviews yet.
+						</Text>
+					</div>
+				)}
 		</Space>
 	);
 }
