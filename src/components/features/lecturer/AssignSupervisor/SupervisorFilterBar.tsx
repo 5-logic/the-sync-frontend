@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { ReloadOutlined } from '@ant-design/icons';
-import { Button, Col, Row, Select } from 'antd';
-import { memo, useCallback } from 'react';
+import { BarChartOutlined, ReloadOutlined } from "@ant-design/icons";
+import { Button, Col, Row, Select } from "antd";
+import { memo, useCallback } from "react";
 
-import GroupSearchBar from '@/components/features/lecturer/AssignSupervisor/GroupSearchBar';
+import GroupSearchBar from "@/components/features/lecturer/AssignSupervisor/GroupSearchBar";
 
 const { Option } = Select;
 
@@ -19,6 +19,7 @@ interface Props {
 	draftCount: number;
 	updating: boolean;
 	semesterOptions: Array<{ value: string; label: string }>;
+	onViewWorkload?: () => void;
 }
 
 /**
@@ -37,6 +38,7 @@ const SupervisorFilterBar = memo<Props>(
 		draftCount,
 		updating,
 		semesterOptions,
+		onViewWorkload,
 	}) => {
 		const handleSemesterChange = useCallback(
 			(value: string) => {
@@ -64,7 +66,7 @@ const SupervisorFilterBar = memo<Props>(
 					<Select
 						value={semester}
 						onChange={handleSemesterChange}
-						style={{ width: '100%' }}
+						style={{ width: "100%" }}
 						placeholder="Filter by semester"
 					>
 						{semesterOptions.map((option) => (
@@ -84,6 +86,17 @@ const SupervisorFilterBar = memo<Props>(
 						Refresh
 					</Button>
 				</Col>
+				{onViewWorkload && (
+					<Col>
+						<Button
+							icon={<BarChartOutlined />}
+							onClick={onViewWorkload}
+							title="View lecturer's workload distribution"
+						>
+							View Workload
+						</Button>
+					</Col>
+				)}
 				<Col>
 					<Button
 						type="primary"
@@ -99,6 +112,6 @@ const SupervisorFilterBar = memo<Props>(
 	},
 );
 
-SupervisorFilterBar.displayName = 'SupervisorFilterBar';
+SupervisorFilterBar.displayName = "SupervisorFilterBar";
 
 export default SupervisorFilterBar;

@@ -1,25 +1,26 @@
-'use client';
+"use client";
 
-import { Alert, Button, Space, notification } from 'antd';
-import { useEffect, useMemo, useState } from 'react';
+import { Alert, Button, Space, notification } from "antd";
+import { useEffect, useMemo, useState } from "react";
 
-import { ConfirmationModal } from '@/components/common/ConfirmModal';
-import { Header } from '@/components/common/Header';
-import AssignSupervisorModal from '@/components/features/lecturer/AssignSupervisor/AssignSupervisorModal';
+import { ConfirmationModal } from "@/components/common/ConfirmModal";
+import { Header } from "@/components/common/Header";
+import AssignSupervisorModal from "@/components/features/lecturer/AssignSupervisor/AssignSupervisorModal";
 import {
 	TABLE_WIDTHS,
 	baseColumns,
 	createActionRenderer,
 	createSupervisorRenderer,
-} from '@/components/features/lecturer/AssignSupervisor/SupervisorColumns';
-import SupervisorFilterBar from '@/components/features/lecturer/AssignSupervisor/SupervisorFilterBar';
-import ThesisOverviewTable from '@/components/features/lecturer/AssignSupervisor/ThesisOverviewTable';
-import { useAssignSupervisor } from '@/hooks/lecturer/useAssignSupervisor';
-import { useCurrentSemester } from '@/hooks/semester';
-import { type SupervisorAssignmentData } from '@/store/useAssignSupervisorStore';
-import { useDraftAssignmentStore } from '@/store/useDraftAssignmentStore';
-import { useSemesterStore } from '@/store/useSemesterStore';
-import { useSupervisionStore } from '@/store/useSupervisionStore';
+} from "@/components/features/lecturer/AssignSupervisor/SupervisorColumns";
+import SupervisorFilterBar from "@/components/features/lecturer/AssignSupervisor/SupervisorFilterBar";
+import ThesisOverviewTable from "@/components/features/lecturer/AssignSupervisor/ThesisOverviewTable";
+import WorkloadDialog from "@/components/features/lecturer/AssignSupervisor/WorkloadDialog";
+import { useAssignSupervisor } from "@/hooks/lecturer/useAssignSupervisor";
+import { useCurrentSemester } from "@/hooks/semester";
+import { type SupervisorAssignmentData } from "@/store/useAssignSupervisorStore";
+import { useDraftAssignmentStore } from "@/store/useDraftAssignmentStore";
+import { useSemesterStore } from "@/store/useSemesterStore";
+import { useSupervisionStore } from "@/store/useSupervisionStore";
 
 /**
  * Main component for assigning supervisors to thesis groups
@@ -29,13 +30,14 @@ export default function AssignSupervisors() {
 	// Get current semester for default filter
 	const { currentSemester } = useCurrentSemester();
 
-	const [search, setSearch] = useState('');
+	const [search, setSearch] = useState("");
 	const [selectedGroup, setSelectedGroup] =
 		useState<SupervisorAssignmentData | null>(null);
 	const [modalOpen, setModalOpen] = useState(false);
 	const [saveDraftLoading, setSaveDraftLoading] = useState(false);
 	const [assignNowLoading, setAssignNowLoading] = useState(false);
-	const [semesterFilter, setSemesterFilter] = useState<string>('All');
+	const [semesterFilter, setSemesterFilter] = useState<string>("All");
+	const [workloadDialogOpen, setWorkloadDialogOpen] = useState(false);
 
 	const {
 		data,
@@ -58,7 +60,7 @@ export default function AssignSupervisors() {
 
 	// Set default semester filter when current semester is available
 	useEffect(() => {
-		if (currentSemester && semesterFilter === 'All') {
+		if (currentSemester && semesterFilter === "All") {
 			setSemesterFilter(currentSemester.id);
 		}
 	}, [currentSemester, semesterFilter]);
@@ -72,7 +74,7 @@ export default function AssignSupervisors() {
 
 	// Fetch data when semester filter changes
 	useEffect(() => {
-		if (semesterFilter === 'All') {
+		if (semesterFilter === "All") {
 			fetchData(true); // Force refresh for all semesters
 		} else {
 			fetchData(true, semesterFilter); // Force refresh for specific semester
@@ -98,12 +100,12 @@ export default function AssignSupervisors() {
 			clearAllDrafts();
 		};
 
-		window.addEventListener('beforeunload', handleBeforeUnload);
-		window.addEventListener('pagehide', handlePageHide);
+		window.addEventListener("beforeunload", handleBeforeUnload);
+		window.addEventListener("pagehide", handlePageHide);
 
 		return () => {
-			window.removeEventListener('beforeunload', handleBeforeUnload);
-			window.removeEventListener('pagehide', handlePageHide);
+			window.removeEventListener("beforeunload", handleBeforeUnload);
+			window.removeEventListener("pagehide", handlePageHide);
 		};
 	}, [clearAllDrafts]);
 
@@ -116,7 +118,7 @@ export default function AssignSupervisors() {
 			value: semester.id,
 			label: semester.name,
 		}));
-		return [{ value: 'All', label: 'All Semesters' }, ...semesterChoices];
+		return [{ value: "All", label: "All Semesters" }, ...semesterChoices];
 	}, [semesters]);
 
 	const filteredData = useMemo(() => {
@@ -246,7 +248,7 @@ export default function AssignSupervisors() {
 
 			return allSuccessful;
 		} catch (error) {
-			console.error('Error in intelligent assignment:', error);
+			console.error("Error in intelligent assignment:", error);
 			return false;
 		}
 	};
@@ -316,8 +318,8 @@ export default function AssignSupervisors() {
 
 		// Show success notification
 		notification.success({
-			message: 'Draft Saved',
-			description: 'Supervisor assignment saved as draft',
+			message: "Draft Saved",
+			description: "Supervisor assignment saved as draft",
 		});
 	};
 
@@ -350,15 +352,15 @@ export default function AssignSupervisors() {
 
 				// Show success notification for change operations
 				notification.success({
-					message: 'Success',
-					description: 'Supervisor assignment completed successfully',
+					message: "Success",
+					description: "Supervisor assignment completed successfully",
 				});
 			} else {
 				// Show error notification with the actual error from supervision store
 				const errorMessage =
-					supervisionError || error || 'Failed to change supervisor assignment';
+					supervisionError || error || "Failed to change supervisor assignment";
 				notification.error({
-					message: 'Error',
+					message: "Error",
 					description: errorMessage,
 				});
 			}
@@ -400,15 +402,15 @@ export default function AssignSupervisors() {
 
 				// Show success notification for assignments
 				notification.success({
-					message: 'Success',
-					description: 'Supervisor assignment completed successfully',
+					message: "Success",
+					description: "Supervisor assignment completed successfully",
 				});
 			} else {
 				// Show error notification with the actual error from supervision store
 				const errorMessage =
-					supervisionError || error || 'Failed to assign supervisors';
+					supervisionError || error || "Failed to assign supervisors";
 				notification.error({
-					message: 'Error',
+					message: "Error",
 					description: errorMessage,
 				});
 			}
@@ -432,13 +434,13 @@ export default function AssignSupervisors() {
 		});
 
 		ConfirmationModal.show({
-			title: 'Assign Supervisors',
+			title: "Assign Supervisors",
 			message: `Are you sure you want to assign supervisors for ${validDrafts.length} thesis assignments?`,
 			details: `This will assign all pending draft assignments to their respective theses.`,
-			note: 'This action cannot be undone. All draft assignments will be processed immediately.',
-			noteType: 'danger',
-			okText: 'Yes, Assign All',
-			cancelText: 'Cancel',
+			note: "This action cannot be undone. All draft assignments will be processed immediately.",
+			noteType: "danger",
+			okText: "Yes, Assign All",
+			cancelText: "Cancel",
 			loading: updating,
 			onOk: handleBulkAssignment,
 		});
@@ -475,7 +477,7 @@ export default function AssignSupervisors() {
 
 		// Filter base columns to replace supervisor column
 		const baseColumnsWithDrafts = baseColumns.map((column) => {
-			if (column.key === 'supervisors') {
+			if (column.key === "supervisors") {
 				return {
 					...column,
 					render: supervisorRenderer,
@@ -487,10 +489,10 @@ export default function AssignSupervisors() {
 		return [
 			...baseColumnsWithDrafts,
 			{
-				title: 'Action',
-				key: 'action',
+				title: "Action",
+				key: "action",
 				width: TABLE_WIDTHS.ACTIONS,
-				align: 'center' as const,
+				align: "center" as const,
 				render: actionRenderer,
 			},
 		];
@@ -519,7 +521,7 @@ export default function AssignSupervisors() {
 	};
 
 	return (
-		<Space direction="vertical" size="large" style={{ width: '100%' }}>
+		<Space direction="vertical" size="large" style={{ width: "100%" }}>
 			<Header
 				title="Assign Supervisor"
 				description="Manage supervisor assignments for thesis groups"
@@ -552,6 +554,7 @@ export default function AssignSupervisors() {
 				draftCount={validDraftCount}
 				updating={updating}
 				semesterOptions={semesterOptions}
+				onViewWorkload={() => setWorkloadDialogOpen(true)}
 			/>
 
 			<ThesisOverviewTable
@@ -581,6 +584,11 @@ export default function AssignSupervisors() {
 				isChangeMode={
 					selectedGroup ? selectedGroup.supervisors.length === 2 : false
 				}
+			/>
+
+			<WorkloadDialog
+				open={workloadDialogOpen}
+				onCancel={() => setWorkloadDialogOpen(false)}
 			/>
 		</Space>
 	);
