@@ -125,7 +125,7 @@ export function SubmittedFilesView({
 							<Avatar icon={<UserOutlined />} />
 							<Space direction="vertical" size={4} style={{ flex: 1 }}>
 								<Typography.Text strong>
-									{review.lecturer.user.fullName}
+									Reviewer
 									{review.isMainReviewer && (
 										<span style={{ color: "#1890ff", marginLeft: 4 }}>
 											(Main Reviewer)
