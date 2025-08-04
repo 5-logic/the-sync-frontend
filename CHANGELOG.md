@@ -9,6 +9,134 @@ For more information about this project, see the [README](./README.md).
 
 ---
 
+## [0.8.0] - 2025-08-01
+
+### Added
+
+#### Reviewer Assignment System
+
+- **Complete Reviewer Assignment Workflow:** Comprehensive reviewer assignment system for lecturers ([#308](https://github.com/5-logic/the-sync-frontend/pull/308), [#310](https://github.com/5-logic/the-sync-frontend/pull/310), [#305](https://github.com/5-logic/the-sync-frontend/pull/305), [#300](https://github.com/5-logic/the-sync-frontend/pull/300))
+  - AssignReviewerModal with support for both assignment and change operations
+  - ReviewerColumns component for consistent reviewer display across tables
+  - Draft reviewer assignment functionality with bulk operations
+  - Advanced reviewer eligibility filtering and selection logic
+  - Enhanced GroupTable with reviewer assignment capabilities
+
+#### Dashboard Enhancements
+
+- **Enhanced Dashboard System:** Improved dashboard with semester filtering and advanced statistics ([#307](https://github.com/5-logic/the-sync-frontend/pull/307), [#306](https://github.com/5-logic/the-sync-frontend/pull/306))
+  - SemesterFilter component for dynamic semester selection
+  - Enhanced DashboardStats with loading states and error handling
+  - Improved ProgressOverview with enhanced data visualization
+  - SupervisorLoadChart with search and filter functionality
+  - New DashboardService for comprehensive statistics management
+
+#### Group Review & Evaluation System
+
+- **Comprehensive Group Review System:** Complete lecturer review management for group evaluations ([#310](https://github.com/5-logic/the-sync-frontend/pull/310))
+  - EditReviewModal for creating and editing group reviews
+  - ExistingReviewsList for managing previous reviews
+  - MilestoneStepFilter for filtering reviews by milestone phases
+  - ReviewGroupSearchTable for advanced group search and filtering
+  - ReviewersList component for reviewer management
+  - Enhanced ReviewChecklistTable with comprehensive review functionality
+
+#### Data Export & Management
+
+- **Export Functionality:** Enhanced data export capabilities for administrative tasks ([#307](https://github.com/5-logic/the-sync-frontend/pull/307))
+  - useExportGroups hook for group data export
+  - Advanced filtering and export options for group management
+  - Improved data formatting for exported files
+
+### Changed
+
+#### Enhanced Lecturer Tools
+
+- **Lecturer Dashboard Improvements:** Streamlined lecturer workflows with enhanced progress tracking
+  - Improved LecturerProgressOverviewCard with better timeline visualization
+  - Enhanced MilestoneDetailCard with improved submission file handling
+  - Better GroupDetailCard with simplified thesis existence checks
+  - Updated SupervisorInfoCard with enhanced display logic
+
+#### Checklist Management Enhancements
+
+- **Checklist System Overhaul:** Comprehensive improvements to checklist management ([#310](https://github.com/5-logic/the-sync-frontend/pull/310))
+  - Enhanced ChecklistItemTable with optimized performance
+  - Improved ChecklistExcelImport with better error handling
+  - Standardized string quotes and improved type usage across components
+  - Enhanced validation logic for review checklists
+  - Better state management in useChecklistStore
+
+#### Service Layer Improvements
+
+- **New Service Architecture:** Expanded service layer with comprehensive API integration
+  - New ReviewService and ReviewsService for review management
+  - Enhanced SubmissionService for submission tracking
+  - New DashboardService for statistics and analytics
+  - Improved MilestoneService with enhanced semester filtering
+  - Added utility services for error handling and milestone management
+
+#### Store & State Management
+
+- **Enhanced State Management:** Comprehensive store improvements for better data flow
+  - New useReviewStore for review state management
+  - New useSubmissionStore for submission tracking
+  - New useDraftReviewerAssignmentStore for draft management
+  - Enhanced useDashboardStore for dashboard statistics
+  - Improved useMilestoneStore with semester-based filtering
+
+### Fixed
+
+#### Code Quality & Performance
+
+- **Code Standardization:** Comprehensive code quality improvements across the application ([#310](https://github.com/5-logic/the-sync-frontend/pull/310))
+  - Standardized string quotes throughout codebase
+  - Improved type usage and interface definitions
+  - Enhanced component prop definitions and state management
+  - Optimized rendering performance with better key generation
+  - Reduced code nesting and improved readability
+
+#### Data Fetching & Consistency
+
+- **Enhanced Data Management:** Improved data fetching and state consistency
+  - Updated milestone fetching to use findAllBySemester for consistency
+  - Enhanced supervisor and reviewer data synchronization
+  - Improved error handling across service layers
+  - Better caching mechanisms for frequently accessed data
+
+#### UI/UX Improvements
+
+- **User Interface Enhancements:** Refined user experience across lecturer and admin interfaces
+  - Improved button sizing and action consistency
+  - Enhanced loading states and error messaging
+  - Better form validation and user feedback
+  - Streamlined navigation and workflow optimization
+
+### Technical Details
+
+- **Files Changed:** 63 files with 7,175 additions and 1,743 deletions
+- **New Components:** SemesterFilter, ReviewerColumns, EditReviewModal, ExistingReviewsList, MilestoneStepFilter, ReviewGroupSearchTable, ReviewersList
+- **New Hooks:** 13 new specialized hooks for lecturer functionality including reviewer assignment, supervision management, and review operations
+- **New Services:** ReviewService, ReviewsService, SubmissionService, DashboardService with comprehensive API integration
+- **New Stores:** useReviewStore, useSubmissionStore, useDraftReviewerAssignmentStore, useDashboardStore
+- **New Utilities:** Error handling utilities, milestone management utilities, UI constants for consistent theming
+
+### API Enhancements
+
+- **Reviewer Management:** Complete API integration for reviewer assignment and management
+- **Dashboard Analytics:** Enhanced statistics and analytics endpoints
+- **Submission Tracking:** Comprehensive submission management with detailed tracking
+- **Review System:** Full review workflow with milestone-based evaluations
+
+### Migration Notes
+
+- **Reviewer Assignment:** New reviewer assignment system requires proper lecturer permissions
+- **Dashboard Updates:** Enhanced dashboard may require cache refresh for optimal performance
+- **Checklist Management:** Improved checklist system with enhanced validation - review custom implementations
+- **State Management:** New stores provide better performance but may require updates to existing state dependencies
+
+---
+
 ## [0.7.1] - 2025-08-01
 
 ### Fixed
