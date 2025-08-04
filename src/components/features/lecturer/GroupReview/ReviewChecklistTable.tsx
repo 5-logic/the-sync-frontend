@@ -547,8 +547,8 @@ export default function ReviewChecklistTable({
 				onReviewUpdated={handleReviewUpdated}
 			/>
 
-			{/* Only show new review form if no existing reviews */}
-			{submissionReviews.length === 0 && (
+			{/* Only show new review form if no existing reviews and not loading */}
+			{submissionReviews.length === 0 && !submissionReviewsLoading && (
 				<>
 					{/* Checklist table */}
 					<div>
