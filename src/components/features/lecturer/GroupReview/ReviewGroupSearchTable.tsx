@@ -1,7 +1,7 @@
 "use client";
 
 import { EyeOutlined, ReloadOutlined, SearchOutlined } from "@ant-design/icons";
-import { Button, Input, Space, Table } from "antd";
+import { Button, Empty, Input, Space, Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
 import { TablePagination } from "@/components/common/TablePagination";
@@ -230,7 +230,9 @@ export default function ReviewGroupSearchTable({
 				size="middle"
 				scroll={{ x: 800 }}
 				locale={{
-					emptyText: loading ? "" : "No data available",
+					emptyText: (
+						<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No data" />
+					),
 				}}
 			/>
 		</Space>

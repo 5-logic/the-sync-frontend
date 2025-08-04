@@ -3,6 +3,7 @@
 import { DownloadOutlined } from "@ant-design/icons";
 import {
 	Button,
+	Empty,
 	Input,
 	Radio,
 	Row,
@@ -567,6 +568,14 @@ export default function ReviewChecklistTable({
 							columns={columns}
 							pagination={false}
 							loading={reviewFormLoading}
+							locale={{
+								emptyText: (
+									<Empty
+										image={Empty.PRESENTED_IMAGE_SIMPLE}
+										description="No data"
+									/>
+								),
+							}}
 						/>
 					</div>
 
