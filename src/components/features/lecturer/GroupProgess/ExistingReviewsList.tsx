@@ -9,6 +9,7 @@ import {
 	ReviewerInfo,
 	ReviewDates,
 } from "@/components/common/ReviewComponents";
+import { AssignedReviewersInfo } from "@/components/common/AssignedReviewersInfo";
 
 import ViewReviewModal from "@/components/features/lecturer/GroupProgess/ViewReviewModal";
 
@@ -63,7 +64,18 @@ export default function ExistingReviewsList({ reviews, loading }: Props) {
 							]}
 						>
 							<List.Item.Meta
-								title={<ReviewerInfo review={review} label="Reviewed by" />}
+								title={
+									/* Show all assigned reviewers if available, otherwise show single reviewer */
+									review.assignedReviewers &&
+									review.assignedReviewers.length > 0 ? (
+										<AssignedReviewersInfo
+											review={review}
+											label="Reviewed by"
+										/>
+									) : (
+										<ReviewerInfo review={review} label="Reviewed by" />
+									)
+								}
 								description={
 									<ReviewDates
 										createdAt={review.createdAt}

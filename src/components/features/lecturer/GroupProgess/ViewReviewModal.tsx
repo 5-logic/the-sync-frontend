@@ -9,6 +9,7 @@ import {
 	ReviewItemsTable,
 	ReviewItemData,
 } from "@/components/common/ReviewComponents";
+import { AssignedReviewersInfo } from "@/components/common/AssignedReviewersInfo";
 
 const { Text } = Typography;
 
@@ -45,7 +46,15 @@ export default function ViewReviewModal({ open, onClose, review }: Props) {
 				{/* Review Info */}
 				<div style={{ marginBottom: 16 }}>
 					<div style={{ marginBottom: 8 }}>
-						<ReviewerInfo review={review} label="Reviewer" />
+						{/* Show all assigned reviewers if available */}
+						{review.assignedReviewers && review.assignedReviewers.length > 0 ? (
+							<AssignedReviewersInfo
+								review={review}
+								label="Assigned Reviewers"
+							/>
+						) : (
+							<ReviewerInfo review={review} label="Reviewer" />
+						)}
 						<div style={{ marginTop: 8 }}>
 							<ReviewDates
 								createdAt={review.createdAt}

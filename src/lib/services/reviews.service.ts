@@ -238,6 +238,8 @@ class ReviewsService {
 							},
 						},
 						isMainReviewer: reviewerInfo?.isMainReviewer || false,
+						// Include all assigned reviewers for each review
+						assignedReviewers: assignmentReviews,
 					};
 				},
 			);
@@ -434,6 +436,27 @@ export interface SubmissionReviewWithReviewer extends SubmissionReview {
 		};
 	};
 	isMainReviewer: boolean;
+	// New field to include all assigned reviewers for the submission
+	assignedReviewers?: {
+		reviewerId: string;
+		submissionId: string;
+		isMainReviewer: boolean;
+		reviewer: {
+			userId: string;
+			isModerator: boolean;
+			user: {
+				id: string;
+				fullName: string;
+				email: string;
+				password: string;
+				gender: string;
+				phoneNumber: string;
+				isActive: boolean;
+				createdAt: string;
+				updatedAt: string;
+			};
+		};
+	}[];
 }
 
 // Type alias for backward compatibility

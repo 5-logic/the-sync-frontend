@@ -9,6 +9,7 @@ import {
 	ReviewerInfo,
 	ReviewDates,
 } from "@/components/common/ReviewComponents";
+import { AssignedReviewersInfo } from "@/components/common/AssignedReviewersInfo";
 
 import EditReviewModal from "./EditReviewModal";
 
@@ -79,7 +80,15 @@ export default function ExistingReviewsList({
 							]}
 						>
 							<List.Item.Meta
-								title={<ReviewerInfo review={review} label="Created by" />}
+								title={
+									/* Show all assigned reviewers if available, otherwise show single reviewer */
+									review.assignedReviewers &&
+									review.assignedReviewers.length > 0 ? (
+										<AssignedReviewersInfo review={review} label="Created by" />
+									) : (
+										<ReviewerInfo review={review} label="Created by" />
+									)
+								}
 								description={
 									<ReviewDates
 										createdAt={review.createdAt}
