@@ -3,7 +3,7 @@ import { useCallback, useState } from "react";
 import reviewsService, {
 	AssignedReview,
 	ReviewFormData,
-	SubmissionReview,
+	SubmissionReviewWithReviewer,
 	SubmitReviewRequest,
 	SubmittedReview,
 	UpdateReviewRequest,
@@ -19,7 +19,7 @@ interface Supervisor {
 interface UseReviewsReturn {
 	reviews: AssignedReview[];
 	reviewForm: ReviewFormData | null;
-	submissionReviews: SubmissionReview[];
+	submissionReviews: SubmissionReviewWithReviewer[];
 	loading: boolean;
 	reviewFormLoading: boolean;
 	submissionReviewsLoading: boolean;
@@ -45,7 +45,7 @@ export function useReviews(): UseReviewsReturn {
 	const [reviews, setReviews] = useState<AssignedReview[]>([]);
 	const [reviewForm, setReviewForm] = useState<ReviewFormData | null>(null);
 	const [submissionReviews, setSubmissionReviews] = useState<
-		SubmissionReview[]
+		SubmissionReviewWithReviewer[]
 	>([]);
 	const [loading, setLoading] = useState(false);
 	const [reviewFormLoading, setReviewFormLoading] = useState(false);

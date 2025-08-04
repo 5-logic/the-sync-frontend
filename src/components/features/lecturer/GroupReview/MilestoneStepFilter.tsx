@@ -5,10 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import milestoneService from "@/lib/services/milestones.service";
 import { handleApiResponse } from "@/lib/utils/handleApi";
-import {
-	convertToVietnamTime,
-	isWithinMilestonePeriod,
-} from "@/lib/utils/milestoneUtils";
+import { convertToVietnamTime } from "@/lib/utils/milestoneUtils";
 import { Milestone } from "@/schemas/milestone";
 
 const { Text } = Typography;
@@ -144,21 +141,25 @@ export default function MilestoneStepFilter({
 						<span
 							style={{
 								fontSize: "14px",
-								color: isWithinMilestonePeriod(
-									currentMilestone.startDate.toString(),
-									currentMilestone.endDate.toString(),
-								)
-									? "#52c41a"
-									: "#ff4d4f",
+								color: (() => {
+									const now = new Date();
+									const startDate = new Date(
+										currentMilestone.startDate.toString(),
+									);
+									const isActive = now >= startDate;
+									return isActive ? "#52c41a" : "#ff4d4f";
+								})(),
 								fontWeight: "bold",
 							}}
 						>
-							{isWithinMilestonePeriod(
-								currentMilestone.startDate.toString(),
-								currentMilestone.endDate.toString(),
-							)
-								? "Active"
-								: "Inactive"}
+							{(() => {
+								const now = new Date();
+								const startDate = new Date(
+									currentMilestone.startDate.toString(),
+								);
+								const isActive = now >= startDate;
+								return isActive ? "Active" : "Inactive";
+							})()}
 						</span>
 					</div>
 				</div>

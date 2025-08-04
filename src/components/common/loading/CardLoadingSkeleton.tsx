@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { Card, Skeleton } from 'antd';
+import { Card, Skeleton } from "antd";
 
 /**
  * Card Loading Skeleton

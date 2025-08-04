@@ -6,14 +6,14 @@
  * Checks if a thesis name is considered "empty" or "not assigned"
  */
 export const isThesisNameEmpty = (thesisName?: string): boolean => {
-	return !thesisName || thesisName === 'Not assigned';
+	return !thesisName || thesisName === "Not assigned";
 };
 
 /**
- * Gets a clean thesis name for export (empty string if not assigned)
+ * Gets a clean thesis name for export (dash if not assigned)
  */
 export const getCleanThesisNameForExport = (thesisName?: string): string => {
-	return isThesisNameEmpty(thesisName) ? '' : thesisName!;
+	return isThesisNameEmpty(thesisName) ? "-" : thesisName!;
 };
 
 /**

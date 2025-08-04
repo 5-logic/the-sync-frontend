@@ -2,14 +2,19 @@ import {
 	ExportOutlined,
 	ReloadOutlined,
 	SearchOutlined,
-} from '@ant-design/icons';
-import { Button, Col, Input, Row, Select } from 'antd';
-import React from 'react';
+} from "@ant-design/icons";
+import { Button, Col, Input, Row, Select, Tooltip } from "antd";
+import React from "react";
+
+import { useSemesterExportValidation } from "@/hooks/admin/useSemesterExportValidation";
+import { Semester } from "@/schemas/semester";
 
 interface SemesterOption {
 	id: string;
 	name: string;
 	code: string;
+	status: string;
+	ongoingPhase?: string | null;
 }
 
 type Props = {
@@ -34,11 +39,17 @@ export const FilterBar = ({
 	availableSemesters,
 	onExportExcel,
 	onRefresh,
-	searchPlaceholder = 'Search...',
-	exportExcelText = 'Export Excel',
+	searchPlaceholder = "Search...",
+	exportExcelText = "Export Excel",
 	showExportExcel = false,
 	loading = false,
 }: Props) => {
+	// Validate export permissions for selected semester
+	const { canExport, reason } = useSemesterExportValidation(
+		selectedSemester,
+		availableSemesters as Semester[],
+	);
+
 	return (
 		<Row gutter={[16, 16]} align="middle" style={{ marginBottom: 16 }}>
 			<Col flex="auto">
@@ -56,14 +67,14 @@ export const FilterBar = ({
 				<Select
 					value={selectedSemester}
 					onChange={onSemesterChange}
-					style={{ width: '100%' }}
+					style={{ width: "100%" }}
 					size="middle"
 					placeholder="Select Semester"
 					disabled={loading}
 					showSearch
 					optionFilterProp="children"
 					filterOption={(input, option) =>
-						String(option?.children || '')
+						String(option?.children || "")
 							.toLowerCase()
 							.includes(input.toLowerCase())
 					}
@@ -90,17 +101,19 @@ export const FilterBar = ({
 			)}
 			{showExportExcel && (
 				<Col style={{ width: 150 }}>
-					<Button
-						icon={<ExportOutlined />}
-						type="primary"
-						size="middle"
-						style={{ width: '100%' }}
-						onClick={onExportExcel}
-						disabled={loading}
-						title="Export to Excel"
-					>
-						{exportExcelText}
-					</Button>
+					<Tooltip title={!canExport ? reason : ""}>
+						<Button
+							icon={<ExportOutlined />}
+							type="primary"
+							size="middle"
+							style={{ width: "100%" }}
+							onClick={onExportExcel}
+							disabled={loading || !canExport}
+							title="Export to Excel"
+						>
+							{exportExcelText}
+						</Button>
+					</Tooltip>
 				</Col>
 			)}
 		</Row>

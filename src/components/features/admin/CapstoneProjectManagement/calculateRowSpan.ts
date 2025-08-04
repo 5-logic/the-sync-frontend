@@ -126,7 +126,7 @@ export const calculateRowSpans = <T extends FullRowSpanItem>(
 // Function for export data that doesn't need semester rowspan
 export const calculateRowSpansForExport = <T extends BaseRowSpanItem>(
 	data: T[],
-): T[] => {
+): (T & { rowSpanGroup: number; rowSpanMajor: number })[] => {
 	// Sort data to ensure proper row spanning
 	const sortedData = [...data].sort((a, b) => {
 		if (a.groupId !== b.groupId) {
@@ -136,23 +136,17 @@ export const calculateRowSpansForExport = <T extends BaseRowSpanItem>(
 		return a.major.localeCompare(b.major);
 	});
 
-	const result: T[] = [];
+	const result: (T & { rowSpanGroup: number; rowSpanMajor: number })[] = [];
 	const groupCounts = calculateGroupCounts(sortedData);
 	const seenGroups = new Set<string>();
 	const seenMajorInGroups = new Set<string>();
 
 	sortedData.forEach((item) => {
-		const newItem = { ...item } as T & {
-			rowSpanGroup?: number;
-			rowSpanMajor?: number;
+		const newItem = {
+			...item,
+			rowSpanGroup: calculateGroupRowSpan(item, seenGroups, groupCounts),
+			rowSpanMajor: calculateMajorRowSpan(item, sortedData, seenMajorInGroups),
 		};
-
-		newItem.rowSpanGroup = calculateGroupRowSpan(item, seenGroups, groupCounts);
-		newItem.rowSpanMajor = calculateMajorRowSpan(
-			item,
-			sortedData,
-			seenMajorInGroups,
-		);
 
 		result.push(newItem);
 	});
