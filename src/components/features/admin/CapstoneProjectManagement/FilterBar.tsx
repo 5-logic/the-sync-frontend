@@ -3,13 +3,18 @@ import {
 	ReloadOutlined,
 	SearchOutlined,
 } from "@ant-design/icons";
-import { Button, Col, Input, Row, Select } from "antd";
+import { Button, Col, Input, Row, Select, Tooltip } from "antd";
 import React from "react";
+
+import { useSemesterExportValidation } from "@/hooks/admin/useSemesterExportValidation";
+import { Semester } from "@/schemas/semester";
 
 interface SemesterOption {
 	id: string;
 	name: string;
 	code: string;
+	status: string;
+	ongoingPhase?: string | null;
 }
 
 type Props = {
@@ -39,6 +44,12 @@ export const FilterBar = ({
 	showExportExcel = false,
 	loading = false,
 }: Props) => {
+	// Validate export permissions for selected semester
+	const { canExport, reason } = useSemesterExportValidation(
+		selectedSemester,
+		availableSemesters as Semester[],
+	);
+
 	return (
 		<Row gutter={[16, 16]} align="middle" style={{ marginBottom: 16 }}>
 			<Col flex="auto">
@@ -90,17 +101,19 @@ export const FilterBar = ({
 			)}
 			{showExportExcel && (
 				<Col style={{ width: 150 }}>
-					<Button
-						icon={<ExportOutlined />}
-						type="primary"
-						size="middle"
-						style={{ width: "100%" }}
-						onClick={onExportExcel}
-						disabled={loading}
-						title="Export to Excel"
-					>
-						{exportExcelText}
-					</Button>
+					<Tooltip title={!canExport ? reason : ""}>
+						<Button
+							icon={<ExportOutlined />}
+							type="primary"
+							size="middle"
+							style={{ width: "100%" }}
+							onClick={onExportExcel}
+							disabled={loading || !canExport}
+							title="Export to Excel"
+						>
+							{exportExcelText}
+						</Button>
+					</Tooltip>
 				</Col>
 			)}
 		</Row>

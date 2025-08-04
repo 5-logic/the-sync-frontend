@@ -54,10 +54,7 @@ export const useExportGroups = () => {
 				filename: `Groups_${semesterDisplayName}_${new Date().toISOString().split("T")[0]}.xlsx`,
 			});
 
-			showNotification.success(
-				"Export Successful",
-				"Data has been exported to Excel successfully",
-			);
+			// Remove duplicate success notification - it's already handled in exportToExcel
 		},
 		[],
 	);
