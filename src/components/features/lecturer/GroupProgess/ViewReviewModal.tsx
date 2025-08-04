@@ -40,6 +40,7 @@ export default function ViewReviewModal({ open, onClose, review }: Props) {
 			width={1200}
 			footer={null}
 		>
+			<Divider />
 			<div>
 				{/* Review Info */}
 				<div style={{ marginBottom: 16 }}>
@@ -54,15 +55,14 @@ export default function ViewReviewModal({ open, onClose, review }: Props) {
 					</div>
 				</div>
 
-				<Divider />
-
 				{/* General Feedback */}
 				<div style={{ marginBottom: 24 }}>
 					<h4>General Feedback</h4>
 					<div
 						style={{
 							padding: "12px",
-							background: "#f5f5f5",
+							background: "#ffffffff",
+							border: "1px solid #f5f5f5",
 							borderRadius: "6px",
 							minHeight: "80px",
 						}}
