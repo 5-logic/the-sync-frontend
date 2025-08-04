@@ -1,7 +1,17 @@
 "use client";
 
 import { DownloadOutlined } from "@ant-design/icons";
-import { Button, Card, Col, Grid, Row, Spin, Steps, Typography } from "antd";
+import {
+	Button,
+	Card,
+	Col,
+	Empty,
+	Grid,
+	Row,
+	Spin,
+	Steps,
+	Typography,
+} from "antd";
 import { useEffect } from "react";
 
 import CardLoadingSkeleton from "@/components/common/loading/CardLoadingSkeleton";
@@ -298,11 +308,14 @@ export default function MilestoneDetailCard({
 									textAlign: "center",
 								}}
 							>
-								<Text type="secondary">
-									{isFullMockGroup(group) && group.submissionFile
-										? group.submissionFile
-										: "No submission files available"}
-								</Text>
+								{isFullMockGroup(group) && group.submissionFile ? (
+									<Text type="secondary">{group.submissionFile}</Text>
+								) : (
+									<Empty
+										image={Empty.PRESENTED_IMAGE_SIMPLE}
+										description="No data"
+									/>
+								)}
 							</div>
 						</div>
 					)}
@@ -333,19 +346,6 @@ export default function MilestoneDetailCard({
 					{/* Additional submission info */}
 					{submission && (
 						<>
-							<Row style={{ marginBottom: 16 }}>
-								<Col span={24}>
-									<Text strong>Status: </Text>
-									<Text
-										type={
-											submission.status === "Submitted" ? "success" : "warning"
-										}
-									>
-										{submission.status}
-									</Text>
-								</Col>
-							</Row>
-
 							{hasAssignmentReviews(submission) && (
 								<Row style={{ marginTop: 16 }}>
 									<Col span={24}>
