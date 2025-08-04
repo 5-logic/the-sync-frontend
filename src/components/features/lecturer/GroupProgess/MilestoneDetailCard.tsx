@@ -1,29 +1,16 @@
 "use client";
 
 import { DownloadOutlined } from "@ant-design/icons";
-import {
-	Button,
-	Card,
-	Col,
-	Divider,
-	Grid,
-	Row,
-	Spin,
-	Steps,
-	Typography,
-} from "antd";
+import { Button, Card, Col, Grid, Row, Spin, Steps, Typography } from "antd";
 import { useEffect } from "react";
 
 import CardLoadingSkeleton from "@/components/common/loading/CardLoadingSkeleton";
 import type { FullMockGroup } from "@/data/group";
 import { useSubmission } from "@/hooks/lecturer/useSubmission";
-import { useReviews } from "@/hooks/lecturer/useReviews";
 import { Group, SupervisedGroup } from "@/lib/services/groups.service";
 import { GroupDashboard } from "@/schemas/group";
 import { Milestone } from "@/schemas/milestone";
 import { SubmissionDetail } from "@/schemas/submission";
-
-import ExistingReviewsList from "./ExistingReviewsList";
 
 type GroupType = FullMockGroup | Group | GroupDashboard | SupervisedGroup;
 
@@ -102,26 +89,12 @@ export default function MilestoneDetailCard({
 		fetchSubmission,
 	} = useSubmission();
 
-	// Reviews hook for submission reviews
-	const {
-		submissionReviews,
-		submissionReviewsLoading,
-		fetchSubmissionReviews,
-	} = useReviews();
-
 	// Fetch submission when group and milestone change
 	useEffect(() => {
 		if (group?.id && milestone?.id) {
 			fetchSubmission(group.id, milestone.id);
 		}
 	}, [group?.id, milestone?.id, fetchSubmission]);
-
-	// Fetch submission reviews when submission is loaded
-	useEffect(() => {
-		if (submission?.id) {
-			fetchSubmissionReviews(submission.id);
-		}
-	}, [submission?.id, fetchSubmissionReviews]);
 
 	// Helper functions
 	const hasDocuments = (sub: SubmissionDetail | null): boolean => {
@@ -360,32 +333,34 @@ export default function MilestoneDetailCard({
 					{/* Additional submission info */}
 					{submission && (
 						<>
-							<Divider style={{ margin: "16px 0" }} />
+							<Row style={{ marginBottom: 16 }}>
+								<Col span={24}>
+									<Text strong>Status: </Text>
+									<Text
+										type={
+											submission.status === "Submitted" ? "success" : "warning"
+										}
+									>
+										{submission.status}
+									</Text>
+								</Col>
+							</Row>
+
 							{hasAssignmentReviews(submission) && (
 								<Row style={{ marginTop: 16 }}>
 									<Col span={24}>
 										<Text strong>Reviewers:</Text>
 										{getAssignmentReviews(submission).map(
-											(review: AssignmentReviewDetail) => (
+											(review: AssignmentReviewDetail, index: number) => (
 												<div key={review.reviewerId} style={{ marginTop: 4 }}>
 													<Text type="secondary">
-														{review.reviewer.user.fullName}
+														{index + 1}. {review.reviewer.user.fullName}
 													</Text>
 												</div>
 											),
 										)}
 									</Col>
 								</Row>
-							)}
-
-							{/* Existing Reviews Section */}
-							{submission && (
-								<div style={{ marginTop: 16 }}>
-									<ExistingReviewsList
-										reviews={submissionReviews}
-										loading={submissionReviewsLoading}
-									/>
-								</div>
 							)}
 						</>
 					)}
