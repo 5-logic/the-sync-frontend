@@ -1,19 +1,19 @@
-'use client';
+"use client";
 
-import { UserOutlined } from '@ant-design/icons';
-import { Avatar, Button, Card, Col, Row, Space, Tag, Typography } from 'antd';
-import { useRouter } from 'next/navigation';
+import { UserOutlined } from "@ant-design/icons";
+import { Avatar, Button, Card, Col, Row, Space, Tag, Typography } from "antd";
+import { useRouter } from "next/navigation";
 
-import { useSemesterStatus } from '@/hooks/student/useSemesterStatus';
-import { useStudentGroupStatus } from '@/hooks/student/useStudentGroupStatus';
-import { useThesisRegistration } from '@/hooks/thesis';
-import { DOMAIN_COLOR_MAP } from '@/lib/constants/domains';
-import { ThesisWithRelations } from '@/schemas/thesis';
-import { cacheUtils } from '@/store/helpers/cacheHelpers';
+import { useSemesterStatus } from "@/hooks/student/useSemesterStatus";
+import { useStudentGroupStatus } from "@/hooks/student/useStudentGroupStatus";
+import { useThesisRegistration } from "@/hooks/thesis";
+import { DOMAIN_COLOR_MAP } from "@/lib/constants/domains";
+import { ThesisWithRelations } from "@/schemas/thesis";
+import { cacheUtils } from "@/store/helpers/cacheHelpers";
 
 interface Props {
 	readonly thesis: ThesisWithRelations;
-	readonly studentRole?: 'leader' | 'member' | 'guest';
+	readonly studentRole?: "leader" | "member" | "guest";
 	readonly onThesisUpdate?: () => void | Promise<void>;
 }
 
@@ -23,15 +23,15 @@ export default function ThesisCard({
 	onThesisUpdate,
 }: Props) {
 	const { hasGroup, group, resetInitialization } = useStudentGroupStatus();
-	const { isPicking, loading: semesterLoading } = useSemesterStatus();
+	const { canRegisterThesis, loading: semesterLoading } = useSemesterStatus();
 	const { registerThesis, unregisterThesis, isRegistering } =
 		useThesisRegistration();
 	const router = useRouter();
 
 	// Get domain color
 	const domainColor = thesis.domain
-		? DOMAIN_COLOR_MAP[thesis.domain] || 'default'
-		: 'default';
+		? DOMAIN_COLOR_MAP[thesis.domain] || "default"
+		: "default";
 
 	// Process skills for display (max 1 line, show extra count if needed)
 	const maxVisibleSkills = 3;
@@ -47,15 +47,15 @@ export default function ThesisCard({
 	const isThesisAssignedToGroup = group?.id === thesis.groupId;
 
 	// Determine if register button should be enabled
-	const canRegister = studentRole === 'leader' && hasGroup && !isThesisTaken;
+	const canRegister = studentRole === "leader" && hasGroup && !isThesisTaken;
 
 	// Determine if unregister button should be shown
 	const canUnregister =
-		studentRole === 'leader' && hasGroup && isThesisAssignedToGroup;
+		studentRole === "leader" && hasGroup && isThesisAssignedToGroup;
 
 	// Disable register button if semester is not in picking phase
 	const isRegisterDisabled =
-		!canRegister || !isPicking || isRegistering || semesterLoading;
+		!canRegister || !canRegisterThesis || isRegistering || semesterLoading;
 
 	// Handle view details navigation
 	const handleViewDetails = () => {
@@ -66,7 +66,7 @@ export default function ThesisCard({
 	const handleRegisterThesis = () => {
 		registerThesis(thesis.id, thesis.englishName, () => {
 			// Clear relevant caches
-			cacheUtils.clear('semesterStatus');
+			cacheUtils.clear("semesterStatus");
 
 			// Refresh group data to update UI
 			resetInitialization();
@@ -80,7 +80,7 @@ export default function ThesisCard({
 	const handleUnregisterThesis = () => {
 		unregisterThesis(thesis.englishName, () => {
 			// Clear relevant caches
-			cacheUtils.clear('semesterStatus');
+			cacheUtils.clear("semesterStatus");
 
 			// Refresh group data to update UI
 			resetInitialization();
@@ -93,59 +93,59 @@ export default function ThesisCard({
 	// Get button tooltip message based on current state
 	const getButtonTooltip = (): string => {
 		if (isThesisTaken) {
-			return 'This thesis is already taken by another group';
+			return "This thesis is already taken by another group";
 		}
 		if (!hasGroup) {
-			return 'You need to be in a group to register';
+			return "You need to be in a group to register";
 		}
-		if (studentRole !== 'leader') {
-			return 'Only group leaders can register for thesis';
+		if (studentRole !== "leader") {
+			return "Only group leaders can register for thesis";
 		}
-		if (!isPicking) {
-			return 'Registration is only available during the "Picking" phase';
+		if (!canRegisterThesis) {
+			return 'Registration is only available during the "Picking" phase or "Ongoing - Scope Adjustable" phase';
 		}
-		return 'Register for this thesis';
+		return "Register for this thesis";
 	};
 
 	// Get register button text based on current state
 	const getRegisterButtonText = (): string => {
 		if (isRegistering) {
-			return 'Registering...';
+			return "Registering...";
 		}
 		if (isThesisTaken) {
-			return 'Taken';
+			return "Taken";
 		}
-		return 'Register';
+		return "Register";
 	};
 
 	return (
 		<Card
 			title={null}
 			style={{
-				height: '100%',
-				display: 'flex',
-				flexDirection: 'column',
+				height: "100%",
+				display: "flex",
+				flexDirection: "column",
 				borderRadius: 12,
 			}}
-			bodyStyle={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}
+			bodyStyle={{ display: "flex", flexDirection: "column", flexGrow: 1 }}
 		>
 			<Space
 				direction="vertical"
 				size="middle"
-				style={{ width: '100%', flexGrow: 1 }}
+				style={{ width: "100%", flexGrow: 1 }}
 			>
 				<Typography.Title
 					level={5}
 					style={{
 						marginBottom: 0,
-						display: '-webkit-box',
+						display: "-webkit-box",
 						WebkitLineClamp: 2,
-						WebkitBoxOrient: 'vertical',
-						overflow: 'hidden',
-						textOverflow: 'ellipsis',
-						lineHeight: '1.4',
-						minHeight: '2.8em', // Always maintain 2 lines height
-						maxHeight: '2.8em', // 2 lines * 1.4 line-height
+						WebkitBoxOrient: "vertical",
+						overflow: "hidden",
+						textOverflow: "ellipsis",
+						lineHeight: "1.4",
+						minHeight: "2.8em", // Always maintain 2 lines height
+						maxHeight: "2.8em", // 2 lines * 1.4 line-height
 					}}
 				>
 					{thesis.englishName}
@@ -154,14 +154,14 @@ export default function ThesisCard({
 				<Typography.Text
 					type="secondary"
 					style={{
-						display: '-webkit-box',
+						display: "-webkit-box",
 						WebkitLineClamp: 4,
-						WebkitBoxOrient: 'vertical',
-						overflow: 'hidden',
-						textOverflow: 'ellipsis',
-						lineHeight: '1.4',
-						minHeight: '5.6em', // Always maintain 4 lines height
-						maxHeight: '5.6em', // 4 lines * 1.4 line-height
+						WebkitBoxOrient: "vertical",
+						overflow: "hidden",
+						textOverflow: "ellipsis",
+						lineHeight: "1.4",
+						minHeight: "5.6em", // Always maintain 4 lines height
+						maxHeight: "5.6em", // 4 lines * 1.4 line-height
 					}}
 				>
 					{thesis.description}
@@ -185,9 +185,9 @@ export default function ThesisCard({
 					wrap
 					size={[8, 8]}
 					style={{
-						minHeight: '2em', // Always maintain consistent height
-						maxHeight: '2em',
-						overflow: 'hidden',
+						minHeight: "2em", // Always maintain consistent height
+						maxHeight: "2em",
+						overflow: "hidden",
 					}}
 				>
 					{visibleSkills.map((skill) => (
@@ -221,7 +221,7 @@ export default function ThesisCard({
 							loading={isRegistering || semesterLoading}
 							title="Unregister from this thesis"
 						>
-							{isRegistering ? 'Unregistering...' : 'Unregister'}
+							{isRegistering ? "Unregistering..." : "Unregister"}
 						</Button>
 					) : (
 						<Button

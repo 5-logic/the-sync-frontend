@@ -1,4 +1,4 @@
-import { EyeOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
+import { EyeOutlined, ReloadOutlined, SearchOutlined } from "@ant-design/icons";
 import {
 	Button,
 	Card,
@@ -9,38 +9,36 @@ import {
 	Spin,
 	Table,
 	Tooltip,
-} from 'antd';
-import { useRouter } from 'next/navigation';
-import React, { useEffect, useState } from 'react';
+} from "antd";
+import { useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
 
-import { TablePagination } from '@/components/common/TablePagination';
-import { useLecturerSemesterFilter } from '@/hooks/lecturer/useLecturerSemesterFilter';
+import { TablePagination } from "@/components/common/TablePagination";
+import { useSessionData } from "@/hooks/auth";
+import { useMilestonesSemesterFilter } from "@/hooks/lecturer/useMilestonesSemesterFilter";
 import groupsService, {
 	type SupervisedGroup,
-} from '@/lib/services/groups.service';
-import { handleApiResponse } from '@/lib/utils/handleApi';
+} from "@/lib/services/groups.service";
+import { handleApiResponse } from "@/lib/utils/handleApi";
+import { Semester } from "@/schemas/semester";
 
 const { Option } = Select;
 
 const AssignedGroupsTable: React.FC = () => {
 	const [groups, setGroups] = useState<SupervisedGroup[]>([]);
-	const [searchText, setSearchText] = useState('');
+	const [searchText, setSearchText] = useState("");
 	const [loading, setLoading] = useState(true);
 	const router = useRouter();
+	const { session } = useSessionData();
 
 	// Use custom hook for semester filter logic
-	const {
-		semesters,
-		selectedSemester,
-		setSelectedSemester,
-		semestersLoading,
-		session,
-	} = useLecturerSemesterFilter();
+	const { semesters, selectedSemester, setSelectedSemester, semestersLoading } =
+		useMilestonesSemesterFilter();
 
 	// Fetch assigned groups
 	useEffect(() => {
 		const fetchGroups = async () => {
-			if (!session?.user?.id || selectedSemester === 'all') {
+			if (!session?.user?.id || !selectedSemester) {
 				setGroups([]);
 				setLoading(false);
 				return;
@@ -55,7 +53,7 @@ const AssignedGroupsTable: React.FC = () => {
 					setGroups(result.data || []);
 				}
 			} catch (error) {
-				console.error('Error fetching assigned groups:', error);
+				console.error("Error fetching assigned groups:", error);
 			} finally {
 				setLoading(false);
 			}
@@ -69,9 +67,9 @@ const AssignedGroupsTable: React.FC = () => {
 		const lowerSearch = searchText.toLowerCase();
 		const leaderName =
 			group.studentGroupParticipations.find((p) => p.isLeader)?.student.user
-				.fullName || '';
+				.fullName || "";
 		const thesisTitle =
-			group.thesis?.englishName || group.thesis?.vietnameseName || '';
+			group.thesis?.englishName || group.thesis?.vietnameseName || "";
 
 		return (
 			group.name?.toLowerCase().includes(lowerSearch) ||
@@ -89,26 +87,27 @@ const AssignedGroupsTable: React.FC = () => {
 	// Helper function to get semester name
 	const getSemesterName = (semesterId: string) => {
 		return (
-			semesters.find((s) => s.id === semesterId)?.name || 'Unknown Semester'
+			semesters.find((s: Semester) => s.id === semesterId)?.name ||
+			"Unknown Semester"
 		);
 	};
 
 	// Helper function to get group leader name
 	const getLeaderName = (group: SupervisedGroup) => {
 		const leader = group.studentGroupParticipations.find((p) => p.isLeader);
-		return leader?.student.user.fullName || 'No Leader';
+		return leader?.student.user.fullName || "No Leader";
 	};
 
 	// Helper function to get thesis title
 	const getThesisTitle = (group: SupervisedGroup) => {
 		return (
-			group.thesis?.englishName || group.thesis?.vietnameseName || 'No Thesis'
+			group.thesis?.englishName || group.thesis?.vietnameseName || "No Thesis"
 		);
 	};
 
 	// Refresh data function
 	const handleRefresh = async () => {
-		if (selectedSemester === 'all') {
+		if (!selectedSemester) {
 			setGroups([]);
 			return;
 		}
@@ -122,7 +121,7 @@ const AssignedGroupsTable: React.FC = () => {
 				setGroups(result.data || []);
 			}
 		} catch (error) {
-			console.error('Error refreshing assigned groups:', error);
+			console.error("Error refreshing assigned groups:", error);
 		} finally {
 			setLoading(false);
 		}
@@ -131,38 +130,38 @@ const AssignedGroupsTable: React.FC = () => {
 	// Table columns
 	const columns = [
 		{
-			title: 'Group Name',
-			dataIndex: 'name',
-			key: 'name',
-			render: (name: string) => name || 'Unnamed Group',
+			title: "Group Name",
+			dataIndex: "name",
+			key: "name",
+			render: (name: string) => name || "Unnamed Group",
 		},
 		{
-			title: 'Group Leader',
-			key: 'leader',
+			title: "Group Leader",
+			key: "leader",
 			render: (_: unknown, record: SupervisedGroup) => getLeaderName(record),
 		},
 		{
-			title: 'Thesis Title',
-			key: 'thesis',
+			title: "Thesis Title",
+			key: "thesis",
 			render: (_: unknown, record: SupervisedGroup) => (
-				<div style={{ maxWidth: '300px' }}>{getThesisTitle(record)}</div>
+				<div style={{ maxWidth: "300px" }}>{getThesisTitle(record)}</div>
 			),
 		},
 		{
-			title: 'Semester',
-			key: 'semester',
+			title: "Semester",
+			key: "semester",
 			render: (_: unknown, record: SupervisedGroup) =>
 				getSemesterName(record.semesterId),
 		},
 		{
-			title: 'Members',
-			key: 'members',
+			title: "Members",
+			key: "members",
 			render: (_: unknown, record: SupervisedGroup) =>
 				record.studentGroupParticipations.length,
 		},
 		{
-			title: 'Actions',
-			key: 'actions',
+			title: "Actions",
+			key: "actions",
 			render: (_: unknown, record: SupervisedGroup) => (
 				<Tooltip title="View Details">
 					<Button
@@ -194,14 +193,11 @@ const AssignedGroupsTable: React.FC = () => {
 					<Select
 						value={selectedSemester}
 						onChange={setSelectedSemester}
-						style={{ width: '100%' }}
-						placeholder="Filter by semester"
-						allowClear
-						onClear={() => setSelectedSemester('all')}
+						style={{ width: "100%" }}
+						placeholder="Select semester"
 						loading={semestersLoading}
 					>
-						<Option value="all">All Semesters</Option>
-						{semesters.map((semester) => (
+						{semesters.map((semester: Semester) => (
 							<Option key={semester.id} value={semester.id}>
 								{semester.name}
 							</Option>
@@ -214,7 +210,7 @@ const AssignedGroupsTable: React.FC = () => {
 							icon={<ReloadOutlined />}
 							onClick={handleRefresh}
 							loading={loading}
-							disabled={selectedSemester === 'all'}
+							disabled={!selectedSemester}
 						>
 							Refresh
 						</Button>
@@ -223,7 +219,7 @@ const AssignedGroupsTable: React.FC = () => {
 			</Row>
 
 			{!isDataReady ? (
-				<div style={{ textAlign: 'center', padding: '40px 0' }}>
+				<div style={{ textAlign: "center", padding: "40px 0" }}>
 					<Spin size="large" />
 				</div>
 			) : (
@@ -232,12 +228,11 @@ const AssignedGroupsTable: React.FC = () => {
 					dataSource={filteredData}
 					rowKey="id"
 					pagination={TablePagination}
-					scroll={{ x: 'max-content' }}
+					scroll={{ x: "max-content" }}
 					locale={{
-						emptyText:
-							selectedSemester === 'all'
-								? 'No assigned groups found'
-								: 'No assigned groups found for selected semester',
+						emptyText: selectedSemester
+							? "No assigned groups found for selected semester"
+							: "Please select a semester to view assigned groups",
 					}}
 				/>
 			)}
