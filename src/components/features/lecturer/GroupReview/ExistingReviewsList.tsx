@@ -95,13 +95,14 @@ export default function ExistingReviewsList({
 								description={
 									<div>
 										<Text type="secondary">
-											Created: {new Date(review.createdAt).toLocaleString()}
+											Created: {new Date(review.createdAt).toLocaleDateString()}
 										</Text>
 										{review.updatedAt !== review.createdAt && (
 											<>
 												<br />
 												<Text type="secondary">
-													Updated: {new Date(review.updatedAt).toLocaleString()}
+													Updated:{" "}
+													{new Date(review.updatedAt).toLocaleDateString()}
 												</Text>
 											</>
 										)}
