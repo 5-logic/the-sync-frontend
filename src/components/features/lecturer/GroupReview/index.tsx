@@ -312,23 +312,30 @@ export default function GroupReviewPage() {
 					<Space direction="vertical" size="small" style={{ width: "100%" }}>
 						<Text type="secondary">
 							Supervised by:{" "}
-							{currentSelectedGroup.isLoadingSupervisors ? (
-								<Skeleton.Input
-									active
-									size="small"
-									style={{
-										width: 150,
-										height: 16,
-										display: "inline-block",
-										verticalAlign: "middle",
-									}}
-								/>
-							) : currentSelectedGroup.supervisorNames &&
-							  currentSelectedGroup.supervisorNames.length > 0 ? (
-								currentSelectedGroup.supervisorNames.join(", ")
-							) : (
-								"No supervisors assigned"
-							)}
+							{(() => {
+								if (currentSelectedGroup.isLoadingSupervisors) {
+									return (
+										<Skeleton.Input
+											active
+											size="small"
+											style={{
+												width: 150,
+												height: 16,
+												display: "inline-block",
+												verticalAlign: "middle",
+											}}
+										/>
+									);
+								}
+
+								const supervisorText =
+									currentSelectedGroup.supervisorNames &&
+									currentSelectedGroup.supervisorNames.length > 0
+										? currentSelectedGroup.supervisorNames.join(", ")
+										: "No supervisors assigned";
+
+								return supervisorText;
+							})()}
 						</Text>
 					</Space>
 
