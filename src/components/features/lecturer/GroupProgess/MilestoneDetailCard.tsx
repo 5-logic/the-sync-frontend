@@ -17,10 +17,13 @@ import { useEffect } from "react";
 import CardLoadingSkeleton from "@/components/common/loading/CardLoadingSkeleton";
 import type { FullMockGroup } from "@/data/group";
 import { useSubmission } from "@/hooks/lecturer/useSubmission";
+import { useReviews } from "@/hooks/lecturer/useReviews";
 import { Group, SupervisedGroup } from "@/lib/services/groups.service";
 import { GroupDashboard } from "@/schemas/group";
 import { Milestone } from "@/schemas/milestone";
 import { SubmissionDetail } from "@/schemas/submission";
+
+import ExistingReviewsList from "./ExistingReviewsList";
 
 type GroupType = FullMockGroup | Group | GroupDashboard | SupervisedGroup;
 
@@ -99,12 +102,26 @@ export default function MilestoneDetailCard({
 		fetchSubmission,
 	} = useSubmission();
 
+	// Reviews hook for submission reviews
+	const {
+		submissionReviews,
+		submissionReviewsLoading,
+		fetchSubmissionReviews,
+	} = useReviews();
+
 	// Fetch submission when group and milestone change
 	useEffect(() => {
 		if (group?.id && milestone?.id) {
 			fetchSubmission(group.id, milestone.id);
 		}
 	}, [group?.id, milestone?.id, fetchSubmission]);
+
+	// Fetch submission reviews when submission is available
+	useEffect(() => {
+		if (submission?.id) {
+			fetchSubmissionReviews(submission.id);
+		}
+	}, [submission?.id, fetchSubmissionReviews]);
 
 	// Helper functions
 	const hasDocuments = (sub: SubmissionDetail | null): boolean => {
@@ -365,6 +382,16 @@ export default function MilestoneDetailCard({
 						</>
 					)}
 				</div>
+
+				{/* Existing Reviews Section */}
+				{submission && (
+					<div style={{ marginBottom: 16 }}>
+						<ExistingReviewsList
+							reviews={submissionReviews}
+							loading={submissionReviewsLoading}
+						/>
+					</div>
+				)}
 			</Card>
 		</Spin>
 	);
