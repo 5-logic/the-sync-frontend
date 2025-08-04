@@ -1,4 +1,4 @@
-import * as XLSX from 'xlsx-js-style';
+import * as XLSX from "xlsx-js-style";
 
 export interface CellStyle {
 	alignment?: {
@@ -24,22 +24,22 @@ export interface CellStyle {
 }
 
 export const getBorderStyle = (
-	style: 'thin' | 'medium' | 'thick',
-	color = '000000',
+	style: "thin" | "medium" | "thick",
+	color = "000000",
 ) => ({
 	style,
 	color: { rgb: color },
 });
 
 export const getBaseCellAlignment = () => ({
-	horizontal: 'center',
-	vertical: 'center',
+	horizontal: "center",
+	vertical: "center",
 	wrapText: true,
 });
 
 export const getLeftAlignedCellAlignment = () => ({
-	horizontal: 'left',
-	vertical: 'center',
+	horizontal: "left",
+	vertical: "center",
 	wrapText: true,
 });
 
@@ -48,17 +48,17 @@ export const getTitleStyle = (backgroundColor: string): CellStyle => ({
 	font: {
 		bold: true,
 		sz: 16,
-		color: { rgb: '000000' },
+		color: { rgb: "000000" },
 	},
 	fill: {
-		patternType: 'solid',
+		patternType: "solid",
 		fgColor: { rgb: backgroundColor },
 	},
 	border: {
-		top: getBorderStyle('thin'),
-		bottom: getBorderStyle('thin'),
-		left: getBorderStyle('thin'),
-		right: getBorderStyle('thin'),
+		top: getBorderStyle("thin"),
+		bottom: getBorderStyle("thin"),
+		left: getBorderStyle("thin"),
+		right: getBorderStyle("thin"),
 	},
 });
 
@@ -67,17 +67,17 @@ export const getSubtitleStyle = (backgroundColor: string): CellStyle => ({
 	font: {
 		bold: false,
 		sz: 12,
-		color: { rgb: '000000' },
+		color: { rgb: "000000" },
 	},
 	fill: {
-		patternType: 'solid',
+		patternType: "solid",
 		fgColor: { rgb: backgroundColor },
 	},
 	border: {
-		top: getBorderStyle('thin'),
-		bottom: getBorderStyle('thin'),
-		left: getBorderStyle('thin'),
-		right: getBorderStyle('thin'),
+		top: getBorderStyle("thin"),
+		bottom: getBorderStyle("thin"),
+		left: getBorderStyle("thin"),
+		right: getBorderStyle("thin"),
 	},
 });
 
@@ -86,27 +86,27 @@ export const getHeaderStyle = (backgroundColor: string): CellStyle => ({
 	font: {
 		bold: true,
 		sz: 12,
-		color: { rgb: '000000' },
+		color: { rgb: "000000" },
 	},
 	fill: {
-		patternType: 'solid',
+		patternType: "solid",
 		fgColor: { rgb: backgroundColor },
 	},
 	border: {
-		top: getBorderStyle('thin'),
-		bottom: getBorderStyle('thin'),
-		left: getBorderStyle('thin'),
-		right: getBorderStyle('thin'),
+		top: getBorderStyle("thin"),
+		bottom: getBorderStyle("thin"),
+		left: getBorderStyle("thin"),
+		right: getBorderStyle("thin"),
 	},
 });
 
 export const getDataRowStyle = (
 	rowIndex: number,
 	groupBoundaries: number[],
-	separatorColor = '808080',
+	separatorColor = "808080",
 ): CellStyle => {
-	const normalBorder = getBorderStyle('thin');
-	const separatorBorder = getBorderStyle('medium', separatorColor);
+	const normalBorder = getBorderStyle("thin");
+	const separatorBorder = getBorderStyle("medium", separatorColor);
 
 	return {
 		alignment: getBaseCellAlignment(),
@@ -122,10 +122,10 @@ export const getDataRowStyle = (
 export const getDataRowStyleWithLeftAlign = (
 	rowIndex: number,
 	groupBoundaries: number[],
-	separatorColor = '808080',
+	separatorColor = "808080",
 ): CellStyle => {
-	const normalBorder = getBorderStyle('thin');
-	const separatorBorder = getBorderStyle('medium', separatorColor);
+	const normalBorder = getBorderStyle("thin");
+	const separatorBorder = getBorderStyle("medium", separatorColor);
 
 	return {
 		alignment: getLeftAlignedCellAlignment(),
@@ -144,7 +144,7 @@ export const generateSubtitle = () => {
 	const day = exportDate.getDate();
 	const month = exportDate.getMonth() + 1; // getMonth() returns 0-11
 	const year = exportDate.getFullYear();
-	return `(Issued under Decision No. keynum/QĐ-FPTUBĐ dated ${day} month ${month} year ${year} of the Rector of FPT University)`;
+	return `(Issued under Decision No. keynum/QĐ-FPTUBĐ ${day}/${month}/${year} of the Rector of FPT University)`;
 };
 
 export const initializeExcelWorksheet = (title: string) => {
@@ -153,14 +153,14 @@ export const initializeExcelWorksheet = (title: string) => {
 	const ws = XLSX.utils.aoa_to_sheet([]);
 
 	// Add title row
-	XLSX.utils.sheet_add_aoa(ws, [[title]], { origin: 'A1' });
+	XLSX.utils.sheet_add_aoa(ws, [[title]], { origin: "A1" });
 
 	// Add subtitle row with decision information using current date
 	const subtitle = generateSubtitle();
-	XLSX.utils.sheet_add_aoa(ws, [[subtitle]], { origin: 'A2' });
+	XLSX.utils.sheet_add_aoa(ws, [[subtitle]], { origin: "A2" });
 
 	// Add empty row
-	XLSX.utils.sheet_add_aoa(ws, [[]], { origin: 'A3' });
+	XLSX.utils.sheet_add_aoa(ws, [[]], { origin: "A3" });
 
 	return { wb, ws };
 };
@@ -171,11 +171,11 @@ export const addHeadersAndData = (
 ) => {
 	// Add headers and data starting from row 4
 	const headers = Object.keys(exportData[0] || {});
-	XLSX.utils.sheet_add_aoa(ws, [headers], { origin: 'A4' });
+	XLSX.utils.sheet_add_aoa(ws, [headers], { origin: "A4" });
 
 	if (exportData.length > 0) {
 		const dataRows = exportData.map((row) => Object.values(row));
-		XLSX.utils.sheet_add_aoa(ws, dataRows, { origin: 'A5' });
+		XLSX.utils.sheet_add_aoa(ws, dataRows, { origin: "A5" });
 	}
 };
 
@@ -206,11 +206,11 @@ export const createMergesAndGroupBoundaries = (
 
 	// Track group boundaries for borders
 	const groupBoundaries: number[] = [];
-	let lastGroupId = '';
+	let lastGroupId = "";
 
 	data.forEach((item) => {
 		// Track group boundaries
-		if (item.groupId !== lastGroupId && lastGroupId !== '') {
+		if (item.groupId !== lastGroupId && lastGroupId !== "") {
 			groupBoundaries.push(currentRow - 1);
 		}
 		lastGroupId = item.groupId;
@@ -266,7 +266,7 @@ export const applyCellStyling = (
 	) => CellStyle | Record<string, never>,
 ) => {
 	const columnLetter = String.fromCharCode(65 + totalColumns - 1); // A=65, so A+7=H for 8 columns
-	const range = XLSX.utils.decode_range(ws['!ref'] || `A1:${columnLetter}1`);
+	const range = XLSX.utils.decode_range(ws["!ref"] || `A1:${columnLetter}1`);
 
 	for (let R = range.s.r; R <= range.e.r; ++R) {
 		for (let C = range.s.c; C <= range.e.c; ++C) {
@@ -274,7 +274,7 @@ export const applyCellStyling = (
 
 			// Create cell if it doesn't exist
 			if (!ws[cellAddress]) {
-				ws[cellAddress] = { v: '', t: 's' };
+				ws[cellAddress] = { v: "", t: "s" };
 			}
 
 			// Apply styling based on row type

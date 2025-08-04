@@ -1,5 +1,5 @@
-import { message } from 'antd';
-import * as XLSX from 'xlsx-js-style';
+import { message } from "antd";
+import * as XLSX from "xlsx-js-style";
 
 import {
 	addHeadersAndData,
@@ -10,14 +10,14 @@ import {
 	getSubtitleStyle,
 	getTitleStyle,
 	initializeExcelWorksheet,
-} from '@/lib/utils/excelStyles';
+} from "@/lib/utils/excelStyles";
 
 export interface DefenseResultsExportData {
-	'No.': number;
-	'Student ID': string;
-	'Full Name': string;
+	"No.": number;
+	"Student ID": string;
+	"Full Name": string;
 	Major: string;
-	'Thesis Title': string;
+	"Thesis Title": string;
 	Semester: string;
 	Status: string;
 	[key: string]: string | number | boolean;
@@ -52,8 +52,8 @@ export const exportDefenseResultsToExcel = ({
 	try {
 		// Get semester text for title
 		const semesterText =
-			selectedSemester === 'all'
-				? 'ALL SEMESTERS'
+			selectedSemester === "all"
+				? "ALL SEMESTERS"
 				: selectedSemester.toUpperCase();
 		const title = `CAPSTONE DEFENSE RESULTS FOR ${semesterText}`;
 
@@ -62,13 +62,13 @@ export const exportDefenseResultsToExcel = ({
 
 		// Prepare data for Excel export
 		const exportData: DefenseResultsExportData[] = data.map((item, index) => ({
-			'No.': index + 1,
-			'Student ID': item.studentId,
-			'Full Name': item.name,
+			"No.": index + 1,
+			"Student ID": item.studentId,
+			"Full Name": item.name,
 			Major: item.major,
-			'Thesis Title': item.thesisName,
+			"Thesis Title": item.thesisName,
 			Semester: item.semester,
-			Status: statusUpdates[item.studentId] || item.status || 'Pass',
+			Status: statusUpdates[item.studentId] || item.status || "Pass",
 		}));
 
 		// Add headers and data starting from row 4
@@ -84,27 +84,32 @@ export const exportDefenseResultsToExcel = ({
 			{ wch: 15 }, // Semester
 			{ wch: 12 }, // Status
 		];
-		ws['!cols'] = colWidths;
+		ws["!cols"] = colWidths;
 
 		// Create merge ranges and apply styling
 		applyDefenseResultsMergesAndStyling(ws, data);
 
 		// Add worksheet to workbook
-		XLSX.utils.book_append_sheet(wb, ws, 'Defense Results');
+		XLSX.utils.book_append_sheet(wb, ws, "Defense Results");
 
 		// Generate filename
 		const currentDate = new Date();
-		const dateString = currentDate.toISOString().split('T')[0];
-		const finalFilename =
+		const dateString = currentDate.toISOString().split("T")[0];
+		let finalFilename =
 			filename || `Capstone_Defense_Results_${dateString}.xlsx`;
+
+		// Ensure filename ends with .xlsx
+		if (!finalFilename.endsWith(".xlsx")) {
+			finalFilename += ".xlsx";
+		}
 
 		// Write file
 		XLSX.writeFile(wb, finalFilename);
 
-		message.success('Defense results exported successfully!');
+		message.success("Defense results exported successfully!");
 	} catch (error) {
-		console.error('Error exporting defense results:', error);
-		message.error('An error occurred while exporting defense results!');
+		console.error("Error exporting defense results:", error);
+		message.error("An error occurred while exporting defense results!");
 	}
 };
 
@@ -116,7 +121,7 @@ const applyDefenseResultsMergesAndStyling = (
 	const { merges, groupBoundaries } = createMergesAndGroupBoundaries(data, 7);
 
 	// Apply merges to worksheet
-	ws['!merges'] = merges;
+	ws["!merges"] = merges;
 
 	// Apply styling using shared utility with special handling for Full Name column
 	applyDefenseResultsCellStyling(ws, groupBoundaries, 7);
@@ -133,13 +138,13 @@ const getCellStyleByRow = (
 ): object => {
 	switch (rowIndex) {
 		case 0:
-			return getTitleStyle('FFE6CC'); // Orange theme for defense results
+			return getTitleStyle("FFE6CC"); // Orange theme for defense results
 		case 1:
-			return getSubtitleStyle('FFF2E6'); // Light orange theme for subtitle
+			return getSubtitleStyle("FFF2E6"); // Light orange theme for subtitle
 		case 2:
 			return {}; // Empty row - no styling
 		case 3:
-			return getHeaderStyle('FFF2E6'); // Light orange for header
+			return getHeaderStyle("FFF2E6"); // Light orange for header
 		default:
 			return getDataRowStyleByColumn(rowIndex, columnIndex, groupBoundaries);
 	}
@@ -157,8 +162,8 @@ const getDataRowStyleByColumn = (
 	const isFullNameColumn = columnIndex === 2;
 
 	return isFullNameColumn
-		? getDataRowStyleWithLeftAlign(rowIndex, groupBoundaries, '808080')
-		: getDataRowStyle(rowIndex, groupBoundaries, '808080');
+		? getDataRowStyleWithLeftAlign(rowIndex, groupBoundaries, "808080")
+		: getDataRowStyle(rowIndex, groupBoundaries, "808080");
 };
 
 /**
@@ -167,7 +172,7 @@ const getDataRowStyleByColumn = (
  */
 const ensureCellExists = (ws: XLSX.WorkSheet, cellAddress: string): void => {
 	if (!ws[cellAddress]) {
-		ws[cellAddress] = { v: '', t: 's' };
+		ws[cellAddress] = { v: "", t: "s" };
 	}
 };
 
@@ -177,7 +182,7 @@ const applyDefenseResultsCellStyling = (
 	totalColumns: number,
 ) => {
 	const columnLetter = String.fromCharCode(65 + totalColumns - 1); // A=65, so A+7=H for 8 columns
-	const range = XLSX.utils.decode_range(ws['!ref'] || `A1:${columnLetter}1`);
+	const range = XLSX.utils.decode_range(ws["!ref"] || `A1:${columnLetter}1`);
 
 	for (let R = range.s.r; R <= range.e.r; ++R) {
 		for (let C = range.s.c; C <= range.e.c; ++C) {

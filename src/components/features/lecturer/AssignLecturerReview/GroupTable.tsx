@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { Table } from 'antd';
-import type { ColumnsType } from 'antd/es/table';
+import { Table } from "antd";
+import type { ColumnsType } from "antd/es/table";
 
-import { TablePagination } from '@/components/common/TablePagination';
-import { Lecturer } from '@/lib/services/review.service';
+import { TablePagination } from "@/components/common/TablePagination";
+import { Lecturer } from "@/lib/services/reviews.service";
 
 export interface GroupTableProps {
 	id: string;
@@ -37,8 +37,8 @@ export default function GroupTable({
 			columns={columns}
 			pagination={TablePagination}
 			loading={loading}
-			scroll={{ x: 'max-content' }}
-			locale={noMilestone ? { emptyText: 'No Data (No Milestone)' } : undefined}
+			scroll={{ x: "max-content" }}
+			locale={noMilestone ? { emptyText: "No Data (No Milestone)" } : undefined}
 		/>
 	);
 }

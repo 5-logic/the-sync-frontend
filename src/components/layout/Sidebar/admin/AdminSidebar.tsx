@@ -1,24 +1,23 @@
-'use client';
+"use client";
 
 import {
 	CalendarOutlined,
 	DashboardOutlined,
 	FundProjectionScreenOutlined,
 	LoadingOutlined,
-	ProjectOutlined,
 	SettingOutlined,
 	TeamOutlined,
 	UserOutlined,
-} from '@ant-design/icons';
-import { Menu } from 'antd';
-import { usePathname } from 'next/navigation';
+} from "@ant-design/icons";
+import { Menu } from "antd";
+import { usePathname } from "next/navigation";
 
 import {
 	ADMIN_MENU_KEYS,
 	getSelectedMenuKey,
-} from '@/components/layout/Sidebar/admin/AdminSidebar.config';
-import { useNavigationLoader } from '@/hooks';
-import { DASHBOARD_PATHS } from '@/lib/auth/config/auth-constants';
+} from "@/components/layout/Sidebar/admin/AdminSidebar.config";
+import { useNavigationLoader } from "@/hooks";
+import { DASHBOARD_PATHS } from "@/lib/auth/config/auth-constants";
 
 export default function AdminSidebar() {
 	const pathname = usePathname();
@@ -37,7 +36,7 @@ export default function AdminSidebar() {
 			) : (
 				<DashboardOutlined />
 			),
-			label: 'Dashboard',
+			label: "Dashboard",
 			onClick: () => navigateWithLoading(DASHBOARD_PATHS.ADMIN),
 			disabled: isNavigating && targetPath !== DASHBOARD_PATHS.ADMIN,
 		},
@@ -48,7 +47,7 @@ export default function AdminSidebar() {
 			) : (
 				<UserOutlined />
 			),
-			label: 'Student Management',
+			label: "Student Management",
 			onClick: () => navigateWithLoading(ADMIN_MENU_KEYS.STUDENTS_MANAGEMENT),
 			disabled:
 				isNavigating && targetPath !== ADMIN_MENU_KEYS.STUDENTS_MANAGEMENT,
@@ -60,7 +59,7 @@ export default function AdminSidebar() {
 			) : (
 				<TeamOutlined />
 			),
-			label: 'Lecturer Management',
+			label: "Lecturer Management",
 			onClick: () => navigateWithLoading(ADMIN_MENU_KEYS.LECTURER_MANAGEMENT),
 			disabled:
 				isNavigating && targetPath !== ADMIN_MENU_KEYS.LECTURER_MANAGEMENT,
@@ -72,22 +71,10 @@ export default function AdminSidebar() {
 			) : (
 				<CalendarOutlined />
 			),
-			label: 'Milestone Management',
+			label: "Milestone Management",
 			onClick: () => navigateWithLoading(ADMIN_MENU_KEYS.MILESTONE_MANAGEMENT),
 			disabled:
 				isNavigating && targetPath !== ADMIN_MENU_KEYS.MILESTONE_MANAGEMENT,
-		},
-		{
-			key: ADMIN_MENU_KEYS.PROJECT_MANAGEMENT,
-			icon: isMenuItemLoading(ADMIN_MENU_KEYS.PROJECT_MANAGEMENT) ? (
-				<LoadingOutlined spin />
-			) : (
-				<ProjectOutlined />
-			),
-			label: 'Project Management',
-			onClick: () => navigateWithLoading(ADMIN_MENU_KEYS.PROJECT_MANAGEMENT),
-			disabled:
-				isNavigating && targetPath !== ADMIN_MENU_KEYS.PROJECT_MANAGEMENT,
 		},
 		{
 			key: ADMIN_MENU_KEYS.CAPSTONE_DEFENSE,
@@ -96,7 +83,7 @@ export default function AdminSidebar() {
 			) : (
 				<FundProjectionScreenOutlined />
 			),
-			label: 'Defense Results',
+			label: "Defense Results",
 			onClick: () => navigateWithLoading(ADMIN_MENU_KEYS.CAPSTONE_DEFENSE),
 			disabled: isNavigating && targetPath !== ADMIN_MENU_KEYS.CAPSTONE_DEFENSE,
 		},
@@ -107,7 +94,7 @@ export default function AdminSidebar() {
 			) : (
 				<SettingOutlined />
 			),
-			label: 'Semester Settings',
+			label: "Semester Settings",
 			onClick: () => navigateWithLoading(ADMIN_MENU_KEYS.SEMESTER_SETTINGS),
 			disabled:
 				isNavigating && targetPath !== ADMIN_MENU_KEYS.SEMESTER_SETTINGS,
@@ -120,8 +107,8 @@ export default function AdminSidebar() {
 			selectedKeys={[getSelectedMenuKey(pathname)]}
 			items={adminMenuItems}
 			style={{
-				border: 'none',
-				height: '100%',
+				border: "none",
+				height: "100%",
 			}}
 		/>
 	);
