@@ -16,6 +16,12 @@ export const useSemesterStatus = () => {
 
 	const isPicking = semesterStatus === "Picking";
 
+	// New logic: Allow thesis registration/unregistration in both Picking and Ongoing-ScopeAdjustable
+	const canRegisterThesis =
+		semesterStatus === "Picking" ||
+		(semesterStatus === "Ongoing" &&
+			currentSemester?.ongoingPhase === "ScopeAdjustable");
+
 	const refreshStatus = useCallback(() => {
 		// Since we're now using useCurrentSemester, we don't need manual refresh
 		// The semester store will handle the refresh
@@ -27,6 +33,7 @@ export const useSemesterStatus = () => {
 	return {
 		semesterStatus,
 		isPicking,
+		canRegisterThesis,
 		loading: semesterLoading,
 		refreshStatus,
 	};
