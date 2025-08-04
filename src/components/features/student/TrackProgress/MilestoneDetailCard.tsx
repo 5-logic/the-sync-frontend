@@ -1,22 +1,24 @@
-'use client';
+"use client";
 
-import { DownloadOutlined } from '@ant-design/icons';
-import { Button, Card, Collapse, Spin, message } from 'antd';
-import dayjs from 'dayjs';
-import { useState } from 'react';
+import { DownloadOutlined } from "@ant-design/icons";
+import { Button, Card, Collapse, Spin, message } from "antd";
+import dayjs from "dayjs";
+import { useState, useEffect, useCallback } from "react";
 
-import { ConfirmationModal } from '@/components/common/ConfirmModal';
+import { ConfirmationModal } from "@/components/common/ConfirmModal";
+import ExistingReviewsList from "@/components/features/lecturer/GroupProgess/ExistingReviewsList";
 import {
 	MilestoneHeader,
 	MilestoneSubmissionForm,
 	SubmissionEditView,
 	SubmittedFilesView,
-} from '@/components/features/student/TrackProgress/MilestoneDetail';
-import { MilestoneSubmission, useMilestoneProgress } from '@/hooks/student';
-import { useStudentGroupStatus } from '@/hooks/student/useStudentGroupStatus';
-import { StorageService } from '@/lib/services/storage.service';
-import { showNotification } from '@/lib/utils/notification';
-import { Milestone } from '@/schemas/milestone';
+} from "@/components/features/student/TrackProgress/MilestoneDetail";
+import { MilestoneSubmission, useMilestoneProgress } from "@/hooks/student";
+import { useStudentGroupStatus } from "@/hooks/student/useStudentGroupStatus";
+import { useReviews } from "@/hooks/lecturer/useReviews";
+import { StorageService } from "@/lib/services/storage.service";
+import { showNotification } from "@/lib/utils/notification";
+import { Milestone } from "@/schemas/milestone";
 
 const { Panel } = Collapse;
 
@@ -46,6 +48,60 @@ export default function MilestoneDetailCard() {
 		refetchSubmissions,
 	} = useMilestoneProgress();
 	const { group } = useStudentGroupStatus();
+
+	// Reviews management
+	const {
+		submissionReviews,
+		submissionReviewsLoading,
+		fetchSubmissionReviews,
+	} = useReviews();
+	const [currentSubmissionId, setCurrentSubmissionId] = useState<string | null>(
+		null,
+	);
+
+	// Function to fetch reviews for a specific submission
+	const handleFetchReviews = useCallback(
+		async (submissionId: string) => {
+			setCurrentSubmissionId(submissionId);
+			await fetchSubmissionReviews(submissionId);
+		},
+		[fetchSubmissionReviews],
+	);
+
+	// Handle collapse panel changes to fetch reviews
+	const handleCollapseChange = (activeKeys: string | string[]) => {
+		const keysArray = Array.isArray(activeKeys) ? activeKeys : [activeKeys];
+
+		keysArray.forEach((key) => {
+			const milestone = milestones.find((m) => m.id.toString() === key);
+			const submission = submissions[milestone?.id || ""];
+
+			// Only fetch if there's a submission and we haven't fetched reviews for this submission yet
+			if (submission?.id && currentSubmissionId !== submission.id) {
+				handleFetchReviews(submission.id);
+			}
+		});
+	};
+
+	// Auto-fetch reviews for the default active milestone when data is loaded
+	useEffect(() => {
+		if (
+			milestones.length > 0 &&
+			Object.keys(submissions).length > 0 &&
+			!currentSubmissionId
+		) {
+			const sortedMilestones = [...milestones].sort((a, b) =>
+				dayjs(a.startDate).isBefore(dayjs(b.startDate)) ? -1 : 1,
+			);
+
+			const firstMilestone = sortedMilestones[0];
+			const firstSubmission = submissions[firstMilestone?.id];
+
+			if (firstSubmission?.id) {
+				handleFetchReviews(firstSubmission.id);
+			}
+		}
+	}, [milestones, submissions, currentSubmissionId, handleFetchReviews]);
 
 	const handleFileChange = (info: UploadInfo, milestoneId: string) => {
 		const { fileList } = info;
@@ -94,13 +150,13 @@ export default function MilestoneDetailCard() {
 		newFiles: File[],
 	) => {
 		if (!group?.id) {
-			message.error('Group information not available');
+			message.error("Group information not available");
 			return;
 		}
 
 		// Upload new files to Supabase
 		const uploadPromises = newFiles.map((file) =>
-			StorageService.uploadFile(file, 'milestone-submissions'),
+			StorageService.uploadFile(file, "milestone-submissions"),
 		);
 
 		const newDocumentUrls = await Promise.all(uploadPromises);
@@ -109,7 +165,7 @@ export default function MilestoneDetailCard() {
 		const allDocumentUrls = [...existingDocs, ...newDocumentUrls];
 
 		// Update submission via API (using the service directly)
-		const groupService = (await import('@/lib/services/groups.service'))
+		const groupService = (await import("@/lib/services/groups.service"))
 			.default;
 		await groupService.updateMilestoneSubmission(
 			group.id,
@@ -118,8 +174,8 @@ export default function MilestoneDetailCard() {
 		);
 
 		showNotification.success(
-			'Success',
-			'Milestone submission updated successfully',
+			"Success",
+			"Milestone submission updated successfully",
 		);
 
 		// Refresh submissions to get updated data
@@ -132,7 +188,7 @@ export default function MilestoneDetailCard() {
 		milestoneId?: string,
 	): string | null => {
 		const filesToSubmit =
-			customNewFiles || submissions[milestoneId || '']?.files || [];
+			customNewFiles || submissions[milestoneId || ""]?.files || [];
 
 		// For custom update mode, check if we have either existing docs or new files
 		if (customExistingDocs !== undefined || customNewFiles !== undefined) {
@@ -140,10 +196,10 @@ export default function MilestoneDetailCard() {
 			const hasNewFiles = filesToSubmit.length > 0;
 
 			if (!hasExistingDocs && !hasNewFiles) {
-				return 'Please keep at least one existing file or add new files';
+				return "Please keep at least one existing file or add new files";
 			}
 		} else if (!filesToSubmit.length) {
-			return 'Please upload files before submitting';
+			return "Please upload files before submitting";
 		}
 
 		return null;
@@ -155,25 +211,25 @@ export default function MilestoneDetailCard() {
 		customNewFiles?: File[],
 	): string => {
 		if (!isUpdate) {
-			return 'Once submitted, you cannot make changes to this milestone submission.';
+			return "Once submitted, you cannot make changes to this milestone submission.";
 		}
 
 		if (customExistingDocs === undefined && customNewFiles === undefined) {
-			return 'This will replace your previous submission files.';
+			return "This will replace your previous submission files.";
 		}
 
 		const hasExistingDocs = (customExistingDocs?.length ?? 0) > 0;
 		const hasNewFiles = (customNewFiles?.length ?? 0) > 0;
 
 		if (hasExistingDocs && hasNewFiles) {
-			return 'This will update your submission with the selected existing files and new uploads.';
+			return "This will update your submission with the selected existing files and new uploads.";
 		}
 
 		if (hasExistingDocs && !hasNewFiles) {
-			return 'This will update your submission with only the selected existing files.';
+			return "This will update your submission with only the selected existing files.";
 		}
 
-		return 'This will replace your previous submission with only the new files.';
+		return "This will replace your previous submission with only the new files.";
 	};
 
 	const handleSubmit = async (
@@ -200,10 +256,10 @@ export default function MilestoneDetailCard() {
 			return;
 		}
 
-		const confirmTitle = isUpdate ? 'Confirm Update' : 'Confirm Submission';
+		const confirmTitle = isUpdate ? "Confirm Update" : "Confirm Submission";
 		const confirmMessage = isUpdate
-			? 'Are you sure you want to update this submission?'
-			: 'Are you sure you want to submit these files?';
+			? "Are you sure you want to update this submission?"
+			: "Are you sure you want to submit these files?";
 
 		const confirmDetails = buildConfirmationDetails(
 			isUpdate,
@@ -215,11 +271,11 @@ export default function MilestoneDetailCard() {
 			title: confirmTitle,
 			message: confirmMessage,
 			details: confirmDetails,
-			noteType: 'warning',
-			note: 'Please make sure all files are correct before proceeding.',
-			okText: isUpdate ? 'Update' : 'Submit',
-			cancelText: 'Cancel',
-			okType: 'primary',
+			noteType: "warning",
+			note: "Please make sure all files are correct before proceeding.",
+			okText: isUpdate ? "Update" : "Submit",
+			cancelText: "Cancel",
+			okType: "primary",
 			onOk: async () => {
 				try {
 					if (isUpdate) {
@@ -277,18 +333,18 @@ export default function MilestoneDetailCard() {
 		const endDate = dayjs(milestone.endDate);
 
 		if (!isLeader) {
-			return 'Only group leaders can submit files';
+			return "Only group leaders can submit files";
 		}
 
 		if (now.isAfter(endDate)) {
-			return 'This milestone has ended';
+			return "This milestone has ended";
 		}
 
 		if (now.isAfter(startDate)) {
-			return 'Submissions are no longer allowed after the milestone start date';
+			return "Submissions are no longer allowed after the milestone start date";
 		}
 
-		return 'Please make sure to submit your report before the deadline.';
+		return "Please make sure to submit your report before the deadline.";
 	};
 
 	const handleDownloadSingleFile = async (documentUrl: string) => {
@@ -296,25 +352,25 @@ export default function MilestoneDetailCard() {
 			const fileName = StorageService.getFileNameFromUrl(documentUrl);
 
 			// Create a temporary anchor element to trigger download
-			const link = document.createElement('a');
+			const link = document.createElement("a");
 			link.href = documentUrl;
 			link.download = fileName;
-			link.target = '_blank';
-			link.style.display = 'none';
+			link.target = "_blank";
+			link.style.display = "none";
 
 			document.body.appendChild(link);
 			link.click();
 			document.body.removeChild(link);
 
 			showNotification.success(
-				'Download Started',
+				"Download Started",
 				`Template "${fileName}" download started successfully`,
 			);
 		} catch (error) {
-			console.error('Failed to download document:', documentUrl, error);
+			console.error("Failed to download document:", documentUrl, error);
 			showNotification.error(
-				'Download Failed',
-				'Failed to download template document',
+				"Download Failed",
+				"Failed to download template document",
 			);
 		}
 	};
@@ -384,7 +440,7 @@ export default function MilestoneDetailCard() {
 
 						// Validate that there are files to submit
 						if (existingDocs.length === 0 && newFiles.length === 0) {
-							message.warning('Please keep at least one file or add new files');
+							message.warning("Please keep at least one file or add new files");
 							return;
 						}
 
@@ -467,13 +523,13 @@ export default function MilestoneDetailCard() {
 			<Card
 				title="Project Milestones"
 				style={{
-					display: 'flex',
-					flexDirection: 'column',
-					justifyContent: 'space-between',
+					display: "flex",
+					flexDirection: "column",
+					justifyContent: "space-between",
 					marginBottom: 16,
 				}}
 			>
-				<div style={{ textAlign: 'center' }}>
+				<div style={{ textAlign: "center" }}>
 					<Spin size="small" />
 				</div>
 			</Card>
@@ -485,13 +541,13 @@ export default function MilestoneDetailCard() {
 			<Card
 				title="Project Milestones"
 				style={{
-					display: 'flex',
-					flexDirection: 'column',
-					justifyContent: 'space-between',
+					display: "flex",
+					flexDirection: "column",
+					justifyContent: "space-between",
 					marginBottom: 16,
 				}}
 			>
-				<div style={{ textAlign: 'center', color: '#999' }}>
+				<div style={{ textAlign: "center", color: "#999" }}>
 					No milestones found for current semester
 				</div>
 			</Card>
@@ -507,17 +563,18 @@ export default function MilestoneDetailCard() {
 		<Card
 			title="Project Milestones"
 			style={{
-				display: 'flex',
-				flexDirection: 'column',
-				justifyContent: 'space-between',
+				display: "flex",
+				flexDirection: "column",
+				justifyContent: "space-between",
 				marginBottom: 16,
 			}}
 		>
 			<Collapse
 				accordion
 				defaultActiveKey={[sortedMilestones[0]?.id.toString()]}
+				onChange={handleCollapseChange}
 			>
-				{sortedMilestones.map((milestone) => {
+				{sortedMilestones.map((milestone: Milestone) => {
 					const submission = submissions[milestone.id];
 					const isSubmitting = submission?.isSubmitting || false;
 					const submissionCanSubmit = canSubmit(milestone);
@@ -534,7 +591,7 @@ export default function MilestoneDetailCard() {
 										style={{
 											fontSize: 14,
 											fontWeight: 500,
-											color: '#333',
+											color: "#333",
 											marginBottom: 8,
 										}}
 									>
@@ -542,13 +599,13 @@ export default function MilestoneDetailCard() {
 									</div>
 									<div
 										style={{
-											backgroundColor: '#f9f9f9',
-											padding: '12px',
+											backgroundColor: "#f9f9f9",
+											padding: "12px",
 											borderRadius: 6,
-											border: '1px solid #e8e8e8',
-											color: '#666',
+											border: "1px solid #e8e8e8",
+											color: "#666",
 											lineHeight: 1.5,
-											whiteSpace: 'pre-wrap',
+											whiteSpace: "pre-wrap",
 										}}
 									>
 										{milestone.note}
@@ -563,24 +620,24 @@ export default function MilestoneDetailCard() {
 										style={{
 											fontSize: 14,
 											fontWeight: 500,
-											color: '#333',
+											color: "#333",
 											marginBottom: 8,
 										}}
 									>
 										📎 Submission Templates ({milestone.documents.length} file
-										{milestone.documents.length > 1 ? 's' : ''}):
+										{milestone.documents.length > 1 ? "s" : ""}):
 									</div>
 
 									{/* Individual file download buttons */}
 									<div
 										style={{
-											display: 'flex',
-											flexDirection: 'column',
+											display: "flex",
+											flexDirection: "column",
 											gap: 4,
-											backgroundColor: '#f9f9f9',
-											padding: '8px 12px',
+											backgroundColor: "#f9f9f9",
+											padding: "8px 12px",
 											borderRadius: 6,
-											border: '1px solid #e8e8e8',
+											border: "1px solid #e8e8e8",
 										}}
 									>
 										{milestone.documents.map((documentUrl, index) => {
@@ -594,11 +651,11 @@ export default function MilestoneDetailCard() {
 													icon={<DownloadOutlined />}
 													onClick={() => handleDownloadSingleFile(documentUrl)}
 													style={{
-														justifyContent: 'flex-start',
-														color: '#1890ff',
-														textAlign: 'left',
-														height: 'auto',
-														padding: '6px 8px',
+														justifyContent: "flex-start",
+														color: "#1890ff",
+														textAlign: "left",
+														height: "auto",
+														padding: "6px 8px",
 														fontWeight: 500,
 													}}
 												>
@@ -616,6 +673,39 @@ export default function MilestoneDetailCard() {
 								submission,
 								isSubmitting,
 								submissionCanSubmit,
+							)}
+
+							{/* Existing Reviews Section - only show if submission exists */}
+							{submission?.id && (
+								<div style={{ marginTop: 16 }}>
+									{/* Show reviews if they're loaded for this submission */}
+									{currentSubmissionId === submission.id &&
+										submissionReviews.length > 0 && (
+											<ExistingReviewsList
+												reviews={submissionReviews}
+												loading={submissionReviewsLoading}
+											/>
+										)}
+
+									{/* Show loading state */}
+									{currentSubmissionId === submission.id &&
+										submissionReviewsLoading && (
+											<ExistingReviewsList reviews={[]} loading={true} />
+										)}
+
+									{/* Show load button if reviews haven't been loaded for this submission */}
+									{currentSubmissionId !== submission.id && (
+										<div style={{ marginBottom: 8 }}>
+											<Button
+												type="link"
+												onClick={() => handleFetchReviews(submission.id)}
+												style={{ padding: 0 }}
+											>
+												Load Reviews
+											</Button>
+										</div>
+									)}
+								</div>
 							)}
 						</Panel>
 					);
