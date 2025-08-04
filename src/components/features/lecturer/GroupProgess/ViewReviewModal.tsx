@@ -3,11 +3,11 @@
 import { Modal, Typography, Divider } from "antd";
 
 import { SubmissionReview } from "@/lib/services/reviews.service";
-import { 
-	ReviewerInfo, 
-	ReviewDates, 
+import {
+	ReviewerInfo,
+	ReviewDates,
 	ReviewItemsTable,
-	ReviewItemData 
+	ReviewItemData,
 } from "@/components/common/ReviewComponents";
 
 const { Text } = Typography;
@@ -74,10 +74,7 @@ export default function ViewReviewModal({ open, onClose, review }: Props) {
 				{/* Review Items Table */}
 				<div>
 					<h4>Review Items</h4>
-					<ReviewItemsTable 
-						reviewItems={reviewItems}
-						showDescription={true}
-					/>
+					<ReviewItemsTable reviewItems={reviewItems} showDescription={true} />
 				</div>
 			</div>
 		</Modal>

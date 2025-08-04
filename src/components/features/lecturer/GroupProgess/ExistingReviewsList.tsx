@@ -5,7 +5,10 @@ import { Button, Card, List, Skeleton } from "antd";
 import { useState } from "react";
 
 import { SubmissionReview } from "@/lib/services/reviews.service";
-import { ReviewerInfo, ReviewDates } from "@/components/common/ReviewComponents";
+import {
+	ReviewerInfo,
+	ReviewDates,
+} from "@/components/common/ReviewComponents";
 
 import ViewReviewModal from "@/components/features/lecturer/GroupProgess/ViewReviewModal";
 

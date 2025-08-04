@@ -10,7 +10,10 @@ interface ReviewerInfoProps {
 	readonly label?: string;
 }
 
-export function ReviewerInfo({ review, label = "Reviewed by" }: ReviewerInfoProps) {
+export function ReviewerInfo({
+	review,
+	label = "Reviewed by",
+}: ReviewerInfoProps) {
 	return (
 		<div style={{ display: "flex", alignItems: "center", gap: 8 }}>
 			<strong>{label}:</strong>
@@ -61,9 +64,9 @@ interface ReviewItemsTableProps {
 	readonly showDescription?: boolean;
 }
 
-export function ReviewItemsTable({ 
-	reviewItems, 
-	showDescription = true 
+export function ReviewItemsTable({
+	reviewItems,
+	showDescription = true,
 }: ReviewItemsTableProps) {
 	const columns: ColumnsType<ReviewItemData> = [
 		{
@@ -72,12 +75,16 @@ export function ReviewItemsTable({
 			key: "name",
 			width: showDescription ? "25%" : "35%",
 		},
-		...(showDescription ? [{
-			title: "Description",
-			dataIndex: "description",
-			key: "description",
-			width: "25%",
-		}] : []),
+		...(showDescription
+			? [
+					{
+						title: "Description",
+						dataIndex: "description",
+						key: "description",
+						width: "25%",
+					},
+				]
+			: []),
 		{
 			title: "Response",
 			key: "response",
