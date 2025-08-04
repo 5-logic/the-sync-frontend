@@ -2,11 +2,12 @@
 
 import { EyeOutlined } from "@ant-design/icons";
 import { Button, Card, List, Tag, Typography } from "antd";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
+import CardLoadingSkeleton from "@/components/common/loading/CardLoadingSkeleton";
 import { SubmissionReview } from "@/lib/services/reviews.service";
 
-import ViewReviewModal from "./ViewReviewModal";
+import ViewReviewModal from "@/components/features/lecturer/GroupProgess/ViewReviewModal";
 
 const { Text } = Typography;
 
@@ -21,21 +22,6 @@ export default function ExistingReviewsList({ reviews, loading }: Props) {
 	);
 	const [viewModalOpen, setViewModalOpen] = useState(false);
 
-	// Debug: Log reviews data to check isMainReviewer values
-	useEffect(() => {
-		if (reviews.length > 0) {
-			console.log("🔍 ExistingReviewsList - Review data check:");
-			reviews.forEach((review, index) => {
-				console.log(`Review ${index + 1}:`, {
-					id: review.id,
-					lecturerName: review.lecturer.user.fullName,
-					isMainReviewer: review.isMainReviewer,
-					isMainReviewerType: typeof review.isMainReviewer,
-				});
-			});
-		}
-	}, [reviews]);
-
 	const handleViewReview = (review: SubmissionReview) => {
 		setViewingReview(review);
 		setViewModalOpen(true);
@@ -46,16 +32,24 @@ export default function ExistingReviewsList({ reviews, loading }: Props) {
 		setViewingReview(null);
 	};
 
-	// Don't render anything if there are no reviews
-	if (reviews.length === 0) {
+	// Don't render anything if there are no reviews and not loading
+	if (reviews.length === 0 && !loading) {
 		return null;
+	}
+
+	// Render skeleton loading state
+	if (loading) {
+		return (
+			<>
+				<CardLoadingSkeleton />
+			</>
+		);
 	}
 
 	return (
 		<>
 			<Card title="Existing Reviews" size="small">
 				<List
-					loading={loading}
 					dataSource={reviews}
 					renderItem={(review) => (
 						<List.Item
