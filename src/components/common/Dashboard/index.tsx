@@ -62,9 +62,12 @@ export default function Dashboard() {
 						/>
 					</Col>
 				)}
-				<Col span={24}>
-					<GroupInfo />
-				</Col>
+				{/* Group Table Info - Only show for admin */}
+				{isAdmin && (
+					<Col span={24}>
+						<GroupInfo />
+					</Col>
+				)}
 			</Row>
 		</Space>
 	);
