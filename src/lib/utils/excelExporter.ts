@@ -96,10 +96,10 @@ export const exportToExcel = ({
 		const currentDate = new Date();
 		const dateString = currentDate.toISOString().split("T")[0];
 		let finalFilename = filename || `Capstone_Project_${dateString}.xlsx`;
-		
+
 		// Ensure filename ends with .xlsx
-		if (!finalFilename.endsWith('.xlsx')) {
-			finalFilename += '.xlsx';
+		if (!finalFilename.endsWith(".xlsx")) {
+			finalFilename += ".xlsx";
 		}
 
 		// Write file

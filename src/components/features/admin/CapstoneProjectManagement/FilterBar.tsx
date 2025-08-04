@@ -2,9 +2,9 @@ import {
 	ExportOutlined,
 	ReloadOutlined,
 	SearchOutlined,
-} from '@ant-design/icons';
-import { Button, Col, Input, Row, Select } from 'antd';
-import React from 'react';
+} from "@ant-design/icons";
+import { Button, Col, Input, Row, Select } from "antd";
+import React from "react";
 
 interface SemesterOption {
 	id: string;
@@ -34,8 +34,8 @@ export const FilterBar = ({
 	availableSemesters,
 	onExportExcel,
 	onRefresh,
-	searchPlaceholder = 'Search...',
-	exportExcelText = 'Export Excel',
+	searchPlaceholder = "Search...",
+	exportExcelText = "Export Excel",
 	showExportExcel = false,
 	loading = false,
 }: Props) => {
@@ -56,14 +56,14 @@ export const FilterBar = ({
 				<Select
 					value={selectedSemester}
 					onChange={onSemesterChange}
-					style={{ width: '100%' }}
+					style={{ width: "100%" }}
 					size="middle"
 					placeholder="Select Semester"
 					disabled={loading}
 					showSearch
 					optionFilterProp="children"
 					filterOption={(input, option) =>
-						String(option?.children || '')
+						String(option?.children || "")
 							.toLowerCase()
 							.includes(input.toLowerCase())
 					}
@@ -94,7 +94,7 @@ export const FilterBar = ({
 						icon={<ExportOutlined />}
 						type="primary"
 						size="middle"
-						style={{ width: '100%' }}
+						style={{ width: "100%" }}
 						onClick={onExportExcel}
 						disabled={loading}
 						title="Export to Excel"
