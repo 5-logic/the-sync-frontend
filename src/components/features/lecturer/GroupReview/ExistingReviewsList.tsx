@@ -1,17 +1,20 @@
 "use client";
 
 import { EditOutlined } from "@ant-design/icons";
-import { Button, Card, List, Tag, Typography } from "antd";
+import { Button, Card, List } from "antd";
 import { useEffect, useState } from "react";
 
-import { SubmissionReview } from "@/lib/services/reviews.service";
+import { SubmissionReviewWithReviewer } from "@/lib/services/reviews.service";
+import {
+	ReviewerInfo,
+	ReviewDates,
+} from "@/components/common/ReviewComponents";
+import { AssignedReviewersInfo } from "@/components/common/AssignedReviewersInfo";
 
 import EditReviewModal from "./EditReviewModal";
 
-const { Text } = Typography;
-
 interface Props {
-	readonly reviews: SubmissionReview[];
+	readonly reviews: SubmissionReviewWithReviewer[];
 	readonly loading?: boolean;
 	readonly onReviewUpdated?: () => void;
 }
@@ -21,9 +24,8 @@ export default function ExistingReviewsList({
 	loading,
 	onReviewUpdated,
 }: Props) {
-	const [editingReview, setEditingReview] = useState<SubmissionReview | null>(
-		null,
-	);
+	const [editingReview, setEditingReview] =
+		useState<SubmissionReviewWithReviewer | null>(null);
 	const [editModalOpen, setEditModalOpen] = useState(false);
 
 	// Debug: Log reviews data to check isMainReviewer values
@@ -41,7 +43,7 @@ export default function ExistingReviewsList({
 		}
 	}, [reviews]);
 
-	const handleEditReview = (review: SubmissionReview) => {
+	const handleEditReview = (review: SubmissionReviewWithReviewer) => {
 		setEditingReview(review);
 		setEditModalOpen(true);
 	};
@@ -79,33 +81,19 @@ export default function ExistingReviewsList({
 						>
 							<List.Item.Meta
 								title={
-									<div
-										style={{ display: "flex", alignItems: "center", gap: 8 }}
-									>
-										<strong>Created by:</strong>
-										<Text strong>{review.lecturer.user.fullName}</Text>
-										{/* Ensure boolean type check for isMainReviewer */}
-										{review.isMainReviewer === true ? (
-											<Tag color="yellow">Main Reviewer</Tag>
-										) : (
-											<Tag color="blue">Secondary Reviewer</Tag>
-										)}
-									</div>
+									/* Show all assigned reviewers if available, otherwise show single reviewer */
+									review.assignedReviewers &&
+									review.assignedReviewers.length > 0 ? (
+										<AssignedReviewersInfo review={review} label="Created by" />
+									) : (
+										<ReviewerInfo review={review} label="Created by" />
+									)
 								}
 								description={
-									<div>
-										<Text type="secondary">
-											Created: {new Date(review.createdAt).toLocaleString()}
-										</Text>
-										{review.updatedAt !== review.createdAt && (
-											<>
-												<br />
-												<Text type="secondary">
-													Updated: {new Date(review.updatedAt).toLocaleString()}
-												</Text>
-											</>
-										)}
-									</div>
+									<ReviewDates
+										createdAt={review.createdAt}
+										updatedAt={review.updatedAt}
+									/>
 								}
 							/>
 						</List.Item>

@@ -1,9 +1,9 @@
-import { create } from 'zustand';
+import { create } from "zustand";
 
 import submissionService, {
 	SubmissionItem,
-} from '@/lib/services/submission.service';
-import { cacheInvalidation, cacheUtils } from '@/store/helpers/cacheHelpers';
+} from "@/lib/services/submissions.service";
+import { cacheInvalidation, cacheUtils } from "@/store/helpers/cacheHelpers";
 
 interface SubmissionState {
 	submissions: SubmissionItem[];
@@ -40,7 +40,7 @@ export const useSubmissionStore = create<SubmissionState>((set, get) => ({
 		// Check cache first (unless forced)
 		if (!force) {
 			const cacheKey = `submission-milestone-${milestoneId}`;
-			const cached = cacheUtils.get('submission', cacheKey);
+			const cached = cacheUtils.get("submission", cacheKey);
 
 			if (cached && Array.isArray(cached)) {
 				set({
@@ -61,17 +61,17 @@ export const useSubmissionStore = create<SubmissionState>((set, get) => ({
 
 				// Cache the data
 				const cacheKey = `submission-milestone-${milestoneId}`;
-				cacheUtils.set('submission', cacheKey, submissionsData);
+				cacheUtils.set("submission", cacheKey, submissionsData);
 
 				set({ submissions: submissionsData, loading: false });
 				return submissionsData;
 			} else {
-				set({ error: 'Failed to fetch submissions', loading: false });
+				set({ error: "Failed to fetch submissions", loading: false });
 				return null;
 			}
 		} catch (e) {
 			set({
-				error: e instanceof Error ? e.message : 'Unknown error',
+				error: e instanceof Error ? e.message : "Unknown error",
 				loading: false,
 			});
 			return null;
@@ -95,12 +95,12 @@ export const useSubmissionStore = create<SubmissionState>((set, get) => ({
 				});
 				return res.data.submission;
 			} else {
-				set({ error: 'Failed to fetch submission', loading: false });
+				set({ error: "Failed to fetch submission", loading: false });
 				return null;
 			}
 		} catch (e) {
 			set({
-				error: e instanceof Error ? e.message : 'Unknown error',
+				error: e instanceof Error ? e.message : "Unknown error",
 				loading: false,
 			});
 			return null;
@@ -117,12 +117,12 @@ export const useSubmissionStore = create<SubmissionState>((set, get) => ({
 
 	clearCache: () => {
 		// Clear cache for submission entity
-		cacheInvalidation.invalidateEntity('submission');
+		cacheInvalidation.invalidateEntity("submission");
 	},
 }));
 
 // Initialize cache for submission entity
-cacheUtils.initCache('submission', {
+cacheUtils.initCache("submission", {
 	ttl: 2 * 60 * 1000, // 2 minutes cache for submissions
 	maxSize: 50,
 	enableLocalStorage: true, // ✅ Lưu vào localStorage để debug
