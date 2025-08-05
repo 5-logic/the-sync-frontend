@@ -1,14 +1,14 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState } from "react";
 
-import { GroupTableProps } from '@/components/features/lecturer/AssignLecturerReview/GroupTable';
+import { GroupTableProps } from "@/components/features/lecturer/AssignLecturerReview/GroupTable";
 import {
 	TABLE_WIDTHS,
 	baseColumns,
 	createActionRenderer,
 	createReviewerRenderer,
-} from '@/components/features/lecturer/AssignLecturerReview/ReviewerColumns';
-import { SubmissionItem } from '@/lib/services/submission.service';
-import { DraftReviewerAssignment } from '@/store/useDraftReviewerAssignmentStore';
+} from "@/components/features/lecturer/AssignLecturerReview/ReviewerColumns";
+import { SubmissionItem } from "@/lib/services/submissions.service";
+import { DraftReviewerAssignment } from "@/store/useDraftReviewerAssignmentStore";
 
 interface UseAssignReviewerColumnsProps {
 	submissions: SubmissionItem[];
@@ -39,8 +39,8 @@ export const useAssignReviewerColumns = ({
 			const submissionGroup = submission.group;
 			setSelectedGroup({
 				...submissionGroup,
-				title: submission.thesis?.englishName || '',
-				phase: submission.milestone?.name || '',
+				title: submission.thesis?.englishName || "",
+				phase: submission.milestone?.name || "",
 				supervisors: submission.thesis?.supervisors || [],
 				reviewers: submission.reviewLecturers,
 				submissionId: submission.id,
@@ -62,7 +62,7 @@ export const useAssignReviewerColumns = ({
 
 		// Replace reviewer column with draft-aware version
 		const baseColumnsWithDrafts = baseColumns.map((column) => {
-			if (column.key === 'reviewers') {
+			if (column.key === "reviewers") {
 				return {
 					...column,
 					render: reviewerRenderer,
@@ -74,10 +74,10 @@ export const useAssignReviewerColumns = ({
 		return [
 			...baseColumnsWithDrafts,
 			{
-				title: 'Action',
-				key: 'action',
+				title: "Action",
+				key: "action",
 				width: TABLE_WIDTHS.ACTIONS,
-				align: 'center' as const,
+				align: "center" as const,
 				render: actionRenderer,
 			},
 		];

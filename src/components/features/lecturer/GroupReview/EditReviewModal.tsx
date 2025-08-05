@@ -1,33 +1,26 @@
 "use client";
 
-import {
-	Button,
-	Divider,
-	Input,
-	Modal,
-	Radio,
-	Table,
-	Tag,
-	Typography,
-} from "antd";
+import { Button, Divider, Input, Modal, Radio, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useCallback, useEffect, useState } from "react";
 
 import { useReviews } from "@/hooks/lecturer/useReviews";
 import {
-	SubmissionReview,
+	SubmissionReviewWithReviewer,
 	UpdateReviewRequest,
 } from "@/lib/services/reviews.service";
 import { showNotification } from "@/lib/utils/notification";
 import { getPriorityConfig } from "@/lib/utils/uiConstants";
 import { ChecklistReviewAcceptance } from "@/schemas/_enums";
-
-const { Text } = Typography;
+import {
+	ReviewerInfo,
+	ReviewDates,
+} from "@/components/common/ReviewComponents";
 
 interface Props {
 	readonly open: boolean;
 	readonly onClose: () => void;
-	readonly review: SubmissionReview | null;
+	readonly review: SubmissionReviewWithReviewer | null;
 	readonly onSuccess?: () => void;
 }
 
@@ -274,34 +267,12 @@ export default function EditReviewModal({
 				{/* Review Info */}
 				<div style={{ marginBottom: 16 }}>
 					<div style={{ marginBottom: 8 }}>
-						<div
-							style={{
-								display: "flex",
-								alignItems: "center",
-								gap: 8,
-								marginTop: 4,
-							}}
-						>
-							<strong>Created by:</strong>
-							<Text strong>{review.lecturer.user.fullName}</Text>
-							{review.isMainReviewer === true ? (
-								<Tag color="yellow">Main Reviewer</Tag>
-							) : (
-								<Tag color="blue">Secondary Reviewer</Tag>
-							)}
-						</div>
-						<div>
-							<Text type="secondary">
-								Created: {new Date(review.createdAt).toLocaleString()}
-							</Text>
-							{review.updatedAt !== review.createdAt && (
-								<>
-									<br />
-									<Text type="secondary">
-										Updated: {new Date(review.updatedAt).toLocaleString()}
-									</Text>
-								</>
-							)}
+						<ReviewerInfo review={review} label="Created by" />
+						<div style={{ marginTop: 8 }}>
+							<ReviewDates
+								createdAt={review.createdAt}
+								updatedAt={review.updatedAt}
+							/>
 						</div>
 					</div>
 				</div>

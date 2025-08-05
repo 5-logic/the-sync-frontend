@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { EyeOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
-import { Button, Input, Space, Table } from 'antd';
-import type { ColumnsType } from 'antd/es/table';
+import { EyeOutlined, ReloadOutlined, SearchOutlined } from "@ant-design/icons";
+import { Button, Empty, Input, Space, Table } from "antd";
+import type { ColumnsType } from "antd/es/table";
 
-import { TablePagination } from '@/components/common/TablePagination';
-import SemesterFilter from '@/components/features/lecturer/GroupProgess/SemesterFilter';
-import type { FullMockGroup } from '@/data/group';
-import { Group, SupervisedGroup } from '@/lib/services/groups.service';
+import { TablePagination } from "@/components/common/TablePagination";
+import SemesterFilter from "@/components/features/lecturer/GroupProgess/SemesterFilter";
+import type { FullMockGroup } from "@/data/group";
+import { Group, SupervisedGroup } from "@/lib/services/groups.service";
 
 // Union type to support both real API data and mock data
 type GroupData = Group | FullMockGroup | SupervisedGroup;
@@ -42,71 +42,71 @@ export default function GroupSearchTable<
 }: Readonly<Props<T>>) {
 	const columns: ColumnsType<T> = [
 		{
-			title: 'Group Name',
-			dataIndex: 'name',
-			key: 'name',
-			responsive: ['xs', 'sm', 'md', 'lg', 'xl'],
+			title: "Group Name",
+			dataIndex: "name",
+			key: "name",
+			responsive: ["xs", "sm", "md", "lg", "xl"],
 		},
 		{
-			title: 'Group Code',
-			dataIndex: 'code',
-			key: 'code',
-			responsive: ['sm', 'md', 'lg', 'xl'],
+			title: "Group Code",
+			dataIndex: "code",
+			key: "code",
+			responsive: ["sm", "md", "lg", "xl"],
 		},
 		{
-			title: 'English Name',
-			key: 'englishName',
+			title: "English Name",
+			key: "englishName",
 			width: 500,
-			responsive: ['md', 'lg', 'xl'],
+			responsive: ["md", "lg", "xl"],
 			render: (_, record) => {
 				// Handle SupervisedGroup type with thesis.englishName
-				if ('thesis' in record && record.thesis?.englishName) {
+				if ("thesis" in record && record.thesis?.englishName) {
 					return record.thesis.englishName;
 				}
 				// Handle FullMockGroup type with englishName property
-				if ('englishName' in record && record.englishName) {
+				if ("englishName" in record && record.englishName) {
 					return record.englishName;
 				}
-				return '-';
+				return "-";
 			},
 		},
 		{
-			title: 'Project Direction',
-			dataIndex: 'projectDirection',
-			key: 'projectDirection',
-			responsive: ['lg', 'xl'],
-			render: (value: string) => value || '-',
+			title: "Project Direction",
+			dataIndex: "projectDirection",
+			key: "projectDirection",
+			responsive: ["lg", "xl"],
+			render: (value: string) => value || "-",
 		},
 
 		{
-			title: 'Members',
-			key: 'memberCount',
-			responsive: ['sm', 'md', 'lg', 'xl'],
+			title: "Members",
+			key: "memberCount",
+			responsive: ["sm", "md", "lg", "xl"],
 			render: (_, record) => {
 				// Handle SupervisedGroup type with studentGroupParticipations
 				if (
-					'studentGroupParticipations' in record &&
+					"studentGroupParticipations" in record &&
 					Array.isArray(record.studentGroupParticipations)
 				) {
 					return record.studentGroupParticipations.length;
 				}
 				// Handle Group type with memberCount
-				if ('memberCount' in record) {
+				if ("memberCount" in record) {
 					return record.memberCount;
 				}
 				// Handle FullMockGroup type with members array
-				if ('members' in record && Array.isArray(record.members)) {
+				if ("members" in record && Array.isArray(record.members)) {
 					return record.members.length;
 				}
-				return '-';
+				return "-";
 			},
 		},
 
 		{
-			title: 'Actions',
-			align: 'center',
-			key: 'actions',
-			responsive: ['xs', 'sm', 'md', 'lg', 'xl'],
+			title: "Actions",
+			align: "center",
+			key: "actions",
+			responsive: ["xs", "sm", "md", "lg", "xl"],
 			width: 80,
 			render: (_, record) => (
 				<Button
@@ -119,14 +119,14 @@ export default function GroupSearchTable<
 	];
 
 	return (
-		<Space direction="vertical" size="small" style={{ width: '100%' }}>
+		<Space direction="vertical" size="small" style={{ width: "100%" }}>
 			<div
 				style={{
-					display: 'flex',
+					display: "flex",
 					gap: 8,
 					marginBottom: 8,
-					flexWrap: 'wrap',
-					alignItems: 'center',
+					flexWrap: "wrap",
+					alignItems: "center",
 				}}
 			>
 				<Input
@@ -162,12 +162,14 @@ export default function GroupSearchTable<
 				rowKey="id"
 				loading={loading}
 				rowClassName={(record) =>
-					record.id === selectedGroup?.id ? 'ant-table-row-selected' : ''
+					record.id === selectedGroup?.id ? "ant-table-row-selected" : ""
 				}
 				size="middle"
 				scroll={{ x: 800 }} // Enable horizontal scroll on small screens
 				locale={{
-					emptyText: loading ? '' : 'No data available',
+					emptyText: (
+						<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No data" />
+					),
 				}}
 			/>
 		</Space>

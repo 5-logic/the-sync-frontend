@@ -1,16 +1,30 @@
-'use client';
+"use client";
 
-import { DownloadOutlined } from '@ant-design/icons';
-import { Button, Card, Col, Grid, Row, Spin, Steps, Typography } from 'antd';
-import { useEffect } from 'react';
+import { DownloadOutlined } from "@ant-design/icons";
+import {
+	Button,
+	Card,
+	Col,
+	Divider,
+	Empty,
+	Grid,
+	Row,
+	Spin,
+	Steps,
+	Typography,
+} from "antd";
+import { useEffect } from "react";
 
-import CardLoadingSkeleton from '@/components/common/loading/CardLoadingSkeleton';
-import type { FullMockGroup } from '@/data/group';
-import { useSubmission } from '@/hooks/lecturer/useSubmission';
-import { Group, SupervisedGroup } from '@/lib/services/groups.service';
-import { GroupDashboard } from '@/schemas/group';
-import { Milestone } from '@/schemas/milestone';
-import { SubmissionDetail } from '@/schemas/submission';
+import CardLoadingSkeleton from "@/components/common/loading/CardLoadingSkeleton";
+import type { FullMockGroup } from "@/data/group";
+import { useSubmission } from "@/hooks/lecturer/useSubmission";
+import { useReviews } from "@/hooks/lecturer/useReviews";
+import { Group, SupervisedGroup } from "@/lib/services/groups.service";
+import { GroupDashboard } from "@/schemas/group";
+import { Milestone } from "@/schemas/milestone";
+import { SubmissionDetail } from "@/schemas/submission";
+
+import ExistingReviewsList from "./ExistingReviewsList";
 
 type GroupType = FullMockGroup | Group | GroupDashboard | SupervisedGroup;
 
@@ -45,12 +59,12 @@ const { Step } = Steps;
  */
 const getFileNameFromUrl = (url: string): string => {
 	try {
-		const urlParts = url.split('/');
+		const urlParts = url.split("/");
 		const fileName = urlParts[urlParts.length - 1];
 		// Decode URI component to handle encoded characters
-		return decodeURIComponent(fileName) || 'Document';
+		return decodeURIComponent(fileName) || "Document";
 	} catch {
-		return 'Document';
+		return "Document";
 	}
 };
 
@@ -61,10 +75,10 @@ const isFullMockGroup = (g: GroupType): g is FullMockGroup => {
 	try {
 		return (
 			g &&
-			typeof g === 'object' &&
-			'submissionFile' in g &&
-			'submissionDate' in g &&
-			'uploadedBy' in g
+			typeof g === "object" &&
+			"submissionFile" in g &&
+			"submissionDate" in g &&
+			"uploadedBy" in g
 		);
 	} catch {
 		return false;
@@ -89,12 +103,26 @@ export default function MilestoneDetailCard({
 		fetchSubmission,
 	} = useSubmission();
 
+	// Reviews hook for submission reviews
+	const {
+		submissionReviews,
+		submissionReviewsLoading,
+		fetchSubmissionReviews,
+	} = useReviews();
+
 	// Fetch submission when group and milestone change
 	useEffect(() => {
 		if (group?.id && milestone?.id) {
 			fetchSubmission(group.id, milestone.id);
 		}
 	}, [group?.id, milestone?.id, fetchSubmission]);
+
+	// Fetch submission reviews when submission is available
+	useEffect(() => {
+		if (submission?.id) {
+			fetchSubmissionReviews(submission.id);
+		}
+	}, [submission?.id, fetchSubmissionReviews]);
 
 	// Helper functions
 	const hasDocuments = (sub: SubmissionDetail | null): boolean => {
@@ -143,15 +171,15 @@ export default function MilestoneDetailCard({
 		if (milestone) {
 			return `${milestone.name} - Submission Details`;
 		}
-		return 'Submission Details';
+		return "Submission Details";
 	};
 
 	const getCardPadding = () => {
-		return screens.xs ? '12px' : '24px';
+		return screens.xs ? "12px" : "24px";
 	};
 
 	// Early safety checks after hooks
-	if (!group || typeof group !== 'object') {
+	if (!group || typeof group !== "object") {
 		return <Card title="No Group Available" />;
 	}
 
@@ -165,16 +193,16 @@ export default function MilestoneDetailCard({
 			<Card
 				title={getCardTitle()}
 				style={{
-					height: '100%',
-					display: 'flex',
-					flexDirection: 'column',
+					height: "100%",
+					display: "flex",
+					flexDirection: "column",
 				}}
 				bodyStyle={{
 					flex: 1,
-					display: 'flex',
-					flexDirection: 'column',
+					display: "flex",
+					flexDirection: "column",
 					padding: getCardPadding(),
-					overflow: 'hidden',
+					overflow: "hidden",
 				}}
 			>
 				{/* Milestone Steps */}
@@ -188,7 +216,7 @@ export default function MilestoneDetailCard({
 								key={ms.id}
 								title={ms.name}
 								onClick={() => onMilestoneChange?.(ms)}
-								style={{ cursor: 'pointer' }}
+								style={{ cursor: "pointer" }}
 							/>
 						))}
 					</Steps>
@@ -198,14 +226,14 @@ export default function MilestoneDetailCard({
 					<div
 						style={{
 							marginBottom: 16,
-							padding: '12px',
-							background: '#f5f5f5',
-							borderRadius: '6px',
+							padding: "12px",
+							background: "#f5f5f5",
+							borderRadius: "6px",
 						}}
 					>
 						<Text strong>Milestone Period: </Text>
 						<Text>
-							{new Date(milestone.startDate).toLocaleDateString()} -{' '}
+							{new Date(milestone.startDate).toLocaleDateString()} -{" "}
 							{new Date(milestone.endDate).toLocaleDateString()}
 						</Text>
 					</div>
@@ -221,7 +249,7 @@ export default function MilestoneDetailCard({
 				<div
 					style={{
 						flex: 1,
-						overflowY: 'auto',
+						overflowY: "auto",
 						marginBottom: 16,
 					}}
 				>
@@ -233,10 +261,10 @@ export default function MilestoneDetailCard({
 							</Text>
 							<div
 								style={{
-									background: '#fafafa',
-									border: '1px solid #f0f0f0',
-									borderRadius: '6px',
-									padding: '12px',
+									background: "#fafafa",
+									border: "1px solid #f0f0f0",
+									borderRadius: "6px",
+									padding: "12px",
 								}}
 							>
 								{getDocuments(submission).map(
@@ -244,20 +272,20 @@ export default function MilestoneDetailCard({
 										<div
 											key={docUrl}
 											style={{
-												display: 'flex',
-												alignItems: 'center',
-												padding: '8px 0',
+												display: "flex",
+												alignItems: "center",
+												padding: "8px 0",
 												borderBottom:
 													index < getDocuments(submission).length - 1
-														? '1px solid #f0f0f0'
-														: 'none',
+														? "1px solid #f0f0f0"
+														: "none",
 											}}
 										>
 											<DownloadOutlined
 												style={{
-													color: '#1890ff',
+													color: "#1890ff",
 													marginRight: 8,
-													fontSize: '14px',
+													fontSize: "14px",
 												}}
 											/>
 											<Button
@@ -265,14 +293,14 @@ export default function MilestoneDetailCard({
 												size="small"
 												style={{
 													paddingLeft: 0,
-													color: '#1890ff',
-													fontSize: '14px',
-													textAlign: 'left',
-													height: 'auto',
-													display: 'flex',
-													alignItems: 'center',
+													color: "#1890ff",
+													fontSize: "14px",
+													textAlign: "left",
+													height: "auto",
+													display: "flex",
+													alignItems: "center",
 												}}
-												onClick={() => window.open(docUrl, '_blank')}
+												onClick={() => window.open(docUrl, "_blank")}
 											>
 												{getFileNameFromUrl(docUrl)}
 											</Button>
@@ -285,30 +313,33 @@ export default function MilestoneDetailCard({
 						<div style={{ marginBottom: 16 }}>
 							<Text
 								strong
-								style={{ fontSize: '16px', marginBottom: 8, display: 'block' }}
+								style={{ fontSize: "16px", marginBottom: 8, display: "block" }}
 							>
 								Submission Files:
 							</Text>
 							<div
 								style={{
-									background: '#fafafa',
-									border: '1px solid #f0f0f0',
-									borderRadius: '6px',
-									padding: '12px',
-									textAlign: 'center',
+									background: "#fafafa",
+									border: "1px solid #f0f0f0",
+									borderRadius: "6px",
+									padding: "12px",
+									textAlign: "center",
 								}}
 							>
-								<Text type="secondary">
-									{isFullMockGroup(group) && group.submissionFile
-										? group.submissionFile
-										: 'No submission files available'}
-								</Text>
+								{isFullMockGroup(group) && group.submissionFile ? (
+									<Text type="secondary">{group.submissionFile}</Text>
+								) : (
+									<Empty
+										image={Empty.PRESENTED_IMAGE_SIMPLE}
+										description="No data"
+									/>
+								)}
 							</div>
 						</div>
 					)}
 
 					{/* Submission Details */}
-					<Row justify="space-between" wrap style={{ marginBottom: 16 }}>
+					<Row justify="space-between" wrap>
 						<Col
 							span={screens.xs ? 24 : 12}
 							style={{ marginBottom: screens.xs ? 8 : 0 }}
@@ -324,7 +355,7 @@ export default function MilestoneDetailCard({
 										return group.submissionDate;
 									}
 
-									return 'No submission yet';
+									return "No submission yet";
 								})()}
 							</Text>
 						</Col>
@@ -333,28 +364,16 @@ export default function MilestoneDetailCard({
 					{/* Additional submission info */}
 					{submission && (
 						<>
-							<Row style={{ marginBottom: 16 }}>
-								<Col span={24}>
-									<Text strong>Status: </Text>
-									<Text
-										type={
-											submission.status === 'Submitted' ? 'success' : 'warning'
-										}
-									>
-										{submission.status}
-									</Text>
-								</Col>
-							</Row>
-
 							{hasAssignmentReviews(submission) && (
-								<Row style={{ marginTop: 16 }}>
+								<Row>
+									<Divider style={{ margin: "16px 0" }} />
 									<Col span={24}>
 										<Text strong>Reviewers:</Text>
 										{getAssignmentReviews(submission).map(
-											(review: AssignmentReviewDetail, index: number) => (
+											(review: AssignmentReviewDetail) => (
 												<div key={review.reviewerId} style={{ marginTop: 4 }}>
 													<Text type="secondary">
-														{index + 1}. {review.reviewer.user.fullName}
+														{review.reviewer.user.fullName}
 													</Text>
 												</div>
 											),
@@ -365,6 +384,16 @@ export default function MilestoneDetailCard({
 						</>
 					)}
 				</div>
+
+				{/* Existing Reviews Section */}
+				{submission && (
+					<div>
+						<ExistingReviewsList
+							reviews={submissionReviews}
+							loading={submissionReviewsLoading}
+						/>
+					</div>
+				)}
 			</Card>
 		</Spin>
 	);
