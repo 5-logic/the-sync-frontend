@@ -66,15 +66,15 @@ export default function AssignListPublishThesisPage() {
 			selectedIds.includes(thesis.id),
 		);
 
-		// Count how many will actually be published (not already published, no groupId)
+		// Count how many will actually be published (not already published)
 		const thesesToPublish = selectedTheses.filter(
-			(thesis) => !thesis.isPublish && !thesis.groupId,
+			(thesis) => !thesis.isPublish,
 		);
 
 		if (thesesToPublish.length === 0) {
 			showNotification.warning(
 				"No Theses to Publish",
-				"All selected theses are already published or assigned to groups.",
+				"All selected theses are already published.",
 			);
 			return;
 		}
