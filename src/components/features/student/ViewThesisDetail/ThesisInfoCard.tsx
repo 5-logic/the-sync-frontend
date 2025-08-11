@@ -1,5 +1,8 @@
 "use client";
 
+import { Avatar, Card, Space, Typography, Divider } from "antd";
+import { UserOutlined } from "@ant-design/icons";
+
 import BaseThesisInfoCard, {
 	type BaseThesisInfo,
 	type SupervisorInfo,
@@ -7,8 +10,17 @@ import BaseThesisInfoCard, {
 import { Lecturer } from "@/schemas/lecturer";
 import { ThesisWithRelations } from "@/schemas/thesis";
 
+const { Text, Paragraph } = Typography;
+
+interface SupervisorInfo_Local {
+	id: string;
+	fullName: string;
+	email: string;
+}
+
 interface EnhancedThesis extends ThesisWithRelations {
 	lecturerInfo?: Lecturer;
+	supervisors?: SupervisorInfo_Local[];
 }
 
 interface Props {
@@ -38,5 +50,34 @@ export default function ThesisInfoCard({ thesis }: Props) {
 			}
 		: undefined;
 
-	return <BaseThesisInfoCard thesis={baseThesis} supervisor={supervisor} />;
+	return (
+		<Space direction="vertical" size="large" style={{ width: "100%" }}>
+			{/* Main thesis information */}
+			<BaseThesisInfoCard thesis={baseThesis} supervisor={supervisor} />
+
+			{/* Supervisors section */}
+			{thesis.supervisors && thesis.supervisors.length > 0 && (
+				<Card title="Assigned Supervisors">
+					<Space direction="vertical" size="middle" style={{ width: "100%" }}>
+						{thesis.supervisors.map((supervisor, index) => (
+							<div key={supervisor.id}>
+								<Space size={16}>
+									<Avatar size={48} icon={<UserOutlined />} />
+									<div>
+										<Text strong>{supervisor.fullName}</Text>
+										<Paragraph style={{ marginBottom: 0 }}>
+											{supervisor.email}
+										</Paragraph>
+									</div>
+								</Space>
+								{index < (thesis.supervisors?.length || 0) - 1 && (
+									<Divider style={{ marginTop: 16, marginBottom: 0 }} />
+								)}
+							</div>
+						))}
+					</Space>
+				</Card>
+			)}
+		</Space>
+	);
 }

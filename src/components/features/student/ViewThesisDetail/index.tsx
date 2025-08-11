@@ -10,14 +10,22 @@ import AssignedGroupCard from "@/components/features/student/ViewThesisDetail/As
 import ThesisInfoCard from "@/components/features/student/ViewThesisDetail/ThesisInfoCard";
 import groupsService from "@/lib/services/groups.service";
 import lecturerService from "@/lib/services/lecturers.service";
+import supervisionService from "@/lib/services/supervisions.service";
 import thesesService from "@/lib/services/theses.service";
 import { handleApiResponse } from "@/lib/utils/handleApi";
 import { GroupDashboard } from "@/schemas/group";
 import { Lecturer } from "@/schemas/lecturer";
 import { ThesisWithRelations } from "@/schemas/thesis";
 
+interface SupervisorInfo {
+	id: string;
+	fullName: string;
+	email: string;
+}
+
 interface EnhancedThesis extends ThesisWithRelations {
 	lecturerInfo?: Lecturer;
+	supervisors?: SupervisorInfo[];
 }
 
 export default function StudentThesisDetailPage() {
@@ -65,10 +73,63 @@ export default function StudentThesisDetailPage() {
 					}
 				}
 
-				// Set enhanced thesis with lecturer info
+				// Fetch supervisors info using thesisId
+				let supervisors: SupervisorInfo[] = [];
+				try {
+					const supervisionResponse =
+						await supervisionService.getByThesisId(thesisId);
+					const supervisionResult = handleApiResponse(
+						supervisionResponse,
+						"Success",
+					);
+
+					if (supervisionResult.success && supervisionResult.data) {
+						const supervisionData = supervisionResult.data;
+
+						// Fetch lecturer details for each supervision
+						const supervisorPromises = supervisionData.map(
+							async (supervision) => {
+								try {
+									const lecturerResponse = await lecturerService.findOne(
+										supervision.lecturerId,
+									);
+									const lecturerResult = handleApiResponse(
+										lecturerResponse,
+										"Success",
+									);
+
+									if (lecturerResult.success && lecturerResult.data) {
+										return {
+											id: lecturerResult.data.id,
+											fullName: lecturerResult.data.fullName,
+											email: lecturerResult.data.email,
+										};
+									}
+								} catch (error) {
+									console.error(
+										`Error fetching supervisor ${supervision.lecturerId}:`,
+										error,
+									);
+								}
+								return null;
+							},
+						);
+
+						const supervisorResults = await Promise.all(supervisorPromises);
+						supervisors = supervisorResults.filter(
+							(supervisor): supervisor is SupervisorInfo => supervisor !== null,
+						);
+					}
+				} catch (error) {
+					console.error("Error fetching supervisors:", error);
+					// Continue without supervisors if fetch fails
+				}
+
+				// Set enhanced thesis with lecturer info and supervisors
 				setThesis({
 					...thesisData,
 					lecturerInfo,
+					supervisors,
 				});
 
 				// If thesis has a group assigned, fetch group details
