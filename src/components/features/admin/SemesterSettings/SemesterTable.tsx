@@ -209,18 +209,16 @@ const SemesterTable = forwardRef<
 					if (currentPhase === "ScopeLocked") {
 						availableStatuses.push(nextStatus);
 					}
-				} else {
+				} else if (
+					!(
+						currentStatus === "NotYet" &&
+						nextStatus === "Preparing" &&
+						ongoingSemester
+					)
+				) {
 					// For other transitions, allow normal progression
 					// But avoid duplicate if already added above
-					if (
-						!(
-							currentStatus === "NotYet" &&
-							nextStatus === "Preparing" &&
-							ongoingSemester
-						)
-					) {
-						availableStatuses.push(nextStatus);
-					}
+					availableStatuses.push(nextStatus);
 				}
 			}
 
