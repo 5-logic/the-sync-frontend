@@ -290,6 +290,8 @@ const AIUsageChart: React.FC<AIUsageChartProps> = ({
 							{chartData.map((segment) => (
 								<div
 									key={`legend-${segment.type}`}
+									role="button"
+									tabIndex={0}
 									style={{
 										display: "flex",
 										alignItems: "center",
@@ -299,6 +301,7 @@ const AIUsageChart: React.FC<AIUsageChartProps> = ({
 										backgroundColor: "#fafafa",
 										border: "1px solid #f0f0f0",
 										transition: "all 0.2s ease",
+										cursor: "pointer",
 									}}
 									onMouseEnter={(e) => {
 										e.currentTarget.style.backgroundColor = "#f5f5f5";
@@ -310,6 +313,12 @@ const AIUsageChart: React.FC<AIUsageChartProps> = ({
 										e.currentTarget.style.backgroundColor = "#fafafa";
 										e.currentTarget.style.transform = "translateY(0)";
 										e.currentTarget.style.boxShadow = "none";
+									}}
+									onKeyDown={(e) => {
+										if (e.key === "Enter" || e.key === " ") {
+											// Handle keyboard interaction if needed
+											e.preventDefault();
+										}
 									}}
 								>
 									<div
