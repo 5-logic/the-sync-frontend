@@ -1,6 +1,15 @@
 "use client";
 
-import { Card, Empty, Skeleton, Space, Tooltip, Typography } from "antd";
+import {
+	Card,
+	Col,
+	Empty,
+	Row,
+	Skeleton,
+	Space,
+	Tooltip,
+	Typography,
+} from "antd";
 import React, { useMemo } from "react";
 
 import type { AIStatistic } from "@/lib/services/ai-statistics.service";
@@ -117,21 +126,42 @@ const AIUsageChart: React.FC<AIUsageChartProps> = ({
 						<Skeleton.Input active size="large" style={{ width: 250 }} />
 						<Skeleton.Input active size="small" style={{ width: 350 }} />
 					</Space>
-					<div style={{ textAlign: "center", padding: "20px 0" }}>
-						<Skeleton.Avatar active size={SVG_SIZE} shape="circle" />
-					</div>
-					<Space direction="vertical" size="small" style={{ width: "100%" }}>
-						{[1, 2, 3].map((i) => (
-							<div
-								key={`legend-skeleton-${i}`}
-								style={{ display: "flex", alignItems: "center", gap: 8 }}
-							>
-								<Skeleton.Avatar active size={16} shape="circle" />
-								<Skeleton.Input active size="small" style={{ width: 120 }} />
-								<Skeleton.Input active size="small" style={{ width: 60 }} />
+					<Row gutter={[24, 16]} align="middle">
+						{/* Left Column - Pie Chart Skeleton */}
+						<Col xs={24} sm={24} md={12} lg={10} xl={8}>
+							<div style={{ textAlign: "center", padding: "20px 0" }}>
+								<Skeleton.Avatar active size={SVG_SIZE} shape="circle" />
 							</div>
-						))}
-					</Space>
+						</Col>
+						{/* Right Column - Legend Skeleton */}
+						<Col xs={24} sm={24} md={12} lg={14} xl={16}>
+							<Space
+								direction="vertical"
+								size="small"
+								style={{ width: "100%" }}
+							>
+								{[1, 2, 3].map((i) => (
+									<div
+										key={`legend-skeleton-${i}`}
+										style={{
+											display: "flex",
+											alignItems: "center",
+											gap: 12,
+											padding: "12px 16px",
+										}}
+									>
+										<Skeleton.Avatar active size={20} shape="circle" />
+										<Skeleton.Input
+											active
+											size="small"
+											style={{ width: 140 }}
+										/>
+										<Skeleton.Input active size="small" style={{ width: 80 }} />
+									</div>
+								))}
+							</Space>
+						</Col>
+					</Row>
 				</Space>
 			</Card>
 		);
@@ -178,114 +208,142 @@ const AIUsageChart: React.FC<AIUsageChartProps> = ({
 					</Text>
 				</Space>
 
-				{/* Pie Chart */}
-				<div style={{ textAlign: "center", padding: "20px 0" }}>
-					<div style={{ position: "relative", display: "inline-block" }}>
-						<svg width={SVG_SIZE} height={SVG_SIZE}>
-							{/* Data segments */}
-							{chartData.map((segment) => (
-								<Tooltip
-									key={`tooltip-${segment.type}`}
-									title={
-										<div style={{ textAlign: "center" }}>
-											<div style={{ fontWeight: "bold", marginBottom: 4 }}>
-												{segment.label}
-											</div>
-											<div>
-												{segment.count} calls ({segment.percentage}%)
-											</div>
-										</div>
-									}
-									placement="top"
-								>
-									<path
-										d={createPieSlicePath(segment.startAngle, segment.endAngle)}
-										fill={segment.color}
-										stroke="white"
-										strokeWidth={2}
-										style={{
-											transition: "all 0.1s ease-in-out",
-											cursor: "pointer",
-										}}
-										onMouseEnter={(e) => {
-											e.currentTarget.style.filter = "brightness(1.15)";
-											e.currentTarget.style.transform = "scale(1.05)";
-											e.currentTarget.style.transformOrigin = `${SVG_SIZE / 2}px ${SVG_SIZE / 2}px`;
-										}}
-										onMouseLeave={(e) => {
-											e.currentTarget.style.filter = "brightness(1)";
-											e.currentTarget.style.transform = "scale(1)";
-										}}
-									/>
-								</Tooltip>
-							))}
-						</svg>
+				{/* Chart and Legend Layout */}
+				<Row gutter={[24, 16]} align="middle">
+					{/* Left Column - Pie Chart */}
+					<Col xs={24} sm={24} md={12} lg={10} xl={8}>
+						<div style={{ textAlign: "center", padding: "20px 0" }}>
+							<div style={{ position: "relative", display: "inline-block" }}>
+								<svg width={SVG_SIZE} height={SVG_SIZE}>
+									{/* Data segments */}
+									{chartData.map((segment) => (
+										<Tooltip
+											key={`tooltip-${segment.type}`}
+											title={
+												<div style={{ textAlign: "center" }}>
+													<div style={{ fontWeight: "bold", marginBottom: 4 }}>
+														{segment.label}
+													</div>
+													<div>
+														{segment.count} calls ({segment.percentage}%)
+													</div>
+												</div>
+											}
+											placement="top"
+										>
+											<path
+												d={createPieSlicePath(
+													segment.startAngle,
+													segment.endAngle,
+												)}
+												fill={segment.color}
+												stroke="white"
+												strokeWidth={2}
+												style={{
+													transition: "all 0.1s ease-in-out",
+													cursor: "pointer",
+												}}
+												onMouseEnter={(e) => {
+													e.currentTarget.style.filter = "brightness(1.15)";
+													e.currentTarget.style.transform = "scale(1.05)";
+													e.currentTarget.style.transformOrigin = `${SVG_SIZE / 2}px ${SVG_SIZE / 2}px`;
+												}}
+												onMouseLeave={(e) => {
+													e.currentTarget.style.filter = "brightness(1)";
+													e.currentTarget.style.transform = "scale(1)";
+												}}
+											/>
+										</Tooltip>
+									))}
+								</svg>
 
-						{/* Center text */}
-						<div
-							style={{
-								position: "absolute",
-								top: "50%",
-								left: "50%",
-								transform: "translate(-50%, -50%)",
-								textAlign: "center",
-							}}
-						>
-							<div
-								style={{
-									fontSize: "24px",
-									fontWeight: "bold",
-									color: "#262626",
-								}}
-							>
-								{totalCalls}
-							</div>
-							<div style={{ fontSize: "14px", color: "#8c8c8c" }}>
-								Total Calls
-							</div>
-						</div>
-					</div>
-				</div>
-
-				{/* Legend */}
-				<Space direction="vertical" size="small" style={{ width: "100%" }}>
-					{chartData.map((segment) => (
-						<div
-							key={`legend-${segment.type}`}
-							style={{
-								display: "flex",
-								alignItems: "center",
-								justifyContent: "space-between",
-								padding: "8px 12px",
-								borderRadius: "6px",
-								backgroundColor: "#fafafa",
-								border: "1px solid #f0f0f0",
-							}}
-						>
-							<div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+								{/* Center text */}
 								<div
 									style={{
-										width: 16,
-										height: 16,
-										borderRadius: "50%",
-										backgroundColor: segment.color,
+										position: "absolute",
+										top: "50%",
+										left: "50%",
+										transform: "translate(-50%, -50%)",
+										textAlign: "center",
 									}}
-								/>
-								<Text strong style={{ fontSize: 14 }}>
-									{segment.label}
-								</Text>
+								>
+									<div
+										style={{
+											fontSize: "24px",
+											fontWeight: "bold",
+											color: "#262626",
+										}}
+									>
+										{totalCalls}
+									</div>
+									<div style={{ fontSize: "14px", color: "#8c8c8c" }}>
+										Total Calls
+									</div>
+								</div>
 							</div>
-							<Space size={16}>
-								<Text style={{ fontSize: 14, color: "#595959" }}>
-									{segment.count} calls
-								</Text>
-								<Text strong style={{ fontSize: 14, color: segment.color }}>
-									{segment.percentage}%
-								</Text>
-							</Space>
 						</div>
-					))}
-				</Space>
+					</Col>
+
+					{/* Right Column - Legend */}
+					<Col xs={24} sm={24} md={12} lg={14} xl={16}>
+						<Space direction="vertical" size="small" style={{ width: "100%" }}>
+							{chartData.map((segment) => (
+								<button
+									key={`legend-${segment.type}`}
+									type="button"
+									style={{
+										display: "flex",
+										alignItems: "center",
+										justifyContent: "space-between",
+										padding: "12px 16px",
+										borderRadius: "8px",
+										backgroundColor: "#fafafa",
+										border: "1px solid #f0f0f0",
+										transition: "all 0.2s ease",
+										cursor: "pointer",
+										width: "100%",
+									}}
+									onMouseEnter={(e) => {
+										e.currentTarget.style.backgroundColor = "#f5f5f5";
+										e.currentTarget.style.transform = "translateY(-1px)";
+										e.currentTarget.style.boxShadow =
+											"0 2px 8px rgba(0,0,0,0.1)";
+									}}
+									onMouseLeave={(e) => {
+										e.currentTarget.style.backgroundColor = "#fafafa";
+										e.currentTarget.style.transform = "translateY(0)";
+										e.currentTarget.style.boxShadow = "none";
+									}}
+								>
+									<div
+										style={{ display: "flex", alignItems: "center", gap: 12 }}
+									>
+										<div
+											style={{
+												width: 20,
+												height: 20,
+												borderRadius: "50%",
+												backgroundColor: segment.color,
+												boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+											}}
+										/>
+										<Text strong style={{ fontSize: 15 }}>
+											{segment.label}
+										</Text>
+									</div>
+									<Space size={16}>
+										<Text style={{ fontSize: 14, color: "#595959" }}>
+											{segment.count} calls
+										</Text>
+										<Text strong style={{ fontSize: 15, color: segment.color }}>
+											{segment.percentage}%
+										</Text>
+									</Space>
+								</button>
+							))}
+						</Space>
+					</Col>
+				</Row>
 			</Space>
 		</Card>
 	);
