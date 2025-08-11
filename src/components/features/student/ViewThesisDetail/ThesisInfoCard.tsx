@@ -4,26 +4,15 @@ import BaseThesisInfoCard, {
 	type BaseThesisInfo,
 	type SupervisorInfo,
 } from "@/components/common/BaseThesisInfoCard";
+import { Lecturer } from "@/schemas/lecturer";
 import { ThesisWithRelations } from "@/schemas/thesis";
 
-interface Props {
-	readonly thesis: ThesisWithRelations;
+interface EnhancedThesis extends ThesisWithRelations {
+	lecturerInfo?: Lecturer;
 }
 
-// Extended lecturer interface to handle both API formats
-interface ExtendedLecturer {
-	fullName?: string;
-	email?: string;
-	phoneNumber?: string;
-	phone?: string;
-	userId: string;
-	isModerator: boolean;
-	user?: {
-		id: string;
-		fullName: string;
-		email: string;
-		phoneNumber?: string;
-	};
+interface Props {
+	readonly thesis: EnhancedThesis;
 }
 
 export default function ThesisInfoCard({ thesis }: Props) {
@@ -40,17 +29,12 @@ export default function ThesisInfoCard({ thesis }: Props) {
 		thesisVersions: thesis.thesisVersions,
 	};
 
-	// Transform lecturer info to supervisor info with safety checks
-	const lecturer = thesis.lecturer as ExtendedLecturer;
-	const supervisor: SupervisorInfo | undefined = lecturer
+	// Use lecturerInfo to create supervisor info
+	const supervisor: SupervisorInfo | undefined = thesis.lecturerInfo
 		? {
-				name: lecturer.fullName || lecturer.user?.fullName || "",
-				email: lecturer.email || lecturer.user?.email || "",
-				phone:
-					lecturer.phoneNumber ||
-					lecturer.user?.phoneNumber ||
-					lecturer.phone ||
-					"",
+				name: thesis.lecturerInfo.fullName,
+				email: thesis.lecturerInfo.email,
+				phone: thesis.lecturerInfo.phoneNumber || "",
 			}
 		: undefined;
 
