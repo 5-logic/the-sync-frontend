@@ -12,7 +12,7 @@ import { ThesisWithRelations } from "@/schemas/thesis";
 
 const { Text, Paragraph } = Typography;
 
-interface SupervisorInfo_Local {
+interface SupervisorDetails {
 	id: string;
 	fullName: string;
 	email: string;
@@ -20,7 +20,7 @@ interface SupervisorInfo_Local {
 
 interface EnhancedThesis extends ThesisWithRelations {
 	lecturerInfo?: Lecturer;
-	supervisors?: SupervisorInfo_Local[];
+	supervisors?: SupervisorDetails[];
 }
 
 interface Props {
