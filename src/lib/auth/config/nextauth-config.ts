@@ -3,6 +3,7 @@ import NextAuth, { NextAuthOptions } from "next-auth";
 import { jwtCallback } from "@/lib/auth/callbacks/jwt";
 import { sessionCallback } from "@/lib/auth/callbacks/session";
 import { credentialsProvider } from "@/lib/auth/providers/credentials";
+import { CookieUtils } from "@/lib/utils/auth/cookie-utils";
 
 /**
  * Enhanced NextAuth Configuration
@@ -82,23 +83,7 @@ export const authOptions: NextAuthOptions = {
 				sessionStorage.clear();
 
 				// Clear all cookies
-				const cookies = document.cookie.split(";");
-				cookies.forEach((cookie) => {
-					const eqPos = cookie.indexOf("=");
-					const name =
-						eqPos > -1 ? cookie.substring(0, eqPos).trim() : cookie.trim();
-
-					// Set cookie to expire in the past
-					document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; domain=${window.location.hostname}`;
-					document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
-
-					// Also try with subdomain
-					const parts = window.location.hostname.split(".");
-					if (parts.length > 2) {
-						const domain = `.${parts.slice(-2).join(".")}`;
-						document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; domain=${domain}`;
-					}
-				});
+				CookieUtils.clearAllCookies();
 			}
 		},
 		async session() {

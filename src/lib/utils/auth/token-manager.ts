@@ -3,6 +3,7 @@ import { getSession } from "next-auth/react";
 import { AdminAuthService } from "@/lib/services/auth/admin-auth.service";
 import { TokenUtilsService } from "@/lib/services/auth/token-utils.service";
 import { UserAuthService } from "@/lib/services/auth/user-auth.service";
+import { CookieUtils } from "@/lib/utils/auth/cookie-utils";
 
 /**
  * Handles conditional storage based on remember me preference
@@ -314,38 +315,10 @@ export class TokenManager {
 			sessionStorage.clear();
 
 			// Clear all cookies by setting them to expire
-			this.clearAllCookies();
+			CookieUtils.clearAllCookies();
 		} catch (error) {
 			console.error("Failed to clear all storage:", error);
 		}
-	}
-
-	/**
-	 * Clear all cookies by setting them to expire
-	 */
-	private static clearAllCookies(): void {
-		if (typeof document === "undefined") return;
-
-		// Get all cookies
-		const cookies = document.cookie.split(";");
-
-		// Clear each cookie by setting it to expire
-		cookies.forEach((cookie) => {
-			const eqPos = cookie.indexOf("=");
-			const name =
-				eqPos > -1 ? cookie.substring(0, eqPos).trim() : cookie.trim();
-
-			// Set cookie to expire in the past
-			document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; domain=${window.location.hostname}`;
-			document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
-
-			// Also try with subdomain
-			const parts = window.location.hostname.split(".");
-			if (parts.length > 2) {
-				const domain = `.${parts.slice(-2).join(".")}`;
-				document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; domain=${domain}`;
-			}
-		});
 	}
 
 	/**
