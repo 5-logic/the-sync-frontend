@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
+import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 import {
 	Button,
 	Col,
@@ -13,23 +13,23 @@ import {
 	Spin,
 	TreeSelect,
 	Typography,
-} from 'antd';
-import React, { useEffect, useState } from 'react';
+} from "antd";
+import React, { useEffect, useState } from "react";
 
-import { FormLabel } from '@/components/common/FormLabel';
-import { useOptimizedSession } from '@/hooks/auth/useAuth';
+import { FormLabel } from "@/components/common/FormLabel";
+import { useOptimizedSession } from "@/hooks/auth/useAuth";
 import {
 	isValidVietnamesePhone,
 	normalizeVietnamesePhone,
-} from '@/lib/utils/validations';
-import { SkillSet } from '@/schemas/skill';
-import { StudentProfile, StudentSelfUpdate } from '@/schemas/student';
+} from "@/lib/utils/validations";
+import { SkillSet } from "@/schemas/skill";
+import { StudentProfile, StudentSelfUpdate } from "@/schemas/student";
 import {
 	useMajorStore,
 	useResponsibilityStore,
 	useSkillSetStore,
 	useStudentStore,
-} from '@/store';
+} from "@/store";
 
 // TypeScript interfaces
 interface FormValues {
@@ -50,19 +50,19 @@ const { Title } = Typography;
 
 // Constants moved outside component to prevent re-creation on each render
 const LEVEL_TOOLTIPS = [
-	'Beginner',
-	'Intermediate',
-	'Proficient',
-	'Advanced',
-	'Expert',
+	"Beginner",
+	"Intermediate",
+	"Proficient",
+	"Advanced",
+	"Expert",
 ] as const;
 
 const LEVEL_COLORS = [
-	'#1890ff', // Blue - Beginner
-	'#52c41a', // Green - Intermediate
-	'#fadb14', // Yellow - Proficient
-	'#fa8c16', // Orange - Advanced
-	'#ff4d4f', // Red - Expert
+	"#1890ff", // Blue - Beginner
+	"#52c41a", // Green - Intermediate
+	"#fadb14", // Yellow - Proficient
+	"#fa8c16", // Orange - Advanced
+	"#ff4d4f", // Red - Expert
 ] as const;
 
 // Memoized skill tree data to prevent unnecessary re-computation
@@ -83,6 +83,9 @@ const StudentAccountForm: React.FC = () => {
 	const [profileData, setProfileData] = useState<StudentProfile | null>(null);
 	const [loadingProfile, setLoadingProfile] = useState(true);
 	const [skillLevels, setSkillLevels] = useState<{ [key: string]: number }>({});
+
+	// Watch for changes in skills field to trigger re-render of TreeSelects
+	const watchedSkills = Form.useWatch("skills", form);
 
 	// Use Student Store for update profile and fetch profile
 	const { updateProfile, updatingProfile, clearError, fetchProfile } =
@@ -174,7 +177,7 @@ const StudentAccountForm: React.FC = () => {
 					});
 				}
 			} catch (error) {
-				console.error('Error loading profile:', error);
+				console.error("Error loading profile:", error);
 			} finally {
 				setLoadingProfile(false);
 			}
@@ -199,6 +202,34 @@ const StudentAccountForm: React.FC = () => {
 		return buildSkillTreeData(skillSets);
 	}, [skillSets]);
 
+	// Get filtered skill tree data for a specific field (excluding already selected skills)
+	const getFilteredSkillTreeData = React.useCallback(
+		(currentFieldName: number) => {
+			const selectedSkills = watchedSkills || [];
+
+			// Get all selected skill IDs except for the current field
+			const selectedSkillIds = selectedSkills
+				.map((skill: { skillId?: string }, index: number) =>
+					index !== currentFieldName ? skill?.skillId : null,
+				)
+				.filter((skillId: string | null) => skillId !== null);
+
+			// Filter out selected skills from tree data
+			return skillTreeData
+				.map((skillSet) => ({
+					...skillSet,
+					children:
+						skillSet.children?.filter(
+							(skill) => !selectedSkillIds.includes(skill.value),
+						) ?? [],
+				}))
+				.filter(
+					(skillSet) => skillSet.children && skillSet.children.length > 0,
+				);
+		},
+		[skillTreeData, watchedSkills],
+	);
+
 	// Build responsibility options from responsibilities data
 	const responsibilityOptions = React.useMemo(() => {
 		return responsibilities.map((responsibility) => ({
@@ -209,7 +240,7 @@ const StudentAccountForm: React.FC = () => {
 
 	// Get the display value for major field
 	const majorDisplayValue = React.useMemo(() => {
-		if (!profileData?.majorId) return '';
+		if (!profileData?.majorId) return "";
 		return getMajorName(profileData.majorId);
 	}, [profileData?.majorId, getMajorName]);
 
@@ -221,7 +252,7 @@ const StudentAccountForm: React.FC = () => {
 			const formSkills = values.skills || [];
 			const studentSkills = formSkills.map((skill) => ({
 				skillId: skill.skillId,
-				level: LEVEL_TOOLTIPS[(skill.level || 1) - 1] || 'Beginner',
+				level: LEVEL_TOOLTIPS[(skill.level || 1) - 1] || "Beginner",
 			}));
 
 			// Get selected responsibilities
@@ -234,7 +265,7 @@ const StudentAccountForm: React.FC = () => {
 			// Prepare update profile data using new API structure
 			const profileUpdateData: StudentSelfUpdate = {
 				fullName: values.fullName.trim(),
-				gender: values.gender as 'Male' | 'Female',
+				gender: values.gender as "Male" | "Female",
 				phoneNumber: normalizeVietnamesePhone(values.phoneNumber.trim()),
 				studentSkills,
 				studentExpectedResponsibilities,
@@ -255,7 +286,7 @@ const StudentAccountForm: React.FC = () => {
 
 	const tooltipFormatter = React.useCallback(
 		(value: number | undefined) =>
-			value ? (LEVEL_TOOLTIPS[value - 1] ?? '') : '',
+			value ? (LEVEL_TOOLTIPS[value - 1] ?? "") : "",
 		[],
 	);
 
@@ -339,15 +370,15 @@ const StudentAccountForm: React.FC = () => {
 		return (
 			<div
 				style={{
-					display: 'flex',
-					justifyContent: 'center',
-					alignItems: 'center',
-					minHeight: '500px',
-					flexDirection: 'column',
+					display: "flex",
+					justifyContent: "center",
+					alignItems: "center",
+					minHeight: "500px",
+					flexDirection: "column",
 				}}
 			>
 				<Spin size="large" />
-				<div style={{ marginTop: 16, color: '#666' }}>
+				<div style={{ marginTop: 16, color: "#666" }}>
 					Loading student profile...
 				</div>
 			</div>
@@ -361,12 +392,12 @@ const StudentAccountForm: React.FC = () => {
 			layout="vertical"
 			onFinish={handleFinish}
 			initialValues={{
-				fullName: profileData?.fullName ?? '',
-				email: profileData?.email ?? '',
-				studentId: profileData?.studentCode ?? '',
-				major: profileData?.majorId ?? '',
-				phoneNumber: profileData?.phoneNumber ?? '',
-				gender: profileData?.gender ?? '',
+				fullName: profileData?.fullName ?? "",
+				email: profileData?.email ?? "",
+				studentId: profileData?.studentCode ?? "",
+				major: profileData?.majorId ?? "",
+				phoneNumber: profileData?.phoneNumber ?? "",
+				gender: profileData?.gender ?? "",
 				responsibility:
 					profileData?.studentExpectedResponsibilities?.map(
 						(r) => r.responsibilityId,
@@ -387,7 +418,7 @@ const StudentAccountForm: React.FC = () => {
 						name="studentId"
 						label={<FormLabel text="Student ID" isBold />}
 						rules={[
-							{ required: true, message: 'Please enter your student ID' },
+							{ required: true, message: "Please enter your student ID" },
 						]}
 					>
 						<Input disabled placeholder="Student ID" />
@@ -400,8 +431,8 @@ const StudentAccountForm: React.FC = () => {
 						rules={[
 							{
 								required: true,
-								type: 'email',
-								message: 'Please enter a valid email',
+								type: "email",
+								message: "Please enter a valid email",
 							},
 						]}
 					>
@@ -415,11 +446,11 @@ const StudentAccountForm: React.FC = () => {
 						name="fullName"
 						label={<FormLabel text="Full Name" isBold />}
 						rules={[
-							{ required: true, message: 'Please enter your full name' },
-							{ min: 2, message: 'Full name must be at least 2 characters' },
+							{ required: true, message: "Please enter your full name" },
+							{ min: 2, message: "Full name must be at least 2 characters" },
 							{
 								max: 100,
-								message: 'Full name must be less than 100 characters',
+								message: "Full name must be less than 100 characters",
 							},
 						]}
 					>
@@ -442,7 +473,7 @@ const StudentAccountForm: React.FC = () => {
 						name="phoneNumber"
 						label={<FormLabel text="Phone Number" isBold />}
 						rules={[
-							{ required: true, message: 'Please enter your phone number' },
+							{ required: true, message: "Please enter your phone number" },
 							{
 								validator: (_, value) => {
 									if (!value) return Promise.resolve();
@@ -451,7 +482,7 @@ const StudentAccountForm: React.FC = () => {
 										return Promise.resolve();
 									}
 									return Promise.reject(
-										new Error('Please enter a valid Vietnamese phone number'),
+										new Error("Please enter a valid Vietnamese phone number"),
 									);
 								},
 							},
@@ -467,7 +498,7 @@ const StudentAccountForm: React.FC = () => {
 					<Form.Item
 						name="gender"
 						label={<FormLabel text="Gender" isBold />}
-						rules={[{ required: true, message: 'Please select gender' }]}
+						rules={[{ required: true, message: "Please select gender" }]}
 					>
 						<Radio.Group disabled={updatingProfile}>
 							<Radio value="Male">Male</Radio>
@@ -487,7 +518,7 @@ const StudentAccountForm: React.FC = () => {
 					placeholder="Select responsibility"
 					disabled={updatingProfile}
 					filterOption={(input, option) =>
-						(option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+						(option?.label ?? "").toLowerCase().includes(input.toLowerCase())
 					}
 					allowClear
 				/>
@@ -509,21 +540,21 @@ const StudentAccountForm: React.FC = () => {
 									style={{
 										marginBottom: 0,
 										minHeight: 40,
-										flexWrap: 'wrap',
+										flexWrap: "wrap",
 									}}
 								>
 									<Col xs={24} md={24} style={{ marginBottom: 8 }}>
 										<Form.Item
 											{...restField}
-											name={[name, 'skillId']}
-											rules={[{ required: true, message: 'Select skill' }]}
-											style={{ marginBottom: 0, width: '100%' }}
+											name={[name, "skillId"]}
+											rules={[{ required: true, message: "Select skill" }]}
+											style={{ marginBottom: 0, width: "100%" }}
 										>
 											<TreeSelect
 												showSearch
-												style={{ width: '100%' }}
+												style={{ width: "100%" }}
 												placeholder="Select skill"
-												treeData={skillTreeData}
+												treeData={getFilteredSkillTreeData(name)}
 												treeDefaultExpandAll={false}
 												allowClear
 												disabled={updatingProfile}
@@ -532,7 +563,7 @@ const StudentAccountForm: React.FC = () => {
 														.toLowerCase()
 														.includes(input.toLowerCase())
 												}
-												dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
+												dropdownStyle={{ maxHeight: 400, overflow: "auto" }}
 											/>
 										</Form.Item>
 									</Col>
@@ -541,12 +572,12 @@ const StudentAccountForm: React.FC = () => {
 											<Col flex="auto">
 												<Form.Item
 													{...restField}
-													name={[name, 'level']}
+													name={[name, "level"]}
 													label={
 														<div
 															style={{
-																display: 'flex',
-																alignItems: 'center',
+																display: "flex",
+																alignItems: "center",
 																gap: 8,
 															}}
 														>
@@ -557,23 +588,23 @@ const StudentAccountForm: React.FC = () => {
 																		LEVEL_COLORS[
 																			(skillLevels[name] ||
 																				form.getFieldValue([
-																					'skills',
+																					"skills",
 																					name,
-																					'level',
+																					"level",
 																				]) ||
 																				1) - 1
 																		],
-																	fontWeight: 'bold',
-																	fontSize: '12px',
+																	fontWeight: "bold",
+																	fontSize: "12px",
 																}}
 															>
 																{
 																	LEVEL_TOOLTIPS[
 																		(skillLevels[name] ||
 																			form.getFieldValue([
-																				'skills',
+																				"skills",
 																				name,
-																				'level',
+																				"level",
 																			]) ||
 																			1) - 1
 																	]
@@ -582,9 +613,9 @@ const StudentAccountForm: React.FC = () => {
 														</div>
 													}
 													rules={[
-														{ required: true, message: 'Select skill level' },
+														{ required: true, message: "Select skill level" },
 													]}
-													style={{ marginBottom: 0, width: '100%' }}
+													style={{ marginBottom: 0, width: "100%" }}
 												>
 													<Slider
 														min={1}
@@ -599,7 +630,7 @@ const StudentAccountForm: React.FC = () => {
 														}
 														{...getSliderStyle(
 															skillLevels[name] ||
-																form.getFieldValue(['skills', name, 'level']) ||
+																form.getFieldValue(["skills", name, "level"]) ||
 																1,
 														)}
 													/>
