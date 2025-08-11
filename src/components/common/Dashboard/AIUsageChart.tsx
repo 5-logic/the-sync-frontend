@@ -288,10 +288,9 @@ const AIUsageChart: React.FC<AIUsageChartProps> = ({
 					<Col xs={24} sm={24} md={12} lg={14} xl={16}>
 						<Space direction="vertical" size="small" style={{ width: "100%" }}>
 							{chartData.map((segment) => (
-								<div
+								<button
 									key={`legend-${segment.type}`}
-									role="button"
-									tabIndex={0}
+									type="button"
 									style={{
 										display: "flex",
 										alignItems: "center",
@@ -302,6 +301,7 @@ const AIUsageChart: React.FC<AIUsageChartProps> = ({
 										border: "1px solid #f0f0f0",
 										transition: "all 0.2s ease",
 										cursor: "pointer",
+										width: "100%",
 									}}
 									onMouseEnter={(e) => {
 										e.currentTarget.style.backgroundColor = "#f5f5f5";
@@ -313,12 +313,6 @@ const AIUsageChart: React.FC<AIUsageChartProps> = ({
 										e.currentTarget.style.backgroundColor = "#fafafa";
 										e.currentTarget.style.transform = "translateY(0)";
 										e.currentTarget.style.boxShadow = "none";
-									}}
-									onKeyDown={(e) => {
-										if (e.key === "Enter" || e.key === " ") {
-											// Handle keyboard interaction if needed
-											e.preventDefault();
-										}
 									}}
 								>
 									<div
@@ -345,7 +339,7 @@ const AIUsageChart: React.FC<AIUsageChartProps> = ({
 											{segment.percentage}%
 										</Text>
 									</Space>
-								</div>
+								</button>
 							))}
 						</Space>
 					</Col>
