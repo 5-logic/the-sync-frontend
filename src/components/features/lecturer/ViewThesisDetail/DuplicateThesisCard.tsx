@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Card, Progress, Space, Typography } from "antd";
+import { Button, Card, Progress, Space, Typography, Popover } from "antd";
 import { useRouter } from "next/navigation";
 
 import { DuplicateThesis } from "@/lib/services/ai-duplicate.service";
@@ -136,6 +136,43 @@ export default function DuplicateThesisCard({ duplicateThesis }: Props) {
 				>
 					{duplicateThesis.description}
 				</Typography.Text>
+
+				{/* Reason duplicate */}
+				{duplicateThesis.reasons && duplicateThesis.reasons.length > 0 && (
+					<Popover
+						content={
+							<div style={{ maxWidth: 300 }}>
+								<Typography.Text strong>Duplicate reasons:</Typography.Text>
+								<div style={{ margin: "8px 0 0 0" }}>
+									{duplicateThesis.reasons.map((reason, index) => (
+										<div
+											key={index}
+											style={{ marginBottom: 4, paddingLeft: 8 }}
+										>
+											<Typography.Text>• {reason}</Typography.Text>
+										</div>
+									))}
+								</div>
+							</div>
+						}
+						title="Why is this thesis marked as duplicate?"
+						trigger="click"
+						placement="top"
+					>
+						<Button
+							type="link"
+							size="small"
+							style={{
+								padding: 0,
+								height: "auto",
+								fontSize: "12px",
+								color: "#1890ff",
+							}}
+						>
+							Reason duplicate
+						</Button>
+					</Popover>
+				)}
 			</Space>
 
 			{/* View Details Button */}
