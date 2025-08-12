@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
 	Alert,
@@ -11,34 +11,35 @@ import {
 	Select,
 	Space,
 	Tag,
-} from 'antd';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+} from "antd";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
-import { FormLabel } from '@/components/common/FormLabel';
-import { SEMESTER_STATUS_TAGS } from '@/lib/constants/semester';
-import { showNotification } from '@/lib/utils/notification';
-import { LecturerCreate } from '@/schemas/lecturer';
-import { StudentCreate } from '@/schemas/student';
+import { FormLabel } from "@/components/common/FormLabel";
+import { useCurrentSemester } from "@/hooks/semester/useCurrentSemester";
+import { SEMESTER_STATUS_TAGS } from "@/lib/constants/semester";
+import { showNotification } from "@/lib/utils/notification";
+import { LecturerCreate } from "@/schemas/lecturer";
+import { StudentCreate } from "@/schemas/student";
 import {
 	useLecturerStore,
 	useMajorStore,
 	useSemesterStore,
 	useStudentStore,
-} from '@/store';
+} from "@/store";
 
 const { Option } = Select;
 
 // Import status tags for consistency
 
 type UserFormProps = {
-	formType: 'student' | 'lecturer';
+	formType: "student" | "lecturer";
 };
 
 const UserForm = ({ formType }: UserFormProps) => {
 	const [form] = Form.useForm();
 	const router = useRouter();
-	const isStudent = formType === 'student';
+	const isStudent = formType === "student";
 	// Use Student Store
 	const {
 		createStudent,
@@ -72,9 +73,12 @@ const UserForm = ({ formType }: UserFormProps) => {
 		clearError: clearSemesterError,
 	} = useSemesterStore();
 
+	// Use current semester hook for auto-selection
+	const { currentSemester } = useCurrentSemester();
+
 	// Filter semesters for user creation (only Preparing status)
 	const availableSemesters = semesters.filter(
-		(semester) => semester.status === 'Preparing',
+		(semester) => semester.status === "Preparing",
 	);
 
 	// Check if there are any available semesters
@@ -108,6 +112,36 @@ const UserForm = ({ formType }: UserFormProps) => {
 		fetchMajors();
 		fetchSemesters(); // Use semester store
 	}, [fetchMajors, fetchSemesters]);
+
+	// Auto-select semester based on current semester logic
+	useEffect(() => {
+		if (
+			isStudent &&
+			!semestersLoading &&
+			hasAvailableSemesters &&
+			currentSemester &&
+			!form.getFieldValue("semesterId") // Only set if not already set
+		) {
+			// Check if current semester is in available semesters (Preparing status)
+			const targetSemester = availableSemesters.find(
+				(semester) => semester.id === currentSemester.id,
+			);
+
+			// If current semester is not available, pick the first Preparing semester
+			const semesterToSelect = targetSemester || availableSemesters[0];
+
+			if (semesterToSelect) {
+				form.setFieldValue("semesterId", semesterToSelect.id);
+			}
+		}
+	}, [
+		isStudent,
+		semestersLoading,
+		hasAvailableSemesters,
+		currentSemester,
+		availableSemesters,
+		form,
+	]);
 	const handleSubmit = async (values: StudentCreate | LecturerCreate) => {
 		if (isStudent) {
 			// Additional validation for semester status
@@ -117,11 +151,11 @@ const UserForm = ({ formType }: UserFormProps) => {
 			);
 			if (
 				selectedSemester &&
-				!['Preparing'].includes(selectedSemester.status)
+				!["Preparing"].includes(selectedSemester.status)
 			) {
 				showNotification.error(
-					'Invalid Semester',
-					'Students can only be created for semesters with Preparing status',
+					"Invalid Semester",
+					"Students can only be created for semesters with Preparing status",
 				);
 				return;
 			}
@@ -154,7 +188,7 @@ const UserForm = ({ formType }: UserFormProps) => {
 			// Success notification is handled in store
 			form.resetFields();
 			// Navigate back to student management
-			router.push('/admin/students-management');
+			router.push("/admin/students-management");
 		}
 		// Error notification is handled in store
 	};
@@ -177,7 +211,7 @@ const UserForm = ({ formType }: UserFormProps) => {
 			// Success notification is handled in store
 			form.resetFields();
 			// Navigate back to lecturer management
-			router.push('/admin/lecturer-management');
+			router.push("/admin/lecturer-management");
 		}
 		// Error notification is handled in store
 	};
@@ -191,8 +225,8 @@ const UserForm = ({ formType }: UserFormProps) => {
 		}
 		form.resetFields();
 		const targetPath = isStudent
-			? '/admin/students-management'
-			: '/admin/lecturer-management';
+			? "/admin/students-management"
+			: "/admin/lecturer-management";
 		router.push(targetPath);
 	};
 
@@ -207,7 +241,7 @@ const UserForm = ({ formType }: UserFormProps) => {
 					description={
 						<div>
 							<p>
-								Students can only be created for semesters with{' '}
+								Students can only be created for semesters with{" "}
 								<strong>Preparing</strong> status.
 							</p>
 							<p>
@@ -229,7 +263,7 @@ const UserForm = ({ formType }: UserFormProps) => {
 					description={
 						<div>
 							Student accounts can only be created for semesters with
-							<Tag color="orange" style={{ margin: '0 4px' }}>
+							<Tag color="orange" style={{ margin: "0 4px" }}>
 								Preparing
 							</Tag>
 							status.
@@ -255,26 +289,26 @@ const UserForm = ({ formType }: UserFormProps) => {
 							<Form.Item
 								name="semesterId"
 								label={FormLabel({
-									text: 'Semester',
+									text: "Semester",
 									isRequired: true,
 									isBold: true,
 								})}
 								rules={[
-									{ required: true, message: 'Please select a semester' },
+									{ required: true, message: "Please select a semester" },
 								]}
 							>
 								<Select
 									placeholder={
 										hasAvailableSemesters
-											? 'Select semester (Preparing status only)'
-											: 'No available semesters for student creation'
+											? "Select semester (Preparing status only)"
+											: "No available semesters for student creation"
 									}
 									loading={semestersLoading} // Use loading from semester store
 									// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
 									disabled={creating || !hasAvailableSemesters}
 									notFoundContent={
 										!semestersLoading && !hasAvailableSemesters
-											? 'No semesters with Preparing status found'
+											? "No semesters with Preparing status found"
 											: undefined
 									}
 								>
@@ -293,11 +327,11 @@ const UserForm = ({ formType }: UserFormProps) => {
 							<Form.Item
 								name="majorId"
 								label={FormLabel({
-									text: 'Major',
+									text: "Major",
 									isRequired: true,
 									isBold: true,
 								})}
-								rules={[{ required: true, message: 'Please select a major' }]}
+								rules={[{ required: true, message: "Please select a major" }]}
 							>
 								<Select
 									placeholder="Select major"
@@ -320,16 +354,16 @@ const UserForm = ({ formType }: UserFormProps) => {
 						<Form.Item
 							name="fullName"
 							label={FormLabel({
-								text: 'Full Name',
+								text: "Full Name",
 								isRequired: true,
 								isBold: true,
 							})}
 							rules={[
-								{ required: true, message: 'Please enter full name' },
-								{ min: 2, message: 'Full name must be at least 2 characters' },
+								{ required: true, message: "Please enter full name" },
+								{ min: 2, message: "Full name must be at least 2 characters" },
 								{
 									max: 100,
-									message: 'Full name must be less than 100 characters',
+									message: "Full name must be less than 100 characters",
 								},
 							]}
 						>
@@ -343,13 +377,13 @@ const UserForm = ({ formType }: UserFormProps) => {
 						<Form.Item
 							name="email"
 							label={FormLabel({
-								text: 'Email Address',
+								text: "Email Address",
 								isRequired: true,
 								isBold: true,
 							})}
 							rules={[
-								{ required: true, message: 'Please enter email address' },
-								{ type: 'email', message: 'Enter a valid email address' },
+								{ required: true, message: "Please enter email address" },
+								{ type: "email", message: "Enter a valid email address" },
 							]}
 						>
 							<Input placeholder="Enter email address" disabled={creating} />
@@ -362,16 +396,16 @@ const UserForm = ({ formType }: UserFormProps) => {
 						<Form.Item
 							name="phoneNumber"
 							label={FormLabel({
-								text: 'Phone Number',
+								text: "Phone Number",
 								isRequired: true,
 								isBold: true,
 							})}
 							rules={[
-								{ required: true, message: 'Please enter phone number' },
+								{ required: true, message: "Please enter phone number" },
 								{
 									pattern:
 										/^(?:\+84|0084|84|0)(?:3[2-9]|5[2689]|7[06-9]|8[1-5]|9[0-4|6-9])\d{7}$/,
-									message: 'Please enter a valid Vietnamese phone number',
+									message: "Please enter a valid Vietnamese phone number",
 								},
 							]}
 						>
@@ -386,16 +420,16 @@ const UserForm = ({ formType }: UserFormProps) => {
 							<Form.Item
 								name="studentCode"
 								label={FormLabel({
-									text: 'Student Code',
+									text: "Student Code",
 									isRequired: true,
 									isBold: true,
 								})}
 								rules={[
-									{ required: true, message: 'Please enter Student Code' },
+									{ required: true, message: "Please enter Student Code" },
 									{
 										pattern: /^[A-Za-z]{2}\d{6}$/,
 										message:
-											'Student Code must be 2 letters followed by 6 digits, e.g. QE123456',
+											"Student Code must be 2 letters followed by 6 digits, e.g. QE123456",
 									},
 								]}
 							>
@@ -407,11 +441,11 @@ const UserForm = ({ formType }: UserFormProps) => {
 						<Form.Item
 							name="gender"
 							label={FormLabel({
-								text: 'Gender',
+								text: "Gender",
 								isRequired: true,
 								isBold: true,
 							})}
-							rules={[{ required: true, message: 'Please select gender' }]}
+							rules={[{ required: true, message: "Please select gender" }]}
 						>
 							<Radio.Group disabled={creating}>
 								<Radio value="Male">Male</Radio>
@@ -422,7 +456,7 @@ const UserForm = ({ formType }: UserFormProps) => {
 				</Row>
 				{/* Submit buttons */}
 				<Form.Item>
-					<Space style={{ width: '100%', justifyContent: 'flex-end' }}>
+					<Space style={{ width: "100%", justifyContent: "flex-end" }}>
 						<Button
 							htmlType="button"
 							onClick={handleCancel}
@@ -436,7 +470,7 @@ const UserForm = ({ formType }: UserFormProps) => {
 							loading={creating}
 							disabled={isStudent && !hasAvailableSemesters}
 						>
-							{isStudent ? 'Create Student' : 'Create Lecturer'}
+							{isStudent ? "Create Student" : "Create Lecturer"}
 						</Button>
 					</Space>
 				</Form.Item>
