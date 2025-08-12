@@ -349,13 +349,20 @@ export default function MilestoneDetailCard() {
 		milestone: Milestone,
 		submission?: MilestoneSubmission,
 	): boolean => {
-		// Can update if already submitted and still within end date
+		// Can update if already submitted and still within allowed timeframe
 		const now = dayjs();
+		const startDate = dayjs(milestone.startDate);
 		const endDate = dayjs(milestone.endDate);
 		const hasSubmission = submission && (submission.documents?.length ?? 0) > 0;
 
-		// Only group leaders can update, must have existing submission, and before end date
-		return isLeader && !!hasSubmission && now.isBefore(endDate);
+		// Only group leaders can update and must have existing submission
+		if (!isLeader || !hasSubmission) return false;
+
+		// Can update before startDate OR between startDate and endDate
+		return (
+			now.isBefore(startDate) ||
+			(now.isAfter(startDate) && now.isBefore(endDate))
+		);
 	};
 
 	const getSubmissionMessage = (
