@@ -9,6 +9,24 @@ interface Props {
 	readonly duplicateThesis: DuplicateThesis;
 }
 
+// Separate component for percentage display to avoid nested component definition
+interface PercentageDisplayProps {
+	readonly percent: number;
+	readonly color: string;
+}
+
+const PercentageDisplay = ({ percent, color }: PercentageDisplayProps) => (
+	<span
+		style={{
+			color,
+			fontWeight: "bold",
+			fontSize: "12px",
+		}}
+	>
+		{percent}%
+	</span>
+);
+
 export default function DuplicateThesisCard({ duplicateThesis }: Props) {
 	const router = useRouter();
 
@@ -51,17 +69,10 @@ export default function DuplicateThesisCard({ duplicateThesis }: Props) {
 							duplicateThesis.duplicatePercentage,
 						)}
 						format={(percent) => (
-							<span
-								style={{
-									color: getPercentageColor(
-										duplicateThesis.duplicatePercentage,
-									),
-									fontWeight: "bold",
-									fontSize: "12px",
-								}}
-							>
-								{percent}%
-							</span>
+							<PercentageDisplay
+								percent={percent || 0}
+								color={getPercentageColor(duplicateThesis.duplicatePercentage)}
+							/>
 						)}
 					/>
 					<Typography.Text
