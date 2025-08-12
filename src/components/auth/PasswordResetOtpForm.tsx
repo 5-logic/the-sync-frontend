@@ -7,6 +7,7 @@ import LoginFormLayout from "@/components/layout/LoginFormLayout";
 import { OtpVerificationSchema } from "@/schemas/forgot-password";
 
 const { Text } = Typography;
+const { OTP } = Input;
 
 /**
  * Props for PasswordResetOtpForm component
@@ -98,7 +99,7 @@ export const PasswordResetOtpForm = ({
 					label={<FormLabel text="Enter OTP" isRequired />}
 					rules={otpRules}
 				>
-					<Input.OTP
+					<OTP
 						length={8}
 						onChange={handleOtpChange}
 						size="large"
