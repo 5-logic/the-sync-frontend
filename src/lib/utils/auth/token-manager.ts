@@ -1,8 +1,9 @@
-import { getSession } from 'next-auth/react';
+import { getSession } from "next-auth/react";
 
-import { AdminAuthService } from '@/lib/services/auth/admin-auth.service';
-import { TokenUtilsService } from '@/lib/services/auth/token-utils.service';
-import { UserAuthService } from '@/lib/services/auth/user-auth.service';
+import { AdminAuthService } from "@/lib/services/auth/admin-auth.service";
+import { TokenUtilsService } from "@/lib/services/auth/token-utils.service";
+import { UserAuthService } from "@/lib/services/auth/user-auth.service";
+import { CookieUtils } from "@/lib/utils/auth/cookie-utils";
 
 /**
  * Handles conditional storage based on remember me preference
@@ -10,11 +11,11 @@ import { UserAuthService } from '@/lib/services/auth/user-auth.service';
  * Aligned with backend token settings (1h access, 1w refresh)
  */
 export class TokenManager {
-	private static readonly ACCESS_TOKEN_KEY = 'accessToken';
-	private static readonly REFRESH_TOKEN_KEY = 'refreshToken';
-	private static readonly REMEMBER_ME_KEY = 'rememberMe';
-	private static readonly STORAGE_VERSION_KEY = 'tokenStorageVersion';
-	private static readonly CURRENT_VERSION = '1.0';
+	private static readonly ACCESS_TOKEN_KEY = "accessToken";
+	private static readonly REFRESH_TOKEN_KEY = "refreshToken";
+	private static readonly REMEMBER_ME_KEY = "rememberMe";
+	private static readonly STORAGE_VERSION_KEY = "tokenStorageVersion";
+	private static readonly CURRENT_VERSION = "1.0";
 
 	// Throttling mechanism to prevent multiple simultaneous refresh calls
 	private static refreshPromise: Promise<string | null> | null = null;
@@ -29,7 +30,7 @@ export class TokenManager {
 		refreshToken: string,
 		rememberMe: boolean = false,
 	): void {
-		if (typeof window === 'undefined') return;
+		if (typeof window === "undefined") return;
 
 		try {
 			// Clear any existing tokens first
@@ -39,20 +40,20 @@ export class TokenManager {
 				// PERSISTENT: Use localStorage for remember me
 				localStorage.setItem(this.ACCESS_TOKEN_KEY, accessToken);
 				localStorage.setItem(this.REFRESH_TOKEN_KEY, refreshToken);
-				localStorage.setItem(this.REMEMBER_ME_KEY, 'true');
+				localStorage.setItem(this.REMEMBER_ME_KEY, "true");
 				localStorage.setItem(this.STORAGE_VERSION_KEY, this.CURRENT_VERSION);
 
 				// Set expiration timestamp aligned with backend (7 days)
 				const expiresAt = Date.now() + 7 * 24 * 60 * 60 * 1000; // 7 days
-				localStorage.setItem('tokenExpiresAt', expiresAt.toString());
+				localStorage.setItem("tokenExpiresAt", expiresAt.toString());
 			} else {
 				// SESSION-ONLY: Use sessionStorage
 				sessionStorage.setItem(this.ACCESS_TOKEN_KEY, accessToken);
 				sessionStorage.setItem(this.REFRESH_TOKEN_KEY, refreshToken);
-				sessionStorage.setItem(this.REMEMBER_ME_KEY, 'false');
+				sessionStorage.setItem(this.REMEMBER_ME_KEY, "false");
 			}
 		} catch (error) {
-			console.error('Failed to store tokens:', error);
+			console.error("Failed to store tokens:", error);
 			// Fallback to sessionStorage
 			this.fallbackToSessionStorage(accessToken, refreshToken);
 		}
@@ -62,7 +63,7 @@ export class TokenManager {
 	 * Get access token from appropriate storage
 	 */
 	static getAccessToken(): string | null {
-		if (typeof window === 'undefined') return null;
+		if (typeof window === "undefined") return null;
 
 		try {
 			// Check if remember me is enabled
@@ -84,7 +85,7 @@ export class TokenManager {
 			// Fallback to sessionStorage
 			return sessionStorage.getItem(this.ACCESS_TOKEN_KEY);
 		} catch (error) {
-			console.error('Failed to get access token:', error);
+			console.error("Failed to get access token:", error);
 			return null;
 		}
 	}
@@ -93,7 +94,7 @@ export class TokenManager {
 	 * Get refresh token from appropriate storage
 	 */
 	static getRefreshToken(): string | null {
-		if (typeof window === 'undefined') return null;
+		if (typeof window === "undefined") return null;
 
 		try {
 			const isRememberMe = this.getRememberMePreference();
@@ -111,7 +112,7 @@ export class TokenManager {
 
 			return sessionStorage.getItem(this.REFRESH_TOKEN_KEY);
 		} catch (error) {
-			console.error('Failed to get refresh token:', error);
+			console.error("Failed to get refresh token:", error);
 			return null;
 		}
 	}
@@ -120,16 +121,16 @@ export class TokenManager {
 	 * Get remember me preference
 	 */
 	static getRememberMePreference(): boolean {
-		if (typeof window === 'undefined') return false;
+		if (typeof window === "undefined") return false;
 
 		try {
 			// Check localStorage first (persistent preference)
 			const localPref = localStorage.getItem(this.REMEMBER_ME_KEY);
-			if (localPref === 'true') return true;
+			if (localPref === "true") return true;
 
 			// Check sessionStorage (session preference)
 			const sessionPref = sessionStorage.getItem(this.REMEMBER_ME_KEY);
-			return sessionPref === 'true';
+			return sessionPref === "true";
 		} catch {
 			return false;
 		}
@@ -141,9 +142,9 @@ export class TokenManager {
 	 */
 	static isTokenValid(token: string): boolean {
 		try {
-			if (!token || typeof token !== 'string') return false;
+			if (!token || typeof token !== "string") return false;
 
-			const parts = token.split('.');
+			const parts = token.split(".");
 			if (parts.length !== 3) return false;
 
 			const payload = JSON.parse(atob(parts[1]));
@@ -201,14 +202,14 @@ export class TokenManager {
 	static async refreshAccessToken(): Promise<string | null> {
 		// Return existing promise if refresh is already in progress
 		if (this.refreshPromise) {
-			console.log('🔄 Refresh already in progress, waiting...');
+			console.log("🔄 Refresh already in progress, waiting...");
 			return this.refreshPromise;
 		}
 
 		// Check throttling - prevent too frequent refresh attempts
 		const now = Date.now();
 		if (now - this.lastRefreshTime < this.REFRESH_THROTTLE_MS) {
-			console.log('🚫 Refresh throttled, too soon since last attempt');
+			console.log("🚫 Refresh throttled, too soon since last attempt");
 			return null;
 		}
 
@@ -232,21 +233,21 @@ export class TokenManager {
 		try {
 			const refreshToken = this.getRefreshToken();
 			if (!refreshToken) {
-				throw new Error('No refresh token available');
+				throw new Error("No refresh token available");
 			}
 
 			// Check if refresh token is expired
 			if (TokenUtilsService.isTokenExpired(refreshToken)) {
-				throw new Error('Refresh token expired');
+				throw new Error("Refresh token expired");
 			}
 
 			// Get current session to determine user type
 			const session = await getSession();
-			const isAdmin = session?.user?.role === 'admin';
+			const isAdmin = session?.user?.role === "admin";
 			const rememberMe = this.getRememberMePreference();
 
 			try {
-				console.log('🔄 Calling backend refresh endpoint...');
+				console.log("🔄 Calling backend refresh endpoint...");
 
 				// Call appropriate refresh endpoint
 				const tokenData = isAdmin
@@ -256,22 +257,22 @@ export class TokenManager {
 				// Update only access token, keep existing refresh token and remember preference
 				this.setTokens(tokenData.accessToken, refreshToken, rememberMe);
 
-				console.log('✅ Token refreshed successfully');
+				console.log("✅ Token refreshed successfully");
 				return tokenData.accessToken;
 			} catch (apiError) {
 				// Handle API errors gracefully
 				if (
 					apiError instanceof Error &&
-					(apiError.message.includes('404') ||
-						apiError.message.includes('not found') ||
-						apiError.message.includes('Not Found'))
+					(apiError.message.includes("404") ||
+						apiError.message.includes("not found") ||
+						apiError.message.includes("Not Found"))
 				) {
-					throw new Error('Token refresh not supported by backend');
+					throw new Error("Token refresh not supported by backend");
 				}
 				throw apiError;
 			}
 		} catch (error) {
-			console.error('❌ Token refresh failed:', error);
+			console.error("❌ Token refresh failed:", error);
 			// Don't clear tokens immediately - let user re-login naturally
 			return null;
 		}
@@ -281,7 +282,7 @@ export class TokenManager {
 	 * Clear all tokens and preferences
 	 */
 	static clearTokens(): void {
-		if (typeof window === 'undefined') return;
+		if (typeof window === "undefined") return;
 
 		try {
 			// Clear localStorage
@@ -293,7 +294,30 @@ export class TokenManager {
 			// Clear throttling state
 			this.clearRefreshState();
 		} catch (error) {
-			console.error('Failed to clear tokens:', error);
+			console.error("Failed to clear tokens:", error);
+		}
+	}
+
+	/**
+	 * Clear ALL storage including cookies, localStorage, sessionStorage
+	 */
+	static clearAllStorage(): void {
+		if (typeof window === "undefined") return;
+
+		try {
+			// Clear our tokens and preferences
+			this.clearTokens();
+
+			// Clear all localStorage
+			localStorage.clear();
+
+			// Clear all sessionStorage
+			sessionStorage.clear();
+
+			// Clear all cookies by setting them to expire
+			CookieUtils.clearAllCookies();
+		} catch (error) {
+			console.error("Failed to clear all storage:", error);
 		}
 	}
 
@@ -309,20 +333,20 @@ export class TokenManager {
 	 * Clear only persistent storage (localStorage)
 	 */
 	static clearPersistentStorage(): void {
-		if (typeof window === 'undefined') return;
+		if (typeof window === "undefined") return;
 
 		localStorage.removeItem(this.ACCESS_TOKEN_KEY);
 		localStorage.removeItem(this.REFRESH_TOKEN_KEY);
 		localStorage.removeItem(this.REMEMBER_ME_KEY);
 		localStorage.removeItem(this.STORAGE_VERSION_KEY);
-		localStorage.removeItem('tokenExpiresAt');
+		localStorage.removeItem("tokenExpiresAt");
 	}
 
 	/**
 	 * Clear only session storage
 	 */
 	static clearSessionStorage(): void {
-		if (typeof window === 'undefined') return;
+		if (typeof window === "undefined") return;
 
 		sessionStorage.removeItem(this.ACCESS_TOKEN_KEY);
 		sessionStorage.removeItem(this.REFRESH_TOKEN_KEY);
@@ -342,7 +366,7 @@ export class TokenManager {
 			}
 
 			// Check expiration timestamp for security (7 days)
-			const expiresAt = localStorage.getItem('tokenExpiresAt');
+			const expiresAt = localStorage.getItem("tokenExpiresAt");
 			if (expiresAt && Date.now() > parseInt(expiresAt)) {
 				return false;
 			}
@@ -380,10 +404,10 @@ export class TokenManager {
 		try {
 			sessionStorage.setItem(this.ACCESS_TOKEN_KEY, accessToken);
 			sessionStorage.setItem(this.REFRESH_TOKEN_KEY, refreshToken);
-			sessionStorage.setItem(this.REMEMBER_ME_KEY, 'false');
+			sessionStorage.setItem(this.REMEMBER_ME_KEY, "false");
 		} catch (fallbackError) {
 			console.error(
-				'Critical: Both localStorage and sessionStorage failed',
+				"Critical: Both localStorage and sessionStorage failed",
 				fallbackError,
 			);
 		}
@@ -395,7 +419,7 @@ export class TokenManager {
 	static getStorageInfo(): {
 		hasTokens: boolean;
 		rememberMe: boolean;
-		storageType: 'localStorage' | 'sessionStorage' | 'none';
+		storageType: "localStorage" | "sessionStorage" | "none";
 		tokenValid: boolean;
 		refreshState: {
 			inProgress: boolean;
@@ -406,12 +430,12 @@ export class TokenManager {
 		const accessToken = this.getAccessToken();
 		const rememberMe = this.getRememberMePreference();
 
-		let storageType: 'localStorage' | 'sessionStorage' | 'none' = 'none';
+		let storageType: "localStorage" | "sessionStorage" | "none" = "none";
 
 		if (rememberMe && localStorage.getItem(this.ACCESS_TOKEN_KEY)) {
-			storageType = 'localStorage';
+			storageType = "localStorage";
 		} else if (sessionStorage.getItem(this.ACCESS_TOKEN_KEY)) {
-			storageType = 'sessionStorage';
+			storageType = "sessionStorage";
 		}
 
 		const now = Date.now();

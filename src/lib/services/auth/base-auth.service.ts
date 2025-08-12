@@ -1,13 +1,13 @@
-import httpClient from '@/lib/services/_httpClient';
-import { AuthErrorHandler } from '@/lib/services/auth/auth-error-handler';
-import { TokenManager } from '@/lib/utils/auth/token-manager';
+import httpClient from "@/lib/services/_httpClient";
+import { AuthErrorHandler } from "@/lib/services/auth/auth-error-handler";
+import { TokenManager } from "@/lib/utils/auth/token-manager";
 import {
 	LoginResponseSchema,
 	RefreshResponseSchema,
 	RefreshToken,
 	RefreshTokenData,
 	TokenData,
-} from '@/schemas/auth';
+} from "@/schemas/auth";
 
 /**
  * Base Authentication Service
@@ -58,6 +58,37 @@ export abstract class BaseAuthService {
 			return parsed.data;
 		} catch (error: unknown) {
 			AuthErrorHandler.handleRefreshError(error);
+		}
+	}
+
+	/**
+	 * Generic logout method
+	 */
+	protected static async performLogout(endpoint: string): Promise<void> {
+		try {
+			// Get current access token to send with logout request
+			const accessToken = TokenManager.getAccessToken();
+
+			// Even if no token, we should still call the logout endpoint
+			// to ensure server-side cleanup
+			await httpClient.post(
+				endpoint,
+				{},
+				{
+					headers: accessToken
+						? {
+								Authorization: `Bearer ${accessToken}`,
+							}
+						: {},
+				},
+			);
+
+			// Clear tokens after successful logout
+			TokenManager.clearTokens();
+		} catch (error: unknown) {
+			// Even if logout request fails, clear local tokens
+			TokenManager.clearTokens();
+			console.warn("Logout request failed, but tokens cleared locally:", error);
 		}
 	}
 }

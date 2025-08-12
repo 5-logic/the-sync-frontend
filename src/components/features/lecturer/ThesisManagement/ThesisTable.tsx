@@ -136,10 +136,33 @@ export default function ThesisTable({ data, loading }: Readonly<Props>) {
 								setSubmitLoadingThesisId(null);
 							}
 						},
+						submitLoadingThesisId === thesis.id, // Pass loading state for this specific thesis
 					);
 				} else {
 					// No duplicates found - show normal confirmation modal
-					ThesisConfirmationModals.submit(thesis.englishName, async () => {
+					ThesisConfirmationModals.submit(
+						thesis.englishName,
+						async () => {
+							try {
+								const success = await submitThesis(thesis.id);
+								if (success) {
+									handleThesisSuccess(THESIS_SUCCESS_CONFIGS.SUBMIT);
+								}
+							} catch (error) {
+								handleThesisError(error, THESIS_ERROR_CONFIGS.SUBMIT);
+							} finally {
+								setSubmitLoadingThesisId(null);
+							}
+						},
+						submitLoadingThesisId === thesis.id,
+					); // Pass loading state for this specific thesis
+				}
+			} catch (error) {
+				console.error("Error checking duplicates:", error);
+				// If duplicate check fails, proceed with normal confirmation
+				ThesisConfirmationModals.submit(
+					thesis.englishName,
+					async () => {
 						try {
 							const success = await submitThesis(thesis.id);
 							if (success) {
@@ -150,26 +173,12 @@ export default function ThesisTable({ data, loading }: Readonly<Props>) {
 						} finally {
 							setSubmitLoadingThesisId(null);
 						}
-					});
-				}
-			} catch (error) {
-				console.error("Error checking duplicates:", error);
-				// If duplicate check fails, proceed with normal confirmation
-				ThesisConfirmationModals.submit(thesis.englishName, async () => {
-					try {
-						const success = await submitThesis(thesis.id);
-						if (success) {
-							handleThesisSuccess(THESIS_SUCCESS_CONFIGS.SUBMIT);
-						}
-					} catch (error) {
-						handleThesisError(error, THESIS_ERROR_CONFIGS.SUBMIT);
-					} finally {
-						setSubmitLoadingThesisId(null);
-					}
-				});
+					},
+					submitLoadingThesisId === thesis.id,
+				); // Pass loading state for this specific thesis
 			}
 		},
-		[submitThesis, navigateWithLoading],
+		[submitThesis, navigateWithLoading, submitLoadingThesisId],
 	);
 
 	// Type-safe color mapping for status

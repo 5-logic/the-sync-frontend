@@ -1,8 +1,8 @@
-import type { StoreApi } from 'zustand';
+import type { StoreApi } from "zustand";
 
-import { handleApiError, handleApiResponse } from '@/lib/utils/handleApi';
-import { showNotification } from '@/lib/utils/notification';
-import { ApiResponse } from '@/schemas/_common';
+import { handleApiError, handleApiResponse } from "@/lib/utils/handleApi";
+import { showNotification } from "@/lib/utils/notification";
+import { ApiResponse } from "@/schemas/_common";
 
 // Error handling utilities
 export const createErrorState = (error: {
@@ -22,11 +22,11 @@ export const handleCreateError = (result: {
 		const getErrorTitle = (statusCode: number): string => {
 			switch (statusCode) {
 				case 400:
-					return 'Validation Error';
+					return "Validation Error";
 				case 409:
-					return 'Conflict Error';
+					return "Conflict Error";
 				case 422:
-					return 'Invalid Data';
+					return "Invalid Data";
 				default:
 					return `Error ${statusCode}`;
 			}
@@ -44,7 +44,7 @@ export function handleActionError(
 	error: unknown,
 	entityName: string,
 	operation: string,
-	set: StoreApi<Record<string, unknown>>['setState'],
+	set: StoreApi<Record<string, unknown>>["setState"],
 ): void {
 	const apiError = handleApiError(
 		error,
@@ -52,17 +52,17 @@ export function handleActionError(
 	);
 	const errorState = createErrorState(apiError);
 	set({ lastError: errorState });
-	showNotification.error('Error', apiError.message);
+	showNotification.error("Error", apiError.message);
 }
 
 // Helper function to handle API result errors
 export function handleResultError(
 	error: { message: string; statusCode: number },
-	set: StoreApi<Record<string, unknown>>['setState'],
+	set: StoreApi<Record<string, unknown>>["setState"],
 ): void {
 	const errorState = createErrorState(error);
 	set({ lastError: errorState });
-	showNotification.error('Error', error.message);
+	showNotification.error("Error", error.message);
 }
 
 // Generic batch create action
@@ -71,12 +71,12 @@ export function createBatchCreateAction<T extends { id: string }, TCreate>(
 	entityName: string,
 ) {
 	return (
-			set: StoreApi<Record<string, unknown>>['setState'],
-			get: StoreApi<Record<string, unknown>>['getState'],
+			set: StoreApi<Record<string, unknown>>["setState"],
+			get: StoreApi<Record<string, unknown>>["getState"],
 		) =>
 		async (data: TCreate): Promise<boolean> => {
 			// Support both legacy naming (creatingMany) and new naming (creatingManyEntitys) for backward compatibility
-			const legacyLoadingField = 'creatingMany';
+			const legacyLoadingField = "creatingMany";
 			const newLoadingField = `creatingMany${entityName.charAt(0).toUpperCase() + entityName.slice(1)}s`;
 
 			set({
@@ -89,8 +89,8 @@ export function createBatchCreateAction<T extends { id: string }, TCreate>(
 				const response = await service.createMany(data);
 				const result = handleApiResponse(
 					response,
-					`Import Successfully`,
-					`List ${entityName}s have been imported successfully.`,
+					// Remove title and success message to avoid duplicate notifications
+					// The ExcelImportForm already shows success notification
 				);
 				if (result.success && result.data) {
 					// Add all new items to the beginning of the array (consistent with single create)
@@ -108,7 +108,7 @@ export function createBatchCreateAction<T extends { id: string }, TCreate>(
 						currentState[
 							`filter${entityName.charAt(0).toUpperCase() + entityName.slice(1)}s`
 						];
-					if (typeof filterFunction === 'function') {
+					if (typeof filterFunction === "function") {
 						filterFunction();
 					}
 					return true;
@@ -119,7 +119,7 @@ export function createBatchCreateAction<T extends { id: string }, TCreate>(
 					return false;
 				}
 			} catch (error) {
-				handleActionError(error, `${entityName}s`, 'create', set);
+				handleActionError(error, `${entityName}s`, "create", set);
 				return false;
 			} finally {
 				set({
@@ -135,8 +135,8 @@ export function createBatchCreateAction<T extends { id: string }, TCreate>(
 function handleFetchSuccess<T extends { id: string }>(
 	data: T[],
 	entityName: string,
-	set: StoreApi<Record<string, unknown>>['setState'],
-	get: StoreApi<Record<string, unknown>>['getState'],
+	set: StoreApi<Record<string, unknown>>["setState"],
+	get: StoreApi<Record<string, unknown>>["getState"],
 ): void {
 	set({
 		[`${entityName}s`]: data,
@@ -149,7 +149,7 @@ function handleFetchSuccess<T extends { id: string }>(
 		currentState[
 			`filter${entityName.charAt(0).toUpperCase() + entityName.slice(1)}s`
 		];
-	if (typeof filterFunction === 'function') {
+	if (typeof filterFunction === "function") {
 		filterFunction();
 	}
 }
@@ -160,8 +160,8 @@ export function createFetchAction<T extends { id: string }>(
 	entityName: string,
 ) {
 	return (
-			set: StoreApi<Record<string, unknown>>['setState'],
-			get: StoreApi<Record<string, unknown>>['getState'],
+			set: StoreApi<Record<string, unknown>>["setState"],
+			get: StoreApi<Record<string, unknown>>["getState"],
 		) =>
 		async () => {
 			set({ loading: true, lastError: null });
@@ -177,7 +177,7 @@ export function createFetchAction<T extends { id: string }>(
 					handleResultError(result.error, set);
 				}
 			} catch (error) {
-				handleActionError(error, `${entityName}s`, 'fetch', set);
+				handleActionError(error, `${entityName}s`, "fetch", set);
 			} finally {
 				set({ loading: false });
 			}
@@ -188,8 +188,8 @@ export function createFetchAction<T extends { id: string }>(
 function handleCreateSuccess<T extends { id: string }>(
 	data: T,
 	entityName: string,
-	set: StoreApi<Record<string, unknown>>['setState'],
-	get: StoreApi<Record<string, unknown>>['getState'],
+	set: StoreApi<Record<string, unknown>>["setState"],
+	get: StoreApi<Record<string, unknown>>["getState"],
 ): void {
 	// Add to items array - put new item at the beginning
 	set((state: Record<string, unknown>) => ({
@@ -203,7 +203,7 @@ function handleCreateSuccess<T extends { id: string }>(
 		currentState[
 			`filter${entityName.charAt(0).toUpperCase() + entityName.slice(1)}s`
 		];
-	if (typeof filterFunction === 'function') {
+	if (typeof filterFunction === "function") {
 		filterFunction();
 	}
 }
@@ -214,8 +214,8 @@ export function createCreateAction<T extends { id: string }, TCreate>(
 	entityName: string,
 ) {
 	return (
-			set: StoreApi<Record<string, unknown>>['setState'],
-			get: StoreApi<Record<string, unknown>>['getState'],
+			set: StoreApi<Record<string, unknown>>["setState"],
+			get: StoreApi<Record<string, unknown>>["getState"],
 		) =>
 		async (data: TCreate): Promise<boolean> => {
 			set({ creating: true, lastError: null });
@@ -223,7 +223,7 @@ export function createCreateAction<T extends { id: string }, TCreate>(
 				const response = await service.create(data);
 				const result = handleApiResponse(
 					response,
-					'Success',
+					"Success",
 					`${entityName.charAt(0).toUpperCase() + entityName.slice(1)} created successfully`,
 				);
 				if (result.success && result.data) {
@@ -238,7 +238,7 @@ export function createCreateAction<T extends { id: string }, TCreate>(
 					return false;
 				}
 			} catch (error) {
-				handleActionError(error, entityName, 'create', set);
+				handleActionError(error, entityName, "create", set);
 				return false;
 			} finally {
 				set({ creating: false });
@@ -252,8 +252,8 @@ function handleUpdateSuccess<T extends { id: string }>(
 	data: T,
 	id: string,
 	entityName: string,
-	set: StoreApi<Record<string, unknown>>['setState'],
-	get: StoreApi<Record<string, unknown>>['getState'],
+	set: StoreApi<Record<string, unknown>>["setState"],
+	get: StoreApi<Record<string, unknown>>["getState"],
 ): void {
 	// Update item in array
 	set((state: Record<string, unknown>) => ({
@@ -269,7 +269,7 @@ function handleUpdateSuccess<T extends { id: string }>(
 		currentState[
 			`filter${entityName.charAt(0).toUpperCase() + entityName.slice(1)}s`
 		];
-	if (typeof filterFunction === 'function') {
+	if (typeof filterFunction === "function") {
 		filterFunction();
 	}
 }
@@ -280,8 +280,8 @@ export function createUpdateAction<T extends { id: string }, TUpdate>(
 	entityName: string,
 ) {
 	return (
-			set: StoreApi<Record<string, unknown>>['setState'],
-			get: StoreApi<Record<string, unknown>>['getState'],
+			set: StoreApi<Record<string, unknown>>["setState"],
+			get: StoreApi<Record<string, unknown>>["getState"],
 		) =>
 		async (id: string, data: TUpdate): Promise<boolean> => {
 			set({ updating: true, lastError: null });
@@ -289,7 +289,7 @@ export function createUpdateAction<T extends { id: string }, TUpdate>(
 				const response = await service.update(id, data);
 				const result = handleApiResponse(
 					response,
-					'Success',
+					"Success",
 					`${entityName.charAt(0).toUpperCase() + entityName.slice(1)} updated successfully`,
 				);
 				if (result.success && result.data) {
@@ -302,7 +302,7 @@ export function createUpdateAction<T extends { id: string }, TUpdate>(
 					return false;
 				}
 			} catch (error) {
-				handleActionError(error, entityName, 'update', set);
+				handleActionError(error, entityName, "update", set);
 				return false;
 			} finally {
 				set({ updating: false });
@@ -315,8 +315,8 @@ export function createUpdateAction<T extends { id: string }, TUpdate>(
 function handleDeleteSuccess<T extends { id: string }>(
 	id: string,
 	entityName: string,
-	set: StoreApi<Record<string, unknown>>['setState'],
-	get: StoreApi<Record<string, unknown>>['getState'],
+	set: StoreApi<Record<string, unknown>>["setState"],
+	get: StoreApi<Record<string, unknown>>["getState"],
 ): void {
 	// Remove from items array
 	set((state: Record<string, unknown>) => ({
@@ -332,7 +332,7 @@ function handleDeleteSuccess<T extends { id: string }>(
 		currentState[
 			`filter${entityName.charAt(0).toUpperCase() + entityName.slice(1)}s`
 		];
-	if (typeof filterFunction === 'function') {
+	if (typeof filterFunction === "function") {
 		filterFunction();
 	}
 }
@@ -343,8 +343,8 @@ export function createDeleteAction<T extends { id: string }>(
 	entityName: string,
 ) {
 	return (
-			set: StoreApi<Record<string, unknown>>['setState'],
-			get: StoreApi<Record<string, unknown>>['getState'],
+			set: StoreApi<Record<string, unknown>>["setState"],
+			get: StoreApi<Record<string, unknown>>["getState"],
 		) =>
 		async (id: string): Promise<boolean> => {
 			set({ deleting: true, lastError: null });
@@ -352,7 +352,7 @@ export function createDeleteAction<T extends { id: string }>(
 				const response = await service.delete(id);
 				const result = handleApiResponse(
 					response,
-					'Success',
+					"Success",
 					`${entityName.charAt(0).toUpperCase() + entityName.slice(1)} deleted successfully`,
 				);
 				if (result.success) {
@@ -365,7 +365,7 @@ export function createDeleteAction<T extends { id: string }>(
 					return false;
 				}
 			} catch (error) {
-				handleActionError(error, entityName, 'delete', set);
+				handleActionError(error, entityName, "delete", set);
 				return false;
 			} finally {
 				set({ deleting: false });
@@ -398,11 +398,11 @@ export function createToggleStatusAction<T extends { id: string }, TToggle>(
 	entityName: string,
 ) {
 	return (
-			set: StoreApi<Record<string, unknown>>['setState'],
-			get: StoreApi<Record<string, unknown>>['getState'],
+			set: StoreApi<Record<string, unknown>>["setState"],
+			get: StoreApi<Record<string, unknown>>["getState"],
 		) =>
 		async (id: string, data: TToggle): Promise<boolean> => {
-			const loadingField = 'togglingStatus';
+			const loadingField = "togglingStatus";
 			set({ [loadingField]: true, lastError: null });
 			try {
 				const response = await service.toggleStatus(id, data);
@@ -420,7 +420,7 @@ export function createToggleStatusAction<T extends { id: string }, TToggle>(
 					return false;
 				}
 			} catch (error) {
-				handleActionError(error, entityName, 'toggle status', set);
+				handleActionError(error, entityName, "toggle status", set);
 				return false;
 			} finally {
 				set({ [loadingField]: false });
@@ -437,8 +437,8 @@ export function createFetchBySemesterAction<T extends { id: string }>(
 	entityName: string,
 ) {
 	return (
-			set: StoreApi<Record<string, unknown>>['setState'],
-			get: StoreApi<Record<string, unknown>>['getState'],
+			set: StoreApi<Record<string, unknown>>["setState"],
+			get: StoreApi<Record<string, unknown>>["getState"],
 		) =>
 		async (semesterId: string, force = false) => {
 			// If not forcing, check if we already have cached data for this semester
@@ -473,10 +473,10 @@ export function createFetchBySemesterAction<T extends { id: string }>(
 					if (
 						result.error.statusCode === 409 &&
 						result.error.message &&
-						(result.error.message.includes('NotYet') ||
-							result.error.message.includes('End') ||
+						(result.error.message.includes("NotYet") ||
+							result.error.message.includes("End") ||
 							result.error.message.includes(
-								'semesters allow student enrollment',
+								"semesters allow student enrollment",
 							))
 					) {
 						// Semester is in NotYet or End status, show empty data instead of error
@@ -488,7 +488,7 @@ export function createFetchBySemesterAction<T extends { id: string }>(
 					handleResultError(result.error, set);
 				}
 			} catch (error) {
-				handleActionError(error, `${entityName}s`, 'fetch by semester', set);
+				handleActionError(error, `${entityName}s`, "fetch by semester", set);
 			} finally {
 				set({ loading: false });
 			}
@@ -500,28 +500,28 @@ export const commonStoreUtilities = {
 	createSetSearchText:
 		(filterFunctionName: string) =>
 		(
-			set: StoreApi<Record<string, unknown>>['setState'],
-			get: StoreApi<Record<string, unknown>>['getState'],
+			set: StoreApi<Record<string, unknown>>["setState"],
+			get: StoreApi<Record<string, unknown>>["getState"],
 		) =>
 		(text: string) => {
 			set({ searchText: text });
 			const currentState = get();
 			const filterFunction = currentState[filterFunctionName];
-			if (typeof filterFunction === 'function') {
+			if (typeof filterFunction === "function") {
 				filterFunction();
 			}
 		},
 	createFieldSetter:
 		(fieldName: string, filterFunctionName: string) =>
 		(
-			set: StoreApi<Record<string, unknown>>['setState'],
-			get: StoreApi<Record<string, unknown>>['getState'],
+			set: StoreApi<Record<string, unknown>>["setState"],
+			get: StoreApi<Record<string, unknown>>["getState"],
 		) =>
 		(value: unknown) => {
 			set({ [fieldName]: value });
 			const currentState = get();
 			const filterFunction = currentState[filterFunctionName];
-			if (typeof filterFunction === 'function') {
+			if (typeof filterFunction === "function") {
 				filterFunction();
 			}
 		},
@@ -537,7 +537,7 @@ export const commonStoreUtilities = {
 				deleting: false,
 				togglingStatus: false,
 				lastError: null,
-				searchText: '',
+				searchText: "",
 			};
 
 			// Add both legacy and new creatingMany fields for backward compatibility
@@ -552,7 +552,7 @@ export const commonStoreUtilities = {
 		},
 	createGetById:
 		<T extends { id: string }>(entityName: string) =>
-		(get: StoreApi<Record<string, unknown>>['getState']) =>
+		(get: StoreApi<Record<string, unknown>>["getState"]) =>
 		(id: string): T | undefined => {
 			const currentState = get();
 			const items = currentState[`${entityName}s`] as T[];
