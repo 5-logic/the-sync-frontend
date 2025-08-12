@@ -13,8 +13,10 @@ import {
 	SubmissionEditView,
 	SubmittedFilesView,
 } from "@/components/features/student/TrackProgress/MilestoneDetail";
+import ReviewerInfo from "@/components/features/student/TrackProgress/ReviewerInfo";
 import { MilestoneSubmission, useMilestoneProgress } from "@/hooks/student";
 import { useStudentGroupStatus } from "@/hooks/student/useStudentGroupStatus";
+import { useStudentReviews } from "@/hooks/student/useReviews";
 import { useReviews } from "@/hooks/lecturer/useReviews";
 import { StorageService } from "@/lib/services/storage.service";
 import { showNotification } from "@/lib/utils/notification";
@@ -55,6 +57,12 @@ export default function MilestoneDetailCard() {
 		submissionReviewsLoading,
 		fetchSubmissionReviews,
 	} = useReviews();
+	const {
+		assignedReviewers,
+		assignedReviewersLoading,
+		error: reviewersError,
+		fetchAssignedReviewers,
+	} = useStudentReviews();
 	const [currentSubmissionId, setCurrentSubmissionId] = useState<string | null>(
 		null,
 	);
@@ -64,8 +72,9 @@ export default function MilestoneDetailCard() {
 		async (submissionId: string) => {
 			setCurrentSubmissionId(submissionId);
 			await fetchSubmissionReviews(submissionId);
+			await fetchAssignedReviewers(submissionId);
 		},
-		[fetchSubmissionReviews],
+		[fetchSubmissionReviews, fetchAssignedReviewers],
 	);
 
 	// Handle collapse panel changes to fetch reviews
@@ -668,6 +677,26 @@ export default function MilestoneDetailCard() {
 										})}
 									</div>
 								</div>
+							)}
+
+							{/* Reviewer Information */}
+							{submission && submission.id && (
+								<ReviewerInfo
+									reviewersData={
+										currentSubmissionId === submission.id
+											? assignedReviewers
+											: null
+									}
+									loading={
+										currentSubmissionId === submission.id &&
+										assignedReviewersLoading
+									}
+									error={
+										currentSubmissionId === submission.id
+											? reviewersError
+											: null
+									}
+								/>
 							)}
 
 							{/* Milestone content based on submission state */}
