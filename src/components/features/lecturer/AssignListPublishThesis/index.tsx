@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import { Alert, Button, Card, Col, Row, Space } from 'antd';
-import { useEffect, useMemo, useState } from 'react';
+import { Alert, Button, Card, Col, Row, Space } from "antd";
+import { useEffect, useMemo, useState } from "react";
 
-import { ThesisConfirmationModals } from '@/components/common/ConfirmModal';
-import { Header } from '@/components/common/Header';
-import ThesisFilterBar from '@/components/features/lecturer/AssignListPublishThesis/ThesisFilterBar';
-import ThesisTable from '@/components/features/lecturer/AssignListPublishThesis/ThesisTable';
-import { useCurrentSemester } from '@/hooks/semester/useCurrentSemester';
-import { showNotification } from '@/lib/utils/notification';
-import { usePublishThesesStore } from '@/store';
+import { ThesisConfirmationModals } from "@/components/common/ConfirmModal";
+import { Header } from "@/components/common/Header";
+import ThesisFilterBar from "@/components/features/lecturer/AssignListPublishThesis/ThesisFilterBar";
+import ThesisTable from "@/components/features/lecturer/AssignListPublishThesis/ThesisTable";
+import { useCurrentSemester } from "@/hooks/semester/useCurrentSemester";
+import { showNotification } from "@/lib/utils/notification";
+import { usePublishThesesStore } from "@/store";
 
 export default function AssignListPublishThesisPage() {
 	const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -31,7 +31,6 @@ export default function AssignListPublishThesisPage() {
 		togglePublishStatus,
 		publishMultiple,
 		getDomainOptions,
-		getSemesterOptions,
 		clearError,
 	} = usePublishThesesStore();
 
@@ -43,7 +42,7 @@ export default function AssignListPublishThesisPage() {
 	// Initialize filters on mount with current semester default
 	useEffect(() => {
 		setFilters({
-			searchText: '',
+			searchText: "",
 			isPublish: undefined,
 			domain: undefined,
 			semesterId: currentSemester?.id,
@@ -54,11 +53,6 @@ export default function AssignListPublishThesisPage() {
 	const domainOptions = useMemo(() => {
 		return getDomainOptions();
 	}, [getDomainOptions]);
-
-	// ✅ Extract unique semester list for dropdown
-	const semesterOptions = useMemo(() => {
-		return getSemesterOptions();
-	}, [getSemesterOptions]);
 
 	const handleFilterChange = (newFilters: Partial<typeof filters>) => {
 		setFilters(newFilters);
@@ -72,15 +66,15 @@ export default function AssignListPublishThesisPage() {
 			selectedIds.includes(thesis.id),
 		);
 
-		// Count how many will actually be published (not already published, no groupId)
+		// Count how many will actually be published (not already published)
 		const thesesToPublish = selectedTheses.filter(
-			(thesis) => !thesis.isPublish && !thesis.groupId,
+			(thesis) => !thesis.isPublish,
 		);
 
 		if (thesesToPublish.length === 0) {
 			showNotification.warning(
-				'No Theses to Publish',
-				'All selected theses are already published or assigned to groups.',
+				"No Theses to Publish",
+				"All selected theses are already published.",
 			);
 			return;
 		}
@@ -97,7 +91,7 @@ export default function AssignListPublishThesisPage() {
 
 					if (success) {
 						showNotification.success(
-							'Bulk Publish Successful',
+							"Bulk Publish Successful",
 							`Published ${thesesToPublish.length} thesis(es) successfully`,
 						);
 						setSelectedIds([]);
@@ -116,7 +110,7 @@ export default function AssignListPublishThesisPage() {
 	// Error state
 	if (lastError) {
 		return (
-			<Space direction="vertical" size="large" style={{ width: '100%' }}>
+			<Space direction="vertical" size="large" style={{ width: "100%" }}>
 				<Alert
 					message="Error Loading Data"
 					description={lastError.message}
@@ -135,7 +129,7 @@ export default function AssignListPublishThesisPage() {
 	}
 
 	return (
-		<Space direction="vertical" size="large" style={{ width: '100%' }}>
+		<Space direction="vertical" size="large" style={{ width: "100%" }}>
 			<Row justify="space-between" align="middle">
 				<Col>
 					<Header
@@ -164,7 +158,6 @@ export default function AssignListPublishThesisPage() {
 							currentFilters={filters}
 							onFilterChange={handleFilterChange}
 							domainOptions={domainOptions}
-							semesterOptions={semesterOptions}
 							onRefresh={refetch}
 							loading={refreshing}
 						/>

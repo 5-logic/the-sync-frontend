@@ -9,6 +9,109 @@ For more information about this project, see the [README](./README.md).
 
 ---
 
+## [0.9.1] - 2025-08-12
+
+### Added
+
+#### Duplicate Thesis Detection Enhancement
+
+- **Reason Display for Duplicates:** Enhanced duplicate thesis detection with detailed reason explanations ([#351](https://github.com/5-logic/the-sync-frontend/pull/351))
+  - Added reasons for duplicate theses display in DuplicateThesisCard component
+  - Enhanced AI duplicate detection service with improved reason reporting
+  - PercentageDisplay component extracted for better readability and reusability
+
+#### Authentication & Security Improvements
+
+- **Enhanced Cookie Management:** Improved authentication system with centralized cookie utilities ([#351](https://github.com/5-logic/the-sync-frontend/pull/351))
+  - New CookieUtils utility for standardized cookie management across authentication services
+  - Enhanced token management with improved security and reliability
+  - Better logout functionality with proper cleanup and session management
+
+#### Supervisor Assignment Enhancements
+
+- **Enhanced Data Structure:** Improved supervisor assignment system with comprehensive tracking ([#351](https://github.com/5-logic/the-sync-frontend/pull/351))
+  - Updated supervisor assignment data structure to include group ID and status information
+  - Enhanced SupervisorColumns component with better sorting and status management
+  - Extracted sorting logic for picked status into separate reusable functions
+
+### Changed
+
+#### Code Quality & Standardization
+
+- **String Quote Standardization:** Comprehensive code standardization across all components ([#351](https://github.com/5-logic/the-sync-frontend/pull/351))
+  - Standardized string quotes throughout the entire codebase for consistency
+  - Improved code formatting and readability across 35+ components
+  - Enhanced import statement organization and component structure
+
+#### Component Architecture Improvements
+
+- **Enhanced Thesis Management:** Streamlined thesis-related components with better data handling ([#351](https://github.com/5-logic/the-sync-frontend/pull/351))
+  - Enhanced thesis detail fetching with parallel data retrieval for better performance
+  - Improved thesis publish logic in ThesisTable and AssignListPublishThesis components
+  - Better loading state handling in thesis actions and table components
+
+#### User Interface Enhancements
+
+- **Improved Form Handling:** Enhanced form components with better validation and user experience ([#351](https://github.com/5-logic/the-sync-frontend/pull/351))
+  - Simplified OTP input handling with improved validation in PasswordResetOtpForm
+  - Enhanced UserForm component with better semester selection logic
+  - Improved error handling in thesis registration hooks
+
+#### Performance Optimizations
+
+- **Data Fetching Improvements:** Optimized data retrieval and component rendering ([#351](https://github.com/5-logic/the-sync-frontend/pull/351))
+  - Streamlined thesis detail fetching with parallel data retrieval
+  - Enhanced semester fetching in ThesisFilterBar and related components
+  - Improved component structure for better maintainability
+
+### Fixed
+
+#### Authentication & Security Fixes
+
+- **Token Management:** Fixed authentication issues with improved token handling ([#351](https://github.com/5-logic/the-sync-frontend/pull/351))
+  - Replaced deprecated substr with substring for cookie name extraction
+  - Enhanced logout functionality across all authentication services
+  - Improved session management with better cleanup procedures
+
+#### Component Functionality Fixes
+
+- **Enhanced Component Logic:** Fixed various component issues and improved functionality ([#351](https://github.com/5-logic/the-sync-frontend/pull/351))
+  - Fixed supervisor information handling in ThesisInfoCard component
+  - Enhanced thesis detail fetching to include supervisors and lecturer information
+  - Improved status transition logic in SemesterTable component
+
+#### User Experience Fixes
+
+- **Form and Navigation Improvements:** Enhanced user interaction and navigation ([#351](https://github.com/5-logic/the-sync-frontend/pull/351))
+  - Simplified percentage display logic in DuplicateThesisCard for better clarity
+  - Enhanced breadcrumb navigation with improved path handling
+  - Better component naming and organization for developer experience
+
+### Removed
+
+#### Deprecated Components
+
+- **Timeline Review System:** Removed unused timeline review components ([#351](https://github.com/5-logic/the-sync-frontend/pull/351))
+  - Removed TimelineReview page and associated components
+  - Cleaned up ProjectMilestone, ReviewGroupTable, and TimelineStats components
+  - Updated sidebar configuration to remove timeline review navigation
+
+### Technical Details
+
+- **Files Changed:** 35 files with 2,042 additions and 1,697 deletions
+- **Enhanced Components:** DuplicateThesisCard, PasswordResetOtpForm, SupervisorColumns, ThesisInfoCard, UserForm, SemesterTable
+- **New Utilities:** CookieUtils for centralized cookie management in authentication
+- **Removed Components:** TimelineReview components and related infrastructure
+- **Code Quality:** Comprehensive string quote standardization and formatting improvements
+
+### Migration Notes
+
+- **Authentication Updates:** Applications using custom authentication may need to update cookie handling to use the new CookieUtils
+- **Component Updates:** Components relying on timeline review functionality should migrate to alternative review systems
+- **Code Standards:** Development teams should adopt the standardized string quote conventions for consistency
+
+---
+
 ## [0.9.0] - 2025-08-04
 
 ### Added

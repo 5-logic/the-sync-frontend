@@ -1,15 +1,15 @@
-import { create } from 'zustand';
-import { devtools } from 'zustand/middleware';
+import { create } from "zustand";
+import { devtools } from "zustand/middleware";
 
-import lecturerService from '@/lib/services/lecturers.service';
-import semesterService from '@/lib/services/semesters.service';
-import supervisionService from '@/lib/services/supervisions.service';
-import thesesService from '@/lib/services/theses.service';
-import { handleApiError, handleApiResponse } from '@/lib/utils/handleApi';
-import { showNotification } from '@/lib/utils/notification';
-import { type Lecturer } from '@/schemas/lecturer';
-import { type Thesis } from '@/schemas/thesis';
-import { useSupervisionStore } from '@/store/useSupervisionStore';
+import lecturerService from "@/lib/services/lecturers.service";
+import semesterService from "@/lib/services/semesters.service";
+import supervisionService from "@/lib/services/supervisions.service";
+import thesesService from "@/lib/services/theses.service";
+import { handleApiError, handleApiResponse } from "@/lib/utils/handleApi";
+import { showNotification } from "@/lib/utils/notification";
+import { type Lecturer } from "@/schemas/lecturer";
+import { type Thesis } from "@/schemas/thesis";
+import { useSupervisionStore } from "@/store/useSupervisionStore";
 
 export interface SupervisorAssignmentData {
 	id: string;
@@ -23,6 +23,8 @@ export interface SupervisorAssignmentData {
 		email: string;
 	}>;
 	thesisId: string;
+	groupId: string | null;
+	isPicked: boolean;
 }
 
 // Helper function to fetch supervisor details for a thesis
@@ -62,7 +64,7 @@ const fetchSupervisorDetails = async (
 		}> = [];
 
 		for (const result of lecturerResults) {
-			if (result.status === 'fulfilled') {
+			if (result.status === "fulfilled") {
 				const lecturerApiResponse = handleApiResponse(result.value);
 
 				if (lecturerApiResponse.success && lecturerApiResponse.data) {
@@ -96,17 +98,17 @@ const showAssignmentNotification = (
 			? `All ${successful} supervisors were already assigned`
 			: `All ${successful} supervisors assigned successfully`;
 
-		const notificationType = allAlreadyExists ? 'info' : 'success';
-		const title = allAlreadyExists ? 'Already Assigned' : 'Assignment Complete';
+		const notificationType = allAlreadyExists ? "info" : "success";
+		const title = allAlreadyExists ? "Already Assigned" : "Assignment Complete";
 
 		showNotification[notificationType](title, message);
 	} else if (successful > 0 && failed > 0) {
 		showNotification.warning(
-			'Partial Success',
+			"Partial Success",
 			`${successful} assignments succeeded, ${failed} failed`,
 		);
 	} else {
-		showNotification.error('Assignment Failed', 'All assignments failed');
+		showNotification.error("Assignment Failed", "All assignments failed");
 	}
 };
 
@@ -117,11 +119,11 @@ const handleAssignmentError = (
 	silent: boolean,
 ): void => {
 	const supervisionError = useSupervisionStore.getState().lastError;
-	const errorMessage = supervisionError || 'No response from server';
+	const errorMessage = supervisionError || "No response from server";
 
 	setState({ data: originalData });
 	if (!silent) {
-		showNotification.error('Assignment Failed', errorMessage);
+		showNotification.error("Assignment Failed", errorMessage);
 	}
 };
 
@@ -142,7 +144,7 @@ const handleBulkAssignmentResult = (
 
 	const { successful, failed } = result.summary;
 	const allAlreadyExists = result.results.every(
-		(r: { status: string }) => r.status === 'already_exists',
+		(r: { status: string }) => r.status === "already_exists",
 	);
 
 	// Show appropriate notification
@@ -191,11 +193,13 @@ const createAssignmentData = async (
 	return {
 		id: thesis.id,
 		thesisTitle: thesis.englishName,
-		abbreviation: thesis.abbreviation || 'No Abbreviation',
+		abbreviation: thesis.abbreviation || "No Abbreviation",
 		semester: semesterName,
 		supervisors: supervisorNames,
 		supervisorDetails,
 		thesisId: thesis.id,
+		groupId: thesis.groupId || null,
+		isPicked: thesis.groupId !== null && thesis.groupId !== undefined,
 	};
 };
 
@@ -305,23 +309,23 @@ export const useAssignSupervisorStore = create<AssignSupervisorState>()(
 					const semestersResult = handleApiResponse(semestersResponse);
 
 					if (!thesesResult.success) {
-						console.error('Theses fetch failed:', thesesResult.error);
+						console.error("Theses fetch failed:", thesesResult.error);
 						throw new Error(
-							thesesResult.error?.message || 'Failed to fetch theses',
+							thesesResult.error?.message || "Failed to fetch theses",
 						);
 					}
 
 					if (!lecturersResult.success) {
-						console.error('Lecturers fetch failed:', lecturersResult.error);
+						console.error("Lecturers fetch failed:", lecturersResult.error);
 						throw new Error(
-							lecturersResult.error?.message || 'Failed to fetch lecturers',
+							lecturersResult.error?.message || "Failed to fetch lecturers",
 						);
 					}
 
 					if (!semestersResult.success) {
-						console.error('Semesters fetch failed:', semestersResult.error);
+						console.error("Semesters fetch failed:", semestersResult.error);
 						throw new Error(
-							semestersResult.error?.message || 'Failed to fetch semesters',
+							semestersResult.error?.message || "Failed to fetch semesters",
 						);
 					}
 
@@ -337,7 +341,7 @@ export const useAssignSupervisorStore = create<AssignSupervisorState>()(
 
 					// Filter only approved theses
 					const filteredTheses = (thesesResult.data || []).filter(
-						(thesis: Thesis) => thesis.status === 'Approved',
+						(thesis: Thesis) => thesis.status === "Approved",
 					);
 
 					// Process each thesis to get supervisor data
@@ -354,13 +358,13 @@ export const useAssignSupervisorStore = create<AssignSupervisorState>()(
 						currentSemester: semesterId || null,
 					});
 				} catch (err) {
-					console.error('Error in fetchData:', err);
+					console.error("Error in fetchData:", err);
 					const { message } = handleApiError(
 						err,
-						'Failed to fetch assign supervisor data',
+						"Failed to fetch assign supervisor data",
 					);
 					set({ lastError: message, loading: false });
-					showNotification.error('Error', message);
+					showNotification.error("Error", message);
 				}
 			},
 
@@ -414,18 +418,18 @@ export const useAssignSupervisorStore = create<AssignSupervisorState>()(
 						// Get error from supervision store if available
 						const supervisionError = supervisionStore.lastError;
 						const errorMessage =
-							supervisionError || 'Failed to change supervisor';
+							supervisionError || "Failed to change supervisor";
 
 						if (!silent) {
-							showNotification.error('Error', errorMessage);
+							showNotification.error("Error", errorMessage);
 						}
 						return false;
 					}
 
 					if (!silent) {
 						showNotification.success(
-							'Success',
-							'Supervisor changed successfully',
+							"Success",
+							"Supervisor changed successfully",
 						);
 					}
 					return true;
@@ -434,10 +438,10 @@ export const useAssignSupervisorStore = create<AssignSupervisorState>()(
 					get().revertOptimisticUpdate(thesisId, originalAssignment);
 					const { message } = handleApiError(
 						error,
-						'Failed to change supervisor',
+						"Failed to change supervisor",
 					);
 					if (!silent) {
-						showNotification.error('Error', message);
+						showNotification.error("Error", message);
 					}
 					return false;
 				}
@@ -512,10 +516,10 @@ export const useAssignSupervisorStore = create<AssignSupervisorState>()(
 					set({ data: originalData });
 					const { message } = handleApiError(
 						error,
-						'Failed to bulk assign supervisors',
+						"Failed to bulk assign supervisors",
 					);
 					if (!silent) {
-						showNotification.error('Error', message);
+						showNotification.error("Error", message);
 					}
 					return false;
 				} finally {
@@ -534,7 +538,7 @@ export const useAssignSupervisorStore = create<AssignSupervisorState>()(
 			clearError: (): void => set({ lastError: null }),
 		}),
 		{
-			name: 'assign-supervisor-store',
+			name: "assign-supervisor-store",
 		},
 	),
 );

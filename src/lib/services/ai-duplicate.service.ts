@@ -1,11 +1,12 @@
-import httpClient from '@/lib/services/_httpClient';
-import { ApiResponse } from '@/schemas/_common';
+import httpClient from "@/lib/services/_httpClient";
+import { ApiResponse } from "@/schemas/_common";
 
 export interface DuplicateThesis {
 	id: string;
 	englishName: string;
 	vietnameseName: string;
 	description: string;
+	reasons: string[];
 	duplicatePercentage: number;
 }
 
@@ -16,7 +17,7 @@ export interface DuplicateCheckResponse {
 }
 
 class AiDuplicateService {
-	private readonly baseUrl = '/ai/thesis';
+	private readonly baseUrl = "/ai/thesis";
 
 	async checkDuplicate(
 		thesisId: string,
