@@ -38,6 +38,14 @@ export default function DuplicateThesisCard({ duplicateThesis }: Props) {
 		return "#52c41a"; // Green
 	};
 
+	// Format function for progress component
+	const formatPercentage = (percent: number | undefined) => (
+		<PercentageDisplay
+			percent={percent || 0}
+			color={getPercentageColor(duplicateThesis.duplicatePercentage)}
+		/>
+	);
+
 	// Handle view thesis details
 	const handleViewDetails = () => {
 		router.push(`/lecturer/thesis-management/${duplicateThesis.id}`);
@@ -68,12 +76,7 @@ export default function DuplicateThesisCard({ duplicateThesis }: Props) {
 						strokeColor={getPercentageColor(
 							duplicateThesis.duplicatePercentage,
 						)}
-						format={(percent) => (
-							<PercentageDisplay
-								percent={percent || 0}
-								color={getPercentageColor(duplicateThesis.duplicatePercentage)}
-							/>
-						)}
+						format={formatPercentage}
 					/>
 					<Typography.Text
 						type="secondary"
@@ -144,9 +147,9 @@ export default function DuplicateThesisCard({ duplicateThesis }: Props) {
 							<div style={{ maxWidth: 300 }}>
 								<Typography.Text strong>Duplicate reasons:</Typography.Text>
 								<div style={{ margin: "8px 0 0 0" }}>
-									{duplicateThesis.reasons.map((reason, index) => (
+									{duplicateThesis.reasons.map((reason) => (
 										<div
-											key={index}
+											key={reason}
 											style={{ marginBottom: 4, paddingLeft: 8 }}
 										>
 											<Typography.Text>• {reason}</Typography.Text>
