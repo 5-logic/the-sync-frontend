@@ -126,6 +126,19 @@ export const createActionRenderer = (
 };
 
 /**
+ * Sorts records by picked status (picked items come last)
+ */
+const sortByPickedStatus = (
+	a: SupervisorAssignmentData,
+	b: SupervisorAssignmentData,
+): number => {
+	if (a.isPicked === b.isPicked) {
+		return 0;
+	}
+	return a.isPicked ? 1 : -1;
+};
+
+/**
  * Base column definitions for supervisor assignment table
  * Consistent with thesis management table styling
  */
@@ -213,7 +226,7 @@ export const baseColumns: ColumnsType<SupervisorAssignmentData> = [
 		key: "isPicked",
 		width: TABLE_WIDTHS.STATUS,
 		align: "center" as const,
-		sorter: (a, b) => (a.isPicked === b.isPicked ? 0 : a.isPicked ? 1 : -1),
+		sorter: sortByPickedStatus,
 		sortDirections: ["ascend", "descend"],
 		render: (isPicked: boolean) => (
 			<div
