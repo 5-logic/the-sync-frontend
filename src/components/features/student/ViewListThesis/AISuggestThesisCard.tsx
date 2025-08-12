@@ -91,6 +91,17 @@ export default function AISuggestThesisCard({
 		return "Register for this thesis";
 	};
 
+	// Get register button text based on current state
+	const getRegisterButtonText = (): string => {
+		if (isRegistering) {
+			return "Registering...";
+		}
+		if (semesterLoading) {
+			return "Checking...";
+		}
+		return "Register";
+	};
+
 	// Get progress color based on relevance score
 	const getProgressColor = (score: number): string => {
 		if (score >= 90) return "#52c41a"; // Green
@@ -256,12 +267,12 @@ export default function AISuggestThesisCard({
 							<Button
 								type="primary"
 								disabled={isRegisterDisabled}
-								loading={isRegistering}
+								loading={isRegistering || semesterLoading}
 								onClick={handleRegisterThesis}
 								title={getButtonTooltip()}
 								block
 							>
-								Register
+								{getRegisterButtonText()}
 							</Button>
 						)}
 					</Col>

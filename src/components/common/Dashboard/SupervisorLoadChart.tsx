@@ -19,16 +19,14 @@ const { Text, Title } = Typography;
 
 // Constants được tách ra ngoài để dễ bảo trì
 const CHART_CONSTANTS = {
-	maxValue: 8,
 	itemHeight: 42, // Reduced from 50 to 42 for even tighter spacing
-	gridValues: [0, 2, 4, 6, 8],
 	padding: {
 		container: 24,
 		chart: 28,
 		legend: 16,
 	},
 	positions: {
-		yAxisWidth: 110,
+		yAxisWidth: 140,
 		gridTop: 20,
 		gridBottom: 40,
 		axisHeight: 20,
@@ -160,16 +158,35 @@ const SupervisorLoadChart: React.FC = () => {
 		return filteredData;
 	}, [supervisorLoadDistribution, searchTerm, selectedCategory]);
 
-	// Memoize các giá trị tính toán để tối ưu performance
-	const chartConfig = useMemo(
-		() => ({
+	// Calculate dynamic maxValue and gridValues based on actual data
+	const chartConfig = useMemo(() => {
+		const maxDataValue =
+			chartData.length > 0
+				? Math.max(...chartData.map((item) => item.count))
+				: 8;
+
+		// Set maxValue to be at least 8, or higher if data exceeds 8
+		const dynamicMaxValue = Math.max(8, maxDataValue);
+
+		// Generate gridValues with interval of 2 for tighter spacing
+		const gridValues: number[] = [];
+		for (let i = 0; i <= dynamicMaxValue; i += 2) {
+			gridValues.push(i);
+		}
+		// Ensure we always include the maxValue
+		if (!gridValues.includes(dynamicMaxValue)) {
+			gridValues.push(dynamicMaxValue);
+		}
+
+		return {
+			maxValue: dynamicMaxValue,
+			gridValues,
 			minHeight:
 				chartData.length * CHART_CONSTANTS.itemHeight +
 				CHART_CONSTANTS.positions.itemStartOffset +
 				60,
-		}),
-		[chartData.length],
-	);
+		};
+	}, [chartData]);
 
 	// Show loading state
 	if (loading) {
@@ -288,12 +305,12 @@ const SupervisorLoadChart: React.FC = () => {
 								bottom: CHART_CONSTANTS.positions.gridBottom,
 							}}
 						>
-							{CHART_CONSTANTS.gridValues.map((i) => (
+							{chartConfig.gridValues.map((i) => (
 								<div
 									key={`grid-${i}`}
 									style={{
 										position: "absolute",
-										left: `${(i / CHART_CONSTANTS.maxValue) * 100}%`,
+										left: `${(i / chartConfig.maxValue) * 100}%`,
 										top: 0,
 										bottom: 0,
 										width: "1px",
@@ -366,7 +383,7 @@ const SupervisorLoadChart: React.FC = () => {
 										position: "absolute",
 										top: `${CHART_CONSTANTS.positions.itemStartOffset + index * CHART_CONSTANTS.itemHeight}px`,
 										height: `${CHART_CONSTANTS.positions.barHeight}px`,
-										width: `${(item.count / CHART_CONSTANTS.maxValue) * 100}%`,
+										width: `${(item.count / chartConfig.maxValue) * 100}%`,
 										background: CATEGORY_STYLES[item.category]?.gradient,
 										transform: "translateY(-50%)",
 										transition: "all 0.8s cubic-bezier(0.4, 0, 0.2, 1)",
@@ -404,12 +421,12 @@ const SupervisorLoadChart: React.FC = () => {
 								borderTop: "2px solid #d9d9d9",
 							}}
 						>
-							{CHART_CONSTANTS.gridValues.map((i) => (
+							{chartConfig.gridValues.map((i) => (
 								<div
 									key={`x-label-${i}`}
 									style={{
 										position: "absolute",
-										left: `${(i / CHART_CONSTANTS.maxValue) * 100}%`,
+										left: `${(i / chartConfig.maxValue) * 100}%`,
 										transform: "translateX(-50%)",
 										fontSize: "12px",
 										color: "#595959",

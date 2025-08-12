@@ -37,6 +37,7 @@ export default function AssignSupervisors() {
 	const [saveDraftLoading, setSaveDraftLoading] = useState(false);
 	const [assignNowLoading, setAssignNowLoading] = useState(false);
 	const [semesterFilter, setSemesterFilter] = useState<string>("All");
+	const [statusFilter, setStatusFilter] = useState<string>("All");
 	const [workloadDialogOpen, setWorkloadDialogOpen] = useState(false);
 
 	const {
@@ -127,10 +128,19 @@ export default function AssignSupervisors() {
 			const matchesSearch = [item.abbreviation, item.thesisTitle].some(
 				(field) => field.toLowerCase().includes(searchText),
 			);
+
+			// Filter by status
+			let matchesStatus = true;
+			if (statusFilter === "Picked") {
+				matchesStatus = item.isPicked;
+			} else if (statusFilter === "Not picked") {
+				matchesStatus = !item.isPicked;
+			}
+
 			// Semester filtering is now handled server-side
-			return matchesSearch;
+			return matchesSearch && matchesStatus;
 		});
-	}, [data, search]);
+	}, [data, search, statusFilter]);
 
 	/**
 	 * Handle bulk assignment of all draft assignments using single API call
@@ -548,6 +558,8 @@ export default function AssignSupervisors() {
 				onSearchChange={setSearch}
 				semester={semesterFilter}
 				onSemesterChange={setSemesterFilter}
+				status={statusFilter}
+				onStatusChange={setStatusFilter}
 				onRefresh={refreshData}
 				refreshing={refreshing}
 				onAssignAllDrafts={handleBulkAssignmentConfirm}
