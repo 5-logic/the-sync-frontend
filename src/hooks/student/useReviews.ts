@@ -41,7 +41,7 @@ export function useStudentReviews(): UseStudentReviewsReturn {
 
 			// Extract assignmentReviews from the response
 			const reviewsData = result.data;
-			if (reviewsData && reviewsData.assignmentReviews) {
+			if (reviewsData?.assignmentReviews) {
 				setAssignedReviewers(reviewsData.assignmentReviews || []);
 			} else {
 				setAssignedReviewers([]);
