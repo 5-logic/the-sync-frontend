@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { Button, Card, Progress, Space, Typography } from 'antd';
-import { useRouter } from 'next/navigation';
+import { Button, Card, Progress, Space, Typography } from "antd";
+import { useRouter } from "next/navigation";
 
-import { DuplicateThesis } from '@/lib/services/ai-duplicate.service';
+import { DuplicateThesis } from "@/lib/services/ai-duplicate.service";
 
 interface Props {
 	readonly duplicateThesis: DuplicateThesis;
@@ -14,10 +14,10 @@ export default function DuplicateThesisCard({ duplicateThesis }: Props) {
 
 	// Get duplicate percentage color
 	const getPercentageColor = (percentage: number) => {
-		if (percentage >= 80) return '#ff4d4f'; // Red
-		if (percentage >= 60) return '#fa8c16'; // Orange
-		if (percentage >= 40) return '#fadb14'; // Yellow
-		return '#52c41a'; // Green
+		if (percentage >= 80) return "#ff4d4f"; // Red
+		if (percentage >= 60) return "#fa8c16"; // Orange
+		if (percentage >= 40) return "#fadb14"; // Yellow
+		return "#52c41a"; // Green
 	};
 
 	// Handle view thesis details
@@ -29,20 +29,20 @@ export default function DuplicateThesisCard({ duplicateThesis }: Props) {
 		<Card
 			title={null}
 			style={{
-				height: '100%',
-				display: 'flex',
-				flexDirection: 'column',
+				height: "100%",
+				display: "flex",
+				flexDirection: "column",
 				borderRadius: 12,
 			}}
-			bodyStyle={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}
+			bodyStyle={{ display: "flex", flexDirection: "column", flexGrow: 1 }}
 		>
 			<Space
 				direction="vertical"
 				size="middle"
-				style={{ width: '100%', flexGrow: 1 }}
+				style={{ width: "100%", flexGrow: 1 }}
 			>
 				{/* Duplicate Percentage */}
-				<div style={{ textAlign: 'center' }}>
+				<div style={{ textAlign: "center" }}>
 					<Progress
 						type="circle"
 						percent={duplicateThesis.duplicatePercentage}
@@ -50,11 +50,23 @@ export default function DuplicateThesisCard({ duplicateThesis }: Props) {
 						strokeColor={getPercentageColor(
 							duplicateThesis.duplicatePercentage,
 						)}
-						format={(percent) => `${percent}%`}
+						format={(percent) => (
+							<span
+								style={{
+									color: getPercentageColor(
+										duplicateThesis.duplicatePercentage,
+									),
+									fontWeight: "bold",
+									fontSize: "12px",
+								}}
+							>
+								{percent}%
+							</span>
+						)}
 					/>
 					<Typography.Text
 						type="secondary"
-						style={{ display: 'block', marginTop: 8 }}
+						style={{ display: "block", marginTop: 8 }}
 					>
 						Similarity
 					</Typography.Text>
@@ -65,14 +77,14 @@ export default function DuplicateThesisCard({ duplicateThesis }: Props) {
 					level={5}
 					style={{
 						marginBottom: 0,
-						display: '-webkit-box',
+						display: "-webkit-box",
 						WebkitLineClamp: 2,
-						WebkitBoxOrient: 'vertical',
-						overflow: 'hidden',
-						textOverflow: 'ellipsis',
-						lineHeight: '1.4',
-						minHeight: '2.8em',
-						maxHeight: '2.8em',
+						WebkitBoxOrient: "vertical",
+						overflow: "hidden",
+						textOverflow: "ellipsis",
+						lineHeight: "1.4",
+						minHeight: "2.8em",
+						maxHeight: "2.8em",
 					}}
 				>
 					{duplicateThesis.englishName}
@@ -82,18 +94,18 @@ export default function DuplicateThesisCard({ duplicateThesis }: Props) {
 				<Typography.Text
 					type="secondary"
 					style={{
-						display: '-webkit-box',
+						display: "-webkit-box",
 						WebkitLineClamp: 2,
-						WebkitBoxOrient: 'vertical',
-						overflow: 'hidden',
-						textOverflow: 'ellipsis',
-						lineHeight: '1.4',
-						minHeight: '2.8em', // Always maintain 2 lines height
-						maxHeight: '2.8em',
-						fontStyle: 'italic',
+						WebkitBoxOrient: "vertical",
+						overflow: "hidden",
+						textOverflow: "ellipsis",
+						lineHeight: "1.4",
+						minHeight: "2.8em", // Always maintain 2 lines height
+						maxHeight: "2.8em",
+						fontStyle: "italic",
 					}}
 				>
-					{duplicateThesis.vietnameseName || '\u00A0'}{' '}
+					{duplicateThesis.vietnameseName || "\u00A0"}{" "}
 					{/* Non-breaking space if empty */}
 				</Typography.Text>
 
@@ -101,14 +113,14 @@ export default function DuplicateThesisCard({ duplicateThesis }: Props) {
 				<Typography.Text
 					type="secondary"
 					style={{
-						display: '-webkit-box',
+						display: "-webkit-box",
 						WebkitLineClamp: 3,
-						WebkitBoxOrient: 'vertical',
-						overflow: 'hidden',
-						textOverflow: 'ellipsis',
-						lineHeight: '1.4',
-						minHeight: '4.2em',
-						maxHeight: '4.2em',
+						WebkitBoxOrient: "vertical",
+						overflow: "hidden",
+						textOverflow: "ellipsis",
+						lineHeight: "1.4",
+						minHeight: "4.2em",
+						maxHeight: "4.2em",
 					}}
 				>
 					{duplicateThesis.description}
