@@ -260,9 +260,20 @@ export default function MilestoneDetailCard() {
 
 		// Find the milestone to check if submission is still allowed
 		const milestone = milestones.find((m) => m.id.toString() === milestoneId);
-		if (milestone && !canSubmit(milestone)) {
-			message.error(getSubmissionMessage(milestone));
-			return;
+		if (milestone) {
+			// Check different permissions for submit vs update
+			if (isUpdate) {
+				const submission = submissions[milestoneId];
+				if (!canUpdate(milestone, submission)) {
+					message.error(getSubmissionMessage(milestone, submission));
+					return;
+				}
+			} else {
+				if (!canSubmit(milestone)) {
+					message.error(getSubmissionMessage(milestone));
+					return;
+				}
+			}
 		}
 
 		const confirmTitle = isUpdate ? "Confirm Update" : "Confirm Submission";
@@ -336,10 +347,27 @@ export default function MilestoneDetailCard() {
 		return isLeader && now.isBefore(startDate);
 	};
 
-	const getSubmissionMessage = (milestone: Milestone): string => {
+	const canUpdate = (
+		milestone: Milestone,
+		submission?: MilestoneSubmission,
+	): boolean => {
+		// Can update if already submitted and still within end date
+		const now = dayjs();
+		const endDate = dayjs(milestone.endDate);
+		const hasSubmission = submission && (submission.documents?.length ?? 0) > 0;
+
+		// Only group leaders can update, must have existing submission, and before end date
+		return isLeader && !!hasSubmission && now.isBefore(endDate);
+	};
+
+	const getSubmissionMessage = (
+		milestone: Milestone,
+		submission?: MilestoneSubmission,
+	): string => {
 		const now = dayjs();
 		const startDate = dayjs(milestone.startDate);
 		const endDate = dayjs(milestone.endDate);
+		const hasSubmission = submission && (submission.documents?.length ?? 0) > 0;
 
 		if (!isLeader) {
 			return "Only group leaders can submit files";
@@ -349,6 +377,16 @@ export default function MilestoneDetailCard() {
 			return "This milestone has ended";
 		}
 
+		// If already submitted, show update message
+		if (hasSubmission) {
+			if (now.isBefore(endDate)) {
+				return "You can update your submission until the milestone end date.";
+			} else {
+				return "Update period has ended for this milestone.";
+			}
+		}
+
+		// For new submissions
 		if (now.isAfter(startDate)) {
 			return "Submissions are no longer allowed after the milestone start date";
 		}
@@ -392,13 +430,14 @@ export default function MilestoneDetailCard() {
 	) => {
 		const hasSubmittedDocuments = (submission?.documents?.length ?? 0) > 0;
 		const isInUpdateMode = updateMode[milestone.id];
+		const submissionCanUpdate = canUpdate(milestone, submission);
 
 		// Case 1: Has submitted documents but not in update mode
 		if (hasSubmittedDocuments && !isInUpdateMode) {
 			return (
 				<SubmittedFilesView
 					documents={submission?.documents || []}
-					canSubmit={submissionCanSubmit}
+					canSubmit={submissionCanUpdate}
 					reviews={
 						currentSubmissionId === submission?.id ? submissionReviews : []
 					}
@@ -474,7 +513,7 @@ export default function MilestoneDetailCard() {
 						}));
 					}}
 					isSubmitting={isSubmitting}
-					disabled={!submissionCanSubmit}
+					disabled={!submissionCanUpdate}
 				/>
 			);
 		}
@@ -487,7 +526,7 @@ export default function MilestoneDetailCard() {
 				isSubmitting={isSubmitting}
 				isUpdateMode={isInUpdateMode || false}
 				hasSubmittedDocuments={hasSubmittedDocuments}
-				submissionMessage={getSubmissionMessage(milestone)}
+				submissionMessage={getSubmissionMessage(milestone, submission)}
 				onFileChange={(info) => handleFileChange(info, milestone.id)}
 				onRemoveFile={(fileName, fileSize) =>
 					removeFile(milestone.id, fileName, fileSize)
