@@ -13,8 +13,10 @@ import {
 	SubmissionEditView,
 	SubmittedFilesView,
 } from "@/components/features/student/TrackProgress/MilestoneDetail";
+import ReviewerInfo from "@/components/features/student/TrackProgress/ReviewerInfo";
 import { MilestoneSubmission, useMilestoneProgress } from "@/hooks/student";
 import { useStudentGroupStatus } from "@/hooks/student/useStudentGroupStatus";
+import { useStudentReviews } from "@/hooks/student/useReviews";
 import { useReviews } from "@/hooks/lecturer/useReviews";
 import { StorageService } from "@/lib/services/storage.service";
 import { showNotification } from "@/lib/utils/notification";
@@ -55,6 +57,12 @@ export default function MilestoneDetailCard() {
 		submissionReviewsLoading,
 		fetchSubmissionReviews,
 	} = useReviews();
+	const {
+		assignedReviewers,
+		assignedReviewersLoading,
+		error: reviewersError,
+		fetchAssignedReviewers,
+	} = useStudentReviews();
 	const [currentSubmissionId, setCurrentSubmissionId] = useState<string | null>(
 		null,
 	);
@@ -64,8 +72,9 @@ export default function MilestoneDetailCard() {
 		async (submissionId: string) => {
 			setCurrentSubmissionId(submissionId);
 			await fetchSubmissionReviews(submissionId);
+			await fetchAssignedReviewers(submissionId);
 		},
-		[fetchSubmissionReviews],
+		[fetchSubmissionReviews, fetchAssignedReviewers],
 	);
 
 	// Handle collapse panel changes to fetch reviews
@@ -251,9 +260,18 @@ export default function MilestoneDetailCard() {
 
 		// Find the milestone to check if submission is still allowed
 		const milestone = milestones.find((m) => m.id.toString() === milestoneId);
-		if (milestone && !canSubmit(milestone)) {
-			message.error(getSubmissionMessage(milestone));
-			return;
+		if (milestone) {
+			// Check different permissions for submit vs update
+			if (isUpdate) {
+				const submission = submissions[milestoneId];
+				if (!canUpdate(milestone, submission)) {
+					message.error(getSubmissionMessage(milestone, submission));
+					return;
+				}
+			} else if (!canSubmit(milestone)) {
+				message.error(getSubmissionMessage(milestone));
+				return;
+			}
 		}
 
 		const confirmTitle = isUpdate ? "Confirm Update" : "Confirm Submission";
@@ -327,10 +345,34 @@ export default function MilestoneDetailCard() {
 		return isLeader && now.isBefore(startDate);
 	};
 
-	const getSubmissionMessage = (milestone: Milestone): string => {
+	const canUpdate = (
+		milestone: Milestone,
+		submission?: MilestoneSubmission,
+	): boolean => {
+		// Can update if already submitted and still within allowed timeframe
 		const now = dayjs();
 		const startDate = dayjs(milestone.startDate);
 		const endDate = dayjs(milestone.endDate);
+		const hasSubmission = submission && (submission.documents?.length ?? 0) > 0;
+
+		// Only group leaders can update and must have existing submission
+		if (!isLeader || !hasSubmission) return false;
+
+		// Can update before startDate OR between startDate and endDate
+		return (
+			now.isBefore(startDate) ||
+			(now.isAfter(startDate) && now.isBefore(endDate))
+		);
+	};
+
+	const getSubmissionMessage = (
+		milestone: Milestone,
+		submission?: MilestoneSubmission,
+	): string => {
+		const now = dayjs();
+		const startDate = dayjs(milestone.startDate);
+		const endDate = dayjs(milestone.endDate);
+		const hasSubmission = submission && (submission.documents?.length ?? 0) > 0;
 
 		if (!isLeader) {
 			return "Only group leaders can submit files";
@@ -340,6 +382,16 @@ export default function MilestoneDetailCard() {
 			return "This milestone has ended";
 		}
 
+		// If already submitted, show update message
+		if (hasSubmission) {
+			if (now.isBefore(endDate)) {
+				return "You can update your submission until the milestone end date.";
+			} else {
+				return "Update period has ended for this milestone.";
+			}
+		}
+
+		// For new submissions
 		if (now.isAfter(startDate)) {
 			return "Submissions are no longer allowed after the milestone start date";
 		}
@@ -383,13 +435,14 @@ export default function MilestoneDetailCard() {
 	) => {
 		const hasSubmittedDocuments = (submission?.documents?.length ?? 0) > 0;
 		const isInUpdateMode = updateMode[milestone.id];
+		const submissionCanUpdate = canUpdate(milestone, submission);
 
 		// Case 1: Has submitted documents but not in update mode
 		if (hasSubmittedDocuments && !isInUpdateMode) {
 			return (
 				<SubmittedFilesView
 					documents={submission?.documents || []}
-					canSubmit={submissionCanSubmit}
+					canSubmit={submissionCanUpdate}
 					reviews={
 						currentSubmissionId === submission?.id ? submissionReviews : []
 					}
@@ -465,7 +518,7 @@ export default function MilestoneDetailCard() {
 						}));
 					}}
 					isSubmitting={isSubmitting}
-					disabled={!submissionCanSubmit}
+					disabled={!submissionCanUpdate}
 				/>
 			);
 		}
@@ -478,7 +531,7 @@ export default function MilestoneDetailCard() {
 				isSubmitting={isSubmitting}
 				isUpdateMode={isInUpdateMode || false}
 				hasSubmittedDocuments={hasSubmittedDocuments}
-				submissionMessage={getSubmissionMessage(milestone)}
+				submissionMessage={getSubmissionMessage(milestone, submission)}
 				onFileChange={(info) => handleFileChange(info, milestone.id)}
 				onRemoveFile={(fileName, fileSize) =>
 					removeFile(milestone.id, fileName, fileSize)
@@ -617,7 +670,7 @@ export default function MilestoneDetailCard() {
 							)}
 
 							{/* Download Templates Section */}
-							{milestone.documents && milestone.documents.length > 0 && (
+							{milestone.documents?.length && (
 								<div style={{ marginBottom: 16 }}>
 									<div
 										style={{
@@ -668,6 +721,26 @@ export default function MilestoneDetailCard() {
 										})}
 									</div>
 								</div>
+							)}
+
+							{/* Reviewer Information */}
+							{submission?.id && (
+								<ReviewerInfo
+									reviewersData={
+										currentSubmissionId === submission.id
+											? assignedReviewers
+											: null
+									}
+									loading={
+										currentSubmissionId === submission.id &&
+										assignedReviewersLoading
+									}
+									error={
+										currentSubmissionId === submission.id
+											? reviewersError
+											: null
+									}
+								/>
 							)}
 
 							{/* Milestone content based on submission state */}

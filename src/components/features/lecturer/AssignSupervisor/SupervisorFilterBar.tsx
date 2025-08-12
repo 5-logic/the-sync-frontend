@@ -13,6 +13,8 @@ interface Props {
 	onSearchChange: (val: string) => void;
 	semester: string;
 	onSemesterChange: (val: string) => void;
+	status: string;
+	onStatusChange: (val: string) => void;
 	onRefresh: () => void;
 	refreshing: boolean;
 	onAssignAllDrafts: () => void;
@@ -32,6 +34,8 @@ const SupervisorFilterBar = memo<Props>(
 		onSearchChange,
 		semester,
 		onSemesterChange,
+		status,
+		onStatusChange,
 		onRefresh,
 		refreshing,
 		onAssignAllDrafts,
@@ -45,6 +49,13 @@ const SupervisorFilterBar = memo<Props>(
 				onSemesterChange(value);
 			},
 			[onSemesterChange],
+		);
+
+		const handleStatusChange = useCallback(
+			(value: string) => {
+				onStatusChange(value);
+			},
+			[onStatusChange],
 		);
 
 		return (
@@ -74,6 +85,18 @@ const SupervisorFilterBar = memo<Props>(
 								{option.label}
 							</Option>
 						))}
+					</Select>
+				</Col>
+				<Col style={{ width: 140 }}>
+					<Select
+						value={status}
+						onChange={handleStatusChange}
+						style={{ width: "100%" }}
+						placeholder="Filter by status"
+					>
+						<Option value="All">All Status</Option>
+						<Option value="Picked">Picked</Option>
+						<Option value="Not picked">Not picked</Option>
 					</Select>
 				</Col>
 				<Col>

@@ -254,6 +254,18 @@ class ReviewsService {
 	}
 
 	/**
+	 * Get assignment reviews for a submission (returns raw assignment data)
+	 */
+	async getSubmissionAssignmentReviews(
+		submissionId: string,
+	): Promise<ApiResponse<SubmissionReviewsResponse>> {
+		const response = await httpClient.get<
+			ApiResponse<SubmissionReviewsResponse>
+		>(`${this.baseUrl}/submissions/${submissionId}/reviews`);
+		return response.data;
+	}
+
+	/**
 	 * Update an existing review
 	 */
 	async updateReview(

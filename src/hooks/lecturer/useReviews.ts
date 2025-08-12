@@ -59,7 +59,6 @@ export function useReviews(): UseReviewsReturn {
 			setLoading(true);
 			setError(null);
 
-			console.log("🔄 Fetching assigned reviews...");
 			const response = await reviewsService.getAssignedReviews();
 			const result = handleApiResponse(response);
 
@@ -71,8 +70,6 @@ export function useReviews(): UseReviewsReturn {
 
 			const data = result.data || [];
 			setReviews(data);
-
-			console.log("✅ Successfully fetched reviews:", data.length);
 		} catch (error) {
 			const errorMessage = handleAsyncError(
 				error,
@@ -88,7 +85,6 @@ export function useReviews(): UseReviewsReturn {
 	const getThesisSupervisors = useCallback(
 		async (thesisId: string): Promise<Supervisor[]> => {
 			try {
-				console.log("🔄 Fetching thesis supervisors for:", thesisId);
 				const response = await supervisionService.getByThesisId(thesisId);
 				const result = handleApiResponse(response);
 
@@ -99,7 +95,6 @@ export function useReviews(): UseReviewsReturn {
 				}
 
 				const data = result.data || [];
-				console.log("✅ Successfully fetched supervisors:", data.length);
 				return data;
 			} catch (error) {
 				console.error("Error fetching thesis supervisors:", error);
@@ -114,7 +109,6 @@ export function useReviews(): UseReviewsReturn {
 			setReviewFormLoading(true);
 			setError(null);
 
-			console.log("🔄 Fetching review form for submission:", submissionId);
 			const response = await reviewsService.getReviewForm(submissionId);
 			const result = handleApiResponse(response);
 
@@ -123,7 +117,6 @@ export function useReviews(): UseReviewsReturn {
 			}
 
 			setReviewForm(result.data || null);
-			console.log("✅ Successfully fetched review form");
 		} catch (error) {
 			const errorMessage = handleAsyncError(
 				error,
@@ -145,7 +138,6 @@ export function useReviews(): UseReviewsReturn {
 				setSubmitting(true);
 				setError(null);
 
-				console.log("🔄 Submitting review for submission:", submissionId);
 				const response = await reviewsService.submitReview(
 					submissionId,
 					reviewData,
@@ -156,7 +148,6 @@ export function useReviews(): UseReviewsReturn {
 					throw new Error(result.error?.message || "Failed to submit review");
 				}
 
-				console.log("✅ Successfully submitted review");
 				return result.data || null;
 			} catch (error) {
 				const errorMessage = handleAsyncError(
@@ -178,7 +169,6 @@ export function useReviews(): UseReviewsReturn {
 			setSubmissionReviewsLoading(true);
 			setError(null);
 
-			console.log("🔄 Fetching submission reviews for:", submissionId);
 			const response = await reviewsService.getSubmissionReviews(submissionId);
 			const result = handleApiResponse(response);
 
@@ -189,7 +179,6 @@ export function useReviews(): UseReviewsReturn {
 			}
 
 			setSubmissionReviews(result.data || []);
-			console.log("✅ Successfully fetched submission reviews");
 		} catch (error) {
 			const errorMessage = handleAsyncError(
 				error,
@@ -211,7 +200,6 @@ export function useReviews(): UseReviewsReturn {
 				setSubmitting(true);
 				setError(null);
 
-				console.log("🔄 Updating review:", reviewId);
 				const response = await reviewsService.updateReview(
 					reviewId,
 					reviewData,
@@ -222,7 +210,6 @@ export function useReviews(): UseReviewsReturn {
 					throw new Error(result.error?.message || "Failed to update review");
 				}
 
-				console.log("✅ Successfully updated review");
 				return result.data || null;
 			} catch (error) {
 				const errorMessage = handleAsyncError(
