@@ -1,11 +1,11 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState } from "react";
 
-import { ConfirmationModal } from '@/components/common/ConfirmModal';
-import { useSemesterStatus } from '@/hooks/student/useSemesterStatus';
-import { useStudentGroupStatus } from '@/hooks/student/useStudentGroupStatus';
-import groupService from '@/lib/services/groups.service';
-import { handleApiResponse } from '@/lib/utils/handleApi';
-import { showNotification } from '@/lib/utils/notification';
+import { ConfirmationModal } from "@/components/common/ConfirmModal";
+import { useSemesterStatus } from "@/hooks/student/useSemesterStatus";
+import { useStudentGroupStatus } from "@/hooks/student/useStudentGroupStatus";
+import groupService from "@/lib/services/groups.service";
+import { handleApiResponse } from "@/lib/utils/handleApi";
+import { showNotification } from "@/lib/utils/notification";
 
 export const useThesisRegistration = () => {
 	const [isRegistering, setIsRegistering] = useState(false);
@@ -39,23 +39,23 @@ export const useThesisRegistration = () => {
 			// Check if user has group and is leader
 			if (!group) {
 				showNotification.error(
-					'No Group Found',
-					'You must be in a group to register for a thesis.',
+					"No Group Found",
+					"You must be in a group to register for a thesis.",
 				);
 				return;
 			}
 
 			// Show confirmation modal immediately
 			ConfirmationModal.show({
-				title: 'Register Thesis',
+				title: "Register Thesis",
 				message:
-					'Are you sure you want to register your group for this thesis?',
-				details: thesisTitle || 'Selected thesis',
-				note: 'This action will assign the thesis to your group and cannot be easily undone.',
-				noteType: 'warning',
-				okText: 'Register',
-				cancelText: 'Cancel',
-				okType: 'primary',
+					"Are you sure you want to register your group for this thesis?",
+				details: thesisTitle || "Selected thesis",
+				note: "This action will assign the thesis to your group and cannot be easily undone.",
+				noteType: "warning",
+				okText: "Register",
+				cancelText: "Cancel",
+				okType: "primary",
 				loading: isRegistering,
 				onOk: async () => {
 					try {
@@ -63,20 +63,20 @@ export const useThesisRegistration = () => {
 
 						// Call the pick-thesis API
 						const response = await groupService.pickThesis(group.id, thesisId);
-						const result = handleApiResponse(response, 'Success');
+						const result = handleApiResponse(response, "Success");
 
 						handleSuccessResponse(
 							result,
-							'Registration Successful',
-							'Your group has been registered for this thesis successfully!',
-							'Registration failed',
+							"Registration Successful",
+							"Your group has been registered for this thesis successfully!",
+							"Registration failed",
 							onSuccess,
 						);
 					} catch (error) {
-						console.error('Error registering thesis:', error);
+						console.error("Error registering thesis:", error);
 						showNotification.error(
-							'Registration Failed',
-							'Failed to register for this thesis. Please try again.',
+							"Registration Failed",
+							"Failed to register for this thesis. Please try again.",
 						);
 					} finally {
 						setIsRegistering(false);
@@ -92,23 +92,23 @@ export const useThesisRegistration = () => {
 			// Check if user has group and is leader
 			if (!group) {
 				showNotification.error(
-					'No Group Found',
-					'You must be in a group to unregister from a thesis.',
+					"No Group Found",
+					"You must be in a group to unregister from a thesis.",
 				);
 				return;
 			}
 
 			// Show confirmation modal immediately
 			ConfirmationModal.show({
-				title: 'Unregister Thesis',
+				title: "Unregister Thesis",
 				message:
-					'Are you sure you want to unregister your group from this thesis?',
-				details: thesisTitle || 'Current thesis',
-				note: 'This action will remove the thesis assignment from your group.',
-				noteType: 'warning',
-				okText: 'Unregister',
-				cancelText: 'Cancel',
-				okType: 'danger',
+					"Are you sure you want to unregister your group from this thesis?",
+				details: thesisTitle || "Current thesis",
+				note: "This action will remove the thesis assignment from your group.",
+				noteType: "warning",
+				okText: "Unregister",
+				cancelText: "Cancel",
+				okType: "danger",
 				loading: isRegistering,
 				onOk: async () => {
 					try {
@@ -116,20 +116,27 @@ export const useThesisRegistration = () => {
 
 						// Call the unpick-thesis API
 						const response = await groupService.unpickThesis(group.id);
-						const result = handleApiResponse(response, 'Success');
+						const result = handleApiResponse(response);
 
-						handleSuccessResponse(
-							result,
-							'Unregistration Successful',
-							'Your group has been unregistered from the thesis successfully!',
-							'Unregistration failed',
-							onSuccess,
-						);
+						if (result.success) {
+							showNotification.success(
+								"Unregistration Successful",
+								"Your group has been unregistered from the thesis successfully!",
+							);
+							onSuccess?.();
+						} else {
+							// Show error message from backend
+							showNotification.error(
+								"Unregistration Failed",
+								result.error?.message ||
+									"Failed to unregister from this thesis. Please try again.",
+							);
+						}
 					} catch (error) {
-						console.error('Error unregistering thesis:', error);
+						console.error("Error unregistering thesis:", error);
 						showNotification.error(
-							'Unregistration Failed',
-							'Failed to unregister from this thesis. Please try again.',
+							"Unregistration Failed",
+							"An unexpected error occurred. Please try again.",
 						);
 					} finally {
 						setIsRegistering(false);
@@ -137,7 +144,7 @@ export const useThesisRegistration = () => {
 				},
 			});
 		},
-		[group, isRegistering, handleSuccessResponse],
+		[group, isRegistering],
 	);
 
 	return {
