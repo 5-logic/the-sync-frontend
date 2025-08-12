@@ -268,11 +268,9 @@ export default function MilestoneDetailCard() {
 					message.error(getSubmissionMessage(milestone, submission));
 					return;
 				}
-			} else {
-				if (!canSubmit(milestone)) {
-					message.error(getSubmissionMessage(milestone));
-					return;
-				}
+			} else if (!canSubmit(milestone)) {
+				message.error(getSubmissionMessage(milestone));
+				return;
 			}
 		}
 
@@ -665,7 +663,7 @@ export default function MilestoneDetailCard() {
 							)}
 
 							{/* Download Templates Section */}
-							{milestone.documents && milestone.documents.length > 0 && (
+							{milestone.documents?.length && (
 								<div style={{ marginBottom: 16 }}>
 									<div
 										style={{
@@ -719,7 +717,7 @@ export default function MilestoneDetailCard() {
 							)}
 
 							{/* Reviewer Information */}
-							{submission && submission.id && (
+							{submission?.id && (
 								<ReviewerInfo
 									reviewersData={
 										currentSubmissionId === submission.id
