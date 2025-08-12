@@ -139,6 +139,7 @@ interface ThesisWithRelations extends Thesis {
 const MyThesisSection: React.FC = () => {
 	const [theses, setTheses] = useState<ThesisWithRelations[]>([]);
 	const [loading, setLoading] = useState(true);
+	const [isMobile, setIsMobile] = useState(false);
 	const router = useRouter();
 
 	// Use custom hook for semester filter logic
@@ -149,6 +150,22 @@ const MyThesisSection: React.FC = () => {
 		semestersLoading,
 		session,
 	} = useLecturerSemesterFilter();
+
+	// Handle responsive behavior
+	useEffect(() => {
+		const checkIsMobile = () => {
+			setIsMobile(window.innerWidth < 576);
+		};
+
+		// Check initial size
+		checkIsMobile();
+
+		// Add event listener
+		window.addEventListener("resize", checkIsMobile);
+
+		// Cleanup
+		return () => window.removeEventListener("resize", checkIsMobile);
+	}, []);
 
 	// Fetch lecturer theses
 	useEffect(() => {
@@ -365,19 +382,36 @@ const MyThesisSection: React.FC = () => {
 	};
 	return (
 		<Card>
-			<Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
-				<Col>
+			<Row
+				justify="space-between"
+				align="top"
+				style={{ marginBottom: 16 }}
+				gutter={[16, 16]}
+			>
+				<Col xs={24} sm={24} md={12} lg={8} xl={8}>
 					<Typography.Title level={5} style={{ margin: 0 }}>
 						My Thesis Topics
 					</Typography.Title>
 				</Col>
-				<Col>
-					<div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+				<Col xs={24} sm={24} md={12} lg={16} xl={16}>
+					<div
+						style={{
+							display: "flex",
+							gap: 12,
+							alignItems: "center",
+							flexDirection: isMobile ? "column" : "row",
+							justifyContent: isMobile ? "stretch" : "flex-end",
+						}}
+					>
 						{/* Semester Filter */}
 						<Select
 							value={selectedSemester}
 							onChange={setSelectedSemester}
-							style={{ width: 200 }}
+							style={{
+								width: isMobile ? "100%" : "auto",
+								minWidth: isMobile ? "100%" : 200,
+								maxWidth: isMobile ? "100%" : 250,
+							}}
 							placeholder="Filter by semester"
 							allowClear
 							loading={semestersLoading}
@@ -395,6 +429,10 @@ const MyThesisSection: React.FC = () => {
 							type="primary"
 							icon={<PlusOutlined />}
 							onClick={handleCreateThesis}
+							style={{
+								width: isMobile ? "100%" : "auto",
+								minWidth: "fit-content",
+							}}
 						>
 							Create New Thesis
 						</Button>

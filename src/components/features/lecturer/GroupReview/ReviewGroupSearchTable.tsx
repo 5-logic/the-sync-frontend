@@ -1,26 +1,13 @@
 "use client";
 
 import { EyeOutlined, ReloadOutlined, SearchOutlined } from "@ant-design/icons";
-import { Button, Input, Space, Table } from "antd";
+import { Button, Empty, Input, Space, Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
 import { TablePagination } from "@/components/common/TablePagination";
 import SemesterFilter from "@/components/features/lecturer/GroupProgess/SemesterFilter";
 import MilestoneStepFilter from "@/components/features/lecturer/GroupReview/MilestoneStepFilter";
 import { AssignmentReviewer } from "@/lib/services/reviews.service";
-import {
-	isWithinMilestonePeriod,
-	testMilestonePeriod,
-} from "@/lib/utils/milestoneUtils";
-
-// Make test function available globally for debugging
-if (typeof window !== "undefined") {
-	(
-		window as typeof window & {
-			testMilestonePeriod: typeof testMilestonePeriod;
-		}
-	).testMilestonePeriod = testMilestonePeriod;
-}
 
 // Review group data type
 export interface ReviewGroupData {
@@ -63,11 +50,6 @@ interface Props {
 	showFilters?: boolean;
 	// Loading synchronization
 	onMilestoneLoadingChange?: (loading: boolean) => void;
-	// Milestone data for time checking
-	selectedMilestoneData?: {
-		startDate: string;
-		endDate: string;
-	} | null;
 }
 
 export default function ReviewGroupSearchTable({
@@ -84,7 +66,6 @@ export default function ReviewGroupSearchTable({
 	onMilestoneChange,
 	showFilters = true,
 	onMilestoneLoadingChange,
-	selectedMilestoneData,
 }: Readonly<Props>) {
 	const columns: ColumnsType<ReviewGroupData> = [
 		{
@@ -127,42 +108,12 @@ export default function ReviewGroupSearchTable({
 			responsive: ["xs", "sm", "md", "lg", "xl"],
 			width: 80,
 			render: (_, record) => {
-				// Check if current time is within milestone period
-				// Priority: Use selected milestone data from filter if available
-				let canView = false;
-
-				if (selectedMilestone && selectedMilestoneData) {
-					// Use selected milestone from filter for time checking
-					canView = isWithinMilestonePeriod(
-						selectedMilestoneData.startDate,
-						selectedMilestoneData.endDate,
-					);
-				} else if (record.milestone) {
-					// Fallback to record milestone
-					canView = isWithinMilestonePeriod(
-						record.milestone.startDate,
-						record.milestone.endDate,
-					);
-				} else {
-					// No milestone data available - allow access
-					canView = true;
-				}
-
 				return (
 					<Button
 						type="link"
 						icon={<EyeOutlined />}
 						onClick={() => onGroupSelect(record)}
-						disabled={!canView}
-						title={
-							!canView
-								? "Review is only available during the milestone period"
-								: "View group review"
-						}
-						style={{
-							color: !canView ? "#d9d9d9" : undefined,
-							cursor: !canView ? "not-allowed" : "pointer",
-						}}
+						title="View group review"
 					/>
 				);
 			},
@@ -230,7 +181,9 @@ export default function ReviewGroupSearchTable({
 				size="middle"
 				scroll={{ x: 800 }}
 				locale={{
-					emptyText: loading ? "" : "No data available",
+					emptyText: (
+						<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No data" />
+					),
 				}}
 			/>
 		</Space>

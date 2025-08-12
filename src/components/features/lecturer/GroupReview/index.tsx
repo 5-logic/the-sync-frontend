@@ -1,6 +1,6 @@
 "use client";
 
-import { Alert, Card, Divider, Space, Typography } from "antd";
+import { Alert, Card, Divider, Skeleton, Space, Typography } from "antd";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { Header } from "@/components/common/Header";
@@ -32,6 +32,9 @@ export default function GroupReviewPage() {
 	const [milestones, setMilestones] = useState<Milestone[]>([]);
 	const [supervisorCache, setSupervisorCache] = useState<
 		Record<string, string[]>
+	>({});
+	const [loadingSupervisors, setLoadingSupervisors] = useState<
+		Record<string, boolean>
 	>({});
 
 	// Helper function to fetch milestones for a semester
@@ -90,6 +93,7 @@ export default function GroupReviewPage() {
 	// Helper function to fetch supervisors for a single thesis
 	const fetchSupervisorsForThesis = useCallback(
 		async (thesisId: string) => {
+			setLoadingSupervisors((prev) => ({ ...prev, [thesisId]: true }));
 			try {
 				const supervisors = await fetchSupervisors(thesisId);
 				const supervisorNames = supervisors.map(
@@ -99,6 +103,8 @@ export default function GroupReviewPage() {
 			} catch (error) {
 				console.error(`Error fetching supervisors for ${thesisId}:`, error);
 				return { thesisId, supervisorNames: [] };
+			} finally {
+				setLoadingSupervisors((prev) => ({ ...prev, [thesisId]: false }));
 			}
 		},
 		[fetchSupervisors],
@@ -208,13 +214,46 @@ export default function GroupReviewPage() {
 		setSelectedGroup(undefined);
 	}, [selectedSemester, selectedMilestone]);
 
-	const handleSelect = (group: ReviewGroupData) => {
+	// Get selected group with updated supervisor names and loading state
+	const currentSelectedGroup = useMemo(() => {
+		if (!selectedGroup) return undefined;
+
+		const supervisorNames =
+			supervisorCache[selectedGroup.thesisId] ||
+			selectedGroup.supervisorNames ||
+			[];
+
+		const isLoadingSupervisors =
+			loadingSupervisors[selectedGroup.thesisId] || false;
+
+		return {
+			...selectedGroup,
+			supervisorNames,
+			isLoadingSupervisors,
+		};
+	}, [selectedGroup, supervisorCache, loadingSupervisors]);
+
+	const handleSelect = async (group: ReviewGroupData) => {
 		setSelectedGroup(group);
+
+		// If supervisors for this group are not cached, fetch them immediately
+		if (!supervisorCache[group.thesisId]) {
+			try {
+				const result = await fetchSupervisorsForThesis(group.thesisId);
+				updateSupervisorCache([result]);
+			} catch (error) {
+				console.error(
+					`Error fetching supervisors for selected group ${group.thesisId}:`,
+					error,
+				);
+			}
+		}
 	};
 
 	const handleRefresh = () => {
 		fetchAssignedReviews();
 		setSupervisorCache({}); // Clear supervisor cache to refetch
+		setLoadingSupervisors({}); // Clear loading states
 	};
 
 	const handleSemesterChange = useCallback((semesterId: string | null) => {
@@ -263,20 +302,39 @@ export default function GroupReviewPage() {
 				onMilestoneChange={handleMilestoneChange}
 				onMilestoneLoadingChange={handleMilestoneLoadingChange}
 				showFilters={true}
-				selectedMilestoneData={selectedMilestoneData}
 			/>
 
-			{selectedGroup && (
+			{currentSelectedGroup && (
 				<Card
-					title={`Group Name: ${selectedGroup.name} | ${selectedGroup.englishName}`}
+					title={`Group Name: ${currentSelectedGroup.name} | ${currentSelectedGroup.englishName}`}
 				>
 					<Space direction="vertical" size="small" style={{ width: "100%" }}>
 						<Text type="secondary">
 							Supervised by:{" "}
-							{selectedGroup.supervisorNames &&
-							selectedGroup.supervisorNames.length > 0
-								? selectedGroup.supervisorNames.join(", ")
-								: "No supervisors assigned"}
+							{(() => {
+								if (currentSelectedGroup.isLoadingSupervisors) {
+									return (
+										<Skeleton.Input
+											active
+											size="small"
+											style={{
+												width: 150,
+												height: 16,
+												display: "inline-block",
+												verticalAlign: "middle",
+											}}
+										/>
+									);
+								}
+
+								const supervisorText =
+									currentSelectedGroup.supervisorNames &&
+									currentSelectedGroup.supervisorNames.length > 0
+										? currentSelectedGroup.supervisorNames.join(", ")
+										: "No supervisors assigned";
+
+								return supervisorText;
+							})()}
 						</Text>
 					</Space>
 
@@ -285,11 +343,12 @@ export default function GroupReviewPage() {
 					<Space direction="vertical" size="large" style={{ width: "100%" }}>
 						<ReviewHeader />
 						<ReviewersList
-							assignmentReviews={selectedGroup.assignmentReviews}
+							assignmentReviews={currentSelectedGroup.assignmentReviews}
 						/>
 						<ReviewChecklistTable
-							submissionId={selectedGroup.submissionId}
-							isMainReviewer={selectedGroup.isMainReviewer}
+							submissionId={currentSelectedGroup.submissionId}
+							isMainReviewer={currentSelectedGroup.isMainReviewer}
+							milestoneData={selectedMilestoneData}
 							onSubmitSuccess={() => {
 								// Refresh the reviews after successful submission
 								fetchAssignedReviews();
