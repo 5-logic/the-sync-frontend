@@ -6,6 +6,7 @@ import { ColumnsType } from "antd/es/table";
 import { TablePagination } from "@/components/common/TablePagination";
 import { isTextMatch } from "@/lib/utils/textNormalization";
 
+// Interface for admin create group (temporary local data)
 export interface AdminGroup {
 	id: string;
 	name: string;
@@ -32,34 +33,33 @@ const GroupsTable: React.FC<GroupsTableProps> = ({ data, onDelete }) => {
 	const columns: ColumnsType<AdminGroup> = useMemo(
 		() => [
 			{
-				title: "Group ID",
+				title: "Group code",
 				dataIndex: "id",
-				key: "id",
+				key: "code",
 				width: "15%",
 			},
 			{
-				title: "Group Name",
+				title: "Group name",
 				dataIndex: "name",
 				key: "name",
 				width: "35%",
 			},
 			{
 				title: "Members",
-				key: "members",
 				render: (_: unknown, record: AdminGroup) =>
 					`${record.members}/${record.maxMembers}`,
+				key: "members",
 				width: "20%",
 			},
 			{
 				title: "Status",
-				dataIndex: "status",
-				key: "status",
-				render: (status: AdminGroup["status"]) =>
-					status === "Active" ? (
+				render: (status: AdminGroup["status"], record: AdminGroup) =>
+					record.status === "Active" ? (
 						<Tag color="green">Active</Tag>
 					) : (
 						<Tag color="gray">Full</Tag>
 					),
+				key: "status",
 				width: "15%",
 			},
 			{
