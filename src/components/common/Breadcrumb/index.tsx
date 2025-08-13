@@ -10,6 +10,7 @@ const ROUTE_TITLES: Record<string, string> = {
 	"/admin": "Admin Dashboard",
 	"/admin/lecturer-management": "Lecturer Management",
 	"/admin/students-management": "Student Management",
+	"/admin/group-management": "Group Management",
 	"/admin/milestone-management": "Milestone Management",
 	"/admin/semester-settings": "Semester Settings",
 	"/admin/create-new-lecturer": "Create New Lecturer",
