@@ -24,7 +24,6 @@ import {
 	ThesisStatus,
 	UI_CONSTANTS,
 } from "@/lib/constants/thesis";
-import { aiDuplicateService } from "@/lib/services/ai-duplicate.service";
 import { getSemesterTagColor } from "@/lib/utils/colorUtils";
 import { formatDate } from "@/lib/utils/dateFormat";
 import {
@@ -102,83 +101,25 @@ export default function ThesisTable({ data, loading }: Readonly<Props>) {
 			// Set loading state for this specific thesis
 			setSubmitLoadingThesisId(thesis.id);
 
-			try {
-				// Check for duplicate theses first
-				const duplicateResult = await aiDuplicateService.checkDuplicate(
-					thesis.id,
-				);
-
-				if (
-					duplicateResult.success &&
-					duplicateResult.data &&
-					duplicateResult.data.length > 0
-				) {
-					// Found duplicates - show duplicate confirmation modal
-					ThesisConfirmationModals.submitWithDuplicates(
-						thesis.englishName,
-						duplicateResult.data.length,
-						() => {
-							// Handle "Check my thesis" - navigate to thesis detail
-							setSubmitLoadingThesisId(null); // Clear loading state first
-							const viewPath = `/lecturer/thesis-management/${thesis.id}`;
-							navigateWithLoading(viewPath);
-						},
-						async () => {
-							// Handle "Confirm" - proceed with submission
-							try {
-								const success = await submitThesis(thesis.id);
-								if (success) {
-									handleThesisSuccess(THESIS_SUCCESS_CONFIGS.SUBMIT);
-								}
-							} catch (error) {
-								handleThesisError(error, THESIS_ERROR_CONFIGS.SUBMIT);
-							} finally {
-								setSubmitLoadingThesisId(null);
-							}
-						},
-						submitLoadingThesisId === thesis.id, // Pass loading state for this specific thesis
-					);
-				} else {
-					// No duplicates found - show normal confirmation modal
-					ThesisConfirmationModals.submit(
-						thesis.englishName,
-						async () => {
-							try {
-								const success = await submitThesis(thesis.id);
-								if (success) {
-									handleThesisSuccess(THESIS_SUCCESS_CONFIGS.SUBMIT);
-								}
-							} catch (error) {
-								handleThesisError(error, THESIS_ERROR_CONFIGS.SUBMIT);
-							} finally {
-								setSubmitLoadingThesisId(null);
-							}
-						},
-						submitLoadingThesisId === thesis.id,
-					); // Pass loading state for this specific thesis
-				}
-			} catch (error) {
-				console.error("Error checking duplicates:", error);
-				// If duplicate check fails, proceed with normal confirmation
-				ThesisConfirmationModals.submit(
-					thesis.englishName,
-					async () => {
-						try {
-							const success = await submitThesis(thesis.id);
-							if (success) {
-								handleThesisSuccess(THESIS_SUCCESS_CONFIGS.SUBMIT);
-							}
-						} catch (error) {
-							handleThesisError(error, THESIS_ERROR_CONFIGS.SUBMIT);
-						} finally {
-							setSubmitLoadingThesisId(null);
+			// Show normal confirmation modal without duplicate checking
+			ThesisConfirmationModals.submit(
+				thesis.englishName,
+				async () => {
+					try {
+						const success = await submitThesis(thesis.id);
+						if (success) {
+							handleThesisSuccess(THESIS_SUCCESS_CONFIGS.SUBMIT);
 						}
-					},
-					submitLoadingThesisId === thesis.id,
-				); // Pass loading state for this specific thesis
-			}
+					} catch (error) {
+						handleThesisError(error, THESIS_ERROR_CONFIGS.SUBMIT);
+					} finally {
+						setSubmitLoadingThesisId(null);
+					}
+				},
+				submitLoadingThesisId === thesis.id, // Pass loading state for this specific thesis
+			);
 		},
-		[submitThesis, navigateWithLoading, submitLoadingThesisId],
+		[submitThesis, submitLoadingThesisId],
 	);
 
 	// Type-safe color mapping for status
