@@ -1,5 +1,5 @@
 import { createMetadata } from "@/app/metadata";
-import CreateGroup from "@/components/features/admin/CreateGroup";
+import GroupManagement from "@/components/features/admin/GroupManagement";
 
 export const metadata = createMetadata({
 	title: "Admin Group Management",
@@ -8,5 +8,5 @@ export const metadata = createMetadata({
 });
 
 export default function AdminGroupManagementPage() {
-	return <CreateGroup />;
+	return <GroupManagement />;
 }

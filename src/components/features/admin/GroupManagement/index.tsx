@@ -1,10 +1,17 @@
 "use client";
 import React, { useState, useCallback } from "react";
 import { Space } from "antd";
-import CreateForm, { CreateFormValues } from "./CreateForm";
-import GroupsTable, { AdminGroup } from "./GroupsTable";
+import CreateForm, {
+	CreateFormValues,
+} from "@/components/features/admin/GroupManagement/CreateForm";
+import GroupsTable, {
+	AdminGroup,
+} from "@/components/features/admin/GroupManagement/GroupsTable";
 
-const CreateGroups: React.FC = () => {
+const DEFAULT_MAX_MEMBERS = 5;
+const GROUP_ID_PADDING = 3;
+
+const GroupManagement: React.FC = () => {
 	const [groups, setGroups] = useState<AdminGroup[]>([]);
 
 	const handleGenerate = useCallback(
@@ -15,11 +22,11 @@ const CreateGroups: React.FC = () => {
 				(_, i) => {
 					const groupNumber = startIndex + i;
 					return {
-						id: `G${String(groupNumber).padStart(3, "0")}`,
+						id: `G${String(groupNumber).padStart(GROUP_ID_PADDING, "0")}`,
 						name: `Group ${groupNumber}`,
 						semester,
 						members: 0,
-						maxMembers: 5,
+						maxMembers: DEFAULT_MAX_MEMBERS,
 						status: "Active" as const,
 					};
 				},
@@ -41,4 +48,4 @@ const CreateGroups: React.FC = () => {
 	);
 };
 
-export default CreateGroups;
+export default GroupManagement;
