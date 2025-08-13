@@ -2,10 +2,10 @@
 import React, { useState } from "react";
 import { Space } from "antd";
 import CreateForm, { CreateFormValues } from "./CreateForm";
-import GroupsTable, { Group } from "./GroupsTable";
+import GroupsTable, { AdminGroup } from "./GroupsTable";
 
 const CreateGroups: React.FC = () => {
-	const [groups, setGroups] = useState<Group[]>([
+	const [groups, setGroups] = useState<AdminGroup[]>([
 		{
 			id: "G001",
 			name: "Group 1",
@@ -26,7 +26,7 @@ const CreateGroups: React.FC = () => {
 
 	const handleGenerate = ({ semester, numberOfGroups }: CreateFormValues) => {
 		const startIndex = groups.length + 1;
-		const newGroups: Group[] = Array.from(
+		const newGroups: AdminGroup[] = Array.from(
 			{ length: numberOfGroups },
 			(_, i) => {
 				const groupNumber = startIndex + i;
