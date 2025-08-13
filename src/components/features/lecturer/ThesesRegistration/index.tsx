@@ -1,16 +1,27 @@
 "use client";
 
 import { Alert, Space } from "antd";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 
 import { Header } from "@/components/common/Header";
 import ThesesRegistrationFilterBar from "./ThesesRegistrationFilterBar";
 import ThesesRegistrationTable from "./ThesesRegistrationTable";
 import { useThesisStore } from "@/store";
+import { createSearchFilter } from "@/store/helpers/storeHelpers";
+import { Thesis } from "@/schemas/thesis";
+
+// Create search filter for theses (same logic as in store)
+const thesisSearchFilter = createSearchFilter<Thesis>((thesis) => [
+	thesis.englishName,
+	thesis.vietnameseName,
+	thesis.abbreviation ?? "",
+	thesis.description ?? "",
+	thesis.domain ?? "",
+]);
 
 export default function ThesesRegistration() {
 	const {
-		filteredTheses,
+		theses, // Use unfiltered theses instead of filteredTheses to avoid cross-page filter interference
 		loading,
 		lastError,
 		searchText,
@@ -22,6 +33,37 @@ export default function ThesesRegistration() {
 		setSelectedSemester,
 		clearError,
 	} = useThesisStore();
+
+	/**
+	 * Create filtered data specifically for ThesesRegistration page.
+	 * This avoids interference from other filters like selectedOwned (My Thesis filter)
+	 * that are used in the ThesisManagement page but shouldn't affect this page.
+	 */
+	const registrationFilteredTheses = useMemo(() => {
+		let filtered = [...theses];
+
+		// Apply search filter using same logic as store
+		if (searchText.trim()) {
+			filtered = thesisSearchFilter(filtered, searchText);
+		}
+
+		// Apply status filter
+		if (selectedStatus) {
+			filtered = filtered.filter((thesis) => {
+				const thesisStatus = thesis.status.toLowerCase();
+				return thesisStatus === selectedStatus;
+			});
+		}
+
+		// Apply semester filter
+		if (selectedSemester) {
+			filtered = filtered.filter(
+				(thesis) => thesis.semesterId === selectedSemester,
+			);
+		}
+
+		return filtered;
+	}, [theses, searchText, selectedStatus, selectedSemester]);
 
 	// Fetch all theses when component mounts
 	useEffect(() => {
@@ -60,7 +102,10 @@ export default function ThesesRegistration() {
 				onSemesterChange={setSelectedSemester}
 				onRefresh={handleRefresh}
 			/>
-			<ThesesRegistrationTable data={filteredTheses} loading={loading} />
+			<ThesesRegistrationTable
+				data={registrationFilteredTheses}
+				loading={loading}
+			/>
 		</Space>
 	);
 }

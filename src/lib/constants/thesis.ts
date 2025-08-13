@@ -16,12 +16,12 @@ export const TIMING = {
 // UI Constants
 export const UI_CONSTANTS = {
 	TABLE_WIDTHS: {
-		TITLE: "40%",
+		TITLE: "36%",
 		OWNER: "12%",
 		DOMAIN: "12%",
 		STATUS: "10%",
 		DATE: "14%",
-		ACTIONS: "12%",
+		ACTIONS: "16%",
 	},
 	TEXT_DISPLAY: {
 		MAX_LINES: 3,

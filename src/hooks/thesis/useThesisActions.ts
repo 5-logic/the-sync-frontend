@@ -106,7 +106,7 @@ export const useThesisActions = (thesisId: string) => {
 					setApproveLoading,
 				);
 			}
-		});
+		}, approveLoading);
 	};
 
 	const handleReject = async () => {

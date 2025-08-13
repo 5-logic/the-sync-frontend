@@ -5,10 +5,8 @@ import {
 	CloseOutlined,
 	EyeOutlined,
 	LoadingOutlined,
-	MoreOutlined,
 } from "@ant-design/icons";
-import { Button, Dropdown, Empty, Table, Tag, Tooltip } from "antd";
-import type { MenuProps } from "antd";
+import { Button, Empty, Table, Tag, Tooltip } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -84,19 +82,27 @@ export default function ThesesRegistrationTable({
 			setReviewLoadingThesisId(thesis.id);
 			setReviewAction("approve");
 
-			ThesisConfirmationModals.approve(async () => {
-				try {
-					const success = await reviewThesis(thesis.id, "Approved");
-					if (success) {
-						handleThesisSuccess(THESIS_SUCCESS_CONFIGS.APPROVE);
+			ThesisConfirmationModals.approve(
+				async () => {
+					try {
+						const success = await reviewThesis(thesis.id, "Approved");
+						if (success) {
+							handleThesisSuccess(THESIS_SUCCESS_CONFIGS.APPROVE);
+						}
+					} catch (error) {
+						handleThesisError(error, THESIS_ERROR_CONFIGS.APPROVE);
+					} finally {
+						setReviewLoadingThesisId(null);
+						setReviewAction(null);
 					}
-				} catch (error) {
-					handleThesisError(error, THESIS_ERROR_CONFIGS.APPROVE);
-				} finally {
+				},
+				false,
+				() => {
+					// Reset loading state when user cancels
 					setReviewLoadingThesisId(null);
 					setReviewAction(null);
-				}
-			});
+				},
+			);
 		},
 		[reviewThesis],
 	);
@@ -106,19 +112,27 @@ export default function ThesesRegistrationTable({
 			setReviewLoadingThesisId(thesis.id);
 			setReviewAction("reject");
 
-			ThesisConfirmationModals.reject(async () => {
-				try {
-					const success = await reviewThesis(thesis.id, "Rejected");
-					if (success) {
-						handleThesisSuccess(THESIS_SUCCESS_CONFIGS.REJECT);
+			ThesisConfirmationModals.reject(
+				async () => {
+					try {
+						const success = await reviewThesis(thesis.id, "Rejected");
+						if (success) {
+							handleThesisSuccess(THESIS_SUCCESS_CONFIGS.REJECT);
+						}
+					} catch (error) {
+						handleThesisError(error, THESIS_ERROR_CONFIGS.REJECT);
+					} finally {
+						setReviewLoadingThesisId(null);
+						setReviewAction(null);
 					}
-				} catch (error) {
-					handleThesisError(error, THESIS_ERROR_CONFIGS.REJECT);
-				} finally {
+				},
+				false,
+				() => {
+					// Reset loading state when user cancels
 					setReviewLoadingThesisId(null);
 					setReviewAction(null);
-				}
-			});
+				},
+			);
 		},
 		[reviewThesis],
 	);
@@ -128,9 +142,9 @@ export default function ThesesRegistrationTable({
 		return STATUS_COLORS[status as ThesisStatus] ?? "default";
 	}, []);
 
-	// Create dropdown menu items for each thesis
-	const getDropdownItems = useCallback(
-		(record: Thesis): MenuProps["items"] => {
+	// Extract actions render logic
+	const renderActionsColumn = useCallback(
+		(record: Thesis) => {
 			const viewPath = `/lecturer/thesis-management/${record.id}`;
 			const isViewLoading = isNavigating && targetPath === viewPath;
 			const isApproveLoading =
@@ -139,34 +153,48 @@ export default function ThesesRegistrationTable({
 				reviewLoadingThesisId === record.id && reviewAction === "reject";
 			const isAnyLoading = isApproveLoading || isRejectLoading;
 
-			return [
-				{
-					key: "view",
-					label: "View Details",
-					icon: isViewLoading ? <LoadingOutlined spin /> : <EyeOutlined />,
-					onClick: () => handleView(record.id),
-					disabled: isNavigating && !isViewLoading,
-				},
-				{
-					type: "divider",
-				},
-				{
-					key: "approve",
-					label: "Approve",
-					icon: isApproveLoading ? <LoadingOutlined spin /> : <CheckOutlined />,
-					disabled: isAnyLoading || isNavigating,
-					onClick: () => !isAnyLoading && handleApprove(record),
-					style: { color: "#52c41a" },
-				},
-				{
-					key: "reject",
-					label: "Reject",
-					icon: isRejectLoading ? <LoadingOutlined spin /> : <CloseOutlined />,
-					danger: true,
-					disabled: isAnyLoading || isNavigating,
-					onClick: () => !isAnyLoading && handleReject(record),
-				},
-			];
+			return (
+				<div style={{ display: "flex", gap: "4px", justifyContent: "center" }}>
+					{/* View Details Button */}
+					<Tooltip title="View Details">
+						<Button
+							icon={isViewLoading ? <LoadingOutlined spin /> : <EyeOutlined />}
+							type="text"
+							size="small"
+							onClick={() => handleView(record.id)}
+							disabled={isNavigating && !isViewLoading}
+						/>
+					</Tooltip>
+
+					{/* Approve Button */}
+					<Tooltip title="Approve">
+						<Button
+							icon={
+								isApproveLoading ? <LoadingOutlined spin /> : <CheckOutlined />
+							}
+							type="text"
+							size="small"
+							onClick={() => !isAnyLoading && handleApprove(record)}
+							disabled={isAnyLoading || isNavigating}
+							style={{ color: "#52c41a" }}
+						/>
+					</Tooltip>
+
+					{/* Reject Button */}
+					<Tooltip title="Reject">
+						<Button
+							icon={
+								isRejectLoading ? <LoadingOutlined spin /> : <CloseOutlined />
+							}
+							type="text"
+							size="small"
+							onClick={() => !isAnyLoading && handleReject(record)}
+							disabled={isAnyLoading || isNavigating}
+							danger
+						/>
+					</Tooltip>
+				</div>
+			);
 		},
 		[
 			isNavigating,
@@ -177,25 +205,6 @@ export default function ThesesRegistrationTable({
 			handleApprove,
 			handleReject,
 		],
-	);
-
-	// Extract actions render logic
-	const renderActionsColumn = useCallback(
-		(record: Thesis) => {
-			return (
-				<div style={{ display: "flex", gap: "8px", justifyContent: "center" }}>
-					{/* Dropdown Menu for View/Approve/Reject */}
-					<Dropdown
-						menu={{ items: getDropdownItems(record) }}
-						trigger={["click"]}
-						placement="bottomRight"
-					>
-						<Button icon={<MoreOutlined />} type="text" size="small" />
-					</Dropdown>
-				</div>
-			);
-		},
-		[getDropdownItems],
 	);
 
 	// Memoize columns to prevent unnecessary re-renders
