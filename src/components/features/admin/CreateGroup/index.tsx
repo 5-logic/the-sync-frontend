@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Space } from "antd";
 import GroupsTable, { Group } from "./GroupsTable";
-import BulkCreateForm, { BulkCreateFormValues } from "./CreateForm";
+import CreateForm, { CreateFormValues } from "./CreateForm";
 
 const BulkCreateGroups: React.FC = () => {
 	const [groups, setGroups] = useState<Group[]>([
@@ -29,7 +29,7 @@ const BulkCreateGroups: React.FC = () => {
 		numberOfGroups,
 		maxMembers,
 		prefix,
-	}: BulkCreateFormValues) => {
+	}: CreateFormValues) => {
 		const startIndex = groups.length + 1;
 		const newGroups: Group[] = Array.from(
 			{ length: numberOfGroups },
@@ -58,7 +58,7 @@ const BulkCreateGroups: React.FC = () => {
 
 	return (
 		<Space direction="vertical" style={{ width: "100%" }}>
-			<BulkCreateForm onGenerate={handleGenerate} />
+			<CreateForm onGenerate={handleGenerate} />
 			<GroupsTable data={groups} onEdit={handleEdit} onDelete={handleDelete} />
 		</Space>
 	);
