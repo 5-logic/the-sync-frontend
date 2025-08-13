@@ -1,73 +1,15 @@
 "use client";
-import React, { useCallback } from "react";
-import { Space, Card } from "antd";
-import { useRouter } from "next/navigation";
-import CreateForm, {
-	CreateFormValues,
-} from "@/components/features/admin/GroupManagement/CreateForm";
-import GroupAssignTable from "@/components/features/lecturer/GroupManagement/GroupAssignTable";
-import StudentFilterBar from "@/components/features/lecturer/GroupManagement/StudentFilterBar";
-import StudentTable from "@/components/features/lecturer/GroupManagement/StudentTable";
-import { useGroupManagement } from "@/hooks/admin/useGroupManagement";
+import React from "react";
+import BaseGroupManagement from "@/components/features/common/BaseGroupManagement";
 
 const GroupManagement: React.FC = () => {
-	const router = useRouter();
-	const {
-		filteredStudents,
-		majorOptions,
-		majorNamesMap,
-		loading,
-		majorLoading,
-		studentSearch,
-		setStudentSearch,
-		studentMajor,
-		setStudentMajor,
-		handleRefresh,
-	} = useGroupManagement();
-
-	const handleGenerate = useCallback(
-		({ semester, numberOfGroups }: CreateFormValues) => {
-			// Handle group generation logic here
-			console.log(`Generating ${numberOfGroups} groups for ${semester}`);
-			// You can integrate this with your group creation API
-		},
-		[],
-	);
-
 	return (
-		<Space direction="vertical" size="large" style={{ width: "100%" }}>
-			<CreateForm onGenerate={handleGenerate} />
-
-			<GroupAssignTable
-				onView={(group) => {
-					router.push(`/admin/group-management/${group.id}`);
-				}}
-				onDelete={(group) => {
-					console.log("Group deleted:", group.name);
-					// Optional: You can add additional logic here if needed
-				}}
-			/>
-
-			<Card title="Ungrouped Students">
-				<div style={{ marginBottom: 16 }}>
-					<StudentFilterBar
-						search={studentSearch}
-						onSearchChange={setStudentSearch}
-						major={studentMajor}
-						onMajorChange={setStudentMajor}
-						majorOptions={majorOptions}
-						majorNamesMap={majorNamesMap}
-						onRefresh={handleRefresh}
-						loading={loading}
-					/>
-				</div>
-				<StudentTable
-					data={filteredStudents}
-					majorNamesMap={majorNamesMap}
-					loading={loading || majorLoading}
-				/>
-			</Card>
-		</Space>
+		<BaseGroupManagement
+			title="Group Management"
+			description="Generate groups and manage student assignments"
+			showCreateForm={true}
+			basePath="/admin/group-management"
+		/>
 	);
 };
 
