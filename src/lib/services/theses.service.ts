@@ -1,11 +1,11 @@
-import httpClient from '@/lib/services/_httpClient';
-import { ApiResponse } from '@/schemas/_common';
+import httpClient from "@/lib/services/_httpClient";
+import { ApiResponse } from "@/schemas/_common";
 import {
 	Thesis,
 	ThesisCreate,
 	ThesisUpdate,
 	ThesisWithRelations,
-} from '@/schemas/thesis';
+} from "@/schemas/thesis";
 
 // Enhanced thesis interface with supervision and group information
 export interface ThesisWithGroup extends Thesis {
@@ -25,17 +25,17 @@ export interface ThesisWithGroup extends Thesis {
 			fullName: string;
 			email: string;
 		};
-		status: 'Active' | 'Inactive';
+		status: "Active" | "Inactive";
 	}>;
 }
 
 // Review thesis interface
 interface ReviewThesisDto {
-	status: 'Approved' | 'Rejected';
+	status: "Approved" | "Rejected";
 }
 
 class ThesisService {
-	private readonly baseUrl = '/theses';
+	private readonly baseUrl = "/theses";
 
 	async findAll(): Promise<ApiResponse<Thesis[]>> {
 		const response = await httpClient.get<ApiResponse<Thesis[]>>(this.baseUrl);
@@ -156,6 +156,19 @@ class ThesisService {
 		const response = await httpClient.post<ApiResponse<Thesis>>(
 			`${this.baseUrl}/${id}/assign`,
 			{ groupId },
+		);
+		return response.data;
+	}
+
+	// Apply for thesis (new endpoint)
+	async applyForThesis(
+		semesterId: string,
+		groupId: string,
+		thesisId: string,
+	): Promise<ApiResponse<void>> {
+		const response = await httpClient.post<ApiResponse<void>>(
+			`/thesis-application/${semesterId}`,
+			{ groupId, thesisId },
 		);
 		return response.data;
 	}

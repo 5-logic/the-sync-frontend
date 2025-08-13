@@ -1,16 +1,19 @@
 import { useCallback, useState } from "react";
 
 import { ConfirmationModal } from "@/components/common/ConfirmModal";
+import { useCurrentSemester } from "@/hooks/semester";
 import { useSemesterStatus } from "@/hooks/student/useSemesterStatus";
 import { useStudentGroupStatus } from "@/hooks/student/useStudentGroupStatus";
 import groupService from "@/lib/services/groups.service";
-import { handleApiResponse } from "@/lib/utils/handleApi";
+import thesisService from "@/lib/services/theses.service";
+import { handleApiResponse, handleApiError } from "@/lib/utils/handleApi";
 import { showNotification } from "@/lib/utils/notification";
 
 export const useThesisRegistration = () => {
 	const [isRegistering, setIsRegistering] = useState(false);
 	const { group } = useStudentGroupStatus();
 	const { refreshStatus } = useSemesterStatus();
+	const { currentSemester } = useCurrentSemester();
 
 	// Common success handler for both register and unregister
 	const handleSuccessResponse = useCallback(
@@ -61,8 +64,17 @@ export const useThesisRegistration = () => {
 					try {
 						setIsRegistering(true);
 
-						// Call the pick-thesis API
-						const response = await groupService.pickThesis(group.id, thesisId);
+						// Check if current semester is available
+						if (!currentSemester) {
+							throw new Error("Current semester not found");
+						}
+
+						// Call the new thesis-application API
+						const response = await thesisService.applyForThesis(
+							currentSemester.id,
+							group.id,
+							thesisId,
+						);
 						const result = handleApiResponse(response, "Success");
 
 						handleSuccessResponse(
@@ -74,17 +86,21 @@ export const useThesisRegistration = () => {
 						);
 					} catch (error) {
 						console.error("Error registering thesis:", error);
-						showNotification.error(
-							"Registration Failed",
+
+						// Use handleApiError to extract error message from backend
+						const apiError = handleApiError(
+							error,
 							"Failed to register for this thesis. Please try again.",
 						);
+
+						showNotification.error("Registration Failed", apiError.message);
 					} finally {
 						setIsRegistering(false);
 					}
 				},
 			});
 		},
-		[group, isRegistering, handleSuccessResponse],
+		[group, currentSemester, isRegistering, handleSuccessResponse],
 	);
 
 	const unregisterThesis = useCallback(
