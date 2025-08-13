@@ -6,10 +6,18 @@ import {
 	EyeOutlined,
 	LoadingOutlined,
 } from "@ant-design/icons";
-import { Button, Empty, Table, Tag, Tooltip } from "antd";
+import { Button, Empty, Table, Tooltip } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import {
+	createActionsColumn,
+	createDateColumn,
+	createOwnerColumn,
+	createSemesterColumn,
+	createStatusColumn,
+	createTitleColumn,
+} from "@/components/common/ThesisTableColumns";
 import { ThesisConfirmationModals } from "@/components/common/ConfirmModal";
 import { TablePagination } from "@/components/common/TablePagination";
 import { useNavigationLoader } from "@/hooks/ux";
@@ -17,10 +25,7 @@ import {
 	STATUS_COLORS,
 	THESIS_STATUS,
 	ThesisStatus,
-	UI_CONSTANTS,
 } from "@/lib/constants/thesis";
-import { getSemesterTagColor } from "@/lib/utils/colorUtils";
-import { formatDate } from "@/lib/utils/dateFormat";
 import {
 	THESIS_ERROR_CONFIGS,
 	THESIS_SUCCESS_CONFIGS,
@@ -210,155 +215,12 @@ export default function ThesesRegistrationTable({
 	// Memoize columns to prevent unnecessary re-renders
 	const columns: ColumnsType<Props["data"][number]> = useMemo(
 		() => [
-			{
-				title: "Title",
-				dataIndex: "englishName",
-				key: "title",
-				width: UI_CONSTANTS.TABLE_WIDTHS.TITLE,
-				sorter: (a, b) => a.englishName.localeCompare(b.englishName),
-				ellipsis: {
-					showTitle: false,
-				},
-				render: (text: string) => (
-					<Tooltip title={text} placement="topLeft">
-						<div
-							style={{
-								display: "-webkit-box",
-								WebkitLineClamp: UI_CONSTANTS.TEXT_DISPLAY.MAX_LINES,
-								WebkitBoxOrient: "vertical",
-								overflow: "hidden",
-								textOverflow: "ellipsis",
-								lineHeight: UI_CONSTANTS.TEXT_DISPLAY.LINE_HEIGHT,
-								maxHeight: UI_CONSTANTS.TEXT_DISPLAY.MAX_HEIGHT,
-								wordBreak: "break-word",
-								whiteSpace: "normal",
-							}}
-						>
-							{text}
-						</div>
-					</Tooltip>
-				),
-			},
-			{
-				title: "Owner",
-				dataIndex: "lecturerId",
-				key: "owner",
-				width: UI_CONSTANTS.TABLE_WIDTHS.OWNER,
-				ellipsis: {
-					showTitle: false,
-				},
-				render: (lecturerId: string) => {
-					const lecturer = getLecturerById(lecturerId);
-					const displayName = lecturer?.fullName ?? "Unknown";
-
-					return (
-						<Tooltip title={displayName} placement="topLeft">
-							<div
-								style={{
-									overflow: "hidden",
-									textOverflow: "ellipsis",
-									whiteSpace: "nowrap",
-								}}
-							>
-								{displayName}
-							</div>
-						</Tooltip>
-					);
-				},
-			},
-			{
-				title: "Semester",
-				dataIndex: "semesterId",
-				key: "semester",
-				width: UI_CONSTANTS.TABLE_WIDTHS.DOMAIN,
-				align: "center" as const,
-				ellipsis: {
-					showTitle: false,
-				},
-				render: (semesterId: string) => {
-					const semester = getSemesterById(semesterId);
-					const displayName = semester?.name ?? "Unknown";
-					const color = getSemesterTagColor(semesterId);
-
-					// Show loading spinner while semesters are being fetched
-					if (semesterLoading && !semester) {
-						return (
-							<div
-								style={{
-									display: "flex",
-									alignItems: "center",
-									justifyContent: "center",
-									height: "100%",
-								}}
-							>
-								<LoadingOutlined spin style={{ color: "#1890ff" }} />
-							</div>
-						);
-					}
-
-					return (
-						<div
-							style={{
-								display: "flex",
-								alignItems: "center",
-								justifyContent: "center",
-								height: "100%",
-							}}
-						>
-							<Tooltip title={displayName} placement="topLeft">
-								<Tag
-									color={color}
-									style={{
-										maxWidth: "100%",
-										overflow: "hidden",
-										textOverflow: "ellipsis",
-										whiteSpace: "nowrap",
-										display: "inline-block",
-									}}
-								>
-									{displayName}
-								</Tag>
-							</Tooltip>
-						</div>
-					);
-				},
-			},
-			{
-				title: "Status",
-				dataIndex: "status",
-				key: "status",
-				width: UI_CONSTANTS.TABLE_WIDTHS.STATUS,
-				align: "center" as const,
-				render: (status: string) => (
-					<div
-						style={{
-							display: "flex",
-							alignItems: "center",
-							justifyContent: "center",
-							height: "100%",
-						}}
-					>
-						<Tag color={getStatusColor(status)}>{status}</Tag>
-					</div>
-				),
-			},
-			{
-				title: "Created date",
-				dataIndex: "createdAt",
-				key: "createdDate",
-				width: UI_CONSTANTS.TABLE_WIDTHS.DATE,
-				align: "center" as const,
-				sorter: (a, b) =>
-					new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
-				render: (date: Date) => formatDate(date),
-			},
-			{
-				title: "Actions",
-				key: "actions",
-				width: UI_CONSTANTS.TABLE_WIDTHS.ACTIONS,
-				align: "center" as const,
-				render: (_, record) => renderActionsColumn(record),
-			},
+			createTitleColumn(),
+			createOwnerColumn(getLecturerById),
+			createSemesterColumn(getSemesterById, semesterLoading),
+			createStatusColumn(getStatusColor),
+			createDateColumn(),
+			createActionsColumn(renderActionsColumn),
 		],
 		[
 			getLecturerById,
@@ -376,7 +238,8 @@ export default function ThesesRegistrationTable({
 			loading={loading}
 			rowKey="id"
 			pagination={TablePagination}
-			scroll={{ x: "max-content" }}
+			tableLayout="auto"
+			scroll={{ x: 1000 }}
 			size="middle"
 			locale={{
 				emptyText: (

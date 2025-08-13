@@ -1,11 +1,6 @@
 "use client";
 
-import { ReloadOutlined, SearchOutlined } from "@ant-design/icons";
-import { Button, Col, Input, Row, Select } from "antd";
-import { useEffect } from "react";
-
-import { useCurrentSemester } from "@/hooks/semester";
-import { useSemesterStore } from "@/store";
+import SharedThesisFilterBar from "@/components/common/SharedThesisFilterBar";
 
 interface Props {
 	search: string;
@@ -17,12 +12,7 @@ interface Props {
 	onRefresh: () => void;
 }
 
-const statusOptions = [
-	{ value: "new", label: "New" },
-	{ value: "approved", label: "Approved" },
-	{ value: "pending", label: "Pending" },
-	{ value: "rejected", label: "Rejected" },
-];
+const statusOptions = [{ value: "pending", label: "Pending" }];
 
 export default function ThesesRegistrationFilterBar({
 	search,
@@ -33,78 +23,19 @@ export default function ThesesRegistrationFilterBar({
 	onSemesterChange,
 	onRefresh,
 }: Readonly<Props>) {
-	const {
-		semesters,
-		fetchSemesters,
-		loading: semesterLoading,
-	} = useSemesterStore();
-	const { currentSemester } = useCurrentSemester();
-
-	// Fetch semesters for dropdown options
-	useEffect(() => {
-		fetchSemesters();
-	}, [fetchSemesters]);
-
-	// Set default semester to current semester when component mounts
-	useEffect(() => {
-		if (currentSemester && !semester) {
-			onSemesterChange(currentSemester.id);
-		}
-	}, [currentSemester, semester, onSemesterChange]);
-
 	return (
-		<Row
-			gutter={[12, 12]}
-			wrap
-			align="middle"
-			justify="start"
-			style={{ marginBottom: 10 }}
-		>
-			<Col flex="auto" style={{ minWidth: 200 }}>
-				<Input
-					allowClear
-					prefix={<SearchOutlined />}
-					placeholder="Search topics"
-					value={search}
-					onChange={(e) => onSearchChange(e.target.value)}
-				/>
-			</Col>
-
-			<Col style={{ width: 140 }}>
-				<Select
-					allowClear
-					placeholder="All Semesters"
-					value={semester}
-					options={semesters.map((s) => ({
-						value: s.id,
-						label: s.name,
-					}))}
-					onChange={onSemesterChange}
-					loading={semesterLoading}
-					style={{ width: "100%" }}
-				/>
-			</Col>
-
-			<Col style={{ width: 140 }}>
-				<Select
-					allowClear
-					placeholder="All Status"
-					value={status}
-					options={statusOptions}
-					onChange={onStatusChange}
-					style={{ width: "100%" }}
-				/>
-			</Col>
-
-			<Col style={{ width: 120 }}>
-				<Button
-					icon={<ReloadOutlined />}
-					onClick={onRefresh}
-					style={{ width: "100%" }}
-				>
-					Refresh
-				</Button>
-			</Col>
-		</Row>
+		<SharedThesisFilterBar
+			search={search}
+			onSearchChange={onSearchChange}
+			status={status}
+			onStatusChange={onStatusChange}
+			semester={semester}
+			onSemesterChange={onSemesterChange}
+			onRefresh={onRefresh}
+			showOwnedFilter={false}
+			showStatusFilter={false}
+			showCreateButton={false}
+			statusOptions={statusOptions}
+		/>
 	);
 }
