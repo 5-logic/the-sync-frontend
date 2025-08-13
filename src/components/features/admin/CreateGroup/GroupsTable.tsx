@@ -6,7 +6,6 @@ import { ColumnsType } from "antd/es/table";
 import { TablePagination } from "@/components/common/TablePagination";
 import { isTextMatch } from "@/lib/utils/textNormalization";
 
-// Interface for admin create group (temporary local data)
 export interface AdminGroup {
 	id: string;
 	name: string;
