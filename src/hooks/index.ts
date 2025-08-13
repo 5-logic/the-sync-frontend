@@ -4,6 +4,9 @@
 // Auth-related hooks
 export * from "@/hooks/auth";
 
+// Group-related hooks (shared between roles)
+export * from "@/hooks/group";
+
 // Lecturer-related hooks
 export * from "@/hooks/lecturer/useAssignSupervisor";
 export * from "@/hooks/lecturer/useSupervisedGroups";

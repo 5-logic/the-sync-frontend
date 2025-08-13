@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from "react";
-import { useParams } from "next/navigation";
 import { useCurrentSemester } from "@/hooks/semester/useCurrentSemester";
 import groupService from "@/lib/services/groups.service";
 import thesesService from "@/lib/services/theses.service";
@@ -11,10 +10,7 @@ import { useMajorStore } from "@/store/useMajorStore";
 import { useSemesterStore } from "@/store/useSemesterStore";
 import { useStudentStore } from "@/store/useStudentStore";
 
-export const useAssignStudentDetail = () => {
-	const params = useParams();
-	const groupId = params.id as string;
-
+export const useAssignStudentDetail = (groupId: string) => {
 	// State
 	const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
 	const [filters, setFilters] = useState({
