@@ -515,8 +515,9 @@ export default function ThesisTable({ data, loading }: Readonly<Props>) {
 			rowKey="id"
 			pagination={TablePagination}
 			loading={loading}
-			size="middle"
 			tableLayout="fixed"
+			scroll={{ x: "max-content" }}
+			size="small"
 		/>
 	);
 }

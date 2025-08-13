@@ -1,4 +1,4 @@
-import httpClient from '@/lib/services/_httpClient';
+import httpClient from "@/lib/services/_httpClient";
 
 // AI Suggestion interfaces
 export interface SuggestGroupsRequest {
@@ -79,8 +79,50 @@ export interface SuggestStudentsResponse {
 	data: SuggestedStudent[];
 }
 
+// AI Suggest Thesis interfaces
+export interface SuggestedThesisLecturer {
+	id: string;
+	name: string;
+	email: string;
+}
+
+export interface SuggestedThesis {
+	id: string;
+	englishName: string;
+	vietnameseName: string;
+	description: string;
+	domain?: string; // Add optional domain field
+	lecturer: SuggestedThesisLecturer;
+}
+
+export interface ThesisSuggestion {
+	thesis: SuggestedThesis;
+	relevanceScore: number;
+	matchingFactors: string[];
+}
+
+export interface SuggestedGroup {
+	id: string;
+	code: string;
+	name: string;
+	projectDirection: string;
+	membersCount: number;
+}
+
+export interface SuggestThesesData {
+	group: SuggestedGroup;
+	suggestions: ThesisSuggestion[];
+	totalAvailableTheses: number;
+}
+
+export interface SuggestThesesResponse {
+	success: boolean;
+	statusCode: number;
+	data: SuggestThesesData;
+}
+
 class AIService {
-	private readonly baseUrl = '/ai';
+	private readonly baseUrl = "/ai";
 
 	/**
 	 * Suggest groups for a student based on their skills and responsibilities
@@ -103,6 +145,16 @@ class AIService {
 	): Promise<SuggestStudentsResponse> {
 		const response = await httpClient.get<SuggestStudentsResponse>(
 			`${this.baseUrl}/students/suggest-for-group/${groupId}`,
+		);
+		return response.data;
+	}
+
+	/**
+	 * Suggest theses for a group based on group's project direction and skills
+	 */
+	async suggestThesesForGroup(groupId: string): Promise<SuggestThesesResponse> {
+		const response = await httpClient.get<SuggestThesesResponse>(
+			`${this.baseUrl}/thesis/suggest-for-group/${groupId}`,
 		);
 		return response.data;
 	}

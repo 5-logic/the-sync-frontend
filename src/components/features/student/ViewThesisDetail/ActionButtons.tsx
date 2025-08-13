@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import { ArrowLeftOutlined } from '@ant-design/icons';
-import { Button, Row, Space } from 'antd';
-import { useRouter } from 'next/navigation';
-import { useCallback } from 'react';
+import { ArrowLeftOutlined } from "@ant-design/icons";
+import { Button, Row, Space } from "antd";
+import { useRouter } from "next/navigation";
+import { useCallback } from "react";
 
-import { useSemesterStatus } from '@/hooks/student/useSemesterStatus';
-import { useStudentGroupStatus } from '@/hooks/student/useStudentGroupStatus';
-import { useThesisRegistration } from '@/hooks/thesis';
-import { ThesisWithRelations } from '@/schemas/thesis';
-import { cacheUtils } from '@/store/helpers/cacheHelpers';
-import { useGroupDashboardStore } from '@/store/useGroupDashboardStore';
+import { useSemesterStatus } from "@/hooks/student/useSemesterStatus";
+import { useStudentGroupStatus } from "@/hooks/student/useStudentGroupStatus";
+import { useThesisRegistration } from "@/hooks/thesis";
+import { ThesisWithRelations } from "@/schemas/thesis";
+import { cacheUtils } from "@/store/helpers/cacheHelpers";
+import { useGroupDashboardStore } from "@/store/useGroupDashboardStore";
 
 interface Props {
 	readonly thesis: ThesisWithRelations;
@@ -26,13 +26,13 @@ export default function ActionButtons({
 	const router = useRouter();
 	const { hasGroup, isLeader, group, resetInitialization } =
 		useStudentGroupStatus();
-	const { isPicking, loading: semesterLoading } = useSemesterStatus();
+	const { canRegisterThesis, loading: semesterLoading } = useSemesterStatus();
 	const { registerThesis, unregisterThesis, isRegistering } =
 		useThesisRegistration();
 	const { fetchStudentGroup } = useGroupDashboardStore();
 
 	const handleBackToList = useCallback(() => {
-		router.push('/student/list-thesis');
+		router.push("/student/list-thesis");
 	}, [router]);
 	const handleRegisterThesis = useCallback(async () => {
 		await registerThesis(thesis.id, thesis.englishName, async () => {
@@ -40,7 +40,7 @@ export default function ActionButtons({
 			onThesisUpdate?.();
 
 			// Clear relevant caches and refresh group data in background
-			cacheUtils.clear('semesterStatus');
+			cacheUtils.clear("semesterStatus");
 			fetchStudentGroup(true); // Remove await to not block UI
 			resetInitialization();
 		});
@@ -58,7 +58,7 @@ export default function ActionButtons({
 			onThesisUpdate?.();
 
 			// Clear relevant caches and refresh group data in background
-			cacheUtils.clear('semesterStatus');
+			cacheUtils.clear("semesterStatus");
 			fetchStudentGroup(true); // Remove await to not block UI
 			resetInitialization();
 		});
@@ -81,7 +81,7 @@ export default function ActionButtons({
 
 	// Disable register button if semester is not in picking phase
 	const isRegisterDisabled =
-		disabled || !isPicking || isRegistering || semesterLoading;
+		disabled || !canRegisterThesis || isRegistering || semesterLoading;
 
 	return (
 		<Row justify="end">
@@ -96,12 +96,12 @@ export default function ActionButtons({
 						loading={isRegistering || semesterLoading}
 						disabled={isRegisterDisabled}
 						title={
-							!isPicking
-								? 'Registration is only available during the "Picking" phase'
+							!canRegisterThesis
+								? 'Registration is only available during the "Picking" phase or "Ongoing - Scope Adjustable" phase'
 								: undefined
 						}
 					>
-						{isRegistering ? 'Registering...' : 'Register Thesis'}
+						{isRegistering ? "Registering..." : "Register Thesis"}
 					</Button>
 				)}
 				{showUnregisterButton && (

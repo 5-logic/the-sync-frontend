@@ -3,6 +3,7 @@
 import { DownloadOutlined } from "@ant-design/icons";
 import {
 	Button,
+	Empty,
 	Input,
 	Radio,
 	Row,
@@ -68,6 +69,10 @@ interface Props {
 	readonly submissionId: string;
 	readonly isMainReviewer: boolean;
 	readonly onSubmitSuccess?: () => void;
+	readonly milestoneData?: {
+		startDate: string;
+		endDate: string;
+	} | null;
 }
 
 interface ChecklistResponse {
@@ -113,6 +118,7 @@ const renderReviewerStatusMessage = (
 	checklistItems: ChecklistItemWithResponse[],
 	getValidationStatus: { isValid: boolean },
 	handleSaveChecklist: () => void,
+	isWithinMilestonePeriodCheck: boolean,
 ) => {
 	if (isMainReviewer) {
 		return (
@@ -159,9 +165,15 @@ const renderReviewerStatusMessage = (
 					disabled={
 						!reviewForm ||
 						checklistItems.length === 0 ||
-						!getValidationStatus.isValid
+						!getValidationStatus.isValid ||
+						!isWithinMilestonePeriodCheck
 					}
 					size="large"
+					title={
+						!isWithinMilestonePeriodCheck
+							? "Review submission is only available after the milestone start date"
+							: undefined
+					}
 				>
 					Submit Review
 				</Button>
@@ -242,6 +254,7 @@ export default function ReviewChecklistTable({
 	submissionId,
 	isMainReviewer,
 	onSubmitSuccess,
+	milestoneData,
 }: Props) {
 	const {
 		reviewForm,
@@ -287,6 +300,19 @@ export default function ReviewChecklistTable({
 			notes: answers[item.id]?.notes,
 		}));
 	}, [reviewForm, answers]);
+
+	// Check if current time is after milestone start date (enable submission once milestone starts)
+	const isWithinMilestonePeriodCheck = useMemo(() => {
+		if (!milestoneData) {
+			// If no milestone data provided, allow submission (backward compatibility)
+			return true;
+		}
+
+		// Allow submission if current time is after start date
+		const now = new Date();
+		const startDate = new Date(milestoneData.startDate);
+		return now >= startDate;
+	}, [milestoneData]);
 
 	// Validation helper functions
 	const getValidationStatus = useMemo(() => {
@@ -547,8 +573,17 @@ export default function ReviewChecklistTable({
 				onReviewUpdated={handleReviewUpdated}
 			/>
 
-			{/* Only show new review form if no existing reviews */}
-			{submissionReviews.length === 0 && (
+			{/* Show loading skeleton while loading reviews */}
+			{submissionReviewsLoading && (
+				<div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+					<div style={{ ...commonStyles.containerBox }}>
+						<Skeleton active avatar={false} paragraph={{ rows: 2 }} />
+					</div>
+				</div>
+			)}
+
+			{/* Only show new review form if no existing reviews and not loading */}
+			{submissionReviews.length === 0 && !submissionReviewsLoading && (
 				<>
 					{/* Checklist table */}
 					<div>
@@ -558,6 +593,14 @@ export default function ReviewChecklistTable({
 							columns={columns}
 							pagination={false}
 							loading={reviewFormLoading}
+							locale={{
+								emptyText: (
+									<Empty
+										image={Empty.PRESENTED_IMAGE_SIMPLE}
+										description="No data"
+									/>
+								),
+							}}
 						/>
 					</div>
 
@@ -614,12 +657,13 @@ export default function ReviewChecklistTable({
 						checklistItems,
 						getValidationStatus,
 						handleSaveChecklist,
+						isWithinMilestonePeriodCheck,
 					)}
 				</>
 			)}
 
 			{/* Show enhanced message when there are existing reviews */}
-			{submissionReviews.length > 0 && (
+			{submissionReviews.length > 0 && !submissionReviewsLoading && (
 				<div
 					style={{
 						...commonStyles.reviewerInfoBox,
@@ -637,6 +681,33 @@ export default function ReviewChecklistTable({
 					</Text>
 				</div>
 			)}
+
+			{/* Show milestone timing message when Submit Review button is disabled due to start date */}
+			{!isMainReviewer &&
+				submissionReviews.length === 0 &&
+				!submissionReviewsLoading &&
+				!isWithinMilestonePeriodCheck &&
+				milestoneData && (
+					<div
+						style={{
+							...commonStyles.reviewerInfoBox,
+							background: "#fff7e6",
+							border: "1px solid #ffd591",
+						}}
+					>
+						<Text type="secondary" style={{ fontSize: "16px" }}>
+							⏰ <strong>Review Period Not Started</strong>
+						</Text>
+						<br />
+						<Text
+							type="secondary"
+							style={{ fontSize: "14px", marginTop: "8px" }}
+						>
+							Review submission is only available after the milestone start
+							date. You can preview the checklist but cannot submit reviews yet.
+						</Text>
+					</div>
+				)}
 		</Space>
 	);
 }

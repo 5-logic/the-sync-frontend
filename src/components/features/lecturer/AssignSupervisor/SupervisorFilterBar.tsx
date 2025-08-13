@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { ReloadOutlined } from '@ant-design/icons';
-import { Button, Col, Row, Select } from 'antd';
-import { memo, useCallback } from 'react';
+import { BarChartOutlined, ReloadOutlined } from "@ant-design/icons";
+import { Button, Col, Row, Select } from "antd";
+import { memo, useCallback } from "react";
 
-import GroupSearchBar from '@/components/features/lecturer/AssignSupervisor/GroupSearchBar';
+import GroupSearchBar from "@/components/features/lecturer/AssignSupervisor/GroupSearchBar";
 
 const { Option } = Select;
 
@@ -13,12 +13,15 @@ interface Props {
 	onSearchChange: (val: string) => void;
 	semester: string;
 	onSemesterChange: (val: string) => void;
+	status: string;
+	onStatusChange: (val: string) => void;
 	onRefresh: () => void;
 	refreshing: boolean;
 	onAssignAllDrafts: () => void;
 	draftCount: number;
 	updating: boolean;
 	semesterOptions: Array<{ value: string; label: string }>;
+	onViewWorkload?: () => void;
 }
 
 /**
@@ -31,18 +34,28 @@ const SupervisorFilterBar = memo<Props>(
 		onSearchChange,
 		semester,
 		onSemesterChange,
+		status,
+		onStatusChange,
 		onRefresh,
 		refreshing,
 		onAssignAllDrafts,
 		draftCount,
 		updating,
 		semesterOptions,
+		onViewWorkload,
 	}) => {
 		const handleSemesterChange = useCallback(
 			(value: string) => {
 				onSemesterChange(value);
 			},
 			[onSemesterChange],
+		);
+
+		const handleStatusChange = useCallback(
+			(value: string) => {
+				onStatusChange(value);
+			},
+			[onStatusChange],
 		);
 
 		return (
@@ -64,7 +77,7 @@ const SupervisorFilterBar = memo<Props>(
 					<Select
 						value={semester}
 						onChange={handleSemesterChange}
-						style={{ width: '100%' }}
+						style={{ width: "100%" }}
 						placeholder="Filter by semester"
 					>
 						{semesterOptions.map((option) => (
@@ -72,6 +85,18 @@ const SupervisorFilterBar = memo<Props>(
 								{option.label}
 							</Option>
 						))}
+					</Select>
+				</Col>
+				<Col style={{ width: 140 }}>
+					<Select
+						value={status}
+						onChange={handleStatusChange}
+						style={{ width: "100%" }}
+						placeholder="Filter by status"
+					>
+						<Option value="All">All Status</Option>
+						<Option value="Picked">Picked</Option>
+						<Option value="Not picked">Not picked</Option>
 					</Select>
 				</Col>
 				<Col>
@@ -84,6 +109,17 @@ const SupervisorFilterBar = memo<Props>(
 						Refresh
 					</Button>
 				</Col>
+				{onViewWorkload && (
+					<Col>
+						<Button
+							icon={<BarChartOutlined />}
+							onClick={onViewWorkload}
+							title="View lecturer's workload distribution"
+						>
+							View Workload
+						</Button>
+					</Col>
+				)}
 				<Col>
 					<Button
 						type="primary"
@@ -99,6 +135,6 @@ const SupervisorFilterBar = memo<Props>(
 	},
 );
 
-SupervisorFilterBar.displayName = 'SupervisorFilterBar';
+SupervisorFilterBar.displayName = "SupervisorFilterBar";
 
 export default SupervisorFilterBar;

@@ -1,4 +1,4 @@
-import { EditOutlined, EyeOutlined, PlusOutlined } from '@ant-design/icons';
+import { EditOutlined, EyeOutlined, PlusOutlined } from "@ant-design/icons";
 import {
 	Button,
 	Card,
@@ -9,21 +9,21 @@ import {
 	Spin,
 	Tag,
 	Typography,
-} from 'antd';
-import { useRouter } from 'next/navigation';
-import React, { useEffect, useState } from 'react';
+} from "antd";
+import { useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
 
-import { useLecturerSemesterFilter } from '@/hooks/lecturer/useLecturerSemesterFilter';
-import { DOMAIN_COLOR_MAP } from '@/lib/constants/domains';
-import thesesService from '@/lib/services/theses.service';
-import { handleApiResponse } from '@/lib/utils/handleApi';
-import { Thesis } from '@/schemas/thesis';
+import { useLecturerSemesterFilter } from "@/hooks/lecturer/useLecturerSemesterFilter";
+import { DOMAIN_COLOR_MAP } from "@/lib/constants/domains";
+import thesesService from "@/lib/services/theses.service";
+import { handleApiResponse } from "@/lib/utils/handleApi";
+import { Thesis } from "@/schemas/thesis";
 
 const statusColor = {
-	Approved: 'green',
-	Pending: 'orange',
-	Rejected: 'red',
-	Draft: 'blue',
+	Approved: "green",
+	Pending: "orange",
+	Rejected: "red",
+	Draft: "blue",
 };
 
 const SkillsDisplay: React.FC<{
@@ -52,7 +52,7 @@ const SkillsDisplay: React.FC<{
 
 			const container = containerRef.current;
 			const containerHeight = container.clientHeight;
-			const tags = container.querySelectorAll('.skill-tag');
+			const tags = container.querySelectorAll(".skill-tag");
 
 			let visibleCount = 0;
 
@@ -88,13 +88,13 @@ const SkillsDisplay: React.FC<{
 		<div
 			ref={containerRef}
 			style={{
-				minHeight: '70px',
-				maxHeight: '70px',
-				display: 'flex',
-				flexWrap: 'wrap',
-				gap: '8px',
-				alignItems: 'flex-start',
-				overflow: 'hidden',
+				minHeight: "70px",
+				maxHeight: "70px",
+				display: "flex",
+				flexWrap: "wrap",
+				gap: "8px",
+				alignItems: "flex-start",
+				overflow: "hidden",
 			}}
 		>
 			{visibleSkills.map((skill) => (
@@ -102,9 +102,9 @@ const SkillsDisplay: React.FC<{
 					key={skill.id}
 					className="skill-tag"
 					style={{
-						padding: '4px 8px',
-						borderRadius: '6px',
-						fontSize: '12px',
+						padding: "4px 8px",
+						borderRadius: "6px",
+						fontSize: "12px",
 						margin: 0,
 					}}
 				>
@@ -114,13 +114,13 @@ const SkillsDisplay: React.FC<{
 			{hiddenCount > 0 && (
 				<Tag
 					style={{
-						padding: '4px 8px',
-						borderRadius: '6px',
-						fontSize: '12px',
+						padding: "4px 8px",
+						borderRadius: "6px",
+						fontSize: "12px",
 						margin: 0,
-						backgroundColor: '#f0f0f0',
-						borderColor: '#d9d9d9',
-						color: '#666',
+						backgroundColor: "#f0f0f0",
+						borderColor: "#d9d9d9",
+						color: "#666",
 						flexShrink: 0,
 					}}
 				>
@@ -139,6 +139,7 @@ interface ThesisWithRelations extends Thesis {
 const MyThesisSection: React.FC = () => {
 	const [theses, setTheses] = useState<ThesisWithRelations[]>([]);
 	const [loading, setLoading] = useState(true);
+	const [isMobile, setIsMobile] = useState(false);
 	const router = useRouter();
 
 	// Use custom hook for semester filter logic
@@ -149,6 +150,22 @@ const MyThesisSection: React.FC = () => {
 		semestersLoading,
 		session,
 	} = useLecturerSemesterFilter();
+
+	// Handle responsive behavior
+	useEffect(() => {
+		const checkIsMobile = () => {
+			setIsMobile(window.innerWidth < 576);
+		};
+
+		// Check initial size
+		checkIsMobile();
+
+		// Add event listener
+		window.addEventListener("resize", checkIsMobile);
+
+		// Cleanup
+		return () => window.removeEventListener("resize", checkIsMobile);
+	}, []);
 
 	// Fetch lecturer theses
 	useEffect(() => {
@@ -163,7 +180,7 @@ const MyThesisSection: React.FC = () => {
 					setTheses(result.data || []);
 				}
 			} catch (error) {
-				console.error('Error fetching theses:', error);
+				console.error("Error fetching theses:", error);
 			} finally {
 				setLoading(false);
 			}
@@ -174,7 +191,7 @@ const MyThesisSection: React.FC = () => {
 
 	// Filter theses by semester
 	const filteredTheses =
-		selectedSemester === 'all'
+		selectedSemester === "all"
 			? theses
 			: theses.filter((thesis) => thesis.semesterId === selectedSemester);
 
@@ -182,7 +199,7 @@ const MyThesisSection: React.FC = () => {
 	const isDataReady = !loading && !semestersLoading && semesters.length > 0;
 
 	const handleCreateThesis = () => {
-		router.push('/lecturer/thesis-management/create-thesis');
+		router.push("/lecturer/thesis-management/create-thesis");
 	};
 
 	const handleViewDetails = (thesisId: string) => {
@@ -195,25 +212,25 @@ const MyThesisSection: React.FC = () => {
 
 	// Helper function to get empty message
 	const getEmptyMessage = () => {
-		if (selectedSemester === 'all') {
-			return 'No thesis topics found';
+		if (selectedSemester === "all") {
+			return "No thesis topics found";
 		}
-		return 'No thesis topics found for selected semester';
+		return "No thesis topics found for selected semester";
 	};
 
 	// Helper function to get thesis tag color
 	const getThesisTagColor = (thesis: ThesisWithRelations) => {
 		if (thesis.isPublish) {
-			return 'green';
+			return "green";
 		}
-		return statusColor[thesis.status as keyof typeof statusColor] || 'default';
+		return statusColor[thesis.status as keyof typeof statusColor] || "default";
 	};
 
 	// Helper function to render main content
 	const renderMainContent = () => {
 		if (!isDataReady) {
 			return (
-				<div style={{ textAlign: 'center', padding: '40px 0' }}>
+				<div style={{ textAlign: "center", padding: "40px 0" }}>
 					<Spin size="large" />
 				</div>
 			);
@@ -221,7 +238,7 @@ const MyThesisSection: React.FC = () => {
 
 		if (filteredTheses.length === 0) {
 			return (
-				<div style={{ textAlign: 'center', padding: '40px 0', color: '#999' }}>
+				<div style={{ textAlign: "center", padding: "40px 0", color: "#999" }}>
 					{getEmptyMessage()}
 				</div>
 			);
@@ -234,10 +251,10 @@ const MyThesisSection: React.FC = () => {
 					const semesterName =
 						thesis.semester?.name ||
 						semesters.find((s) => s.id === thesis.semesterId)?.name ||
-						'Unknown Semester';
+						"Unknown Semester";
 
 					// Determine status to display
-					const displayStatus = thesis.isPublish ? 'Published' : thesis.status;
+					const displayStatus = thesis.isPublish ? "Published" : thesis.status;
 
 					return (
 						<Col xs={24} md={12} lg={8} key={thesis.id}>
@@ -259,19 +276,19 @@ const MyThesisSection: React.FC = () => {
 									<button
 										key="view"
 										style={{
-											color: '#000',
-											cursor: 'pointer',
-											transition: 'color 0.3s',
-											background: 'none',
-											border: 'none',
+											color: "#000",
+											cursor: "pointer",
+											transition: "color 0.3s",
+											background: "none",
+											border: "none",
 											padding: 0,
-											font: 'inherit',
+											font: "inherit",
 										}}
 										onMouseEnter={(e) =>
-											((e.currentTarget as HTMLElement).style.color = '#1890ff')
+											((e.currentTarget as HTMLElement).style.color = "#1890ff")
 										}
 										onMouseLeave={(e) =>
-											((e.currentTarget as HTMLElement).style.color = '#000')
+											((e.currentTarget as HTMLElement).style.color = "#000")
 										}
 										onClick={() => handleViewDetails(thesis.id)}
 									>
@@ -281,19 +298,19 @@ const MyThesisSection: React.FC = () => {
 									<button
 										key="edit"
 										style={{
-											color: '#000',
-											cursor: 'pointer',
-											transition: 'color 0.3s',
-											background: 'none',
-											border: 'none',
+											color: "#000",
+											cursor: "pointer",
+											transition: "color 0.3s",
+											background: "none",
+											border: "none",
 											padding: 0,
-											font: 'inherit',
+											font: "inherit",
 										}}
 										onMouseEnter={(e) =>
-											((e.currentTarget as HTMLElement).style.color = '#1890ff')
+											((e.currentTarget as HTMLElement).style.color = "#1890ff")
 										}
 										onMouseLeave={(e) =>
-											((e.currentTarget as HTMLElement).style.color = '#000')
+											((e.currentTarget as HTMLElement).style.color = "#000")
 										}
 										onClick={() => handleEditThesis(thesis.id)}
 									>
@@ -301,13 +318,13 @@ const MyThesisSection: React.FC = () => {
 										Edit
 									</button>,
 								]}
-								style={{ height: '100%' }}
+								style={{ height: "100%" }}
 							>
-								<Flex vertical style={{ height: '100%' }}>
+								<Flex vertical style={{ height: "100%" }}>
 									{/* Domain Tag */}
 									{thesis.domain && (
 										<div style={{ marginBottom: 8 }}>
-											<Tag color={DOMAIN_COLOR_MAP[thesis.domain] || 'blue'}>
+											<Tag color={DOMAIN_COLOR_MAP[thesis.domain] || "blue"}>
 												{thesis.domain}
 											</Tag>
 										</div>
@@ -316,17 +333,17 @@ const MyThesisSection: React.FC = () => {
 									{/* English Name */}
 									<div
 										style={{
-											fontSize: '16px',
+											fontSize: "16px",
 											fontWeight: 600,
-											color: '#1f2937',
+											color: "#1f2937",
 											marginBottom: 12,
-											lineHeight: '1.5',
-											height: '48px', // 2 lines * 1.5 * 16px
-											overflow: 'hidden',
-											display: '-webkit-box',
+											lineHeight: "1.5",
+											height: "48px", // 2 lines * 1.5 * 16px
+											overflow: "hidden",
+											display: "-webkit-box",
 											WebkitLineClamp: 2,
-											WebkitBoxOrient: 'vertical',
-											wordBreak: 'break-word',
+											WebkitBoxOrient: "vertical",
+											wordBreak: "break-word",
 										}}
 									>
 										{thesis.englishName}
@@ -335,24 +352,24 @@ const MyThesisSection: React.FC = () => {
 									{/* Description */}
 									<div
 										style={{
-											color: '#6b7280',
-											lineHeight: '1.5',
+											color: "#6b7280",
+											lineHeight: "1.5",
 											marginBottom: 12,
-											fontSize: '14px',
-											height: '84px', // 4 lines * 1.5 * 14px = 84px
-											overflow: 'hidden',
-											display: '-webkit-box',
+											fontSize: "14px",
+											height: "84px", // 4 lines * 1.5 * 14px = 84px
+											overflow: "hidden",
+											display: "-webkit-box",
 											WebkitLineClamp: 4,
-											WebkitBoxOrient: 'vertical',
-											wordBreak: 'break-word',
-											textOverflow: 'ellipsis',
+											WebkitBoxOrient: "vertical",
+											wordBreak: "break-word",
+											textOverflow: "ellipsis",
 										}}
 									>
 										{thesis.description}
 									</div>
 
 									{/* Skills */}
-									<div style={{ marginTop: 'auto' }}>
+									<div style={{ marginTop: "auto" }}>
 										<SkillsDisplay skills={thesis.thesisRequiredSkills || []} />
 									</div>
 								</Flex>
@@ -365,22 +382,38 @@ const MyThesisSection: React.FC = () => {
 	};
 	return (
 		<Card>
-			<Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
-				<Col>
+			<Row
+				justify="space-between"
+				align="top"
+				style={{ marginBottom: 16 }}
+				gutter={[16, 16]}
+			>
+				<Col xs={24} sm={24} md={12} lg={8} xl={8}>
 					<Typography.Title level={5} style={{ margin: 0 }}>
 						My Thesis Topics
 					</Typography.Title>
 				</Col>
-				<Col>
-					<div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+				<Col xs={24} sm={24} md={12} lg={16} xl={16}>
+					<div
+						style={{
+							display: "flex",
+							gap: 12,
+							alignItems: "center",
+							flexDirection: isMobile ? "column" : "row",
+							justifyContent: isMobile ? "stretch" : "flex-end",
+						}}
+					>
 						{/* Semester Filter */}
 						<Select
 							value={selectedSemester}
 							onChange={setSelectedSemester}
-							style={{ width: 200 }}
+							style={{
+								width: isMobile ? "100%" : "auto",
+								minWidth: isMobile ? "100%" : 200,
+								maxWidth: isMobile ? "100%" : 250,
+							}}
 							placeholder="Filter by semester"
 							allowClear
-							onClear={() => setSelectedSemester('all')}
 							loading={semestersLoading}
 						>
 							<Select.Option value="all">All Semesters</Select.Option>
@@ -396,6 +429,10 @@ const MyThesisSection: React.FC = () => {
 							type="primary"
 							icon={<PlusOutlined />}
 							onClick={handleCreateThesis}
+							style={{
+								width: isMobile ? "100%" : "auto",
+								minWidth: "fit-content",
+							}}
 						>
 							Create New Thesis
 						</Button>
