@@ -1,5 +1,6 @@
 import React from "react";
-import { Card, Table, Tag, Space, Button, Input } from "antd";
+import { Card, Table, Tag, Space, Button, Input, Tooltip } from "antd";
+import { DeleteOutlined } from "@ant-design/icons";
 
 export interface Group {
 	id: string;
@@ -12,15 +13,10 @@ export interface Group {
 
 interface GroupsTableProps {
 	data: Group[];
-	onEdit: (record: Group) => void;
 	onDelete: (id: string) => void;
 }
 
-const GroupsTable: React.FC<GroupsTableProps> = ({
-	data,
-	onEdit,
-	onDelete,
-}) => {
+const GroupsTable: React.FC<GroupsTableProps> = ({ data, onDelete }) => {
 	const columns = [
 		{
 			title: "Group ID",
@@ -59,12 +55,15 @@ const GroupsTable: React.FC<GroupsTableProps> = ({
 			key: "actions",
 			render: (_: unknown, record: Group) => (
 				<Space>
-					<Button type="link" onClick={() => onEdit(record)}>
-						Edit
-					</Button>
-					<Button type="link" danger onClick={() => onDelete(record.id)}>
-						Delete
-					</Button>
+					<Tooltip title="Delete">
+						<Button
+							icon={<DeleteOutlined />}
+							size="small"
+							type="text"
+							danger
+							onClick={() => onDelete(record.id)}
+						/>
+					</Tooltip>
 				</Space>
 			),
 		},
@@ -83,7 +82,6 @@ const GroupsTable: React.FC<GroupsTableProps> = ({
 				dataSource={data}
 				pagination={{ pageSize: 5 }}
 				rowKey="id"
-				// responsive
 			/>
 		</Card>
 	);
