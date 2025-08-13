@@ -1,49 +1,145 @@
 "use client";
-import React, { useState, useCallback } from "react";
-import { Space } from "antd";
+import React, { useState, useCallback, useMemo, useEffect } from "react";
+import { Space, Card } from "antd";
+import { useRouter } from "next/navigation";
 import CreateForm, {
 	CreateFormValues,
 } from "@/components/features/admin/GroupManagement/CreateForm";
-import GroupsTable, {
-	AdminGroup,
-} from "@/components/features/admin/GroupManagement/GroupsTable";
-
-const DEFAULT_MAX_MEMBERS = 5;
-const GROUP_ID_PADDING = 3;
+import GroupAssignTable from "@/components/features/lecturer/GroupManagement/GroupAssignTable";
+import StudentFilterBar from "@/components/features/lecturer/GroupManagement/StudentFilterBar";
+import StudentTable from "@/components/features/lecturer/GroupManagement/StudentTable";
+import { useGroupsStore } from "@/store/useGroupsStore";
+import { useMajorStore } from "@/store/useMajorStore";
+import { useSemesterStore } from "@/store/useSemesterStore";
+import { useStudentStore } from "@/store/useStudentStore";
 
 const GroupManagement: React.FC = () => {
-	const [groups, setGroups] = useState<AdminGroup[]>([]);
+	const router = useRouter();
+	const { students, fetchStudentsWithoutGroup, loading } = useStudentStore();
+	const { majors, fetchMajors, loading: majorLoading } = useMajorStore();
+	const { semesters, fetchSemesters } = useSemesterStore();
+	const { refetch: refetchGroups } = useGroupsStore();
+
+	const [studentSearch, setStudentSearch] = useState("");
+	const [studentMajor, setStudentMajor] = useState("All");
+
+	// Find preparing semester
+	const preparingSemester = useMemo(() => {
+		return semesters.find((semester) => semester.status === "Preparing");
+	}, [semesters]);
+
+	// Fetch data on component mount
+	useEffect(() => {
+		const initializeData = async () => {
+			// Fetch semesters first to find preparing semester
+			await fetchSemesters();
+			// Fetch majors for filter
+			await fetchMajors();
+		};
+
+		initializeData();
+	}, [fetchSemesters, fetchMajors]);
+
+	// Fetch students when preparing semester is found
+	useEffect(() => {
+		if (preparingSemester) {
+			fetchStudentsWithoutGroup(preparingSemester.id);
+		}
+	}, [preparingSemester, fetchStudentsWithoutGroup]);
+
+	// Refresh data when component mounts (handles browser back button)
+	useEffect(() => {
+		// Only refresh if we don't have groups data already
+		const { groups } = useGroupsStore.getState();
+		if (groups.length === 0) {
+			refetchGroups();
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []); // Only run once on mount
 
 	const handleGenerate = useCallback(
 		({ semester, numberOfGroups }: CreateFormValues) => {
-			const startIndex = groups.length + 1;
-			const newGroups: AdminGroup[] = Array.from(
-				{ length: numberOfGroups },
-				(_, i) => {
-					const groupNumber = startIndex + i;
-					return {
-						id: `G${String(groupNumber).padStart(GROUP_ID_PADDING, "0")}`,
-						name: `Group ${groupNumber}`,
-						semester,
-						members: 0,
-						maxMembers: DEFAULT_MAX_MEMBERS,
-						status: "Active" as const,
-					};
-				},
-			);
-			setGroups((prev) => [...prev, ...newGroups]);
+			// Handle group generation logic here
+			console.log(`Generating ${numberOfGroups} groups for ${semester}`);
+			// You can integrate this with your group creation API
 		},
-		[groups.length],
+		[],
 	);
 
-	const handleDelete = useCallback((id: string) => {
-		setGroups((prev) => prev.filter((group) => group.id !== id));
-	}, []);
+	// Handle refresh
+	const handleRefresh = () => {
+		if (preparingSemester) {
+			fetchStudentsWithoutGroup(preparingSemester.id, true); // Force refresh
+		}
+	};
+
+	// Major options for filter (with names displayed)
+	const majorOptions = useMemo(() => {
+		const options = ["All"];
+		majors.forEach((major) => {
+			options.push(major.id);
+		});
+		return options;
+	}, [majors]);
+
+	// Create a mapping for major names
+	const majorNamesMap = useMemo(() => {
+		const map: Record<string, string> = { All: "All" };
+		majors.forEach((major) => {
+			map[major.id] = major.name;
+		});
+		return map;
+	}, [majors]);
+
+	// Filtered students
+	const filteredStudents = useMemo(() => {
+		return students.filter((student) => {
+			const fullNameMatch = student.fullName
+				.toLowerCase()
+				.includes(studentSearch.toLowerCase());
+			const emailMatch = student.email
+				.toLowerCase()
+				.includes(studentSearch.toLowerCase());
+			const matchSearch = fullNameMatch || emailMatch;
+			const matchMajor =
+				studentMajor === "All" || student.majorId === studentMajor;
+			return matchSearch && matchMajor;
+		});
+	}, [students, studentSearch, studentMajor]);
 
 	return (
 		<Space direction="vertical" size="large" style={{ width: "100%" }}>
 			<CreateForm onGenerate={handleGenerate} />
-			<GroupsTable data={groups} onDelete={handleDelete} />
+
+			<GroupAssignTable
+				onView={(group) => {
+					router.push(`/admin/group-management/${group.id}`);
+				}}
+				onDelete={(group) => {
+					console.log("Group deleted:", group.name);
+					// Optional: You can add additional logic here if needed
+				}}
+			/>
+
+			<Card title="Ungrouped Students">
+				<div style={{ marginBottom: 16 }}>
+					<StudentFilterBar
+						search={studentSearch}
+						onSearchChange={setStudentSearch}
+						major={studentMajor}
+						onMajorChange={setStudentMajor}
+						majorOptions={majorOptions}
+						majorNamesMap={majorNamesMap}
+						onRefresh={handleRefresh}
+						loading={loading}
+					/>
+				</div>
+				<StudentTable
+					data={filteredStudents}
+					majorNamesMap={majorNamesMap}
+					loading={loading || majorLoading}
+				/>
+			</Card>
 		</Space>
 	);
 };
