@@ -1,12 +1,12 @@
 import { createMetadata } from "@/app/metadata";
-import LecturerManagementClient from "@/components/pages/admin/LecturerManagementClient";
+import CreateGroup from "@/components/features/admin/CreateGroup";
 
 export const metadata = createMetadata({
-	title: "Admin Lecturer Management",
+	title: "Admin Create Group",
 	description:
-		"Admin Lecturer Management for TheSync - Group Formation and Capstone Thesis Development",
+		"Admin Create Group for TheSync - Group Formation and Capstone Thesis Development",
 });
 
-export default function AdminLectureManagementPage() {
-	return <LecturerManagementClient />;
+export default function AdminCreateGroupPage() {
+	return <CreateGroup />;
 }
