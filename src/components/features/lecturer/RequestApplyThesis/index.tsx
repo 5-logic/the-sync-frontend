@@ -8,7 +8,8 @@ import RequestApplyThesisTable from "@/components/features/lecturer/RequestApply
 import { useRequestApplyThesis } from "@/hooks/lecturer/useRequestApplyThesis";
 
 export default function RequestApplyThesis() {
-	const { applications, loading, fetchApplications } = useRequestApplyThesis();
+	const { applications, loading, fetchApplications, updateApplicationStatus } =
+		useRequestApplyThesis();
 
 	// Fetch applications when component mounts
 	useEffect(() => {
@@ -26,6 +27,7 @@ export default function RequestApplyThesis() {
 				data={applications}
 				loading={loading}
 				onRefresh={fetchApplications}
+				updateApplicationStatus={updateApplicationStatus}
 			/>
 		</Space>
 	);

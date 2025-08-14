@@ -13,7 +13,6 @@ import { useCallback, useMemo, useState } from "react";
 import { ConfirmationModal } from "@/components/common/ConfirmModal";
 import GroupDetailModal from "@/components/features/lecturer/RequestApplyThesis/GroupDetailModal";
 import ThesisDetailModal from "@/components/features/lecturer/RequestApplyThesis/ThesisDetailModal";
-import { useRequestApplyThesis } from "@/hooks/lecturer/useRequestApplyThesis";
 import { formatDate } from "@/lib/utils/dateFormat";
 import { ThesisApplication } from "@/lib/services/thesis-application.service";
 
@@ -21,6 +20,11 @@ interface Props {
 	data: ThesisApplication[];
 	loading?: boolean;
 	onRefresh: () => void;
+	updateApplicationStatus: (
+		groupId: string,
+		thesisId: string,
+		status: "Approved" | "Rejected",
+	) => Promise<void>;
 }
 
 // Status color mapping
@@ -43,9 +47,8 @@ export default function RequestApplyThesisTable({
 	data,
 	loading,
 	onRefresh,
+	updateApplicationStatus,
 }: Readonly<Props>) {
-	const { updateApplicationStatus } = useRequestApplyThesis();
-
 	// Filter states
 	const [searchText, setSearchText] = useState("");
 	const [statusFilter, setStatusFilter] = useState<string>("");
