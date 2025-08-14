@@ -1,10 +1,19 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useCallback } from "react";
 import { Card, Tag, Button, Input, Space, Col, Row, Table } from "antd";
 import { DeleteOutlined, SearchOutlined } from "@ant-design/icons";
 import { ColumnsType } from "antd/es/table";
 
 import { TablePagination } from "@/components/common/TablePagination";
 import { isTextMatch } from "@/lib/utils/textNormalization";
+
+// Constants
+const COLUMN_WIDTHS = {
+	CODE: "15%",
+	NAME: "35%",
+	MEMBERS: "20%",
+	STATUS: "15%",
+	ACTIONS: "15%",
+} as const;
 
 export interface AdminGroup {
 	id: string;
@@ -23,11 +32,50 @@ interface GroupsTableProps {
 const GroupsTable: React.FC<GroupsTableProps> = ({ data, onDelete }) => {
 	const [groupSearch, setGroupSearch] = useState("");
 
+	const handleSearchChange = useCallback(
+		(e: React.ChangeEvent<HTMLInputElement>) => {
+			setGroupSearch(e.target.value);
+		},
+		[],
+	);
+
 	const filteredGroups = useMemo(() => {
 		return data.filter((group) =>
 			isTextMatch(groupSearch, [group.id, group.name, group.semester]),
 		);
 	}, [groupSearch, data]);
+
+	const renderMembersCount = useCallback(
+		(_: unknown, record: AdminGroup) =>
+			`${record.members}/${record.maxMembers}`,
+		[],
+	);
+
+	const renderStatus = useCallback(
+		(_: unknown, record: AdminGroup) =>
+			record.status === "Active" ? (
+				<Tag color="green">Active</Tag>
+			) : (
+				<Tag color="gray">Full</Tag>
+			),
+		[],
+	);
+
+	const renderActions = useCallback(
+		(_: unknown, record: AdminGroup) => (
+			<Space>
+				<Button
+					type="link"
+					icon={<DeleteOutlined />}
+					onClick={() => onDelete(record.id)}
+					danger
+					title="Delete Group"
+					aria-label={`Delete group ${record.name}`}
+				/>
+			</Space>
+		),
+		[onDelete],
+	);
 
 	const columns: ColumnsType<AdminGroup> = useMemo(
 		() => [
@@ -35,51 +83,35 @@ const GroupsTable: React.FC<GroupsTableProps> = ({ data, onDelete }) => {
 				title: "Group code",
 				dataIndex: "id",
 				key: "code",
-				width: "15%",
+				width: COLUMN_WIDTHS.CODE,
 			},
 			{
 				title: "Group name",
 				dataIndex: "name",
 				key: "name",
-				width: "35%",
+				width: COLUMN_WIDTHS.NAME,
 			},
 			{
 				title: "Members",
-				render: (_: unknown, record: AdminGroup) =>
-					`${record.members}/${record.maxMembers}`,
+				render: renderMembersCount,
 				key: "members",
-				width: "20%",
+				width: COLUMN_WIDTHS.MEMBERS,
 			},
 			{
 				title: "Status",
-				render: (status: AdminGroup["status"], record: AdminGroup) =>
-					record.status === "Active" ? (
-						<Tag color="green">Active</Tag>
-					) : (
-						<Tag color="gray">Full</Tag>
-					),
+				render: renderStatus,
 				key: "status",
-				width: "15%",
+				width: COLUMN_WIDTHS.STATUS,
 			},
 			{
 				title: "Actions",
-				render: (_: unknown, record: AdminGroup) => (
-					<Space>
-						<Button
-							type="link"
-							icon={<DeleteOutlined />}
-							onClick={() => onDelete(record.id)}
-							danger
-							title="Delete Group"
-						/>
-					</Space>
-				),
+				render: renderActions,
 				key: "actions",
 				align: "center" as const,
-				width: "15%",
+				width: COLUMN_WIDTHS.ACTIONS,
 			},
 		],
-		[onDelete],
+		[renderMembersCount, renderStatus, renderActions],
 	);
 
 	return (
@@ -96,7 +128,8 @@ const GroupsTable: React.FC<GroupsTableProps> = ({ data, onDelete }) => {
 						prefix={<SearchOutlined />}
 						placeholder="Search groups"
 						value={groupSearch}
-						onChange={(e) => setGroupSearch(e.target.value)}
+						onChange={handleSearchChange}
+						aria-label="Search groups"
 					/>
 				</Col>
 			</Row>
@@ -106,6 +139,7 @@ const GroupsTable: React.FC<GroupsTableProps> = ({ data, onDelete }) => {
 				rowKey="id"
 				pagination={TablePagination}
 				scroll={{ x: "max-content" }}
+				aria-label="Groups table"
 			/>
 		</Card>
 	);

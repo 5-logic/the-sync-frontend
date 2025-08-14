@@ -1,11 +1,11 @@
-import { z } from 'zod';
+import { z } from "zod";
 
-import { ApiResponseSchema } from '@/schemas/_common';
-import { MajorSchema } from '@/schemas/major';
-import { ResponsibilitySchema } from '@/schemas/responsibility';
-import { SemesterSchema } from '@/schemas/semester';
-import { SkillSchema, SkillSetSchema } from '@/schemas/skill';
-import { UserSchema } from '@/schemas/user';
+import { ApiResponseSchema } from "@/schemas/_common";
+import { MajorSchema } from "@/schemas/major";
+import { ResponsibilitySchema } from "@/schemas/responsibility";
+import { SemesterSchema } from "@/schemas/semester";
+import { SkillSchema, SkillSetSchema } from "@/schemas/skill";
+import { UserSchema } from "@/schemas/user";
 
 // ===== EXISTING GROUP SCHEMAS =====
 
@@ -115,6 +115,23 @@ export const GroupCreateServiceSchema = z.object({
 	responsibilityIds: z.array(z.string().uuid()).optional(),
 });
 
+// Bulk group creation schemas (Admin only)
+export const CreateMultipleGroupsRequestSchema = z.object({
+	semesterId: z.string().uuid(),
+	numberOfGroup: z.number().int().positive().min(1).max(100), // Reasonable limits
+});
+
+export const CreatedGroupSchema = z.object({
+	id: z.string().uuid(),
+	code: z.string(),
+	name: z.string(),
+	projectDirection: z.string().nullable(),
+	semesterId: z.string().uuid(),
+	thesisId: z.string().uuid().nullable(),
+	createdAt: z.string(),
+	updatedAt: z.string(),
+});
+
 // ===== GROUP DASHBOARD SCHEMAS =====
 
 // Group member schema - combining User and other info
@@ -203,3 +220,9 @@ export type GroupResponsibilityService = z.infer<
 >;
 export type GroupCreateService = z.infer<typeof GroupCreateServiceSchema>;
 export type SemesterInfoService = z.infer<typeof SemesterInfoServiceSchema>;
+
+// Export bulk creation types
+export type CreateMultipleGroupsRequest = z.infer<
+	typeof CreateMultipleGroupsRequestSchema
+>;
+export type CreatedGroup = z.infer<typeof CreatedGroupSchema>;
