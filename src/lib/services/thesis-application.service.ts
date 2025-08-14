@@ -5,7 +5,7 @@ import { ApiResponse } from "@/schemas/_common";
 export interface ThesisApplication {
 	groupId: string;
 	thesisId: string;
-	status: "Pending" | "Approved" | "Rejected";
+	status: "Pending" | "Approved" | "Rejected" | "Cancelled";
 	createdAt: string;
 	updatedAt: string;
 	thesis: {
@@ -121,6 +121,29 @@ class ThesisApplicationService {
 	): Promise<ApiResponse<void>> {
 		const response = await httpClient.put<ApiResponse<void>>(
 			`${this.baseUrl}/${groupId}/${thesisId}/cancel`,
+		);
+		return response.data;
+	}
+
+	// Get all thesis applications for lecturer (by semester)
+	async getThesisApplicationsBySemester(
+		semesterId: string,
+	): Promise<ApiResponse<ThesisApplication[]>> {
+		const response = await httpClient.get<ApiResponse<ThesisApplication[]>>(
+			`${this.baseUrl}/${semesterId}`,
+		);
+		return response.data;
+	}
+
+	// Update thesis application status (approve/reject)
+	async updateThesisApplicationStatus(
+		groupId: string,
+		thesisId: string,
+		status: "Approved" | "Rejected",
+	): Promise<ApiResponse<void>> {
+		const response = await httpClient.put<ApiResponse<void>>(
+			`${this.baseUrl}/${groupId}/${thesisId}`,
+			{ status },
 		);
 		return response.data;
 	}

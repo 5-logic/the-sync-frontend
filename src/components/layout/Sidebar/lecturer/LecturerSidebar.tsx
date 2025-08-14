@@ -67,6 +67,14 @@ const createBasicMenuItems = (
 		targetPath,
 	),
 	createMenuItem(
+		LECTURER_MENU_KEYS.REQUEST_APPLY_THESIS,
+		<FileTextOutlined />,
+		"Request Apply Thesis",
+		navigateWithLoading,
+		isNavigating,
+		targetPath,
+	),
+	createMenuItem(
 		LECTURER_MENU_KEYS.GROUP_PROGRESS,
 		<TeamOutlined />,
 		"Group Progress",

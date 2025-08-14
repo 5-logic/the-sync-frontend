@@ -8,6 +8,7 @@ import { DASHBOARD_PATHS } from "@/lib/auth/config/auth-constants";
 export const LECTURER_MENU_KEYS = {
 	DASHBOARD: DASHBOARD_PATHS.LECTURER,
 	THESIS_MANAGEMENT: "/lecturer/thesis-management",
+	REQUEST_APPLY_THESIS: "/lecturer/request-apply-thesis",
 	GROUP_PROGRESS: "/lecturer/group-progress",
 	GROUP_REVIEW: "/lecturer/group-review",
 	// Moderator features
@@ -31,6 +32,7 @@ export const LECTURER_PATH_MAPPING = {
 		"/lecturer/edit-thesis",
 		"/lecturer/thesis-management/create-thesis",
 	],
+	[LECTURER_MENU_KEYS.REQUEST_APPLY_THESIS]: ["/lecturer/request-apply-thesis"],
 	[LECTURER_MENU_KEYS.GROUP_PROGRESS]: [
 		"/lecturer/group-progress",
 		"/lecturer/group-details",
