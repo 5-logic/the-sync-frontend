@@ -4,10 +4,15 @@ import { UserOutlined } from "@ant-design/icons";
 import { Avatar, Button, Card, Col, Row, Space, Tag, Typography } from "antd";
 import { useRouter } from "next/navigation";
 
+import { ConfirmationModal } from "@/components/common/ConfirmModal";
 import { useSemesterStatus } from "@/hooks/student/useSemesterStatus";
 import { useStudentGroupStatus } from "@/hooks/student/useStudentGroupStatus";
+import { useThesisApplications } from "@/hooks/student/useThesisApplications";
 import { useThesisRegistration } from "@/hooks/thesis";
 import { DOMAIN_COLOR_MAP } from "@/lib/constants/domains";
+import thesisApplicationService from "@/lib/services/thesis-application.service";
+import { handleApiError } from "@/lib/utils/handleApi";
+import { showNotification } from "@/lib/utils/notification";
 import { ThesisWithRelations } from "@/schemas/thesis";
 import { cacheUtils } from "@/store/helpers/cacheHelpers";
 
@@ -26,6 +31,7 @@ export default function ThesisCard({
 	const { canRegisterThesis, loading: semesterLoading } = useSemesterStatus();
 	const { registerThesis, unregisterThesis, isRegistering } =
 		useThesisRegistration();
+	const { applications, refreshApplications } = useThesisApplications();
 	const router = useRouter();
 
 	// Get domain color
@@ -40,6 +46,11 @@ export default function ThesisCard({
 	const extraSkillsCount =
 		(thesis.thesisRequiredSkills?.length || 0) - maxVisibleSkills;
 
+	// Check if current group has application for this thesis
+	const hasApplicationForThesis = applications.some(
+		(app) => app.thesisId === thesis.id && app.status === "Pending",
+	);
+
 	// Check if thesis is already taken by another group
 	const isThesisTaken = thesis.groupId != null; // Use != null to catch both null and undefined
 
@@ -47,7 +58,11 @@ export default function ThesisCard({
 	const isThesisAssignedToGroup = group?.id === thesis.groupId;
 
 	// Determine if register button should be enabled
-	const canRegister = studentRole === "leader" && hasGroup && !isThesisTaken;
+	const canRegister =
+		studentRole === "leader" &&
+		hasGroup &&
+		!isThesisTaken &&
+		!hasApplicationForThesis;
 
 	// Determine if unregister button should be shown
 	const canUnregister =
@@ -90,8 +105,54 @@ export default function ThesisCard({
 		});
 	};
 
+	// Handle cancel application
+	const handleCancelApplication = () => {
+		if (!group) return;
+
+		ConfirmationModal.show({
+			title: "Cancel Application",
+			message:
+				"Are you sure you want to cancel your application for this thesis?",
+			details: thesis.englishName,
+			note: "This action cannot be undone.",
+			noteType: "warning",
+			okText: "Yes, Cancel",
+			cancelText: "No",
+			okType: "danger",
+			onOk: async () => {
+				try {
+					await thesisApplicationService.cancelThesisApplication(
+						group.id,
+						thesis.id,
+					);
+
+					showNotification.success(
+						"Application Canceled",
+						"Your thesis application has been canceled successfully!",
+					);
+
+					// Refresh applications and thesis list
+					refreshApplications();
+					onThesisUpdate?.();
+				} catch (error) {
+					console.error("Error canceling application:", error);
+
+					const apiError = handleApiError(
+						error,
+						"Failed to cancel application. Please try again.",
+					);
+
+					showNotification.error("Cancel Failed", apiError.message);
+				}
+			},
+		});
+	};
+
 	// Get button tooltip message based on current state
 	const getButtonTooltip = (): string => {
+		if (hasApplicationForThesis) {
+			return "You have a pending application for this thesis";
+		}
 		if (isThesisTaken) {
 			return "This thesis is already taken by another group";
 		}
@@ -110,7 +171,10 @@ export default function ThesisCard({
 	// Get register button text based on current state
 	const getRegisterButtonText = (): string => {
 		if (isRegistering) {
-			return "Registering...";
+			return "Processing...";
+		}
+		if (hasApplicationForThesis) {
+			return "Cancel Request";
 		}
 		if (isThesisTaken) {
 			return "Taken";
@@ -226,10 +290,15 @@ export default function ThesisCard({
 					) : (
 						<Button
 							block
-							disabled={isRegisterDisabled}
+							disabled={isRegisterDisabled && !hasApplicationForThesis}
 							title={getButtonTooltip()}
-							onClick={handleRegisterThesis}
+							onClick={
+								hasApplicationForThesis
+									? handleCancelApplication
+									: handleRegisterThesis
+							}
 							loading={isRegistering || semesterLoading}
+							danger={hasApplicationForThesis}
 						>
 							{getRegisterButtonText()}
 						</Button>

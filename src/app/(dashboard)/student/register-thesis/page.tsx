@@ -13,7 +13,7 @@ export default function StudentRegisterThesisPage() {
 	return (
 		<Space direction="vertical" size="large" style={{ width: "100%" }}>
 			<Header
-				title="Register Thesis"
+				title="Register Thesis Request"
 				description="Manage your thesis application requests"
 			/>
 

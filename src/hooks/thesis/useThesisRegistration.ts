@@ -50,13 +50,13 @@ export const useThesisRegistration = () => {
 
 			// Show confirmation modal immediately
 			ConfirmationModal.show({
-				title: "Register Thesis",
+				title: "Submit Application",
 				message:
-					"Are you sure you want to register your group for this thesis?",
+					"Are you sure you want to submit an application for this thesis?",
 				details: thesisTitle || "Selected thesis",
-				note: "This action will assign the thesis to your group and cannot be easily undone.",
-				noteType: "warning",
-				okText: "Register",
+				note: "Your application will be reviewed by the lecturer. You can track its status in the Register Thesis page.",
+				noteType: "info",
+				okText: "Submit Application",
 				cancelText: "Cancel",
 				okType: "primary",
 				loading: isRegistering,
@@ -79,9 +79,9 @@ export const useThesisRegistration = () => {
 
 						handleSuccessResponse(
 							result,
-							"Registration Successful",
-							"Your group has been registered for this thesis successfully!",
-							"Registration failed",
+							"Application Submitted",
+							"Your thesis application has been submitted successfully! You can track its status in the Register Thesis page.",
+							"Application submission failed",
 							onSuccess,
 						);
 					} catch (error) {
