@@ -3,6 +3,7 @@
 import { UserOutlined } from "@ant-design/icons";
 import { Avatar, Button, Card, Col, Row, Space, Tag, Typography } from "antd";
 import { useRouter } from "next/navigation";
+import { useState, useMemo, useEffect } from "react";
 
 import { ConfirmationModal } from "@/components/common/ConfirmModal";
 import { useSemesterStatus } from "@/hooks/student/useSemesterStatus";
@@ -31,8 +32,15 @@ export default function ThesisCard({
 	const { canRegisterThesis, loading: semesterLoading } = useSemesterStatus();
 	const { registerThesis, unregisterThesis, isRegistering } =
 		useThesisRegistration();
-	const { applications, refreshApplications } = useThesisApplications();
+	const {
+		applications,
+		refreshApplications,
+		initialized: applicationsInitialized,
+	} = useThesisApplications();
 	const router = useRouter();
+
+	// Local state to track pending application to avoid race conditions
+	const [localPendingApplication, setLocalPendingApplication] = useState(false);
 
 	// Get domain color
 	const domainColor = thesis.domain
@@ -47,9 +55,27 @@ export default function ThesisCard({
 		(thesis.thesisRequiredSkills?.length || 0) - maxVisibleSkills;
 
 	// Check if current group has application for this thesis
-	const hasApplicationForThesis = applications.some(
-		(app) => app.thesisId === thesis.id && app.status === "Pending",
-	);
+	const hasApplicationForThesis = useMemo(() => {
+		// Check local state first for immediate UI update
+		if (localPendingApplication) return true;
+
+		// Then check server data
+		return applications.some(
+			(app) => app.thesisId === thesis.id && app.status === "Pending",
+		);
+	}, [applications, thesis.id, localPendingApplication]);
+
+	// Reset local pending state when server data confirms the application exists
+	useEffect(() => {
+		if (localPendingApplication) {
+			const serverHasApplication = applications.some(
+				(app) => app.thesisId === thesis.id && app.status === "Pending",
+			);
+			if (serverHasApplication) {
+				setLocalPendingApplication(false);
+			}
+		}
+	}, [applications, thesis.id, localPendingApplication]);
 
 	// Check if thesis is already taken by another group
 	const isThesisTaken = thesis.groupId != null; // Use != null to catch both null and undefined
@@ -70,7 +96,11 @@ export default function ThesisCard({
 
 	// Disable register button if semester is not in picking phase
 	const isRegisterDisabled =
-		!canRegister || !canRegisterThesis || isRegistering || semesterLoading;
+		!canRegister ||
+		!canRegisterThesis ||
+		isRegistering ||
+		semesterLoading ||
+		(!applicationsInitialized && !localPendingApplication); // Only show loading initially, not after local action
 
 	// Handle view details navigation
 	const handleViewDetails = () => {
@@ -80,11 +110,17 @@ export default function ThesisCard({
 	// Handle register thesis
 	const handleRegisterThesis = () => {
 		registerThesis(thesis.id, thesis.englishName, () => {
+			// Set local pending state AFTER successful submission
+			setLocalPendingApplication(true);
+
 			// Clear relevant caches
 			cacheUtils.clear("semesterStatus");
 
 			// Refresh group data to update UI
 			resetInitialization();
+
+			// Refresh applications immediately to update button state
+			refreshApplications();
 
 			// Refresh thesis list immediately to show updated assignment
 			onThesisUpdate?.();
@@ -131,8 +167,13 @@ export default function ThesisCard({
 						"Your thesis application has been canceled successfully!",
 					);
 
-					// Refresh applications and thesis list
+					// Clear local pending state immediately
+					setLocalPendingApplication(false);
+
+					// Refresh applications first to update button state immediately
 					refreshApplications();
+
+					// Then refresh thesis list
 					onThesisUpdate?.();
 				} catch (error) {
 					console.error("Error canceling application:", error);
@@ -172,6 +213,9 @@ export default function ThesisCard({
 	const getRegisterButtonText = (): string => {
 		if (isRegistering) {
 			return "Processing...";
+		}
+		if (!applicationsInitialized && !localPendingApplication) {
+			return "Checking...";
 		}
 		if (hasApplicationForThesis) {
 			return "Cancel Request";
@@ -297,7 +341,11 @@ export default function ThesisCard({
 									? handleCancelApplication
 									: handleRegisterThesis
 							}
-							loading={isRegistering || semesterLoading}
+							loading={
+								isRegistering ||
+								(semesterLoading && applicationsInitialized) ||
+								(!applicationsInitialized && !localPendingApplication)
+							}
 							danger={hasApplicationForThesis}
 						>
 							{getRegisterButtonText()}

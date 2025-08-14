@@ -12,6 +12,7 @@ import { showNotification } from "@/lib/utils/notification";
 export const useThesisApplications = () => {
 	const [applications, setApplications] = useState<ThesisApplication[]>([]);
 	const [loading, setLoading] = useState(false);
+	const [initialized, setInitialized] = useState(false);
 	const [groupId, setGroupId] = useState<string | null>(null);
 	const { currentSemester } = useCurrentSemester();
 	const { session } = useSessionData();
@@ -41,7 +42,10 @@ export const useThesisApplications = () => {
 
 	// Fetch thesis applications
 	const fetchApplications = useCallback(async () => {
-		if (!currentSemester?.id || !groupId) return;
+		if (!currentSemester?.id || !groupId) {
+			setInitialized(true);
+			return;
+		}
 
 		try {
 			setLoading(true);
@@ -64,12 +68,13 @@ export const useThesisApplications = () => {
 			showNotification.error("Error", apiError.message);
 		} finally {
 			setLoading(false);
+			setInitialized(true);
 		}
 	}, [currentSemester?.id, groupId]);
 
 	// Refresh applications
-	const refreshApplications = useCallback(() => {
-		fetchApplications();
+	const refreshApplications = useCallback(async () => {
+		await fetchApplications();
 	}, [fetchApplications]);
 
 	// Initialize data
@@ -86,6 +91,7 @@ export const useThesisApplications = () => {
 	return {
 		applications,
 		loading,
+		initialized,
 		groupId,
 		refreshApplications,
 	};

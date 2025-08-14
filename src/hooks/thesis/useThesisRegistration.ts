@@ -82,7 +82,10 @@ export const useThesisRegistration = () => {
 							"Application Submitted",
 							"Your thesis application has been submitted successfully! You can track its status in the Register Thesis page.",
 							"Application submission failed",
-							onSuccess,
+							() => {
+								// Call the success callback immediately to update UI
+								onSuccess?.();
+							},
 						);
 					} catch (error) {
 						console.error("Error registering thesis:", error);
