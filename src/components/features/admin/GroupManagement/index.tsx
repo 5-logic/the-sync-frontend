@@ -32,16 +32,11 @@ const GroupManagement: React.FC = () => {
 
 	const handleGenerate = useCallback(
 		async ({ semesterId, numberOfGroups }: CreateFormValues) => {
-			const result = await createGroups({
+			await createGroups({
 				semesterId,
 				numberOfGroup: numberOfGroups,
 			});
-
-			if (result) {
-				// Groups created successfully
-				// The hook already handles showing success message and refreshing data
-				console.log(`Successfully created ${result.length} groups`);
-			}
+			// The hook handles all success/error notifications and data refresh
 		},
 		[createGroups],
 	);
