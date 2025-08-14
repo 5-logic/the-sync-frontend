@@ -14,6 +14,43 @@ interface UseCreateGroupsResult {
 }
 
 /**
+ * Helper function to get error details based on status code
+ */
+const getErrorDetails = (statusCode: number, errorMessage: string) => {
+	if (statusCode === 404) {
+		return {
+			title: "Semester Not Found",
+			description:
+				"The selected semester does not exist. Please refresh and try again.",
+		};
+	}
+	if (statusCode === 400) {
+		return {
+			title: "Invalid Request",
+			description: errorMessage,
+		};
+	}
+	if (statusCode === 403) {
+		return {
+			title: "Access Denied",
+			description:
+				"You don't have permission to create groups. Admin access required.",
+		};
+	}
+	if (statusCode >= 500) {
+		return {
+			title: "Server Error",
+			description:
+				"A server error occurred. Please try again later or contact support.",
+		};
+	}
+	return {
+		title: "Group Creation Failed",
+		description: errorMessage,
+	};
+};
+
+/**
  * Hook for creating multiple groups (Admin only)
  * Handles the API call, loading state, error handling, and store updates
  */
@@ -45,27 +82,9 @@ export const useCreateGroups = (): UseCreateGroupsResult => {
 				const errorMessage = response.error || "Failed to create groups";
 				setError(errorMessage);
 
-				// Show more specific error messages based on status code
-				let errorTitle = "Group Creation Failed";
-				let errorDescription = errorMessage;
-
-				// Handle specific error cases
-				if (response.statusCode === 404) {
-					errorTitle = "Semester Not Found";
-					errorDescription =
-						"The selected semester does not exist. Please refresh and try again.";
-				} else if (response.statusCode === 400) {
-					errorTitle = "Invalid Request";
-					errorDescription = errorMessage;
-				} else if (response.statusCode === 403) {
-					errorTitle = "Access Denied";
-					errorDescription =
-						"You don't have permission to create groups. Admin access required.";
-				} else if (response.statusCode >= 500) {
-					errorTitle = "Server Error";
-					errorDescription =
-						"A server error occurred. Please try again later or contact support.";
-				}
+				// Get error details based on status code
+				const { title: errorTitle, description: errorDescription } =
+					getErrorDetails(response.statusCode || 0, errorMessage);
 
 				showNotification.error(errorTitle, errorDescription);
 

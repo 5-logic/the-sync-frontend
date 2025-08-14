@@ -20,9 +20,9 @@ import { useThesisOperations } from "@/hooks/group/useThesisOperations";
 import { Thesis } from "@/schemas/thesis";
 
 interface AssignStudentDetailProps {
-	groupId: string;
-	backRoute: string;
-	headerBadgeText?: string;
+	readonly groupId: string;
+	readonly backRoute: string;
+	readonly headerBadgeText?: string;
 }
 
 export default function AssignStudentDetail({
