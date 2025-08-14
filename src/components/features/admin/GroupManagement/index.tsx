@@ -10,6 +10,7 @@ import GroupAssignTable from "@/components/features/lecturer/GroupManagement/Gro
 import StudentFilterBar from "@/components/features/lecturer/GroupManagement/StudentFilterBar";
 import StudentTable from "@/components/features/lecturer/GroupManagement/StudentTable";
 import { useGroupManagement } from "@/hooks/admin/useGroupManagement";
+import { useCreateGroups } from "@/hooks/admin/useCreateGroups";
 
 const GroupManagement: React.FC = () => {
 	const router = useRouter();
@@ -24,20 +25,34 @@ const GroupManagement: React.FC = () => {
 		studentMajor,
 		setStudentMajor,
 		handleRefresh,
+		semesters,
 	} = useGroupManagement();
 
+	const { createGroups, isCreating } = useCreateGroups();
+
 	const handleGenerate = useCallback(
-		({ semester, numberOfGroups }: CreateFormValues) => {
-			// Handle group generation logic here
-			console.log(`Generating ${numberOfGroups} groups for ${semester}`);
-			// You can integrate this with your group creation API
+		async ({ semesterId, numberOfGroups }: CreateFormValues) => {
+			const result = await createGroups({
+				semesterId,
+				numberOfGroup: numberOfGroups,
+			});
+
+			if (result) {
+				// Groups created successfully
+				// The hook already handles showing success message and refreshing data
+				console.log(`Successfully created ${result.length} groups`);
+			}
 		},
-		[],
+		[createGroups],
 	);
 
 	return (
 		<Space direction="vertical" size="large" style={{ width: "100%" }}>
-			<CreateForm onGenerate={handleGenerate} />
+			<CreateForm
+				onGenerate={handleGenerate}
+				loading={isCreating}
+				semesters={semesters}
+			/>
 
 			<GroupAssignTable
 				onView={(group) => {

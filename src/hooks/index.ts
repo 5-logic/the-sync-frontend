@@ -4,6 +4,10 @@
 // Auth-related hooks
 export * from "@/hooks/auth";
 
+// Admin-related hooks
+export * from "@/hooks/admin/useCreateGroups";
+export * from "@/hooks/admin/useGroupManagement";
+
 // Group-related hooks (shared between roles)
 export * from "@/hooks/group";
 

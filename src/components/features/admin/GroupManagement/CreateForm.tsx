@@ -7,18 +7,30 @@ const { Option } = Select;
 
 // Constants
 const MIN_GROUPS = 1;
+const MAX_GROUPS = 100; // From schema validation
 const FORM_ID = "group-management-form";
 
 export interface CreateFormValues {
-	semester: string;
+	semesterId: string;
 	numberOfGroups: number;
 }
 
 interface CreateFormProps {
 	onGenerate: (values: CreateFormValues) => void;
+	loading?: boolean;
+	semesters?: Array<{
+		id: string;
+		name: string;
+		code: string;
+		status: string;
+	}>;
 }
 
-const CreateForm: React.FC<CreateFormProps> = ({ onGenerate }) => {
+const CreateForm: React.FC<CreateFormProps> = ({
+	onGenerate,
+	loading = false,
+	semesters = [],
+}) => {
 	const [form] = Form.useForm<CreateFormValues>();
 
 	const handleFinish = useCallback(
@@ -53,15 +65,20 @@ const CreateForm: React.FC<CreateFormProps> = ({ onGenerate }) => {
 						<Col xs={24} sm={12}>
 							<Form.Item
 								label={<FormLabel text="Semester" isRequired={true} />}
-								name="semester"
+								name="semesterId"
 								rules={[{ required: true, message: "Please select semester" }]}
 							>
 								<Select
 									placeholder="Select semester"
 									aria-label="Select semester"
+									loading={loading}
+									disabled={loading}
 								>
-									<Option value="Fall 2025">Fall 2025</Option>
-									<Option value="Summer 2025">Summer 2025</Option>
+									{semesters.map((semester) => (
+										<Option key={semester.id} value={semester.id}>
+											{semester.name} ({semester.code}) - {semester.status}
+										</Option>
+									))}
 								</Select>
 							</Form.Item>
 						</Col>
@@ -75,10 +92,19 @@ const CreateForm: React.FC<CreateFormProps> = ({ onGenerate }) => {
 									/>
 								}
 								name="numberOfGroups"
-								rules={[{ required: true, message: "Enter number of groups" }]}
+								rules={[
+									{ required: true, message: "Enter number of groups" },
+									{
+										type: "number",
+										min: MIN_GROUPS,
+										max: MAX_GROUPS,
+										message: `Number must be between ${MIN_GROUPS} and ${MAX_GROUPS}`,
+									},
+								]}
 							>
 								<InputNumber
 									min={MIN_GROUPS}
+									max={MAX_GROUPS}
 									style={{ width: "100%" }}
 									placeholder="Enter number"
 									aria-label="Number of groups to create"
@@ -89,12 +115,21 @@ const CreateForm: React.FC<CreateFormProps> = ({ onGenerate }) => {
 
 					<Row justify="end" gutter={8}>
 						<Col>
-							<Button type="primary" htmlType="submit">
+							<Button
+								type="primary"
+								htmlType="submit"
+								loading={loading}
+								disabled={loading}
+							>
 								Generate
 							</Button>
 						</Col>
 						<Col>
-							<Button htmlType="button" onClick={handleReset}>
+							<Button
+								htmlType="button"
+								onClick={handleReset}
+								disabled={loading}
+							>
 								Reset
 							</Button>
 						</Col>

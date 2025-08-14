@@ -1,6 +1,10 @@
-import httpClient from '@/lib/services/_httpClient';
-import { ApiResponse } from '@/schemas/_common';
-import { GroupDashboard } from '@/schemas/group';
+import httpClient from "@/lib/services/_httpClient";
+import { ApiResponse } from "@/schemas/_common";
+import {
+	GroupDashboard,
+	CreateMultipleGroupsRequest,
+	CreatedGroup,
+} from "@/schemas/group";
 
 // Group interfaces
 export interface GroupCreate {
@@ -50,7 +54,7 @@ export interface MilestoneSubmission {
 	groupId: string;
 	milestoneId: string;
 	documents: string[];
-	status: 'Submitted' | 'Not Submitted';
+	status: "Submitted" | "Not Submitted";
 	createdAt: string;
 	updatedAt: string;
 	milestone: {
@@ -191,7 +195,7 @@ export interface SupervisedGroup {
 }
 
 class GroupService {
-	private readonly baseUrl = '/groups';
+	private readonly baseUrl = "/groups";
 
 	async create(createGroupDto: GroupCreate): Promise<ApiResponse<Group>> {
 		const response = await httpClient.post<ApiResponse<Group>>(
@@ -352,6 +356,20 @@ class GroupService {
 	): Promise<ApiResponse<SupervisedGroup[]>> {
 		const response = await httpClient.get<ApiResponse<SupervisedGroup[]>>(
 			`${this.baseUrl}/supervise/semester/${semesterId}`,
+		);
+		return response.data;
+	}
+
+	/**
+	 * Create multiple empty groups for a semester (Admin only)
+	 * POST /groups/admin
+	 */
+	async createMultipleGroups(
+		createRequest: CreateMultipleGroupsRequest,
+	): Promise<ApiResponse<CreatedGroup[]>> {
+		const response = await httpClient.post<ApiResponse<CreatedGroup[]>>(
+			`${this.baseUrl}/admin`,
+			createRequest,
 		);
 		return response.data;
 	}
