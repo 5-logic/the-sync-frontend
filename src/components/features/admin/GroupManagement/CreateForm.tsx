@@ -2,6 +2,7 @@ import React, { useCallback } from "react";
 import { Form, InputNumber, Select, Space, Row, Col, Button, Card } from "antd";
 import { Header } from "@/components/common/Header";
 import { FormLabel } from "@/components/common/FormLabel";
+import { SEMESTER_STATUS_TAGS } from "@/lib/constants/semester";
 
 const { Option } = Select;
 
@@ -76,7 +77,14 @@ const CreateForm: React.FC<CreateFormProps> = ({
 								>
 									{semesters.map((semester) => (
 										<Option key={semester.id} value={semester.id}>
-											{semester.name} ({semester.code}) - {semester.status}
+											<Space>
+												<span>{semester.name}</span>
+												{
+													SEMESTER_STATUS_TAGS[
+														semester.status as keyof typeof SEMESTER_STATUS_TAGS
+													]
+												}
+											</Space>
 										</Option>
 									))}
 								</Select>
