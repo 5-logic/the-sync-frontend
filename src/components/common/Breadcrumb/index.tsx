@@ -110,6 +110,11 @@ const DYNAMIC_ROUTE_PATTERNS: Array<{
 
 	// Admin dynamic routes (if any)
 	{
+		pattern: /^\/admin\/group-management\/(.+)$/,
+		getTitle: () => "Assign Student & Thesis",
+		getParentPath: () => "/admin/group-management",
+	},
+	{
 		pattern: /^\/admin\/lecturer-management\/(.+)$/,
 		getTitle: () => "Lecturer Detail",
 		getParentPath: () => "/admin/lecturer-management",
