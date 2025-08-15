@@ -132,7 +132,7 @@ export default function GroupCard({
 	};
 
 	const handleViewDetail = () => {
-		router.push(`/student/form-or-join-group/${group.id}`);
+		router.push(`/student/join-group/${group.id}`);
 	};
 
 	// Extract nested ternary operations into independent statements

@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import { Modal, Tabs } from 'antd';
-import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { Modal, Tabs } from "antd";
+import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 
-import RequestsTab from '@/components/common/RequestsManagement/RequestsTab';
-import { type RequestsDialogProps } from '@/components/common/RequestsManagement/types';
-import { type GroupRequest } from '@/lib/services/requests.service';
-import { showNotification } from '@/lib/utils/notification';
-import { isTextMatch } from '@/lib/utils/textNormalization';
-import { useRequestsStore } from '@/store';
-import { useGroupDashboardStore } from '@/store/useGroupDashboardStore';
+import RequestsTab from "@/components/common/RequestsManagement/RequestsTab";
+import { type RequestsDialogProps } from "@/components/common/RequestsManagement/types";
+import { type GroupRequest } from "@/lib/services/requests.service";
+import { showNotification } from "@/lib/utils/notification";
+import { isTextMatch } from "@/lib/utils/textNormalization";
+import { useRequestsStore } from "@/store";
+import { useGroupDashboardStore } from "@/store/useGroupDashboardStore";
 
 export default function RequestsDialog({
 	visible,
@@ -18,8 +18,8 @@ export default function RequestsDialog({
 	config,
 	onRequestsUpdate,
 }: Readonly<RequestsDialogProps>) {
-	const [activeTab, setActiveTab] = useState('invite');
-	const [searchText, setSearchText] = useState('');
+	const [activeTab, setActiveTab] = useState("invite");
+	const [searchText, setSearchText] = useState("");
 	const [statusFilter, setStatusFilter] = useState<string | undefined>(
 		undefined,
 	);
@@ -52,19 +52,19 @@ export default function RequestsDialog({
 	// Count pending requests by type (for tab labels - always show pending count)
 	const totalInviteRequestsCount = useMemo(() => {
 		return requests.filter(
-			(req) => req.type === 'Invite' && req.status === 'Pending',
+			(req) => req.type === "Invite" && req.status === "Pending",
 		).length;
 	}, [requests]);
 
 	const totalJoinRequestsCount = useMemo(() => {
 		return requests.filter(
-			(req) => req.type === 'Join' && req.status === 'Pending',
+			(req) => req.type === "Join" && req.status === "Pending",
 		).length;
 	}, [requests]);
 
 	// Helper function to filter requests by type, status, and search text
 	const filterRequests = useMemo(() => {
-		return (requestType: 'Invite' | 'Join') => {
+		return (requestType: "Invite" | "Join") => {
 			let filtered = requests.filter((req) => req.type === requestType);
 
 			// Filter by status
@@ -78,7 +78,7 @@ export default function RequestsDialog({
 					// For group leader: search by student info
 					// For student: search by group info
 					const searchTargets =
-						config.mode === 'group-leader'
+						config.mode === "group-leader"
 							? [
 									req.student.user.fullName,
 									req.student.studentCode,
@@ -96,24 +96,24 @@ export default function RequestsDialog({
 
 	// Filter requests by type using the helper function
 	const inviteRequests = useMemo(() => {
-		return filterRequests('Invite');
+		return filterRequests("Invite");
 	}, [filterRequests]);
 
 	const joinRequests = useMemo(() => {
-		return filterRequests('Join');
+		return filterRequests("Join");
 	}, [filterRequests]);
 
 	// Get group dashboard store for refreshing group data and redirecting
 
 	// Action handlers based on mode
 	const handleAcceptInvite = async (requestId: string) => {
-		const success = await updateRequestStatus(requestId, 'Approved');
+		const success = await updateRequestStatus(requestId, "Approved");
 		if (success) {
-			showNotification.success('Success', 'Invitation accepted successfully!');
+			showNotification.success("Success", "Invitation accepted successfully!");
 			onRequestsUpdate?.();
 
 			// For student mode, refresh group status and redirect to dashboard
-			if (config.mode === 'student') {
+			if (config.mode === "student") {
 				try {
 					// Get refreshGroup from the store to update the group status
 					const { refreshGroup } = useGroupDashboardStore.getState();
@@ -129,77 +129,77 @@ export default function RequestsDialog({
 					onCancel();
 
 					// Redirect to group dashboard
-					router.push('/student/group-dashboard');
+					router.push("/student/group-dashboard");
 				} catch (error) {
-					console.error('Error refreshing group status:', error);
+					console.error("Error refreshing group status:", error);
 					// Close dialog if we can't refresh
 					onCancel();
 				}
 			}
 		} else {
 			showNotification.error(
-				'Error',
-				'Failed to accept invitation. Please try again.',
+				"Error",
+				"Failed to accept invitation. Please try again.",
 			);
 		}
 	};
 
 	const handleRejectInvite = async (requestId: string) => {
 		// Student rejecting invitation - use 'Rejected'
-		const status = 'Rejected';
+		const status = "Rejected";
 		const success = await updateRequestStatus(requestId, status);
 		if (success) {
-			const message = 'Invitation rejected successfully!';
-			showNotification.success('Success', message);
+			const message = "Invitation rejected successfully!";
+			showNotification.success("Success", message);
 			onRequestsUpdate?.();
 		} else {
-			const message = 'Failed to reject invitation. Please try again.';
-			showNotification.error('Error', message);
+			const message = "Failed to reject invitation. Please try again.";
+			showNotification.error("Error", message);
 		}
 	};
 
 	const handleCancelInvite = async (requestId: string) => {
 		// Group leader cancelling invitation - use 'Cancelled'
-		const status = 'Cancelled';
+		const status = "Cancelled";
 		const success = await updateRequestStatus(requestId, status);
 		if (success) {
-			const message = 'Invitation cancelled successfully!';
-			showNotification.success('Success', message);
+			const message = "Invitation cancelled successfully!";
+			showNotification.success("Success", message);
 			onRequestsUpdate?.();
 		} else {
-			const message = 'Failed to cancel invitation. Please try again.';
-			showNotification.error('Error', message);
+			const message = "Failed to cancel invitation. Please try again.";
+			showNotification.error("Error", message);
 		}
 	};
 
 	const handleApproveJoinRequest = async (requestId: string) => {
-		const success = await updateRequestStatus(requestId, 'Approved');
+		const success = await updateRequestStatus(requestId, "Approved");
 		if (success) {
 			showNotification.success(
-				'Success',
-				'Join request approved successfully!',
+				"Success",
+				"Join request approved successfully!",
 			);
 			onRequestsUpdate?.();
 		} else {
 			showNotification.error(
-				'Error',
-				'Failed to approve join request. Please try again.',
+				"Error",
+				"Failed to approve join request. Please try again.",
 			);
 		}
 	};
 
 	const handleRejectJoinRequest = async (requestId: string) => {
-		const success = await updateRequestStatus(requestId, 'Rejected');
+		const success = await updateRequestStatus(requestId, "Rejected");
 		if (success) {
 			showNotification.success(
-				'Success',
-				'Join request rejected successfully!',
+				"Success",
+				"Join request rejected successfully!",
 			);
 			onRequestsUpdate?.();
 		} else {
 			showNotification.error(
-				'Error',
-				'Failed to reject join request. Please try again.',
+				"Error",
+				"Failed to reject join request. Please try again.",
 			);
 		}
 	};
@@ -208,14 +208,14 @@ export default function RequestsDialog({
 		const success = await cancelRequest(requestId);
 		if (success) {
 			showNotification.success(
-				'Success',
-				'Join request cancelled successfully!',
+				"Success",
+				"Join request cancelled successfully!",
 			);
 			onRequestsUpdate?.();
 		} else {
 			showNotification.error(
-				'Error',
-				'Failed to cancel join request. Please try again.',
+				"Error",
+				"Failed to cancel join request. Please try again.",
 			);
 		}
 	};
@@ -224,9 +224,9 @@ export default function RequestsDialog({
 	const createViewDetailAction = (request: GroupRequest | undefined) => {
 		if (!request) return undefined;
 
-		const isStudentMode = config.mode === 'student';
+		const isStudentMode = config.mode === "student";
 		const targetUrl = isStudentMode
-			? `/student/form-or-join-group/${request.groupId}`
+			? `/student/join-group/${request.groupId}`
 			: `/student/profile/${request.studentId}`;
 
 		return {
@@ -242,19 +242,19 @@ export default function RequestsDialog({
 	) => {
 		return {
 			primaryAction: {
-				text: 'Accept',
-				title: 'Accept invitation?',
+				text: "Accept",
+				title: "Accept invitation?",
 				description: `Group: ${targetName}`,
-				okText: 'Yes, Accept',
-				okType: 'primary' as const,
+				okText: "Yes, Accept",
+				okType: "primary" as const,
 				onConfirm: () => handleAcceptInvite(requestId),
 			},
 			secondaryAction: {
-				text: 'Reject',
-				title: 'Reject invitation?',
+				text: "Reject",
+				title: "Reject invitation?",
 				description: `Group: ${targetName}`,
-				okText: 'Yes, Reject',
-				okType: 'danger' as const,
+				okText: "Yes, Reject",
+				okType: "danger" as const,
 				onConfirm: () => handleRejectInvite(requestId),
 			},
 			viewDetailAction: createViewDetailAction(request),
@@ -269,11 +269,11 @@ export default function RequestsDialog({
 	) => {
 		return {
 			primaryAction: {
-				text: 'Cancel',
-				title: 'Cancel join request?',
+				text: "Cancel",
+				title: "Cancel join request?",
 				description: `Group: ${targetName}`,
-				okText: 'Yes, Cancel',
-				okType: 'danger' as const,
+				okText: "Yes, Cancel",
+				okType: "danger" as const,
 				onConfirm: () => handleCancelJoinRequest(requestId),
 			},
 			viewDetailAction: createViewDetailAction(request),
@@ -288,11 +288,11 @@ export default function RequestsDialog({
 	) => {
 		return {
 			primaryAction: {
-				text: 'Cancel',
-				title: 'Cancel invitation?',
+				text: "Cancel",
+				title: "Cancel invitation?",
 				description: `Student: ${targetName}`,
-				okText: 'Yes, Cancel',
-				okType: 'danger' as const,
+				okText: "Yes, Cancel",
+				okType: "danger" as const,
 				onConfirm: () => handleCancelInvite(requestId), // Use handleCancelInvite instead
 			},
 			viewDetailAction: createViewDetailAction(request),
@@ -307,19 +307,19 @@ export default function RequestsDialog({
 	) => {
 		return {
 			primaryAction: {
-				text: 'Approve',
-				title: 'Approve join request?',
+				text: "Approve",
+				title: "Approve join request?",
 				description: `Student: ${targetName}`,
-				okText: 'Yes, Approve',
-				okType: 'primary' as const,
+				okText: "Yes, Approve",
+				okType: "primary" as const,
 				onConfirm: () => handleApproveJoinRequest(requestId),
 			},
 			secondaryAction: {
-				text: 'Reject',
-				title: 'Reject join request?',
+				text: "Reject",
+				title: "Reject join request?",
 				description: `Student: ${targetName}`,
-				okText: 'Yes, Reject',
-				okType: 'danger' as const,
+				okText: "Yes, Reject",
+				okType: "danger" as const,
 				onConfirm: () => handleRejectJoinRequest(requestId),
 			},
 			viewDetailAction: createViewDetailAction(request),
@@ -329,12 +329,12 @@ export default function RequestsDialog({
 	// Main function with reduced cognitive complexity
 	const getActionProps = (
 		requestId: string,
-		requestType: 'Invite' | 'Join',
+		requestType: "Invite" | "Join",
 		targetName: string,
 	) => {
 		const request = requests.find((r) => r.id === requestId);
-		const isStudentMode = config.mode === 'student';
-		const isInviteType = requestType === 'Invite';
+		const isStudentMode = config.mode === "student";
+		const isInviteType = requestType === "Invite";
 
 		if (isStudentMode && isInviteType) {
 			return getStudentInviteActions(requestId, targetName, request);
@@ -365,7 +365,7 @@ export default function RequestsDialog({
 
 	const tabItems = [
 		{
-			key: 'invite',
+			key: "invite",
 			label: `Invitations (${totalInviteRequestsCount})`,
 			children: (
 				<RequestsTab
@@ -383,7 +383,7 @@ export default function RequestsDialog({
 			),
 		},
 		{
-			key: 'join',
+			key: "join",
 			label: `Join Requests (${totalJoinRequestsCount})`,
 			children: (
 				<RequestsTab
@@ -403,7 +403,7 @@ export default function RequestsDialog({
 	];
 
 	// Group leader permission check
-	if (config.mode === 'group-leader' && config.groupId) {
+	if (config.mode === "group-leader" && config.groupId) {
 		// You might want to add group leader validation here
 		// For now, we'll assume the component is only rendered for valid group leaders
 	}

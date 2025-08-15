@@ -15,11 +15,11 @@ export default function StudentFirstLoginDashboard() {
 	const router = useRouter();
 
 	const handleJoinGroup = () => {
-		router.push("/student/form-or-join-group");
+		router.push("/student/join-group");
 	};
 
 	const handleAIFindGroup = () => {
-		router.push("/student/form-or-join-group");
+		router.push("/student/join-group");
 	};
 
 	return (
