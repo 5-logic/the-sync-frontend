@@ -1,8 +1,8 @@
 import { ThesisOrientation } from "@/schemas/_enums";
 
 export const ORIENTATION_LABELS: Record<ThesisOrientation, string> = {
-	SE: "Software Engineering",
-	AI: "Artificial Intelligence",
+	SE: "Software Engineering Focus",
+	AI: "Artificial Intelligence Focus",
 	Neutral: "SE + AI (Neutral)",
 };
 

@@ -8,9 +8,9 @@ import { useAiDuplicateCheck } from "@/hooks/thesis/useAiDuplicateCheck";
 import { THESIS_STATUS } from "@/lib/constants/thesis";
 
 interface Props {
-	thesisId: string;
-	thesisStatus: string;
-	canViewDuplicates?: boolean;
+	readonly thesisId: string;
+	readonly thesisStatus: string;
+	readonly canViewDuplicates?: boolean;
 }
 
 export default function DuplicateThesesSection({
