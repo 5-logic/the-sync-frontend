@@ -247,21 +247,28 @@ export default function GroupCard({
 	const getButtonStyles = (
 		isPrimary: boolean = false,
 		isDisabled: boolean = false,
-	) => ({
-		borderRadius: CARD_CONFIG.BUTTON_BORDER_RADIUS,
-		border: isPrimary
-			? undefined
-			: isDisabled
-				? "1px solid #d9d9d9"
-				: "1px solid #222",
-		fontWeight: 500,
-		fontSize: Math.min(fontSize - 1, 12),
-		height: CARD_CONFIG.BUTTON_HEIGHT,
-		lineHeight: "18px",
-		padding: "0 12px",
-		flex: "1 1 0",
-		minWidth: "120px",
-	});
+	) => {
+		let borderValue: string | undefined;
+		if (isPrimary) {
+			borderValue = undefined;
+		} else if (isDisabled) {
+			borderValue = "1px solid #d9d9d9";
+		} else {
+			borderValue = "1px solid #222";
+		}
+
+		return {
+			borderRadius: CARD_CONFIG.BUTTON_BORDER_RADIUS,
+			border: borderValue,
+			fontWeight: 500,
+			fontSize: Math.min(fontSize - 1, 12),
+			height: CARD_CONFIG.BUTTON_HEIGHT,
+			lineHeight: "18px",
+			padding: "0 12px",
+			flex: "1 1 0",
+			minWidth: "120px",
+		};
+	};
 
 	return (
 		<Card hoverable style={getCardStyles()} bodyStyle={getBodyStyles()}>
