@@ -69,9 +69,9 @@ export default function GroupAssignTable({
 		}
 	}, [selectedSemester, semesters]);
 
-	const handleRefresh = () => {
+	const handleRefresh = useCallback(() => {
 		useGroupsStore.getState().refetch(); // Use refetch method for forced refresh
-	};
+	}, []);
 
 	const handleFormatGroups = useCallback(
 		async (semesterId: string) => {
@@ -82,13 +82,20 @@ export default function GroupAssignTable({
 
 			try {
 				await formatGroups(semesterId, semesterName);
-				// After formatting, refresh the groups data
+				// After successful formatting, refresh the groups data
 				handleRefresh();
 			} catch (error) {
-				console.error("Format groups failed:", error);
+				// This will catch both API errors and user cancellation
+				if (
+					error instanceof Error &&
+					error.message !== "User cancelled the operation"
+				) {
+					console.error("Format groups failed:", error);
+				}
+				// Don't refresh if formatting failed or was cancelled
 			}
 		},
-		[isAdminMode, semesters, formatGroups],
+		[isAdminMode, semesters, formatGroups, handleRefresh],
 	);
 
 	const handleDeleteGroup = useCallback(
@@ -136,7 +143,7 @@ export default function GroupAssignTable({
 				setDeleteLoading(null);
 			}
 		},
-		[isAdminMode, adminDeleteGroup, onDelete],
+		[isAdminMode, adminDeleteGroup, onDelete, handleRefresh],
 	);
 
 	const showDeleteConfirm = useCallback(
