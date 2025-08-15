@@ -15,20 +15,29 @@ import { isTextMatch } from "@/lib/utils/textNormalization";
 import { useGroupsStore } from "@/store/useGroupsStore";
 import { useSemesterStore } from "@/store/useSemesterStore";
 import SemesterFilter from "@/components/features/lecturer/GroupProgess/SemesterFilter";
+import { useAdminGroupActions } from "@/hooks/admin/useAdminGroupActions";
 
 import CustomGroupTable from "./GroupTable";
 
 interface Props {
 	readonly onView?: (group: Group) => void;
 	readonly onDelete?: (group: Group) => void;
+	readonly isAdminMode?: boolean; // New prop to determine if admin actions should be used
 }
 
-export default function GroupAssignTable({ onView, onDelete }: Props) {
+export default function GroupAssignTable({
+	onView,
+	onDelete,
+	isAdminMode = false,
+}: Props) {
 	const [groupSearch, setGroupSearch] = useState("");
 	const [selectedSemester, setSelectedSemester] = useState<string | null>(null);
 	const [deleteLoading, setDeleteLoading] = useState<string | null>(null);
 	const { groups, loading, fetchGroups } = useGroupsStore();
 	const { semesters, fetchSemesters } = useSemesterStore();
+
+	// Use admin-specific delete hook when in admin mode
+	const { deleteGroup: adminDeleteGroup } = useAdminGroupActions();
 
 	useEffect(() => {
 		// Fetch groups and semesters data when component mounts
@@ -54,6 +63,21 @@ export default function GroupAssignTable({ onView, onDelete }: Props) {
 
 	const handleDeleteGroup = useCallback(
 		async (group: Group) => {
+			if (isAdminMode) {
+				// Use admin-specific delete method with enhanced error handling
+				try {
+					await adminDeleteGroup(group.id, group.name, () => {
+						handleRefresh(); // Refresh the groups list
+						onDelete?.(group); // Call optional callback
+					});
+				} catch (error) {
+					// Error is already handled by the admin hook
+					console.error("Admin delete failed:", error);
+				}
+				return;
+			}
+
+			// Original student/lecturer delete logic
 			try {
 				setDeleteLoading(group.id);
 
@@ -82,11 +106,18 @@ export default function GroupAssignTable({ onView, onDelete }: Props) {
 				setDeleteLoading(null);
 			}
 		},
-		[onDelete],
+		[isAdminMode, adminDeleteGroup, onDelete],
 	);
 
 	const showDeleteConfirm = useCallback(
 		(group: Group) => {
+			if (isAdminMode) {
+				// Use admin delete method directly (it handles its own confirmation)
+				handleDeleteGroup(group);
+				return;
+			}
+
+			// Original confirmation modal for student/lecturer mode
 			ConfirmationModal.show({
 				title: "Delete Group",
 				message: "Are you sure you want to delete this group?",
@@ -99,7 +130,7 @@ export default function GroupAssignTable({ onView, onDelete }: Props) {
 				loading: deleteLoading === group.id,
 			});
 		},
-		[deleteLoading, handleDeleteGroup],
+		[isAdminMode, deleteLoading, handleDeleteGroup],
 	);
 
 	const filteredGroups = useMemo(() => {

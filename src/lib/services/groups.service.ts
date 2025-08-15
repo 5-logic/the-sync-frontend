@@ -373,6 +373,19 @@ class GroupService {
 		);
 		return response.data;
 	}
+
+	/**
+	 * Delete an empty group (Admin only)
+	 * DELETE /groups/admin/{groupId}
+	 * Only allows deletion of empty groups (groups with no student participations)
+	 * Returns: {"success":true,"statusCode":200,"data":true} on success
+	 */
+	async deleteGroupAdmin(groupId: string): Promise<ApiResponse<boolean>> {
+		const response = await httpClient.delete<ApiResponse<boolean>>(
+			`${this.baseUrl}/admin/${groupId}`,
+		);
+		return response.data;
+	}
 }
 
 const groupService = new GroupService();

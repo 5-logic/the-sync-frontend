@@ -8,6 +8,7 @@ import { useGroupManagement } from "@/hooks/admin/useGroupManagement";
 
 interface GroupManagementRendererProps {
 	routePrefix: string;
+	isAdminMode?: boolean; // New prop to determine admin mode
 }
 
 /**
@@ -16,6 +17,7 @@ interface GroupManagementRendererProps {
  */
 export const useGroupManagementRenderer = ({
 	routePrefix,
+	isAdminMode = false,
 }: GroupManagementRendererProps) => {
 	const router = useRouter();
 	const {
@@ -33,6 +35,7 @@ export const useGroupManagementRenderer = ({
 
 	const renderGroupAssignTable = () => (
 		<GroupAssignTable
+			isAdminMode={isAdminMode}
 			onView={(group) => {
 				router.push(`${routePrefix}/group-management/${group.id}`);
 			}}

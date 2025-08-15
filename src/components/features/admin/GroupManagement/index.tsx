@@ -15,6 +15,7 @@ const GroupManagement: React.FC = () => {
 	const { renderGroupAssignTable, renderUngroupedStudentsCard } =
 		useGroupManagementRenderer({
 			routePrefix: "/admin",
+			isAdminMode: true, // Enable admin mode for enhanced delete functionality
 		});
 
 	const handleGenerate = useCallback(
