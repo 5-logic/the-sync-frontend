@@ -152,21 +152,6 @@ export default function BaseThesisInfoCard({ thesis, supervisor }: Props) {
 				<Paragraph>{thesis.description}</Paragraph>
 			</div>
 
-			<div style={{ marginBottom: 24 }}>
-				<Title level={5} style={{ marginBottom: 8 }}>
-					Required Skills
-				</Title>
-				<Space wrap size={[8, 12]}>
-					{thesis.thesisRequiredSkills?.length ? (
-						thesis.thesisRequiredSkills.map((skill) => (
-							<Tag key={skill.id}>{skill.name}</Tag>
-						))
-					) : (
-						<Text type="secondary">No skills specified</Text>
-					)}
-				</Space>
-			</div>
-
 			<Space size={16} style={{ marginBottom: 24 }}>
 				<Button
 					icon={<DownloadOutlined />}

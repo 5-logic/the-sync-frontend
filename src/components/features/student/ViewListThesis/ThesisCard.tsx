@@ -47,13 +47,6 @@ export default function ThesisCard({
 		? DOMAIN_COLOR_MAP[thesis.domain] || "default"
 		: "default";
 
-	// Process skills for display (max 1 line, show extra count if needed)
-	const maxVisibleSkills = 3;
-	const visibleSkills =
-		thesis.thesisRequiredSkills?.slice(0, maxVisibleSkills) || [];
-	const extraSkillsCount =
-		(thesis.thesisRequiredSkills?.length || 0) - maxVisibleSkills;
-
 	// Check if current group has application for this thesis
 	const hasApplicationForThesis = useMemo(() => {
 		// Check local state first for immediate UI update
@@ -288,30 +281,6 @@ export default function ThesisCard({
 						{thesis.domain}
 					</Tag>
 				)}
-
-				<Space
-					wrap
-					size={[8, 8]}
-					style={{
-						minHeight: "2em", // Always maintain consistent height
-						maxHeight: "2em",
-						overflow: "hidden",
-					}}
-				>
-					{visibleSkills.map((skill) => (
-						<Tag key={skill.id} style={{ borderRadius: 6 }}>
-							{skill.name}
-						</Tag>
-					))}
-					{extraSkillsCount > 0 && (
-						<Tag style={{ borderRadius: 6 }}>+{extraSkillsCount} more</Tag>
-					)}
-					{visibleSkills.length === 0 && (
-						<Typography.Text type="secondary">
-							No skills specified
-						</Typography.Text>
-					)}
-				</Space>
 			</Space>
 
 			<Row gutter={8} style={{ marginTop: 24 }}>

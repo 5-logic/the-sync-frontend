@@ -26,111 +26,6 @@ const statusColor = {
 	Draft: "blue",
 };
 
-const SkillsDisplay: React.FC<{
-	skills: Array<{ id: string; name: string }>;
-}> = ({ skills }) => {
-	const containerRef = React.useRef<HTMLDivElement>(null);
-	const [visibleSkills, setVisibleSkills] = useState<
-		Array<{ id: string; name: string }>
-	>([]);
-	const [hiddenCount, setHiddenCount] = useState(0);
-
-	useEffect(() => {
-		if (!containerRef.current || skills.length === 0) {
-			setVisibleSkills(skills);
-			setHiddenCount(0);
-			return;
-		}
-
-		// Temporarily display all skills to measure size
-		setVisibleSkills(skills);
-		setHiddenCount(0);
-
-		// Use setTimeout to ensure DOM has rendered
-		const timeoutId = setTimeout(() => {
-			if (!containerRef.current) return;
-
-			const container = containerRef.current;
-			const containerHeight = container.clientHeight;
-			const tags = container.querySelectorAll(".skill-tag");
-
-			let visibleCount = 0;
-
-			for (const tag of Array.from(tags)) {
-				const tagElement = tag as HTMLElement;
-				const tagRect = tagElement.getBoundingClientRect();
-				const containerRect = container.getBoundingClientRect();
-
-				// Calculate relative position to container
-				const tagBottom = tagRect.bottom - containerRect.top;
-
-				// Stop if tag exceeds container height
-				if (tagBottom > containerHeight) {
-					break;
-				}
-
-				visibleCount++;
-			}
-
-			// If there are cut off tags, subtract 1 to make room for +{count} tag
-			if (visibleCount < skills.length && visibleCount > 0) {
-				visibleCount = visibleCount - 1;
-			}
-
-			setVisibleSkills(skills.slice(0, visibleCount));
-			setHiddenCount(skills.length - visibleCount);
-		}, 50);
-
-		return () => clearTimeout(timeoutId);
-	}, [skills]);
-
-	return (
-		<div
-			ref={containerRef}
-			style={{
-				minHeight: "70px",
-				maxHeight: "70px",
-				display: "flex",
-				flexWrap: "wrap",
-				gap: "8px",
-				alignItems: "flex-start",
-				overflow: "hidden",
-			}}
-		>
-			{visibleSkills.map((skill) => (
-				<Tag
-					key={skill.id}
-					className="skill-tag"
-					style={{
-						padding: "4px 8px",
-						borderRadius: "6px",
-						fontSize: "12px",
-						margin: 0,
-					}}
-				>
-					{skill.name}
-				</Tag>
-			))}
-			{hiddenCount > 0 && (
-				<Tag
-					style={{
-						padding: "4px 8px",
-						borderRadius: "6px",
-						fontSize: "12px",
-						margin: 0,
-						backgroundColor: "#f0f0f0",
-						borderColor: "#d9d9d9",
-						color: "#666",
-						flexShrink: 0,
-					}}
-				>
-					+{hiddenCount}
-				</Tag>
-			)}
-		</div>
-	);
-};
-
 interface ThesisWithRelations extends Thesis {
 	thesisRequiredSkills?: Array<{ id: string; name: string }>;
 	semester?: { id: string; name: string; code: string };
@@ -366,11 +261,6 @@ const MyThesisSection: React.FC = () => {
 										}}
 									>
 										{thesis.description}
-									</div>
-
-									{/* Skills */}
-									<div style={{ marginTop: "auto" }}>
-										<SkillsDisplay skills={thesis.thesisRequiredSkills || []} />
 									</div>
 								</Flex>
 							</Card>

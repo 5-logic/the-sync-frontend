@@ -106,27 +106,6 @@ export default function ThesisDetailModal({
 						)}
 					</div>
 				</div>
-
-				{/* Required Skills */}
-				{thesis.thesisRequiredSkills &&
-					thesis.thesisRequiredSkills.length > 0 && (
-						<div>
-							<Title level={4} style={{ marginBottom: 8 }}>
-								Required Skills
-							</Title>
-							<div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-								{thesis.thesisRequiredSkills.map((skillItem) => (
-									<Tag
-										key={skillItem.skillId}
-										color="cyan"
-										style={{ marginBottom: 4 }}
-									>
-										{skillItem.skill.name}
-									</Tag>
-								))}
-							</div>
-						</div>
-					)}
 			</Space>
 		</Modal>
 	);
