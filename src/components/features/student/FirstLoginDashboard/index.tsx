@@ -14,7 +14,7 @@ export default function StudentFirstLoginDashboard() {
 	const screens = useBreakpoint();
 	const router = useRouter();
 
-	const handleFormOrJoinGroup = () => {
+	const handleJoinGroup = () => {
 		router.push("/student/form-or-join-group");
 	};
 
@@ -58,14 +58,14 @@ export default function StudentFirstLoginDashboard() {
 							icon={
 								<UsergroupAddOutlined
 									style={{ fontSize: 36, color: "#1677ff", marginBottom: 12 }}
-									aria-label="Form or Join Group"
+									aria-label="Join Group"
 								/>
 							}
-							title="Form or Join Group"
-							description="Create a new group or join an existing one"
-							buttonText="Get Started"
+							title="Join Group"
+							description="Find and join an existing group that matches your interests"
+							buttonText="Browse Groups"
 							type="primary"
-							onClick={handleFormOrJoinGroup}
+							onClick={handleJoinGroup}
 						/>
 					</Col>
 					<Col
@@ -82,7 +82,7 @@ export default function StudentFirstLoginDashboard() {
 								/>
 							}
 							title="AI Group Suggestion"
-							description="Let our AI match you with the perfect team"
+							description="Let our AI help you discover groups that match your skills and interests"
 							buttonText="Find Match"
 							onClick={handleAIFindGroup}
 						/>
