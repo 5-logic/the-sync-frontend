@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
 	BarChartOutlined,
@@ -8,17 +8,17 @@ import {
 	LoadingOutlined,
 	TeamOutlined,
 	UserAddOutlined,
-} from '@ant-design/icons';
-import { Menu } from 'antd';
-import { usePathname } from 'next/navigation';
+} from "@ant-design/icons";
+import { Menu } from "antd";
+import { usePathname } from "next/navigation";
 
 import {
 	STUDENT_MENU_KEYS,
 	getSelectedMenuKey,
-} from '@/components/layout/Sidebar/student/StudentSidebar.config';
-import { useNavigationLoader } from '@/hooks';
-import { useStudentGroupStatus } from '@/hooks/student/useStudentGroupStatus';
-import { DASHBOARD_PATHS } from '@/lib/auth/config/auth-constants';
+} from "@/components/layout/Sidebar/student/StudentSidebar.config";
+import { useNavigationLoader } from "@/hooks";
+import { useStudentGroupStatus } from "@/hooks/student/useStudentGroupStatus";
+import { DASHBOARD_PATHS } from "@/lib/auth/config/auth-constants";
 
 export default function StudentSidebar() {
 	const pathname = usePathname();
@@ -34,9 +34,9 @@ export default function StudentSidebar() {
 	const getGroupMenuItem = () => {
 		if (groupLoading) {
 			return {
-				key: 'group-loading',
+				key: "group-loading",
 				icon: <LoadingOutlined spin />,
-				label: 'Loading...',
+				label: "Loading...",
 				onClick: () => {},
 				disabled: true,
 			};
@@ -50,7 +50,7 @@ export default function StudentSidebar() {
 				) : (
 					<TeamOutlined />
 				),
-				label: 'Group Dashboard',
+				label: "Group Dashboard",
 				onClick: () => navigateWithLoading(STUDENT_MENU_KEYS.GROUP_DASHBOARD),
 				disabled:
 					isNavigating && targetPath !== STUDENT_MENU_KEYS.GROUP_DASHBOARD,
@@ -64,7 +64,7 @@ export default function StudentSidebar() {
 			) : (
 				<UserAddOutlined />
 			),
-			label: 'Form / Join Group',
+			label: "Join Group",
 			onClick: () => navigateWithLoading(STUDENT_MENU_KEYS.JOIN_GROUP),
 			disabled: isNavigating && targetPath !== STUDENT_MENU_KEYS.JOIN_GROUP,
 		};
@@ -78,7 +78,7 @@ export default function StudentSidebar() {
 			) : (
 				<DashboardOutlined />
 			),
-			label: 'Home',
+			label: "Home",
 			onClick: () => navigateWithLoading(DASHBOARD_PATHS.STUDENT),
 			disabled: isNavigating && targetPath !== DASHBOARD_PATHS.STUDENT,
 		},
@@ -89,7 +89,7 @@ export default function StudentSidebar() {
 			) : (
 				<BookOutlined />
 			),
-			label: 'List Thesis',
+			label: "List Thesis",
 			onClick: () => navigateWithLoading(STUDENT_MENU_KEYS.LIST_THESIS),
 			disabled: isNavigating && targetPath !== STUDENT_MENU_KEYS.LIST_THESIS,
 		},
@@ -101,7 +101,7 @@ export default function StudentSidebar() {
 			) : (
 				<FileTextOutlined />
 			),
-			label: 'Register Thesis',
+			label: "Register Thesis",
 			onClick: () => navigateWithLoading(STUDENT_MENU_KEYS.REGISTER_THESIS),
 			disabled:
 				isNavigating && targetPath !== STUDENT_MENU_KEYS.REGISTER_THESIS,
@@ -113,7 +113,7 @@ export default function StudentSidebar() {
 			) : (
 				<BarChartOutlined />
 			),
-			label: 'Tracking Progress',
+			label: "Tracking Progress",
 			onClick: () => navigateWithLoading(STUDENT_MENU_KEYS.TRACK_PROGRESS),
 			disabled: isNavigating && targetPath !== STUDENT_MENU_KEYS.TRACK_PROGRESS,
 		},
@@ -126,8 +126,8 @@ export default function StudentSidebar() {
 			selectedKeys={[getSelectedMenuKey(pathname)]}
 			items={studentMenuItems}
 			style={{
-				border: 'none',
-				height: '100%',
+				border: "none",
+				height: "100%",
 			}}
 		/>
 	);

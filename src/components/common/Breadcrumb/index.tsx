@@ -34,7 +34,7 @@ const ROUTE_TITLES: Record<string, string> = {
 
 	// Student routes
 	"/student": "Student Dashboard",
-	"/student/form-or-join-group": "Form or Join Group",
+	"/student/form-or-join-group": "Join Group",
 	"/student/group-dashboard": "Group Dashboard",
 	"/student/group-detail": "Group Detail",
 	"/student/invite-to-group": "Invite to Group",
