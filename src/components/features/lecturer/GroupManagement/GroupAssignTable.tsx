@@ -50,14 +50,20 @@ export default function GroupAssignTable({
 		fetchSemesters();
 	}, [fetchGroups, fetchSemesters]);
 
-	// Auto-select first available semester (not NotYet or End) if none selected
+	// Auto-select first active semester (prefer Preparing, Picking, Ongoing), but allow any semester
 	useEffect(() => {
 		if (!selectedSemester && semesters.length > 0) {
-			const availableSemesters = semesters.filter(
+			// Prioritize active semesters for auto-selection
+			const activeSemesters = semesters.filter(
 				(semester) => semester.status !== "NotYet" && semester.status !== "End",
 			);
-			if (availableSemesters.length > 0) {
-				setSelectedSemester(availableSemesters[0].id);
+
+			// Select active semester if available, otherwise select any semester
+			const semesterToSelect =
+				activeSemesters.length > 0 ? activeSemesters[0] : semesters[0];
+
+			if (semesterToSelect) {
+				setSelectedSemester(semesterToSelect.id);
 			}
 		}
 	}, [selectedSemester, semesters]);
@@ -163,13 +169,7 @@ export default function GroupAssignTable({
 				if (selectedSemester && group.semester.id !== selectedSemester) {
 					return false;
 				}
-				// If no semester selected, show groups from semesters that are not NotYet or End
-				if (!selectedSemester) {
-					return (
-						group.semester.status !== "NotYet" &&
-						group.semester.status !== "End"
-					);
-				}
+				// If no semester selected, show all groups (including End and NotYet semesters)
 				return true;
 			})
 			.sort((a, b) => a.memberCount - b.memberCount) // Sort by members ascending
