@@ -1,14 +1,14 @@
-import { UserOutlined } from '@ant-design/icons';
-import { Button, Card, Grid, Space, Tag, Typography } from 'antd';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { UserOutlined } from "@ant-design/icons";
+import { Button, Card, Grid, Space, Tag, Typography } from "antd";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
-import { GroupConfirmationModals } from '@/components/common/ConfirmModal';
-import { DOMAIN_COLOR_MAP } from '@/lib/constants/domains';
+import { GroupConfirmationModals } from "@/components/common/ConfirmModal";
+import { DOMAIN_COLOR_MAP } from "@/lib/constants/domains";
 import requestService, {
 	type GroupRequest,
-} from '@/lib/services/requests.service';
-import { showNotification } from '@/lib/utils/notification';
+} from "@/lib/services/requests.service";
+import { showNotification } from "@/lib/utils/notification";
 
 const { Text } = Typography;
 const { useBreakpoint } = Grid;
@@ -61,44 +61,74 @@ export default function GroupCard({
 	const hasPendingJoinRequest = existingRequests.some(
 		(request) =>
 			request.groupId === group.id &&
-			request.type === 'Join' &&
-			request.status === 'Pending',
+			request.type === "Join" &&
+			request.status === "Pending",
 	);
 
 	// Check if user has a pending invite request for this group
 	const hasPendingInviteRequest = existingRequests.some(
 		(request) =>
 			request.groupId === group.id &&
-			request.type === 'Invite' &&
-			request.status === 'Pending',
+			request.type === "Invite" &&
+			request.status === "Pending",
 	);
 
 	// Check if group is full (≥5 members)
 	const isGroupFull = group.members >= 5;
 
+	// Check if group has no members
+	const hasNoMembers = group.members <= 0;
+
 	const handleJoinRequest = () => {
-		GroupConfirmationModals.requestToJoin(
-			group.name,
-			async () => {
-				setIsRequesting(true);
-				try {
-					await requestService.joinGroup(group.id);
-					showNotification.success(
-						'Success',
-						'Join request sent successfully! The group leader will review your request.',
-					);
-					onRequestSent?.();
-				} catch {
-					showNotification.error(
-						'Error',
-						'Failed to send join request. Please try again.',
-					);
-				} finally {
-					setIsRequesting(false);
-				}
-			},
-			isRequesting,
-		);
+		if (hasNoMembers) {
+			// Direct join for groups with no members
+			GroupConfirmationModals.joinGroup(
+				group.name,
+				async () => {
+					setIsRequesting(true);
+					try {
+						await requestService.joinGroup(group.id);
+						showNotification.success(
+							"Success",
+							"You have successfully joined the group!",
+						);
+						onRequestSent?.();
+					} catch {
+						showNotification.error(
+							"Error",
+							"Failed to join the group. Please try again.",
+						);
+					} finally {
+						setIsRequesting(false);
+					}
+				},
+				isRequesting,
+			);
+		} else {
+			// Request to join for groups with existing members
+			GroupConfirmationModals.requestToJoin(
+				group.name,
+				async () => {
+					setIsRequesting(true);
+					try {
+						await requestService.joinGroup(group.id);
+						showNotification.success(
+							"Success",
+							"Join request sent successfully! The group leader will review your request.",
+						);
+						onRequestSent?.();
+					} catch {
+						showNotification.error(
+							"Error",
+							"Failed to send join request. Please try again.",
+						);
+					} finally {
+						setIsRequesting(false);
+					}
+				},
+				isRequesting,
+			);
+		}
 	};
 
 	const handleViewDetail = () => {
@@ -108,15 +138,18 @@ export default function GroupCard({
 	// Extract nested ternary operations into independent statements
 	const getButtonTitle = () => {
 		if (hasPendingInviteRequest) {
-			return 'You have been invited to this group - click to view details';
+			return "You have been invited to this group - click to view details";
 		}
 		if (hasPendingJoinRequest) {
-			return 'Request already sent';
+			return "Request already sent";
 		}
 		if (isGroupFull) {
-			return 'Group is full (5/5 members)';
+			return "Group is full (5/5 members)";
 		}
-		return 'Request to Join';
+		if (hasNoMembers) {
+			return "Join this group directly";
+		}
+		return "Request to Join";
 	};
 
 	const getButtonAriaLabel = () => {
@@ -129,20 +162,26 @@ export default function GroupCard({
 		if (isGroupFull) {
 			return `${group.name} is full`;
 		}
+		if (hasNoMembers) {
+			return `Join ${group.name} directly`;
+		}
 		return `Request to join ${group.name}`;
 	};
 
 	const getButtonText = () => {
 		if (hasPendingInviteRequest) {
-			return 'View Invite';
+			return "View Invite";
 		}
 		if (hasPendingJoinRequest) {
-			return 'Request Sent';
+			return "Request Sent";
 		}
 		if (isGroupFull) {
-			return 'Group Full';
+			return "Group Full";
 		}
-		return 'Request to Join';
+		if (hasNoMembers) {
+			return "Join Group";
+		}
+		return "Request to Join";
 	};
 
 	const getButtonClickHandler = () => {
@@ -157,19 +196,19 @@ export default function GroupCard({
 
 	const getCardStyles = () => ({
 		borderRadius: CARD_CONFIG.BORDER_RADIUS,
-		width: '100%',
+		width: "100%",
 		minHeight: CARD_CONFIG.MIN_HEIGHT,
-		height: '100%',
-		display: 'flex',
-		flexDirection: 'column' as const,
+		height: "100%",
+		display: "flex",
+		flexDirection: "column" as const,
 	});
 
 	const getBodyStyles = () => ({
 		padding,
-		display: 'flex',
-		flexDirection: 'column' as const,
+		display: "flex",
+		flexDirection: "column" as const,
 		flex: 1,
-		justifyContent: 'space-between',
+		justifyContent: "space-between",
 	});
 
 	const getTitleStyles = () => ({
@@ -178,54 +217,61 @@ export default function GroupCard({
 		fontSize: fontSize + 2,
 		fontWeight: 600,
 		lineHeight: TEXT_CONFIG.TITLE_LINE_HEIGHT,
-		overflow: 'hidden',
-		display: '-webkit-box',
+		overflow: "hidden",
+		display: "-webkit-box",
 		WebkitLineClamp: TEXT_CONFIG.TITLE_LINE_CLAMP,
-		WebkitBoxOrient: 'vertical' as const,
-		textOverflow: 'ellipsis',
-		wordBreak: 'break-word' as const,
+		WebkitBoxOrient: "vertical" as const,
+		textOverflow: "ellipsis",
+		wordBreak: "break-word" as const,
 		minHeight: `${(fontSize + 2) * TEXT_CONFIG.TITLE_LINE_HEIGHT * TEXT_CONFIG.TITLE_LINE_CLAMP}px`,
 		maxHeight: `${(fontSize + 2) * TEXT_CONFIG.TITLE_LINE_HEIGHT * TEXT_CONFIG.TITLE_LINE_CLAMP}px`,
-		whiteSpace: 'normal' as const,
-		color: 'rgba(0, 0, 0, 0.88)',
+		whiteSpace: "normal" as const,
+		color: "rgba(0, 0, 0, 0.88)",
 	});
 
 	const getLeaderStyles = () => ({
 		fontSize,
 		lineHeight: TEXT_CONFIG.LEADER_LINE_HEIGHT,
-		overflow: 'hidden',
-		display: '-webkit-box',
+		overflow: "hidden",
+		display: "-webkit-box",
 		WebkitLineClamp: TEXT_CONFIG.LEADER_LINE_CLAMP,
-		WebkitBoxOrient: 'vertical' as const,
-		textOverflow: 'ellipsis',
-		wordBreak: 'break-word' as const,
+		WebkitBoxOrient: "vertical" as const,
+		textOverflow: "ellipsis",
+		wordBreak: "break-word" as const,
 		minHeight: `${fontSize * TEXT_CONFIG.LEADER_LINE_HEIGHT * TEXT_CONFIG.LEADER_LINE_CLAMP}px`,
 		maxHeight: `${fontSize * TEXT_CONFIG.LEADER_LINE_HEIGHT * TEXT_CONFIG.LEADER_LINE_CLAMP}px`,
-		whiteSpace: 'normal' as const,
-		color: 'rgba(0, 0, 0, 0.45)',
+		whiteSpace: "normal" as const,
+		color: "rgba(0, 0, 0, 0.45)",
 	});
 
-	const getButtonStyles = (isPrimary: boolean = false) => ({
+	const getButtonStyles = (
+		isPrimary: boolean = false,
+		isDisabled: boolean = false,
+	) => ({
 		borderRadius: CARD_CONFIG.BUTTON_BORDER_RADIUS,
-		border: isPrimary ? undefined : '1px solid #222',
+		border: isPrimary
+			? undefined
+			: isDisabled
+				? "1px solid #d9d9d9"
+				: "1px solid #222",
 		fontWeight: 500,
 		fontSize: Math.min(fontSize - 1, 12),
 		height: CARD_CONFIG.BUTTON_HEIGHT,
-		lineHeight: '18px',
-		padding: '0 12px',
-		flex: '1 1 0',
-		minWidth: '120px',
+		lineHeight: "18px",
+		padding: "0 12px",
+		flex: "1 1 0",
+		minWidth: "120px",
 	});
 
 	return (
 		<Card hoverable style={getCardStyles()} bodyStyle={getBodyStyles()}>
-			<div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+			<div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
 				<div style={{ flex: 1 }}>
 					<div style={getTitleStyles()} title={group.name}>
 						{group.name}
 					</div>
 					<Tag
-						color={DOMAIN_COLOR_MAP[group.domain] || 'default'}
+						color={DOMAIN_COLOR_MAP[group.domain] || "default"}
 						style={{ fontSize: fontSize - 3, marginBottom: 8 }}
 					>
 						{group.domain}
@@ -235,7 +281,7 @@ export default function GroupCard({
 					</div>
 					<Space align="center" style={{ marginTop: 8 }}>
 						<UserOutlined
-							style={{ fontSize: fontSize - 1, color: '#bfbfbf' }}
+							style={{ fontSize: fontSize - 1, color: "#bfbfbf" }}
 						/>
 						<Text
 							type="secondary"
@@ -248,29 +294,39 @@ export default function GroupCard({
 				<div
 					style={{
 						marginTop: 16,
-						display: 'flex',
-						flexDirection: 'column',
+						display: "flex",
+						flexDirection: "column",
 						gap: 8,
 					}}
 				>
 					<div
 						style={{
-							display: 'flex',
+							display: "flex",
 							gap: 8,
-							flexWrap: 'wrap',
+							flexWrap: "wrap",
 						}}
 					>
 						<Button
-							style={getButtonStyles()}
-							title="View Group Detail"
-							aria-label={`View details for ${group.name}`}
+							style={getButtonStyles(false, hasNoMembers)}
+							title={
+								hasNoMembers ? "No members in this group" : "View Group Detail"
+							}
+							aria-label={
+								hasNoMembers
+									? `${group.name} has no members`
+									: `View details for ${group.name}`
+							}
 							onClick={handleViewDetail}
+							disabled={hasNoMembers}
 						>
 							View Group Detail
 						</Button>
 						<Button
 							type="primary"
-							style={getButtonStyles(true)}
+							style={getButtonStyles(
+								true,
+								isRequesting || hasPendingJoinRequest || isGroupFull,
+							)}
 							title={getButtonTitle()}
 							aria-label={getButtonAriaLabel()}
 							onClick={getButtonClickHandler()}
