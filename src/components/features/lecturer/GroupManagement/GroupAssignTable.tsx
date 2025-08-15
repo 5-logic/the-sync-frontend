@@ -3,6 +3,7 @@ import {
 	EyeOutlined,
 	ReloadOutlined,
 	SearchOutlined,
+	FormatPainterOutlined,
 } from "@ant-design/icons";
 import { Button, Card, Col, Input, Row, Space, Spin, Tooltip } from "antd";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -16,6 +17,7 @@ import { useGroupsStore } from "@/store/useGroupsStore";
 import { useSemesterStore } from "@/store/useSemesterStore";
 import SemesterFilter from "@/components/features/lecturer/GroupProgess/SemesterFilter";
 import { useAdminGroupActions } from "@/hooks/admin/useAdminGroupActions";
+import { useFormatGroups } from "@/hooks/admin/useFormatGroups";
 
 import CustomGroupTable from "./GroupTable";
 
@@ -39,6 +41,9 @@ export default function GroupAssignTable({
 	// Use admin-specific delete hook when in admin mode
 	const { deleteGroup: adminDeleteGroup } = useAdminGroupActions();
 
+	// Use format groups hook when in admin mode
+	const { isFormatting, formatGroups } = useFormatGroups();
+
 	useEffect(() => {
 		// Fetch groups and semesters data when component mounts
 		fetchGroups();
@@ -60,6 +65,24 @@ export default function GroupAssignTable({
 	const handleRefresh = () => {
 		useGroupsStore.getState().refetch(); // Use refetch method for forced refresh
 	};
+
+	const handleFormatGroups = useCallback(
+		async (semesterId: string) => {
+			if (!semesterId || !isAdminMode) return;
+
+			const semester = semesters.find((s) => s.id === semesterId);
+			const semesterName = semester?.name || "Unknown Semester";
+
+			try {
+				await formatGroups(semesterId, semesterName);
+				// After formatting, refresh the groups data
+				handleRefresh();
+			} catch (error) {
+				console.error("Format groups failed:", error);
+			}
+		},
+		[isAdminMode, semesters, formatGroups],
+	);
 
 	const handleDeleteGroup = useCallback(
 		async (group: Group) => {
@@ -251,6 +274,23 @@ export default function GroupAssignTable({
 						Refresh
 					</Button>
 				</Col>
+				{isAdminMode && (
+					<Col flex="none">
+						<Tooltip title="Format and reorganize groups in the selected semester">
+							<Button
+								icon={<FormatPainterOutlined />}
+								onClick={() =>
+									selectedSemester && handleFormatGroups(selectedSemester)
+								}
+								type="default"
+								loading={isFormatting}
+								disabled={!selectedSemester || isFormatting}
+							>
+								Format
+							</Button>
+						</Tooltip>
+					</Col>
+				)}
 			</Row>
 			<Spin spinning={loading} tip="Loading groups...">
 				<CustomGroupTable data={filteredGroups} columns={groupColumns} />
