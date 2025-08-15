@@ -162,7 +162,6 @@ export const ParticipationSchema = z.object({
 	semester: SemesterSchema.omit({
 		createdAt: true,
 		updatedAt: true,
-		maxGroup: true,
 		ongoingPhase: true,
 	}),
 });
@@ -179,7 +178,6 @@ export const GroupDashboardSchema = GroupSchema.omit({
 	semester: SemesterSchema.omit({
 		createdAt: true,
 		updatedAt: true,
-		maxGroup: true,
 		ongoingPhase: true,
 	}),
 	thesis: z.null().or(
