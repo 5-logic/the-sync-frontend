@@ -4,14 +4,14 @@ import { ReloadOutlined, SearchOutlined } from "@ant-design/icons";
 import { Button, Input, Select } from "antd";
 
 interface SearchAndFilterControlsProps {
-	searchText: string;
-	onSearchChange: (value: string) => void;
-	statusFilter: string;
-	onStatusFilterChange: (value: string) => void;
-	onRefresh: () => void;
-	loading?: boolean;
-	searchPlaceholder?: string;
-	showCancelledStatus?: boolean;
+	readonly searchText: string;
+	readonly onSearchChange: (value: string) => void;
+	readonly statusFilter: string;
+	readonly onStatusFilterChange: (value: string) => void;
+	readonly onRefresh: () => void;
+	readonly loading?: boolean;
+	readonly searchPlaceholder?: string;
+	readonly showCancelledStatus?: boolean;
 }
 
 export default function SearchAndFilterControls({

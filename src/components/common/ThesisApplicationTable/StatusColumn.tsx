@@ -17,7 +17,7 @@ export const getStatusColor = (status: string): string => {
 };
 
 interface StatusColumnProps {
-	status: string;
+	readonly status: string;
 }
 
 export function StatusColumn({ status }: StatusColumnProps) {
