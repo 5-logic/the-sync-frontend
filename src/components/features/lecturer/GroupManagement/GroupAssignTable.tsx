@@ -4,7 +4,7 @@ import {
 	ReloadOutlined,
 	SearchOutlined,
 } from "@ant-design/icons";
-import { Button, Card, Col, Input, Row, Space, Spin } from "antd";
+import { Button, Card, Col, Input, Row, Space, Spin, Tooltip } from "antd";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { ConfirmationModal } from "@/components/common/ConfirmModal";
@@ -190,22 +190,24 @@ export default function GroupAssignTable({
 				title: "Actions",
 				render: (_: unknown, record: Group) => (
 					<Space>
-						<Button
-							type="link"
-							icon={<EyeOutlined />}
-							onClick={() => {
-								onView?.(record);
-							}}
-							title="View Details"
-						/>
-						<Button
-							type="link"
-							icon={<DeleteOutlined />}
-							onClick={() => showDeleteConfirm(record)}
-							loading={deleteLoading === record.id}
-							danger
-							title="Delete Group"
-						/>
+						<Tooltip title="View Details">
+							<Button
+								type="link"
+								icon={<EyeOutlined />}
+								onClick={() => {
+									onView?.(record);
+								}}
+							/>
+						</Tooltip>
+						<Tooltip title="Delete Group">
+							<Button
+								type="link"
+								icon={<DeleteOutlined />}
+								onClick={() => showDeleteConfirm(record)}
+								loading={deleteLoading === record.id}
+								danger
+							/>
+						</Tooltip>
 					</Space>
 				),
 				key: "actions",

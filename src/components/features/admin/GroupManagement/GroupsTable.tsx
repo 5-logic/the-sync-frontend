@@ -1,6 +1,16 @@
 import React, { useMemo, useState, useCallback } from "react";
-import { Card, Tag, Button, Input, Space, Col, Row, Table } from "antd";
-import { DeleteOutlined, SearchOutlined } from "@ant-design/icons";
+import {
+	Card,
+	Tag,
+	Button,
+	Input,
+	Space,
+	Col,
+	Row,
+	Table,
+	Tooltip,
+} from "antd";
+import { DeleteOutlined, SearchOutlined, EyeOutlined } from "@ant-design/icons";
 import { ColumnsType } from "antd/es/table";
 
 import { TablePagination } from "@/components/common/TablePagination";
@@ -27,9 +37,14 @@ export interface AdminGroup {
 interface GroupsTableProps {
 	data: AdminGroup[];
 	onDelete: (id: string) => void;
+	onViewDetail?: (id: string) => void;
 }
 
-const GroupsTable: React.FC<GroupsTableProps> = ({ data, onDelete }) => {
+const GroupsTable: React.FC<GroupsTableProps> = ({
+	data,
+	onDelete,
+	onViewDetail,
+}) => {
 	const [groupSearch, setGroupSearch] = useState("");
 
 	const handleSearchChange = useCallback(
@@ -64,17 +79,28 @@ const GroupsTable: React.FC<GroupsTableProps> = ({ data, onDelete }) => {
 	const renderActions = useCallback(
 		(_: unknown, record: AdminGroup) => (
 			<Space>
-				<Button
-					type="link"
-					icon={<DeleteOutlined />}
-					onClick={() => onDelete(record.id)}
-					danger
-					title="Delete Group"
-					aria-label={`Delete group ${record.name}`}
-				/>
+				{onViewDetail && (
+					<Tooltip title="View Details">
+						<Button
+							type="link"
+							icon={<EyeOutlined />}
+							onClick={() => onViewDetail(record.id)}
+							aria-label={`View details of group ${record.name}`}
+						/>
+					</Tooltip>
+				)}
+				<Tooltip title="Delete Group">
+					<Button
+						type="link"
+						icon={<DeleteOutlined />}
+						onClick={() => onDelete(record.id)}
+						danger
+						aria-label={`Delete group ${record.name}`}
+					/>
+				</Tooltip>
 			</Space>
 		),
-		[onDelete],
+		[onDelete, onViewDetail],
 	);
 
 	const columns: ColumnsType<AdminGroup> = useMemo(
