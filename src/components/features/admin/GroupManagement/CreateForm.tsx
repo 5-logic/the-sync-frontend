@@ -75,18 +75,20 @@ const CreateForm: React.FC<CreateFormProps> = ({
 									loading={loading}
 									disabled={loading}
 								>
-									{semesters.map((semester) => (
-										<Option key={semester.id} value={semester.id}>
-											<Space>
-												<span>{semester.name}</span>
-												{
-													SEMESTER_STATUS_TAGS[
-														semester.status as keyof typeof SEMESTER_STATUS_TAGS
-													]
-												}
-											</Space>
-										</Option>
-									))}
+									{semesters
+										.filter((semester) => semester.status === "Preparing")
+										.map((semester) => (
+											<Option key={semester.id} value={semester.id}>
+												<Space>
+													<span>{semester.name}</span>
+													{
+														SEMESTER_STATUS_TAGS[
+															semester.status as keyof typeof SEMESTER_STATUS_TAGS
+														]
+													}
+												</Space>
+											</Option>
+										))}
 								</Select>
 							</Form.Item>
 						</Col>

@@ -7,6 +7,7 @@ import {
 } from "@ant-design/icons";
 import { Button, Card, Col, Input, Row, Space, Spin, Tooltip } from "antd";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import type { SortOrder } from "antd/es/table/interface";
 
 import { ConfirmationModal } from "@/components/common/ConfirmModal";
 import groupService, { Group } from "@/lib/services/groups.service";
@@ -172,7 +173,6 @@ export default function GroupAssignTable({
 				// If no semester selected, show all groups (including End and NotYet semesters)
 				return true;
 			})
-			.sort((a, b) => a.memberCount - b.memberCount) // Sort by members ascending
 			.filter((group) =>
 				isTextMatch(groupSearch, [
 					group.code,
@@ -182,6 +182,13 @@ export default function GroupAssignTable({
 			);
 	}, [groupSearch, groups, selectedSemester]);
 
+	// Helper function to extract number from group code for sorting
+	const extractGroupNumber = useCallback((code: string): number => {
+		// Extract numbers from the end of the code (e.g., "SU25SEAI001" -> 1, "GROUP003" -> 3)
+		const match = code.match(/(\d+)$/);
+		return match ? parseInt(match[1], 10) : 0;
+	}, []);
+
 	const groupColumns = useMemo(() => {
 		return [
 			{
@@ -189,6 +196,12 @@ export default function GroupAssignTable({
 				dataIndex: "code",
 				key: "code",
 				width: "15%",
+				sorter: (a: Group, b: Group) => {
+					const numA = extractGroupNumber(a.code);
+					const numB = extractGroupNumber(b.code);
+					return numA - numB;
+				},
+				sortDirections: ["ascend", "descend"] as SortOrder[],
 			},
 			{
 				title: "Group name",
@@ -201,6 +214,8 @@ export default function GroupAssignTable({
 				dataIndex: "memberCount",
 				key: "members",
 				width: "20%",
+				sorter: (a: Group, b: Group) => a.memberCount - b.memberCount,
+				sortDirections: ["ascend", "descend"] as SortOrder[],
 			},
 			{
 				title: "Leader",
@@ -240,7 +255,13 @@ export default function GroupAssignTable({
 				width: "15%",
 			},
 		];
-	}, [onView, deleteLoading, showDeleteConfirm, isAdminMode]);
+	}, [
+		onView,
+		deleteLoading,
+		showDeleteConfirm,
+		isAdminMode,
+		extractGroupNumber,
+	]);
 
 	return (
 		<Card title="Active Groups">
