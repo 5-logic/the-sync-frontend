@@ -8,15 +8,11 @@ import { ThesisConfirmationModals } from "@/components/common/ConfirmModal";
 import { Header } from "@/components/common/Header";
 import ContentLoader from "@/components/common/loading/ContentLoader";
 import ActionButtons from "@/components/features/lecturer/ViewThesisDetail/ActionButtons";
-import DuplicateThesesModal from "@/components/features/lecturer/ViewThesisDetail/DuplicateThesesModal";
+import DuplicateThesesSection from "@/components/features/lecturer/ViewThesisDetail/DuplicateThesesSection";
 import ThesisInfoCard from "@/components/features/lecturer/ViewThesisDetail/ThesisInfoCard";
 import { useSessionData } from "@/hooks/auth/useAuth";
 import { usePermissions } from "@/hooks/auth/usePermissions";
-import {
-	useAiDuplicateCheck,
-	useThesisActions,
-	useThesisDetail,
-} from "@/hooks/thesis";
+import { useThesisActions, useThesisDetail } from "@/hooks/thesis";
 import { showNotification } from "@/lib/utils/notification";
 import { usePublishThesesStore } from "@/store/usePublishThesesStore";
 
@@ -34,14 +30,6 @@ export default function ViewThesisDetail({
 
 	// Use custom hooks for data and actions
 	const { thesis, loading, error, loadingMessage } = useThesisDetail(thesisId);
-	const {
-		loading: duplicateLoading,
-		duplicateTheses,
-		isModalVisible: isDuplicateModalVisible,
-		checkDuplicate,
-		closeModal: closeDuplicateModal,
-	} = useAiDuplicateCheck();
-
 	const { loadingStates, modalStates, actions } = useThesisActions(thesisId);
 
 	// Publish thesis functionality
@@ -111,12 +99,6 @@ export default function ViewThesisDetail({
 			},
 			publishLoading,
 		);
-	};
-
-	// Handle AI duplicate check
-	const handleDuplicateCheck = async () => {
-		if (!thesis) return;
-		await checkDuplicate(thesis.id);
 	};
 
 	// Handle exit action based on mode
@@ -201,11 +183,9 @@ export default function ViewThesisDetail({
 					approveLoading={loadingStates.approveLoading}
 					rejectLoading={loadingStates.rejectLoading}
 					publishLoading={publishLoading}
-					duplicateLoading={duplicateLoading}
 					mode={mode}
 					isPublished={thesis.isPublish}
 					canUnpublish={!thesis.groupId}
-					onToggleDuplicate={handleDuplicateCheck}
 					onExit={handleExit}
 					onEdit={actions.handleEdit}
 					onApprove={() => modalStates.setShowApproveConfirm(true)}
@@ -213,6 +193,15 @@ export default function ViewThesisDetail({
 					onRegisterSubmit={actions.handleSubmit}
 					onPublishThesis={handlePublishThesis}
 					onDelete={actions.handleDelete}
+				/>
+
+				{/* Duplicate Theses Section - Only show for pending theses */}
+				<DuplicateThesesSection
+					thesisId={thesis.id}
+					thesisStatus={thesis.status}
+					canViewDuplicates={
+						permissionChecks.canModerate || permissionChecks.canSubmit
+					}
 				/>
 			</div>
 
@@ -262,14 +251,6 @@ export default function ViewThesisDetail({
 					&quot;Rejected&quot; and the author will need to revise it.
 				</Typography.Text>
 			</Modal>
-
-			{/* Duplicate Theses Modal */}
-			<DuplicateThesesModal
-				isVisible={isDuplicateModalVisible}
-				onClose={closeDuplicateModal}
-				duplicateTheses={duplicateTheses}
-				loading={duplicateLoading}
-			/>
 		</Space>
 	);
 }

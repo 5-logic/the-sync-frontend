@@ -23,7 +23,6 @@ export const useThesisActions = (thesisId: string) => {
 	const [rejectLoading, setRejectLoading] = useState(false);
 
 	// Modal states
-	const [showDuplicate, setShowDuplicate] = useState(false);
 	const [showRejectConfirm, setShowRejectConfirm] = useState(false);
 	const [showApproveConfirm, setShowApproveConfirm] = useState(false);
 
@@ -141,10 +140,8 @@ export const useThesisActions = (thesisId: string) => {
 
 		// Modal states
 		modalStates: {
-			showDuplicate,
 			showRejectConfirm,
 			showApproveConfirm,
-			setShowDuplicate,
 			setShowRejectConfirm,
 			setShowApproveConfirm,
 		},

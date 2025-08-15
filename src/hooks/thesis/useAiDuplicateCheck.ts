@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState } from "react";
 
 import aiDuplicateService, {
 	DuplicateThesis,
-} from '@/lib/services/ai-duplicate.service';
-import { showNotification } from '@/lib/utils/notification';
+} from "@/lib/services/ai-duplicate.service";
+import { showNotification } from "@/lib/utils/notification";
 
 export function useAiDuplicateCheck() {
 	const [loading, setLoading] = useState(false);
@@ -22,16 +22,38 @@ export function useAiDuplicateCheck() {
 				setIsModalVisible(true);
 			} else {
 				showNotification.error(
-					'Duplicate Check Failed',
-					'Failed to check for duplicate theses',
+					"Duplicate Check Failed",
+					"Failed to check for duplicate theses",
 				);
 			}
 		} catch (error) {
-			console.error('Error checking duplicate theses:', error);
+			console.error("Error checking duplicate theses:", error);
 			showNotification.error(
-				'Error',
-				'An error occurred while checking for duplicate theses',
+				"Error",
+				"An error occurred while checking for duplicate theses",
 			);
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	// Simplified version for automatic checking (no modal)
+	const checkDuplicateOnly = async (thesisId: string) => {
+		setLoading(true);
+		try {
+			// Call AI duplicate check API
+			const duplicateResponse =
+				await aiDuplicateService.checkDuplicate(thesisId);
+
+			if (duplicateResponse.success && duplicateResponse.data) {
+				setDuplicateTheses(duplicateResponse.data);
+			} else {
+				// Don't show error notification for automatic check
+				console.warn("Failed to check for duplicate theses");
+			}
+		} catch (error) {
+			console.error("Error checking duplicate theses:", error);
+			// Don't show error notification for automatic check
 		} finally {
 			setLoading(false);
 		}
@@ -47,6 +69,7 @@ export function useAiDuplicateCheck() {
 		duplicateTheses,
 		isModalVisible,
 		checkDuplicate,
+		checkDuplicateOnly,
 		closeModal,
 	};
 }

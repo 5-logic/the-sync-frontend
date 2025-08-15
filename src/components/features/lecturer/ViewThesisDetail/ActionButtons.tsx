@@ -6,7 +6,6 @@ import {
 	DeleteOutlined,
 	EyeInvisibleOutlined,
 	EyeOutlined,
-	SearchOutlined,
 	SendOutlined,
 } from "@ant-design/icons";
 import { Button, Col, Row, Space } from "antd";
@@ -14,7 +13,6 @@ import { Button, Col, Row, Space } from "antd";
 import { THESIS_STATUS } from "@/lib/constants/thesis";
 
 interface ActionButtonProps {
-	onToggleDuplicate: () => void;
 	onApprove?: () => void;
 	onReject?: () => void;
 	onExit?: () => void;
@@ -31,14 +29,12 @@ interface ActionButtonProps {
 	approveLoading?: boolean;
 	rejectLoading?: boolean;
 	publishLoading?: boolean;
-	duplicateLoading?: boolean;
 	mode?: "thesis-management" | "publish-list";
 	isPublished?: boolean;
 	canUnpublish?: boolean;
 }
 
 export default function ActionButtons({
-	onToggleDuplicate,
 	onApprove,
 	onReject,
 	onExit,
@@ -55,16 +51,10 @@ export default function ActionButtons({
 	approveLoading = false,
 	rejectLoading = false,
 	publishLoading = false,
-	duplicateLoading = false,
 	mode = "thesis-management",
 	isPublished = false,
 	canUnpublish = true,
 }: Readonly<ActionButtonProps>) {
-	// Show duplicate check button for lecturers and moderators
-	const showDuplicateCheck =
-		(canModerate || isThesisOwner) &&
-		(status === THESIS_STATUS.PENDING || status === THESIS_STATUS.NEW);
-
 	// Determine if we should show moderator actions (Approve/Reject)
 	// BUSINESS LOGIC: Only show for "Pending" status and only for moderators (not thesis owners)
 	const showModeratorActions = canModerate && status === THESIS_STATUS.PENDING;
@@ -146,21 +136,7 @@ export default function ActionButtons({
 					</Space>
 				</Row>
 			) : (
-				<Row justify="space-between">
-					<Col>
-						{showDuplicateCheck && (
-							<Button
-								icon={<SearchOutlined />}
-								onClick={onToggleDuplicate}
-								type="primary"
-								loading={duplicateLoading}
-							>
-								{duplicateLoading
-									? "Checking Similarity..."
-									: "Check Similar Thesis"}
-							</Button>
-						)}
-					</Col>
+				<Row justify="end">
 					<Col>
 						<Space>
 							<Button onClick={onExit} loading={exitLoading}>
