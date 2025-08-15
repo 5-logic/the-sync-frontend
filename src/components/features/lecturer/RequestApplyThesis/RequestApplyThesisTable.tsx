@@ -1,19 +1,19 @@
 "use client";
 
-import {
-	CheckOutlined,
-	CloseOutlined,
-	ReloadOutlined,
-	SearchOutlined,
-} from "@ant-design/icons";
-import { Button, Input, Select, Space, Table, Tag, Tooltip } from "antd";
+import { CheckOutlined, CloseOutlined } from "@ant-design/icons";
+import { Button, Space, Table, Tooltip } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useCallback, useMemo, useState } from "react";
 
 import { ConfirmationModal } from "@/components/common/ConfirmModal";
 import GroupDetailModal from "@/components/features/lecturer/RequestApplyThesis/GroupDetailModal";
 import ThesisDetailModal from "@/components/features/lecturer/RequestApplyThesis/ThesisDetailModal";
-import { formatDate } from "@/lib/utils/dateFormat";
+import {
+	SearchAndFilterControls,
+	createStatusColumn,
+	createAppliedDateColumn,
+	getThesisApplicationTableConfig,
+} from "@/components/common/ThesisApplicationTable";
 import { ThesisApplication } from "@/lib/services/thesis-application.service";
 
 interface Props {
@@ -26,22 +26,6 @@ interface Props {
 		status: "Approved" | "Rejected",
 	) => Promise<void>;
 }
-
-// Status color mapping
-const getStatusColor = (status: string): string => {
-	switch (status) {
-		case "Pending":
-			return "orange";
-		case "Approved":
-			return "green";
-		case "Rejected":
-			return "red";
-		case "Cancelled":
-			return "gray";
-		default:
-			return "default";
-	}
-};
 
 export default function RequestApplyThesisTable({
 	data,
@@ -198,26 +182,8 @@ export default function RequestApplyThesisTable({
 					</div>
 				),
 			},
-			{
-				title: "Status",
-				dataIndex: "status",
-				key: "status",
-				width: "10%",
-				align: "center" as const,
-				render: (status: string) => (
-					<Tag color={getStatusColor(status)}>{status}</Tag>
-				),
-			},
-			{
-				title: "Applied Date",
-				dataIndex: "createdAt",
-				key: "createdAt",
-				width: "17%",
-				align: "center" as const,
-				sorter: (a, b) =>
-					new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
-				render: (date: string) => formatDate(new Date(date)),
-			},
+			createStatusColumn("10%"),
+			createAppliedDateColumn("17%"),
 			{
 				title: "Actions",
 				key: "actions",
@@ -255,48 +221,16 @@ export default function RequestApplyThesisTable({
 	return (
 		<div>
 			{/* Search and Filter Controls */}
-			<div
-				style={{
-					marginBottom: 16,
-					display: "flex",
-					gap: "12px",
-					alignItems: "center",
-				}}
-			>
-				{/* Search Input */}
-				<Input
-					placeholder="Search by thesis name or group name..."
-					prefix={<SearchOutlined />}
-					value={searchText}
-					onChange={(e) => setSearchText(e.target.value)}
-					style={{ flex: 1 }}
-					allowClear
-				/>
-
-				{/* Status Filter */}
-				<Select
-					placeholder="Filter by status"
-					value={statusFilter || undefined}
-					onChange={(value) => setStatusFilter(value || "")}
-					style={{ width: 160 }}
-					allowClear
-				>
-					<Select.Option value="Pending">Pending</Select.Option>
-					<Select.Option value="Approved">Approved</Select.Option>
-					<Select.Option value="Rejected">Rejected</Select.Option>
-					<Select.Option value="Cancelled">Cancelled</Select.Option>
-				</Select>
-
-				{/* Refresh Button */}
-				<Button
-					icon={<ReloadOutlined />}
-					onClick={onRefresh}
-					loading={loading}
-					style={{ minWidth: 100 }}
-				>
-					Refresh
-				</Button>
-			</div>
+			<SearchAndFilterControls
+				searchText={searchText}
+				onSearchChange={setSearchText}
+				statusFilter={statusFilter}
+				onStatusFilterChange={setStatusFilter}
+				onRefresh={onRefresh}
+				loading={loading}
+				searchPlaceholder="Search by thesis name or group name..."
+				showCancelledStatus={true}
+			/>
 
 			{/* Table */}
 			<Table
@@ -304,16 +238,7 @@ export default function RequestApplyThesisTable({
 				dataSource={filteredData}
 				rowKey={(record) => `${record.groupId}-${record.thesisId}`}
 				loading={loading}
-				pagination={{
-					showSizeChanger: true,
-					showQuickJumper: true,
-					showTotal: (total, range) =>
-						`${range[0]}-${range[1]} of ${total} applications`,
-					pageSizeOptions: ["10", "20", "50"],
-					defaultPageSize: 20,
-				}}
-				scroll={{ x: 800 }}
-				size="small"
+				{...getThesisApplicationTableConfig("applications")}
 			/>
 
 			{/* Modals */}
