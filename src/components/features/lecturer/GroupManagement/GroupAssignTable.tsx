@@ -213,7 +213,7 @@ export default function GroupAssignTable({
 				title: "Actions",
 				render: (_: unknown, record: Group) => (
 					<Space>
-						<Tooltip title="View Details">
+						<Tooltip title="Assign Student/Assign Thesis">
 							<Button
 								type="link"
 								icon={<EyeOutlined />}
@@ -222,15 +222,17 @@ export default function GroupAssignTable({
 								}}
 							/>
 						</Tooltip>
-						<Tooltip title="Delete Group">
-							<Button
-								type="link"
-								icon={<DeleteOutlined />}
-								onClick={() => showDeleteConfirm(record)}
-								loading={deleteLoading === record.id}
-								danger
-							/>
-						</Tooltip>
+						{isAdminMode && (
+							<Tooltip title="Delete Group">
+								<Button
+									type="link"
+									icon={<DeleteOutlined />}
+									onClick={() => showDeleteConfirm(record)}
+									loading={deleteLoading === record.id}
+									danger
+								/>
+							</Tooltip>
+						)}
 					</Space>
 				),
 				key: "actions",
@@ -238,7 +240,7 @@ export default function GroupAssignTable({
 				width: "15%",
 			},
 		];
-	}, [onView, deleteLoading, showDeleteConfirm]);
+	}, [onView, deleteLoading, showDeleteConfirm, isAdminMode]);
 
 	return (
 		<Card title="Active Groups">
@@ -282,7 +284,7 @@ export default function GroupAssignTable({
 								onClick={() =>
 									selectedSemester && handleFormatGroups(selectedSemester)
 								}
-								type="default"
+								type="primary"
 								loading={isFormatting}
 								disabled={!selectedSemester || isFormatting}
 							>
