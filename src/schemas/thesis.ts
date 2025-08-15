@@ -1,7 +1,7 @@
-import { z } from 'zod';
+import { z } from "zod";
 
-import { ThesisStatusSchema } from '@/schemas/_enums';
-import { SupervisionSchema, SupervisorInfoSchema } from '@/schemas/supervision';
+import { ThesisStatusSchema, ThesisOrientationSchema } from "@/schemas/_enums";
+import { SupervisionSchema, SupervisorInfoSchema } from "@/schemas/supervision";
 
 export const ThesisSchema = z.object({
 	id: z.string().uuid(),
@@ -10,6 +10,7 @@ export const ThesisSchema = z.object({
 	abbreviation: z.string().min(1),
 	description: z.string().min(1),
 	domain: z.string().nullable().optional(),
+	orientation: ThesisOrientationSchema.optional(),
 	status: ThesisStatusSchema,
 	isPublish: z.boolean().default(false),
 	groupId: z.string().uuid().nullable().optional(),
@@ -44,8 +45,8 @@ export const ThesisCreateSchema = z.object({
 	abbreviation: z.string().min(1),
 	description: z.string().min(1),
 	domain: z.string().optional(),
+	orientation: ThesisOrientationSchema.optional(),
 	supportingDocument: z.string().min(1),
-	skillIds: z.array(z.string().uuid()).optional(),
 });
 
 export const ThesisUpdateSchema = ThesisSchema.omit({
@@ -56,7 +57,6 @@ export const ThesisUpdateSchema = ThesisSchema.omit({
 })
 	.partial()
 	.extend({
-		skillIds: z.array(z.string().uuid()).optional(),
 		supportingDocument: z.string().optional(),
 	});
 
@@ -99,7 +99,7 @@ export type ThesisRequiredSkillForCreate = z.infer<
 >;
 
 // Re-export supervision-related types for convenience
-export type { Supervision, SupervisorInfo } from '@/schemas/supervision';
+export type { Supervision, SupervisorInfo } from "@/schemas/supervision";
 
 export const GroupInfoSchema = z.object({
 	id: z.string().uuid(),

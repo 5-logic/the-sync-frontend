@@ -11,6 +11,7 @@ import { useStudentGroupStatus } from "@/hooks/student/useStudentGroupStatus";
 import { useThesisApplications } from "@/hooks/student/useThesisApplications";
 import { useThesisRegistration } from "@/hooks/thesis";
 import { DOMAIN_COLOR_MAP } from "@/lib/constants/domains";
+import { getOrientationDisplay } from "@/lib/constants/orientation";
 import thesisApplicationService from "@/lib/services/thesis-application.service";
 import { handleApiError } from "@/lib/utils/handleApi";
 import { showNotification } from "@/lib/utils/notification";
@@ -281,6 +282,18 @@ export default function ThesisCard({
 						{thesis.domain}
 					</Tag>
 				)}
+
+				{thesis.orientation &&
+					(() => {
+						const orientationDisplay = getOrientationDisplay(
+							thesis.orientation,
+						);
+						return orientationDisplay ? (
+							<Tag color={orientationDisplay.color} style={{ borderRadius: 6 }}>
+								{orientationDisplay.label}
+							</Tag>
+						) : null;
+					})()}
 			</Space>
 
 			<Row gutter={8} style={{ marginTop: 24 }}>

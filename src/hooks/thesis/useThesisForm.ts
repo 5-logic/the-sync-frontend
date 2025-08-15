@@ -42,6 +42,7 @@ export const useThesisForm = ({
 			abbreviation: thesis.abbreviation,
 			description: thesis.description,
 			domain: thesis.domain,
+			orientation: thesis.orientation,
 		};
 	}, [mode, thesis]);
 

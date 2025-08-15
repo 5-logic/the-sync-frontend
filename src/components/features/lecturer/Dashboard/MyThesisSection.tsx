@@ -15,6 +15,7 @@ import React, { useEffect, useState } from "react";
 
 import { useLecturerSemesterFilter } from "@/hooks/lecturer/useLecturerSemesterFilter";
 import { DOMAIN_COLOR_MAP } from "@/lib/constants/domains";
+import { getOrientationDisplay } from "@/lib/constants/orientation";
 import thesesService from "@/lib/services/theses.service";
 import { handleApiResponse } from "@/lib/utils/handleApi";
 import { Thesis } from "@/schemas/thesis";
@@ -27,7 +28,6 @@ const statusColor = {
 };
 
 interface ThesisWithRelations extends Thesis {
-	thesisRequiredSkills?: Array<{ id: string; name: string }>;
 	semester?: { id: string; name: string; code: string };
 }
 
@@ -222,6 +222,22 @@ const MyThesisSection: React.FC = () => {
 											<Tag color={DOMAIN_COLOR_MAP[thesis.domain] || "blue"}>
 												{thesis.domain}
 											</Tag>
+										</div>
+									)}
+
+									{/* Orientation Tag */}
+									{thesis.orientation && (
+										<div style={{ marginBottom: 8 }}>
+											{(() => {
+												const orientationDisplay = getOrientationDisplay(
+													thesis.orientation,
+												);
+												return orientationDisplay ? (
+													<Tag color={orientationDisplay.color}>
+														{orientationDisplay.label}
+													</Tag>
+												) : null;
+											})()}
 										</div>
 									)}
 

@@ -31,7 +31,6 @@ export default function EditThesis({ thesisId }: Props) {
 	const convertToThesisWithRelations = (
 		thesisData: Thesis & {
 			semesterId?: string;
-			thesisRequiredSkills?: Array<{ id: string; name: string }>;
 			thesisVersions?: ThesisVersion[];
 		},
 	): ThesisWithRelations => {
@@ -47,7 +46,6 @@ export default function EditThesis({ thesisId }: Props) {
 					email: "",
 				},
 			},
-			thesisRequiredSkills: thesisData.thesisRequiredSkills || [],
 			thesisVersions: thesisData.thesisVersions || [],
 		};
 	};

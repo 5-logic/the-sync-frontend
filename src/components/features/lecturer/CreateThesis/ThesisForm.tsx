@@ -1,11 +1,13 @@
 "use client";
 
-import { Button, Col, Form, Input, Row, Select } from "antd";
+import { QuestionCircleOutlined } from "@ant-design/icons";
+import { Button, Col, Form, Input, Row, Select, Tooltip } from "antd";
 import { useEffect, useState } from "react";
 
 import { FormLabel } from "@/components/common/FormLabel";
 import SupportingDocumentField from "@/components/features/lecturer/CreateThesis/ThesisFileUpload";
 import { getSortedDomains } from "@/lib/constants/domains";
+import { ORIENTATION_LABELS } from "@/lib/constants/orientation";
 import { StorageService } from "@/lib/services/storage.service";
 import { useSemesterStore } from "@/store/useSemesterStore";
 
@@ -165,6 +167,7 @@ export default function ThesisForm({
 			"abbreviation",
 			"description",
 			"domain",
+			"orientation",
 		];
 		const hasChanges = fieldsToCompare.some((field) => {
 			const currentValue = currentValues[field];
@@ -210,6 +213,7 @@ export default function ThesisForm({
 			"abbreviation",
 			"description",
 			"domain",
+			"orientation",
 		];
 		fieldsToCheck.forEach((field) => {
 			const currentValue = currentValues[field];
@@ -376,6 +380,31 @@ export default function ThesisForm({
 					showCount
 					maxLength={2000}
 				/>
+			</Form.Item>
+
+			<Form.Item
+				name="orientation"
+				label={
+					<div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+						<FormLabel text="Thesis Orientation" isBold />
+						<Tooltip
+							title="Choose the focus area of your thesis: SE (Software Engineering), AI (Artificial Intelligence), or Neutral (combination of both)"
+							placement="topLeft"
+						>
+							<QuestionCircleOutlined
+								style={{ color: "#8c8c8c", cursor: "help" }}
+							/>
+						</Tooltip>
+					</div>
+				}
+			>
+				<Select placeholder="Select thesis orientation" allowClear>
+					{Object.entries(ORIENTATION_LABELS).map(([value, label]) => (
+						<Select.Option key={value} value={value}>
+							{label}
+						</Select.Option>
+					))}
+				</Select>
 			</Form.Item>
 
 			<div style={{ marginBottom: 24 }}>
