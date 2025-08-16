@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { AxiosError } from "axios";
 
 import groupService from "@/lib/services/groups.service";
 import { CreateMultipleGroupsRequest, CreatedGroup } from "@/schemas/group";
@@ -21,12 +22,13 @@ const getErrorDetails = (statusCode: number, errorMessage: string) => {
 		return {
 			title: "Semester Not Found",
 			description:
+				errorMessage ||
 				"The selected semester does not exist. Please refresh and try again.",
 		};
 	}
 	if (statusCode === 400) {
 		return {
-			title: "Invalid Request",
+			title: "Cannot Create Groups",
 			description: errorMessage,
 		};
 	}
@@ -34,6 +36,7 @@ const getErrorDetails = (statusCode: number, errorMessage: string) => {
 		return {
 			title: "Access Denied",
 			description:
+				errorMessage ||
 				"You don't have permission to create groups. Admin access required.",
 		};
 	}
@@ -41,6 +44,7 @@ const getErrorDetails = (statusCode: number, errorMessage: string) => {
 		return {
 			title: "Server Error",
 			description:
+				errorMessage ||
 				"A server error occurred. Please try again later or contact support.",
 		};
 	}
@@ -107,6 +111,19 @@ export const useCreateGroups = (): UseCreateGroupsResult => {
 		} catch (err) {
 			let errorMessage = "An unexpected error occurred";
 			let errorTitle = "Group Creation Failed";
+
+			// Handle axios error from API
+			if (err instanceof AxiosError && err.response?.data) {
+				const apiResponse = err.response.data;
+				// If API returns structured error response, use it
+				if (apiResponse.error && apiResponse.statusCode) {
+					const { title: errorTitle, description: errorDescription } =
+						getErrorDetails(apiResponse.statusCode, apiResponse.error);
+					setError(apiResponse.error);
+					showNotification.error(errorTitle, errorDescription);
+					return null;
+				}
+			}
 
 			if (err instanceof Error) {
 				errorMessage = err.message;

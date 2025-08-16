@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { AxiosError } from "axios";
 
 import groupService from "@/lib/services/groups.service";
 import { showNotification } from "@/lib/utils/notification";
@@ -24,15 +25,16 @@ export const useAdminGroupActions = () => {
 				// Group not found: "Group not found"
 				showNotification.error(
 					"Group Not Found",
-					"The group you're trying to delete no longer exists.",
+					error || "The group you're trying to delete no longer exists.",
 					4,
 				);
 				break;
 			default:
-				// Generic error
+				// Generic error - use the actual error message from response
 				showNotification.error(
 					"Delete Failed",
-					"Failed to delete the group. Please try again or contact support if the problem persists.",
+					error ||
+						"Failed to delete the group. Please try again or contact support if the problem persists.",
 					4,
 				);
 		}
@@ -72,6 +74,16 @@ export const useAdminGroupActions = () => {
 								handleDeleteError(response.error, response.statusCode);
 							}
 						} catch (error: unknown) {
+							// Handle axios error from API
+							if (error instanceof AxiosError && error.response?.data) {
+								const apiResponse = error.response.data;
+								// If API returns structured error response, use it
+								if (apiResponse.error && apiResponse.statusCode) {
+									handleDeleteError(apiResponse.error, apiResponse.statusCode);
+									return;
+								}
+							}
+
 							// Handle network/server errors
 							handleDeleteError(
 								"An unexpected error occurred. Please try again.",
