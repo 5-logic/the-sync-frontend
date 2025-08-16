@@ -1,9 +1,28 @@
 "use client";
 
-import { Modal, Table, Button, Space, Tag, Typography } from "antd";
-import { CheckOutlined, CloseOutlined } from "@ant-design/icons";
+import {
+	Modal,
+	Table,
+	Button,
+	Space,
+	Tag,
+	Typography,
+	Input,
+	Select,
+	Row,
+	Col,
+	Popconfirm,
+} from "antd";
+import {
+	CheckOutlined,
+	CloseOutlined,
+	SearchOutlined,
+	ReloadOutlined,
+} from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
+import { useState, useMemo } from "react";
 import { ThesisRequest } from "@/types/thesis-requests";
+import { isTextMatch } from "@/lib/utils/textNormalization";
 
 const { Title } = Typography;
 
@@ -14,7 +33,9 @@ interface Props {
 	thesisTitle: string;
 	onApprove: (groupId: string, thesisId: string) => Promise<void>;
 	onReject: (groupId: string, thesisId: string) => Promise<void>;
-	loading?: boolean;
+	onRefresh?: () => void;
+	loading?: boolean; // Loading for approve/reject actions
+	dataLoading?: boolean; // Loading for data fetching
 }
 
 export default function ThesisRequestsModal({
@@ -24,8 +45,52 @@ export default function ThesisRequestsModal({
 	thesisTitle,
 	onApprove,
 	onReject,
+	onRefresh,
 	loading,
+	dataLoading,
 }: Props) {
+	// Filter states
+	const [searchText, setSearchText] = useState("");
+	const [statusFilter, setStatusFilter] = useState<string | undefined>(
+		undefined,
+	);
+
+	// Wrapper functions to close dialog after successful action
+	const handleApprove = async (groupId: string, thesisId: string) => {
+		await onApprove(groupId, thesisId);
+		onClose(); // Close dialog after successful approve
+	};
+
+	const handleReject = async (groupId: string, thesisId: string) => {
+		await onReject(groupId, thesisId);
+		onClose(); // Close dialog after successful reject
+	};
+
+	// Filter data based on search and status
+	const filteredRequests = useMemo(() => {
+		return requests.filter((request) => {
+			// Search filter
+			if (searchText) {
+				const leader = getLeaderInfo(request);
+				const matchesSearch = isTextMatch(searchText, [
+					request.group.name,
+					request.group.code,
+					leader?.user.fullName,
+					leader?.studentCode,
+					leader?.user.email,
+				]);
+				if (!matchesSearch) return false;
+			}
+
+			// Status filter
+			if (statusFilter && request.status !== statusFilter) {
+				return false;
+			}
+
+			return true;
+		});
+	}, [requests, searchText, statusFilter]);
+
 	const getLeaderInfo = (request: ThesisRequest) => {
 		const leader = request.group.studentGroupParticipations.find(
 			(participation) => participation.isLeader,
@@ -73,6 +138,10 @@ export default function ThesisRequestsModal({
 		{
 			title: "Created Date",
 			key: "createdAt",
+			dataIndex: "createdAt",
+			sorter: (a, b) =>
+				new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+			defaultSortOrder: "ascend" as const,
 			render: (_, record) => (
 				<div>
 					<div>{new Date(record.createdAt).toLocaleDateString()}</div>
@@ -105,35 +174,50 @@ export default function ThesisRequestsModal({
 		{
 			title: "Actions",
 			key: "actions",
+			align: "center",
 			render: (_, record) => {
-				if (record.status !== "Pending") {
-					return (
-						<Tag color={record.status === "Approved" ? "success" : "error"}>
-							{record.status}
-						</Tag>
-					);
-				}
+				const isPending = record.status === "Pending";
 
 				return (
 					<Space>
-						<Button
-							type="primary"
-							icon={<CheckOutlined />}
-							size="small"
-							onClick={() => onApprove(record.groupId, record.thesisId)}
-							loading={loading}
+						<Popconfirm
+							title="Approve Application"
+							description="Are you sure you want to approve this thesis application?"
+							onConfirm={() => handleApprove(record.groupId, record.thesisId)}
+							okText="Yes, Approve"
+							cancelText="Cancel"
+							okButtonProps={{ loading }}
+							disabled={!isPending}
 						>
-							Approve
-						</Button>
-						<Button
-							danger
-							icon={<CloseOutlined />}
-							size="small"
-							onClick={() => onReject(record.groupId, record.thesisId)}
-							loading={loading}
+							<Button
+								type="primary"
+								icon={<CheckOutlined />}
+								size="small"
+								loading={loading}
+								disabled={!isPending}
+							>
+								Approve
+							</Button>
+						</Popconfirm>
+						<Popconfirm
+							title="Reject Application"
+							description="Are you sure you want to reject this thesis application?"
+							onConfirm={() => handleReject(record.groupId, record.thesisId)}
+							okText="Yes, Reject"
+							cancelText="Cancel"
+							okButtonProps={{ loading, danger: true }}
+							disabled={!isPending}
 						>
-							Reject
-						</Button>
+							<Button
+								danger
+								icon={<CloseOutlined />}
+								size="small"
+								loading={loading}
+								disabled={!isPending}
+							>
+								Reject
+							</Button>
+						</Popconfirm>
 					</Space>
 				);
 			},
@@ -146,14 +230,62 @@ export default function ThesisRequestsModal({
 			open={open}
 			onCancel={onClose}
 			footer={null}
-			width={1000}
+			width={1200}
 			centered
 		>
+			{/* Search and Filter Controls */}
+			<Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
+				<Col span={15}>
+					<Input
+						placeholder="Search by group name, code, leader name, student ID or email..."
+						prefix={<SearchOutlined />}
+						value={searchText}
+						onChange={(e) => setSearchText(e.target.value)}
+						allowClear
+					/>
+				</Col>
+				<Col span={6}>
+					<Select
+						placeholder="Filter by Status"
+						value={statusFilter}
+						onChange={setStatusFilter}
+						allowClear
+						style={{ width: "100%" }}
+					>
+						<Select.Option value="Pending">Pending</Select.Option>
+						<Select.Option value="Approved">Approved</Select.Option>
+						<Select.Option value="Rejected">Rejected</Select.Option>
+					</Select>
+				</Col>
+				<Col span={3}>
+					<Button
+						type="default"
+						icon={<ReloadOutlined />}
+						onClick={() => {
+							setSearchText("");
+							setStatusFilter(undefined);
+							onRefresh?.();
+						}}
+						loading={dataLoading}
+						block
+					>
+						Refresh
+					</Button>
+				</Col>
+			</Row>
+
 			<Table
 				columns={columns}
-				dataSource={requests}
+				dataSource={filteredRequests}
 				rowKey={(record) => `${record.groupId}-${record.thesisId}`}
-				pagination={false}
+				loading={dataLoading}
+				pagination={{
+					pageSize: 10,
+					showSizeChanger: true,
+					showQuickJumper: true,
+					showTotal: (total, range) =>
+						`${range[0]}-${range[1]} of ${total} requests`,
+				}}
 				locale={{
 					emptyText: "No requests found for this thesis",
 				}}

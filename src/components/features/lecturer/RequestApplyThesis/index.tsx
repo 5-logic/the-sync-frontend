@@ -5,16 +5,20 @@ import { useEffect } from "react";
 
 import { Header } from "@/components/common/Header";
 import RequestApplyThesisTable from "@/components/features/lecturer/RequestApplyThesis/RequestApplyThesisTable";
-import { useRequestApplyThesis } from "@/hooks/lecturer/useRequestApplyThesis";
+import { useThesisRequests } from "@/hooks/lecturer/useThesisRequests";
 
 export default function RequestApplyThesis() {
-	const { applications, loading, fetchApplications, updateApplicationStatus } =
-		useRequestApplyThesis();
+	const {
+		thesesWithRequests,
+		loading,
+		fetchThesisRequests,
+		updateApplicationStatus,
+	} = useThesisRequests();
 
-	// Fetch applications when component mounts
+	// Fetch thesis requests when component mounts
 	useEffect(() => {
-		fetchApplications();
-	}, [fetchApplications]);
+		fetchThesisRequests();
+	}, [fetchThesisRequests]);
 
 	return (
 		<Space direction="vertical" size="large" style={{ width: "100%" }}>
@@ -24,9 +28,9 @@ export default function RequestApplyThesis() {
 			/>
 
 			<RequestApplyThesisTable
-				data={applications}
+				data={thesesWithRequests}
 				loading={loading}
-				onRefresh={fetchApplications}
+				onRefresh={fetchThesisRequests}
 				updateApplicationStatus={updateApplicationStatus}
 			/>
 		</Space>

@@ -3,11 +3,12 @@
 import { Modal, Typography, Space, Tag, List, Divider } from "antd";
 import { UserOutlined } from "@ant-design/icons";
 import { ThesisApplication } from "@/lib/services/thesis-application.service";
+import { ThesisRequest } from "@/types/thesis-requests";
 
 const { Title, Text } = Typography;
 
 interface Props {
-	group: ThesisApplication["group"] | null;
+	group: ThesisApplication["group"] | ThesisRequest["group"] | null;
 	open: boolean;
 	onClose: () => void;
 }
@@ -49,10 +50,6 @@ export default function GroupDetailModal({
 							</Text>
 						</div>
 						<Tag color="blue">{group.code}</Tag>
-					</div>
-					<div style={{ marginTop: 8 }}>
-						<Text type="secondary">Project Direction: </Text>
-						<Text>{group.projectDirection}</Text>
 					</div>
 				</div>
 

@@ -1,23 +1,41 @@
 "use client";
 
-import { CheckOutlined, CloseOutlined } from "@ant-design/icons";
-import { Button, Space, Table, Tooltip } from "antd";
-import type { ColumnsType } from "antd/es/table";
-import { useCallback, useMemo, useState } from "react";
-
-import { ConfirmationModal } from "@/components/common/ConfirmModal";
-import GroupDetailModal from "@/components/features/lecturer/RequestApplyThesis/GroupDetailModal";
-import ThesisDetailModal from "@/components/features/lecturer/RequestApplyThesis/ThesisDetailModal";
 import {
-	SearchAndFilterControls,
-	createStatusColumn,
-	createAppliedDateColumn,
-	getThesisApplicationTableConfig,
-} from "@/components/common/ThesisApplicationTable";
-import { ThesisApplication } from "@/lib/services/thesis-application.service";
+	EyeOutlined,
+	UnorderedListOutlined,
+	ReloadOutlined,
+	SearchOutlined,
+} from "@ant-design/icons";
+import {
+	Button,
+	Space,
+	Table,
+	Badge,
+	Tag,
+	Input,
+	Select,
+	Row,
+	Col,
+} from "antd";
+import type { ColumnsType } from "antd/es/table";
+import { useState, useMemo } from "react";
+
+import ThesisDetailModal from "@/components/features/lecturer/RequestApplyThesis/ThesisDetailModal";
+import ThesisRequestsModal from "@/components/features/lecturer/RequestApplyThesis/ThesisRequestsModal";
+import GroupDetailModal from "@/components/features/lecturer/RequestApplyThesis/GroupDetailModal";
+import { ThesisWithRequests, ThesisRequest } from "@/types/thesis-requests";
+
+// Type alias for Group from ThesisRequest
+type GroupWithDetails = ThesisRequest["group"];
+import {
+	getOrientationDisplay,
+	ORIENTATION_LABELS,
+} from "@/lib/constants/orientation";
+import { THESIS_DOMAINS } from "@/lib/constants/domains";
+import { isTextMatch } from "@/lib/utils/textNormalization";
 
 interface Props {
-	data: ThesisApplication[];
+	data: ThesisWithRequests[];
 	loading?: boolean;
 	onRefresh: () => void;
 	updateApplicationStatus: (
@@ -32,231 +50,293 @@ export default function RequestApplyThesisTable({
 	loading,
 	onRefresh,
 	updateApplicationStatus,
-}: Readonly<Props>) {
-	// Filter states
-	const [searchText, setSearchText] = useState("");
-	const [statusFilter, setStatusFilter] = useState<string>("");
-
+}: Props) {
 	// Modal states
 	const [selectedThesis, setSelectedThesis] = useState<
-		ThesisApplication["thesis"] | null
+		ThesisWithRequests["thesis"] | null
 	>(null);
-	const [selectedGroup, setSelectedGroup] = useState<
-		ThesisApplication["group"] | null
-	>(null);
+	const [selectedThesisForRequests, setSelectedThesisForRequests] =
+		useState<ThesisWithRequests | null>(null);
+	const [selectedGroup, setSelectedGroup] = useState<GroupWithDetails | null>(
+		null,
+	);
+	const [actionLoading, setActionLoading] = useState(false);
 
-	// Filter data based on search and status
+	// Filter states
+	const [searchText, setSearchText] = useState("");
+	const [orientationFilter, setOrientationFilter] = useState<
+		string | undefined
+	>(undefined);
+	const [domainFilter, setDomainFilter] = useState<string | undefined>(
+		undefined,
+	);
+
+	// Search utility function
+
+	const handleApprove = async (groupId: string, thesisId: string) => {
+		setActionLoading(true);
+		try {
+			await updateApplicationStatus(groupId, thesisId, "Approved");
+			onRefresh();
+		} finally {
+			setActionLoading(false);
+		}
+	};
+
+	const handleReject = async (groupId: string, thesisId: string) => {
+		setActionLoading(true);
+		try {
+			await updateApplicationStatus(groupId, thesisId, "Rejected");
+			onRefresh();
+		} finally {
+			setActionLoading(false);
+		}
+	};
+
+	// Filter data based on search and filters
 	const filteredData = useMemo(() => {
 		return data.filter((item) => {
-			const matchesSearch =
-				item.thesis.englishName
-					.toLowerCase()
-					.includes(searchText.toLowerCase()) ||
-				item.group.name.toLowerCase().includes(searchText.toLowerCase()) ||
-				item.group.code.toLowerCase().includes(searchText.toLowerCase());
+			// Search filter
+			if (searchText) {
+				const matchesSearch = isTextMatch(searchText, [
+					item.thesis.englishName,
+					item.thesis.vietnameseName,
+					item.thesis.abbreviation,
+				]);
+				if (!matchesSearch) return false;
+			}
 
-			const matchesStatus = !statusFilter || item.status === statusFilter;
+			// Orientation filter
+			if (orientationFilter && item.thesis.orientation !== orientationFilter) {
+				return false;
+			}
 
-			return matchesSearch && matchesStatus;
+			// Domain filter
+			if (domainFilter && item.thesis.domain !== domainFilter) {
+				return false;
+			}
+
+			return true;
 		});
-	}, [data, searchText, statusFilter]);
+	}, [data, searchText, orientationFilter, domainFilter]);
 
-	// Handle approve application
-	const handleApprove = useCallback(
-		(application: ThesisApplication) => {
-			ConfirmationModal.show({
-				title: "Approve Application",
-				message: "Are you sure you want to approve this thesis application?",
-				details: `${application.group.name} - ${application.thesis.englishName}`,
-				note: "This will assign the thesis to the group.",
-				noteType: "info",
-				okText: "Approve",
-				cancelText: "Cancel",
-				okType: "primary",
-				onOk: async () => {
-					await updateApplicationStatus(
-						application.groupId,
-						application.thesisId,
-						"Approved",
+	const getPendingRequestsCount = (
+		requests: ThesisWithRequests["requests"],
+	) => {
+		return requests.filter((request) => request.status === "Pending").length;
+	};
+
+	// Get approved group for a thesis
+	const getApprovedGroup = (requests: ThesisWithRequests["requests"]) => {
+		const approvedRequest = requests.find(
+			(request) => request.status === "Approved",
+		);
+		return approvedRequest?.group || null;
+	};
+
+	const columns: ColumnsType<ThesisWithRequests> = [
+		{
+			title: "Thesis Information",
+			key: "thesis",
+			render: (_, record) => (
+				<div>
+					<div>
+						<strong>{record.thesis.englishName}</strong>
+					</div>
+					<div style={{ color: "#666", fontSize: "14px", marginTop: 4 }}>
+						{record.thesis.vietnameseName}
+					</div>
+					<div style={{ marginTop: 8 }}>
+						<Space wrap>
+							<Tag color="blue">{record.thesis.abbreviation}</Tag>
+							{(() => {
+								const orientationDisplay = getOrientationDisplay(
+									record.thesis.orientation,
+								);
+								return orientationDisplay ? (
+									<Tag color={orientationDisplay.color}>
+										{orientationDisplay.label}
+									</Tag>
+								) : null;
+							})()}
+							<Tag color="cyan">{record.thesis.domain}</Tag>
+						</Space>
+					</div>
+				</div>
+			),
+			width: "50%",
+		},
+		{
+			title: "Assigned Group",
+			key: "assignedGroup",
+			render: (_, record) => {
+				const approvedGroup = getApprovedGroup(record.requests);
+
+				if (!approvedGroup) {
+					return (
+						<span style={{ color: "#999", fontStyle: "italic" }}>
+							No group assigned
+						</span>
 					);
-				},
-			});
-		},
-		[updateApplicationStatus],
-	);
+				}
 
-	// Handle reject application
-	const handleReject = useCallback(
-		(application: ThesisApplication) => {
-			ConfirmationModal.show({
-				title: "Reject Application",
-				message: "Are you sure you want to reject this thesis application?",
-				details: `${application.group.name} - ${application.thesis.englishName}`,
-				note: "The group will be notified of this decision.",
-				noteType: "warning",
-				okText: "Reject",
-				cancelText: "Cancel",
-				okType: "danger",
-				onOk: async () => {
-					await updateApplicationStatus(
-						application.groupId,
-						application.thesisId,
-						"Rejected",
-					);
-				},
-			});
-		},
-		[updateApplicationStatus],
-	);
-
-	// Handle view thesis detail
-	const handleViewThesis = useCallback(
-		(thesis: ThesisApplication["thesis"]) => {
-			setSelectedThesis(thesis);
-		},
-		[],
-	);
-
-	// Handle view group detail
-	const handleViewGroup = useCallback((group: ThesisApplication["group"]) => {
-		setSelectedGroup(group);
-	}, []);
-
-	// Define table columns
-	const columns: ColumnsType<ThesisApplication> = useMemo(
-		() => [
-			{
-				title: "Thesis Name",
-				dataIndex: ["thesis", "englishName"],
-				key: "thesisName",
-				width: "40%",
-				ellipsis: {
-					showTitle: false,
-				},
-				render: (text: string, record) => (
-					<Tooltip title={text} placement="topLeft">
-						<Button
-							type="link"
-							onClick={() => handleViewThesis(record.thesis)}
-							style={{
-								padding: 0,
-								height: "auto",
-								textAlign: "left",
-								whiteSpace: "normal",
-								wordBreak: "break-word",
-							}}
-						>
-							<div
-								style={{
-									display: "-webkit-box",
-									WebkitLineClamp: 2,
-									WebkitBoxOrient: "vertical",
-									overflow: "hidden",
-									textOverflow: "ellipsis",
-									lineHeight: "1.5",
-									maxHeight: "3em",
-								}}
-							>
-								{text}
-							</div>
-						</Button>
-					</Tooltip>
-				),
-			},
-			{
-				title: "Group",
-				key: "group",
-				width: "18%",
-				render: (_, record) => (
+				return (
 					<div>
 						<Button
 							type="link"
-							onClick={() => handleViewGroup(record.group)}
-							style={{ padding: 0, fontWeight: "bold" }}
+							onClick={() => setSelectedGroup(approvedGroup)}
+							style={{ padding: 0, height: "auto", fontWeight: "500" }}
 						>
-							{record.group.name}
+							{approvedGroup.name}
 						</Button>
-						<div style={{ fontSize: "12px", color: "#666" }}>
-							{record.group.code}
+						<div style={{ color: "#666", fontSize: "12px", marginTop: 2 }}>
+							{approvedGroup.code}
 						</div>
 					</div>
-				),
+				);
 			},
-			createStatusColumn("10%"),
-			createAppliedDateColumn("17%"),
-			{
-				title: "Actions",
-				key: "actions",
-				width: "15%",
-				align: "center" as const,
-				render: (_, record) => (
-					<Space size="small">
-						{record.status === "Pending" && (
-							<>
-								<Tooltip title="Approve">
-									<Button
-										icon={<CheckOutlined />}
-										size="small"
-										type="primary"
-										onClick={() => handleApprove(record)}
-									/>
-								</Tooltip>
-								<Tooltip title="Reject">
-									<Button
-										icon={<CloseOutlined />}
-										size="small"
-										danger
-										onClick={() => handleReject(record)}
-									/>
-								</Tooltip>
-							</>
-						)}
+			width: "25%",
+		},
+		{
+			title: "Actions",
+			key: "actions",
+			align: "center",
+			render: (_, record) => {
+				const pendingCount = getPendingRequestsCount(record.requests);
+
+				return (
+					<Space direction="vertical" size="small">
+						<Button
+							type="default"
+							icon={<EyeOutlined />}
+							onClick={() => setSelectedThesis(record.thesis)}
+							size="small"
+							block
+						>
+							View Details
+						</Button>
+						<Badge count={pendingCount} size="small">
+							<Button
+								type="primary"
+								icon={<UnorderedListOutlined />}
+								onClick={() => setSelectedThesisForRequests(record)}
+								size="small"
+								block
+								disabled={record.requests.length === 0}
+							>
+								View Requests ({record.requests.length})
+							</Button>
+						</Badge>
 					</Space>
-				),
+				);
 			},
-		],
-		[handleApprove, handleReject, handleViewThesis, handleViewGroup],
-	);
+			width: "25%",
+		},
+	];
 
 	return (
-		<div>
+		<>
 			{/* Search and Filter Controls */}
-			<SearchAndFilterControls
-				searchText={searchText}
-				onSearchChange={setSearchText}
-				statusFilter={statusFilter}
-				onStatusFilterChange={setStatusFilter}
-				onRefresh={onRefresh}
-				loading={loading}
-				searchPlaceholder="Search by thesis name or group name..."
-				showCancelledStatus={true}
-			/>
+			<Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
+				<Col span={11}>
+					<Input
+						placeholder="Search by thesis name or abbreviation..."
+						prefix={<SearchOutlined />}
+						value={searchText}
+						onChange={(e) => setSearchText(e.target.value)}
+						allowClear
+					/>
+				</Col>
+				<Col span={5}>
+					<Select
+						placeholder="Filter by Orientation"
+						value={orientationFilter}
+						onChange={setOrientationFilter}
+						allowClear
+						showSearch
+						style={{ width: "100%" }}
+					>
+						{Object.entries(ORIENTATION_LABELS).map(([key, label]) => (
+							<Select.Option key={key} value={key}>
+								{label}
+							</Select.Option>
+						))}
+					</Select>
+				</Col>
+				<Col span={5}>
+					<Select
+						placeholder="Filter by Domain"
+						value={domainFilter}
+						onChange={setDomainFilter}
+						allowClear
+						showSearch
+						style={{ width: "100%" }}
+					>
+						{THESIS_DOMAINS.map((domain) => (
+							<Select.Option key={domain} value={domain}>
+								{domain}
+							</Select.Option>
+						))}
+					</Select>
+				</Col>
+				<Col span={3}>
+					<Button
+						type="default"
+						icon={<ReloadOutlined />}
+						onClick={onRefresh}
+						loading={loading}
+						block
+					>
+						Refresh
+					</Button>
+				</Col>
+			</Row>
 
-			{/* Table */}
 			<Table
 				columns={columns}
 				dataSource={filteredData}
-				rowKey={(record) => `${record.groupId}-${record.thesisId}`}
+				rowKey={(record) => record.thesis.id}
 				loading={loading}
-				locale={{
-					emptyText:
-						"No thesis applications found. Students haven't submitted any thesis requests yet.",
+				pagination={{
+					pageSize: 10,
+					showSizeChanger: true,
+					showQuickJumper: true,
+					showTotal: (total, range) =>
+						`${range[0]}-${range[1]} of ${total} theses`,
 				}}
-				{...getThesisApplicationTableConfig("applications")}
+				locale={{
+					emptyText: "No thesis applications found",
+				}}
 			/>
 
-			{/* Modals */}
+			{/* Thesis Detail Modal */}
 			<ThesisDetailModal
-				thesis={selectedThesis}
 				open={!!selectedThesis}
 				onClose={() => setSelectedThesis(null)}
+				thesis={selectedThesis}
 			/>
 
+			{/* Thesis Requests Modal */}
+			{selectedThesisForRequests && (
+				<ThesisRequestsModal
+					open={!!selectedThesisForRequests}
+					onClose={() => setSelectedThesisForRequests(null)}
+					requests={selectedThesisForRequests.requests}
+					thesisTitle={selectedThesisForRequests.thesis.englishName}
+					onApprove={handleApprove}
+					onReject={handleReject}
+					onRefresh={onRefresh}
+					loading={actionLoading}
+					dataLoading={loading}
+				/>
+			)}
+
+			{/* Group Detail Modal */}
 			<GroupDetailModal
-				group={selectedGroup}
 				open={!!selectedGroup}
 				onClose={() => setSelectedGroup(null)}
+				group={selectedGroup}
 			/>
-		</div>
+		</>
 	);
 }

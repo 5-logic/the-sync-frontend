@@ -3,6 +3,7 @@ import { useCallback, useState } from "react";
 import { useCurrentSemester } from "@/hooks/semester";
 import { ThesisWithRequests } from "@/types/thesis-requests";
 import httpClient from "@/lib/services/_httpClient";
+import { thesisApplicationService } from "@/lib/services/thesis-application.service";
 import { ApiResponse } from "@/schemas/_common";
 import { handleApiResponse, handleApiError } from "@/lib/utils/handleApi";
 import { showNotification } from "@/lib/utils/notification";
@@ -48,16 +49,12 @@ export const useThesisRequests = () => {
 			status: "Approved" | "Rejected",
 		) => {
 			try {
-				const response = await httpClient.patch<ApiResponse<unknown>>(
-					`/thesis-application/status`,
-					{
+				const result =
+					await thesisApplicationService.updateThesisApplicationStatus(
 						groupId,
 						thesisId,
 						status,
-					},
-				);
-
-				const result = handleApiResponse(response.data, "Success");
+					);
 
 				if (result.success) {
 					showNotification.success(
