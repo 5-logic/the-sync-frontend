@@ -11,10 +11,6 @@ import { Thesis } from "@/schemas/thesis";
 
 // API response type for thesis data với thêm fields từ API
 type ThesisApiResponse = Thesis & {
-	thesisRequiredSkills?: Array<{
-		id: string;
-		name: string;
-	}>;
 	thesisVersions?: Array<{
 		id: string;
 		version: number;

@@ -8,11 +8,12 @@ import { useState, useMemo, useEffect } from "react";
 import { ConfirmationModal } from "@/components/common/ConfirmModal";
 import { useSemesterStatus } from "@/hooks/student/useSemesterStatus";
 import { useStudentGroupStatus } from "@/hooks/student/useStudentGroupStatus";
-import { useThesisApplications } from "@/hooks/student/useThesisApplications";
 import { useThesisRegistration } from "@/hooks/thesis";
 import { DOMAIN_COLOR_MAP } from "@/lib/constants/domains";
 import { getOrientationDisplay } from "@/lib/constants/orientation";
-import thesisApplicationService from "@/lib/services/thesis-application.service";
+import thesisApplicationService, {
+	ThesisApplication,
+} from "@/lib/services/thesis-application.service";
 import { handleApiError } from "@/lib/utils/handleApi";
 import { showNotification } from "@/lib/utils/notification";
 import { ThesisWithRelations } from "@/schemas/thesis";
@@ -21,23 +22,24 @@ import { cacheUtils } from "@/store/helpers/cacheHelpers";
 interface Props {
 	readonly thesis: ThesisWithRelations;
 	readonly studentRole?: "leader" | "member" | "guest";
+	readonly applications?: ThesisApplication[];
+	readonly applicationsLoading?: boolean;
 	readonly onThesisUpdate?: () => void | Promise<void>;
+	readonly onApplicationsRefresh?: () => void | Promise<void>;
 }
 
 export default function ThesisCard({
 	thesis,
 	studentRole,
+	applications = [],
+	applicationsLoading = false,
 	onThesisUpdate,
+	onApplicationsRefresh,
 }: Props) {
 	const { hasGroup, group, resetInitialization } = useStudentGroupStatus();
 	const { canRegisterThesis, loading: semesterLoading } = useSemesterStatus();
 	const { registerThesis, unregisterThesis, isRegistering } =
 		useThesisRegistration();
-	const {
-		applications,
-		refreshApplications,
-		initialized: applicationsInitialized,
-	} = useThesisApplications();
 	const router = useRouter();
 
 	// Local state to track pending application to avoid race conditions
@@ -55,7 +57,8 @@ export default function ThesisCard({
 
 		// Then check server data
 		return applications.some(
-			(app) => app.thesisId === thesis.id && app.status === "Pending",
+			(app: ThesisApplication) =>
+				app.thesisId === thesis.id && app.status === "Pending",
 		);
 	}, [applications, thesis.id, localPendingApplication]);
 
@@ -63,7 +66,8 @@ export default function ThesisCard({
 	useEffect(() => {
 		if (localPendingApplication) {
 			const serverHasApplication = applications.some(
-				(app) => app.thesisId === thesis.id && app.status === "Pending",
+				(app: ThesisApplication) =>
+					app.thesisId === thesis.id && app.status === "Pending",
 			);
 			if (serverHasApplication) {
 				setLocalPendingApplication(false);
@@ -77,24 +81,35 @@ export default function ThesisCard({
 	// Check if current group has this thesis assigned
 	const isThesisAssignedToGroup = group?.id === thesis.groupId;
 
+	// Check if all data is loaded
+	const isAllDataLoaded = !applicationsLoading && !semesterLoading;
+
 	// Determine if register button should be enabled
 	const canRegister =
 		studentRole === "leader" &&
 		hasGroup &&
 		!isThesisTaken &&
-		!hasApplicationForThesis;
+		!hasApplicationForThesis &&
+		isAllDataLoaded;
 
 	// Determine if unregister button should be shown
 	const canUnregister =
-		studentRole === "leader" && hasGroup && isThesisAssignedToGroup;
+		studentRole === "leader" &&
+		hasGroup &&
+		isThesisAssignedToGroup &&
+		isAllDataLoaded;
+
+	// Show loading button when data is still being loaded
+	const showLoadingButton =
+		!isAllDataLoaded &&
+		studentRole === "leader" &&
+		hasGroup &&
+		!isThesisAssignedToGroup &&
+		!localPendingApplication;
 
 	// Disable register button if semester is not in picking phase
 	const isRegisterDisabled =
-		!canRegister ||
-		!canRegisterThesis ||
-		isRegistering ||
-		semesterLoading ||
-		(!applicationsInitialized && !localPendingApplication); // Only show loading initially, not after local action
+		!canRegister || !canRegisterThesis || isRegistering;
 
 	// Handle view details navigation
 	const handleViewDetails = () => {
@@ -114,7 +129,7 @@ export default function ThesisCard({
 			resetInitialization();
 
 			// Refresh applications immediately to update button state
-			refreshApplications();
+			onApplicationsRefresh?.();
 
 			// Refresh thesis list immediately to show updated assignment
 			onThesisUpdate?.();
@@ -165,7 +180,7 @@ export default function ThesisCard({
 					setLocalPendingApplication(false);
 
 					// Refresh applications first to update button state immediately
-					refreshApplications();
+					onApplicationsRefresh?.();
 
 					// Then refresh thesis list
 					onThesisUpdate?.();
@@ -208,7 +223,7 @@ export default function ThesisCard({
 		if (isRegistering) {
 			return "Processing...";
 		}
-		if (!applicationsInitialized && !localPendingApplication) {
+		if (showLoadingButton) {
 			return "Checking...";
 		}
 		if (hasApplicationForThesis) {
@@ -308,7 +323,8 @@ export default function ThesisCard({
 							block
 							danger
 							onClick={handleUnregisterThesis}
-							loading={isRegistering || semesterLoading}
+							loading={isRegistering}
+							disabled={!isAllDataLoaded}
 							title="Unregister from this thesis"
 						>
 							{isRegistering ? "Unregistering..." : "Unregister"}
@@ -316,19 +332,18 @@ export default function ThesisCard({
 					) : (
 						<Button
 							block
-							disabled={isRegisterDisabled && !hasApplicationForThesis}
+							disabled={
+								showLoadingButton ||
+								(isRegisterDisabled && !hasApplicationForThesis)
+							}
 							title={getButtonTooltip()}
 							onClick={
 								hasApplicationForThesis
 									? handleCancelApplication
 									: handleRegisterThesis
 							}
-							loading={
-								isRegistering ||
-								(semesterLoading && applicationsInitialized) ||
-								(!applicationsInitialized && !localPendingApplication)
-							}
-							danger={hasApplicationForThesis}
+							loading={isRegistering || showLoadingButton}
+							danger={hasApplicationForThesis && isAllDataLoaded}
 						>
 							{getRegisterButtonText()}
 						</Button>

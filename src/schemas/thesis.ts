@@ -29,16 +29,6 @@ export const ThesisVersionSchema = z.object({
 	updatedAt: z.date(),
 });
 
-export const ThesisRequiredSkillSchema = z.object({
-	thesisId: z.string().uuid(),
-	skillId: z.string().uuid(),
-});
-
-// Schema for creating thesis with skills (only skillId needed)
-export const ThesisRequiredSkillForCreateSchema = z.object({
-	skillId: z.string().uuid(),
-});
-
 export const ThesisCreateSchema = z.object({
 	englishName: z.string().min(1),
 	vietnameseName: z.string().min(1),
@@ -77,8 +67,6 @@ export const ThesisVersionUpdateSchema = ThesisVersionSchema.omit({
 	updatedAt: true,
 }).partial();
 
-export const ThesisRequiredSkillCreateSchema = ThesisRequiredSkillSchema;
-
 // Export inferred types
 export type Thesis = z.infer<typeof ThesisSchema>;
 export type ThesisWithRelations = z.infer<typeof ThesisWithRelationsSchema>;
@@ -90,13 +78,6 @@ export type ThesisPublic = z.infer<typeof ThesisPublicSchema>;
 export type ThesisVersion = z.infer<typeof ThesisVersionSchema>;
 export type ThesisVersionCreate = z.infer<typeof ThesisVersionCreateSchema>;
 export type ThesisVersionUpdate = z.infer<typeof ThesisVersionUpdateSchema>;
-export type ThesisRequiredSkill = z.infer<typeof ThesisRequiredSkillSchema>;
-export type ThesisRequiredSkillCreate = z.infer<
-	typeof ThesisRequiredSkillCreateSchema
->;
-export type ThesisRequiredSkillForCreate = z.infer<
-	typeof ThesisRequiredSkillForCreateSchema
->;
 
 // Re-export supervision-related types for convenience
 export type { Supervision, SupervisorInfo } from "@/schemas/supervision";
@@ -116,14 +97,6 @@ export const ThesisWithGroupSchema = ThesisSchema.extend({
 
 // Extended schema for API responses that include relationships
 export const ThesisWithRelationsSchema = ThesisSchema.extend({
-	thesisRequiredSkills: z
-		.array(
-			z.object({
-				id: z.string().uuid(),
-				name: z.string(),
-			}),
-		)
-		.optional(),
 	thesisVersions: z
 		.array(
 			z.object({

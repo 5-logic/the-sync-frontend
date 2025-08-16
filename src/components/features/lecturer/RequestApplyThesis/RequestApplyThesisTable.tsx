@@ -238,6 +238,10 @@ export default function RequestApplyThesisTable({
 				dataSource={filteredData}
 				rowKey={(record) => `${record.groupId}-${record.thesisId}`}
 				loading={loading}
+				locale={{
+					emptyText:
+						"No thesis applications found. Students haven't submitted any thesis requests yet.",
+				}}
 				{...getThesisApplicationTableConfig("applications")}
 			/>
 

@@ -1,5 +1,6 @@
 import httpClient from "@/lib/services/_httpClient";
 import { ApiResponse } from "@/schemas/_common";
+import { ThesisOrientation } from "@/schemas/_enums";
 
 // Thesis application interface
 export interface ThesisApplication {
@@ -15,6 +16,7 @@ export interface ThesisApplication {
 		abbreviation: string;
 		description: string;
 		domain: string;
+		orientation?: ThesisOrientation | null;
 		status: string;
 		isPublish: boolean;
 		groupId: string | null;
@@ -36,23 +38,6 @@ export interface ThesisApplication {
 				updatedAt: string;
 			};
 		};
-		thesisRequiredSkills: Array<{
-			thesisId: string;
-			skillId: string;
-			skill: {
-				id: string;
-				name: string;
-				skillSetId: string;
-				createdAt: string;
-				updatedAt: string;
-				skillSet: {
-					id: string;
-					name: string;
-					createdAt: string;
-					updatedAt: string;
-				};
-			};
-		}>;
 	};
 	group: {
 		id: string;

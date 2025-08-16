@@ -1,6 +1,6 @@
-import httpClient from '@/lib/services/_httpClient';
-import { ApiResponse } from '@/schemas/_common';
-import { GroupDashboard } from '@/schemas/group';
+import httpClient from "@/lib/services/_httpClient";
+import { ApiResponse } from "@/schemas/_common";
+import { GroupDashboard } from "@/schemas/group";
 
 // Group interfaces
 export interface GroupCreate {
@@ -50,7 +50,7 @@ export interface MilestoneSubmission {
 	groupId: string;
 	milestoneId: string;
 	documents: string[];
-	status: 'Submitted' | 'Not Submitted';
+	status: "Submitted" | "Not Submitted";
 	createdAt: string;
 	updatedAt: string;
 	milestone: {
@@ -102,23 +102,6 @@ export interface SupervisedGroup {
 				updatedAt: string;
 			};
 		};
-		thesisRequiredSkills?: Array<{
-			thesisId: string;
-			skillId: string;
-			skill: {
-				id: string;
-				name: string;
-				skillSetId: string;
-				createdAt: string;
-				updatedAt: string;
-				skillSet: {
-					id: string;
-					name: string;
-					createdAt: string;
-					updatedAt: string;
-				};
-			};
-		}>;
 	};
 	semester: {
 		id: string;
@@ -191,7 +174,7 @@ export interface SupervisedGroup {
 }
 
 class GroupService {
-	private readonly baseUrl = '/groups';
+	private readonly baseUrl = "/groups";
 
 	async create(createGroupDto: GroupCreate): Promise<ApiResponse<Group>> {
 		const response = await httpClient.post<ApiResponse<Group>>(
