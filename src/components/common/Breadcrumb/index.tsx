@@ -10,6 +10,7 @@ const ROUTE_TITLES: Record<string, string> = {
 	"/admin": "Admin Dashboard",
 	"/admin/lecturer-management": "Lecturer Management",
 	"/admin/students-management": "Student Management",
+	"/admin/group-management": "Group Management",
 	"/admin/milestone-management": "Milestone Management",
 	"/admin/semester-settings": "Semester Settings",
 	"/admin/create-new-lecturer": "Create New Lecturer",
@@ -34,12 +35,12 @@ const ROUTE_TITLES: Record<string, string> = {
 
 	// Student routes
 	"/student": "Student Dashboard",
-	"/student/form-or-join-group": "Form or Join Group",
+	"/student/join-group": "Join Group",
 	"/student/group-dashboard": "Group Dashboard",
 	"/student/group-detail": "Group Detail",
 	"/student/invite-to-group": "Invite to Group",
 	"/student/list-thesis": "List Thesis",
-	"/student/register-thesis": "Register Thesis",
+	"/student/register-thesis": "Register Thesis Request",
 	"/student/suggested-thesis": "Suggested Thesis",
 	"/student/track-progress": "Track Progress",
 	"/student/account-setting": "Account Setting",
@@ -108,6 +109,11 @@ const DYNAMIC_ROUTE_PATTERNS: Array<{
 	},
 
 	// Admin dynamic routes (if any)
+	{
+		pattern: /^\/admin\/group-management\/(.+)$/,
+		getTitle: () => "Assign Student & Thesis",
+		getParentPath: () => "/admin/group-management",
+	},
 	{
 		pattern: /^\/admin\/lecturer-management\/(.+)$/,
 		getTitle: () => "Lecturer Detail",

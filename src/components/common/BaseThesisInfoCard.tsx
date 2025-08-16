@@ -17,9 +17,10 @@ import {
 import { useEffect, useState } from "react";
 
 import ThesisDocumentVersionDialog from "@/components/common/ThesisDocumentVersionDialog";
-
+import { getOrientationDisplay } from "@/lib/constants/orientation";
 import { StorageService } from "@/lib/services/storage.service";
 import { showNotification } from "@/lib/utils/notification";
+import { ThesisOrientation } from "@/schemas/_enums";
 import { useSemesterStore } from "@/store";
 
 const { Title, Text, Paragraph } = Typography;
@@ -31,12 +32,9 @@ export interface BaseThesisInfo {
 	abbreviation: string;
 	description: string;
 	domain?: string | null;
+	orientation?: ThesisOrientation | null;
 	status: "New" | "Pending" | "Approved" | "Rejected";
 	semesterId?: string;
-	thesisRequiredSkills?: Array<{
-		id: string;
-		name: string;
-	}>;
 	thesisVersions?: Array<{
 		id: string;
 		version: number;
@@ -152,20 +150,31 @@ export default function BaseThesisInfoCard({ thesis, supervisor }: Props) {
 				<Paragraph>{thesis.description}</Paragraph>
 			</div>
 
-			<div style={{ marginBottom: 24 }}>
-				<Title level={5} style={{ marginBottom: 8 }}>
-					Required Skills
-				</Title>
-				<Space wrap size={[8, 12]}>
-					{thesis.thesisRequiredSkills?.length ? (
-						thesis.thesisRequiredSkills.map((skill) => (
-							<Tag key={skill.id}>{skill.name}</Tag>
-						))
-					) : (
-						<Text type="secondary">No skills specified</Text>
-					)}
-				</Space>
-			</div>
+			{thesis.orientation && (
+				<div style={{ marginBottom: 16 }}>
+					<Text strong>Orientation</Text>
+					<div style={{ marginTop: 8 }}>
+						{(() => {
+							const orientationDisplay = getOrientationDisplay(
+								thesis.orientation,
+							);
+							return orientationDisplay ? (
+								<Space direction="vertical" size={4}>
+									<Tag
+										color={orientationDisplay.color}
+										style={{ borderRadius: 6 }}
+									>
+										{orientationDisplay.label}
+									</Tag>
+									<Text type="secondary" style={{ fontSize: 12 }}>
+										{orientationDisplay.description}
+									</Text>
+								</Space>
+							) : null;
+						})()}
+					</div>
+				</div>
+			)}
 
 			<Space size={16} style={{ marginBottom: 24 }}>
 				<Button

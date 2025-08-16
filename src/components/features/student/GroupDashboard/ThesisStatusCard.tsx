@@ -9,11 +9,6 @@ import StudentEditThesisModal from "@/components/features/student/GroupDashboard
 import { DOMAIN_COLOR_MAP } from "@/lib/constants/domains";
 import thesesService from "@/lib/services/theses.service";
 
-// Type for thesis required skills - handles both direct skill objects and skill relations
-type ThesisRequiredSkill =
-	| { id: string; name: string } // Direct skill object
-	| { skill: { id: string; name: string } }; // Skill relation object
-
 const { Title, Text } = Typography;
 
 interface ThesisStatusCardProps {
@@ -194,33 +189,6 @@ export default function ThesisStatusCard({
 						<Text type="secondary">Status</Text>
 						<Space>
 							<Tag color="green">{thesis.status}</Tag>
-						</Space>
-					</Space>
-
-					<Space direction="vertical" size={4}>
-						<Text type="secondary">Required Skills</Text>
-						<Space>
-							{thesis.thesisRequiredSkills &&
-							thesis.thesisRequiredSkills.length > 0 ? (
-								<Space size={[4, 8]} wrap>
-									{thesis.thesisRequiredSkills.map(
-										(skillRelation: ThesisRequiredSkill) => {
-											// Handle both direct skill objects and skill relation objects
-											const skill =
-												"skill" in skillRelation
-													? skillRelation.skill
-													: skillRelation;
-											return (
-												<Tag key={skill.id} color="blue">
-													{skill.name}
-												</Tag>
-											);
-										},
-									)}
-								</Space>
-							) : (
-								<Text type="secondary">No skills required</Text>
-							)}
 						</Space>
 					</Space>
 				</Space>

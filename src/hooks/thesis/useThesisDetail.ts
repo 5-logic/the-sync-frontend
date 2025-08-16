@@ -1,20 +1,16 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { lecturerService } from '@/lib/services/lecturers.service';
-import { thesisService } from '@/lib/services/theses.service';
+import { lecturerService } from "@/lib/services/lecturers.service";
+import { thesisService } from "@/lib/services/theses.service";
 import {
 	THESIS_ERROR_CONFIGS,
 	handleThesisError,
-} from '@/lib/utils/thesis-handlers';
-import { Lecturer } from '@/schemas/lecturer';
-import { Thesis } from '@/schemas/thesis';
+} from "@/lib/utils/thesis-handlers";
+import { Lecturer } from "@/schemas/lecturer";
+import { Thesis } from "@/schemas/thesis";
 
 // API response type for thesis data với thêm fields từ API
 type ThesisApiResponse = Thesis & {
-	thesisRequiredSkills?: Array<{
-		id: string;
-		name: string;
-	}>;
 	thesisVersions?: Array<{
 		id: string;
 		version: number;
@@ -24,7 +20,6 @@ type ThesisApiResponse = Thesis & {
 
 // Enhanced thesis type cho UI display
 type EnhancedThesis = ThesisApiResponse & {
-	skills: string[];
 	version: string;
 	supervisor?: {
 		name: string;
@@ -38,10 +33,6 @@ const transformThesisData = (
 	apiThesis: ThesisApiResponse,
 	lecturer?: Lecturer,
 ): EnhancedThesis => {
-	// Extract skills từ thesisRequiredSkills - API now returns skills directly
-	const skills =
-		apiThesis.thesisRequiredSkills?.map((skill) => skill.name) ?? [];
-
 	// Get highest version từ thesisVersions array
 	const highestVersion = apiThesis.thesisVersions?.length
 		? Math.max(...apiThesis.thesisVersions.map((tv) => tv.version))
@@ -59,7 +50,6 @@ const transformThesisData = (
 
 	return {
 		...apiThesis,
-		skills,
 		version,
 		supervisor,
 	};
@@ -69,8 +59,8 @@ export const useThesisDetail = (thesisId: string) => {
 	const [thesis, setThesis] = useState<EnhancedThesis | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [loadingStage, setLoadingStage] = useState<
-		'thesis' | 'lecturer' | 'preparing'
-	>('thesis');
+		"thesis" | "lecturer" | "preparing"
+	>("thesis");
 	const [error, setError] = useState<string | null>(null);
 
 	// Memoized fetch function to prevent unnecessary recreations
@@ -78,33 +68,33 @@ export const useThesisDetail = (thesisId: string) => {
 		try {
 			setLoading(true);
 			setError(null);
-			setLoadingStage('thesis');
+			setLoadingStage("thesis");
 			// Fetch thesis data first
 			const thesisResponse = await thesisService.findOne(thesisId);
 
-			if ('data' in thesisResponse && thesisResponse.data) {
+			if ("data" in thesisResponse && thesisResponse.data) {
 				// Type guard to ensure thesis data structure
 				const isThesisApiResponse = (
 					data: unknown,
 				): data is ThesisApiResponse => {
-					if (data === null || typeof data !== 'object') return false;
+					if (data === null || typeof data !== "object") return false;
 					const obj = data as Record<string, unknown>;
 					return (
-						'id' in obj &&
-						typeof obj.id === 'string' &&
-						'lecturerId' in obj &&
-						typeof obj.lecturerId === 'string'
+						"id" in obj &&
+						typeof obj.id === "string" &&
+						"lecturerId" in obj &&
+						typeof obj.lecturerId === "string"
 					);
 				};
 
 				if (!isThesisApiResponse(thesisResponse.data)) {
-					throw new Error('Invalid thesis data structure');
+					throw new Error("Invalid thesis data structure");
 				}
 
 				const thesisData = thesisResponse.data;
 
 				// Update loading stage
-				setLoadingStage('lecturer');
+				setLoadingStage("lecturer");
 
 				// Fetch lecturer data
 				const lecturerResponse = await lecturerService.findOne(
@@ -112,22 +102,22 @@ export const useThesisDetail = (thesisId: string) => {
 				);
 				let lecturerData: Lecturer | undefined;
 
-				if ('data' in lecturerResponse && lecturerResponse.data) {
+				if ("data" in lecturerResponse && lecturerResponse.data) {
 					lecturerData = lecturerResponse.data;
 				}
 
 				// Final preparation
-				setLoadingStage('preparing');
+				setLoadingStage("preparing");
 
 				// Transform thesis with lecturer data
 				const transformedThesis = transformThesisData(thesisData, lecturerData);
 				setThesis(transformedThesis);
 			} else {
-				setError('Failed to load thesis data. Please try again.');
+				setError("Failed to load thesis data. Please try again.");
 			}
 		} catch (error) {
 			handleThesisError(error, THESIS_ERROR_CONFIGS.FETCH);
-			setError('Failed to load data. Please try again.');
+			setError("Failed to load data. Please try again.");
 		} finally {
 			setLoading(false);
 		}
@@ -142,14 +132,14 @@ export const useThesisDetail = (thesisId: string) => {
 	// Memoized loading message calculation
 	const loadingMessage = useMemo(() => {
 		switch (loadingStage) {
-			case 'thesis':
-				return 'Loading thesis data...';
-			case 'lecturer':
-				return 'Loading lecturer information...';
-			case 'preparing':
-				return 'Preparing content...';
+			case "thesis":
+				return "Loading thesis data...";
+			case "lecturer":
+				return "Loading lecturer information...";
+			case "preparing":
+				return "Preparing content...";
 			default:
-				return 'Loading...';
+				return "Loading...";
 		}
 	}, [loadingStage]);
 

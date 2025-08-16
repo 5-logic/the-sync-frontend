@@ -1,15 +1,14 @@
-'use client';
+"use client";
 
-import { Alert, Button, Flex, Space, Spin, Typography } from 'antd';
-import { useEffect, useState } from 'react';
+import { Alert, Button, Flex, Space, Spin, Typography } from "antd";
+import { useEffect, useState } from "react";
 
-import { Header } from '@/components/common/Header';
-import ThesisForm from '@/components/features/lecturer/CreateThesis/ThesisForm';
-import { useThesisForm } from '@/hooks/thesis';
-import thesisService from '@/lib/services/theses.service';
-import { handleApiResponse } from '@/lib/utils/handleApi';
-import { Thesis, ThesisVersion, ThesisWithRelations } from '@/schemas/thesis';
-import { useSkillSetStore } from '@/store';
+import { Header } from "@/components/common/Header";
+import ThesisForm from "@/components/features/lecturer/CreateThesis/ThesisForm";
+import { useThesisForm } from "@/hooks/thesis";
+import thesisService from "@/lib/services/theses.service";
+import { handleApiResponse } from "@/lib/utils/handleApi";
+import { Thesis, ThesisVersion, ThesisWithRelations } from "@/schemas/thesis";
 
 interface Props {
 	readonly thesisId?: string;
@@ -26,20 +25,12 @@ export default function EditThesis({ thesisId }: Props) {
 		handleSubmit: handleUpdate,
 		getFormInitialValues,
 		getInitialFile,
-	} = useThesisForm({ mode: 'edit', thesisId, thesis });
-
-	// Get skillSets store
-	const {
-		skillSets,
-		loading: skillSetsLoading,
-		fetchSkillSets,
-	} = useSkillSetStore();
+	} = useThesisForm({ mode: "edit", thesisId, thesis });
 
 	// Convert Thesis to ThesisWithRelations với semesterId từ API
 	const convertToThesisWithRelations = (
 		thesisData: Thesis & {
 			semesterId?: string;
-			thesisRequiredSkills?: Array<{ id: string; name: string }>;
 			thesisVersions?: ThesisVersion[];
 		},
 	): ThesisWithRelations => {
@@ -51,24 +42,22 @@ export default function EditThesis({ thesisId }: Props) {
 				isModerator: false,
 				user: {
 					id: thesisData.lecturerId,
-					fullName: '',
-					email: '',
+					fullName: "",
+					email: "",
 				},
 			},
-			thesisRequiredSkills: thesisData.thesisRequiredSkills || [],
 			thesisVersions: thesisData.thesisVersions || [],
 		};
 	};
 
 	// Check if all required data is loaded
-	const isDataReady =
-		!loading && !skillSetsLoading && thesis && skillSets.length > 0;
+	const isDataReady = !loading && thesis;
 
 	// Fetch thesis data when component mounts
 	useEffect(() => {
 		const fetchThesis = async () => {
 			if (!thesisId) {
-				setError('Thesis ID is required');
+				setError("Thesis ID is required");
 				setLoading(false);
 				return;
 			}
@@ -82,45 +71,42 @@ export default function EditThesis({ thesisId }: Props) {
 					setThesis(convertToThesisWithRelations(result.data));
 					setError(null);
 				} else if (result.error) {
-					setError(result.error.message || 'Failed to fetch thesis');
+					setError(result.error.message || "Failed to fetch thesis");
 				}
 			} catch {
-				setError('Failed to fetch thesis data');
+				setError("Failed to fetch thesis data");
 			} finally {
 				setLoading(false);
 			}
 		};
 
 		fetchThesis();
-		// Also fetch skillSets for the skills dropdown
-		fetchSkillSets();
-	}, [thesisId, fetchSkillSets]);
+	}, [thesisId]);
 
 	// Helper function to get loading message based on current state
 	const getLoadingMessage = () => {
-		if (loading) return 'Loading thesis data...';
-		if (skillSetsLoading) return 'Loading skills data...';
-		return 'Preparing form...';
+		if (loading) return "Loading thesis data...";
+		return "Preparing form...";
 	};
 
-	if (loading || skillSetsLoading || !isDataReady) {
+	if (loading || !isDataReady) {
 		return (
 			<Flex
 				vertical
 				justify="center"
 				align="center"
 				style={{
-					minHeight: 'calc(100vh - 280px)',
-					padding: '50px 24px',
-					gap: '16px',
+					minHeight: "calc(100vh - 280px)",
+					padding: "50px 24px",
+					gap: "16px",
 				}}
 			>
 				<Spin size="large" />
 				<Typography.Text
 					style={{
-						color: '#666',
-						fontSize: '16px',
-						textAlign: 'center',
+						color: "#666",
+						fontSize: "16px",
+						textAlign: "center",
 						fontWeight: 500,
 					}}
 				>
@@ -132,7 +118,7 @@ export default function EditThesis({ thesisId }: Props) {
 
 	if (error) {
 		return (
-			<Space direction="vertical" size="large" style={{ width: '100%' }}>
+			<Space direction="vertical" size="large" style={{ width: "100%" }}>
 				<Alert
 					message="Error Loading Thesis"
 					description={error}
@@ -154,7 +140,7 @@ export default function EditThesis({ thesisId }: Props) {
 
 	if (!thesis) {
 		return (
-			<Space direction="vertical" size="large" style={{ width: '100%' }}>
+			<Space direction="vertical" size="large" style={{ width: "100%" }}>
 				<Alert
 					message="Thesis Not Found"
 					description="The requested thesis could not be found."
@@ -166,7 +152,7 @@ export default function EditThesis({ thesisId }: Props) {
 	}
 
 	return (
-		<Space direction="vertical" size="large" style={{ width: '100%' }}>
+		<Space direction="vertical" size="large" style={{ width: "100%" }}>
 			<Space direction="vertical" size="small">
 				<Header
 					title="Edit Thesis"

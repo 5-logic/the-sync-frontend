@@ -1,22 +1,17 @@
 import BaseThesisInfoCard, {
 	type BaseThesisInfo,
 	type SupervisorInfo,
-} from '@/components/common/BaseThesisInfoCard';
-import { Thesis } from '@/schemas/thesis';
+} from "@/components/common/BaseThesisInfoCard";
+import { Thesis } from "@/schemas/thesis";
 
 // Enhanced thesis type cho UI display
 type EnhancedThesis = Thesis & {
-	skills?: string[];
 	version?: string;
 	supervisor?: {
 		name: string;
 		phone: string;
 		email: string;
 	};
-	thesisRequiredSkills?: Array<{
-		id: string;
-		name: string;
-	}>;
 	thesisVersions?: Array<{
 		id: string;
 		version: number;
@@ -36,9 +31,9 @@ export default function ThesisInfoCard({ thesis }: Props) {
 		abbreviation: thesis.abbreviation,
 		description: thesis.description,
 		domain: thesis.domain,
+		orientation: thesis.orientation,
 		status: thesis.status,
 		semesterId: thesis.semesterId,
-		thesisRequiredSkills: thesis.thesisRequiredSkills,
 		thesisVersions: thesis.thesisVersions,
 	};
 

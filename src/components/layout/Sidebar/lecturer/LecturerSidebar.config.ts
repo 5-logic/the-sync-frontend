@@ -8,6 +8,7 @@ import { DASHBOARD_PATHS } from "@/lib/auth/config/auth-constants";
 export const LECTURER_MENU_KEYS = {
 	DASHBOARD: DASHBOARD_PATHS.LECTURER,
 	THESIS_MANAGEMENT: "/lecturer/thesis-management",
+	REQUEST_APPLY_THESIS: "/lecturer/request-apply-thesis",
 	GROUP_PROGRESS: "/lecturer/group-progress",
 	GROUP_REVIEW: "/lecturer/group-review",
 	// Moderator features
@@ -17,6 +18,7 @@ export const LECTURER_MENU_KEYS = {
 	ASSIGN_SUPERVISOR: DASHBOARD_PATHS.LECTURER_ASSIGN_SUPERVISOR,
 	ASSIGN_LECTURER_REVIEW: DASHBOARD_PATHS.LECTURER_ASSIGN_LECTURER_REVIEW,
 	CHECKLIST_MANAGEMENT: DASHBOARD_PATHS.LECTURER_CHECKLIST_MANAGEMENT,
+	THESES_REGISTRATION: DASHBOARD_PATHS.LECTURER_THESES_REGISTRATION,
 } as const;
 
 /**
@@ -30,6 +32,7 @@ export const LECTURER_PATH_MAPPING = {
 		"/lecturer/edit-thesis",
 		"/lecturer/thesis-management/create-thesis",
 	],
+	[LECTURER_MENU_KEYS.REQUEST_APPLY_THESIS]: ["/lecturer/request-apply-thesis"],
 	[LECTURER_MENU_KEYS.GROUP_PROGRESS]: [
 		"/lecturer/group-progress",
 		"/lecturer/group-details",
@@ -61,6 +64,9 @@ export const LECTURER_PATH_MAPPING = {
 		"/lecturer/checklist-detail",
 		"/lecturer/checklist-edit",
 		"/lecturer/create-checklist",
+	],
+	[LECTURER_MENU_KEYS.THESES_REGISTRATION]: [
+		DASHBOARD_PATHS.LECTURER_THESES_REGISTRATION,
 	],
 } as const;
 
