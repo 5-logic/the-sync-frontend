@@ -64,7 +64,7 @@ export default function StudentSidebar() {
 			) : (
 				<UserAddOutlined />
 			),
-			label: "Form / Join Group",
+			label: "Join Group",
 			onClick: () => navigateWithLoading(STUDENT_MENU_KEYS.JOIN_GROUP),
 			disabled: isNavigating && targetPath !== STUDENT_MENU_KEYS.JOIN_GROUP,
 		};

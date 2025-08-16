@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
 	Button,
@@ -10,13 +10,13 @@ import {
 	Row,
 	Space,
 	Typography,
-} from 'antd';
-import type { FormInstance } from 'antd/es/form';
-import { memo, useCallback, useEffect } from 'react';
+} from "antd";
+import type { FormInstance } from "antd/es/form";
+import { memo, useCallback, useEffect } from "react";
 
-import { FormLabel } from '@/components/common/FormLabel';
-import { SemesterCreate } from '@/schemas/semester';
-import { useSemesterStore } from '@/store';
+import { FormLabel } from "@/components/common/FormLabel";
+import { SemesterCreate } from "@/schemas/semester";
+import { useSemesterStore } from "@/store";
 
 const { Title } = Typography;
 
@@ -49,7 +49,7 @@ const SemesterForm = memo<SemesterFormProps>(({ form, onSuccess }) => {
 			const semesterData: SemesterCreate = {
 				...values,
 				code: values.code.trim().toUpperCase(),
-				status: 'NotYet',
+				status: "NotYet",
 			};
 
 			// Use store method to create semester
@@ -73,25 +73,24 @@ const SemesterForm = memo<SemesterFormProps>(({ form, onSuccess }) => {
 	// Set default values for new semester
 	useEffect(() => {
 		form.setFieldsValue({
-			maxGroup: 5,
 			defaultThesesPerLecturer: 4,
 			maxThesesPerLecturer: 6,
 		});
 	}, [form]);
 
 	const nameRules = [
-		{ required: true, message: 'Semester name is required' },
-		{ max: 100, message: 'Name must be less than 100 characters' },
+		{ required: true, message: "Semester name is required" },
+		{ max: 100, message: "Name must be less than 100 characters" },
 	];
 
 	const codeRules = [
-		{ required: true, message: 'Semester code is required' },
-		{ max: 20, message: 'Code must be less than 20 characters' },
+		{ required: true, message: "Semester code is required" },
+		{ max: 20, message: "Code must be less than 20 characters" },
 	];
 
 	return (
 		<Card>
-			<Space direction="vertical" size="middle" style={{ width: '100%' }}>
+			<Space direction="vertical" size="middle" style={{ width: "100%" }}>
 				<Title level={4} style={{ marginBottom: 0 }}>
 					Add New Semester
 				</Title>
@@ -107,7 +106,7 @@ const SemesterForm = memo<SemesterFormProps>(({ form, onSuccess }) => {
 							<Form.Item
 								name="name"
 								label={FormLabel({
-									text: 'Semester Name',
+									text: "Semester Name",
 									isRequired: true,
 									isBold: true,
 								})}
@@ -126,7 +125,7 @@ const SemesterForm = memo<SemesterFormProps>(({ form, onSuccess }) => {
 							<Form.Item
 								name="code"
 								label={FormLabel({
-									text: 'Semester Code',
+									text: "Semester Code",
 									isRequired: true,
 									isBold: true,
 								})}
@@ -142,52 +141,23 @@ const SemesterForm = memo<SemesterFormProps>(({ form, onSuccess }) => {
 						</Col>
 					</Row>
 
-					<Space direction="vertical" size="small" style={{ width: '100%' }}>
+					<Space direction="vertical" size="small" style={{ width: "100%" }}>
 						<Title level={5} style={{ marginBottom: 8 }}>
 							Semester Policy
 						</Title>
 						<Row gutter={16}>
-							<Col xs={24} md={8}>
-								<Form.Item
-									name="maxGroup"
-									label={FormLabel({
-										text: 'Maximum Number of Groups',
-										isBold: true,
-									})}
-								>
-									<InputNumber
-										placeholder="Enter maximum number of groups"
-										min={1}
-										max={1000}
-										precision={0}
-										parser={(value) =>
-											Number((value ?? '').replace(/\$\s?|(,*)/g, ''))
-										}
-										formatter={(value) =>
-											value !== undefined && value !== null
-												? Number(value).toLocaleString('en-US')
-												: ''
-										}
-										style={{ width: '100%' }}
-										disabled={creating}
-										controls={true}
-										keyboard={true}
-										stringMode={false}
-									/>
-								</Form.Item>
-							</Col>
-							<Col xs={24} md={8}>
+							<Col xs={24} md={12}>
 								<Form.Item
 									name="defaultThesesPerLecturer"
 									label={FormLabel({
-										text: 'Default Theses per Lecturer',
+										text: "Default Theses per Lecturer",
 										isBold: true,
 									})}
 									rules={[
-										{ required: true, message: 'Required' },
+										{ required: true, message: "Required" },
 										({ getFieldValue }) => ({
 											validator(_, value) {
-												const maxTheses = getFieldValue('maxThesesPerLecturer');
+												const maxTheses = getFieldValue("maxThesesPerLecturer");
 												if (!value || !maxTheses) {
 													return Promise.resolve();
 												}
@@ -196,38 +166,38 @@ const SemesterForm = memo<SemesterFormProps>(({ form, onSuccess }) => {
 												}
 												return Promise.reject(
 													new Error(
-														'Default theses must be less than or equal to max theses',
+														"Default theses must be less than or equal to max theses",
 													),
 												);
 											},
 										}),
 									]}
-									dependencies={['maxThesesPerLecturer']}
+									dependencies={["maxThesesPerLecturer"]}
 								>
 									<InputNumber
 										min={1}
 										max={20}
 										precision={0}
-										style={{ width: '100%' }}
+										style={{ width: "100%" }}
 										disabled={creating}
 										controls={true}
 										keyboard={true}
 									/>
 								</Form.Item>
 							</Col>
-							<Col xs={24} md={8}>
+							<Col xs={24} md={12}>
 								<Form.Item
 									name="maxThesesPerLecturer"
 									label={FormLabel({
-										text: 'Max Theses per Lecturer',
+										text: "Max Theses per Lecturer",
 										isBold: true,
 									})}
 									rules={[
-										{ required: true, message: 'Required' },
+										{ required: true, message: "Required" },
 										({ getFieldValue }) => ({
 											validator(_, value) {
 												const defaultTheses = getFieldValue(
-													'defaultThesesPerLecturer',
+													"defaultThesesPerLecturer",
 												);
 												if (!value || !defaultTheses) {
 													return Promise.resolve();
@@ -237,19 +207,19 @@ const SemesterForm = memo<SemesterFormProps>(({ form, onSuccess }) => {
 												}
 												return Promise.reject(
 													new Error(
-														'Max theses must be greater than or equal to default theses',
+														"Max theses must be greater than or equal to default theses",
 													),
 												);
 											},
 										}),
 									]}
-									dependencies={['defaultThesesPerLecturer']}
+									dependencies={["defaultThesesPerLecturer"]}
 								>
 									<InputNumber
 										min={1}
 										max={50}
 										precision={0}
-										style={{ width: '100%' }}
+										style={{ width: "100%" }}
 										disabled={creating}
 										controls={true}
 										keyboard={true}
@@ -280,6 +250,6 @@ const SemesterForm = memo<SemesterFormProps>(({ form, onSuccess }) => {
 	);
 });
 
-SemesterForm.displayName = 'SemesterForm';
+SemesterForm.displayName = "SemesterForm";
 
 export default SemesterForm;

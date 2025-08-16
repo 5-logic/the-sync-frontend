@@ -1,20 +1,22 @@
-'use client';
+"use client";
 
-import { DisconnectOutlined, EyeOutlined } from '@ant-design/icons';
-import { Button, Card, Empty, Space, Tooltip } from 'antd';
+import { DisconnectOutlined, EyeOutlined } from "@ant-design/icons";
+import { Button, Card, Empty, Space, Tooltip } from "antd";
 
-import { GroupDashboard } from '@/schemas/group';
+import { GroupDashboard } from "@/schemas/group";
 
 interface Props {
 	readonly group: GroupDashboard;
 	readonly onViewDetail?: () => void;
 	readonly onUnassignThesis?: () => void;
+	readonly showUnassignButton?: boolean;
 }
 
 export default function ThesisCard({
 	group,
 	onViewDetail,
 	onUnassignThesis,
+	showUnassignButton = true,
 }: Props) {
 	const { thesis } = group;
 
@@ -24,10 +26,10 @@ export default function ThesisCard({
 				title="Group's Thesis"
 				size="small"
 				headStyle={{
-					fontSize: '16px',
-					fontWeight: '600',
-					paddingLeft: '20px',
-					paddingRight: '20px',
+					fontSize: "16px",
+					fontWeight: "600",
+					paddingLeft: "20px",
+					paddingRight: "20px",
 				}}
 			>
 				<Empty
@@ -44,10 +46,10 @@ export default function ThesisCard({
 			title="Group's Thesis"
 			size="small"
 			headStyle={{
-				fontSize: '16px',
-				fontWeight: '600',
-				paddingLeft: '20px',
-				paddingRight: '20px',
+				fontSize: "16px",
+				fontWeight: "600",
+				paddingLeft: "20px",
+				paddingRight: "20px",
 			}}
 			extra={
 				<Space>
@@ -59,15 +61,17 @@ export default function ThesisCard({
 							onClick={onViewDetail}
 						/>
 					</Tooltip>
-					<Tooltip title="Unassign Thesis">
-						<Button
-							type="text"
-							icon={<DisconnectOutlined />}
-							size="small"
-							onClick={onUnassignThesis}
-							danger
-						/>
-					</Tooltip>
+					{showUnassignButton && onUnassignThesis && (
+						<Tooltip title="Unassign Thesis">
+							<Button
+								type="text"
+								icon={<DisconnectOutlined />}
+								size="small"
+								onClick={onUnassignThesis}
+								danger
+							/>
+						</Tooltip>
+					)}
 				</Space>
 			}
 		>

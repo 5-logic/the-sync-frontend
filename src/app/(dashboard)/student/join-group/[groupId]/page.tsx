@@ -1,12 +1,12 @@
-import { Metadata } from 'next';
+import { Metadata } from "next";
 
-import GroupDetailClient from '@/components/pages/student/GroupDetailClient';
+import GroupDetailClient from "@/components/pages/student/GroupDetailClient";
 
 export async function generateMetadata(): Promise<Metadata> {
 	return {
-		title: 'Group Details | TheSync',
+		title: "Group Details | TheSync",
 		description:
-			'View detailed information about the group including members, skills, responsibilities and project direction.',
+			"View detailed information about the group including members, skills, responsibilities and project direction.",
 	};
 }
 

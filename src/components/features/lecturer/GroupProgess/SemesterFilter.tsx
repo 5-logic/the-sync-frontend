@@ -1,10 +1,11 @@
-'use client';
+"use client";
 
-import { Select } from 'antd';
-import { useEffect } from 'react';
+import { Select, Space } from "antd";
+import { useEffect } from "react";
 
-import { Semester } from '@/schemas/semester';
-import { useSemesterStore } from '@/store/useSemesterStore';
+import { Semester } from "@/schemas/semester";
+import { useSemesterStore } from "@/store/useSemesterStore";
+import { SEMESTER_STATUS_TAGS } from "@/lib/constants/semester";
 
 const { Option } = Select;
 
@@ -30,24 +31,29 @@ export default function SemesterFilter({
 		fetchSemesters();
 	}, [fetchSemesters]);
 
-	// Filter semesters to exclude "NotYet" and "End" status
-	const availableSemesters = semesters.filter(
+	// Show all semesters, but prioritize active ones for auto-selection
+	const availableSemesters = semesters; // Show all semesters
+	const activeSemesters = semesters.filter(
 		(semester: Semester) =>
-			semester.status !== 'NotYet' && semester.status !== 'End',
+			semester.status !== "NotYet" && semester.status !== "End",
 	);
 
-	// Auto-select first available semester if none selected
+	// Auto-select first active semester if none selected, fallback to any semester
 	useEffect(() => {
 		if (
 			!selectedSemester &&
 			availableSemesters.length > 0 &&
 			!semestersLoading
 		) {
-			onSemesterChange(availableSemesters[0].id);
+			// Prefer active semesters, but allow any semester if no active ones exist
+			const semesterToSelect =
+				activeSemesters.length > 0 ? activeSemesters[0] : availableSemesters[0];
+			onSemesterChange(semesterToSelect.id);
 		}
 	}, [
 		selectedSemester,
 		availableSemesters,
+		activeSemesters,
 		semestersLoading,
 		onSemesterChange,
 	]);
@@ -62,7 +68,14 @@ export default function SemesterFilter({
 		>
 			{availableSemesters.map((semester) => (
 				<Option key={semester.id} value={semester.id}>
-					{semester.name}
+					<Space>
+						<span>{semester.name}</span>
+						{
+							SEMESTER_STATUS_TAGS[
+								semester.status as keyof typeof SEMESTER_STATUS_TAGS
+							]
+						}
+					</Space>
 				</Option>
 			))}
 		</Select>

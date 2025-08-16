@@ -1,6 +1,10 @@
 import httpClient from "@/lib/services/_httpClient";
 import { ApiResponse } from "@/schemas/_common";
-import { GroupDashboard } from "@/schemas/group";
+import {
+	GroupDashboard,
+	CreateMultipleGroupsRequest,
+	CreatedGroup,
+} from "@/schemas/group";
 
 // Group interfaces
 export interface GroupCreate {
@@ -61,6 +65,23 @@ export interface MilestoneSubmission {
 	};
 	assignmentReviews: unknown[];
 	reviews: unknown[];
+}
+
+// Interface for formatted group response
+export interface FormattedGroup {
+	id: string;
+	code: string;
+	name: string;
+	projectDirection?: string;
+	semesterId: string;
+	thesisId?: string;
+	studentCount: number;
+	students: Array<{
+		studentCode: string;
+		fullName: string;
+	}>;
+	createdAt: string;
+	updatedAt: string;
 }
 
 // Interface for the new supervise API response
@@ -335,6 +356,47 @@ class GroupService {
 	): Promise<ApiResponse<SupervisedGroup[]>> {
 		const response = await httpClient.get<ApiResponse<SupervisedGroup[]>>(
 			`${this.baseUrl}/supervise/semester/${semesterId}`,
+		);
+		return response.data;
+	}
+
+	/**
+	 * Create multiple empty groups for a semester (Admin only)
+	 * POST /groups/admin
+	 */
+	async createMultipleGroups(
+		createRequest: CreateMultipleGroupsRequest,
+	): Promise<ApiResponse<CreatedGroup[]>> {
+		const response = await httpClient.post<ApiResponse<CreatedGroup[]>>(
+			`${this.baseUrl}/admin`,
+			createRequest,
+		);
+		return response.data;
+	}
+
+	/**
+	 * Delete an empty group (Admin only)
+	 * DELETE /groups/admin/{groupId}
+	 * Only allows deletion of empty groups (groups with no student participations)
+	 * Returns: {"success":true,"statusCode":200,"data":true} on success
+	 */
+	async deleteGroupAdmin(groupId: string): Promise<ApiResponse<boolean>> {
+		const response = await httpClient.delete<ApiResponse<boolean>>(
+			`${this.baseUrl}/admin/${groupId}`,
+		);
+		return response.data;
+	}
+
+	/**
+	 * Format and reorganize all groups in a semester (Admin only)
+	 * PUT /groups/admin/format/{semesterId}
+	 * Reorganizes all existing groups in the semester by priority and updates their codes
+	 */
+	async formatGroupsInSemester(
+		semesterId: string,
+	): Promise<ApiResponse<FormattedGroup[]>> {
+		const response = await httpClient.put<ApiResponse<FormattedGroup[]>>(
+			`${this.baseUrl}/admin/format/${semesterId}`,
 		);
 		return response.data;
 	}

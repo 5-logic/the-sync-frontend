@@ -333,6 +333,22 @@ export const ThesisConfirmationModals = {
 
 // Group-related confirmation modals
 export const GroupConfirmationModals = {
+	joinGroup: (
+		groupName: string,
+		onConfirm: () => void | Promise<void>,
+		loading = false,
+	) =>
+		ConfirmationModal.show({
+			title: "Join Group",
+			message: "Are you sure you want to join this group?",
+			details: groupName,
+			note: "You will become a member of this group immediately.",
+			noteType: "info",
+			okText: "Join Group",
+			loading,
+			onOk: onConfirm,
+		}),
+
 	requestToJoin: (
 		groupName: string,
 		onConfirm: () => void | Promise<void>,
@@ -396,6 +412,26 @@ export const GroupConfirmationModals = {
 			note: "You will no longer be the leader of this group and will not have access to leader-only functions.",
 			noteType: "warning",
 			okText: "Confirm",
+			loading,
+			onOk: onConfirm,
+		}),
+
+	deleteGroup: (
+		groupName: string,
+		onConfirm: () => void | Promise<void>,
+		loading = false,
+		isAdminMode = false,
+	) =>
+		ConfirmationModal.show({
+			title: "Delete Group",
+			message: "Are you sure you want to delete this group?",
+			details: groupName,
+			note: isAdminMode
+				? "This action cannot be undone. Only empty groups (with no students) can be deleted."
+				: "This action cannot be undone. All group data will be permanently deleted.",
+			noteType: "danger",
+			okText: "Delete",
+			okType: "danger",
 			loading,
 			onOk: onConfirm,
 		}),
