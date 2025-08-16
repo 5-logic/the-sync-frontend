@@ -103,7 +103,6 @@ export default memo(function GroupInfoCard({
 	const [isInviteDialogVisible, setIsInviteDialogVisible] = useState(false);
 	const [isEditDialogVisible, setIsEditDialogVisible] = useState(false);
 	const [isLeaving, setIsLeaving] = useState(false);
-	const [isDeleting, setIsDeleting] = useState(false);
 	const [isRefreshing, setIsRefreshing] = useState(false);
 	const [localGroup, setLocalGroup] = useState<GroupDashboard>(group);
 	const { session } = useSessionData();
@@ -163,9 +162,6 @@ export default memo(function GroupInfoCard({
 	// Check if semester is NOT in PREPARING status - hide action buttons
 	const shouldHideActionButtons = localGroup.semester.status !== "Preparing";
 
-	// Check if user is the only member (cannot leave - must delete instead)
-	const isOnlyMember = localGroup.members.length === 1;
-
 	// Helper function to get Leave Group button title
 	const getLeaveGroupButtonTitle = () => {
 		if (!canLeaveOrInvite) {
@@ -174,23 +170,7 @@ export default memo(function GroupInfoCard({
 		if (isCurrentUserLeader && localGroup.members.length > 1) {
 			return "Transfer leadership before leaving";
 		}
-		if (isOnlyMember) {
-			return "Cannot leave as the only member";
-		}
 		return "Leave this group";
-	};
-
-	// Helper function to get Delete Group button title
-	const getDeleteGroupButtonTitle = () => {
-		// Check thesis/submissions first (more specific reason)
-		if (hasThesisOrSubmissions) {
-			return "Cannot delete group with thesis or submissions";
-		}
-		// Then check semester status
-		if (localGroup.semester.status !== "Preparing") {
-			return "Cannot delete group during this semester status";
-		}
-		return "Delete this group permanently";
 	};
 
 	const handleLeaveGroup = async () => {
@@ -206,14 +186,6 @@ export default memo(function GroupInfoCard({
 			showNotification.error(
 				"Transfer Leadership Required",
 				"As a leader, you must transfer leadership to another member before leaving the group.",
-			);
-			return;
-		}
-
-		if (isOnlyMember) {
-			showNotification.error(
-				"Cannot Leave Group",
-				"Cannot leave group as the only member. Please delete the group instead.",
 			);
 			return;
 		}
@@ -236,43 +208,6 @@ export default memo(function GroupInfoCard({
 		}
 	};
 
-	const handleDeleteGroup = async () => {
-		// Check thesis/submissions first (more specific reason)
-		if (hasThesisOrSubmissions) {
-			showNotification.error(
-				"Cannot Delete Group",
-				"Cannot delete group that has assigned thesis or submissions.",
-			);
-			return;
-		}
-
-		// Then check semester status
-		if (localGroup.semester.status !== "Preparing") {
-			showNotification.error(
-				"Cannot Delete Group",
-				"Cannot delete group. Semester is not in PREPARING status.",
-			);
-			return;
-		}
-
-		setIsDeleting(true);
-		try {
-			await groupService.deleteGroup(localGroup.id);
-			showNotification.success("Success", "Group deleted successfully!");
-			// Clear group data from store
-			clearGroup();
-			// Navigate to form or join group page since group no longer exists
-			router.push("/student/join-group");
-		} catch {
-			showNotification.error(
-				"Error",
-				"Failed to delete group. Please try again.",
-			);
-		} finally {
-			setIsDeleting(false);
-		}
-	};
-
 	// Helper function to get Invite Members button title
 	const getInviteMembersButtonTitle = () => {
 		if (!canLeaveOrInvite) {
@@ -287,30 +222,16 @@ export default memo(function GroupInfoCard({
 	const showLeaveGroupConfirm = () => {
 		const canLeave =
 			canLeaveOrInvite &&
-			!(isCurrentUserLeader && localGroup.members.length > 1) &&
-			!isOnlyMember;
+			!(isCurrentUserLeader && localGroup.members.length > 1);
 
 		GroupConfirmationModals.leaveGroup(
 			localGroup.name,
 			canLeave,
 			isCurrentUserLeader,
-			isOnlyMember,
+			false, // isOnlyMember - no longer relevant
 			canLeaveOrInvite,
 			handleLeaveGroup,
 			isLeaving,
-		);
-	};
-
-	const showDeleteGroupConfirm = () => {
-		const canDelete = canModifyGroup && !hasThesisOrSubmissions;
-
-		GroupConfirmationModals.deleteGroup(
-			localGroup.name,
-			canDelete,
-			hasThesisOrSubmissions,
-			canModifyGroup,
-			handleDeleteGroup,
-			isDeleting,
 		);
 	};
 
@@ -483,27 +404,13 @@ export default memo(function GroupInfoCard({
 									loading={isLeaving}
 									disabled={
 										!canLeaveOrInvite ||
-										(isCurrentUserLeader && localGroup.members.length > 1) ||
-										isOnlyMember
+										(isCurrentUserLeader && localGroup.members.length > 1)
 									}
 									onClick={showLeaveGroupConfirm}
 									title={getLeaveGroupButtonTitle()}
 								>
 									Leave Group
 								</Button>
-
-								{/* Delete Group Button - only visible to leader */}
-								{isCurrentUserLeader && (
-									<Button
-										danger
-										loading={isDeleting}
-										disabled={!canModifyGroup || hasThesisOrSubmissions}
-										onClick={showDeleteGroupConfirm}
-										title={getDeleteGroupButtonTitle()}
-									>
-										Delete Group
-									</Button>
-								)}
 
 								{/* Invite Members Button - only visible to leader */}
 								{isCurrentUserLeader && (
