@@ -68,30 +68,48 @@ export default function GroupCard({
 		? CARD_CONFIG.PADDING_MOBILE
 		: CARD_CONFIG.PADDING_DESKTOP;
 
-	// Check if user already has a pending join request for this group
-	const hasPendingJoinRequest = existingRequests.some(
-		(request) =>
-			request.groupId === group.id &&
-			request.type === "Join" &&
-			request.status === "Pending",
-	);
+	// Consolidated group status checks
+	const groupStatus = {
+		hasPendingJoinRequest: existingRequests.some(
+			(request) =>
+				request.groupId === group.id &&
+				request.type === "Join" &&
+				request.status === "Pending",
+		),
+		hasPendingInviteRequest: existingRequests.some(
+			(request) =>
+				request.groupId === group.id &&
+				request.type === "Invite" &&
+				request.status === "Pending",
+		),
+		isGroupFull: group.members >= 5,
+		hasNoMembers: group.members <= 0,
+	};
 
-	// Check if user has a pending invite request for this group
-	const hasPendingInviteRequest = existingRequests.some(
-		(request) =>
-			request.groupId === group.id &&
-			request.type === "Invite" &&
-			request.status === "Pending",
-	);
+	// Consolidated function to handle successful group join/approval
+	const handleJoinSuccess = async () => {
+		showNotification.success(
+			"Success",
+			"You have successfully joined the group!",
+		);
+		onRequestSent?.();
 
-	// Check if group is full (≥5 members)
-	const isGroupFull = group.members >= 5;
+		// Use the same logic as accept invite - refresh group data and redirect
+		const { refreshGroup } = useGroupDashboardStore.getState();
 
-	// Check if group has no members
-	const hasNoMembers = group.members <= 0;
+		// Similar to group creation flow, trigger refresh and redirect
+		await refreshGroup();
+
+		// Add a small delay to ensure API has processed the group membership
+		await new Promise((resolve) => setTimeout(resolve, 1000));
+		await refreshGroup();
+
+		// Redirect to group dashboard
+		router.push("/student/group-dashboard");
+	};
 
 	const handleJoinRequest = () => {
-		if (hasNoMembers) {
+		if (groupStatus.hasNoMembers) {
 			// Direct join for groups with no members
 			GroupConfirmationModals.joinGroup(
 				group.name,
@@ -101,26 +119,9 @@ export default function GroupCard({
 						const response = await requestService.joinGroup(group.id);
 
 						// Check if user directly joined or created a request
-						if (hasNoMembers && response.success) {
+						if (groupStatus.hasNoMembers && response.success) {
 							// Direct join successful
-							showNotification.success(
-								"Success",
-								"You have successfully joined the group!",
-							);
-							onRequestSent?.();
-
-							// Use the same logic as accept invite - refresh group data and redirect
-							const { refreshGroup } = useGroupDashboardStore.getState();
-
-							// Similar to group creation flow, trigger refresh and redirect
-							await refreshGroup();
-
-							// Add a small delay to ensure API has processed the group membership
-							await new Promise((resolve) => setTimeout(resolve, 1000));
-							await refreshGroup();
-
-							// Redirect to group dashboard
-							router.push("/student/group-dashboard");
+							await handleJoinSuccess();
 						} else {
 							// Request created
 							showNotification.success(
@@ -154,24 +155,7 @@ export default function GroupCard({
 						// Check response or request status to determine if directly joined
 						if (response.success && response.data?.status === "Approved") {
 							// Direct join successful (auto-approved)
-							showNotification.success(
-								"Success",
-								"You have successfully joined the group!",
-							);
-							onRequestSent?.();
-
-							// Use the same logic as accept invite - refresh group data and redirect
-							const { refreshGroup } = useGroupDashboardStore.getState();
-
-							// Similar to group creation flow, trigger refresh and redirect
-							await refreshGroup();
-
-							// Add a small delay to ensure API has processed the group membership
-							await new Promise((resolve) => setTimeout(resolve, 1000));
-							await refreshGroup();
-
-							// Redirect to group dashboard
-							router.push("/student/group-dashboard");
+							await handleJoinSuccess();
 						} else {
 							// Request created and pending
 							showNotification.success(
@@ -200,65 +184,65 @@ export default function GroupCard({
 		router.push(`/student/join-group/${group.id}`);
 	};
 
-	// Extract nested ternary operations into independent statements
-	const getButtonTitle = () => {
+	// Consolidated button configuration based on group status
+	const getButtonConfig = () => {
+		const {
+			hasPendingInviteRequest,
+			hasPendingJoinRequest,
+			isGroupFull,
+			hasNoMembers,
+		} = groupStatus;
+
 		if (hasPendingInviteRequest) {
-			return "You have been invited to this group - click to view details";
+			return {
+				title: "You have been invited to this group - click to view details",
+				ariaLabel: `You have been invited to ${group.name}`,
+				text: "View Invite",
+				clickHandler: handleViewDetail,
+				disabled: false,
+			};
 		}
+
 		if (hasPendingJoinRequest) {
-			return "Request already sent";
+			return {
+				title: "Request already sent",
+				ariaLabel: `Request already sent to ${group.name}`,
+				text: "Request Sent",
+				clickHandler: undefined,
+				disabled: true,
+			};
 		}
+
 		if (isGroupFull) {
-			return "Group is full (5/5 members)";
+			return {
+				title: "Group is full (5/5 members)",
+				ariaLabel: `${group.name} is full`,
+				text: "Group Full",
+				clickHandler: undefined,
+				disabled: true,
+			};
 		}
+
 		if (hasNoMembers) {
-			return "Join this group directly";
+			return {
+				title: "Join this group directly",
+				ariaLabel: `Join ${group.name} directly`,
+				text: "Join Group",
+				clickHandler: handleJoinRequest,
+				disabled: false,
+			};
 		}
-		return "Request to Join";
+
+		return {
+			title: "Request to Join",
+			ariaLabel: `Request to join ${group.name}`,
+			text: "Request to Join",
+			clickHandler: handleJoinRequest,
+			disabled: false,
+		};
 	};
 
-	const getButtonAriaLabel = () => {
-		if (hasPendingInviteRequest) {
-			return `You have been invited to ${group.name}`;
-		}
-		if (hasPendingJoinRequest) {
-			return `Request already sent to ${group.name}`;
-		}
-		if (isGroupFull) {
-			return `${group.name} is full`;
-		}
-		if (hasNoMembers) {
-			return `Join ${group.name} directly`;
-		}
-		return `Request to join ${group.name}`;
-	};
-
-	const getButtonText = () => {
-		if (hasPendingInviteRequest) {
-			return "View Invite";
-		}
-		if (hasPendingJoinRequest) {
-			return "Request Sent";
-		}
-		if (isGroupFull) {
-			return "Group Full";
-		}
-		if (hasNoMembers) {
-			return "Join Group";
-		}
-		return "Request to Join";
-	};
-
-	const getButtonClickHandler = () => {
-		if (hasPendingInviteRequest) {
-			return handleViewDetail;
-		}
-		if (isGroupFull) {
-			return undefined; // No action when group is full
-		}
-		return handleJoinRequest;
-	};
-
+	// Consolidated styling functions
 	const getCardStyles = () => ({
 		borderRadius: CARD_CONFIG.BORDER_RADIUS,
 		width: "100%",
@@ -276,51 +260,59 @@ export default function GroupCard({
 		justifyContent: "space-between",
 	});
 
+	// Consolidated text styles with common properties
+	const getTextStyles = (
+		size: number,
+		lineHeight: number,
+		lineClamp: number,
+		fontWeight?: number,
+		color?: string,
+	) => ({
+		fontSize: size,
+		fontWeight: fontWeight || "normal",
+		lineHeight,
+		overflow: "hidden",
+		display: "-webkit-box",
+		WebkitLineClamp: lineClamp,
+		WebkitBoxOrient: "vertical" as const,
+		textOverflow: "ellipsis",
+		wordBreak: "break-word" as const,
+		minHeight: `${size * lineHeight * lineClamp}px`,
+		maxHeight: `${size * lineHeight * lineClamp}px`,
+		whiteSpace: "normal" as const,
+		color: color || "inherit",
+	});
+
 	const getTitleStyles = () => ({
 		margin: 0,
 		marginBottom: 8,
-		fontSize: fontSize + 2,
-		fontWeight: 600,
-		lineHeight: TEXT_CONFIG.TITLE_LINE_HEIGHT,
-		overflow: "hidden",
-		display: "-webkit-box",
-		WebkitLineClamp: TEXT_CONFIG.TITLE_LINE_CLAMP,
-		WebkitBoxOrient: "vertical" as const,
-		textOverflow: "ellipsis",
-		wordBreak: "break-word" as const,
-		minHeight: `${(fontSize + 2) * TEXT_CONFIG.TITLE_LINE_HEIGHT * TEXT_CONFIG.TITLE_LINE_CLAMP}px`,
-		maxHeight: `${(fontSize + 2) * TEXT_CONFIG.TITLE_LINE_HEIGHT * TEXT_CONFIG.TITLE_LINE_CLAMP}px`,
-		whiteSpace: "normal" as const,
-		color: "rgba(0, 0, 0, 0.88)",
+		...getTextStyles(
+			fontSize + 2,
+			TEXT_CONFIG.TITLE_LINE_HEIGHT,
+			TEXT_CONFIG.TITLE_LINE_CLAMP,
+			600,
+			"rgba(0, 0, 0, 0.88)",
+		),
 	});
 
-	const getLeaderStyles = () => ({
-		fontSize,
-		lineHeight: TEXT_CONFIG.LEADER_LINE_HEIGHT,
-		overflow: "hidden",
-		display: "-webkit-box",
-		WebkitLineClamp: TEXT_CONFIG.LEADER_LINE_CLAMP,
-		WebkitBoxOrient: "vertical" as const,
-		textOverflow: "ellipsis",
-		wordBreak: "break-word" as const,
-		minHeight: `${fontSize * TEXT_CONFIG.LEADER_LINE_HEIGHT * TEXT_CONFIG.LEADER_LINE_CLAMP}px`,
-		maxHeight: `${fontSize * TEXT_CONFIG.LEADER_LINE_HEIGHT * TEXT_CONFIG.LEADER_LINE_CLAMP}px`,
-		whiteSpace: "normal" as const,
-		color: "rgba(0, 0, 0, 0.45)",
-	});
+	const getLeaderStyles = () =>
+		getTextStyles(
+			fontSize,
+			TEXT_CONFIG.LEADER_LINE_HEIGHT,
+			TEXT_CONFIG.LEADER_LINE_CLAMP,
+			undefined,
+			"rgba(0, 0, 0, 0.45)",
+		);
 
 	const getButtonStyles = (
 		isPrimary: boolean = false,
 		isDisabled: boolean = false,
 	) => {
-		let borderValue: string | undefined;
-		if (isPrimary) {
-			borderValue = undefined;
-		} else if (isDisabled) {
-			borderValue = "1px solid #d9d9d9";
-		} else {
-			borderValue = "1px solid #222";
-		}
+		const borderValue = isPrimary
+			? undefined
+			: isDisabled
+				? "1px solid #d9d9d9"
+				: "1px solid #222";
 
 		return {
 			borderRadius: CARD_CONFIG.BUTTON_BORDER_RADIUS,
@@ -334,6 +326,9 @@ export default function GroupCard({
 			minWidth: "120px",
 		};
 	};
+
+	const buttonConfig = getButtonConfig();
+	const { hasNoMembers } = groupStatus;
 
 	return (
 		<Card hoverable style={getCardStyles()} bodyStyle={getBodyStyles()}>
@@ -395,17 +390,14 @@ export default function GroupCard({
 						</Button>
 						<Button
 							type="primary"
-							style={getButtonStyles(
-								true,
-								isRequesting || hasPendingJoinRequest || isGroupFull,
-							)}
-							title={getButtonTitle()}
-							aria-label={getButtonAriaLabel()}
-							onClick={getButtonClickHandler()}
+							style={getButtonStyles(true, buttonConfig.disabled)}
+							title={buttonConfig.title}
+							aria-label={buttonConfig.ariaLabel}
+							onClick={buttonConfig.clickHandler}
 							loading={isRequesting}
-							disabled={isRequesting || hasPendingJoinRequest || isGroupFull}
+							disabled={isRequesting || buttonConfig.disabled}
 						>
-							{getButtonText()}
+							{buttonConfig.text}
 						</Button>
 					</div>
 				</div>
