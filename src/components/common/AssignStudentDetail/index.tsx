@@ -226,7 +226,7 @@ export default function AssignStudentDetail({
 				description={
 					isAdminMode
 						? "Facilitate the grouping process by assigning ungrouped students to available project groups."
-						: "Facilitate the grouping process by assigning ungrouped students to available project groups."
+						: "Facilitate the grouping process by assigning ungrouped students to available project groups and assign thesis topics."
 				}
 				badgeText={headerBadgeText}
 			/>

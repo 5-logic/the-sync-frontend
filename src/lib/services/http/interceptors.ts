@@ -70,8 +70,8 @@ export class HttpInterceptors {
 	static createRequestErrorHandler() {
 		return (error: AxiosError) => {
 			console.error("Request Error:", error);
-			// Keep original AxiosError to preserve response data
-			return Promise.reject(error);
+			// AxiosError extends Error, so it's already an Error instance
+			return Promise.reject(error as Error);
 		};
 	}
 
@@ -174,7 +174,7 @@ export class HttpInterceptors {
 			const originalRequest = HttpInterceptors.validateRequestConfig(error);
 
 			if (!originalRequest) {
-				return Promise.reject(error);
+				return Promise.reject(error as Error);
 			}
 
 			const shouldRetryWithRefresh =
@@ -196,7 +196,8 @@ export class HttpInterceptors {
 			}
 
 			HttpInterceptors.logApiError(error, originalRequest);
-			return Promise.reject(error); // Keep original AxiosError to preserve response data
+			// AxiosError extends Error, so it's already an Error instance
+			return Promise.reject(error as Error); // Keep original AxiosError to preserve response data
 		};
 	}
 }

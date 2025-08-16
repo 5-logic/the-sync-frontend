@@ -60,7 +60,7 @@ export const useFormatGroups = (): UseFormatGroupsReturn => {
 								"Failed to format groups",
 							);
 							showNotification.error("Format Failed", message);
-							reject(error);
+							reject(error instanceof Error ? error : new Error(message));
 						} finally {
 							setIsFormatting(false);
 						}

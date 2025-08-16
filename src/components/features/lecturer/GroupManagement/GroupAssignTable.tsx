@@ -193,7 +193,8 @@ export default function GroupAssignTable({
 	const extractGroupNumber = useCallback((code: string): number => {
 		// Extract numbers from the end of the code (e.g., "SU25SEAI001" -> 1, "GROUP003" -> 3)
 		// Using a more specific regex that matches 1-10 digits at the end to prevent potential ReDoS
-		const match = code.match(/(\d{1,10})$/);
+		const regex = /(\d{1,10})$/;
+		const match = regex.exec(code);
 		return match ? parseInt(match[1], 10) : 0;
 	}, []);
 
