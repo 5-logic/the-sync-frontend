@@ -1,19 +1,19 @@
-'use client';
+"use client";
 
-import { ArrowLeftOutlined } from '@ant-design/icons';
-import { Alert, Button, Card, Col, Row, Space, Spin, Typography } from 'antd';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { ArrowLeftOutlined } from "@ant-design/icons";
+import { Alert, Button, Card, Col, Row, Space, Spin, Typography } from "antd";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
-import { GroupConfirmationModals } from '@/components/common/ConfirmModal';
-import GroupInfoCard from '@/components/features/student/GroupDashboard/GroupInfoCard';
-import { useSessionData } from '@/hooks/auth/useAuth';
-import groupService from '@/lib/services/groups.service';
-import requestService from '@/lib/services/requests.service';
-import { showNotification } from '@/lib/utils/notification';
-import { GroupDashboard } from '@/schemas/group';
-import { useGroupDashboardStore } from '@/store/useGroupDashboardStore';
-import { useRequestsStore } from '@/store/useRequestsStore';
+import { GroupConfirmationModals } from "@/components/common/ConfirmModal";
+import GroupInfoCard from "@/components/features/student/GroupDashboard/GroupInfoCard";
+import { useSessionData } from "@/hooks/auth/useAuth";
+import groupService from "@/lib/services/groups.service";
+import requestService from "@/lib/services/requests.service";
+import { showNotification } from "@/lib/utils/notification";
+import { GroupDashboard } from "@/schemas/group";
+import { useGroupDashboardStore } from "@/store/useGroupDashboardStore";
+import { useRequestsStore } from "@/store/useRequestsStore";
 
 const { Title, Paragraph } = Typography;
 
@@ -43,12 +43,12 @@ export default function GroupDetailClient({ groupId }: GroupDetailClientProps) {
 				if (response.success) {
 					setGroup(response.data);
 				} else {
-					setError(response.error || 'Failed to load group details');
+					setError(response.error || "Failed to load group details");
 				}
 			} catch (err) {
-				console.error('Error fetching group detail:', err);
+				console.error("Error fetching group detail:", err);
 				setError(
-					'Failed to load group details. The group may not exist or you may not have permission to view it.',
+					"Failed to load group details. The group may not exist or you may not have permission to view it.",
 				);
 			} finally {
 				setLoading(false);
@@ -62,7 +62,7 @@ export default function GroupDetailClient({ groupId }: GroupDetailClientProps) {
 					await fetchStudentRequests(true);
 					setRequestsLoaded(true);
 				} catch (err) {
-					console.error('Error fetching student requests:', err);
+					console.error("Error fetching student requests:", err);
 					setRequestsLoaded(true); // Set to true even on error to not block UI
 				}
 			} else {
@@ -84,16 +84,43 @@ export default function GroupDetailClient({ groupId }: GroupDetailClientProps) {
 			async () => {
 				setIsRequesting(true);
 				try {
-					await requestService.joinGroup(group.id);
-					showNotification.success(
-						'Join request sent successfully! The group leader will review your request.',
-					);
-					// Refresh requests to update button state
-					await fetchStudentRequests(true);
-				} catch {
-					showNotification.error(
-						'Failed to send join request. Please try again.',
-					);
+					const response = await requestService.joinGroup(group.id);
+
+					// Check response to determine if directly joined or created request
+					if (response.success && response.data?.status === "Approved") {
+						// Direct join successful (auto-approved)
+						showNotification.success("You have successfully joined the group!");
+
+						// Use the same logic as accept invite - refresh group data and redirect
+						const { refreshGroup } = useGroupDashboardStore.getState();
+
+						// Similar to group creation flow, trigger refresh and redirect
+						await refreshGroup();
+
+						// Add a small delay to ensure API has processed the group membership
+						await new Promise((resolve) => setTimeout(resolve, 1000));
+						await refreshGroup();
+
+						// Redirect to group dashboard
+						router.push("/student/group-dashboard");
+					} else {
+						// Request created and pending
+						showNotification.success(
+							"Join request sent successfully! The group leader will review your request.",
+						);
+						// Refresh requests to update button state
+						await fetchStudentRequests(true);
+					}
+				} catch (error: unknown) {
+					const apiError = error as {
+						response?: { data?: { error?: string } };
+						message?: string;
+					};
+					const errorMessage =
+						apiError?.response?.data?.error ||
+						(error as Error)?.message ||
+						"Failed to send join request. Please try again.";
+					showNotification.error(errorMessage);
 				} finally {
 					setIsRequesting(false);
 				}
@@ -102,13 +129,13 @@ export default function GroupDetailClient({ groupId }: GroupDetailClientProps) {
 		);
 	};
 
-	const handleInviteResponse = async (action: 'Approved' | 'Rejected') => {
+	const handleInviteResponse = async (action: "Approved" | "Rejected") => {
 		if (!pendingInviteRequest) return;
 
 		setIsRequesting(true);
 		try {
 			// Use 'Cancelled' for reject action instead of 'Rejected'
-			const status = action === 'Rejected' ? 'Cancelled' : action;
+			const status = action === "Rejected" ? "Cancelled" : action;
 			const { updateRequestStatus } = useRequestsStore.getState();
 			const success = await updateRequestStatus(
 				pendingInviteRequest.id,
@@ -120,7 +147,7 @@ export default function GroupDetailClient({ groupId }: GroupDetailClientProps) {
 					`Invite ${action.toLowerCase()} successfully!`,
 				);
 
-				if (action === 'Approved') {
+				if (action === "Approved") {
 					// Get refreshGroup from the store to update the group status
 					const { refreshGroup } = useGroupDashboardStore.getState();
 
@@ -132,10 +159,10 @@ export default function GroupDetailClient({ groupId }: GroupDetailClientProps) {
 					await refreshGroup();
 
 					// Redirect to group dashboard
-					router.push('/student/group-dashboard');
+					router.push("/student/group-dashboard");
 				} else {
 					// If rejecting, navigate back to groups page
-					router.push('/student/form-or-join-group');
+					router.push("/student/join-group");
 				}
 			} else {
 				showNotification.error(
@@ -163,8 +190,8 @@ export default function GroupDetailClient({ groupId }: GroupDetailClientProps) {
 				const pendingJoinRequest = requests.find(
 					(request) =>
 						request.groupId === groupId &&
-						request.status === 'Pending' &&
-						request.type === 'Join',
+						request.status === "Pending" &&
+						request.type === "Join",
 				);
 
 				if (!pendingJoinRequest) return;
@@ -174,21 +201,21 @@ export default function GroupDetailClient({ groupId }: GroupDetailClientProps) {
 					const success = await cancelRequest(pendingJoinRequest.id);
 					if (success) {
 						showNotification.success(
-							'Success',
-							'Join request cancelled successfully!',
+							"Success",
+							"Join request cancelled successfully!",
 						);
 						// Refresh requests to update button state
 						await fetchStudentRequests(true);
 					} else {
 						showNotification.error(
-							'Error',
-							'Failed to cancel join request. Please try again.',
+							"Error",
+							"Failed to cancel join request. Please try again.",
 						);
 					}
 				} catch {
 					showNotification.error(
-						'Error',
-						'Failed to cancel join request. Please try again.',
+						"Error",
+						"Failed to cancel join request. Please try again.",
 					);
 				} finally {
 					setIsRequesting(false);
@@ -199,7 +226,7 @@ export default function GroupDetailClient({ groupId }: GroupDetailClientProps) {
 	};
 
 	const handleBack = () => {
-		router.push('/student/form-or-join-group');
+		router.push("/student/join-group");
 	};
 
 	if (loading) {
@@ -214,7 +241,7 @@ export default function GroupDetailClient({ groupId }: GroupDetailClientProps) {
 		return (
 			<Card className="text-center">
 				<Title level={4} type="danger">
-					{error || 'Group not found'}
+					{error || "Group not found"}
 				</Title>
 				<Button
 					type="primary"
@@ -238,8 +265,8 @@ export default function GroupDetailClient({ groupId }: GroupDetailClientProps) {
 		requests.some(
 			(request) =>
 				request.groupId === groupId &&
-				request.status === 'Pending' &&
-				request.type === 'Join',
+				request.status === "Pending" &&
+				request.type === "Join",
 		);
 
 	// Check if user has a pending invite request to this group
@@ -248,20 +275,20 @@ export default function GroupDetailClient({ groupId }: GroupDetailClientProps) {
 		requests.some(
 			(request) =>
 				request.groupId === groupId &&
-				request.status === 'Pending' &&
-				request.type === 'Invite',
+				request.status === "Pending" &&
+				request.type === "Invite",
 		);
 
 	// Get the pending invite request for actions
 	const pendingInviteRequest = requests.find(
 		(request) =>
 			request.groupId === groupId &&
-			request.status === 'Pending' &&
-			request.type === 'Invite',
+			request.status === "Pending" &&
+			request.type === "Invite",
 	);
 
 	// Check if semester is in PREPARING status (when join requests are allowed)
-	const canJoinGroup = group.semester.status === 'Preparing';
+	const canJoinGroup = group.semester.status === "Preparing";
 
 	// Check if group is full (≥5 members)
 	const isGroupFull = group.members.length >= 5;
@@ -272,12 +299,12 @@ export default function GroupDetailClient({ groupId }: GroupDetailClientProps) {
 	// Extract nested ternary operations into independent statements
 	const getJoinButtonTitle = () => {
 		if (!canJoinGroup) {
-			return 'Join requests are not allowed during this semester status';
+			return "Join requests are not allowed during this semester status";
 		}
 		if (isGroupFull) {
 			return `Group is full (${group.members.length}/5 members)`;
 		}
-		return 'Send a request to join this group';
+		return "Send a request to join this group";
 	};
 
 	const renderActionButtons = () => {
@@ -287,14 +314,14 @@ export default function GroupDetailClient({ groupId }: GroupDetailClientProps) {
 				<>
 					<Button
 						danger
-						onClick={() => handleInviteResponse('Rejected')}
+						onClick={() => handleInviteResponse("Rejected")}
 						loading={isRequesting}
 					>
 						Reject Invite
 					</Button>
 					<Button
 						type="primary"
-						onClick={() => handleInviteResponse('Approved')}
+						onClick={() => handleInviteResponse("Approved")}
 						loading={isRequesting}
 					>
 						Accept Invite
@@ -326,13 +353,13 @@ export default function GroupDetailClient({ groupId }: GroupDetailClientProps) {
 				disabled={!canSendJoinRequest}
 				title={getJoinButtonTitle()}
 			>
-				{isGroupFull ? 'Group Full' : 'Request to Join'}
+				{isGroupFull ? "Group Full" : "Request to Join"}
 			</Button>
 		);
 	};
 
 	return (
-		<Space direction="vertical" size="large" style={{ width: '100%' }}>
+		<Space direction="vertical" size="large" style={{ width: "100%" }}>
 			{/* Header Section */}
 			<Row align="middle" justify="space-between" wrap>
 				<Col xs={24}>
@@ -374,9 +401,9 @@ export default function GroupDetailClient({ groupId }: GroupDetailClientProps) {
 			<Card>
 				<div
 					style={{
-						display: 'flex',
-						justifyContent: 'flex-end',
-						alignItems: 'center',
+						display: "flex",
+						justifyContent: "flex-end",
+						alignItems: "center",
 						gap: 8,
 					}}
 				>

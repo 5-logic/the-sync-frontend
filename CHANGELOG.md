@@ -9,6 +9,101 @@ For more information about this project, see the [README](./README.md).
 
 ---
 
+## [1.0.0] - 2025-08-12
+
+### Added
+
+#### Enhanced User Experience & Accessibility
+
+- **Improved Chart Accessibility:** Enhanced AIUsageChart with better keyboard navigation and accessibility features ([#354](https://github.com/5-logic/the-sync-frontend/pull/354), [#352](https://github.com/5-logic/the-sync-frontend/pull/352))
+  - Replaced legend divs with buttons for improved accessibility and keyboard interaction
+  - Added role attributes and enhanced keyboard navigation support
+  - Responsive design improvements with better skeleton loading states
+
+#### Student Review System Enhancements
+
+- **ReviewerInfo Component:** New comprehensive reviewer information display for students ([#354](https://github.com/5-logic/the-sync-frontend/pull/354))
+  - Added ReviewerInfo component with detailed reviewer display functionality
+  - Enhanced student review hooks (useReviews) for better data management
+  - Improved review information presentation in student dashboard
+
+#### Supervisor Assignment Improvements
+
+- **Enhanced Assignment Features:** Comprehensive improvements to supervisor assignment workflow ([#354](https://github.com/5-logic/the-sync-frontend/pull/354))
+  - Added status filter to supervisor assignment page for better navigation
+  - Implemented sorting by picked status in supervisor assignment table
+  - Enhanced supervisor assignment table with improved filtering and status management
+
+### Changed
+
+#### Chart and Data Visualization
+
+- **Dynamic Chart Configuration:** Improved chart performance and visual presentation ([#354](https://github.com/5-logic/the-sync-frontend/pull/354))
+  - Updated chart configuration to dynamically calculate maxValue and gridValue
+  - Enhanced chart responsiveness and data presentation
+  - Improved skeleton loading states for better user experience
+
+#### Submission Management System
+
+- **Enhanced Submission Handling:** Comprehensive improvements to submission workflow ([#354](https://github.com/5-logic/the-sync-frontend/pull/354))
+  - Updated submission handling with proper update permissions and user messages
+  - Enhanced submission validation with better timeframe checks
+  - Streamlined document rendering checks and validation logic
+
+#### User Interface Improvements
+
+- **Responsive Design Enhancements:** Improved responsive behavior across multiple components ([#354](https://github.com/5-logic/the-sync-frontend/pull/354))
+  - Added responsive behavior to MyThesisSection component
+  - Enhanced responsive design for assign supervisor page
+  - Improved mobile and tablet experience across key components
+
+#### Code Quality & Consistency
+
+- **Code Standardization:** Comprehensive code quality improvements ([#354](https://github.com/5-logic/the-sync-frontend/pull/354))
+  - Standardized quotation marks across multiple components for consistency
+  - Improved code readability in ThesisTable and GroupTable components
+  - Enhanced formatting in CapstoneDefenseResults and GroupTableInfo components
+
+### Fixed
+
+#### Review Assignment System
+
+- **Simplified Review Logic:** Enhanced review assignment and data extraction ([#354](https://github.com/5-logic/the-sync-frontend/pull/354))
+  - Simplified assignment reviews extraction with optional chaining
+  - Improved error handling in review data processing
+  - Better null and undefined handling in review components
+
+#### User Feedback & Interaction
+
+- **Enhanced User Feedback:** Improved user interaction and feedback systems ([#354](https://github.com/5-logic/the-sync-frontend/pull/354))
+  - Updated register button text and loading state for improved user feedback
+  - Enhanced loading states and user messaging throughout the application
+  - Better error handling and user notification systems
+
+#### Data Processing & Validation
+
+- **Robust Data Handling:** Improved data processing and validation throughout the application
+  - Enhanced submission update logic to allow changes within specified timeframe
+  - Better validation logic for document rendering and submission processing
+  - Improved error handling and data consistency checks
+
+### Technical Details
+
+- **Files Changed:** 16 files with significant improvements across dashboard, lecturer, and student components
+- **Enhanced Components:** AIUsageChart, GroupTableInfo, SupervisorLoadChart, ThesisOverviewTable, MilestoneDetailCard, ReviewerInfo
+- **Service Improvements:** Enhanced reviews.service.ts with better data handling and API integration
+- **New Features:** Status filtering, improved sorting, enhanced accessibility, responsive design
+- **Performance:** Dynamic chart calculations, optimized data loading, better skeleton states
+
+### Migration Notes
+
+- **Chart Components:** AIUsageChart now uses dynamic calculations - existing implementations should be tested for compatibility
+- **Review System:** Enhanced review hooks provide better data management - review custom review implementations
+- **Responsive Design:** New responsive behaviors may affect custom styling - test mobile and tablet layouts
+- **Accessibility:** Enhanced keyboard navigation may require updates to custom accessibility implementations
+
+---
+
 ## [0.9.1] - 2025-08-12
 
 ### Added

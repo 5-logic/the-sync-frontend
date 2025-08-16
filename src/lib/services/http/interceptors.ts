@@ -3,9 +3,9 @@ import {
 	AxiosInstance,
 	AxiosResponse,
 	InternalAxiosRequestConfig,
-} from 'axios';
+} from "axios";
 
-import { TokenManager } from '@/lib/utils/auth/token-manager';
+import { TokenManager } from "@/lib/utils/auth/token-manager";
 
 /**
  * Extended request config to include retry flag
@@ -23,7 +23,7 @@ export class HttpInterceptors {
 	private static isRetryableRequest(
 		config: InternalAxiosRequestConfig,
 	): config is ExtendedAxiosRequestConfig {
-		return typeof config === 'object' && config !== null;
+		return typeof config === "object" && config !== null;
 	}
 	/**
 	 * Add access token with simple check (no automatic refresh)
@@ -33,12 +33,12 @@ export class HttpInterceptors {
 		return async (config: InternalAxiosRequestConfig) => {
 			// Skip auth for login/refresh endpoints and password reset endpoints
 			const authEndpoints = [
-				'/auth/admin/login',
-				'/auth/user/login',
-				'/auth/admin/refresh',
-				'/auth/user/refresh',
-				'/auth/password-reset/request',
-				'/auth/password-reset/verify',
+				"/auth/admin/login",
+				"/auth/user/login",
+				"/auth/admin/refresh",
+				"/auth/user/refresh",
+				"/auth/password-reset/request",
+				"/auth/password-reset/verify",
 			];
 			const isAuthEndpoint = authEndpoints.some((endpoint) =>
 				config.url?.includes(endpoint),
@@ -69,11 +69,9 @@ export class HttpInterceptors {
 	 */
 	static createRequestErrorHandler() {
 		return (error: AxiosError) => {
-			console.error('Request Error:', error);
-			// Ensure error is an Error instance
-			const errorToReject =
-				error instanceof Error ? error : new Error(String(error));
-			return Promise.reject(errorToReject);
+			console.error("Request Error:", error);
+			// AxiosError extends Error, so it's already an Error instance
+			return Promise.reject(error as Error);
 		};
 	}
 
@@ -92,14 +90,14 @@ export class HttpInterceptors {
 	): ExtendedAxiosRequestConfig | null {
 		if (!error.config) {
 			console.error(
-				'API Error (no config):',
+				"API Error (no config):",
 				error.response?.data ?? error.message,
 			);
 			return null;
 		}
 
 		if (!HttpInterceptors.isRetryableRequest(error.config)) {
-			console.error('Invalid request config for retry');
+			console.error("Invalid request config for retry");
 			return null;
 		}
 
@@ -113,12 +111,12 @@ export class HttpInterceptors {
 		if (!url) return false;
 
 		const authEndpoints = [
-			'/auth/admin/login',
-			'/auth/user/login',
-			'/auth/admin/refresh',
-			'/auth/user/refresh',
-			'/auth/password-reset/request',
-			'/auth/password-reset/verify',
+			"/auth/admin/login",
+			"/auth/user/login",
+			"/auth/admin/refresh",
+			"/auth/user/refresh",
+			"/auth/password-reset/request",
+			"/auth/password-reset/verify",
 		];
 
 		return authEndpoints.some((endpoint) => url.includes(endpoint));
@@ -131,25 +129,25 @@ export class HttpInterceptors {
 		originalRequest: ExtendedAxiosRequestConfig,
 		httpClient: AxiosInstance,
 	): Promise<AxiosResponse> {
-		console.log('🔄 Token expired, attempting refresh...');
+		console.log("🔄 Token expired, attempting refresh...");
 
 		const newAccessToken = await TokenManager.refreshAccessToken();
 
 		if (newAccessToken) {
-			console.log('✅ Token refresh successful');
+			console.log("✅ Token refresh successful");
 			originalRequest.headers = originalRequest.headers ?? {};
 			originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
 			return httpClient(originalRequest);
 		}
 
-		console.warn('❌ Token refresh failed, redirecting to login');
+		console.warn("❌ Token refresh failed, redirecting to login");
 		TokenManager.clearTokens();
 
-		if (typeof window !== 'undefined') {
-			window.location.href = '/login';
+		if (typeof window !== "undefined") {
+			window.location.href = "/login";
 		}
 
-		throw new Error('Token refresh failed');
+		throw new Error("Token refresh failed");
 	}
 
 	/**
@@ -160,19 +158,12 @@ export class HttpInterceptors {
 		originalRequest: ExtendedAxiosRequestConfig,
 	): void {
 		if (error.response?.status !== 401) {
-			console.error('API Error:', {
+			console.error("API Error:", {
 				status: error.response?.status,
 				url: originalRequest.url,
 				message: error.response?.data ?? error.message,
 			});
 		}
-	}
-
-	/**
-	 * Create standard error object
-	 */
-	private static createErrorObject(error: AxiosError): Error {
-		return error instanceof Error ? error : new Error(String(error));
 	}
 
 	/**
@@ -183,7 +174,7 @@ export class HttpInterceptors {
 			const originalRequest = HttpInterceptors.validateRequestConfig(error);
 
 			if (!originalRequest) {
-				return Promise.reject(HttpInterceptors.createErrorObject(error));
+				return Promise.reject(error as Error);
 			}
 
 			const shouldRetryWithRefresh =
@@ -205,7 +196,8 @@ export class HttpInterceptors {
 			}
 
 			HttpInterceptors.logApiError(error, originalRequest);
-			return Promise.reject(HttpInterceptors.createErrorObject(error));
+			// AxiosError extends Error, so it's already an Error instance
+			return Promise.reject(error as Error); // Keep original AxiosError to preserve response data
 		};
 	}
 }

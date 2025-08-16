@@ -1,4 +1,4 @@
-import { ReloadOutlined } from '@ant-design/icons';
+import { ReloadOutlined } from "@ant-design/icons";
 import {
 	Button,
 	Card,
@@ -8,22 +8,22 @@ import {
 	Tag,
 	Tooltip,
 	Typography,
-} from 'antd';
-import { useRouter } from 'next/navigation';
-import { memo, useEffect, useState } from 'react';
+} from "antd";
+import { useRouter } from "next/navigation";
+import { memo, useEffect, useState } from "react";
 
-import EditGroupInfoDialog from '@/components/features/student/GroupDashboard/EditGroupInfoDialog';
-import { GroupConfirmationModals } from '@/components/features/student/GroupDashboard/GroupConfirmationModals';
-import GroupMembersCard from '@/components/features/student/GroupDashboard/GroupMembersCard';
-import InviteMembersDialog from '@/components/features/student/GroupDashboard/InviteMembersDialog';
-import { useSessionData } from '@/hooks/auth/useAuth';
-import { GROUP_MAX_MEMBERS } from '@/lib/constants/group';
-import groupService from '@/lib/services/groups.service';
-import { formatDate } from '@/lib/utils/dateFormat';
-import { showNotification } from '@/lib/utils/notification';
-import { GroupDashboard } from '@/schemas/group';
-import { useRequestsStore } from '@/store';
-import { useGroupDashboardStore } from '@/store/useGroupDashboardStore';
+import EditGroupInfoDialog from "@/components/features/student/GroupDashboard/EditGroupInfoDialog";
+import { GroupConfirmationModals } from "@/components/features/student/GroupDashboard/GroupConfirmationModals";
+import GroupMembersCard from "@/components/features/student/GroupDashboard/GroupMembersCard";
+import InviteMembersDialog from "@/components/features/student/GroupDashboard/InviteMembersDialog";
+import { useSessionData } from "@/hooks/auth/useAuth";
+import { GROUP_MAX_MEMBERS } from "@/lib/constants/group";
+import groupService from "@/lib/services/groups.service";
+import { formatDate } from "@/lib/utils/dateFormat";
+import { showNotification } from "@/lib/utils/notification";
+import { GroupDashboard } from "@/schemas/group";
+import { useRequestsStore } from "@/store";
+import { useGroupDashboardStore } from "@/store/useGroupDashboardStore";
 
 const { Title, Text } = Typography;
 
@@ -53,7 +53,7 @@ const TagList = ({
 					key={item.id}
 					color={color}
 					className="text-xs"
-					style={{ margin: '2px' }}
+					style={{ margin: "2px" }}
 				>
 					{item.name}
 				</Tag>
@@ -72,13 +72,13 @@ const TagList = ({
 				<Tooltip
 					title={tooltipContent}
 					color="white"
-					overlayInnerStyle={{ color: '#000' }}
+					overlayInnerStyle={{ color: "#000" }}
 				>
 					<Tag
 						className="text-xs border-dashed cursor-pointer"
 						style={{
-							backgroundColor: '#f5f5f5',
-							borderColor: '#d9d9d9',
+							backgroundColor: "#f5f5f5",
+							borderColor: "#d9d9d9",
 						}}
 					>
 						+{remainingCount}
@@ -103,7 +103,6 @@ export default memo(function GroupInfoCard({
 	const [isInviteDialogVisible, setIsInviteDialogVisible] = useState(false);
 	const [isEditDialogVisible, setIsEditDialogVisible] = useState(false);
 	const [isLeaving, setIsLeaving] = useState(false);
-	const [isDeleting, setIsDeleting] = useState(false);
 	const [isRefreshing, setIsRefreshing] = useState(false);
 	const [localGroup, setLocalGroup] = useState<GroupDashboard>(group);
 	const { session } = useSessionData();
@@ -136,8 +135,8 @@ export default memo(function GroupInfoCard({
 			await fetchGroupRequests(localGroup.id, true);
 		} catch {
 			showNotification.error(
-				'Refresh Failed',
-				'Failed to refresh group information. Please try again.',
+				"Refresh Failed",
+				"Failed to refresh group information. Please try again.",
 			);
 		} finally {
 			setIsRefreshing(false);
@@ -155,65 +154,38 @@ export default memo(function GroupInfoCard({
 
 	// Check if semester is in PREPARING status and group doesn't have thesis
 	const canModifyGroup =
-		localGroup.semester.status === 'Preparing' && !hasThesisOrSubmissions;
+		localGroup.semester.status === "Preparing" && !hasThesisOrSubmissions;
 
 	// Check if semester is in PREPARING status (can leave group and invite members even with thesis)
-	const canLeaveOrInvite = localGroup.semester.status === 'Preparing';
+	const canLeaveOrInvite = localGroup.semester.status === "Preparing";
 
 	// Check if semester is NOT in PREPARING status - hide action buttons
-	const shouldHideActionButtons = localGroup.semester.status !== 'Preparing';
-
-	// Check if user is the only member (cannot leave - must delete instead)
-	const isOnlyMember = localGroup.members.length === 1;
+	const shouldHideActionButtons = localGroup.semester.status !== "Preparing";
 
 	// Helper function to get Leave Group button title
 	const getLeaveGroupButtonTitle = () => {
 		if (!canLeaveOrInvite) {
-			return 'Cannot leave group during this semester status';
+			return "Cannot leave group during this semester status";
 		}
 		if (isCurrentUserLeader && localGroup.members.length > 1) {
-			return 'Transfer leadership before leaving';
+			return "Transfer leadership before leaving";
 		}
-		if (isOnlyMember) {
-			return 'Cannot leave as the only member';
-		}
-		return 'Leave this group';
-	};
-
-	// Helper function to get Delete Group button title
-	const getDeleteGroupButtonTitle = () => {
-		// Check thesis/submissions first (more specific reason)
-		if (hasThesisOrSubmissions) {
-			return 'Cannot delete group with thesis or submissions';
-		}
-		// Then check semester status
-		if (localGroup.semester.status !== 'Preparing') {
-			return 'Cannot delete group during this semester status';
-		}
-		return 'Delete this group permanently';
+		return "Leave this group";
 	};
 
 	const handleLeaveGroup = async () => {
 		if (!canLeaveOrInvite) {
 			showNotification.error(
-				'Cannot Leave Group',
-				'Cannot leave group. Semester is not in PREPARING status.',
+				"Cannot Leave Group",
+				"Cannot leave group. Semester is not in PREPARING status.",
 			);
 			return;
 		}
 
 		if (isCurrentUserLeader && localGroup.members.length > 1) {
 			showNotification.error(
-				'Transfer Leadership Required',
-				'As a leader, you must transfer leadership to another member before leaving the group.',
-			);
-			return;
-		}
-
-		if (isOnlyMember) {
-			showNotification.error(
-				'Cannot Leave Group',
-				'Cannot leave group as the only member. Please delete the group instead.',
+				"Transfer Leadership Required",
+				"As a leader, you must transfer leadership to another member before leaving the group.",
 			);
 			return;
 		}
@@ -221,102 +193,51 @@ export default memo(function GroupInfoCard({
 		setIsLeaving(true);
 		try {
 			await groupService.leaveGroup(localGroup.id);
-			showNotification.success('Success', 'Successfully left the group!');
+			showNotification.success("Success", "Successfully left the group!");
 			// Clear group data from store
 			clearGroup();
 			// Navigate to form or join group page since user no longer has a group
-			router.push('/student/form-or-join-group');
+			router.push("/student/join-group");
 		} catch {
 			showNotification.error(
-				'Error',
-				'Failed to leave group. Please try again.',
+				"Error",
+				"Failed to leave group. Please try again.",
 			);
 		} finally {
 			setIsLeaving(false);
 		}
 	};
 
-	const handleDeleteGroup = async () => {
-		// Check thesis/submissions first (more specific reason)
-		if (hasThesisOrSubmissions) {
-			showNotification.error(
-				'Cannot Delete Group',
-				'Cannot delete group that has assigned thesis or submissions.',
-			);
-			return;
-		}
-
-		// Then check semester status
-		if (localGroup.semester.status !== 'Preparing') {
-			showNotification.error(
-				'Cannot Delete Group',
-				'Cannot delete group. Semester is not in PREPARING status.',
-			);
-			return;
-		}
-
-		setIsDeleting(true);
-		try {
-			await groupService.deleteGroup(localGroup.id);
-			showNotification.success('Success', 'Group deleted successfully!');
-			// Clear group data from store
-			clearGroup();
-			// Navigate to form or join group page since group no longer exists
-			router.push('/student/form-or-join-group');
-		} catch {
-			showNotification.error(
-				'Error',
-				'Failed to delete group. Please try again.',
-			);
-		} finally {
-			setIsDeleting(false);
-		}
-	};
-
 	// Helper function to get Invite Members button title
 	const getInviteMembersButtonTitle = () => {
 		if (!canLeaveOrInvite) {
-			return 'Cannot invite members during this semester status';
+			return "Cannot invite members during this semester status";
 		}
 		if (hasReachedMaxMembers) {
 			return `Cannot invite more members. Maximum ${GROUP_MAX_MEMBERS} members allowed.`;
 		}
-		return 'Invite new members to this group';
+		return "Invite new members to this group";
 	};
 
 	const showLeaveGroupConfirm = () => {
 		const canLeave =
 			canLeaveOrInvite &&
-			!(isCurrentUserLeader && localGroup.members.length > 1) &&
-			!isOnlyMember;
+			!(isCurrentUserLeader && localGroup.members.length > 1);
 
 		GroupConfirmationModals.leaveGroup(
 			localGroup.name,
 			canLeave,
 			isCurrentUserLeader,
-			isOnlyMember,
+			false, // isOnlyMember - no longer relevant
 			canLeaveOrInvite,
 			handleLeaveGroup,
 			isLeaving,
 		);
 	};
 
-	const showDeleteGroupConfirm = () => {
-		const canDelete = canModifyGroup && !hasThesisOrSubmissions;
-
-		GroupConfirmationModals.deleteGroup(
-			localGroup.name,
-			canDelete,
-			hasThesisOrSubmissions,
-			canModifyGroup,
-			handleDeleteGroup,
-			isDeleting,
-		);
-	};
-
 	const handleCardClick = () => {
 		if (isDashboardView) {
-			router.push('/student/group-dashboard');
+			router.push("/student/group-dashboard");
 		}
 	};
 
@@ -333,17 +254,17 @@ export default memo(function GroupInfoCard({
 							className="text-base font-bold text-gray-600 mb-3"
 							onClick={handleCardClick}
 							style={{
-								cursor: isDashboardView ? 'pointer' : 'default',
-								transition: 'color 0.2s ease',
+								cursor: isDashboardView ? "pointer" : "default",
+								transition: "color 0.2s ease",
 							}}
 							onMouseEnter={(e) => {
 								if (isDashboardView) {
-									e.currentTarget.style.color = '#1890ff';
+									e.currentTarget.style.color = "#1890ff";
 								}
 							}}
 							onMouseLeave={(e) => {
 								if (isDashboardView) {
-									e.currentTarget.style.color = '';
+									e.currentTarget.style.color = "";
 								}
 							}}
 						>
@@ -379,7 +300,7 @@ export default memo(function GroupInfoCard({
 					<div className="space-y-4">
 						{/* Basic Group Info */}
 						<div
-							className={`grid grid-cols-1 gap-4 ${isDashboardView ? 'md:grid-cols-2' : 'md:grid-cols-3'}`}
+							className={`grid grid-cols-1 gap-4 ${isDashboardView ? "md:grid-cols-2" : "md:grid-cols-3"}`}
 						>
 							<div>
 								<Text className="text-sm text-gray-400 block font-semibold">
@@ -403,7 +324,7 @@ export default memo(function GroupInfoCard({
 									</Text>
 								</div>
 							)}
-						</div>{' '}
+						</div>{" "}
 						{/* Project Direction */}
 						<div>
 							<Text className="text-sm text-gray-400 block font-semibold">
@@ -417,7 +338,7 @@ export default memo(function GroupInfoCard({
 						</div>
 						{/* Skills and Responsibilities - 2 columns */}
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-							{' '}
+							{" "}
 							{/* Required Skills */}
 							<div>
 								<Text className="text-sm text-gray-400 block font-semibold">
@@ -450,7 +371,7 @@ export default memo(function GroupInfoCard({
 							{isDashboardView ? (
 								<Text className="text-sm text-gray-600">
 									{localGroup.members.length} member
-									{localGroup.members.length !== 1 ? 's' : ''}
+									{localGroup.members.length !== 1 ? "s" : ""}
 								</Text>
 							) : (
 								<GroupMembersCard
@@ -460,10 +381,10 @@ export default memo(function GroupInfoCard({
 								/>
 							)}
 						</div>
-					</div>{' '}
+					</div>{" "}
 					{/* Created Date and Action Buttons */}
 					<div
-						className={`flex flex-col sm:flex-row sm:items-end ${viewOnly ? 'sm:justify-start' : 'sm:justify-between'} gap-4 pt-4`}
+						className={`flex flex-col sm:flex-row sm:items-end ${viewOnly ? "sm:justify-start" : "sm:justify-between"} gap-4 pt-4`}
 					>
 						<div className="flex-shrink-0">
 							<Text className="text-sm text-gray-400 block font-semibold">
@@ -483,27 +404,13 @@ export default memo(function GroupInfoCard({
 									loading={isLeaving}
 									disabled={
 										!canLeaveOrInvite ||
-										(isCurrentUserLeader && localGroup.members.length > 1) ||
-										isOnlyMember
+										(isCurrentUserLeader && localGroup.members.length > 1)
 									}
 									onClick={showLeaveGroupConfirm}
 									title={getLeaveGroupButtonTitle()}
 								>
 									Leave Group
 								</Button>
-
-								{/* Delete Group Button - only visible to leader */}
-								{isCurrentUserLeader && (
-									<Button
-										danger
-										loading={isDeleting}
-										disabled={!canModifyGroup || hasThesisOrSubmissions}
-										onClick={showDeleteGroupConfirm}
-										title={getDeleteGroupButtonTitle()}
-									>
-										Delete Group
-									</Button>
-								)}
 
 								{/* Invite Members Button - only visible to leader */}
 								{isCurrentUserLeader && (

@@ -6,6 +6,7 @@
 export const ADMIN_MENU_KEYS = {
 	DASHBOARD: "/admin",
 	STUDENTS_MANAGEMENT: "/admin/students-management",
+	GROUP_MANAGEMENT: "/admin/group-management",
 	LECTURER_MANAGEMENT: "/admin/lecturer-management",
 	MILESTONE_MANAGEMENT: "/admin/milestone-management",
 	CAPSTONE_DEFENSE: "/admin/capstone-defense-results",
@@ -21,6 +22,7 @@ export const ADMIN_PATH_MAPPING = {
 		"/admin/students-management",
 		"/admin/create-new-student",
 	],
+	[ADMIN_MENU_KEYS.GROUP_MANAGEMENT]: ["/admin/group-management"],
 	[ADMIN_MENU_KEYS.LECTURER_MANAGEMENT]: [
 		"/admin/lecturer-management",
 		"/admin/create-new-lecturer",

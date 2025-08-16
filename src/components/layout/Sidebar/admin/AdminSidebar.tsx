@@ -8,6 +8,7 @@ import {
 	SettingOutlined,
 	TeamOutlined,
 	UserOutlined,
+	UsergroupAddOutlined,
 } from "@ant-design/icons";
 import { Menu } from "antd";
 import { usePathname } from "next/navigation";
@@ -51,6 +52,17 @@ export default function AdminSidebar() {
 			onClick: () => navigateWithLoading(ADMIN_MENU_KEYS.STUDENTS_MANAGEMENT),
 			disabled:
 				isNavigating && targetPath !== ADMIN_MENU_KEYS.STUDENTS_MANAGEMENT,
+		},
+		{
+			key: ADMIN_MENU_KEYS.GROUP_MANAGEMENT,
+			icon: isMenuItemLoading(ADMIN_MENU_KEYS.GROUP_MANAGEMENT) ? (
+				<LoadingOutlined spin />
+			) : (
+				<UsergroupAddOutlined />
+			),
+			label: "Group Management",
+			onClick: () => navigateWithLoading(ADMIN_MENU_KEYS.GROUP_MANAGEMENT),
+			disabled: isNavigating && targetPath !== ADMIN_MENU_KEYS.GROUP_MANAGEMENT,
 		},
 		{
 			key: ADMIN_MENU_KEYS.LECTURER_MANAGEMENT,

@@ -1,13 +1,12 @@
-import { z } from 'zod';
+import { z } from "zod";
 
-import { OngoingPhaseSchema, SemesterStatusSchema } from '@/schemas/_enums';
+import { OngoingPhaseSchema, SemesterStatusSchema } from "@/schemas/_enums";
 
 export const SemesterSchema = z.object({
 	id: z.string().uuid(),
 	name: z.string().min(1),
 	code: z.string().min(1),
-	maxGroup: z.number().int().positive().default(5),
-	status: SemesterStatusSchema.default('NotYet'),
+	status: SemesterStatusSchema.default("NotYet"),
 	ongoingPhase: OngoingPhaseSchema.nullable().optional(),
 	defaultThesesPerLecturer: z.number().int().positive().default(4),
 	maxThesesPerLecturer: z.number().int().positive().default(6),
