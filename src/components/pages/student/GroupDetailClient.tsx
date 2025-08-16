@@ -84,16 +84,43 @@ export default function GroupDetailClient({ groupId }: GroupDetailClientProps) {
 			async () => {
 				setIsRequesting(true);
 				try {
-					await requestService.joinGroup(group.id);
-					showNotification.success(
-						"Join request sent successfully! The group leader will review your request.",
-					);
-					// Refresh requests to update button state
-					await fetchStudentRequests(true);
-				} catch {
-					showNotification.error(
-						"Failed to send join request. Please try again.",
-					);
+					const response = await requestService.joinGroup(group.id);
+
+					// Check response to determine if directly joined or created request
+					if (response.success && response.data?.status === "Approved") {
+						// Direct join successful (auto-approved)
+						showNotification.success("You have successfully joined the group!");
+
+						// Use the same logic as accept invite - refresh group data and redirect
+						const { refreshGroup } = useGroupDashboardStore.getState();
+
+						// Similar to group creation flow, trigger refresh and redirect
+						await refreshGroup();
+
+						// Add a small delay to ensure API has processed the group membership
+						await new Promise((resolve) => setTimeout(resolve, 1000));
+						await refreshGroup();
+
+						// Redirect to group dashboard
+						router.push("/student/group-dashboard");
+					} else {
+						// Request created and pending
+						showNotification.success(
+							"Join request sent successfully! The group leader will review your request.",
+						);
+						// Refresh requests to update button state
+						await fetchStudentRequests(true);
+					}
+				} catch (error: unknown) {
+					const apiError = error as {
+						response?: { data?: { error?: string } };
+						message?: string;
+					};
+					const errorMessage =
+						apiError?.response?.data?.error ||
+						(error as Error)?.message ||
+						"Failed to send join request. Please try again.";
+					showNotification.error(errorMessage);
 				} finally {
 					setIsRequesting(false);
 				}

@@ -7,6 +7,7 @@ import { ListPagination } from "@/components/common/ListPagination";
 import { type GroupSuggestion } from "@/lib/services/ai.service";
 import requestService from "@/lib/services/requests.service";
 import { showNotification } from "@/lib/utils/notification";
+import { useGroupDashboardStore } from "@/store/useGroupDashboardStore";
 
 const { Title, Text } = Typography;
 
@@ -46,16 +47,45 @@ const AISuggestionCard: React.FC<AISuggestionCardProps> = ({ suggestion }) => {
 			async () => {
 				setIsRequesting(true);
 				try {
-					await requestService.joinGroup(group.id);
-					showNotification.success(
-						"Success",
-						"Join request sent successfully! The group leader will review your request.",
-					);
-				} catch {
-					showNotification.error(
-						"Error",
-						"Failed to send join request. Please try again.",
-					);
+					const response = await requestService.joinGroup(group.id);
+
+					// Check response to determine if directly joined or created request
+					if (response.success && response.data?.status === "Approved") {
+						// Direct join successful (auto-approved)
+						showNotification.success(
+							"Success",
+							"You have successfully joined the group!",
+						);
+
+						// Use the same logic as accept invite - refresh group data and redirect
+						const { refreshGroup } = useGroupDashboardStore.getState();
+
+						// Similar to group creation flow, trigger refresh and redirect
+						await refreshGroup();
+
+						// Add a small delay to ensure API has processed the group membership
+						await new Promise((resolve) => setTimeout(resolve, 1000));
+						await refreshGroup();
+
+						// Redirect to group dashboard
+						router.push("/student/group-dashboard");
+					} else {
+						// Request created and pending
+						showNotification.success(
+							"Success",
+							"Join request sent successfully! The group leader will review your request.",
+						);
+					}
+				} catch (error: unknown) {
+					const apiError = error as {
+						response?: { data?: { error?: string } };
+						message?: string;
+					};
+					const errorMessage =
+						apiError?.response?.data?.error ||
+						(error as Error)?.message ||
+						"Failed to send join request. Please try again.";
+					showNotification.error("Error", errorMessage);
 				} finally {
 					setIsRequesting(false);
 				}
