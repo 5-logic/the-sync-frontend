@@ -23,12 +23,14 @@ interface AssignStudentDetailProps {
 	readonly groupId: string;
 	readonly backRoute: string;
 	readonly headerBadgeText?: string;
+	readonly isAdminMode?: boolean;
 }
 
 export default function AssignStudentDetail({
 	groupId,
 	backRoute,
 	headerBadgeText,
+	isAdminMode = false,
 }: AssignStudentDetailProps) {
 	const router = useRouter();
 
@@ -218,9 +220,14 @@ export default function AssignStudentDetail({
 	return (
 		<Space direction="vertical" size={24} style={{ width: "100%" }}>
 			<Header
-				title="Assign Student & Thesis"
-				description="Facilitate the grouping process by assigning ungrouped students to
-					available project groups."
+				title={
+					isAdminMode ? "Assign Student to Group" : "Assign Student & Thesis"
+				}
+				description={
+					isAdminMode
+						? "Facilitate the grouping process by assigning ungrouped students to available project groups."
+						: "Facilitate the grouping process by assigning ungrouped students to available project groups."
+				}
 				badgeText={headerBadgeText}
 			/>
 
@@ -232,7 +239,8 @@ export default function AssignStudentDetail({
 						<ThesisCard
 							group={group}
 							onViewDetail={handleViewGroupThesisWithButton}
-							onUnassignThesis={handleUnassignThesis}
+							onUnassignThesis={isAdminMode ? undefined : handleUnassignThesis}
+							showUnassignButton={!isAdminMode}
 						/>
 					</Space>
 				</Col>
@@ -304,67 +312,82 @@ export default function AssignStudentDetail({
 				</Row>
 			</Card>
 
-			{/* Assign Thesis Card */}
-			<Card title="Assign Thesis to Group">
-				{groupHasThesis && (
-					<div
-						style={{
-							marginBottom: 16,
-							padding: "8px 12px",
-							backgroundColor: "#f6ffed",
-							border: "1px solid #b7eb8f",
-							borderRadius: "6px",
-							color: "#389e0d",
-						}}
-					>
-						✓ This group already has a thesis assigned. Thesis assignment is
-						disabled.
-					</div>
-				)}
-				<div style={{ marginBottom: 16 }}>
-					<ThesisFilterBar
-						search={thesisFilters.keyword}
-						onSearchChange={(val) =>
-							setThesisFilters((prev) => ({ ...prev, keyword: val }))
-						}
-						semester={thesisFilters.semester}
-						onSemesterChange={(val) =>
-							setThesisFilters((prev) => ({ ...prev, semester: val }))
-						}
-						semesterOptions={semesterOptions}
-						semesterNamesMap={semesterNamesMap}
-						onRefresh={fetchAvailableTheses}
-						loading={thesesLoading}
-					/>
-				</div>
-				<AvailableThesesTable
-					data={filteredTheses}
-					loading={thesesLoading}
-					selectedRowKeys={selectedThesisKeys}
-					onSelectionChange={handleThesisSelectionChange}
-					onViewDetail={handleViewThesisDetail}
-					semesterNamesMap={semesterNamesMap}
-					disableSelection={groupHasThesis}
-				/>
+			{/* Back button for admin mode when thesis assignment is hidden */}
+			{isAdminMode && (
 				<Row gutter={[16, 16]} className="mt-4">
 					<Col span={24}>
-						<Row justify="space-between">
+						<Row justify="start">
 							<Button type="default" onClick={() => router.push(backRoute)}>
 								Back
 							</Button>
-							<Tooltip title={getAssignThesisButtonTooltip()}>
-								<Button
-									type="primary"
-									disabled={isAssignThesisDisabled}
-									onClick={() => setIsAssignThesisModalOpen(true)}
-								>
-									Assign Thesis to Group
-								</Button>
-							</Tooltip>
 						</Row>
 					</Col>
 				</Row>
-			</Card>
+			)}
+
+			{/* Assign Thesis Card - Hidden for admin mode */}
+			{!isAdminMode && (
+				<Card title="Assign Thesis to Group">
+					{groupHasThesis && (
+						<div
+							style={{
+								marginBottom: 16,
+								padding: "8px 12px",
+								backgroundColor: "#f6ffed",
+								border: "1px solid #b7eb8f",
+								borderRadius: "6px",
+								color: "#389e0d",
+							}}
+						>
+							✓ This group already has a thesis assigned. Thesis assignment is
+							disabled.
+						</div>
+					)}
+					<div style={{ marginBottom: 16 }}>
+						<ThesisFilterBar
+							search={thesisFilters.keyword}
+							onSearchChange={(val) =>
+								setThesisFilters((prev) => ({ ...prev, keyword: val }))
+							}
+							semester={thesisFilters.semester}
+							onSemesterChange={(val) =>
+								setThesisFilters((prev) => ({ ...prev, semester: val }))
+							}
+							semesterOptions={semesterOptions}
+							semesterNamesMap={semesterNamesMap}
+							onRefresh={fetchAvailableTheses}
+							loading={thesesLoading}
+						/>
+					</div>
+					<AvailableThesesTable
+						data={filteredTheses}
+						loading={thesesLoading}
+						selectedRowKeys={selectedThesisKeys}
+						onSelectionChange={handleThesisSelectionChange}
+						onViewDetail={handleViewThesisDetail}
+						semesterNamesMap={semesterNamesMap}
+						disableSelection={groupHasThesis}
+					/>
+					<Row gutter={[16, 16]} className="mt-4">
+						<Col span={24}>
+							<Row justify="space-between">
+								<Button type="default" onClick={() => router.push(backRoute)}>
+									Back
+								</Button>
+								<Tooltip title={getAssignThesisButtonTooltip()}>
+									<Button
+										type="primary"
+										disabled={isAssignThesisDisabled}
+										onClick={() => setIsAssignThesisModalOpen(true)}
+									>
+										Assign Thesis to Group
+									</Button>
+								</Tooltip>
+							</Row>
+						</Col>
+					</Row>
+				</Card>
+			)}
 
 			{/* Student Assignment Modal */}
 			<AssignConfirmModal
@@ -381,8 +404,8 @@ export default function AssignStudentDetail({
 				open={isThesisDetailModalOpen}
 				onCancel={() => setIsThesisDetailModalOpen(false)}
 				thesis={viewingThesis}
-				onUnassignThesis={handleUnassignThesis}
-				showUnassignButton={showUnassignButton}
+				onUnassignThesis={isAdminMode ? undefined : handleUnassignThesis}
+				showUnassignButton={!isAdminMode && showUnassignButton}
 			/>
 
 			{/* Assign Thesis Modal */}

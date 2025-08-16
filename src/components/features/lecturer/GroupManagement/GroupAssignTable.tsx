@@ -236,7 +236,11 @@ export default function GroupAssignTable({
 				title: "Actions",
 				render: (_: unknown, record: Group) => (
 					<Space>
-						<Tooltip title="Assign Student/Assign Thesis">
+						<Tooltip
+							title={
+								isAdminMode ? "Assign Student" : "Assign Student/Assign Thesis"
+							}
+						>
 							<Button
 								type="link"
 								icon={<EyeOutlined />}

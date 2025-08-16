@@ -11,6 +11,7 @@ export default function AdminAssignStudentsDetailPage() {
 		<AssignStudentDetail
 			groupId={groupId}
 			backRoute="/admin/group-management"
+			isAdminMode={true}
 		/>
 	);
 }
