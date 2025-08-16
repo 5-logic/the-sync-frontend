@@ -308,11 +308,15 @@ export default function GroupCard({
 		isPrimary: boolean = false,
 		isDisabled: boolean = false,
 	) => {
-		const borderValue = isPrimary
-			? undefined
-			: isDisabled
-				? "1px solid #d9d9d9"
-				: "1px solid #222";
+		let borderValue: string | undefined;
+
+		if (isPrimary) {
+			borderValue = undefined;
+		} else if (isDisabled) {
+			borderValue = "1px solid #d9d9d9";
+		} else {
+			borderValue = "1px solid #222";
+		}
 
 		return {
 			borderRadius: CARD_CONFIG.BUTTON_BORDER_RADIUS,
