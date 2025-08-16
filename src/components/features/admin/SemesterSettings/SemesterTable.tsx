@@ -42,9 +42,7 @@ const { Option } = Select;
 const { Text } = Typography;
 
 // Form values type with string support for form inputs
-type SemesterFormValues = Omit<SemesterUpdate, "maxGroup"> & {
-	maxGroup?: number | string;
-};
+type SemesterFormValues = SemesterUpdate;
 
 // Original values type for comparison (allows all SemesterUpdate fields)
 type SemesterOriginalValues = SemesterUpdate;
@@ -266,7 +264,6 @@ const SemesterTable = forwardRef<
 			form.setFieldsValue({
 				name: record.name,
 				code: record.code,
-				maxGroup: record.maxGroup,
 				status: record.status,
 				ongoingPhase: record.ongoingPhase ?? undefined,
 				defaultThesesPerLecturer: record.defaultThesesPerLecturer,
@@ -354,7 +351,6 @@ const SemesterTable = forwardRef<
 			record: Semester,
 			values: {
 				status: SemesterStatus;
-				maxGroup?: number;
 				ongoingPhase?: string;
 			},
 		): boolean => {
@@ -375,20 +371,7 @@ const SemesterTable = forwardRef<
 				}
 			}
 
-			// Rule 2: Max Group required when status is Picking
-			if (values.status === "Picking" && !values.maxGroup) {
-				form.setFields([
-					{
-						name: "maxGroup",
-						errors: [
-							"Maximum number of groups is required when status is Picking.",
-						],
-					},
-				]);
-				return false;
-			}
-
-			// Rule 3: Only one semester can have active status at a time
+			// Rule 2: Only one semester can have active status at a time
 			const statusCheck = isStatusChangeAllowed(record, values.status);
 			if (!statusCheck.allowed) {
 				form.setFields([
@@ -428,15 +411,6 @@ const SemesterTable = forwardRef<
 			if (values.code !== original.code) {
 				payload.code = values.code;
 			}
-			if (values.maxGroup !== original.maxGroup) {
-				// Only include maxGroup if status allows it (not End)
-				if (values.status !== "End" && values.maxGroup) {
-					payload.maxGroup =
-						typeof values.maxGroup === "string"
-							? parseInt(values.maxGroup, 10)
-							: values.maxGroup;
-				}
-			}
 			if (values.status !== original.status) {
 				payload.status = values.status;
 			}
@@ -465,7 +439,6 @@ const SemesterTable = forwardRef<
 		return {
 			name: record.name,
 			code: record.code,
-			maxGroup: record.maxGroup,
 			status: record.status,
 			ongoingPhase: record.ongoingPhase,
 			defaultThesesPerLecturer: record.defaultThesesPerLecturer,
@@ -533,11 +506,6 @@ const SemesterTable = forwardRef<
 				form.setFieldValue("ongoingPhase", undefined);
 			}
 
-			// Clear max group if status is not Picking and it's empty
-			if (value !== "Picking" && !form.getFieldValue("maxGroup")) {
-				form.setFieldValue("maxGroup", undefined);
-			}
-
 			// Clear status field error when user changes status
 			form.setFields([
 				{
@@ -545,19 +513,6 @@ const SemesterTable = forwardRef<
 					errors: [],
 				},
 			]);
-
-			// Clear maxGroup field error when status changes
-			form.setFields([
-				{
-					name: "maxGroup",
-					errors: [],
-				},
-			]);
-
-			// Trigger form validation to update maxGroup field requirement
-			form.validateFields(["maxGroup"]).catch(() => {
-				// Ignore validation errors, they will be shown in the form
-			});
 		},
 		[form],
 	);
@@ -588,7 +543,6 @@ const SemesterTable = forwardRef<
 		const original = {
 			name: editingRecord.name,
 			code: editingRecord.code,
-			maxGroup: editingRecord.maxGroup,
 			status: editingRecord.status,
 			ongoingPhase: editingRecord.ongoingPhase,
 			defaultThesesPerLecturer: editingRecord.defaultThesesPerLecturer,
@@ -614,12 +568,6 @@ const SemesterTable = forwardRef<
 				dataIndex: "code",
 				key: "code",
 				width: 150,
-			},
-			{
-				title: "Max Groups",
-				dataIndex: "maxGroup",
-				key: "maxGroup",
-				width: 120,
 			},
 			{
 				title: "Status",
@@ -938,39 +886,6 @@ const SemesterTable = forwardRef<
 							</Form.Item>
 						</Col>
 					</Row>
-
-					<Form.Item
-						name="maxGroup"
-						label={FormLabel({
-							text: "Maximum Number of Groups",
-							isBold: true,
-						})}
-						rules={[
-							{
-								required: selectedStatus === "Picking",
-								message:
-									"Maximum number of groups is required when status is Picking",
-							},
-							{
-								type: "number",
-								min: 1,
-								message: "Maximum number of groups must be a positive integer",
-								transform: (value) => (value ? Number(value) : undefined),
-							},
-						]}
-					>
-						<Input
-							placeholder={
-								selectedStatus === "Picking"
-									? "Enter maximum number of groups (required for Picking status)"
-									: "Enter maximum number of groups (optional)"
-							}
-							type="number"
-							min={1}
-							step={1}
-							disabled={updating}
-						/>
-					</Form.Item>
 
 					<Form.Item
 						name="defaultThesesPerLecturer"

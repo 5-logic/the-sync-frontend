@@ -406,6 +406,26 @@ export const GroupConfirmationModals = {
 			onOk: onConfirm,
 		}),
 
+	deleteGroup: (
+		groupName: string,
+		onConfirm: () => void | Promise<void>,
+		loading = false,
+		isAdminMode = false,
+	) =>
+		ConfirmationModal.show({
+			title: "Delete Group",
+			message: "Are you sure you want to delete this group?",
+			details: groupName,
+			note: isAdminMode
+				? "This action cannot be undone. Only empty groups (with no students) can be deleted."
+				: "This action cannot be undone. All group data will be permanently deleted.",
+			noteType: "danger",
+			okText: "Delete",
+			okType: "danger",
+			loading,
+			onOk: onConfirm,
+		}),
+
 	// Generic show method for custom modals
 	show: ConfirmationModal.show,
 };
