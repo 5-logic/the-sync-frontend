@@ -12,6 +12,7 @@ export default function AssignStudentsDetailPage() {
 			groupId={groupId}
 			backRoute="/lecturer/group-management"
 			headerBadgeText="Moderator Only"
+			isAdminMode={true}
 		/>
 	);
 }
