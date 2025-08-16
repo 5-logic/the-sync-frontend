@@ -7,9 +7,9 @@ import { getOrientationDisplay } from "@/lib/constants/orientation";
 const { Paragraph, Title } = Typography;
 
 interface Props {
-	open: boolean;
-	onClose: () => void;
-	thesis: ThesisWithRequests["thesis"] | null;
+	readonly open: boolean;
+	readonly onClose: () => void;
+	readonly thesis: ThesisWithRequests["thesis"] | null;
 }
 
 export default function ThesisDetailModal({ open, onClose, thesis }: Props) {

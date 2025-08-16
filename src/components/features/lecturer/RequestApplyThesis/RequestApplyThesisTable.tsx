@@ -35,10 +35,10 @@ import { THESIS_DOMAINS } from "@/lib/constants/domains";
 import { isTextMatch } from "@/lib/utils/textNormalization";
 
 interface Props {
-	data: ThesisWithRequests[];
-	loading?: boolean;
-	onRefresh: () => void;
-	updateApplicationStatus: (
+	readonly data: ThesisWithRequests[];
+	readonly loading?: boolean;
+	readonly onRefresh: () => void;
+	readonly updateApplicationStatus: (
 		groupId: string,
 		thesisId: string,
 		status: "Approved" | "Rejected",

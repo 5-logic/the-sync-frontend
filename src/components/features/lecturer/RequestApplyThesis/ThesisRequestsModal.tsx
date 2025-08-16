@@ -27,15 +27,15 @@ import { isTextMatch } from "@/lib/utils/textNormalization";
 const { Title } = Typography;
 
 interface Props {
-	open: boolean;
-	onClose: () => void;
-	requests: ThesisRequest[];
-	thesisTitle: string;
-	onApprove: (groupId: string, thesisId: string) => Promise<void>;
-	onReject: (groupId: string, thesisId: string) => Promise<void>;
-	onRefresh?: () => void;
-	loading?: boolean; // Loading for approve/reject actions
-	dataLoading?: boolean; // Loading for data fetching
+	readonly open: boolean;
+	readonly onClose: () => void;
+	readonly requests: ThesisRequest[];
+	readonly thesisTitle: string;
+	readonly onApprove: (groupId: string, thesisId: string) => Promise<void>;
+	readonly onReject: (groupId: string, thesisId: string) => Promise<void>;
+	readonly onRefresh?: () => void;
+	readonly loading?: boolean; // Loading for approve/reject actions
+	readonly dataLoading?: boolean; // Loading for data fetching
 }
 
 export default function ThesisRequestsModal({
