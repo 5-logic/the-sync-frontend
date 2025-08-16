@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 
 import aiDuplicateService, {
 	DuplicateThesis,
@@ -9,8 +9,11 @@ export function useAiDuplicateCheck() {
 	const [loading, setLoading] = useState(false);
 	const [duplicateTheses, setDuplicateTheses] = useState<DuplicateThesis[]>([]);
 	const [isModalVisible, setIsModalVisible] = useState(false);
+	const [checkedThesisIds, setCheckedThesisIds] = useState<Set<string>>(
+		new Set(),
+	);
 
-	const checkDuplicate = async (thesisId: string) => {
+	const checkDuplicate = useCallback(async (thesisId: string) => {
 		setLoading(true);
 		try {
 			// Call AI duplicate check API
@@ -35,34 +38,44 @@ export function useAiDuplicateCheck() {
 		} finally {
 			setLoading(false);
 		}
-	};
+	}, []);
 
 	// Simplified version for automatic checking (no modal)
-	const checkDuplicateOnly = async (thesisId: string) => {
-		setLoading(true);
-		try {
-			// Call AI duplicate check API
-			const duplicateResponse =
-				await aiDuplicateService.checkDuplicate(thesisId);
-
-			if (duplicateResponse.success && duplicateResponse.data) {
-				setDuplicateTheses(duplicateResponse.data);
-			} else {
-				// Don't show error notification for automatic check
-				console.warn("Failed to check for duplicate theses");
+	const checkDuplicateOnly = useCallback(
+		async (thesisId: string) => {
+			// Skip if already checked this thesis
+			if (checkedThesisIds.has(thesisId)) {
+				return;
 			}
-		} catch (error) {
-			console.error("Error checking duplicate theses:", error);
-			// Don't show error notification for automatic check
-		} finally {
-			setLoading(false);
-		}
-	};
 
-	const closeModal = () => {
+			setLoading(true);
+			try {
+				// Call AI duplicate check API
+				const duplicateResponse =
+					await aiDuplicateService.checkDuplicate(thesisId);
+
+				if (duplicateResponse.success && duplicateResponse.data) {
+					setDuplicateTheses(duplicateResponse.data);
+					// Mark this thesis as checked
+					setCheckedThesisIds((prev) => new Set(prev).add(thesisId));
+				} else {
+					// Don't show error notification for automatic check
+					console.warn("Failed to check for duplicate theses");
+				}
+			} catch (error) {
+				console.error("Error checking duplicate theses:", error);
+				// Don't show error notification for automatic check
+			} finally {
+				setLoading(false);
+			}
+		},
+		[checkedThesisIds],
+	);
+
+	const closeModal = useCallback(() => {
 		setIsModalVisible(false);
 		setDuplicateTheses([]);
-	};
+	}, []);
 
 	return {
 		loading,
