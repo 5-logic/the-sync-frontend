@@ -55,6 +55,68 @@ const getErrorDetails = (statusCode: number, errorMessage: string) => {
 };
 
 /**
+ * Helper function to handle API response errors
+ */
+const handleApiResponseError = (
+	response: { success: boolean; error?: string; statusCode?: number },
+	setError: (error: string) => void,
+) => {
+	const errorMessage = response.error || "Failed to create groups";
+	setError(errorMessage);
+
+	const { title: errorTitle, description: errorDescription } = getErrorDetails(
+		response.statusCode || 0,
+		errorMessage,
+	);
+
+	showNotification.error(errorTitle, errorDescription);
+	return null;
+};
+
+/**
+ * Helper function to handle axios errors
+ */
+const handleAxiosError = (
+	err: AxiosError,
+	setError: (error: string) => void,
+) => {
+	const apiResponse = err.response?.data as {
+		error?: string;
+		statusCode?: number;
+	};
+	if (apiResponse?.error && apiResponse?.statusCode) {
+		const { title: errorTitle, description: errorDescription } =
+			getErrorDetails(apiResponse.statusCode, apiResponse.error);
+		setError(apiResponse.error);
+		showNotification.error(errorTitle, errorDescription);
+		return true; // Handled
+	}
+	return false; // Not handled
+};
+
+/**
+ * Helper function to get error message and title based on error type
+ */
+const getErrorMessageAndTitle = (err: Error) => {
+	let errorMessage = err.message;
+	let errorTitle = "Group Creation Failed";
+
+	if (err.message.includes("Network Error") || err.message.includes("fetch")) {
+		errorTitle = "Connection Error";
+		errorMessage =
+			"Unable to connect to the server. Please check your internet connection and try again.";
+	} else if (err.message.includes("timeout")) {
+		errorTitle = "Request Timeout";
+		errorMessage = "The request took too long to complete. Please try again.";
+	} else if (err.message.includes("required")) {
+		errorTitle = "Missing Information";
+		// Keep the original validation message
+	}
+
+	return { errorMessage, errorTitle };
+};
+
+/**
  * Hook for creating multiple groups (Admin only)
  * Handles the API call, loading state, error handling, and store updates
  */
@@ -83,16 +145,7 @@ export const useCreateGroups = (): UseCreateGroupsResult => {
 			const response = await groupService.createMultipleGroups(request);
 
 			if (!response.success) {
-				const errorMessage = response.error || "Failed to create groups";
-				setError(errorMessage);
-
-				// Get error details based on status code
-				const { title: errorTitle, description: errorDescription } =
-					getErrorDetails(response.statusCode || 0, errorMessage);
-
-				showNotification.error(errorTitle, errorDescription);
-
-				return null;
+				return handleApiResponseError(response, setError);
 			}
 
 			// Show success notification with backend response data
@@ -109,48 +162,28 @@ export const useCreateGroups = (): UseCreateGroupsResult => {
 
 			return response.data;
 		} catch (err) {
-			let errorMessage = "An unexpected error occurred";
-			let errorTitle = "Group Creation Failed";
-
 			// Handle axios error from API
 			if (err instanceof AxiosError && err.response?.data) {
-				const apiResponse = err.response.data;
-				// If API returns structured error response, use it
-				if (apiResponse.error && apiResponse.statusCode) {
-					const { title: errorTitle, description: errorDescription } =
-						getErrorDetails(apiResponse.statusCode, apiResponse.error);
-					setError(apiResponse.error);
-					showNotification.error(errorTitle, errorDescription);
+				const wasHandled = handleAxiosError(err, setError);
+				if (wasHandled) {
 					return null;
 				}
 			}
 
-			if (err instanceof Error) {
-				errorMessage = err.message;
+			// Handle other error types
+			const defaultErrorMessage = "An unexpected error occurred";
+			let errorMessage = defaultErrorMessage;
+			let errorTitle = "Group Creation Failed";
 
-				// Handle specific error types
-				if (
-					err.message.includes("Network Error") ||
-					err.message.includes("fetch")
-				) {
-					errorTitle = "Connection Error";
-					errorMessage =
-						"Unable to connect to the server. Please check your internet connection and try again.";
-				} else if (err.message.includes("timeout")) {
-					errorTitle = "Request Timeout";
-					errorMessage =
-						"The request took too long to complete. Please try again.";
-				} else if (err.message.includes("required")) {
-					errorTitle = "Missing Information";
-					// Keep the original validation message
-				}
+			if (err instanceof Error) {
+				const { errorMessage: msg, errorTitle: title } =
+					getErrorMessageAndTitle(err);
+				errorMessage = msg;
+				errorTitle = title;
 			}
 
 			setError(errorMessage);
-
-			// Show error notification
 			showNotification.error(errorTitle, errorMessage);
-
 			return null;
 		} finally {
 			setIsCreating(false);
