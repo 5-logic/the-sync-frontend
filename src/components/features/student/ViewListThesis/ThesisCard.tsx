@@ -3,24 +3,38 @@
 import { UserOutlined } from "@ant-design/icons";
 import { Avatar, Button, Card, Col, Row, Space, Tag, Typography } from "antd";
 import { useRouter } from "next/navigation";
+import { useState, useMemo, useEffect } from "react";
 
+import { ConfirmationModal } from "@/components/common/ConfirmModal";
 import { useSemesterStatus } from "@/hooks/student/useSemesterStatus";
 import { useStudentGroupStatus } from "@/hooks/student/useStudentGroupStatus";
 import { useThesisRegistration } from "@/hooks/thesis";
 import { DOMAIN_COLOR_MAP } from "@/lib/constants/domains";
+import { getOrientationDisplay } from "@/lib/constants/orientation";
+import thesisApplicationService, {
+	ThesisApplication,
+} from "@/lib/services/thesis-application.service";
+import { handleApiError } from "@/lib/utils/handleApi";
+import { showNotification } from "@/lib/utils/notification";
 import { ThesisWithRelations } from "@/schemas/thesis";
 import { cacheUtils } from "@/store/helpers/cacheHelpers";
 
 interface Props {
 	readonly thesis: ThesisWithRelations;
 	readonly studentRole?: "leader" | "member" | "guest";
+	readonly applications?: ThesisApplication[];
+	readonly applicationsLoading?: boolean;
 	readonly onThesisUpdate?: () => void | Promise<void>;
+	readonly onApplicationsRefresh?: () => void | Promise<void>;
 }
 
 export default function ThesisCard({
 	thesis,
 	studentRole,
+	applications = [],
+	applicationsLoading = false,
 	onThesisUpdate,
+	onApplicationsRefresh,
 }: Props) {
 	const { hasGroup, group, resetInitialization } = useStudentGroupStatus();
 	const { canRegisterThesis, loading: semesterLoading } = useSemesterStatus();
@@ -28,17 +42,38 @@ export default function ThesisCard({
 		useThesisRegistration();
 	const router = useRouter();
 
+	// Local state to track pending application to avoid race conditions
+	const [localPendingApplication, setLocalPendingApplication] = useState(false);
+
 	// Get domain color
 	const domainColor = thesis.domain
 		? DOMAIN_COLOR_MAP[thesis.domain] || "default"
 		: "default";
 
-	// Process skills for display (max 1 line, show extra count if needed)
-	const maxVisibleSkills = 3;
-	const visibleSkills =
-		thesis.thesisRequiredSkills?.slice(0, maxVisibleSkills) || [];
-	const extraSkillsCount =
-		(thesis.thesisRequiredSkills?.length || 0) - maxVisibleSkills;
+	// Check if current group has application for this thesis
+	const hasApplicationForThesis = useMemo(() => {
+		// Check local state first for immediate UI update
+		if (localPendingApplication) return true;
+
+		// Then check server data
+		return applications.some(
+			(app: ThesisApplication) =>
+				app.thesisId === thesis.id && app.status === "Pending",
+		);
+	}, [applications, thesis.id, localPendingApplication]);
+
+	// Reset local pending state when server data confirms the application exists
+	useEffect(() => {
+		if (localPendingApplication) {
+			const serverHasApplication = applications.some(
+				(app: ThesisApplication) =>
+					app.thesisId === thesis.id && app.status === "Pending",
+			);
+			if (serverHasApplication) {
+				setLocalPendingApplication(false);
+			}
+		}
+	}, [applications, thesis.id, localPendingApplication]);
 
 	// Check if thesis is already taken by another group
 	const isThesisTaken = thesis.groupId != null; // Use != null to catch both null and undefined
@@ -46,16 +81,35 @@ export default function ThesisCard({
 	// Check if current group has this thesis assigned
 	const isThesisAssignedToGroup = group?.id === thesis.groupId;
 
+	// Check if all data is loaded
+	const isAllDataLoaded = !applicationsLoading && !semesterLoading;
+
 	// Determine if register button should be enabled
-	const canRegister = studentRole === "leader" && hasGroup && !isThesisTaken;
+	const canRegister =
+		studentRole === "leader" &&
+		hasGroup &&
+		!isThesisTaken &&
+		!hasApplicationForThesis &&
+		isAllDataLoaded;
 
 	// Determine if unregister button should be shown
 	const canUnregister =
-		studentRole === "leader" && hasGroup && isThesisAssignedToGroup;
+		studentRole === "leader" &&
+		hasGroup &&
+		isThesisAssignedToGroup &&
+		isAllDataLoaded;
+
+	// Show loading button when data is still being loaded
+	const showLoadingButton =
+		!isAllDataLoaded &&
+		studentRole === "leader" &&
+		hasGroup &&
+		!isThesisAssignedToGroup &&
+		!localPendingApplication;
 
 	// Disable register button if semester is not in picking phase
 	const isRegisterDisabled =
-		!canRegister || !canRegisterThesis || isRegistering || semesterLoading;
+		!canRegister || !canRegisterThesis || isRegistering;
 
 	// Handle view details navigation
 	const handleViewDetails = () => {
@@ -65,11 +119,17 @@ export default function ThesisCard({
 	// Handle register thesis
 	const handleRegisterThesis = () => {
 		registerThesis(thesis.id, thesis.englishName, () => {
+			// Set local pending state AFTER successful submission
+			setLocalPendingApplication(true);
+
 			// Clear relevant caches
 			cacheUtils.clear("semesterStatus");
 
 			// Refresh group data to update UI
 			resetInitialization();
+
+			// Refresh applications immediately to update button state
+			onApplicationsRefresh?.();
 
 			// Refresh thesis list immediately to show updated assignment
 			onThesisUpdate?.();
@@ -90,8 +150,59 @@ export default function ThesisCard({
 		});
 	};
 
+	// Handle cancel application
+	const handleCancelApplication = () => {
+		if (!group) return;
+
+		ConfirmationModal.show({
+			title: "Cancel Application",
+			message:
+				"Are you sure you want to cancel your application for this thesis?",
+			details: thesis.englishName,
+			note: "This action cannot be undone.",
+			noteType: "warning",
+			okText: "Yes, Cancel",
+			cancelText: "No",
+			okType: "danger",
+			onOk: async () => {
+				try {
+					await thesisApplicationService.cancelThesisApplication(
+						group.id,
+						thesis.id,
+					);
+
+					showNotification.success(
+						"Application Canceled",
+						"Your thesis application has been canceled successfully!",
+					);
+
+					// Clear local pending state immediately
+					setLocalPendingApplication(false);
+
+					// Refresh applications first to update button state immediately
+					onApplicationsRefresh?.();
+
+					// Then refresh thesis list
+					onThesisUpdate?.();
+				} catch (error) {
+					console.error("Error canceling application:", error);
+
+					const apiError = handleApiError(
+						error,
+						"Failed to cancel application. Please try again.",
+					);
+
+					showNotification.error("Cancel Failed", apiError.message);
+				}
+			},
+		});
+	};
+
 	// Get button tooltip message based on current state
 	const getButtonTooltip = (): string => {
+		if (hasApplicationForThesis) {
+			return "You have a pending application for this thesis";
+		}
 		if (isThesisTaken) {
 			return "This thesis is already taken by another group";
 		}
@@ -110,7 +221,13 @@ export default function ThesisCard({
 	// Get register button text based on current state
 	const getRegisterButtonText = (): string => {
 		if (isRegistering) {
-			return "Registering...";
+			return "Processing...";
+		}
+		if (showLoadingButton) {
+			return "Checking...";
+		}
+		if (hasApplicationForThesis) {
+			return "Cancel Request";
 		}
 		if (isThesisTaken) {
 			return "Taken";
@@ -181,29 +298,17 @@ export default function ThesisCard({
 					</Tag>
 				)}
 
-				<Space
-					wrap
-					size={[8, 8]}
-					style={{
-						minHeight: "2em", // Always maintain consistent height
-						maxHeight: "2em",
-						overflow: "hidden",
-					}}
-				>
-					{visibleSkills.map((skill) => (
-						<Tag key={skill.id} style={{ borderRadius: 6 }}>
-							{skill.name}
-						</Tag>
-					))}
-					{extraSkillsCount > 0 && (
-						<Tag style={{ borderRadius: 6 }}>+{extraSkillsCount} more</Tag>
-					)}
-					{visibleSkills.length === 0 && (
-						<Typography.Text type="secondary">
-							No skills specified
-						</Typography.Text>
-					)}
-				</Space>
+				{thesis.orientation &&
+					(() => {
+						const orientationDisplay = getOrientationDisplay(
+							thesis.orientation,
+						);
+						return orientationDisplay ? (
+							<Tag color={orientationDisplay.color} style={{ borderRadius: 6 }}>
+								{orientationDisplay.label}
+							</Tag>
+						) : null;
+					})()}
 			</Space>
 
 			<Row gutter={8} style={{ marginTop: 24 }}>
@@ -218,7 +323,8 @@ export default function ThesisCard({
 							block
 							danger
 							onClick={handleUnregisterThesis}
-							loading={isRegistering || semesterLoading}
+							loading={isRegistering}
+							disabled={!isAllDataLoaded}
 							title="Unregister from this thesis"
 						>
 							{isRegistering ? "Unregistering..." : "Unregister"}
@@ -226,10 +332,18 @@ export default function ThesisCard({
 					) : (
 						<Button
 							block
-							disabled={isRegisterDisabled}
+							disabled={
+								showLoadingButton ||
+								(isRegisterDisabled && !hasApplicationForThesis)
+							}
 							title={getButtonTooltip()}
-							onClick={handleRegisterThesis}
-							loading={isRegistering || semesterLoading}
+							onClick={
+								hasApplicationForThesis
+									? handleCancelApplication
+									: handleRegisterThesis
+							}
+							loading={isRegistering || showLoadingButton}
+							danger={hasApplicationForThesis && isAllDataLoaded}
 						>
 							{getRegisterButtonText()}
 						</Button>

@@ -101,7 +101,7 @@ export default function StudentSidebar() {
 			) : (
 				<FileTextOutlined />
 			),
-			label: "Register Thesis",
+			label: "Register Thesis Request",
 			onClick: () => navigateWithLoading(STUDENT_MENU_KEYS.REGISTER_THESIS),
 			disabled:
 				isNavigating && targetPath !== STUDENT_MENU_KEYS.REGISTER_THESIS,

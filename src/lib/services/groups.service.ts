@@ -123,23 +123,6 @@ export interface SupervisedGroup {
 				updatedAt: string;
 			};
 		};
-		thesisRequiredSkills?: Array<{
-			thesisId: string;
-			skillId: string;
-			skill: {
-				id: string;
-				name: string;
-				skillSetId: string;
-				createdAt: string;
-				updatedAt: string;
-				skillSet: {
-					id: string;
-					name: string;
-					createdAt: string;
-					updatedAt: string;
-				};
-			};
-		}>;
 	};
 	semester: {
 		id: string;

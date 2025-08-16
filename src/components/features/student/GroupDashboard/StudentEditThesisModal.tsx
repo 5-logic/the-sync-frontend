@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { Modal, Spin } from 'antd';
-import { useEffect, useState } from 'react';
+import { Modal, Spin } from "antd";
+import { useEffect, useState } from "react";
 
-import ThesisForm from '@/components/features/lecturer/CreateThesis/ThesisForm';
-import { useThesisForm } from '@/hooks/thesis';
-import thesisService from '@/lib/services/theses.service';
-import { handleApiResponse } from '@/lib/utils/handleApi';
-import { ThesisWithRelations } from '@/schemas/thesis';
+import ThesisForm from "@/components/features/lecturer/CreateThesis/ThesisForm";
+import { useThesisForm } from "@/hooks/thesis";
+import thesisService from "@/lib/services/theses.service";
+import { handleApiResponse } from "@/lib/utils/handleApi";
+import { ThesisWithRelations } from "@/schemas/thesis";
 
 interface Props {
 	readonly visible: boolean;
@@ -31,7 +31,7 @@ export default function StudentEditThesisModal({
 		handleSubmit: handleUpdate,
 		getFormInitialValues,
 		getInitialFile,
-	} = useThesisForm({ mode: 'edit', thesisId, thesis });
+	} = useThesisForm({ mode: "edit", thesisId, thesis });
 
 	// Fetch thesis data when modal opens
 	useEffect(() => {
@@ -45,7 +45,7 @@ export default function StudentEditThesisModal({
 		try {
 			setLoading(true);
 			const response = await thesisService.findOne(thesisId);
-			const result = handleApiResponse(response, 'Success');
+			const result = handleApiResponse(response, "Success");
 
 			if (result.success && result.data) {
 				// Convert to ThesisWithRelations format if needed
@@ -56,14 +56,10 @@ export default function StudentEditThesisModal({
 						isModerator: false,
 						user: {
 							id: result.data.lecturerId,
-							fullName: '',
-							email: '',
+							fullName: "",
+							email: "",
 						},
 					},
-					thesisRequiredSkills:
-						((result.data as Record<string, unknown>)
-							?.thesisRequiredSkills as Array<{ id: string; name: string }>) ||
-						[],
 					thesisVersions:
 						((result.data as Record<string, unknown>)?.thesisVersions as Array<{
 							id: string;
@@ -74,7 +70,7 @@ export default function StudentEditThesisModal({
 				setThesis(thesisData);
 			}
 		} catch (error) {
-			console.error('Failed to fetch thesis:', error);
+			console.error("Failed to fetch thesis:", error);
 		} finally {
 			setLoading(false);
 		}
@@ -99,14 +95,14 @@ export default function StudentEditThesisModal({
 			width={1000}
 			destroyOnClose
 			style={{ top: 20 }}
-			bodyStyle={{ maxHeight: '80vh', overflowY: 'auto' }}
+			bodyStyle={{ maxHeight: "80vh", overflowY: "auto" }}
 		>
 			{loading ? (
 				<div className="flex justify-center items-center py-8">
 					<Spin size="large" />
 				</div>
 			) : (
-				<div style={{ maxWidth: '100%', overflow: 'hidden' }}>
+				<div style={{ maxWidth: "100%", overflow: "hidden" }}>
 					<ThesisForm
 						mode="edit"
 						initialValues={getFormInitialValues()}

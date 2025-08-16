@@ -1,13 +1,14 @@
 "use client";
 
-import { Button, Col, Form, Input, Row, Select, TreeSelect } from "antd";
+import { QuestionCircleOutlined } from "@ant-design/icons";
+import { Button, Col, Form, Input, Row, Select, Tooltip } from "antd";
 import { useEffect, useState } from "react";
 
 import { FormLabel } from "@/components/common/FormLabel";
 import SupportingDocumentField from "@/components/features/lecturer/CreateThesis/ThesisFileUpload";
 import { getSortedDomains } from "@/lib/constants/domains";
+import { ORIENTATION_LABELS } from "@/lib/constants/orientation";
 import { StorageService } from "@/lib/services/storage.service";
-import { useSkillSetStore } from "@/store";
 import { useSemesterStore } from "@/store/useSemesterStore";
 
 type Props = Readonly<{
@@ -58,13 +59,6 @@ export default function ThesisForm({
 	// Get sorted domain options
 	const domainOptions = getSortedDomains();
 
-	// Skill sets store
-	const {
-		skillSets,
-		loading: skillSetsLoading,
-		fetchSkillSets,
-	} = useSkillSetStore();
-
 	// Semester store
 	const {
 		semesters,
@@ -72,22 +66,10 @@ export default function ThesisForm({
 		loading: semestersLoading,
 	} = useSemesterStore();
 
-	// Build tree data for TreeSelect
-	const skillTreeData = skillSets.map((skillSet) => ({
-		value: skillSet.id,
-		title: skillSet.name,
-		selectable: false, // Skill set categories are not selectable
-		children: skillSet.skills.map((skill) => ({
-			value: skill.id,
-			title: skill.name,
-		})),
-	}));
-
-	// Fetch skill sets on component mount
+	// Fetch semesters on component mount
 	useEffect(() => {
-		fetchSkillSets();
 		fetchSemesters(); // Fetch semesters to get the preparing semester
-	}, [fetchSkillSets, fetchSemesters]);
+	}, [fetchSemesters]);
 
 	// Find the preparing semester
 	const preparingSemester = semesters.find(
@@ -185,22 +167,11 @@ export default function ThesisForm({
 			"abbreviation",
 			"description",
 			"domain",
-			"skills",
+			"orientation",
 		];
 		const hasChanges = fieldsToCompare.some((field) => {
 			const currentValue = currentValues[field];
 			const initialValue = initialValues?.[field];
-
-			// Handle array comparison for skills
-			if (field === "skills") {
-				const currentSkills = Array.isArray(currentValue)
-					? currentValue.toSorted((a: string, b: string) => a.localeCompare(b))
-					: [];
-				const initialSkills = Array.isArray(initialValue)
-					? initialValue.toSorted((a: string, b: string) => a.localeCompare(b))
-					: [];
-				return JSON.stringify(currentSkills) !== JSON.stringify(initialSkills);
-			}
 
 			// Handle other fields
 			return currentValue !== initialValue;
@@ -220,14 +191,12 @@ export default function ThesisForm({
 	const getChangedFields = (values: Record<string, unknown>) => {
 		if (mode === "create") {
 			// For create mode, return all values
-			const selectedSkills = (values.skills as string[]) ?? [];
 			const semesterId = preparingSemester?.id;
 
 			// eslint-disable-next-line @typescript-eslint/no-unused-vars
-			const { supportingDocument, skills, ...restValues } = values;
+			const { supportingDocument, ...restValues } = values;
 			return {
 				...restValues,
-				skillIds: selectedSkills,
 				semesterId,
 				supportingDocument: uploadedFile?.url ?? "",
 			};
@@ -244,6 +213,7 @@ export default function ThesisForm({
 			"abbreviation",
 			"description",
 			"domain",
+			"orientation",
 		];
 		fieldsToCheck.forEach((field) => {
 			const currentValue = currentValues[field];
@@ -263,22 +233,6 @@ export default function ThesisForm({
 				changedFields[field] = currentValue;
 			}
 		});
-
-		// Handle skills separately
-		const currentSkills = Array.isArray(currentValues.skills)
-			? currentValues.skills.toSorted((a: string, b: string) =>
-					a.localeCompare(b),
-				)
-			: [];
-		const initialSkills = Array.isArray(initialValues?.skills)
-			? initialValues.skills.toSorted((a: string, b: string) =>
-					a.localeCompare(b),
-				)
-			: [];
-		if (JSON.stringify(currentSkills) !== JSON.stringify(initialSkills)) {
-			// Always send skillIds even if it's an empty array (when user clears all skills)
-			changedFields.skillIds = currentSkills;
-		}
 
 		// Note: supportingDocument will be handled in handleFormSubmit for edit mode
 		// to properly handle file upload/delete operations
@@ -429,30 +383,28 @@ export default function ThesisForm({
 			</Form.Item>
 
 			<Form.Item
-				name="skills"
-				label={<FormLabel text="Required Skills" isBold />}
+				name="orientation"
+				label={
+					<div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+						<FormLabel text="Thesis Orientation" isBold />
+						<Tooltip
+							title="Choose the focus area of your thesis: SE (Software Engineering), AI (Artificial Intelligence), or Neutral (combination of both)"
+							placement="topLeft"
+						>
+							<QuestionCircleOutlined
+								style={{ color: "#8c8c8c", cursor: "help" }}
+							/>
+						</Tooltip>
+					</div>
+				}
 			>
-				<TreeSelect
-					showSearch
-					multiple
-					style={{ width: "100%" }}
-					placeholder="Select required skills"
-					treeData={skillTreeData}
-					treeDefaultExpandAll={false}
-					allowClear
-					loading={skillSetsLoading}
-					filterTreeNode={(input, treeNode) =>
-						(treeNode.title as string)
-							.toLowerCase()
-							.includes(input.toLowerCase())
-					}
-					dropdownStyle={{
-						maxHeight: 400,
-						overflow: "auto",
-					}}
-					treeCheckable={true}
-					showCheckedStrategy={TreeSelect.SHOW_CHILD}
-				/>
+				<Select placeholder="Select thesis orientation" allowClear>
+					{Object.entries(ORIENTATION_LABELS).map(([value, label]) => (
+						<Select.Option key={value} value={value}>
+							{label}
+						</Select.Option>
+					))}
+				</Select>
 			</Form.Item>
 
 			<div style={{ marginBottom: 24 }}>

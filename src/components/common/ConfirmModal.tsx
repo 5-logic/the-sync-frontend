@@ -144,7 +144,11 @@ export const ThesisConfirmationModals = {
 		return ConfirmationModal.show(config);
 	},
 
-	approve: (onConfirm: () => void | Promise<void>, loading = false) =>
+	approve: (
+		onConfirm: () => void | Promise<void>,
+		loading = false,
+		onCancel?: () => void,
+	) =>
 		ConfirmationModal.show({
 			title: "Approve Thesis",
 			message: "Are you sure you want to approve this thesis?",
@@ -153,9 +157,14 @@ export const ThesisConfirmationModals = {
 			okText: "Yes, Approve",
 			loading,
 			onOk: onConfirm,
+			onCancel,
 		}),
 
-	reject: (onConfirm: () => void | Promise<void>, loading = false) =>
+	reject: (
+		onConfirm: () => void | Promise<void>,
+		loading = false,
+		onCancel?: () => void,
+	) =>
 		ConfirmationModal.show({
 			title: "Reject Thesis",
 			message: "Are you sure you want to reject this thesis?",
@@ -165,6 +174,7 @@ export const ThesisConfirmationModals = {
 			okType: "danger",
 			loading,
 			onOk: onConfirm,
+			onCancel,
 		}),
 
 	publish: (

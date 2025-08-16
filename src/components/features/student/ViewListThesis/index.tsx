@@ -12,6 +12,7 @@ import { ListPagination } from "@/components/common/ListPagination";
 import AISuggestThesisCard from "@/components/features/student/ViewListThesis/AISuggestThesisCard";
 import ThesisCard from "@/components/features/student/ViewListThesis/ThesisCard";
 import { useStudentGroupStatus } from "@/hooks/student/useStudentGroupStatus";
+import { useThesisApplications } from "@/hooks/student/useThesisApplications";
 import { getSortedDomains } from "@/lib/constants/domains";
 import aiService, { ThesisSuggestion } from "@/lib/services/ai.service";
 import lecturersService from "@/lib/services/lecturers.service";
@@ -49,11 +50,6 @@ const convertToThesisWithRelations = async (
 					email: lecturer.email,
 				},
 			},
-			thesisRequiredSkills:
-				((thesis as Record<string, unknown>).thesisRequiredSkills as Array<{
-					id: string;
-					name: string;
-				}>) || [], // Use actual data from thesis
 			thesisVersions:
 				((thesis as Record<string, unknown>).thesisVersions as Array<{
 					id: string;
@@ -70,6 +66,11 @@ const convertToThesisWithRelations = async (
 export default function ViewListThesis() {
 	const { data: session } = useSession();
 	const { isLeader, hasGroup, group } = useStudentGroupStatus();
+	const {
+		applications,
+		refreshApplications,
+		initialized: applicationsInitialized,
+	} = useThesisApplications();
 	const router = useRouter();
 	const [currentPage, setCurrentPage] = useState(1);
 	const [searchText, setSearchText] = useState("");
@@ -326,7 +327,10 @@ export default function ViewListThesis() {
 					<ThesisCard
 						thesis={thesis}
 						studentRole={isLeader ? "leader" : "member"}
+						applications={applications}
+						applicationsLoading={!applicationsInitialized}
 						onThesisUpdate={handleRefresh}
+						onApplicationsRefresh={refreshApplications}
 					/>
 				</Col>
 			));

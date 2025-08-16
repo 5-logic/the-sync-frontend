@@ -8,10 +8,15 @@ import { Header } from "@/components/common/Header";
 import ActionButtons from "@/components/features/student/ViewThesisDetail/ActionButtons";
 import AssignedGroupCard from "@/components/features/student/ViewThesisDetail/AssignedGroupCard";
 import ThesisInfoCard from "@/components/features/student/ViewThesisDetail/ThesisInfoCard";
+import { useSessionData } from "@/hooks/auth/useAuth";
+import { useCurrentSemester } from "@/hooks/semester";
 import groupsService from "@/lib/services/groups.service";
 import lecturerService from "@/lib/services/lecturers.service";
 import supervisionService from "@/lib/services/supervisions.service";
 import thesesService from "@/lib/services/theses.service";
+import thesisApplicationService, {
+	ThesisApplication,
+} from "@/lib/services/thesis-application.service";
 import { handleApiResponse } from "@/lib/utils/handleApi";
 import { GroupDashboard } from "@/schemas/group";
 import { Lecturer } from "@/schemas/lecturer";
@@ -30,12 +35,61 @@ interface EnhancedThesis extends ThesisWithRelations {
 
 export default function StudentThesisDetailPage() {
 	const { id: thesisId } = useParams() as { id: string };
+	const { session } = useSessionData();
+	const { currentSemester } = useCurrentSemester();
 
 	const [thesis, setThesis] = useState<EnhancedThesis | null>(null);
 	const [assignedGroup, setAssignedGroup] = useState<GroupDashboard | null>(
 		null,
 	);
 	const [loading, setLoading] = useState(true);
+	const [applications, setApplications] = useState<ThesisApplication[]>([]);
+	const [applicationsLoading, setApplicationsLoading] = useState(true);
+
+	// Function to fetch thesis applications
+	const fetchApplications = useCallback(async () => {
+		if (!session?.user?.id || !currentSemester?.id) {
+			setApplicationsLoading(false);
+			return;
+		}
+
+		try {
+			setApplicationsLoading(true);
+
+			// Get student's group first
+			const groupResponse = await groupsService.getStudentGroupById(
+				session.user.id,
+			);
+			const groupResult = handleApiResponse(groupResponse, "Success");
+
+			if (groupResult.success && groupResult.data) {
+				const group = Array.isArray(groupResult.data)
+					? groupResult.data[0]
+					: groupResult.data;
+
+				if (group?.id) {
+					// Fetch applications for this group
+					const applicationsResponse =
+						await thesisApplicationService.getThesisApplications(
+							currentSemester.id,
+							group.id,
+						);
+					const applicationsResult = handleApiResponse(
+						applicationsResponse,
+						"Success",
+					);
+
+					if (applicationsResult.success && applicationsResult.data) {
+						setApplications(applicationsResult.data || []);
+					}
+				}
+			}
+		} catch (error) {
+			console.error("Error fetching applications:", error);
+		} finally {
+			setApplicationsLoading(false);
+		}
+	}, [session?.user?.id, currentSemester?.id]);
 
 	// Main fetch thesis details function with helper functions inside
 	const fetchThesisDetails = useCallback(async () => {
@@ -163,16 +217,19 @@ export default function StudentThesisDetailPage() {
 	}, [thesisId]);
 
 	useEffect(() => {
-		fetchThesisDetails();
-	}, [fetchThesisDetails]);
+		// Load both thesis details and applications in parallel
+		Promise.all([fetchThesisDetails(), fetchApplications()]);
+	}, [fetchThesisDetails, fetchApplications]);
 
 	// Handle refresh with cache clearing
 	const handleRefreshThesis = useCallback(async () => {
 		setLoading(true); // Show loading immediately
+		setApplicationsLoading(true);
 		setThesis(null);
 		setAssignedGroup(null);
-		await fetchThesisDetails();
-	}, [fetchThesisDetails]);
+		setApplications([]);
+		await Promise.all([fetchThesisDetails(), fetchApplications()]);
+	}, [fetchThesisDetails, fetchApplications]);
 
 	if (loading) {
 		return (
@@ -201,7 +258,13 @@ export default function StudentThesisDetailPage() {
 			{assignedGroup && <AssignedGroupCard assignedGroup={assignedGroup} />}
 
 			{/* Action Buttons */}
-			<ActionButtons thesis={thesis} onThesisUpdate={handleRefreshThesis} />
+			<ActionButtons
+				thesis={thesis}
+				applications={applications}
+				applicationsLoading={applicationsLoading}
+				onThesisUpdate={handleRefreshThesis}
+				onApplicationsRefresh={fetchApplications}
+			/>
 		</Space>
 	);
 }

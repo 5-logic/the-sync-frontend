@@ -40,7 +40,7 @@ const ROUTE_TITLES: Record<string, string> = {
 	"/student/group-detail": "Group Detail",
 	"/student/invite-to-group": "Invite to Group",
 	"/student/list-thesis": "List Thesis",
-	"/student/register-thesis": "Register Thesis",
+	"/student/register-thesis": "Register Thesis Request",
 	"/student/suggested-thesis": "Suggested Thesis",
 	"/student/track-progress": "Track Progress",
 	"/student/account-setting": "Account Setting",
