@@ -9,6 +9,130 @@ For more information about this project, see the [README](./README.md).
 
 ---
 
+## [1.0.1] - 2025-08-16
+
+### Added
+
+#### Group Management System Enhancement
+
+- **Complete Group Management Page:** Comprehensive group management functionality for administrators ([#356](https://github.com/5-logic/the-sync-frontend/pull/356), [#360](https://github.com/5-logic/the-sync-frontend/pull/360), [#361](https://github.com/5-logic/the-sync-frontend/pull/361))
+  - New Group Management page with full CRUD operations for groups
+  - AdminGroup interface implementation for enhanced group data handling
+  - CreateForm component for efficient group creation with bulk functionality
+  - GroupsTable component with advanced filtering, sorting, and management features
+  - Group formatting functionality with confirmation modals for admin users
+  - Enhanced group deletion functionality with comprehensive error handling
+
+#### Thesis Request Management System
+
+- **Request Apply Thesis Feature:** New comprehensive thesis application management system ([#357](https://github.com/5-logic/the-sync-frontend/pull/357))
+  - RequestApplyThesisTable component for managing thesis applications
+  - ThesisRequestsModal for detailed thesis request handling
+  - GroupDetailModal and ThesisDetailModal for comprehensive information display
+  - Enhanced thesis application workflow with status management and approval processes
+  - Thesis application filtering and search capabilities
+
+#### Enhanced Thesis Registration System
+
+- **Theses Registration Page:** Advanced thesis registration management for lecturers ([#358](https://github.com/5-logic/the-sync-frontend/pull/358))
+  - ThesesRegistrationTable with comprehensive filtering and search functionality
+  - SharedThesisFilterBar for consistent filtering across thesis-related components
+  - ThesisApplicationTable with reusable columns and search/filter controls
+  - Enhanced thesis orientation feature with display and selection options
+  - Duplicate theses detection with automatic checking for pending applications
+
+#### Student Join Group Enhancement
+
+- **Improved Join Group Experience:** Enhanced group joining functionality for students
+  - Refactored Join Group page with improved navigation and user experience
+  - Enhanced GroupCard component with better status checks and button configuration
+  - Improved group join logic with better notifications and error handling
+  - Enhanced group browsing with better filtering and display options
+
+### Changed
+
+#### Administrative Interface Improvements
+
+- **Enhanced Admin Navigation:** Improved administrative interface with new management tools
+  - Added Group Management route to admin sidebar with dynamic routing support
+  - Enhanced breadcrumb navigation for Group Management sections
+  - Improved admin user interface with better component organization
+
+#### Thesis Management Enhancements
+
+- **Improved Thesis Workflows:** Streamlined thesis-related processes across all user roles
+  - Enhanced thesis application handling with local state management
+  - Improved thesis registration terminology for better clarity
+  - Updated thesis orientation labels and selection interface
+  - Enhanced thesis filtering logic with better validation
+
+#### Component Architecture Improvements
+
+- **Reusable Component Development:** Enhanced component reusability and maintainability
+  - Extracted shared rendering utilities for group management components
+  - Implemented reusable ThesisApplicationTable columns for consistent UI
+  - Enhanced SearchAndFilterControls for standardized filtering interfaces
+  - Improved component prop handling with readonly modifiers
+
+#### Code Quality & Standardization
+
+- **Comprehensive Code Improvements:** Enhanced code quality and consistency
+  - Standardized quotation marks across all components
+  - Improved regex patterns for group code extraction
+  - Enhanced error handling with Axios error support
+  - Optimized component rendering with useCallback implementations
+
+### Fixed
+
+#### Group Management Fixes
+
+- **Enhanced Group Operations:** Improved group management functionality and reliability
+  - Fixed group status checks and button configuration logic
+  - Enhanced group creation error handling with detailed user messages
+  - Improved group join logic with better notifications and status management
+  - Fixed group deletion restrictions and permission handling
+
+#### Form and Validation Improvements
+
+- **Better Form Handling:** Enhanced form validation and user experience
+  - Improved error handling in group creation with dedicated error functions
+  - Enhanced semester selection with status tags in forms
+  - Fixed validation logic for group operations and thesis applications
+  - Better handling of form state management and change detection
+
+#### User Interface Fixes
+
+- **UI/UX Enhancements:** Improved user interface and interaction patterns
+  - Enhanced tooltip functionality for action buttons in tables
+  - Improved responsive design for group and thesis management interfaces
+  - Better loading state management across components
+  - Fixed navigation and routing issues in student interfaces
+
+### Technical Details
+
+- **Files Changed:** 107 files with 6,957 additions and 3,139 deletions
+- **New Components:** GroupManagement suite (CreateForm, GroupsTable), RequestApplyThesis components (GroupDetailModal, ThesisDetailModal, ThesisRequestsModal), ThesesRegistration components
+- **Enhanced Services:** thesis-application.service.ts, enhanced groups.service.ts with admin functionality
+- **New Hooks:** useAdminGroupActions, useCreateGroups, useFormatGroups, useGroupManagement, useRequestApplyThesis, useThesisRequests, useThesisApplications
+- **Enhanced Stores:** useGroupsStore with improved state management
+- **New Utilities:** groupManagementRenderer for shared component rendering, enhanced orientation constants
+
+### API Enhancements
+
+- **Group Management:** New admin APIs for comprehensive group management operations
+- **Thesis Applications:** Enhanced thesis application endpoints with status management
+- **Request System:** Improved request handling for thesis applications and group management
+- **Authentication:** Enhanced role-based access control for administrative functions
+
+### Migration Notes
+
+- **Group Management:** New admin group management features require proper administrative permissions
+- **Thesis Applications:** Enhanced thesis application system may require updates to existing workflow implementations
+- **Navigation Updates:** New routing structure for group management requires cache refresh for optimal performance
+- **Component Updates:** Shared component utilities provide better code reuse but may require updates to custom implementations
+
+---
+
 ## [1.0.0] - 2025-08-12
 
 ### Added
