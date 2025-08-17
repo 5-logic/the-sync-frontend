@@ -197,11 +197,11 @@ export default function ActionButtons({
 						disabled={isRegisterDisabled}
 						title={
 							!canRegisterThesis
-								? 'Registration is only available during the "Picking" phase or "Ongoing - Scope Adjustable" phase'
+								? 'Application is only available during the "Picking" phase or "Ongoing - Scope Adjustable" phase'
 								: undefined
 						}
 					>
-						{isRegistering ? "Registering..." : "Register Thesis"}
+						{isRegistering ? "Applying..." : "Apply Thesis"}
 					</Button>
 				)}
 				{showUnregisterButton && (
@@ -212,7 +212,7 @@ export default function ActionButtons({
 						loading={isRegistering}
 						disabled={disabled}
 					>
-						Unregister Thesis
+						Cancel Application
 					</Button>
 				)}
 				{showCancelApplicationButton && (

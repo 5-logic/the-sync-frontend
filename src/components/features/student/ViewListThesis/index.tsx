@@ -377,7 +377,7 @@ export default function ViewListThesis() {
 						description={
 							showAISuggestions
 								? "AI-recommended thesis topics based on your group's project direction."
-								: "Browse available thesis topics proposed and published by lecturers. You can view details and register once your group is ready."
+								: "Browse available thesis topics proposed and published by lecturers. You can view details and apply once your group is ready."
 						}
 					/>
 				</Col>

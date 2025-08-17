@@ -207,15 +207,15 @@ export default function ThesisCard({
 			return "This thesis is already taken by another group";
 		}
 		if (!hasGroup) {
-			return "You need to be in a group to register";
+			return "You need to be in a group to apply";
 		}
 		if (studentRole !== "leader") {
-			return "Only group leaders can register for thesis";
+			return "Only group leaders can apply for thesis";
 		}
 		if (!canRegisterThesis) {
-			return 'Registration is only available during the "Picking" phase or "Ongoing - Scope Adjustable" phase';
+			return 'Application is only available during the "Picking" phase or "Ongoing - Scope Adjustable" phase';
 		}
-		return "Register for this thesis";
+		return "Apply for this thesis";
 	};
 
 	// Get register button text based on current state
@@ -227,12 +227,12 @@ export default function ThesisCard({
 			return "Checking...";
 		}
 		if (hasApplicationForThesis) {
-			return "Cancel Request";
+			return "Cancel Application";
 		}
 		if (isThesisTaken) {
 			return "Taken";
 		}
-		return "Register";
+		return "Apply Thesis";
 	};
 
 	return (
@@ -325,9 +325,9 @@ export default function ThesisCard({
 							onClick={handleUnregisterThesis}
 							loading={isRegistering}
 							disabled={!isAllDataLoaded}
-							title="Unregister from this thesis"
+							title="Cancel thesis application"
 						>
-							{isRegistering ? "Unregistering..." : "Unregister"}
+							{isRegistering ? "Canceling..." : "Cancel Application"}
 						</Button>
 					) : (
 						<Button
