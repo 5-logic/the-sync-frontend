@@ -4,6 +4,10 @@ import { UserOutlined } from "@ant-design/icons";
 import { Avatar, Button, Card, Typography } from "antd";
 import React from "react";
 
+import {
+	ResponsibilityRadarChart,
+	ResponsibilityData,
+} from "@/components/common/radar-chart";
 import { Student } from "@/schemas/student";
 
 const { Paragraph } = Typography;
@@ -26,6 +30,14 @@ export const StudentSuggestionCard: React.FC<{ student: Student }> = ({
 		majorName = "Artificial Intelligence";
 	}
 
+	// Convert studentResponsibilities to ResponsibilityData format
+	const responsibilityData: ResponsibilityData[] =
+		s.studentResponsibilities.map((resp) => ({
+			responsibilityId: resp.responsibilityId,
+			responsibilityName: resp.name,
+			level: 0, // Default level since we don't have level data in this interface
+		}));
+
 	return (
 		<Card
 			hoverable
@@ -42,9 +54,25 @@ export const StudentSuggestionCard: React.FC<{ student: Student }> = ({
 				{majorName}
 			</Paragraph>
 
-			<Paragraph style={{ marginBottom: 8 }}>
-				Roles: {s.studentResponsibilities.map((r) => r.name).join(", ")}
-			</Paragraph>
+			{/* Responsibilities Radar Chart */}
+			{responsibilityData.length > 0 ? (
+				<div style={{ marginBottom: 16 }}>
+					<Paragraph
+						style={{ marginBottom: 8, fontSize: "12px", color: "#666" }}
+					>
+						Responsibilities:
+					</Paragraph>
+					<ResponsibilityRadarChart
+						data={responsibilityData}
+						height={200}
+						loading={false}
+					/>
+				</div>
+			) : (
+				<Paragraph style={{ marginBottom: 8 }}>
+					No responsibilities specified
+				</Paragraph>
+			)}
 
 			<Button type="primary" block>
 				Invite

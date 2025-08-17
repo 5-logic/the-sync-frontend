@@ -15,6 +15,10 @@ import {
 import Link from "next/link";
 
 import { ConfirmationModal } from "@/components/common/ConfirmModal";
+import {
+	ResponsibilityRadarChart,
+	ResponsibilityData,
+} from "@/components/common/radar-chart";
 import { GroupDashboard } from "@/schemas/group";
 import { StudentProfile } from "@/schemas/student";
 
@@ -208,14 +212,36 @@ export default function StudentInfoCard({
 
 			{/* Expected Responsibilities */}
 			<Card title="Expected Responsibilities" loading={loading}>
-				<Space wrap>
-					{student.studentResponsibilities.map((responsibility) => (
-						<Tag key={responsibility.responsibilityName} color="purple">
-							{responsibility.responsibilityName}
-						</Tag>
-					))}
-				</Space>
-				{student.studentResponsibilities.length === 0 && (
+				{student.studentResponsibilities.length > 0 ? (
+					<>
+						{/* Tags */}
+						<Space wrap style={{ marginBottom: 16 }}>
+							{student.studentResponsibilities.map((responsibility) => (
+								<Tag key={responsibility.responsibilityName} color="purple">
+									{responsibility.responsibilityName}
+								</Tag>
+							))}
+						</Space>
+
+						{/* Radar Chart */}
+						<div style={{ marginTop: 16 }}>
+							<Text strong style={{ marginBottom: 8, display: "block" }}>
+								Responsibility Levels:
+							</Text>
+							<ResponsibilityRadarChart
+								data={student.studentResponsibilities.map(
+									(resp): ResponsibilityData => ({
+										responsibilityId: resp.responsibilityId,
+										responsibilityName: resp.responsibilityName,
+										level: Number(resp.level),
+									}),
+								)}
+								height={300}
+								loading={loading}
+							/>
+						</div>
+					</>
+				) : (
 					<div className="text-center py-4">
 						<Text type="secondary">No expected responsibilities specified</Text>
 					</div>
