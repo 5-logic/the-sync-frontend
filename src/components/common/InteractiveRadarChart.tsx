@@ -39,7 +39,7 @@ const LEVEL_NAMES = [
 ] as const;
 const LEVEL_COLORS = [
 	"#52c41a", // Green for low level (level 1)
-	"#fadb14", // Yellow for level 2
+	"#faad14", // Darker yellow for level 2 (Intermediate) - better visibility on white background
 	"#fa8c16", // Orange for level 3
 	"#ff4d4f", // Red for level 4
 	"#1890ff", // Blue for highest level (level 5)
