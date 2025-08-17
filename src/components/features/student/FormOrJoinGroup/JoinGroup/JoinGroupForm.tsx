@@ -5,7 +5,7 @@ import { useCallback, useState } from "react";
 import { ConfirmationModal } from "@/components/common/ConfirmModal";
 import { useSessionData } from "@/hooks/auth/useAuth";
 import { useCurrentSemester } from "@/hooks/semester/useCurrentSemester";
-import aiService, { type GroupSuggestion } from "@/lib/services/ai.service";
+import aiService, { type SuggestGroupsData } from "@/lib/services/ai.service";
 import studentsService from "@/lib/services/students.service";
 import { handleApiResponse } from "@/lib/utils/handleApi";
 
@@ -23,7 +23,7 @@ const BUTTON_STYLES = {
 } as const;
 
 interface JoinGroupFormProps {
-	readonly onSuggestionsReceived?: (suggestions: GroupSuggestion[]) => void;
+	readonly onSuggestionsReceived?: (data: SuggestGroupsData) => void;
 }
 
 export default function JoinGroupForm({
@@ -46,8 +46,8 @@ export default function JoinGroupForm({
 			});
 
 			// Direct access since service already returns proper response format
-			if (response.success && response.data?.suggestions) {
-				onSuggestionsReceived?.(response.data.suggestions);
+			if (response.success && response.data?.groups) {
+				onSuggestionsReceived?.(response.data);
 			}
 		} catch (error) {
 			console.error("Error calling AI suggest API:", error);

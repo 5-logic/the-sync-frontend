@@ -8,7 +8,7 @@ import { RequestsButton } from "@/components/common/RequestsManagement";
 import AISuggestions from "@/components/features/student/FormOrJoinGroup/JoinGroup/AISuggestions";
 import GroupListSection from "@/components/features/student/FormOrJoinGroup/JoinGroup/GroupBrowsing/GroupListSection";
 import JoinGroupForm from "@/components/features/student/FormOrJoinGroup/JoinGroup/JoinGroupForm";
-import { type GroupSuggestion } from "@/lib/services/ai.service";
+import { type SuggestGroupsData } from "@/lib/services/ai.service";
 import { type Group } from "@/lib/services/groups.service";
 import { useRequestsStore } from "@/store";
 import { useGroupsStore } from "@/store/useGroupsStore";
@@ -42,7 +42,9 @@ export default function FormOrJoinGroup() {
 	// const [tabKey, setTabKey] = useState<string>(TAB_KEYS.JOIN);
 	const [search, setSearch] = useState<string>("");
 	const [category, setCategory] = useState<string | undefined>(undefined);
-	const [aiSuggestions, setAiSuggestions] = useState<GroupSuggestion[]>([]);
+	const [aiSuggestions, setAiSuggestions] = useState<SuggestGroupsData | null>(
+		null,
+	);
 	const [aiSuggestionsLoading, setAiSuggestionsLoading] = useState(false);
 
 	// All Available Groups (using API data)
@@ -96,13 +98,10 @@ export default function FormOrJoinGroup() {
 	}, [fetchStudentRequests]);
 
 	// Handle AI suggestions received
-	const handleAISuggestionsReceived = useCallback(
-		(suggestions: GroupSuggestion[]) => {
-			setAiSuggestions(suggestions);
-			setAiSuggestionsLoading(false);
-		},
-		[],
-	);
+	const handleAISuggestionsReceived = useCallback((data: SuggestGroupsData) => {
+		setAiSuggestions(data);
+		setAiSuggestionsLoading(false);
+	}, []);
 
 	// Helper function to render All Available Groups section
 	const renderAllAvailableGroups = () => {

@@ -6,41 +6,16 @@ export interface SuggestGroupsRequest {
 	semesterId: string;
 }
 
-export interface SuggestedGroupMember {
-	id: string;
-	name: string;
-	isLeader: boolean;
-}
-
 export interface SuggestedGroup {
 	id: string;
 	code: string;
 	name: string;
-	projectDirection: string;
-	thesis: null;
-	currentMembersCount: number;
-	leader: {
-		id: string;
-		name: string;
-	};
-	members: SuggestedGroupMember[];
-}
-
-export interface GroupSuggestion {
-	group: SuggestedGroup;
-	compatibilityScore: number;
-	matchingResponsibilities: number;
+	compatibility: number;
 }
 
 export interface SuggestGroupsData {
-	student: {
-		id: string;
-		studentCode: string;
-		name: string;
-		email: string;
-	};
-	suggestions: GroupSuggestion[];
-	totalGroups: number;
+	reason: string;
+	groups: SuggestedGroup[];
 }
 
 export interface SuggestGroupsResponse {

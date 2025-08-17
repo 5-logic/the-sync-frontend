@@ -1,10 +1,22 @@
-import { Button, Card, Col, Progress, Row, Space, Tag, Typography } from "antd";
+import {
+	Button,
+	Card,
+	Col,
+	Progress,
+	Row,
+	Space,
+	Typography,
+	Collapse,
+} from "antd";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
 import { GroupConfirmationModals } from "@/components/common/ConfirmModal";
 import { ListPagination } from "@/components/common/ListPagination";
-import { type GroupSuggestion } from "@/lib/services/ai.service";
+import {
+	type SuggestGroupsData,
+	type SuggestedGroup,
+} from "@/lib/services/ai.service";
 import requestService from "@/lib/services/requests.service";
 import { showNotification } from "@/lib/utils/notification";
 import { useGroupDashboardStore } from "@/store/useGroupDashboardStore";
@@ -12,25 +24,20 @@ import { useGroupDashboardStore } from "@/store/useGroupDashboardStore";
 const { Title, Text } = Typography;
 
 interface AISuggestionsProps {
-	readonly suggestions: GroupSuggestion[];
+	readonly suggestions: SuggestGroupsData | null;
 	readonly loading?: boolean;
 }
 
 interface AISuggestionCardProps {
-	suggestion: GroupSuggestion;
+	group: SuggestedGroup;
 }
 
-const AISuggestionCard: React.FC<AISuggestionCardProps> = ({ suggestion }) => {
+const AISuggestionCard: React.FC<AISuggestionCardProps> = ({ group }) => {
 	const [isRequesting, setIsRequesting] = useState(false);
 	const router = useRouter();
 
-	const { group, compatibilityScore, matchingResponsibilities } = suggestion;
-
-	// Calculate percentage for compatibility score (assuming max score is around 100)
-	const compatibilityPercentage = Math.min(compatibilityScore, 100);
-
-	// Check if group is full (≥5 members)
-	const isGroupFull = group.currentMembersCount >= 5;
+	// Calculate percentage for compatibility score (0-1 scale to percentage)
+	const compatibilityPercentage = Math.round(group.compatibility * 100);
 
 	const handleViewDetail = () => {
 		router.push(`/student/join-group/${group.id}`);
@@ -120,43 +127,30 @@ const AISuggestionCard: React.FC<AISuggestionCardProps> = ({ suggestion }) => {
 			<div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
 				<div style={{ flex: 1 }}>
 					<Space direction="vertical" size="small" style={{ width: "100%" }}>
-						{/* Project Direction */}
+						{/* Compatibility Score */}
 						<div>
-							<Text strong>Project Direction: </Text>
-							<Tag color="blue">{group.projectDirection}</Tag>
-						</div>
-
-						{/* Leader */}
-						<div>
-							<Text strong>Leader: </Text>
-							<Text>{group.leader.name}</Text>
-						</div>
-
-						{/* Members */}
-						<div>
-							<Text strong>Members: </Text>
-							<Text>{group.currentMembersCount}/5</Text>
-						</div>
-
-						{/* Matching Stats */}
-						<Row gutter={16}>
-							<Col span={24}>
-								<div style={{ textAlign: "center" }}>
-									<Text type="secondary" style={{ fontSize: "12px" }}>
-										Matching Responsibilities
+							<Row justify="space-between" align="middle">
+								<Col>
+									<Text strong style={{ fontSize: "14px" }}>
+										Compatibility
 									</Text>
-									<div
-										style={{
-											fontSize: "16px",
-											fontWeight: "bold",
-											color: "#1890ff",
-										}}
-									>
-										{matchingResponsibilities}
-									</div>
-								</div>
-							</Col>
-						</Row>
+								</Col>
+								<Col>
+									<Text style={{ fontSize: "12px", fontWeight: "bold" }}>
+										{compatibilityPercentage}%
+									</Text>
+								</Col>
+							</Row>
+							<Progress
+								percent={compatibilityPercentage}
+								strokeColor={{
+									"0%": "#108ee9",
+									"100%": "#87d068",
+								}}
+								showInfo={false}
+								size="small"
+							/>
+						</div>
 					</Space>
 				</div>
 
@@ -192,14 +186,12 @@ const AISuggestionCard: React.FC<AISuggestionCardProps> = ({ suggestion }) => {
 							height: 40,
 							width: "100%",
 						}}
-						title={
-							isGroupFull ? "Group is full" : `Request to join ${group.name}`
-						}
+						title={`Request to join ${group.name}`}
 						onClick={handleJoinRequest}
 						loading={isRequesting}
-						disabled={isRequesting || isGroupFull}
+						disabled={isRequesting}
 					>
-						{isGroupFull ? "Group Full" : "Request to Join"}
+						Request to Join
 					</Button>
 				</div>
 			</div>
@@ -215,16 +207,17 @@ export default function AISuggestions({
 	const pageSize = 3;
 
 	// Memoize sorted suggestions by compatibility score
-	const sortedSuggestions = useMemo(() => {
-		return [...suggestions].sort(
-			(a, b) => b.compatibilityScore - a.compatibilityScore,
+	const sortedGroups = useMemo(() => {
+		if (!suggestions?.groups) return [];
+		return [...suggestions.groups].sort(
+			(a, b) => b.compatibility - a.compatibility,
 		);
-	}, [suggestions]);
+	}, [suggestions?.groups]);
 
 	// Calculate paginated data
 	const startIndex = (currentPage - 1) * pageSize;
 	const endIndex = startIndex + pageSize;
-	const paginatedSuggestions = sortedSuggestions.slice(startIndex, endIndex);
+	const paginatedGroups = sortedGroups.slice(startIndex, endIndex);
 
 	if (loading) {
 		return (
@@ -236,7 +229,7 @@ export default function AISuggestions({
 		);
 	}
 
-	if (suggestions.length === 0) {
+	if (!suggestions || suggestions.groups.length === 0) {
 		return null; // Don't render anything when no suggestions
 	}
 
@@ -245,7 +238,7 @@ export default function AISuggestions({
 			<Space direction="vertical" size="large" style={{ width: "100%" }}>
 				<div>
 					<Title level={5} style={{ margin: 0 }}>
-						AI Group Suggestions ({suggestions.length} groups found)
+						AI Group Suggestions ({suggestions.groups.length} groups found)
 					</Title>
 					<Text type="secondary">
 						Groups are ranked by compatibility score based on your
@@ -253,25 +246,29 @@ export default function AISuggestions({
 					</Text>
 				</div>
 
+				{/* AI Reasoning */}
+				<Collapse
+					items={[
+						{
+							key: "reason",
+							label: "Why these groups were suggested",
+							children: <Text>{suggestions.reason}</Text>,
+						},
+					]}
+				/>
+
 				<Row gutter={[16, 16]}>
-					{paginatedSuggestions.map((suggestion) => (
-						<Col
-							xs={24}
-							sm={24}
-							md={12}
-							lg={8}
-							xl={8}
-							key={suggestion.group.id}
-						>
-							<AISuggestionCard suggestion={suggestion} />
+					{paginatedGroups.map((group) => (
+						<Col xs={24} sm={24} md={12} lg={8} xl={8} key={group.id}>
+							<AISuggestionCard group={group} />
 						</Col>
 					))}
 				</Row>
 
-				{suggestions.length > pageSize && (
+				{suggestions.groups.length > pageSize && (
 					<ListPagination
 						current={currentPage}
-						total={suggestions.length}
+						total={suggestions.groups.length}
 						pageSize={pageSize}
 						onChange={(page) => setCurrentPage(page)}
 						itemName="groups"
