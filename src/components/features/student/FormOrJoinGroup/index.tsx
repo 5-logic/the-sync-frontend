@@ -171,6 +171,8 @@ export default function FormOrJoinGroup() {
 					<AISuggestions
 						suggestions={aiSuggestions}
 						loading={aiSuggestionsLoading}
+						onRequestSent={handleRequestSent}
+						existingRequests={requests}
 					/>
 					{/* All Available Groups uses API data with loading/error states */}
 					{renderAllAvailableGroups()}

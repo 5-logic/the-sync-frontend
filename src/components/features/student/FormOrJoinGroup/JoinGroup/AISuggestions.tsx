@@ -17,7 +17,9 @@ import {
 	type SuggestGroupsData,
 	type SuggestedGroup,
 } from "@/lib/services/ai.service";
-import requestService from "@/lib/services/requests.service";
+import requestService, {
+	type GroupRequest,
+} from "@/lib/services/requests.service";
 import { showNotification } from "@/lib/utils/notification";
 import { useGroupDashboardStore } from "@/store/useGroupDashboardStore";
 
@@ -26,24 +28,77 @@ const { Title, Text } = Typography;
 interface AISuggestionsProps {
 	readonly suggestions: SuggestGroupsData | null;
 	readonly loading?: boolean;
+	readonly onRequestSent?: () => void;
+	readonly existingRequests?: readonly GroupRequest[];
 }
 
 interface AISuggestionCardProps {
 	group: SuggestedGroup;
+	onRequestSent?: () => void;
+	existingRequests?: readonly GroupRequest[];
 }
 
-const AISuggestionCard: React.FC<AISuggestionCardProps> = ({ group }) => {
+const AISuggestionCard: React.FC<AISuggestionCardProps> = ({
+	group,
+	onRequestSent,
+	existingRequests = [],
+}) => {
 	const [isRequesting, setIsRequesting] = useState(false);
 	const router = useRouter();
 
 	// Calculate percentage for compatibility score (0-1 scale to percentage)
 	const compatibilityPercentage = Math.round(group.compatibility * 100);
 
+	// Group status logic - similar to GroupCard (but without member count checks since AI suggestions don't provide this)
+	const groupStatus = useMemo(() => {
+		const pendingInviteRequest = existingRequests.find(
+			(req) =>
+				req.group.id === group.id &&
+				req.type === "Invite" &&
+				req.status === "Pending",
+		);
+
+		const pendingJoinRequest = existingRequests.find(
+			(req) =>
+				req.group.id === group.id &&
+				req.type === "Join" &&
+				req.status === "Pending",
+		);
+
+		return {
+			hasPendingInviteRequest: !!pendingInviteRequest,
+			hasPendingJoinRequest: !!pendingJoinRequest,
+			hasNoMembers: false, // AI suggestions don't provide member count, assume groups have members
+			isGroupFull: false, // AI suggestions don't provide member count, assume groups aren't full
+		};
+	}, [group.id, existingRequests]);
+
 	const handleViewDetail = () => {
 		router.push(`/student/join-group/${group.id}`);
 	};
 
+	const handleJoinSuccess = async () => {
+		showNotification.success(
+			"Success",
+			"You have successfully joined the group!",
+		);
+
+		// Use the same logic as accept invite - refresh group data and redirect
+		const { refreshGroup } = useGroupDashboardStore.getState();
+
+		// Similar to group creation flow, trigger refresh and redirect
+		await refreshGroup();
+
+		// Add a small delay to ensure API has processed the group membership
+		await new Promise((resolve) => setTimeout(resolve, 1000));
+		await refreshGroup();
+
+		// Redirect to group dashboard
+		router.push("/student/group-dashboard");
+	};
+
 	const handleJoinRequest = () => {
+		// For AI suggestions, we don't know member count, so always use requestToJoin flow
 		GroupConfirmationModals.requestToJoin(
 			group.name,
 			async () => {
@@ -51,32 +106,17 @@ const AISuggestionCard: React.FC<AISuggestionCardProps> = ({ group }) => {
 				try {
 					const response = await requestService.joinGroup(group.id);
 
-					// Check response to determine if directly joined or created request
+					// Check response or request status to determine if directly joined
 					if (response.success && response.data?.status === "Approved") {
 						// Direct join successful (auto-approved)
-						showNotification.success(
-							"Success",
-							"You have successfully joined the group!",
-						);
-
-						// Use the same logic as accept invite - refresh group data and redirect
-						const { refreshGroup } = useGroupDashboardStore.getState();
-
-						// Similar to group creation flow, trigger refresh and redirect
-						await refreshGroup();
-
-						// Add a small delay to ensure API has processed the group membership
-						await new Promise((resolve) => setTimeout(resolve, 1000));
-						await refreshGroup();
-
-						// Redirect to group dashboard
-						router.push("/student/group-dashboard");
+						await handleJoinSuccess();
 					} else {
 						// Request created and pending
 						showNotification.success(
 							"Success",
 							"Join request sent successfully! The group leader will review your request.",
 						);
+						onRequestSent?.();
 					}
 				} catch (error: unknown) {
 					const apiError = error as {
@@ -96,30 +136,51 @@ const AISuggestionCard: React.FC<AISuggestionCardProps> = ({ group }) => {
 		);
 	};
 
+	// Button configuration based on group status - simplified for AI suggestions
+	const getButtonConfig = () => {
+		const { hasPendingInviteRequest, hasPendingJoinRequest } = groupStatus;
+
+		if (hasPendingInviteRequest) {
+			return {
+				title: "You have been invited to this group - click to view details",
+				text: "View Invite",
+				clickHandler: handleViewDetail,
+				disabled: false,
+			};
+		}
+
+		if (hasPendingJoinRequest) {
+			return {
+				title: "Request already sent",
+				text: "Request Sent",
+				clickHandler: undefined,
+				disabled: true,
+			};
+		}
+
+		// For AI suggestions, default to "Request to Join" since we don't know member count
+		return {
+			title: "Request to Join",
+			text: "Request to Join",
+			clickHandler: handleJoinRequest,
+			disabled: false,
+		};
+	};
+
+	const buttonConfig = getButtonConfig();
+
 	return (
 		<Card
 			hoverable
 			size="small"
 			title={
 				<div style={{ padding: "8px 0" }}>
-					<Row justify="space-between" align="middle">
-						<Col>
-							<Space direction="vertical" size={0}>
-								<Text strong>{group.name}</Text>
-								<Text type="secondary" style={{ fontSize: "12px" }}>
-									{group.code}
-								</Text>
-							</Space>
-						</Col>
-						<Col>
-							<Progress
-								type="circle"
-								size={40}
-								percent={compatibilityPercentage}
-								format={(percent) => `${percent}%`}
-							/>
-						</Col>
-					</Row>
+					<Space direction="vertical" size={0}>
+						<Text strong>{group.name}</Text>
+						<Text type="secondary" style={{ fontSize: "12px" }}>
+							{group.code}
+						</Text>
+					</Space>
 				</div>
 			}
 			style={{ height: "100%" }}
@@ -186,12 +247,12 @@ const AISuggestionCard: React.FC<AISuggestionCardProps> = ({ group }) => {
 							height: 40,
 							width: "100%",
 						}}
-						title={`Request to join ${group.name}`}
-						onClick={handleJoinRequest}
+						title={buttonConfig.title}
+						onClick={buttonConfig.clickHandler}
 						loading={isRequesting}
-						disabled={isRequesting}
+						disabled={isRequesting || buttonConfig.disabled}
 					>
-						Request to Join
+						{buttonConfig.text}
 					</Button>
 				</div>
 			</div>
@@ -202,6 +263,8 @@ const AISuggestionCard: React.FC<AISuggestionCardProps> = ({ group }) => {
 export default function AISuggestions({
 	suggestions,
 	loading = false,
+	onRequestSent,
+	existingRequests = [],
 }: AISuggestionsProps) {
 	const [currentPage, setCurrentPage] = useState(1);
 	const pageSize = 3;
@@ -260,7 +323,11 @@ export default function AISuggestions({
 				<Row gutter={[16, 16]}>
 					{paginatedGroups.map((group) => (
 						<Col xs={24} sm={24} md={12} lg={8} xl={8} key={group.id}>
-							<AISuggestionCard group={group} />
+							<AISuggestionCard
+								group={group}
+								onRequestSent={onRequestSent}
+								existingRequests={existingRequests}
+							/>
 						</Col>
 					))}
 				</Row>
