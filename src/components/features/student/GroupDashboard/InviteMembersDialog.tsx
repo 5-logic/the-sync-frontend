@@ -2,6 +2,7 @@ import {
 	Alert,
 	Button,
 	Col,
+	Collapse,
 	Divider,
 	Modal,
 	Row,
@@ -18,7 +19,7 @@ import requestService from "@/lib/services/requests.service";
 import { showNotification } from "@/lib/utils/notification";
 import { GroupDashboard } from "@/schemas/group";
 import type { Student } from "@/schemas/student";
-import { useRequestsStore, useStudentStore } from "@/store";
+import { useRequestsStore, useStudentStore, useMajorStore } from "@/store";
 
 const { Text } = Typography;
 
@@ -42,12 +43,14 @@ export default function InviteMembersDialog({
 	const [suggestedStudents, setSuggestedStudents] = useState<
 		SuggestedStudent[]
 	>([]);
+	const [suggestionReason, setSuggestionReason] = useState<string>("");
 	const [suggestLoading, setSuggestLoading] = useState(false);
 	const [showSuggestions, setShowSuggestions] = useState(false);
 	const [currentPage, setCurrentPage] = useState(1);
 	const [pageSize] = useState(3);
 	const { fetchGroupRequests, requests } = useRequestsStore();
 	const { fetchStudentsWithoutGroupAuto } = useStudentStore();
+	const { fetchMajors } = useMajorStore();
 
 	// Calculate pagination for suggested students
 	const startIndex = (currentPage - 1) * pageSize;
@@ -58,6 +61,11 @@ export default function InviteMembersDialog({
 	const handlePageChange = (page: number) => {
 		setCurrentPage(page);
 	};
+
+	// Fetch majors on component mount for mapping major names
+	useEffect(() => {
+		fetchMajors();
+	}, [fetchMajors]);
 
 	// Get existing member IDs to exclude from invites
 	const existingMemberIds = group.members.map((member) => member.userId);
@@ -113,11 +121,12 @@ export default function InviteMembersDialog({
 		try {
 			const response = await aiService.suggestStudentsForGroup(groupId);
 			if (response.success) {
-				setSuggestedStudents(response.data);
+				setSuggestedStudents(response.data.students);
+				setSuggestionReason(response.data.reason);
 				setShowSuggestions(true);
 				showNotification.success(
 					"Students Suggested",
-					`Found ${response.data.length} suggested students for your group.`,
+					`Found ${response.data.students.length} suggested students for your group.`,
 				);
 			} else {
 				showNotification.error(
@@ -240,6 +249,7 @@ export default function InviteMembersDialog({
 	const handleCancel = () => {
 		setSelectedMembers([]);
 		setSuggestedStudents([]);
+		setSuggestionReason("");
 		setShowSuggestions(false);
 		setCurrentPage(1);
 		onCancel();
@@ -258,16 +268,41 @@ export default function InviteMembersDialog({
 		if (suggestedStudents.length > 0) {
 			return (
 				<>
+					{/* AI Suggestion Reason */}
+					{suggestionReason && (
+						<Collapse
+							className="mb-6"
+							style={{ marginBottom: "24px" }}
+							items={[
+								{
+									key: "ai-analysis",
+									label: "AI Analysis & Recommendation",
+									children: (
+										<div style={{ color: "#666", lineHeight: "1.6" }}>
+											{suggestionReason}
+										</div>
+									),
+								},
+							]}
+						/>
+					)}
+
 					{/* Students Grid */}
-					<Row gutter={[16, 16]} className="mb-4">
-						{paginatedStudents.map((student) => (
-							<Col xs={24} sm={12} lg={8} key={student.id}>
-								<SuggestedStudentCard
-									student={student}
-									onAdd={handleAddSuggestedStudent}
-								/>
-							</Col>
-						))}
+					<Row gutter={[16, 16]} className="mb-4" style={{ marginTop: "16px" }}>
+						{paginatedStudents.map((student) => {
+							const isSelected = selectedMembers.some(
+								(member) => member.id === student.id,
+							);
+							return (
+								<Col xs={24} sm={12} lg={8} key={student.id}>
+									<SuggestedStudentCard
+										student={student}
+										onAdd={handleAddSuggestedStudent}
+										isSelected={isSelected}
+									/>
+								</Col>
+							);
+						})}
 					</Row>
 
 					{/* Pagination */}

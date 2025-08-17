@@ -51,24 +51,53 @@ export interface SuggestGroupsResponse {
 
 // AI Suggest Students interfaces
 export interface SuggestedStudentResponsibility {
+	responsibilityId: string;
+	responsibilityName: string;
+	level: string;
+}
+
+export interface SuggestedStudentMajor {
 	id: string;
 	name: string;
+	code: string;
+	createdAt: string;
+	updatedAt: string;
+}
+
+export interface SuggestedStudentEnrollment {
+	semester: {
+		id: string;
+		name: string;
+		code: string;
+		status: string;
+	};
+	status: string;
 }
 
 export interface SuggestedStudent {
 	id: string;
-	studentCode: string;
 	fullName: string;
 	email: string;
-	responsibilities: SuggestedStudentResponsibility[];
-	similarityScore: number;
-	matchPercentage: number;
+	gender: string;
+	phoneNumber: string;
+	isActive: boolean;
+	studentCode: string;
+	majorId: string;
+	createdAt: string;
+	updatedAt: string;
+	major: SuggestedStudentMajor;
+	enrollments: SuggestedStudentEnrollment[];
+	studentResponsibilities: SuggestedStudentResponsibility[];
+	compatibility: number;
 }
 
 export interface SuggestStudentsResponse {
 	success: boolean;
 	statusCode: number;
-	data: SuggestedStudent[];
+	data: {
+		reason: string;
+		students: SuggestedStudent[];
+	};
 }
 
 // AI Suggest Thesis interfaces
