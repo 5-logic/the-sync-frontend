@@ -4,9 +4,10 @@ import { Button, Col, Form, Input, Radio, Row, Spin, Typography } from "antd";
 import React, { useEffect, useState, useCallback } from "react";
 
 import { FormLabel } from "@/components/common/FormLabel";
-import InteractiveRadarChart, {
+import {
+	InteractiveRadarChart,
 	ResponsibilityData,
-} from "@/components/common/InteractiveRadarChart";
+} from "@/components/common/radar-chart";
 import { useOptimizedSession } from "@/hooks/auth/useAuth";
 import {
 	isValidVietnamesePhone,

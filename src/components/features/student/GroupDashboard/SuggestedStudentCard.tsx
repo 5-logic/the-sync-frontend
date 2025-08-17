@@ -1,9 +1,10 @@
 import { PlusOutlined } from "@ant-design/icons";
 import { Button, Card, Col, Flex, Progress, Row, Typography } from "antd";
 
-import ResponsibilityRadarChart, {
+import {
+	ResponsibilityRadarChart,
 	ResponsibilityData,
-} from "@/components/common/ResponsibilityRadarChart";
+} from "@/components/common/radar-chart";
 import type { SuggestedStudent } from "@/lib/services/ai.service";
 import { useMajorStore } from "@/store";
 
