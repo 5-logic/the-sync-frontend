@@ -54,7 +54,7 @@ export const useThesisRegistration = () => {
 				message:
 					"Are you sure you want to submit an application for this thesis?",
 				details: thesisTitle || "Selected thesis",
-				note: "Your application will be reviewed by the lecturer. You can track its status in the Register Thesis page.",
+				note: "Your application will be reviewed by the lecturer. You can track its status in the Apply Thesis Request page.",
 				noteType: "info",
 				okText: "Submit Application",
 				cancelText: "Cancel",
@@ -80,7 +80,7 @@ export const useThesisRegistration = () => {
 						handleSuccessResponse(
 							result,
 							"Application Submitted",
-							"Your thesis application has been submitted successfully! You can track its status in the Register Thesis page.",
+							"Your thesis application has been submitted successfully! You can track its status in the Apply Thesis Request page.",
 							"Application submission failed",
 							() => {
 								// Call the success callback immediately to update UI
