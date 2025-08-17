@@ -333,7 +333,7 @@ export default function InviteMembersDialog({
 			{/* AI Suggestion Alert */}
 			<Alert
 				message="Get AI-powered student suggestions"
-				description="Let our AI suggest students who would be a great fit for your group based on skills and responsibilities."
+				description="Let our AI suggest students who would be a great fit for your group based on responsibilities."
 				type="info"
 				showIcon
 				action={

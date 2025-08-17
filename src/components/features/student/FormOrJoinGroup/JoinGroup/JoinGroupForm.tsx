@@ -62,7 +62,7 @@ export default function JoinGroupForm({
 		try {
 			setLoading(true);
 
-			// First, get current student data to check if they have skills and responsibilities
+			// First, get current student data to check if they have responsibilities
 			const studentResponse = await studentsService.findOne(session.user.id);
 			const studentResult = handleApiResponse(studentResponse);
 
@@ -72,20 +72,18 @@ export default function JoinGroupForm({
 			}
 
 			const student = studentResult.data;
-			const hasSkills =
-				student?.studentSkills && student.studentSkills.length > 0;
 			const hasResponsibilities =
 				student?.studentExpectedResponsibilities &&
 				student.studentExpectedResponsibilities.length > 0;
 
-			// Show modal if student doesn't have skills or responsibilities
-			if (!hasSkills || !hasResponsibilities) {
+			// Show modal if student doesn't have responsibilities
+			if (!hasResponsibilities) {
 				ConfirmationModal.show({
 					title: "Set Up Your Profile",
 					message:
-						"To get the best group suggestions, please set up your skills and expected responsibilities in your profile first.",
+						"To get the best group suggestions, please set up your expected responsibilities in your profile first.",
 					details:
-						"This helps our AI algorithm find groups that match your expertise and preferences.",
+						"This helps our AI algorithm find groups that match your preferences.",
 					okText: "Continue Anyway",
 					cancelText: "Go to Profile",
 					okType: "primary",
@@ -97,7 +95,7 @@ export default function JoinGroupForm({
 					},
 				});
 			} else {
-				// If student has both skills and responsibilities, directly call API
+				// If student has responsibilities, directly call API
 				await callAISuggestAPI();
 			}
 		} catch (error) {
@@ -113,7 +111,7 @@ export default function JoinGroupForm({
 			<div className="hidden sm:block">
 				<Alert
 					message="Having trouble finding a group?"
-					description="Use our AI-powered group suggestion feature to find groups that match your skills and responsibilities!"
+					description="Use our AI-powered group suggestion feature to find groups that match your responsibilities!"
 					type="info"
 					showIcon
 					action={
@@ -141,7 +139,7 @@ export default function JoinGroupForm({
 			<div className="block sm:hidden">
 				<Alert
 					message="Having trouble finding a group?"
-					description="Use our AI-powered group suggestion feature to find groups that match your skills and responsibilities!"
+					description="Use our AI-powered group suggestion feature to find groups that match your responsibilities!"
 					type="info"
 					showIcon
 					style={{

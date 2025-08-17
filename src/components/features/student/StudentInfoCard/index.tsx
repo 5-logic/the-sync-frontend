@@ -37,21 +37,6 @@ interface StudentInfoCardProps {
 	readonly showGroupActions?: boolean;
 }
 
-const getLevelColor = (level: string) => {
-	switch (level.toLowerCase()) {
-		case "beginner":
-			return "blue";
-		case "intermediate":
-			return "orange";
-		case "proficient":
-			return "green";
-		case "expert":
-			return "purple";
-		default:
-			return "default";
-	}
-};
-
 export default function StudentInfoCard({
 	student,
 	studentGroup,
@@ -219,30 +204,6 @@ export default function StudentInfoCard({
 						</Col>
 					))}
 				</Row>
-			</Card>
-
-			{/* Skills */}
-			<Card title="Skills & Expertise" loading={loading}>
-				<Space size={[8, 8]} wrap>
-					{student.studentSkills.map((skill) => (
-						<div
-							key={`${skill.skillName}-${skill.level}`}
-							className="inline-flex items-center gap-2 p-2 border rounded-lg bg-gray-50 border-gray-300"
-						>
-							<Text strong className="text-sm">
-								{skill.skillName}
-							</Text>
-							<Tag color={getLevelColor(skill.level)} className="text-xs">
-								{skill.level}
-							</Tag>
-						</div>
-					))}
-				</Space>
-				{student.studentSkills.length === 0 && (
-					<div className="text-center py-8">
-						<Text type="secondary">No skills registered yet</Text>
-					</div>
-				)}
 			</Card>
 
 			{/* Expected Responsibilities */}

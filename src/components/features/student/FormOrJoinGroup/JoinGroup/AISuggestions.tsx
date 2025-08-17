@@ -24,12 +24,7 @@ const AISuggestionCard: React.FC<AISuggestionCardProps> = ({ suggestion }) => {
 	const [isRequesting, setIsRequesting] = useState(false);
 	const router = useRouter();
 
-	const {
-		group,
-		compatibilityScore,
-		matchingSkills,
-		matchingResponsibilities,
-	} = suggestion;
+	const { group, compatibilityScore, matchingResponsibilities } = suggestion;
 
 	// Calculate percentage for compatibility score (assuming max score is around 100)
 	const compatibilityPercentage = Math.min(compatibilityScore, 100);
@@ -145,23 +140,7 @@ const AISuggestionCard: React.FC<AISuggestionCardProps> = ({ suggestion }) => {
 
 						{/* Matching Stats */}
 						<Row gutter={16}>
-							<Col span={12}>
-								<div style={{ textAlign: "center" }}>
-									<Text type="secondary" style={{ fontSize: "12px" }}>
-										Matching Skills
-									</Text>
-									<div
-										style={{
-											fontSize: "16px",
-											fontWeight: "bold",
-											color: "#52c41a",
-										}}
-									>
-										{matchingSkills}
-									</div>
-								</div>
-							</Col>
-							<Col span={12}>
+							<Col span={24}>
 								<div style={{ textAlign: "center" }}>
 									<Text type="secondary" style={{ fontSize: "12px" }}>
 										Matching Responsibilities
@@ -269,7 +248,7 @@ export default function AISuggestions({
 						AI Group Suggestions ({suggestions.length} groups found)
 					</Title>
 					<Text type="secondary">
-						Groups are ranked by compatibility score based on your skills and
+						Groups are ranked by compatibility score based on your
 						responsibilities.
 					</Text>
 				</div>

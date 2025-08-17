@@ -51,12 +51,6 @@ export interface SuggestGroupsResponse {
 }
 
 // AI Suggest Students interfaces
-export interface SuggestedStudentSkill {
-	id: string;
-	name: string;
-	level: string;
-}
-
 export interface SuggestedStudentResponsibility {
 	id: string;
 	name: string;
@@ -67,7 +61,6 @@ export interface SuggestedStudent {
 	studentCode: string;
 	fullName: string;
 	email: string;
-	skills: SuggestedStudentSkill[];
 	responsibilities: SuggestedStudentResponsibility[];
 	similarityScore: number;
 	matchPercentage: number;
@@ -125,7 +118,7 @@ class AIService {
 	private readonly baseUrl = "/ai";
 
 	/**
-	 * Suggest groups for a student based on their skills and responsibilities
+	 * Suggest groups for a student based on their responsibilities
 	 */
 	async suggestGroupsForStudent(
 		request: SuggestGroupsRequest,
@@ -138,7 +131,7 @@ class AIService {
 	}
 
 	/**
-	 * Suggest students for a group based on group's needs and student skills
+	 * Suggest students for a group based on group's needs and student responsibilities
 	 */
 	async suggestStudentsForGroup(
 		groupId: string,
