@@ -171,13 +171,7 @@ export default function ViewListThesis() {
 	// Check if group has required information for AI suggestions
 	const isGroupInfoComplete = () => {
 		if (!group) return false;
-		return !!(
-			group.projectDirection &&
-			group.skills &&
-			group.skills.length > 0 &&
-			group.responsibilities &&
-			group.responsibilities.length > 0
-		);
+		return !!group.projectDirection;
 	};
 
 	// Handle AI Suggest button click
@@ -193,8 +187,7 @@ export default function ViewListThesis() {
 				title: "Group Information Incomplete",
 				message:
 					"Your group is missing some important information for better AI recommendations.",
-				details:
-					"Project direction, required skills, and expected responsibilities are needed for accurate suggestions.",
+				details: "Project direction is needed for accurate suggestions.",
 				note: "You can continue anyway, but the suggestions might be less accurate.",
 				noteType: "warning",
 				okText: "Continue Anyway",
@@ -383,7 +376,7 @@ export default function ViewListThesis() {
 						title={showAISuggestions ? "AI Suggested Thesis" : "List Thesis"}
 						description={
 							showAISuggestions
-								? "AI-recommended thesis topics based on your group's project direction, skills, and responsibilities."
+								? "AI-recommended thesis topics based on your group's project direction."
 								: "Browse available thesis topics proposed and published by lecturers. You can view details and register once your group is ready."
 						}
 					/>
