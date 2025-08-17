@@ -22,12 +22,12 @@ export interface ResponsibilityData {
 }
 
 interface InteractiveRadarChartProps {
-	data: ResponsibilityData[];
-	originalData?: ResponsibilityData[]; // Original data for reset
-	loading?: boolean;
-	onChange?: (updatedData: ResponsibilityData[]) => void;
-	title?: string;
-	hasChanges?: boolean; // Receive hasChanges from parent
+	readonly data: ResponsibilityData[];
+	readonly originalData?: ResponsibilityData[]; // Original data for reset
+	readonly loading?: boolean;
+	readonly onChange?: (updatedData: ResponsibilityData[]) => void;
+	readonly title?: string;
+	readonly hasChanges?: boolean; // Receive hasChanges from parent
 }
 
 const LEVEL_NAMES = [
