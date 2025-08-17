@@ -38,7 +38,7 @@ export const mockStudents = [
 		password: mockSecret,
 		createdAt: new Date("2024-01-01"),
 		updatedAt: COMMON_UPDATE_DATE,
-		studentExpectedResponsibilities: [RESPONSIBILITIES.FRONTEND],
+		studentResponsibilities: [RESPONSIBILITIES.FRONTEND],
 	},
 	{
 		id: "2",
@@ -52,7 +52,7 @@ export const mockStudents = [
 		password: mockSecret,
 		createdAt: new Date("2024-02-15"),
 		updatedAt: COMMON_UPDATE_DATE,
-		studentExpectedResponsibilities: [RESPONSIBILITIES.BACKEND],
+		studentResponsibilities: [RESPONSIBILITIES.BACKEND],
 	},
 	{
 		id: "3",
@@ -66,7 +66,7 @@ export const mockStudents = [
 		password: mockSecret,
 		createdAt: new Date("2024-01-15"),
 		updatedAt: COMMON_UPDATE_DATE,
-		studentExpectedResponsibilities: [RESPONSIBILITIES.FULLSTACK],
+		studentResponsibilities: [RESPONSIBILITIES.FULLSTACK],
 	},
 	{
 		id: "4",
@@ -80,7 +80,7 @@ export const mockStudents = [
 		password: mockSecret,
 		createdAt: new Date("2024-02-01"),
 		updatedAt: COMMON_UPDATE_DATE,
-		studentExpectedResponsibilities: [RESPONSIBILITIES.FRONTEND],
+		studentResponsibilities: [RESPONSIBILITIES.FRONTEND],
 	},
 	{
 		id: "5",
@@ -94,6 +94,6 @@ export const mockStudents = [
 		password: mockSecret,
 		createdAt: new Date("2024-01-20"),
 		updatedAt: COMMON_UPDATE_DATE,
-		studentExpectedResponsibilities: [RESPONSIBILITIES.BACKEND],
+		studentResponsibilities: [RESPONSIBILITIES.BACKEND],
 	},
 ] as unknown as Student[];

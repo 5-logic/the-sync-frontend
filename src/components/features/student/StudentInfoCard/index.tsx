@@ -209,13 +209,13 @@ export default function StudentInfoCard({
 			{/* Expected Responsibilities */}
 			<Card title="Expected Responsibilities" loading={loading}>
 				<Space wrap>
-					{student.studentExpectedResponsibilities.map((responsibility) => (
+					{student.studentResponsibilities.map((responsibility) => (
 						<Tag key={responsibility.responsibilityName} color="purple">
 							{responsibility.responsibilityName}
 						</Tag>
 					))}
 				</Space>
-				{student.studentExpectedResponsibilities.length === 0 && (
+				{student.studentResponsibilities.length === 0 && (
 					<div className="text-center py-4">
 						<Text type="secondary">No expected responsibilities specified</Text>
 					</div>

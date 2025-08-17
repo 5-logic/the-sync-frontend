@@ -1,30 +1,19 @@
 "use client";
 
-import {
-	Button,
-	Col,
-	Form,
-	Input,
-	Radio,
-	Row,
-	Select,
-	Spin,
-	Typography,
-} from "antd";
-import React, { useEffect, useState } from "react";
+import { Button, Col, Form, Input, Radio, Row, Spin, Typography } from "antd";
+import React, { useEffect, useState, useCallback } from "react";
 
 import { FormLabel } from "@/components/common/FormLabel";
+import InteractiveRadarChart, {
+	ResponsibilityData,
+} from "@/components/common/InteractiveRadarChart";
 import { useOptimizedSession } from "@/hooks/auth/useAuth";
 import {
 	isValidVietnamesePhone,
 	normalizeVietnamesePhone,
 } from "@/lib/utils/validations";
 import { StudentProfile, StudentSelfUpdate } from "@/schemas/student";
-import {
-	useMajorStore,
-	useResponsibilityStore,
-	useStudentStore,
-} from "@/store";
+import { useMajorStore, useStudentStore } from "@/store";
 
 // TypeScript interfaces
 interface FormValues {
@@ -34,7 +23,6 @@ interface FormValues {
 	major: string;
 	phoneNumber: string;
 	gender: string;
-	responsibility: string[];
 }
 
 const { Title } = Typography;
@@ -43,6 +31,17 @@ const StudentAccountForm: React.FC = () => {
 	const [form] = Form.useForm();
 	const [profileData, setProfileData] = useState<StudentProfile | null>(null);
 	const [loadingProfile, setLoadingProfile] = useState(true);
+	const [responsibilityData, setResponsibilityData] = useState<
+		ResponsibilityData[]
+	>([]);
+	const [originalData, setOriginalData] = useState<{
+		formValues: FormValues | null;
+		responsibilities: ResponsibilityData[];
+	}>({
+		formValues: null,
+		responsibilities: [],
+	});
+	const [hasChanges, setHasChanges] = useState(false);
 
 	// Use Student Store for update profile and fetch profile
 	const { updateProfile, updatingProfile, clearError, fetchProfile } =
@@ -50,13 +49,6 @@ const StudentAccountForm: React.FC = () => {
 
 	// Use Major Store to get major names
 	const { majors, loading: majorsLoading, fetchMajors } = useMajorStore();
-
-	// Use Responsibility Store to get responsibilities data
-	const {
-		responsibilities,
-		loading: responsibilitiesLoading,
-		fetchResponsibilities,
-	} = useResponsibilityStore();
 
 	// Get current user session
 	const {
@@ -75,10 +67,14 @@ const StudentAccountForm: React.FC = () => {
 		fetchMajors();
 	}, [fetchMajors]);
 
-	// Fetch responsibilities for display
-	useEffect(() => {
-		fetchResponsibilities();
-	}, [fetchResponsibilities]);
+	// Get major name from ID
+	const getMajorName = useCallback(
+		(majorId: string) => {
+			const major = majors.find((m) => m.id === majorId);
+			return major?.name ?? majorId; // Fallback to ID if name not found
+		},
+		[majors],
+	);
 
 	// Fetch user profile data
 	useEffect(() => {
@@ -96,17 +92,33 @@ const StudentAccountForm: React.FC = () => {
 				if (profile) {
 					setProfileData(profile);
 
+					// Set responsibility data for radar chart
+					const responsibilities = profile.studentResponsibilities.map((r) => ({
+						responsibilityId: r.responsibilityId,
+						responsibilityName: r.responsibilityName,
+						level: r.level,
+					}));
+					setResponsibilityData(responsibilities);
+
 					// Initialize form with profile data
-					form.setFieldsValue({
+					const formValues = {
 						fullName: profile.fullName,
 						email: profile.email,
 						studentId: profile.studentCode,
-						major: profile.majorId,
+						major: getMajorName(profile.majorId),
 						phoneNumber: profile.phoneNumber,
 						gender: profile.gender,
-						responsibility: profile.studentExpectedResponsibilities.map(
-							(r) => r.responsibilityId,
-						),
+					};
+
+					form.setFieldsValue({
+						...formValues,
+						major: "", // Will be set by separate useEffect
+					});
+
+					// Store original data for comparison
+					setOriginalData({
+						formValues,
+						responsibilities,
 					});
 				}
 			} catch (error) {
@@ -119,24 +131,116 @@ const StudentAccountForm: React.FC = () => {
 		if (!sessionLoading) {
 			loadProfile();
 		}
-	}, [session, isAuthenticated, sessionLoading, form, fetchProfile]);
+	}, [
+		session,
+		isAuthenticated,
+		sessionLoading,
+		form,
+		fetchProfile,
+		getMajorName,
+	]);
 
-	// Get major name from ID
-	const getMajorName = React.useCallback(
-		(majorId: string) => {
-			const major = majors.find((m) => m.id === majorId);
-			return major?.name ?? majorId; // Fallback to ID if name not found
+	// Update form major field when majors are loaded
+	useEffect(() => {
+		if (profileData && majors.length > 0) {
+			const majorName = getMajorName(profileData.majorId);
+			form.setFieldValue("major", majorName);
+
+			// Update original data with major name
+			setOriginalData((prev) => ({
+				...prev,
+				formValues: prev.formValues
+					? {
+							...prev.formValues,
+							major: majorName,
+						}
+					: null,
+			}));
+		}
+	}, [profileData, majors, getMajorName, form]);
+
+	// Check for changes in form values
+	const checkFormChanges = useCallback(() => {
+		if (!originalData.formValues) {
+			return false;
+		}
+
+		const currentValues = form.getFieldsValue();
+		const original = originalData.formValues;
+
+		const hasChanges =
+			currentValues.fullName !== original.fullName ||
+			currentValues.phoneNumber !== original.phoneNumber ||
+			currentValues.gender !== original.gender;
+
+		return hasChanges;
+	}, [form, originalData.formValues]);
+
+	// Get changed responsibilities only
+	const getChangedResponsibilities = useCallback(() => {
+		if (originalData.responsibilities.length !== responsibilityData.length) {
+			return responsibilityData.map((item) => ({
+				responsibilityId: item.responsibilityId,
+				level: item.level,
+			}));
+		}
+
+		// Find only the responsibilities that have changed levels
+		const changedResponsibilities: {
+			responsibilityId: string;
+			level: number;
+		}[] = [];
+
+		responsibilityData.forEach((current) => {
+			const original = originalData.responsibilities.find(
+				(orig) => orig.responsibilityId === current.responsibilityId,
+			);
+
+			// Convert both values to numbers for proper comparison
+			if (original && Number(original.level) !== Number(current.level)) {
+				changedResponsibilities.push({
+					responsibilityId: current.responsibilityId,
+					level: current.level,
+				});
+			}
+		});
+
+		return changedResponsibilities;
+	}, [originalData.responsibilities, responsibilityData]);
+
+	// Check for changes in responsibilities
+	const checkResponsibilityChanges = useCallback(() => {
+		const changes = getChangedResponsibilities();
+		const hasChanges = changes.length > 0;
+		return hasChanges;
+	}, [getChangedResponsibilities]);
+
+	// Update hasChanges when form or responsibilities change
+	useEffect(() => {
+		const formChanged = checkFormChanges();
+		const responsibilityChanged = checkResponsibilityChanges();
+		const totalHasChanges = formChanged || responsibilityChanged;
+
+		setHasChanges(totalHasChanges);
+	}, [checkFormChanges, checkResponsibilityChanges, responsibilityData]);
+
+	// Handle responsibility data changes from radar chart
+	const handleResponsibilityChange = useCallback(
+		(updatedData: ResponsibilityData[]) => {
+			setResponsibilityData(updatedData);
 		},
-		[majors],
+		[],
 	);
 
-	// Build responsibility options from responsibilities data
-	const responsibilityOptions = React.useMemo(() => {
-		return responsibilities.map((responsibility) => ({
-			value: responsibility.id,
-			label: responsibility.name,
-		}));
-	}, [responsibilities]);
+	// Handle form values change
+	const handleFormValuesChange = useCallback(() => {
+		// Use setTimeout to ensure form values are updated
+		setTimeout(() => {
+			const formChanged = checkFormChanges();
+			const responsibilityChanged = checkResponsibilityChanges();
+			setHasChanges(formChanged || responsibilityChanged);
+		}, 0);
+	}, [checkFormChanges, checkResponsibilityChanges]);
 
 	// Get the display value for major field
 	const majorDisplayValue = React.useMemo(() => {
@@ -144,97 +248,127 @@ const StudentAccountForm: React.FC = () => {
 		return getMajorName(profileData.majorId);
 	}, [profileData?.majorId, getMajorName]);
 
-	const handleFinish = React.useCallback(
+	const handleFinish = useCallback(
 		async (values: FormValues) => {
+			if (!originalData.formValues) return;
+
 			// Clear any previous errors
 			clearError();
 
-			// Get selected responsibilities
-			const studentExpectedResponsibilities = (values.responsibility || []).map(
-				(responsibilityId) => ({
-					responsibilityId,
-				}),
-			);
+			// Build update data with only changed fields
+			const profileUpdateData: StudentSelfUpdate = {};
 
-			// Prepare update profile data using new API structure
-			const profileUpdateData: StudentSelfUpdate = {
-				fullName: values.fullName.trim(),
-				gender: values.gender as "Male" | "Female",
-				phoneNumber: normalizeVietnamesePhone(values.phoneNumber.trim()),
-				studentExpectedResponsibilities,
-			};
+			// Check form field changes
+			if (values.fullName.trim() !== originalData.formValues.fullName) {
+				profileUpdateData.fullName = values.fullName.trim();
+			}
+
+			if (values.gender !== originalData.formValues.gender) {
+				profileUpdateData.gender = values.gender as "Male" | "Female";
+			}
+
+			const normalizedPhone = normalizeVietnamesePhone(
+				values.phoneNumber.trim(),
+			);
+			const originalPhone = normalizeVietnamesePhone(
+				originalData.formValues.phoneNumber,
+			);
+			if (normalizedPhone !== originalPhone) {
+				profileUpdateData.phoneNumber = normalizedPhone;
+			}
+
+			// Check responsibility changes
+			const changedResponsibilities = getChangedResponsibilities();
+			if (changedResponsibilities.length > 0) {
+				profileUpdateData.studentResponsibilities = changedResponsibilities;
+			}
+
+			// Only update if there are changes
+			if (Object.keys(profileUpdateData).length === 0) {
+				return;
+			}
 
 			// Use store method to update profile
 			const success = await updateProfile(profileUpdateData);
 
 			if (success) {
-				// Refresh profile data after successful update
-				if (session?.user?.id) {
-					await fetchProfile(session.user.id, true);
+				// Refresh the profile data to reflect updates
+				if (session?.user) {
+					const updatedProfile = await fetchProfile(session.user.id, true);
+					if (updatedProfile) {
+						// Update original data to new values
+						const newResponsibilities =
+							updatedProfile.studentResponsibilities.map((r) => ({
+								responsibilityId: r.responsibilityId,
+								responsibilityName: r.responsibilityName,
+								level: r.level,
+							}));
+
+						const newFormValues = {
+							fullName: updatedProfile.fullName,
+							email: updatedProfile.email,
+							studentId: updatedProfile.studentCode,
+							major: getMajorName(updatedProfile.majorId),
+							phoneNumber: updatedProfile.phoneNumber,
+							gender: updatedProfile.gender,
+						};
+
+						setOriginalData({
+							formValues: newFormValues,
+							responsibilities: newResponsibilities,
+						});
+
+						setResponsibilityData(newResponsibilities);
+						setHasChanges(false);
+					}
 				}
 			}
 		},
-		[updateProfile, clearError, fetchProfile, session],
+		[
+			updateProfile,
+			clearError,
+			fetchProfile,
+			session,
+			originalData,
+			getChangedResponsibilities,
+			getMajorName,
+		],
 	);
 
 	// Check if any loading is in progress
 	const isLoading = React.useMemo(() => {
-		const states = [
-			loadingProfile,
-			sessionLoading,
-			majorsLoading,
-			responsibilitiesLoading,
-		];
+		const states = [loadingProfile, sessionLoading, majorsLoading];
 		return states.some(Boolean);
-	}, [loadingProfile, sessionLoading, majorsLoading, responsibilitiesLoading]);
+	}, [loadingProfile, sessionLoading, majorsLoading]);
 
 	// Check if we have all required data to render the form
 	const hasRequiredData = React.useMemo(() => {
-		return (
-			profileData &&
-			!isLoading &&
-			majors.length > 0 &&
-			responsibilities.length > 0
-		);
-	}, [profileData, isLoading, majors, responsibilities]);
+		return profileData && !isLoading && majors.length > 0;
+	}, [profileData, isLoading, majors]);
 
 	// Don't render form until all data is loaded and available
 	if (!hasRequiredData) {
 		return (
-			<div
-				style={{
-					display: "flex",
-					justifyContent: "center",
-					alignItems: "center",
-					minHeight: "500px",
-					flexDirection: "column",
-				}}
-			>
+			<div style={{ textAlign: "center", padding: "40px 0" }}>
 				<Spin size="large" />
-				<div style={{ marginTop: 16, color: "#666" }}>
-					Loading student profile...
-				</div>
 			</div>
 		);
 	}
 
 	return (
 		<Form
-			requiredMark={false}
 			form={form}
 			layout="vertical"
 			onFinish={handleFinish}
+			onValuesChange={handleFormValuesChange}
+			disabled={updatingProfile}
 			initialValues={{
 				fullName: profileData?.fullName ?? "",
 				email: profileData?.email ?? "",
 				studentId: profileData?.studentCode ?? "",
-				major: profileData?.majorId ?? "",
+				major: majorDisplayValue,
 				phoneNumber: profileData?.phoneNumber ?? "",
 				gender: profileData?.gender ?? "",
-				responsibility:
-					profileData?.studentExpectedResponsibilities?.map(
-						(r) => r.responsibilityId,
-					) ?? [],
 			}}
 		>
 			<Title level={5} style={{ marginBottom: 24 }}>
@@ -257,14 +391,11 @@ const StudentAccountForm: React.FC = () => {
 						name="email"
 						label={<FormLabel text="Email" isBold />}
 						rules={[
-							{
-								required: true,
-								type: "email",
-								message: "Please enter a valid email",
-							},
+							{ required: true, message: "Please enter your email" },
+							{ type: "email", message: "Please enter a valid email" },
 						]}
 					>
-						<Input disabled placeholder="john.smith@fpt.edu.vn" />
+						<Input disabled placeholder="Email address" />
 					</Form.Item>
 				</Col>
 			</Row>
@@ -273,25 +404,18 @@ const StudentAccountForm: React.FC = () => {
 					<Form.Item
 						name="fullName"
 						label={<FormLabel text="Full Name" isBold />}
-						rules={[
-							{ required: true, message: "Please enter your full name" },
-							{ min: 2, message: "Full name must be at least 2 characters" },
-							{
-								max: 100,
-								message: "Full name must be less than 100 characters",
-							},
-						]}
+						rules={[{ required: true, message: "Please enter your full name" }]}
 					>
-						<Input placeholder="John Smith" disabled={updatingProfile} />
+						<Input placeholder="Enter full name" disabled={updatingProfile} />
 					</Form.Item>
 				</Col>
 				<Col xs={24} md={12}>
-					<Form.Item label={<FormLabel text="Major" isBold />}>
-						<Input
-							disabled
-							value={majorDisplayValue}
-							placeholder="No major assigned"
-						/>
+					<Form.Item
+						name="major"
+						label={<FormLabel text="Major" isBold />}
+						rules={[{ required: true, message: "Please select your major" }]}
+					>
+						<Input disabled placeholder="Major" />
 					</Form.Item>
 				</Col>
 			</Row>
@@ -303,15 +427,13 @@ const StudentAccountForm: React.FC = () => {
 						rules={[
 							{ required: true, message: "Please enter your phone number" },
 							{
-								validator: (_, value) => {
-									if (!value) return Promise.resolve();
-									const normalized = normalizeVietnamesePhone(value);
-									if (isValidVietnamesePhone(normalized)) {
-										return Promise.resolve();
+								validator: async (_, value) => {
+									if (!value) return;
+									if (!isValidVietnamesePhone(value)) {
+										throw new Error(
+											"Please enter a valid Vietnamese phone number",
+										);
 									}
-									return Promise.reject(
-										new Error("Please enter a valid Vietnamese phone number"),
-									);
 								},
 							},
 						]}
@@ -335,22 +457,19 @@ const StudentAccountForm: React.FC = () => {
 					</Form.Item>
 				</Col>
 			</Row>
-			<Form.Item
-				name="responsibility"
-				label={<FormLabel text="Responsibility" isBold />}
-			>
-				<Select
-					mode="multiple"
-					showSearch
-					options={responsibilityOptions}
-					placeholder="Select responsibility"
-					disabled={updatingProfile}
-					filterOption={(input, option) =>
-						(option?.label ?? "").toLowerCase().includes(input.toLowerCase())
-					}
-					allowClear
-				/>
-			</Form.Item>
+
+			{/* Responsibility Radar Chart */}
+			<Title level={5} style={{ marginBottom: 16, marginTop: 24 }}>
+				Responsibility Levels
+			</Title>
+			<InteractiveRadarChart
+				data={responsibilityData}
+				originalData={originalData.responsibilities}
+				loading={updatingProfile}
+				onChange={handleResponsibilityChange}
+				title="My Responsibility Assessment"
+				hasChanges={hasChanges}
+			/>
 
 			<Form.Item>
 				<Row justify="end" style={{ marginTop: 24 }}>
@@ -359,8 +478,9 @@ const StudentAccountForm: React.FC = () => {
 						htmlType="submit"
 						aria-label="Save profile changes"
 						loading={updatingProfile}
+						disabled={!hasChanges || updatingProfile}
 					>
-						Save Changes
+						Save Profile Changes
 					</Button>
 				</Row>
 			</Form.Item>

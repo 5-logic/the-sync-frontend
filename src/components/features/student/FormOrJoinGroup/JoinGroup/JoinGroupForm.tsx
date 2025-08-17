@@ -73,8 +73,8 @@ export default function JoinGroupForm({
 
 			const student = studentResult.data;
 			const hasResponsibilities =
-				student?.studentExpectedResponsibilities &&
-				student.studentExpectedResponsibilities.length > 0;
+				student?.studentResponsibilities &&
+				student.studentResponsibilities.length > 0;
 
 			// Show modal if student doesn't have responsibilities
 			if (!hasResponsibilities) {

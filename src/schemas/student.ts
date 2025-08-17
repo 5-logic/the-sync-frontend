@@ -60,18 +60,18 @@ export const StudentUpdateSchema = StudentSchema.pick({
 	majorId: true,
 }).partial();
 
+// Schema for student responsibility with level
+export const StudentResponsibilitySchema = z.object({
+	responsibilityId: uuidField,
+	level: z.number().min(0).max(5),
+});
+
 // Schema for student self-update (profile update)
 export const StudentSelfUpdateSchema = z.object({
 	fullName: z.string().min(1).optional(),
 	gender: GenderSchema.optional(),
 	phoneNumber: z.string().min(1).optional(),
-	studentExpectedResponsibilities: z
-		.array(
-			z.object({
-				responsibilityId: uuidField,
-			}),
-		)
-		.optional(),
+	studentResponsibilities: z.array(StudentResponsibilitySchema).optional(),
 });
 
 // Schema for detailed student profile response
@@ -102,10 +102,11 @@ export const StudentProfileSchema = z.object({
 			}),
 		}),
 	),
-	studentExpectedResponsibilities: z.array(
+	studentResponsibilities: z.array(
 		z.object({
 			responsibilityId: uuidField,
 			responsibilityName: z.string(),
+			level: z.string().transform((val) => parseInt(val, 10)),
 		}),
 	),
 });

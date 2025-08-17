@@ -11,9 +11,9 @@ const { Paragraph } = Typography;
 export const StudentSuggestionCard: React.FC<{ student: Student }> = ({
 	student,
 }) => {
-	// Ép kiểu tạm thời để truy cập studentExpectedResponsibilities
+	// Ép kiểu tạm thời để truy cập studentResponsibilities
 	const s = student as Student & {
-		studentExpectedResponsibilities: {
+		studentResponsibilities: {
 			responsibilityId: string;
 			name: string;
 		}[];
@@ -43,7 +43,7 @@ export const StudentSuggestionCard: React.FC<{ student: Student }> = ({
 			</Paragraph>
 
 			<Paragraph style={{ marginBottom: 8 }}>
-				Roles: {s.studentExpectedResponsibilities.map((r) => r.name).join(", ")}
+				Roles: {s.studentResponsibilities.map((r) => r.name).join(", ")}
 			</Paragraph>
 
 			<Button type="primary" block>

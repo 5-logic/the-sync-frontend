@@ -53,7 +53,7 @@ export const StudentTable = () => {
 		},
 		{
 			title: "Role",
-			dataIndex: "studentExpectedResponsibilities",
+			dataIndex: "studentResponsibilities",
 			key: "role",
 			render: (roles: { responsibilityId: string; name: string }[]) => (
 				<Space wrap>
