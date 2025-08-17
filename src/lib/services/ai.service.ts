@@ -29,7 +29,6 @@ export interface SuggestedGroup {
 export interface GroupSuggestion {
 	group: SuggestedGroup;
 	compatibilityScore: number;
-	matchingSkills: number;
 	matchingResponsibilities: number;
 }
 
@@ -143,7 +142,7 @@ class AIService {
 	}
 
 	/**
-	 * Suggest theses for a group based on group's project direction and skills
+	 * Suggest theses for a group based on group's project direction and responsibilities
 	 */
 	async suggestThesesForGroup(groupId: string): Promise<SuggestThesesResponse> {
 		const response = await httpClient.get<SuggestThesesResponse>(

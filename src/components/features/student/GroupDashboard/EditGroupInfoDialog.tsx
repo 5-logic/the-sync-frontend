@@ -171,7 +171,7 @@ export default function EditGroupInfoDialog({
 				<div style={{ textAlign: "center", padding: "40px 0" }}>
 					<Spin size="large" />
 					<div style={{ marginTop: 16, color: "#666" }}>
-						Loading skills and responsibilities...
+						Loading responsibilities...
 					</div>
 				</div>
 			) : (

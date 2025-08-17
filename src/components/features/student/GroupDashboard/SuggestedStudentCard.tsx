@@ -1,8 +1,8 @@
-import { PlusOutlined } from '@ant-design/icons';
-import { Button, Card, Col, Flex, Progress, Row, Typography } from 'antd';
+import { PlusOutlined } from "@ant-design/icons";
+import { Button, Card, Col, Flex, Progress, Row, Typography } from "antd";
 
-import { TagList } from '@/components/common/TagList';
-import type { SuggestedStudent } from '@/lib/services/ai.service';
+import { TagList } from "@/components/common/TagList";
+import type { SuggestedStudent } from "@/lib/services/ai.service";
 
 const { Text, Title } = Typography;
 
@@ -23,16 +23,16 @@ export default function SuggestedStudentCard({
 
 	// Get progress color based on match percentage
 	const getProgressColor = (percentage: number) => {
-		if (percentage >= 70) return '#52c41a'; // green
-		if (percentage >= 50) return '#faad14'; // orange
-		return '#ff4d4f'; // red
+		if (percentage >= 70) return "#52c41a"; // green
+		if (percentage >= 50) return "#faad14"; // orange
+		return "#ff4d4f"; // red
 	};
 
 	return (
 		<Card
 			size="small"
 			className="mb-3"
-			bodyStyle={{ padding: '12px' }}
+			bodyStyle={{ padding: "12px" }}
 			extra={
 				<Button
 					type="primary"
@@ -52,13 +52,13 @@ export default function SuggestedStudentCard({
 						align="center"
 						gap={8}
 						className="mb-2"
-						style={{ minHeight: '60px', maxHeight: '60px' }}
+						style={{ minHeight: "60px", maxHeight: "60px" }}
 					>
-						<div style={{ minHeight: '54px', maxHeight: '54px' }}>
+						<div style={{ minHeight: "54px", maxHeight: "54px" }}>
 							<Title
 								level={5}
 								className="mb-0 text-sm"
-								style={{ lineHeight: '18px', height: '18px' }}
+								style={{ lineHeight: "18px", height: "18px" }}
 							>
 								{student.fullName}
 							</Title>
@@ -66,11 +66,11 @@ export default function SuggestedStudentCard({
 								type="secondary"
 								className="text-xs"
 								style={{
-									lineHeight: '14px',
-									height: '42px',
-									display: 'block',
-									overflow: 'hidden',
-									textOverflow: 'ellipsis',
+									lineHeight: "14px",
+									height: "42px",
+									display: "block",
+									overflow: "hidden",
+									textOverflow: "ellipsis",
 								}}
 							>
 								{student.studentCode} • {student.email}
@@ -91,23 +91,6 @@ export default function SuggestedStudentCard({
 								style={{ flex: 1, maxWidth: 100 }}
 							/>
 						</Flex>
-					</div>
-
-					{/* Skills */}
-					<div className="mb-2">
-						<Text className="text-xs text-gray-500 mb-1 block">Skills:</Text>
-						{student.skills.length > 0 ? (
-							<TagList
-								items={student.skills}
-								color="blue"
-								maxVisible={3}
-								showLevel={true}
-								minHeight="auto"
-								maxHeight="none"
-							/>
-						) : (
-							<Text className="text-xs text-gray-400">No skills specified</Text>
-						)}
 					</div>
 
 					{/* Responsibilities */}
