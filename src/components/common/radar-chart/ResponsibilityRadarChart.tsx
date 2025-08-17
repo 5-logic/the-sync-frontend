@@ -7,10 +7,10 @@ import BaseRadarChart, {
 } from "./BaseRadarChart";
 
 interface ResponsibilityRadarChartProps {
-	data: ResponsibilityData[];
-	loading?: boolean;
-	height?: number;
-	showCard?: boolean;
+	readonly data: ResponsibilityData[];
+	readonly loading?: boolean;
+	readonly height?: number;
+	readonly showCard?: boolean;
 }
 
 export default function ResponsibilityRadarChart({

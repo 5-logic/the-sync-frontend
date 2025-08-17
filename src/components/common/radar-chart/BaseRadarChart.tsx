@@ -23,9 +23,9 @@ export interface ChartData {
 }
 
 interface BaseRadarChartProps {
-	data: ChartData[];
-	height?: number;
-	showLegend?: boolean;
+	readonly data: ChartData[];
+	readonly height?: number;
+	readonly showLegend?: boolean;
 }
 
 export default function BaseRadarChart({
