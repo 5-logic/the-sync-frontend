@@ -2,7 +2,7 @@ export const STUDENT_MENU_KEYS = {
 	DASHBOARD: "/student",
 	LIST_THESIS: "/student/list-thesis",
 	JOIN_GROUP: "/student/join-group",
-	REGISTER_THESIS: "/student/register-thesis",
+	APPLY_THESIS_REQUEST: "/student/apply-thesis-request",
 	GROUP_DASHBOARD: "/student/group-dashboard",
 	TRACK_PROGRESS: "/student/track-progress",
 } as const;
@@ -20,8 +20,8 @@ export const STUDENT_PATH_MAPPING = {
 		"/student/create-group",
 		"/student/group-invitation",
 	],
-	[STUDENT_MENU_KEYS.REGISTER_THESIS]: [
-		"/student/register-thesis",
+	[STUDENT_MENU_KEYS.APPLY_THESIS_REQUEST]: [
+		"/student/apply-thesis-request",
 		"/student/thesis-registration",
 		"/student/submit-thesis",
 	],

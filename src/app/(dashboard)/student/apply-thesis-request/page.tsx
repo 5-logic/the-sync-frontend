@@ -3,17 +3,17 @@
 import { Space } from "antd";
 
 import { Header } from "@/components/common/Header";
-import ThesisApplicationTable from "@/components/features/student/RegisterThesis/ThesisApplicationTable";
+import ThesisApplicationTable from "@/components/features/student/ApplyThesisRequest/ThesisApplicationTable";
 import { useThesisApplications } from "@/hooks/student/useThesisApplications";
 
-export default function StudentRegisterThesisPage() {
+export default function StudentApplyThesisRequestPage() {
 	const { applications, loading, refreshApplications } =
 		useThesisApplications();
 
 	return (
 		<Space direction="vertical" size="large" style={{ width: "100%" }}>
 			<Header
-				title="Register Thesis Request"
+				title="Apply Thesis Request"
 				description="Manage your thesis application requests"
 			/>
 

@@ -1,8 +1,12 @@
-import { PlusOutlined } from '@ant-design/icons';
-import { Button, Card, Col, Flex, Progress, Row, Typography } from 'antd';
+import { PlusOutlined } from "@ant-design/icons";
+import { Button, Card, Col, Flex, Progress, Row, Typography } from "antd";
 
-import { TagList } from '@/components/common/TagList';
-import type { SuggestedStudent } from '@/lib/services/ai.service';
+import {
+	ResponsibilityRadarChart,
+	ResponsibilityData,
+} from "@/components/common/radar-chart";
+import type { SuggestedStudent } from "@/lib/services/ai.service";
+import { useMajorStore } from "@/store";
 
 const { Text, Title } = Typography;
 
@@ -10,38 +14,58 @@ interface SuggestedStudentCardProps {
 	readonly student: SuggestedStudent;
 	readonly onAdd: (student: SuggestedStudent) => void;
 	readonly loading?: boolean;
+	readonly isSelected?: boolean;
 }
 
 export default function SuggestedStudentCard({
 	student,
 	onAdd,
 	loading = false,
+	isSelected = false,
 }: SuggestedStudentCardProps) {
+	const { getMajorById } = useMajorStore();
+
 	const handleAdd = () => {
 		onAdd(student);
 	};
 
-	// Get progress color based on match percentage
+	// Get major name from cache
+	const major = getMajorById(student.majorId);
+	const majorName = major ? `${major.name} (${major.code})` : "Unknown Major";
+
+	// Get progress color based on compatibility percentage
 	const getProgressColor = (percentage: number) => {
-		if (percentage >= 70) return '#52c41a'; // green
-		if (percentage >= 50) return '#faad14'; // orange
-		return '#ff4d4f'; // red
+		if (percentage >= 0.7) return "#52c41a"; // green
+		if (percentage >= 0.5) return "#faad14"; // orange
+		return "#ff4d4f"; // red
 	};
+
+	// Convert studentResponsibilities to ResponsibilityData format
+	const responsibilityData: ResponsibilityData[] =
+		student.studentResponsibilities.map((resp) => ({
+			responsibilityId: resp.responsibilityId,
+			responsibilityName: resp.responsibilityName,
+			level: Number(resp.level),
+		}));
+
+	// Convert compatibility to percentage (0-1 to 0-100)
+	const compatibilityPercentage = Math.round(student.compatibility * 100);
 
 	return (
 		<Card
 			size="small"
 			className="mb-3"
-			bodyStyle={{ padding: '12px' }}
+			bodyStyle={{ padding: "12px" }}
 			extra={
 				<Button
 					type="primary"
 					icon={<PlusOutlined />}
 					size="small"
 					loading={loading}
+					disabled={isSelected}
 					onClick={handleAdd}
 				>
-					Add
+					{isSelected ? "Added" : "Add"}
 				</Button>
 			}
 		>
@@ -52,13 +76,13 @@ export default function SuggestedStudentCard({
 						align="center"
 						gap={8}
 						className="mb-2"
-						style={{ minHeight: '60px', maxHeight: '60px' }}
+						style={{ minHeight: "75px", maxHeight: "75px" }}
 					>
-						<div style={{ minHeight: '54px', maxHeight: '54px' }}>
+						<div style={{ minHeight: "70px", maxHeight: "70px" }}>
 							<Title
 								level={5}
 								className="mb-0 text-sm"
-								style={{ lineHeight: '18px', height: '18px' }}
+								style={{ lineHeight: "18px", height: "18px" }}
 							>
 								{student.fullName}
 							</Title>
@@ -66,63 +90,49 @@ export default function SuggestedStudentCard({
 								type="secondary"
 								className="text-xs"
 								style={{
-									lineHeight: '14px',
-									height: '42px',
-									display: 'block',
-									overflow: 'hidden',
-									textOverflow: 'ellipsis',
+									lineHeight: "16px", // Increased from 14px to 16px for better spacing
+									height: "56px", // Increased to accommodate major line
+									minHeight: "56px", // Add minHeight to prevent text cutoff
+									display: "block",
+									overflow: "hidden",
+									textOverflow: "ellipsis",
 								}}
 							>
 								{student.studentCode} • {student.email}
+								<br />
+								{majorName}
 							</Text>
 						</div>
 					</Flex>
 
-					{/* Match Percentage */}
-					<div className="mb-2">
+					{/* Compatibility Percentage */}
+					<div className="mb-2" style={{ marginTop: "12px" }}>
 						<Flex align="center" gap={6}>
 							<Text strong className="text-xs">
-								Match:
+								Compatibility:
 							</Text>
 							<Progress
-								percent={student.matchPercentage}
+								percent={compatibilityPercentage}
 								size="small"
-								strokeColor={getProgressColor(student.matchPercentage)}
+								strokeColor={getProgressColor(student.compatibility)}
 								style={{ flex: 1, maxWidth: 100 }}
 							/>
 						</Flex>
 					</div>
 
-					{/* Skills */}
-					<div className="mb-2">
-						<Text className="text-xs text-gray-500 mb-1 block">Skills:</Text>
-						{student.skills.length > 0 ? (
-							<TagList
-								items={student.skills}
-								color="blue"
-								maxVisible={3}
-								showLevel={true}
-								minHeight="auto"
-								maxHeight="none"
-							/>
-						) : (
-							<Text className="text-xs text-gray-400">No skills specified</Text>
-						)}
-					</div>
-
-					{/* Responsibilities */}
+					{/* Responsibilities Radar Chart */}
 					<div>
 						<Text className="text-xs text-gray-500 mb-1 block">
-							Responsibilities:
+							Responsibility Levels:
 						</Text>
-						{student.responsibilities.length > 0 ? (
-							<TagList
-								items={student.responsibilities}
-								color="green"
-								maxVisible={3}
-								minHeight="auto"
-								maxHeight="none"
-							/>
+						{responsibilityData.length > 0 ? (
+							<div style={{ marginTop: 8 }}>
+								<ResponsibilityRadarChart
+									data={responsibilityData}
+									height={180}
+									loading={false}
+								/>
+							</div>
 						) : (
 							<Text className="text-xs text-gray-400">
 								No responsibilities specified

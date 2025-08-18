@@ -54,7 +54,7 @@ export const useThesisRegistration = () => {
 				message:
 					"Are you sure you want to submit an application for this thesis?",
 				details: thesisTitle || "Selected thesis",
-				note: "Your application will be reviewed by the lecturer. You can track its status in the Register Thesis page.",
+				note: "Your application will be reviewed by the lecturer. You can track its status in the Apply Thesis Request page.",
 				noteType: "info",
 				okText: "Submit Application",
 				cancelText: "Cancel",
@@ -80,7 +80,7 @@ export const useThesisRegistration = () => {
 						handleSuccessResponse(
 							result,
 							"Application Submitted",
-							"Your thesis application has been submitted successfully! You can track its status in the Register Thesis page.",
+							"Your thesis application has been submitted successfully! You can track its status in the Apply Thesis Request page.",
 							"Application submission failed",
 							() => {
 								// Call the success callback immediately to update UI
@@ -112,20 +112,19 @@ export const useThesisRegistration = () => {
 			if (!group) {
 				showNotification.error(
 					"No Group Found",
-					"You must be in a group to unregister from a thesis.",
+					"You must be in a group to unpick a thesis.",
 				);
 				return;
 			}
 
 			// Show confirmation modal immediately
 			ConfirmationModal.show({
-				title: "Unregister Thesis",
-				message:
-					"Are you sure you want to unregister your group from this thesis?",
+				title: "Unpick Thesis",
+				message: "Are you sure you want to unpick this thesis from your group?",
 				details: thesisTitle || "Current thesis",
 				note: "This action will remove the thesis assignment from your group.",
 				noteType: "warning",
-				okText: "Unregister",
+				okText: "Unpick",
 				cancelText: "Cancel",
 				okType: "danger",
 				loading: isRegistering,
@@ -139,22 +138,22 @@ export const useThesisRegistration = () => {
 
 						if (result.success) {
 							showNotification.success(
-								"Unregistration Successful",
-								"Your group has been unregistered from the thesis successfully!",
+								"Thesis Unpicked Successfully",
+								"Your group has unpicked the thesis successfully!",
 							);
 							onSuccess?.();
 						} else {
 							// Show error message from backend
 							showNotification.error(
-								"Unregistration Failed",
+								"Unpick Failed",
 								result.error?.message ||
-									"Failed to unregister from this thesis. Please try again.",
+									"Failed to unpick this thesis. Please try again.",
 							);
 						}
 					} catch (error) {
-						console.error("Error unregistering thesis:", error);
+						console.error("Error unpicking thesis:", error);
 						showNotification.error(
-							"Unregistration Failed",
+							"Unpick Failed",
 							"An unexpected error occurred. Please try again.",
 						);
 					} finally {

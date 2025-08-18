@@ -1,22 +1,20 @@
-import { Button, Col, Form, Row } from 'antd';
-import { useRouter } from 'next/navigation';
-import { memo, useCallback, useState } from 'react';
+import { Button, Col, Form, Row } from "antd";
+import { useRouter } from "next/navigation";
+import { memo, useCallback, useState } from "react";
 
-import CreateGroupInviteMembersSimple from '@/components/features/student/FormOrJoinGroup/CreateGroup/CreateGroupInviteMembersSimple';
-import GroupFormFields from '@/components/features/student/FormOrJoinGroup/CreateGroup/GroupFormFields';
-import groupService from '@/lib/services/groups.service';
-import requestService from '@/lib/services/requests.service';
-import { handleApiError } from '@/lib/utils/handleApi';
-import { showNotification } from '@/lib/utils/notification';
-import { GroupCreateService as GroupCreate } from '@/schemas/group';
-import type { Student } from '@/schemas/student';
-import { useGroupDashboardStore } from '@/store/useGroupDashboardStore';
+import CreateGroupInviteMembersSimple from "@/components/features/student/FormOrJoinGroup/CreateGroup/CreateGroupInviteMembersSimple";
+import GroupFormFields from "@/components/features/student/FormOrJoinGroup/CreateGroup/GroupFormFields";
+import groupService from "@/lib/services/groups.service";
+import requestService from "@/lib/services/requests.service";
+import { handleApiError } from "@/lib/utils/handleApi";
+import { showNotification } from "@/lib/utils/notification";
+import { GroupCreateService as GroupCreate } from "@/schemas/group";
+import type { Student } from "@/schemas/student";
+import { useGroupDashboardStore } from "@/store/useGroupDashboardStore";
 
 interface CreateGroupFormValues {
 	name: string;
 	area?: string;
-	skills?: string[];
-	responsibility?: string[];
 }
 
 function CreateGroupForm() {
@@ -41,19 +39,17 @@ function CreateGroupForm() {
 				const groupData: GroupCreate = {
 					name: values.name,
 					projectDirection: values.area,
-					skillIds: values.skills || [],
-					responsibilityIds: values.responsibility || [],
 				};
 
 				// Step 1: Create group
 				const groupResponse = await groupService.create(groupData);
 
 				if (!groupResponse.success) {
-					throw new Error(groupResponse.error || 'Failed to create group');
+					throw new Error(groupResponse.error || "Failed to create group");
 				}
 
 				const createdGroup = groupResponse.data;
-				showNotification.success('Success', 'Group created successfully!');
+				showNotification.success("Success", "Group created successfully!");
 
 				// Reset form immediately after successful creation
 				form.resetFields();
@@ -62,14 +58,14 @@ function CreateGroupForm() {
 				refreshGroup();
 
 				// Navigate to dashboard immediately after group creation
-				router.push('/student/group-dashboard');
+				router.push("/student/group-dashboard");
 
 				// Step 2: Invite members in background (if any)
 				if (members.length > 0) {
 					// Show loading notification for invite process
 					const inviteLoadingKey = `invite-${Date.now()}`;
 					showNotification.loading(
-						'Sending invitations...',
+						"Sending invitations...",
 						`Inviting ${members.length} members to your group`,
 						{ key: inviteLoadingKey, duration: 0 },
 					);
@@ -89,7 +85,7 @@ function CreateGroupForm() {
 
 							if (inviteResponse.success && inviteResponse.data.length > 0) {
 								showNotification.success(
-									'Invitations sent successfully!',
+									"Invitations sent successfully!",
 									`Successfully invited ${inviteResponse.data.length}/${members.length} members`,
 									4.5,
 								);
@@ -98,26 +94,26 @@ function CreateGroupForm() {
 								inviteResponse.data.length === 0
 							) {
 								showNotification.warning(
-									'No invitations sent',
-									'No invitations were sent.',
+									"No invitations sent",
+									"No invitations were sent.",
 									4.5,
 								);
 							} else {
 								showNotification.warning(
-									'Partial invitation failure',
-									'Failed to send some invitations. You can invite members later from the group dashboard.',
+									"Partial invitation failure",
+									"Failed to send some invitations. You can invite members later from the group dashboard.",
 									6,
 								);
 							}
 						} catch (inviteError) {
-							console.error('Error inviting members:', inviteError);
+							console.error("Error inviting members:", inviteError);
 
 							// Dismiss loading notification
 							showNotification.destroy(inviteLoadingKey);
 
 							showNotification.warning(
-								'Invitation failed',
-								'Failed to send invitations. You can invite members later from the group dashboard.',
+								"Invitation failed",
+								"Failed to send invitations. You can invite members later from the group dashboard.",
 								6,
 							);
 						}
@@ -130,9 +126,9 @@ function CreateGroupForm() {
 				// Reset members state
 				setMembers([]);
 			} catch (error) {
-				console.error('Error creating group:', error);
-				const apiError = handleApiError(error, 'Failed to create group');
-				showNotification.error('Failed to Create Group', apiError.message);
+				console.error("Error creating group:", error);
+				const apiError = handleApiError(error, "Failed to create group");
+				showNotification.error("Failed to Create Group", apiError.message);
 			} finally {
 				setLoading(false);
 			}

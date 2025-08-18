@@ -95,16 +95,17 @@ export default function StudentSidebar() {
 		},
 		getGroupMenuItem(),
 		{
-			key: STUDENT_MENU_KEYS.REGISTER_THESIS,
-			icon: isMenuItemLoading(STUDENT_MENU_KEYS.REGISTER_THESIS) ? (
+			key: STUDENT_MENU_KEYS.APPLY_THESIS_REQUEST,
+			icon: isMenuItemLoading(STUDENT_MENU_KEYS.APPLY_THESIS_REQUEST) ? (
 				<LoadingOutlined spin />
 			) : (
 				<FileTextOutlined />
 			),
-			label: "Register Thesis Request",
-			onClick: () => navigateWithLoading(STUDENT_MENU_KEYS.REGISTER_THESIS),
+			label: "Apply Thesis Request",
+			onClick: () =>
+				navigateWithLoading(STUDENT_MENU_KEYS.APPLY_THESIS_REQUEST),
 			disabled:
-				isNavigating && targetPath !== STUDENT_MENU_KEYS.REGISTER_THESIS,
+				isNavigating && targetPath !== STUDENT_MENU_KEYS.APPLY_THESIS_REQUEST,
 		},
 		{
 			key: STUDENT_MENU_KEYS.TRACK_PROGRESS,

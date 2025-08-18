@@ -369,7 +369,7 @@ export default function GroupDetailClient({ groupId }: GroupDetailClientProps) {
 						</Title>
 						<Paragraph type="secondary" style={{ marginBottom: 0 }}>
 							View detailed information about the group including members,
-							skills, responsibilities and project direction.
+							responsibilities and project direction.
 						</Paragraph>
 					</Space>
 				</Col>
