@@ -9,6 +9,69 @@ For more information about this project, see the [README](./README.md).
 
 ---
 
+## [1.0.2] - 2025-08-18
+
+### Added
+
+#### Radar Chart Visualization System
+
+- **Responsibility Radar Charts:** New interactive chart components for visualizing student responsibility levels ([#365](https://github.com/5-logic/the-sync-frontend/pull/365))
+  - BaseRadarChart component for foundational radar chart functionality
+  - InteractiveRadarChart component for interactive responsibility assessment
+  - ResponsibilityRadarChart component for displaying student responsibility levels
+  - Integration of radar charts into SuggestedStudentCard and StudentInfoCard components
+
+#### Enhanced AI Suggestions
+
+- **Improved Group Recommendations:** Enhanced AI suggestion system with better group matching
+  - Updated AISuggestionCard with group leader information and member count logic
+  - Enhanced AISuggestions component with improved data handling using SuggestGroupsData structure
+  - Better thesis application logic integration in AI recommendations
+
+### Changed
+
+#### Terminology Updates
+
+- **"Register" to "Apply" Migration:** Comprehensive terminology update across the application
+  - Renamed "Register Thesis Request" to "Apply Thesis Request" throughout the UI
+  - Updated page route from `/student/register-thesis` to `/student/apply-thesis-request`
+  - Updated ThesisCard and ActionButtons components to use "apply" terminology
+  - Enhanced thesis application workflow with improved user experience
+
+#### Component Architecture Improvements
+
+- **Enhanced Code Clarity:** Improved component structure and prop handling
+  - Refactored join request handling in AISuggestionCard for better code reusability
+  - Updated key props in AISuggestThesisCard and ViewListThesis for improved rendering
+  - Enhanced props with readonly modifiers in BaseRadarChart and ResponsibilityRadarChart
+  - Updated student-related components and services for better consistency
+
+#### Skills System Removal
+
+- **Streamlined Data Model:** Removed skills-based functionality to simplify the application
+  - Removed skill.ts and skillSet.ts data files
+  - Eliminated skill-sets.service.ts and related skill functionality
+  - Removed useSkillSetStore.ts from state management
+  - Updated AI suggestions to remove skills references and focus on other matching criteria
+
+### Fixed
+
+#### UI and Rendering Improvements
+
+- **Better Component Rendering:** Enhanced user interface consistency and performance
+  - Fixed key props issues in thesis and group-related components
+  - Improved radar chart component immutability with readonly props
+  - Enhanced color definitions and clarity in chart components (level 2 color improvements)
+  - Updated thesis application handling with better state management
+
+#### Code Quality Enhancements
+
+- **Improved Code Consistency:** Better code organization and readability
+  - Standardized code formatting and consistency across multiple components
+  - Enhanced join group logic with better error handling
+  - Improved component prop validation and type safety
+  - Better state management in thesis application workflows
+
 ## [1.0.1] - 2025-08-16
 
 ### Added
