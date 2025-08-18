@@ -101,79 +101,57 @@ const AISuggestionCard: React.FC<AISuggestionCardProps> = ({
 		router.push("/student/group-dashboard");
 	};
 
+	const executeJoinRequest = async (successMessage: string) => {
+		setIsRequesting(true);
+		try {
+			const response = await requestService.joinGroup(group.id);
+
+			// Check if user directly joined or created a request
+			if (
+				(groupStatus.hasNoMembers && response.success) ||
+				(response.success && response.data?.status === "Approved")
+			) {
+				// Direct join successful
+				await handleJoinSuccess();
+			} else {
+				// Request created and pending
+				showNotification.success("Success", successMessage);
+				onRequestSent?.();
+			}
+		} catch (error: unknown) {
+			const apiError = error as {
+				response?: { data?: { error?: string } };
+				message?: string;
+			};
+			const errorMessage =
+				apiError?.response?.data?.error ||
+				(error as Error)?.message ||
+				"Failed to join the group. Please try again.";
+			showNotification.error("Error", errorMessage);
+		} finally {
+			setIsRequesting(false);
+		}
+	};
+
 	const handleJoinRequest = () => {
 		if (groupStatus.hasNoMembers) {
 			// Direct join for groups with no members
 			GroupConfirmationModals.joinGroup(
 				group.name,
-				async () => {
-					setIsRequesting(true);
-					try {
-						const response = await requestService.joinGroup(group.id);
-
-						// Check if user directly joined or created a request
-						if (groupStatus.hasNoMembers && response.success) {
-							// Direct join successful
-							await handleJoinSuccess();
-						} else {
-							// Request created
-							showNotification.success(
-								"Success",
-								"Join request sent successfully! The group leader will review your request.",
-							);
-							onRequestSent?.();
-						}
-					} catch (error: unknown) {
-						const apiError = error as {
-							response?: { data?: { error?: string } };
-							message?: string;
-						};
-						const errorMessage =
-							apiError?.response?.data?.error ||
-							(error as Error)?.message ||
-							"Failed to join the group. Please try again.";
-						showNotification.error("Error", errorMessage);
-					} finally {
-						setIsRequesting(false);
-					}
-				},
+				() =>
+					executeJoinRequest(
+						"Join request sent successfully! The group leader will review your request.",
+					),
 				isRequesting,
 			);
 		} else {
 			// Request to join for groups with existing members
 			GroupConfirmationModals.requestToJoin(
 				group.name,
-				async () => {
-					setIsRequesting(true);
-					try {
-						const response = await requestService.joinGroup(group.id);
-
-						// Check response or request status to determine if directly joined
-						if (response.success && response.data?.status === "Approved") {
-							// Direct join successful (auto-approved)
-							await handleJoinSuccess();
-						} else {
-							// Request created and pending
-							showNotification.success(
-								"Success",
-								"Join request sent successfully! The group leader will review your request.",
-							);
-							onRequestSent?.();
-						}
-					} catch (error: unknown) {
-						const apiError = error as {
-							response?: { data?: { error?: string } };
-							message?: string;
-						};
-						const errorMessage =
-							apiError?.response?.data?.error ||
-							(error as Error)?.message ||
-							"Failed to send join request. Please try again.";
-						showNotification.error("Error", errorMessage);
-					} finally {
-						setIsRequesting(false);
-					}
-				},
+				() =>
+					executeJoinRequest(
+						"Join request sent successfully! The group leader will review your request.",
+					),
 				isRequesting,
 			);
 		}
