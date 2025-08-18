@@ -288,8 +288,8 @@ export default function AISuggestThesisCard({
 						Supervisors:
 					</Typography.Text>
 					<Space direction="vertical" size="small" style={{ width: "100%" }}>
-						{suggestion.supervisorsName.map((supervisor, index) => (
-							<Row key={index} align="middle" gutter={8}>
+						{suggestion.supervisorsName.map((supervisor) => (
+							<Row key={supervisor} align="middle" gutter={8}>
 								<Col>
 									<Avatar size="small" icon={<UserOutlined />} />
 								</Col>

@@ -503,13 +503,17 @@ export default function ViewListThesis() {
 														.map((part, partIndex) => {
 															// If index is odd, it's text within single quotes - make it bold
 															if (partIndex % 2 === 1) {
-																return <strong key={partIndex}>{part}</strong>;
+																return (
+																	<strong key={`${index}-${partIndex}`}>
+																		{part}
+																	</strong>
+																);
 															}
 															return part;
 														});
 
 													return (
-														<span key={index}>
+														<span key={`line-${index}-${line.slice(0, 20)}`}>
 															{processedLine}
 															{index < array.length - 1 && <br />}
 														</span>
