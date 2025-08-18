@@ -8,6 +8,7 @@ import {
 	Typography,
 	Collapse,
 } from "antd";
+import { UserOutlined } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
@@ -49,7 +50,7 @@ const AISuggestionCard: React.FC<AISuggestionCardProps> = ({
 	// Calculate percentage for compatibility score (0-1 scale to percentage)
 	const compatibilityPercentage = Math.round(group.compatibility * 100);
 
-	// Group status logic - similar to GroupCard (but without member count checks since AI suggestions don't provide this)
+	// Group status logic - now using actual member count from API
 	const groupStatus = useMemo(() => {
 		const pendingInviteRequest = existingRequests.find(
 			(req) =>
@@ -65,13 +66,16 @@ const AISuggestionCard: React.FC<AISuggestionCardProps> = ({
 				req.status === "Pending",
 		);
 
+		const hasNoMembers = group.memberCount === 0;
+		const isGroupFull = group.memberCount >= 5;
+
 		return {
 			hasPendingInviteRequest: !!pendingInviteRequest,
 			hasPendingJoinRequest: !!pendingJoinRequest,
-			hasNoMembers: false, // AI suggestions don't provide member count, assume groups have members
-			isGroupFull: false, // AI suggestions don't provide member count, assume groups aren't full
+			hasNoMembers,
+			isGroupFull,
 		};
-	}, [group.id, existingRequests]);
+	}, [group.id, group.memberCount, existingRequests]);
 
 	const handleViewDetail = () => {
 		router.push(`/student/join-group/${group.id}`);
@@ -98,47 +102,91 @@ const AISuggestionCard: React.FC<AISuggestionCardProps> = ({
 	};
 
 	const handleJoinRequest = () => {
-		// For AI suggestions, we don't know member count, so always use requestToJoin flow
-		GroupConfirmationModals.requestToJoin(
-			group.name,
-			async () => {
-				setIsRequesting(true);
-				try {
-					const response = await requestService.joinGroup(group.id);
+		if (groupStatus.hasNoMembers) {
+			// Direct join for groups with no members
+			GroupConfirmationModals.joinGroup(
+				group.name,
+				async () => {
+					setIsRequesting(true);
+					try {
+						const response = await requestService.joinGroup(group.id);
 
-					// Check response or request status to determine if directly joined
-					if (response.success && response.data?.status === "Approved") {
-						// Direct join successful (auto-approved)
-						await handleJoinSuccess();
-					} else {
-						// Request created and pending
-						showNotification.success(
-							"Success",
-							"Join request sent successfully! The group leader will review your request.",
-						);
-						onRequestSent?.();
+						// Check if user directly joined or created a request
+						if (groupStatus.hasNoMembers && response.success) {
+							// Direct join successful
+							await handleJoinSuccess();
+						} else {
+							// Request created
+							showNotification.success(
+								"Success",
+								"Join request sent successfully! The group leader will review your request.",
+							);
+							onRequestSent?.();
+						}
+					} catch (error: unknown) {
+						const apiError = error as {
+							response?: { data?: { error?: string } };
+							message?: string;
+						};
+						const errorMessage =
+							apiError?.response?.data?.error ||
+							(error as Error)?.message ||
+							"Failed to join the group. Please try again.";
+						showNotification.error("Error", errorMessage);
+					} finally {
+						setIsRequesting(false);
 					}
-				} catch (error: unknown) {
-					const apiError = error as {
-						response?: { data?: { error?: string } };
-						message?: string;
-					};
-					const errorMessage =
-						apiError?.response?.data?.error ||
-						(error as Error)?.message ||
-						"Failed to send join request. Please try again.";
-					showNotification.error("Error", errorMessage);
-				} finally {
-					setIsRequesting(false);
-				}
-			},
-			isRequesting,
-		);
+				},
+				isRequesting,
+			);
+		} else {
+			// Request to join for groups with existing members
+			GroupConfirmationModals.requestToJoin(
+				group.name,
+				async () => {
+					setIsRequesting(true);
+					try {
+						const response = await requestService.joinGroup(group.id);
+
+						// Check response or request status to determine if directly joined
+						if (response.success && response.data?.status === "Approved") {
+							// Direct join successful (auto-approved)
+							await handleJoinSuccess();
+						} else {
+							// Request created and pending
+							showNotification.success(
+								"Success",
+								"Join request sent successfully! The group leader will review your request.",
+							);
+							onRequestSent?.();
+						}
+					} catch (error: unknown) {
+						const apiError = error as {
+							response?: { data?: { error?: string } };
+							message?: string;
+						};
+						const errorMessage =
+							apiError?.response?.data?.error ||
+							(error as Error)?.message ||
+							"Failed to send join request. Please try again.";
+						showNotification.error("Error", errorMessage);
+					} finally {
+						setIsRequesting(false);
+					}
+				},
+				isRequesting,
+			);
+		}
 	};
 
-	// Button configuration based on group status - simplified for AI suggestions
+	// Button configuration based on group status - now with full group state checks
 	const getButtonConfig = () => {
-		const { hasPendingInviteRequest, hasPendingJoinRequest } = groupStatus;
+		const {
+			hasPendingInviteRequest,
+			hasPendingJoinRequest,
+			isGroupFull,
+			hasNoMembers,
+		} = groupStatus;
 
 		if (hasPendingInviteRequest) {
 			return {
@@ -158,7 +206,24 @@ const AISuggestionCard: React.FC<AISuggestionCardProps> = ({
 			};
 		}
 
-		// For AI suggestions, default to "Request to Join" since we don't know member count
+		if (isGroupFull) {
+			return {
+				title: "Group is full (5/5 members)",
+				text: "Group Full",
+				clickHandler: undefined,
+				disabled: true,
+			};
+		}
+
+		if (hasNoMembers) {
+			return {
+				title: "Join this group directly",
+				text: "Join Group",
+				clickHandler: handleJoinRequest,
+				disabled: false,
+			};
+		}
+
 		return {
 			title: "Request to Join",
 			text: "Request to Join",
@@ -211,6 +276,44 @@ const AISuggestionCard: React.FC<AISuggestionCardProps> = ({
 								showInfo={false}
 								size="small"
 							/>
+						</div>
+
+						{/* Leader Information */}
+						<div>
+							<Text
+								strong
+								style={{ fontSize: "14px", display: "block", marginBottom: 8 }}
+							>
+								Leader
+							</Text>
+							<div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+								<UserOutlined style={{ fontSize: "14px", color: "#bfbfbf" }} />
+								<div>
+									<Text style={{ fontSize: "14px", fontWeight: "500" }}>
+										{group.leader.fullName}
+									</Text>
+									<br />
+									<Text type="secondary" style={{ fontSize: "12px" }}>
+										{group.leader.studentCode} • {group.leader.email}
+									</Text>
+								</div>
+							</div>
+						</div>
+
+						{/* Member Count */}
+						<div>
+							<Row justify="space-between" align="middle">
+								<Col>
+									<Text strong style={{ fontSize: "14px" }}>
+										Members
+									</Text>
+								</Col>
+								<Col>
+									<Text style={{ fontSize: "12px", fontWeight: "bold" }}>
+										{group.memberCount}/5
+									</Text>
+								</Col>
+							</Row>
 						</div>
 					</Space>
 				</div>

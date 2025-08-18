@@ -6,10 +6,18 @@ export interface SuggestGroupsRequest {
 	semesterId: string;
 }
 
+export interface SuggestedGroupLeader {
+	fullName: string;
+	studentCode: string;
+	email: string;
+}
+
 export interface SuggestedGroup {
 	id: string;
 	code: string;
 	name: string;
+	leader: SuggestedGroupLeader;
+	memberCount: number;
 	compatibility: number;
 }
 
