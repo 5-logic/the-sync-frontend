@@ -92,7 +92,7 @@ export default function ActionButtons({
 		onThesisUpdate,
 	]);
 
-	// Handle cancel application
+	// Handle cancel application (for pending applications)
 	const handleCancelApplication = useCallback(async () => {
 		if (!group?.id) return;
 
@@ -168,7 +168,7 @@ export default function ActionButtons({
 	const showUnregisterButton =
 		isAllDataLoaded && hasGroup && isLeader && isThesisAssignedToGroup;
 
-	// Show cancel application button if user has group, is leader, and has pending application for this thesis
+	// Show cancel application button if user has group, is leader, and has pending application for this thesis (not yet assigned)
 	const showCancelApplicationButton =
 		isAllDataLoaded &&
 		hasGroup &&
@@ -197,11 +197,11 @@ export default function ActionButtons({
 						disabled={isRegisterDisabled}
 						title={
 							!canRegisterThesis
-								? 'Registration is only available during the "Picking" phase or "Ongoing - Scope Adjustable" phase'
+								? 'Application is only available during the "Picking" phase or "Ongoing - Scope Adjustable" phase'
 								: undefined
 						}
 					>
-						{isRegistering ? "Registering..." : "Register Thesis"}
+						{isRegistering ? "Applying..." : "Apply Thesis"}
 					</Button>
 				)}
 				{showUnregisterButton && (
@@ -212,7 +212,7 @@ export default function ActionButtons({
 						loading={isRegistering}
 						disabled={disabled}
 					>
-						Unregister Thesis
+						{isRegistering ? "Unpicking..." : "Unpick Thesis"}
 					</Button>
 				)}
 				{showCancelApplicationButton && (

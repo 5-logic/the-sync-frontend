@@ -1,14 +1,5 @@
 import { ReloadOutlined } from "@ant-design/icons";
-import {
-	Button,
-	Card,
-	Divider,
-	Space,
-	Spin,
-	Tag,
-	Tooltip,
-	Typography,
-} from "antd";
+import { Button, Card, Divider, Space, Spin, Typography } from "antd";
 import { useRouter } from "next/navigation";
 import { memo, useEffect, useState } from "react";
 
@@ -26,68 +17,6 @@ import { useRequestsStore } from "@/store";
 import { useGroupDashboardStore } from "@/store/useGroupDashboardStore";
 
 const { Title, Text } = Typography;
-
-// Helper component for displaying tags with max limit and overflow indicator
-const TagList = ({
-	items,
-	color,
-	maxVisible = 3,
-}: {
-	items: Array<{ id: string; name: string }>;
-	color: string;
-	maxVisible?: number;
-}) => {
-	if (!items || items.length === 0) {
-		return <Text className="text-gray-400 italic">Not specified</Text>;
-	}
-
-	const visibleItems = items.slice(0, maxVisible);
-	const remainingCount = items.length - maxVisible;
-	const remainingItems = items.slice(maxVisible);
-
-	// Create tooltip content for remaining items
-	const tooltipContent = remainingItems.length > 0 && (
-		<div style={{ maxWidth: 200 }}>
-			{remainingItems.map((item) => (
-				<Tag
-					key={item.id}
-					color={color}
-					className="text-xs"
-					style={{ margin: "2px" }}
-				>
-					{item.name}
-				</Tag>
-			))}
-		</div>
-	);
-
-	return (
-		<div className="flex flex-wrap gap-2 mt-1">
-			{visibleItems.map((item) => (
-				<Tag key={item.id} color={color} className="text-xs">
-					{item.name}
-				</Tag>
-			))}
-			{remainingCount > 0 && (
-				<Tooltip
-					title={tooltipContent}
-					color="white"
-					overlayInnerStyle={{ color: "#000" }}
-				>
-					<Tag
-						className="text-xs border-dashed cursor-pointer"
-						style={{
-							backgroundColor: "#f5f5f5",
-							borderColor: "#d9d9d9",
-						}}
-					>
-						+{remainingCount}
-					</Tag>
-				</Tooltip>
-			)}
-		</div>
-	);
-};
 
 interface GroupInfoCardProps {
 	readonly group: GroupDashboard;
@@ -149,12 +78,8 @@ export default memo(function GroupInfoCard({
 	// Check if group has reached maximum members
 	const hasReachedMaxMembers = localGroup.members.length >= GROUP_MAX_MEMBERS;
 
-	// Check if group has thesis or submissions (cannot delete)
-	const hasThesisOrSubmissions = localGroup.thesis !== null;
-
-	// Check if semester is in PREPARING status and group doesn't have thesis
-	const canModifyGroup =
-		localGroup.semester.status === "Preparing" && !hasThesisOrSubmissions;
+	// Check if semester is in PREPARING status - allow edit group info even with thesis
+	const canModifyGroup = localGroup.semester.status === "Preparing";
 
 	// Check if semester is in PREPARING status (can leave group and invite members even with thesis)
 	const canLeaveOrInvite = localGroup.semester.status === "Preparing";
@@ -335,32 +260,6 @@ export default memo(function GroupInfoCard({
 									<span className="text-gray-400 italic">Not specified</span>
 								)}
 							</Text>
-						</div>
-						{/* Skills and Responsibilities - 2 columns */}
-						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-							{" "}
-							{/* Required Skills */}
-							<div>
-								<Text className="text-sm text-gray-400 block font-semibold">
-									Required Skills
-								</Text>
-								<TagList
-									items={localGroup.skills || []}
-									color="blue"
-									maxVisible={3}
-								/>
-							</div>
-							{/* Responsibilities */}
-							<div>
-								<Text className="text-sm text-gray-400 block font-semibold">
-									Expected Responsibilities
-								</Text>
-								<TagList
-									items={localGroup.responsibilities || []}
-									color="green"
-									maxVisible={3}
-								/>
-							</div>
 						</div>
 						{/* Members Section */}
 						<div>

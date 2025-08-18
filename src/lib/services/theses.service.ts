@@ -73,7 +73,7 @@ class ThesisService {
 		id: string,
 	): Promise<ApiResponse<ThesisWithRelations>> {
 		const response = await httpClient.get<ApiResponse<ThesisWithRelations>>(
-			`${this.baseUrl}/${id}?include=lecturer,skills`,
+			`${this.baseUrl}/${id}?include=lecturer`,
 		);
 		return response.data;
 	}

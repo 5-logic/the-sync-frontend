@@ -1,23 +1,26 @@
-'use client';
+"use client";
 
-import { TeamOutlined, UserOutlined } from '@ant-design/icons';
+import { TeamOutlined, UserOutlined } from "@ant-design/icons";
 import {
 	Avatar,
 	Button,
 	Card,
 	Col,
 	Descriptions,
-	Divider,
 	Row,
 	Space,
 	Tag,
 	Typography,
-} from 'antd';
-import Link from 'next/link';
+} from "antd";
+import Link from "next/link";
 
-import { ConfirmationModal } from '@/components/common/ConfirmModal';
-import { GroupDashboard } from '@/schemas/group';
-import { StudentProfile } from '@/schemas/student';
+import { ConfirmationModal } from "@/components/common/ConfirmModal";
+import {
+	ResponsibilityRadarChart,
+	ResponsibilityData,
+} from "@/components/common/radar-chart";
+import { GroupDashboard } from "@/schemas/group";
+import { StudentProfile } from "@/schemas/student";
 
 const { Title, Text } = Typography;
 
@@ -38,21 +41,6 @@ interface StudentInfoCardProps {
 	readonly showGroupActions?: boolean;
 }
 
-const getLevelColor = (level: string) => {
-	switch (level.toLowerCase()) {
-		case 'beginner':
-			return 'blue';
-		case 'intermediate':
-			return 'orange';
-		case 'proficient':
-			return 'green';
-		case 'expert':
-			return 'purple';
-		default:
-			return 'default';
-	}
-};
-
 export default function StudentInfoCard({
 	student,
 	studentGroup,
@@ -72,10 +60,10 @@ export default function StudentInfoCard({
 		if (!student) return;
 
 		ConfirmationModal.show({
-			title: 'Send Invitation',
+			title: "Send Invitation",
 			message: `Are you sure you want to send an invitation to ${student.fullName}?`,
-			okText: 'Yes, Send',
-			cancelText: 'Cancel',
+			okText: "Yes, Send",
+			cancelText: "Cancel",
 			onOk: onSendInvite || (() => {}),
 		});
 	};
@@ -84,11 +72,11 @@ export default function StudentInfoCard({
 		if (!student) return;
 
 		ConfirmationModal.show({
-			title: 'Cancel Invitation',
+			title: "Cancel Invitation",
 			message: `Are you sure you want to cancel the invitation to ${student.fullName}?`,
-			okText: 'Yes, Cancel',
-			cancelText: 'No',
-			okType: 'danger',
+			okText: "Yes, Cancel",
+			cancelText: "No",
+			okType: "danger",
 			onOk: onCancelInvite || (() => {}),
 		});
 	};
@@ -97,10 +85,10 @@ export default function StudentInfoCard({
 		if (!student) return;
 
 		ConfirmationModal.show({
-			title: 'Approve Join Request',
+			title: "Approve Join Request",
 			message: `Are you sure you want to approve ${student.fullName}'s request to join your group?`,
-			okText: 'Yes, Approve',
-			cancelText: 'Cancel',
+			okText: "Yes, Approve",
+			cancelText: "Cancel",
 			onOk: onApproveJoinRequest || (() => {}),
 		});
 	};
@@ -109,11 +97,11 @@ export default function StudentInfoCard({
 		if (!student) return;
 
 		ConfirmationModal.show({
-			title: 'Reject Join Request',
+			title: "Reject Join Request",
 			message: `Are you sure you want to reject ${student.fullName}'s request to join your group?`,
-			okText: 'Yes, Reject',
-			cancelText: 'Cancel',
-			okType: 'danger',
+			okText: "Yes, Reject",
+			cancelText: "Cancel",
+			okType: "danger",
 			onOk: onRejectJoinRequest || (() => {}),
 		});
 	};
@@ -201,8 +189,8 @@ export default function StudentInfoCard({
 						</Tag>
 					</Descriptions.Item>
 					<Descriptions.Item label="Status">
-						<Tag color={student.isActive ? 'green' : 'red'}>
-							{student.isActive ? 'Active' : 'Inactive'}
+						<Tag color={student.isActive ? "green" : "red"}>
+							{student.isActive ? "Active" : "Inactive"}
 						</Tag>
 					</Descriptions.Item>
 					<Descriptions.Item label="Joined">
@@ -222,40 +210,38 @@ export default function StudentInfoCard({
 				</Row>
 			</Card>
 
-			{/* Skills */}
-			<Card title="Skills & Expertise" loading={loading}>
-				<Space size={[8, 8]} wrap>
-					{student.studentSkills.map((skill) => (
-						<div
-							key={`${skill.skillName}-${skill.level}`}
-							className="inline-flex items-center gap-2 p-2 border rounded-lg bg-gray-50 border-gray-300"
-						>
-							<Text strong className="text-sm">
-								{skill.skillName}
-							</Text>
-							<Tag color={getLevelColor(skill.level)} className="text-xs">
-								{skill.level}
-							</Tag>
-						</div>
-					))}
-				</Space>
-				{student.studentSkills.length === 0 && (
-					<div className="text-center py-8">
-						<Text type="secondary">No skills registered yet</Text>
-					</div>
-				)}
-			</Card>
-
 			{/* Expected Responsibilities */}
 			<Card title="Expected Responsibilities" loading={loading}>
-				<Space wrap>
-					{student.studentExpectedResponsibilities.map((responsibility) => (
-						<Tag key={responsibility.responsibilityName} color="purple">
-							{responsibility.responsibilityName}
-						</Tag>
-					))}
-				</Space>
-				{student.studentExpectedResponsibilities.length === 0 && (
+				{student.studentResponsibilities.length > 0 ? (
+					<>
+						{/* Tags */}
+						<Space wrap style={{ marginBottom: 16 }}>
+							{student.studentResponsibilities.map((responsibility) => (
+								<Tag key={responsibility.responsibilityName} color="purple">
+									{responsibility.responsibilityName}
+								</Tag>
+							))}
+						</Space>
+
+						{/* Radar Chart */}
+						<div style={{ marginTop: 16 }}>
+							<Text strong style={{ marginBottom: 8, display: "block" }}>
+								Responsibility Levels:
+							</Text>
+							<ResponsibilityRadarChart
+								data={student.studentResponsibilities.map(
+									(resp): ResponsibilityData => ({
+										responsibilityId: resp.responsibilityId,
+										responsibilityName: resp.responsibilityName,
+										level: Number(resp.level),
+									}),
+								)}
+								height={300}
+								loading={loading}
+							/>
+						</div>
+					</>
+				) : (
 					<div className="text-center py-4">
 						<Text type="secondary">No expected responsibilities specified</Text>
 					</div>
@@ -283,7 +269,7 @@ export default function StudentInfoCard({
 							<Tag color="blue">{studentGroup.code}</Tag>
 						</Descriptions.Item>
 						<Descriptions.Item label="Project Direction">
-							{studentGroup.projectDirection || 'Not specified'}
+							{studentGroup.projectDirection || "Not specified"}
 						</Descriptions.Item>
 						<Descriptions.Item label="Leader">
 							<div className="flex items-center gap-2">
@@ -299,32 +285,6 @@ export default function StudentInfoCard({
 							{studentGroup.members.length} members
 						</Descriptions.Item>
 					</Descriptions>
-
-					<Divider />
-
-					{/* Group Skills */}
-					<div className="mb-4">
-						<Title level={5}>Required Skills</Title>
-						<Space wrap>
-							{studentGroup.skills.map((skill) => (
-								<Tag key={skill.id} color="green">
-									{skill.name} ({skill.skillSet.name})
-								</Tag>
-							))}
-						</Space>
-					</div>
-
-					{/* Group Responsibilities */}
-					<div>
-						<Title level={5}>Required Responsibilities</Title>
-						<Space wrap>
-							{studentGroup.responsibilities.map((responsibility) => (
-								<Tag key={responsibility.id} color="purple">
-									{responsibility.name}
-								</Tag>
-							))}
-						</Space>
-					</div>
 				</Card>
 			)}
 
@@ -332,10 +292,10 @@ export default function StudentInfoCard({
 			{showGroupActions && (
 				<div
 					style={{
-						display: 'flex',
-						justifyContent: 'flex-end',
-						gap: '12px',
-						marginTop: '24px',
+						display: "flex",
+						justifyContent: "flex-end",
+						gap: "12px",
+						marginTop: "24px",
 					}}
 				>
 					{/* Go Back to Group button - Always show when showGroupActions is true */}

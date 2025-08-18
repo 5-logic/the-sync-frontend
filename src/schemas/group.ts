@@ -2,9 +2,7 @@ import { z } from "zod";
 
 import { ApiResponseSchema } from "@/schemas/_common";
 import { MajorSchema } from "@/schemas/major";
-import { ResponsibilitySchema } from "@/schemas/responsibility";
 import { SemesterSchema } from "@/schemas/semester";
-import { SkillSchema, SkillSetSchema } from "@/schemas/skill";
 import { UserSchema } from "@/schemas/user";
 
 // ===== EXISTING GROUP SCHEMAS =====
@@ -18,11 +16,6 @@ export const GroupSchema = z.object({
 	thesisId: z.string().uuid().nullable().optional(),
 	createdAt: z.date(),
 	updatedAt: z.date(),
-});
-
-export const GroupRequiredSkillSchema = z.object({
-	groupId: z.string().uuid(),
-	skillId: z.string().uuid(),
 });
 
 export const GroupCreateSchema = GroupSchema.omit({
@@ -41,7 +34,6 @@ export const GroupUpdateSchema = GroupSchema.omit({
 export type Group = z.infer<typeof GroupSchema>;
 export type GroupCreate = z.infer<typeof GroupCreateSchema>;
 export type GroupUpdate = z.infer<typeof GroupUpdateSchema>;
-export type GroupRequiredSkill = z.infer<typeof GroupRequiredSkillSchema>;
 
 // ===== GROUP SERVICE SCHEMAS =====
 
@@ -60,22 +52,6 @@ export const GroupMemberServiceSchema = z.object({
 		code: z.string(),
 	}),
 	isLeader: z.boolean(),
-});
-
-// Group skill schema for service responses
-export const GroupSkillServiceSchema = z.object({
-	id: z.string().uuid(),
-	name: z.string(),
-	skillSet: z.object({
-		id: z.string().uuid(),
-		name: z.string(),
-	}),
-});
-
-// Group responsibility schema for service responses
-export const GroupResponsibilityServiceSchema = z.object({
-	id: z.string().uuid(),
-	name: z.string(),
 });
 
 // Semester info schema for service responses
@@ -97,13 +73,9 @@ export const GroupServiceSchema = z.object({
 	semester: SemesterInfoServiceSchema,
 	// Backward compatibility fields
 	memberCount: z.number().optional(),
-	skillCount: z.number().optional(),
-	responsibilityCount: z.number().optional(),
 	// Actual API response fields
 	members: z.array(GroupMemberServiceSchema).optional(),
 	leader: GroupMemberServiceSchema.optional(),
-	skills: z.array(GroupSkillServiceSchema).optional(),
-	responsibilities: z.array(GroupResponsibilityServiceSchema).optional(),
 	thesis: z.unknown().optional(), // Can be null or thesis object
 });
 
@@ -111,8 +83,6 @@ export const GroupServiceSchema = z.object({
 export const GroupCreateServiceSchema = z.object({
 	name: z.string().min(1),
 	projectDirection: z.string().optional(),
-	skillIds: z.array(z.string().uuid()).optional(),
-	responsibilityIds: z.array(z.string().uuid()).optional(),
 });
 
 // Bulk group creation schemas (Admin only)
@@ -141,19 +111,6 @@ export const GroupMemberSchema = z.object({
 	user: UserSchema.omit({ password: true }), // Use existing UserSchema without password
 	major: MajorSchema.omit({ createdAt: true, updatedAt: true }), // Use existing MajorSchema
 	isLeader: z.boolean(),
-});
-
-// Group skill schema - extending existing SkillSchema with SkillSet info
-export const GroupSkillSchema = SkillSchema.omit({
-	createdAt: true,
-	updatedAt: true,
-	skillSetId: true,
-}).extend({
-	skillSet: SkillSetSchema.omit({
-		createdAt: true,
-		updatedAt: true,
-		skills: true,
-	}),
 });
 
 // Participation schema
@@ -191,8 +148,6 @@ export const GroupDashboardSchema = GroupSchema.omit({
 			domain: z.string(),
 		}),
 	), // null or thesis object with actual properties
-	skills: z.array(GroupSkillSchema),
-	responsibilities: z.array(ResponsibilitySchema), // Use existing ResponsibilitySchema
 	members: z.array(GroupMemberSchema),
 	leader: GroupMemberSchema,
 	participation: ParticipationSchema,
@@ -206,16 +161,11 @@ export const GroupDashboardApiResponseSchema = ApiResponseSchema(
 // Export additional types for dashboard
 export type GroupDashboard = z.infer<typeof GroupDashboardSchema>;
 export type GroupMember = z.infer<typeof GroupMemberSchema>;
-export type GroupSkill = z.infer<typeof GroupSkillSchema>;
 export type Participation = z.infer<typeof ParticipationSchema>;
 
 // Export service types
 export type GroupService = z.infer<typeof GroupServiceSchema>;
 export type GroupMemberService = z.infer<typeof GroupMemberServiceSchema>;
-export type GroupSkillService = z.infer<typeof GroupSkillServiceSchema>;
-export type GroupResponsibilityService = z.infer<
-	typeof GroupResponsibilityServiceSchema
->;
 export type GroupCreateService = z.infer<typeof GroupCreateServiceSchema>;
 export type SemesterInfoService = z.infer<typeof SemesterInfoServiceSchema>;
 

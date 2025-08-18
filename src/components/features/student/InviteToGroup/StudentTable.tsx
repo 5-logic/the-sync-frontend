@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import { SearchOutlined } from '@ant-design/icons';
-import { Button, Col, Input, Row, Select, Space, Table, Tag } from 'antd';
-import { useState } from 'react';
+import { SearchOutlined } from "@ant-design/icons";
+import { Button, Col, Input, Row, Select, Space, Table, Tag } from "antd";
+import { useState } from "react";
 
-import { TablePagination } from '@/components/common/TablePagination';
-import { mockStudents } from '@/data/student';
+import { TablePagination } from "@/components/common/TablePagination";
+import { mockStudents } from "@/data/student";
 
 const { Option } = Select;
 
 export const StudentTable = () => {
-	const [searchText, setSearchText] = useState('');
+	const [searchText, setSearchText] = useState("");
 	const [selectedMajor, setSelectedMajor] = useState<string | null>(null);
 
 	const filteredStudents = mockStudents.filter((student) => {
@@ -25,51 +25,36 @@ export const StudentTable = () => {
 
 	const columns = [
 		{
-			title: 'Name',
-			dataIndex: 'fullName',
-			key: 'name',
+			title: "Name",
+			dataIndex: "fullName",
+			key: "name",
 			width: 180,
 		},
 		{
-			title: 'Email',
-			dataIndex: 'email',
-			key: 'email',
+			title: "Email",
+			dataIndex: "email",
+			key: "email",
 			width: 220,
 		},
 		{
-			title: 'Major',
-			dataIndex: 'majorId',
-			key: 'major',
+			title: "Major",
+			dataIndex: "majorId",
+			key: "major",
 			width: 180,
 			render: (majorId: string) => {
 				let majorName = majorId;
-				if (majorId === 'SE') {
-					majorName = 'Software Engineering';
-				} else if (majorId === 'AI') {
-					majorName = 'Artificial Intelligence';
+				if (majorId === "SE") {
+					majorName = "Software Engineering";
+				} else if (majorId === "AI") {
+					majorName = "Artificial Intelligence";
 				}
 				return majorName;
 			},
 		},
-
 		{
-			title: 'Skills',
-			dataIndex: 'studentSkills',
-			key: 'skills',
-			render: (skills: { skillId: string; name: string }[]) => (
-				<Space wrap>
-					{skills.map((s) => (
-						<Tag color="geekblue" key={s.skillId}>
-							{s.name}
-						</Tag>
-					))}
-				</Space>
-			),
-		},
-		{
-			title: 'Role',
-			dataIndex: 'studentExpectedResponsibilities',
-			key: 'role',
+			title: "Role",
+			dataIndex: "studentResponsibilities",
+			key: "role",
 			render: (roles: { responsibilityId: string; name: string }[]) => (
 				<Space wrap>
 					{roles.map((r) => (
@@ -81,8 +66,8 @@ export const StudentTable = () => {
 			),
 		},
 		{
-			title: 'Action',
-			key: 'action',
+			title: "Action",
+			key: "action",
 			width: 100,
 			render: () => <Button type="primary">Invite</Button>,
 		},
@@ -104,10 +89,10 @@ export const StudentTable = () => {
 					/>
 				</Col>
 
-				<Col style={{ flex: '0 0 250px' }}>
+				<Col style={{ flex: "0 0 250px" }}>
 					<Select
 						placeholder="Filter by Major"
-						style={{ width: '100%' }}
+						style={{ width: "100%" }}
 						allowClear
 						onChange={(value) => setSelectedMajor(value)}
 					>
@@ -122,7 +107,7 @@ export const StudentTable = () => {
 				dataSource={filteredStudents}
 				rowKey="id"
 				pagination={TablePagination}
-				scroll={{ x: 'max-content' }}
+				scroll={{ x: "max-content" }}
 			/>
 		</>
 	);

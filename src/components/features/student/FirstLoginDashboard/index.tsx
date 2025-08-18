@@ -82,7 +82,7 @@ export default function StudentFirstLoginDashboard() {
 								/>
 							}
 							title="AI Group Suggestion"
-							description="Let our AI help you discover groups that match your skills and interests"
+							description="Let our AI help you discover groups that match your interests"
 							buttonText="Find Match"
 							onClick={handleAIFindGroup}
 						/>

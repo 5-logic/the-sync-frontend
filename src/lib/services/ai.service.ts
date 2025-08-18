@@ -6,42 +6,24 @@ export interface SuggestGroupsRequest {
 	semesterId: string;
 }
 
-export interface SuggestedGroupMember {
-	id: string;
-	name: string;
-	isLeader: boolean;
+export interface SuggestedGroupLeader {
+	fullName: string;
+	studentCode: string;
+	email: string;
 }
 
 export interface SuggestedGroup {
 	id: string;
 	code: string;
 	name: string;
-	projectDirection: string;
-	thesis: null;
-	currentMembersCount: number;
-	leader: {
-		id: string;
-		name: string;
-	};
-	members: SuggestedGroupMember[];
-}
-
-export interface GroupSuggestion {
-	group: SuggestedGroup;
-	compatibilityScore: number;
-	matchingSkills: number;
-	matchingResponsibilities: number;
+	leader: SuggestedGroupLeader;
+	memberCount: number;
+	compatibility: number;
 }
 
 export interface SuggestGroupsData {
-	student: {
-		id: string;
-		studentCode: string;
-		name: string;
-		email: string;
-	};
-	suggestions: GroupSuggestion[];
-	totalGroups: number;
+	reason: string;
+	groups: SuggestedGroup[];
 }
 
 export interface SuggestGroupsResponse {
@@ -51,32 +33,54 @@ export interface SuggestGroupsResponse {
 }
 
 // AI Suggest Students interfaces
-export interface SuggestedStudentSkill {
-	id: string;
-	name: string;
+export interface SuggestedStudentResponsibility {
+	responsibilityId: string;
+	responsibilityName: string;
 	level: string;
 }
 
-export interface SuggestedStudentResponsibility {
+export interface SuggestedStudentMajor {
 	id: string;
 	name: string;
+	code: string;
+	createdAt: string;
+	updatedAt: string;
+}
+
+export interface SuggestedStudentEnrollment {
+	semester: {
+		id: string;
+		name: string;
+		code: string;
+		status: string;
+	};
+	status: string;
 }
 
 export interface SuggestedStudent {
 	id: string;
-	studentCode: string;
 	fullName: string;
 	email: string;
-	skills: SuggestedStudentSkill[];
-	responsibilities: SuggestedStudentResponsibility[];
-	similarityScore: number;
-	matchPercentage: number;
+	gender: string;
+	phoneNumber: string;
+	isActive: boolean;
+	studentCode: string;
+	majorId: string;
+	createdAt: string;
+	updatedAt: string;
+	major: SuggestedStudentMajor;
+	enrollments: SuggestedStudentEnrollment[];
+	studentResponsibilities: SuggestedStudentResponsibility[];
+	compatibility: number;
 }
 
 export interface SuggestStudentsResponse {
 	success: boolean;
 	statusCode: number;
-	data: SuggestedStudent[];
+	data: {
+		reason: string;
+		students: SuggestedStudent[];
+	};
 }
 
 // AI Suggest Thesis interfaces
@@ -89,30 +93,14 @@ export interface SuggestedThesisLecturer {
 export interface SuggestedThesis {
 	id: string;
 	englishName: string;
-	vietnameseName: string;
-	description: string;
-	domain?: string; // Add optional domain field
-	lecturer: SuggestedThesisLecturer;
-}
-
-export interface ThesisSuggestion {
-	thesis: SuggestedThesis;
-	relevanceScore: number;
-	matchingFactors: string[];
-}
-
-export interface SuggestedGroup {
-	id: string;
-	code: string;
-	name: string;
-	projectDirection: string;
-	membersCount: number;
+	abbreviation: string;
+	supervisorsName: string[];
+	compatibility: number;
 }
 
 export interface SuggestThesesData {
-	group: SuggestedGroup;
-	suggestions: ThesisSuggestion[];
-	totalAvailableTheses: number;
+	reason: string;
+	theses: SuggestedThesis[];
 }
 
 export interface SuggestThesesResponse {
@@ -121,11 +109,25 @@ export interface SuggestThesesResponse {
 	data: SuggestThesesData;
 }
 
+// Legacy interfaces for backward compatibility
+export interface ThesisSuggestion {
+	thesis: {
+		id: string;
+		englishName: string;
+		vietnameseName?: string;
+		description?: string;
+		domain?: string;
+		lecturer: SuggestedThesisLecturer;
+	};
+	relevanceScore: number;
+	matchingFactors: string[];
+}
+
 class AIService {
 	private readonly baseUrl = "/ai";
 
 	/**
-	 * Suggest groups for a student based on their skills and responsibilities
+	 * Suggest groups for a student based on their responsibilities
 	 */
 	async suggestGroupsForStudent(
 		request: SuggestGroupsRequest,
@@ -138,7 +140,7 @@ class AIService {
 	}
 
 	/**
-	 * Suggest students for a group based on group's needs and student skills
+	 * Suggest students for a group based on group's needs and student responsibilities
 	 */
 	async suggestStudentsForGroup(
 		groupId: string,
@@ -150,7 +152,7 @@ class AIService {
 	}
 
 	/**
-	 * Suggest theses for a group based on group's project direction and skills
+	 * Suggest theses for a group based on group's project direction and responsibilities
 	 */
 	async suggestThesesForGroup(groupId: string): Promise<SuggestThesesResponse> {
 		const response = await httpClient.get<SuggestThesesResponse>(
