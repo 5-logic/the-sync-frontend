@@ -325,9 +325,9 @@ export default function ThesisCard({
 							onClick={handleUnregisterThesis}
 							loading={isRegistering}
 							disabled={!isAllDataLoaded}
-							title="Cancel thesis application"
+							title="Unpick this thesis"
 						>
-							{isRegistering ? "Canceling..." : "Cancel Application"}
+							{isRegistering ? "Unpicking..." : "Unpick Thesis"}
 						</Button>
 					) : (
 						<Button

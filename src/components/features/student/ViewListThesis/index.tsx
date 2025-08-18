@@ -1,7 +1,18 @@
 "use client";
 
 import { ReloadOutlined, SearchOutlined } from "@ant-design/icons";
-import { Button, Col, Empty, Input, Row, Select, Space, Spin } from "antd";
+import {
+	Button,
+	Col,
+	Empty,
+	Input,
+	Row,
+	Select,
+	Space,
+	Spin,
+	Typography,
+	Collapse,
+} from "antd";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -14,7 +25,7 @@ import ThesisCard from "@/components/features/student/ViewListThesis/ThesisCard"
 import { useStudentGroupStatus } from "@/hooks/student/useStudentGroupStatus";
 import { useThesisApplications } from "@/hooks/student/useThesisApplications";
 import { getSortedDomains } from "@/lib/constants/domains";
-import aiService, { ThesisSuggestion } from "@/lib/services/ai.service";
+import aiService, { SuggestedThesis } from "@/lib/services/ai.service";
 import lecturersService from "@/lib/services/lecturers.service";
 import studentsService from "@/lib/services/students.service";
 import thesesService from "@/lib/services/theses.service";
@@ -86,7 +97,8 @@ export default function ViewListThesis() {
 
 	// AI Suggest states
 	const [showAISuggestions, setShowAISuggestions] = useState(false);
-	const [aiSuggestions, setAISuggestions] = useState<ThesisSuggestion[]>([]);
+	const [aiSuggestions, setAISuggestions] = useState<SuggestedThesis[]>([]);
+	const [aiReason, setAIReason] = useState<string>("");
 	const [aiLoading, setAILoading] = useState(false);
 	const [aiCurrentPage, setAICurrentPage] = useState(1);
 
@@ -215,7 +227,8 @@ export default function ViewListThesis() {
 			const response = await aiService.suggestThesesForGroup(group.id);
 
 			if (response.success && response.data) {
-				setAISuggestions(response.data.suggestions);
+				setAISuggestions(response.data.theses);
+				setAIReason(response.data.reason);
 				setShowAISuggestions(true);
 				setAICurrentPage(1); // Reset to first page
 			}
@@ -296,7 +309,7 @@ export default function ViewListThesis() {
 
 			if (paginatedAISuggestions.length > 0) {
 				return paginatedAISuggestions.map((suggestion) => (
-					<Col xs={24} sm={12} md={8} key={suggestion.thesis.id}>
+					<Col xs={24} sm={12} md={8} key={suggestion.id}>
 						<AISuggestThesisCard
 							suggestion={suggestion}
 							studentRole={isLeader ? "leader" : "member"}
@@ -451,6 +464,62 @@ export default function ViewListThesis() {
 						>
 							Refresh
 						</Button>
+					</Col>
+				</Row>
+			)}
+
+			{/* AI Reasoning Section - Only show for AI suggestions */}
+			{showAISuggestions && aiReason && (
+				<Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+					<Col span={24}>
+						<Collapse
+							size="small"
+							style={{
+								borderColor: "#1890ff",
+								backgroundColor: "#f6ffed",
+							}}
+							items={[
+								{
+									key: "ai-reasoning",
+									label: (
+										<Typography.Text strong style={{ color: "#1890ff" }}>
+											🤖 AI Analysis & Reasoning
+										</Typography.Text>
+									),
+									children: (
+										<Typography.Paragraph
+											style={{
+												margin: 0,
+												lineHeight: "1.6",
+											}}
+										>
+											{aiReason
+												.replace(/\n{2,}/g, "\n")
+												.split("\n")
+												.map((line, index, array) => {
+													// Process each line to handle text formatting
+													const processedLine = line
+														.split(/'([^']*)'/)
+														.map((part, partIndex) => {
+															// If index is odd, it's text within single quotes - make it bold
+															if (partIndex % 2 === 1) {
+																return <strong key={partIndex}>{part}</strong>;
+															}
+															return part;
+														});
+
+													return (
+														<span key={index}>
+															{processedLine}
+															{index < array.length - 1 && <br />}
+														</span>
+													);
+												})}
+										</Typography.Paragraph>
+									),
+								},
+							]}
+						/>
 					</Col>
 				</Row>
 			)}

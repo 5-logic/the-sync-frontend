@@ -93,36 +93,34 @@ export interface SuggestedThesisLecturer {
 export interface SuggestedThesis {
 	id: string;
 	englishName: string;
-	vietnameseName: string;
-	description: string;
-	domain?: string; // Add optional domain field
-	lecturer: SuggestedThesisLecturer;
-}
-
-export interface ThesisSuggestion {
-	thesis: SuggestedThesis;
-	relevanceScore: number;
-	matchingFactors: string[];
-}
-
-export interface SuggestedGroup {
-	id: string;
-	code: string;
-	name: string;
-	projectDirection: string;
-	membersCount: number;
+	abbreviation: string;
+	supervisorsName: string[];
+	compatibility: number;
 }
 
 export interface SuggestThesesData {
-	group: SuggestedGroup;
-	suggestions: ThesisSuggestion[];
-	totalAvailableTheses: number;
+	reason: string;
+	theses: SuggestedThesis[];
 }
 
 export interface SuggestThesesResponse {
 	success: boolean;
 	statusCode: number;
 	data: SuggestThesesData;
+}
+
+// Legacy interfaces for backward compatibility
+export interface ThesisSuggestion {
+	thesis: {
+		id: string;
+		englishName: string;
+		vietnameseName?: string;
+		description?: string;
+		domain?: string;
+		lecturer: SuggestedThesisLecturer;
+	};
+	relevanceScore: number;
+	matchingFactors: string[];
 }
 
 class AIService {
