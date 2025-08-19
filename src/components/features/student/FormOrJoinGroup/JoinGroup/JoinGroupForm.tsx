@@ -62,7 +62,7 @@ export default function JoinGroupForm({
 		try {
 			setLoading(true);
 
-			// First, get current student data to check if they have responsibilities
+			// First, get current student data to check their responsibility levels
 			const studentResponse = await studentsService.findOne(session.user.id);
 			const studentResult = handleApiResponse(studentResponse);
 
@@ -72,18 +72,21 @@ export default function JoinGroupForm({
 			}
 
 			const student = studentResult.data;
-			const hasResponsibilities =
-				student?.studentResponsibilities &&
-				student.studentResponsibilities.length > 0;
+			const responsibilities = student?.studentResponsibilities || [];
 
-			// Show modal if student doesn't have responsibilities
-			if (!hasResponsibilities) {
+			// Check if all responsibility levels are 0 or if no responsibilities exist
+			const hasSetResponsibilities =
+				responsibilities.length > 0 &&
+				responsibilities.some((responsibility) => responsibility.level > 0);
+
+			// Show modal if student hasn't set any responsibility levels (all are 0 or none exist)
+			if (!hasSetResponsibilities) {
 				ConfirmationModal.show({
 					title: "Set Up Your Profile",
 					message:
-						"To get the best group suggestions, please set up your expected responsibilities in your profile first.",
+						"To get the best group suggestions, please set up your responsibility levels in your profile first.",
 					details:
-						"This helps our AI algorithm find groups that match your preferences.",
+						"This helps our AI algorithm find groups that match your preferences and skills.",
 					okText: "Continue Anyway",
 					cancelText: "Go to Profile",
 					okType: "primary",
@@ -95,7 +98,7 @@ export default function JoinGroupForm({
 					},
 				});
 			} else {
-				// If student has responsibilities, directly call API
+				// If student has set responsibility levels, directly call API
 				await callAISuggestAPI();
 			}
 		} catch (error) {
