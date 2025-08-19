@@ -399,7 +399,7 @@ export default function ViewListThesis() {
 						{showAISuggestions && (
 							<Button onClick={handleToggleView}>Back to All Thesis</Button>
 						)}
-						{!showAISuggestions && hasGroup && isLeader && (
+						{!showAISuggestions && hasGroup && (
 							<Button
 								type="primary"
 								onClick={handleAISuggest}
