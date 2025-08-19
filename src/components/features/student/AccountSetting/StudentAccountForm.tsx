@@ -371,6 +371,7 @@ const StudentAccountForm: React.FC = () => {
 				phoneNumber: profileData?.phoneNumber ?? "",
 				gender: profileData?.gender ?? "",
 			}}
+			requiredMark={false}
 		>
 			<Title level={5} style={{ marginBottom: 24 }}>
 				Personal Information
@@ -379,7 +380,7 @@ const StudentAccountForm: React.FC = () => {
 				<Col xs={24} md={12}>
 					<Form.Item
 						name="studentId"
-						label={<FormLabel text="Student ID" isBold />}
+						label={<FormLabel text="Student ID" isRequired isBold />}
 						rules={[
 							{ required: true, message: "Please enter your student ID" },
 						]}
@@ -390,7 +391,7 @@ const StudentAccountForm: React.FC = () => {
 				<Col xs={24} md={12}>
 					<Form.Item
 						name="email"
-						label={<FormLabel text="Email" isBold />}
+						label={<FormLabel text="Email" isRequired isBold />}
 						rules={[
 							{ required: true, message: "Please enter your email" },
 							{ type: "email", message: "Please enter a valid email" },
@@ -404,7 +405,7 @@ const StudentAccountForm: React.FC = () => {
 				<Col xs={24} md={12}>
 					<Form.Item
 						name="fullName"
-						label={<FormLabel text="Full Name" isBold />}
+						label={<FormLabel text="Full Name" isRequired isBold />}
 						rules={[{ required: true, message: "Please enter your full name" }]}
 					>
 						<Input placeholder="Enter full name" disabled={updatingProfile} />
@@ -413,7 +414,7 @@ const StudentAccountForm: React.FC = () => {
 				<Col xs={24} md={12}>
 					<Form.Item
 						name="major"
-						label={<FormLabel text="Major" isBold />}
+						label={<FormLabel text="Major" isRequired isBold />}
 						rules={[{ required: true, message: "Please select your major" }]}
 					>
 						<Input disabled placeholder="Major" />
@@ -424,7 +425,7 @@ const StudentAccountForm: React.FC = () => {
 				<Col xs={24} md={12}>
 					<Form.Item
 						name="phoneNumber"
-						label={<FormLabel text="Phone Number" isBold />}
+						label={<FormLabel text="Phone Number" isRequired isBold />}
 						rules={[
 							{ required: true, message: "Please enter your phone number" },
 							{
@@ -448,7 +449,7 @@ const StudentAccountForm: React.FC = () => {
 				<Col xs={24} md={12}>
 					<Form.Item
 						name="gender"
-						label={<FormLabel text="Gender" isBold />}
+						label={<FormLabel text="Gender" isRequired isBold />}
 						rules={[{ required: true, message: "Please select gender" }]}
 					>
 						<Radio.Group disabled={updatingProfile}>
