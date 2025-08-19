@@ -78,9 +78,6 @@ export default memo(function GroupInfoCard({
 	// Check if group has reached maximum members
 	const hasReachedMaxMembers = localGroup.members.length >= GROUP_MAX_MEMBERS;
 
-	// Check if semester is in PREPARING status - allow edit group info even with thesis
-	const canModifyGroup = localGroup.semester.status === "Preparing";
-
 	// Check if semester is in PREPARING status (can leave group and invite members even with thesis)
 	const canLeaveOrInvite = localGroup.semester.status === "Preparing";
 
@@ -205,8 +202,8 @@ export default memo(function GroupInfoCard({
 									title="Refresh group information"
 								/>
 							)}
-							{/* Edit Group Info Button - only visible to leader and when can modify */}
-							{!viewOnly && isCurrentUserLeader && canModifyGroup && (
+							{/* Edit Group Info Button - only visible to leader */}
+							{!viewOnly && isCurrentUserLeader && (
 								<Button
 									type="primary"
 									onClick={() => setIsEditDialogVisible(true)}
