@@ -1,6 +1,7 @@
 "use client";
 
 import SharedThesisFilterBar from "@/components/common/SharedThesisFilterBar";
+import { useSessionData } from "@/hooks/auth/useAuth";
 
 interface Props {
 	search: string;
@@ -15,6 +16,25 @@ interface Props {
 }
 
 export default function ThesisFilterBar(props: Readonly<Props>) {
+	const { session } = useSessionData();
+
+	// Check if user is moderator
+	const isModerator =
+		session?.user?.role === "moderator" || session?.user?.isModerator;
+
+	// Define status options based on user role
+	const statusOptions = isModerator
+		? [
+				{ value: "approved", label: "Approved" },
+				{ value: "rejected", label: "Rejected" },
+			]
+		: [
+				{ value: "new", label: "New" },
+				{ value: "approved", label: "Approved" },
+				{ value: "pending", label: "Pending" },
+				{ value: "rejected", label: "Rejected" },
+			];
+
 	return (
 		<SharedThesisFilterBar
 			{...props}
@@ -22,6 +42,7 @@ export default function ThesisFilterBar(props: Readonly<Props>) {
 			showCreateButton={true}
 			createButtonPath="/lecturer/thesis-management/create-thesis"
 			createButtonText="Create Thesis"
+			statusOptions={statusOptions}
 		/>
 	);
 }
