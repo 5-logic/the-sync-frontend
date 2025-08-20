@@ -9,6 +9,111 @@ For more information about this project, see the [README](./README.md).
 
 ---
 
+## [1.0.3] - 2025-08-20
+
+### Added
+
+#### Group Responsibility Analytics System
+
+- **Responsibility Radar Visualization:** New group responsibility tracking and visualization features ([#366](https://github.com/5-logic/the-sync-frontend/pull/366))
+  - GroupResponsibilityAverage interface for tracking average responsibility levels
+  - getGroupResponsibilities API endpoint for fetching group responsibility data
+  - Integration of responsibility radar charts into GroupInfoCard for group analytics
+  - Real-time responsibility level tracking with loading states and error handling
+
+#### Enhanced AI Reasoning & Analysis
+
+- **AI Reasoning Display:** New AIReasoningCollapse component for improved AI analysis transparency ([#366](https://github.com/5-logic/the-sync-frontend/pull/366))
+  - Collapsible AI reasoning explanations with custom styling
+  - Integration into AI suggestion components for better user understanding
+  - Enhanced AISuggestThesisCard with detailed reasoning display and orientation tagging
+
+#### Template Management System
+
+- **Enhanced Template Downloads:** Improved template download functionality with fallback support ([#366](https://github.com/5-logic/the-sync-frontend/pull/366))
+  - Added local template fallback system for reliable downloads
+  - New "Thesis Register Document Template.docx" file in public assets
+  - Remote template validation with automatic local fallback
+  - Enhanced error handling for template download failures
+
+#### Role-Based Thesis Management
+
+- **Role-Specific Filtering:** Enhanced thesis management with role-based access control ([#366](https://github.com/5-logic/the-sync-frontend/pull/366))
+  - Dynamic status options based on user role (moderator vs regular lecturer)
+  - Improved ThesisFilterBar with role-aware filtering capabilities
+  - Enhanced thesis management workflow for different user types
+
+### Changed
+
+#### Enhanced User Profile Management
+
+- **Profile Setup Integration:** Improved user profile management and group suggestions ([#366](https://github.com/5-logic/the-sync-frontend/pull/366))
+  - Enhanced StudentAccountForm with required field validation
+  - Profile setup modal integration for better group suggestion experience
+  - Improved AI suggestion visibility logic for group leaders
+
+#### Radar Chart System Improvements
+
+- **Chart Visualization Enhancements:** Refined radar chart functionality and display ([#366](https://github.com/5-logic/the-sync-frontend/pull/366))
+  - Corrected PolarRadiusAxis angle in BaseRadarChart for proper orientation
+  - Removed artificial minimum level constraints for more accurate data representation
+  - Simplified responsibility display logic in StudentInfoCard for better readability
+  - Enhanced SuggestedStudentCard layout and styling
+
+#### Milestone & Submission Management
+
+- **Enhanced Milestone Tracking:** Improved milestone submission and tracking capabilities ([#366](https://github.com/5-logic/the-sync-frontend/pull/366))
+  - Enhanced MilestoneDetailCard with better error handling and notifications
+  - Improved submission update logic with proper validation
+  - Better user feedback for milestone-related actions
+
+#### Code Quality & Standardization
+
+- **Comprehensive Code Improvements:** Standardized code quality across components ([#366](https://github.com/5-logic/the-sync-frontend/pull/366))
+  - Standardized string quotes throughout the codebase
+  - Improved useStudentRequestStatus hook functionality
+  - Enhanced component rendering logic and performance optimization
+
+### Fixed
+
+#### Group Management & Permissions
+
+- **Group Modification Logic:** Improved group management permissions and validation ([#366](https://github.com/5-logic/the-sync-frontend/pull/366))
+  - Removed unnecessary group modification checks in GroupInfoCard
+  - Simplified group leader permissions for editing group information
+  - Enhanced group validation logic in JoinGroupForm with better comments
+
+#### AI Suggestion System
+
+- **AI Component Performance:** Enhanced AI suggestion system reliability and performance ([#366](https://github.com/5-logic/the-sync-frontend/pull/366))
+  - Improved AI suggestion button visibility logic
+  - Enhanced orientation display in thesis suggestions
+  - Better error handling in AI reasoning components
+
+#### Form Validation & User Experience
+
+- **Enhanced Form Handling:** Improved form validation and user interaction ([#366](https://github.com/5-logic/the-sync-frontend/pull/366))
+  - Required field validation in StudentAccountForm
+  - Enhanced thesis-related form handling and validation
+  - Improved user feedback and notification systems
+
+### Technical Details
+
+- **Files Changed:** 22 files with 595 additions and 284 deletions
+- **Enhanced Components:** GroupInfoCard, AIReasoningCollapse, ThesisFileUpload, ThesisFilterBar, BaseRadarChart, StudentInfoCard, AISuggestThesisCard, MilestoneDetailCard
+- **Service Improvements:** Enhanced groups.service.ts with responsibility tracking, improved ai.service.ts
+- **New Features:** Group responsibility analytics, AI reasoning display, template fallback system, role-based filtering
+- **Performance:** Enhanced component rendering, better error handling, improved loading states
+
+### Migration Notes
+
+- **Group Responsibilities:** New responsibility tracking requires backend support for responsibility analytics
+- **Template System:** Enhanced template download system provides better reliability but may require cache refresh
+- **Role-Based Features:** New role-specific filtering requires proper user role configuration
+- **AI Enhancements:** Enhanced AI reasoning display may require updates to existing AI integration implementations
+
+---
+
 ## [1.0.2] - 2025-08-18
 
 ### Added
