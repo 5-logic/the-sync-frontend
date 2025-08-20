@@ -19,12 +19,14 @@ import { useSemesterStatus } from "@/hooks/student/useSemesterStatus";
 import { useStudentGroupStatus } from "@/hooks/student/useStudentGroupStatus";
 import { useThesisApplications } from "@/hooks/student/useThesisApplications";
 import { useThesisRegistration } from "@/hooks/thesis";
+import { getOrientationDisplay } from "@/lib/constants/orientation";
 import { SuggestedThesis } from "@/lib/services/ai.service";
 import thesisApplicationService, {
 	ThesisApplication,
 } from "@/lib/services/thesis-application.service";
 import { handleApiError } from "@/lib/utils/handleApi";
 import { showNotification } from "@/lib/utils/notification";
+import { ThesisOrientation } from "@/schemas/_enums";
 import { cacheUtils } from "@/store/helpers/cacheHelpers";
 
 interface Props {
@@ -271,12 +273,31 @@ export default function AISuggestThesisCard({
 						{suggestion.englishName}
 					</Typography.Title>
 
-					{/* Abbreviation */}
-					{suggestion.abbreviation && (
-						<Tag color="geekblue" style={{ marginBottom: "8px" }}>
-							{suggestion.abbreviation}
-						</Tag>
-					)}
+					{/* Tags Section */}
+					<div style={{ marginBottom: "8px" }}>
+						{/* Abbreviation */}
+						{suggestion.abbreviation && (
+							<Tag color="geekblue" style={{ marginRight: "8px" }}>
+								{suggestion.abbreviation}
+							</Tag>
+						)}
+
+						{/* Orientation Tag */}
+						{suggestion.orientation &&
+							(() => {
+								const orientationData = getOrientationDisplay(
+									suggestion.orientation as ThesisOrientation,
+								);
+								return orientationData ? (
+									<Tag
+										color={orientationData.color}
+										title={orientationData.description}
+									>
+										{orientationData.label}
+									</Tag>
+								) : null;
+							})()}
+					</div>
 				</div>
 
 				{/* Supervisors Info */}
