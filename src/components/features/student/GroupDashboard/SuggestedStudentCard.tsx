@@ -73,16 +73,28 @@ export default function SuggestedStudentCard({
 				{/* Student Info */}
 				<Col flex="auto">
 					<Flex
-						align="center"
+						align="flex-start"
 						gap={8}
 						className="mb-2"
-						style={{ minHeight: "75px", maxHeight: "75px" }}
+						style={{ minHeight: "85px", maxHeight: "100px" }}
 					>
-						<div style={{ minHeight: "70px", maxHeight: "70px" }}>
+						<div
+							style={{ minHeight: "80px", maxHeight: "95px", width: "100%" }}
+						>
 							<Title
 								level={5}
 								className="mb-0 text-sm"
-								style={{ lineHeight: "18px", height: "18px" }}
+								style={{
+									lineHeight: "18px",
+									minHeight: "18px",
+									maxHeight: "36px", // Allow for 2 lines
+									overflow: "hidden",
+									textOverflow: "ellipsis",
+									display: "-webkit-box",
+									WebkitLineClamp: 2,
+									WebkitBoxOrient: "vertical",
+									marginBottom: "4px",
+								}}
 							>
 								{student.fullName}
 							</Title>
@@ -90,9 +102,8 @@ export default function SuggestedStudentCard({
 								type="secondary"
 								className="text-xs"
 								style={{
-									lineHeight: "16px", // Increased from 14px to 16px for better spacing
-									height: "56px", // Increased to accommodate major line
-									minHeight: "56px", // Add minHeight to prevent text cutoff
+									lineHeight: "16px",
+									minHeight: "40px", // Ensure minimum space for student info
 									display: "block",
 									overflow: "hidden",
 									textOverflow: "ellipsis",
