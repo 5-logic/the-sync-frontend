@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from "react";
 
-import requestService from '@/lib/services/requests.service';
-import { showNotification } from '@/lib/utils/notification';
-import { useGroupDashboardStore } from '@/store/useGroupDashboardStore';
+import requestService from "@/lib/services/requests.service";
+import { showNotification } from "@/lib/utils/notification";
+import { useGroupDashboardStore } from "@/store/useGroupDashboardStore";
 
 interface UseStudentRequestStatusReturn {
 	// State
@@ -26,6 +26,7 @@ interface UseStudentRequestStatusReturn {
  */
 export function useStudentRequestStatus(
 	studentId: string,
+	onUpdate?: () => Promise<void> | void,
 ): UseStudentRequestStatusReturn {
 	const [hasInvite, setHasInvite] = useState(false);
 	const [hasJoinRequest, setHasJoinRequest] = useState(false);
@@ -48,17 +49,21 @@ export function useStudentRequestStatus(
 			const response = await requestService.getGroupRequests(currentGroup.id);
 			if (response.success) {
 				const pendingRequests = response.data.filter(
-					(req) => req.status === 'Pending',
+					(req) => req.status === "Pending",
 				);
 
 				// Check for invite sent to this student
 				const inviteRequest = pendingRequests.find(
-					(req) => req.type === 'Invite' && req.studentId === studentId,
+					(req) =>
+						req.type === "Invite" &&
+						(req.studentId === studentId || req.student?.userId === studentId),
 				);
 
 				// Check for join request from this student
 				const joinRequest = pendingRequests.find(
-					(req) => req.type === 'Join' && req.studentId === studentId,
+					(req) =>
+						req.type === "Join" &&
+						(req.studentId === studentId || req.student?.userId === studentId),
 				);
 
 				setHasInvite(!!inviteRequest);
@@ -66,7 +71,7 @@ export function useStudentRequestStatus(
 				setRequestId(inviteRequest?.id || joinRequest?.id || null);
 			}
 		} catch (error) {
-			console.error('Failed to check request status:', error);
+			console.error("Failed to check request status:", error);
 		}
 	}, [currentGroup?.id, studentId]);
 
@@ -82,19 +87,19 @@ export function useStudentRequestStatus(
 			);
 
 			if (response.success) {
-				showNotification.success('Success', 'Invitation sent successfully!');
+				showNotification.success("Success", "Invitation sent successfully!");
 				await checkRequestStatus();
 			} else {
 				showNotification.error(
-					'Error',
-					'Failed to send invitation. Please try again.',
+					"Error",
+					"Failed to send invitation. Please try again.",
 				);
 			}
 		} catch (error) {
-			console.error('Error sending invitation:', error);
+			console.error("Error sending invitation:", error);
 			showNotification.error(
-				'Error',
-				'Failed to send invitation. Please try again.',
+				"Error",
+				"Failed to send invitation. Please try again.",
 			);
 		} finally {
 			setLoading(false);
@@ -104,7 +109,7 @@ export function useStudentRequestStatus(
 	// Helper function to update request status
 	const updateRequestStatusHelper = useCallback(
 		async (
-			status: 'Approved' | 'Rejected' | 'Cancelled',
+			status: "Approved" | "Rejected" | "Cancelled",
 			successMessage: string,
 			errorMessage: string,
 		) => {
@@ -118,7 +123,22 @@ export function useStudentRequestStatus(
 
 				if (response.success) {
 					showNotification.success(successMessage);
+
+					// If approving a request, refresh group dashboard store
+					if (status === "Approved") {
+						const { refreshGroup } = useGroupDashboardStore.getState();
+						await refreshGroup();
+
+						// Add small delay to ensure backend processing is complete
+						await new Promise((resolve) => setTimeout(resolve, 500));
+					}
+
 					await checkRequestStatus();
+
+					// Call onUpdate callback if provided
+					if (onUpdate) {
+						await onUpdate();
+					}
 				} else {
 					showNotification.error(errorMessage);
 				}
@@ -129,33 +149,33 @@ export function useStudentRequestStatus(
 				setLoading(false);
 			}
 		},
-		[requestId, checkRequestStatus],
+		[requestId, checkRequestStatus, onUpdate],
 	);
 
 	// Cancel invite
 	const cancelInvite = useCallback(async () => {
 		await updateRequestStatusHelper(
-			'Cancelled',
-			'Invitation cancelled successfully!',
-			'Failed to cancel invitation. Please try again.',
+			"Cancelled",
+			"Invitation cancelled successfully!",
+			"Failed to cancel invitation. Please try again.",
 		);
 	}, [updateRequestStatusHelper]);
 
 	// Approve join request
 	const approveJoinRequest = useCallback(async () => {
 		await updateRequestStatusHelper(
-			'Approved',
-			'Join request approved successfully!',
-			'Failed to approve request. Please try again.',
+			"Approved",
+			"Join request approved successfully!",
+			"Failed to approve request. Please try again.",
 		);
 	}, [updateRequestStatusHelper]);
 
 	// Reject join request
 	const rejectJoinRequest = useCallback(async () => {
 		await updateRequestStatusHelper(
-			'Rejected',
-			'Join request rejected successfully!',
-			'Failed to reject request. Please try again.',
+			"Rejected",
+			"Join request rejected successfully!",
+			"Failed to reject request. Please try again.",
 		);
 	}, [updateRequestStatusHelper]);
 
