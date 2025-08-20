@@ -1,17 +1,9 @@
-import {
-	Button,
-	Card,
-	Col,
-	Progress,
-	Row,
-	Space,
-	Typography,
-	Collapse,
-} from "antd";
+import { Button, Card, Col, Progress, Row, Space, Typography } from "antd";
 import { UserOutlined } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
+import AIReasoningCollapse from "@/components/common/AIReasoningCollapse";
 import { GroupConfirmationModals } from "@/components/common/ConfirmModal";
 import { ListPagination } from "@/components/common/ListPagination";
 import {
@@ -391,14 +383,9 @@ export default function AISuggestions({
 				</div>
 
 				{/* AI Reasoning */}
-				<Collapse
-					items={[
-						{
-							key: "reason",
-							label: "Why these groups were suggested",
-							children: <Text>{suggestions.reason}</Text>,
-						},
-					]}
+				<AIReasoningCollapse
+					reason={suggestions.reason}
+					style={{ marginBottom: "16px" }}
 				/>
 
 				<Row gutter={[16, 16]}>

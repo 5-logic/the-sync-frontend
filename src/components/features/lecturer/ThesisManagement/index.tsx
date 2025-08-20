@@ -29,6 +29,10 @@ export default function ThesisManagement() {
 		clearError,
 	} = useThesisStore();
 
+	// Check if user is moderator
+	const isModerator =
+		session?.user?.role === "moderator" || session?.user?.isModerator;
+
 	// Fetch all theses when component mounts
 	useEffect(() => {
 		fetchTheses();
@@ -41,12 +45,16 @@ export default function ThesisManagement() {
 		}
 	}, [session?.user?.id, setSessionLecturerId]);
 
-	// Set default filter to "My Thesis" when component mounts
+	// Set default filter based on user role
 	useEffect(() => {
 		if (selectedOwned === undefined || selectedOwned === null) {
-			setSelectedOwned(true); // Default to "My Thesis"
+			if (isModerator) {
+				setSelectedOwned(false); // Default to "All Theses" for moderator
+			} else {
+				setSelectedOwned(true); // Default to "My Thesis" for regular lecturer
+			}
 		}
-	}, [selectedOwned, setSelectedOwned]);
+	}, [selectedOwned, setSelectedOwned, isModerator]);
 
 	const handleRefresh = () => {
 		fetchTheses(true); // Force refresh

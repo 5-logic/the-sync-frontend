@@ -19,6 +19,7 @@ import { useStudentGroupStatus } from "@/hooks/student/useStudentGroupStatus";
 import { useStudentReviews } from "@/hooks/student/useReviews";
 import { useReviews } from "@/hooks/lecturer/useReviews";
 import { StorageService } from "@/lib/services/storage.service";
+import { handleApiError, handleApiResponse } from "@/lib/utils/handleApi";
 import { showNotification } from "@/lib/utils/notification";
 import { Milestone } from "@/schemas/milestone";
 
@@ -163,32 +164,56 @@ export default function MilestoneDetailCard() {
 			return;
 		}
 
-		// Upload new files to Supabase
-		const uploadPromises = newFiles.map((file) =>
-			StorageService.uploadFile(file, "milestone-submissions"),
-		);
+		try {
+			// Upload new files to Supabase
+			const uploadPromises = newFiles.map((file) =>
+				StorageService.uploadFile(file, "milestone-submissions"),
+			);
 
-		const newDocumentUrls = await Promise.all(uploadPromises);
+			const newDocumentUrls = await Promise.all(uploadPromises);
 
-		// Combine existing docs and new uploaded docs
-		const allDocumentUrls = [...existingDocs, ...newDocumentUrls];
+			// Combine existing docs and new uploaded docs
+			const allDocumentUrls = [...existingDocs, ...newDocumentUrls];
 
-		// Update submission via API (using the service directly)
-		const groupService = (await import("@/lib/services/groups.service"))
-			.default;
-		await groupService.updateMilestoneSubmission(
-			group.id,
-			milestoneId,
-			allDocumentUrls,
-		);
+			// Update submission via API (using the service directly)
+			const groupService = (await import("@/lib/services/groups.service"))
+				.default;
+			const response = await groupService.updateMilestoneSubmission(
+				group.id,
+				milestoneId,
+				allDocumentUrls,
+			);
 
-		showNotification.success(
-			"Success",
-			"Milestone submission updated successfully",
-		);
+			// Handle API response using the utility
+			const result = handleApiResponse(response);
 
-		// Refresh submissions to get updated data
-		await refetchSubmissions();
+			if (result.success) {
+				showNotification.success(
+					"Success",
+					"Milestone submission updated successfully",
+				);
+				// Refresh submissions to get updated data
+				await refetchSubmissions();
+			} else {
+				// Extract error message from API error details
+				const errorMessage =
+					result.error?.message || "Failed to update milestone submission";
+				showNotification.error("Update Failed", errorMessage);
+				throw new Error(errorMessage);
+			}
+		} catch (error) {
+			console.error("Error updating milestone submission:", error);
+
+			// Use handleApiError for consistent error handling
+			const { message } = handleApiError(
+				error,
+				"Failed to update milestone submission",
+			);
+			showNotification.error("Update Failed", message);
+
+			// Re-throw the error so the caller knows the operation failed
+			throw error;
+		}
 	};
 
 	const validateSubmission = (
@@ -468,10 +493,19 @@ export default function MilestoneDetailCard() {
 
 		// Case 2: In update mode and has submitted documents
 		if (isInUpdateMode && hasSubmittedDocuments) {
+			// Initialize existing documents when entering update mode
 			const existingDocuments =
-				updateExistingDocs[milestone.id]?.length > 0
-					? updateExistingDocs[milestone.id]
-					: submission?.documents || [];
+				milestone.id in updateExistingDocs
+					? updateExistingDocs[milestone.id] // Use the modified list (could be empty)
+					: submission?.documents || []; // Use original documents on first load
+
+			// Initialize updateExistingDocs if not set yet
+			if (!(milestone.id in updateExistingDocs)) {
+				setUpdateExistingDocs((prev) => ({
+					...prev,
+					[milestone.id]: submission?.documents || [],
+				}));
+			}
 
 			return (
 				<SubmissionEditView
@@ -503,19 +537,22 @@ export default function MilestoneDetailCard() {
 						handleSubmit(milestone.id.toString(), true, existingDocs, newFiles);
 					}}
 					onCancel={() => {
-						// Exit update mode and clear temporary state
+						// Exit update mode and reset to original state
 						setUpdateMode((prev) => ({
 							...prev,
 							[milestone.id]: false,
 						}));
-						setUpdateExistingDocs((prev) => ({
-							...prev,
-							[milestone.id]: [],
-						}));
-						setUpdateNewFiles((prev) => ({
-							...prev,
-							[milestone.id]: [],
-						}));
+						// Remove from temporary state to reset to original
+						setUpdateExistingDocs((prev) => {
+							const newState = { ...prev };
+							delete newState[milestone.id];
+							return newState;
+						});
+						setUpdateNewFiles((prev) => {
+							const newState = { ...prev };
+							delete newState[milestone.id];
+							return newState;
+						});
 					}}
 					isSubmitting={isSubmitting}
 					disabled={!submissionCanUpdate}
@@ -537,20 +574,22 @@ export default function MilestoneDetailCard() {
 					removeFile(milestone.id, fileName, fileSize)
 				}
 				onCancelUpdate={() => {
-					// Exit update mode and clear temporary state
+					// Exit update mode and reset to original state
 					setUpdateMode((prev) => ({
 						...prev,
 						[milestone.id]: false,
 					}));
-					// Clear temporary update state
-					setUpdateExistingDocs((prev) => ({
-						...prev,
-						[milestone.id]: [],
-					}));
-					setUpdateNewFiles((prev) => ({
-						...prev,
-						[milestone.id]: [],
-					}));
+					// Remove from temporary state to reset to original
+					setUpdateExistingDocs((prev) => {
+						const newState = { ...prev };
+						delete newState[milestone.id];
+						return newState;
+					});
+					setUpdateNewFiles((prev) => {
+						const newState = { ...prev };
+						delete newState[milestone.id];
+						return newState;
+					});
 				}}
 				onSubmit={() => {
 					const isInUpdateMode = updateMode[milestone.id];

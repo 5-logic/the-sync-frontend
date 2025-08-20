@@ -21,6 +21,13 @@ export interface GroupUpdate {
 	responsibilityIds?: string[];
 }
 
+// Group Responsibility Average interface
+export interface GroupResponsibilityAverage {
+	responsibilityId: string;
+	responsibilityName: string;
+	averageLevel: number;
+}
+
 export interface Group {
 	id: string;
 	code: string;
@@ -371,6 +378,20 @@ class GroupService {
 		const response = await httpClient.put<ApiResponse<FormattedGroup[]>>(
 			`${this.baseUrl}/admin/format/${semesterId}`,
 		);
+		return response.data;
+	}
+
+	/**
+	 * Get group responsibilities average levels
+	 * GET /groups/{id}/responsibilities
+	 * Returns average responsibility levels for all members in the group
+	 */
+	async getGroupResponsibilities(
+		groupId: string,
+	): Promise<ApiResponse<GroupResponsibilityAverage[]>> {
+		const response = await httpClient.get<
+			ApiResponse<GroupResponsibilityAverage[]>
+		>(`${this.baseUrl}/${groupId}/responsibilities`);
 		return response.data;
 	}
 }

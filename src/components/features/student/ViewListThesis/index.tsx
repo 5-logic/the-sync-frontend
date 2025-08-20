@@ -1,22 +1,12 @@
 "use client";
 
 import { ReloadOutlined, SearchOutlined } from "@ant-design/icons";
-import {
-	Button,
-	Col,
-	Empty,
-	Input,
-	Row,
-	Select,
-	Space,
-	Spin,
-	Typography,
-	Collapse,
-} from "antd";
+import { Button, Col, Empty, Input, Row, Select, Space, Spin } from "antd";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import AIReasoningCollapse from "@/components/common/AIReasoningCollapse";
 import { ConfirmationModal } from "@/components/common/ConfirmModal";
 import { Header } from "@/components/common/Header";
 import { ListPagination } from "@/components/common/ListPagination";
@@ -399,7 +389,7 @@ export default function ViewListThesis() {
 						{showAISuggestions && (
 							<Button onClick={handleToggleView}>Back to All Thesis</Button>
 						)}
-						{!showAISuggestions && hasGroup && isLeader && (
+						{!showAISuggestions && hasGroup && (
 							<Button
 								type="primary"
 								onClick={handleAISuggest}
@@ -472,58 +462,7 @@ export default function ViewListThesis() {
 			{showAISuggestions && aiReason && (
 				<Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
 					<Col span={24}>
-						<Collapse
-							size="small"
-							style={{
-								borderColor: "#1890ff",
-								backgroundColor: "#f6ffed",
-							}}
-							items={[
-								{
-									key: "ai-reasoning",
-									label: (
-										<Typography.Text strong style={{ color: "#1890ff" }}>
-											🤖 AI Analysis & Reasoning
-										</Typography.Text>
-									),
-									children: (
-										<Typography.Paragraph
-											style={{
-												margin: 0,
-												lineHeight: "1.6",
-											}}
-										>
-											{aiReason
-												.replace(/\n{2,}/g, "\n")
-												.split("\n")
-												.map((line, index, array) => {
-													// Process each line to handle text formatting
-													const processedLine = line
-														.split(/'([^']*)'/)
-														.map((part, partIndex) => {
-															// If index is odd, it's text within single quotes - make it bold
-															if (partIndex % 2 === 1) {
-																return (
-																	<strong key={`${index}-${partIndex}`}>
-																		{part}
-																	</strong>
-																);
-															}
-															return part;
-														});
-
-													return (
-														<span key={`line-${index}-${line.slice(0, 20)}`}>
-															{processedLine}
-															{index < array.length - 1 && <br />}
-														</span>
-													);
-												})}
-										</Typography.Paragraph>
-									),
-								},
-							]}
-						/>
+						<AIReasoningCollapse reason={aiReason} />
 					</Col>
 				</Row>
 			)}
