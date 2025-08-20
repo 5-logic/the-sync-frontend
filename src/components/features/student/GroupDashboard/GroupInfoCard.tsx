@@ -3,14 +3,21 @@ import { Button, Card, Divider, Space, Spin, Typography } from "antd";
 import { useRouter } from "next/navigation";
 import { memo, useEffect, useState } from "react";
 
+import {
+	ResponsibilityRadarChart,
+	ResponsibilityData,
+} from "@/components/common/radar-chart";
 import EditGroupInfoDialog from "@/components/features/student/GroupDashboard/EditGroupInfoDialog";
 import { GroupConfirmationModals } from "@/components/features/student/GroupDashboard/GroupConfirmationModals";
 import GroupMembersCard from "@/components/features/student/GroupDashboard/GroupMembersCard";
 import InviteMembersDialog from "@/components/features/student/GroupDashboard/InviteMembersDialog";
 import { useSessionData } from "@/hooks/auth/useAuth";
 import { GROUP_MAX_MEMBERS } from "@/lib/constants/group";
-import groupService from "@/lib/services/groups.service";
+import groupService, {
+	GroupResponsibilityAverage,
+} from "@/lib/services/groups.service";
 import { formatDate } from "@/lib/utils/dateFormat";
+import { handleApiError } from "@/lib/utils/handleApi";
 import { showNotification } from "@/lib/utils/notification";
 import { GroupDashboard } from "@/schemas/group";
 import { useRequestsStore } from "@/store";
@@ -34,6 +41,10 @@ export default memo(function GroupInfoCard({
 	const [isLeaving, setIsLeaving] = useState(false);
 	const [isRefreshing, setIsRefreshing] = useState(false);
 	const [localGroup, setLocalGroup] = useState<GroupDashboard>(group);
+	const [groupResponsibilities, setGroupResponsibilities] = useState<
+		GroupResponsibilityAverage[]
+	>([]);
+	const [responsibilitiesLoading, setResponsibilitiesLoading] = useState(false);
 	const { session } = useSessionData();
 	const { clearGroup } = useGroupDashboardStore();
 	const { fetchGroupRequests } = useRequestsStore();
@@ -43,6 +54,30 @@ export default memo(function GroupInfoCard({
 	useEffect(() => {
 		setLocalGroup(group);
 	}, [group]);
+
+	// Fetch group responsibilities when group ID changes
+	useEffect(() => {
+		const fetchResponsibilities = async () => {
+			setResponsibilitiesLoading(true);
+			try {
+				const response = await groupService.getGroupResponsibilities(group.id);
+				if (response.success) {
+					setGroupResponsibilities(response.data);
+				}
+			} catch (error) {
+				console.error("Error fetching group responsibilities:", error);
+				const { message } = handleApiError(
+					error,
+					"Failed to fetch group responsibilities",
+				);
+				showNotification.error("Fetch Failed", message);
+			} finally {
+				setResponsibilitiesLoading(false);
+			}
+		};
+
+		fetchResponsibilities();
+	}, [group.id]);
 
 	const handleInviteSuccess = () => {
 		setIsInviteDialogVisible(false);
@@ -62,6 +97,13 @@ export default memo(function GroupInfoCard({
 
 			// Also refresh requests to get latest request data
 			await fetchGroupRequests(localGroup.id, true);
+
+			// Refresh group responsibilities data
+			const responsibilitiesResponse =
+				await groupService.getGroupResponsibilities(localGroup.id);
+			if (responsibilitiesResponse.success) {
+				setGroupResponsibilities(responsibilitiesResponse.data);
+			}
 		} catch {
 			showNotification.error(
 				"Refresh Failed",
@@ -277,6 +319,42 @@ export default memo(function GroupInfoCard({
 								/>
 							)}
 						</div>
+						{/* Group Responsibility Levels - Only show in full view, not dashboard view */}
+						{!isDashboardView && (
+							<div>
+								<Text className="text-sm text-gray-400 block font-semibold mb-2">
+									Average Responsibility Levels
+								</Text>
+								{responsibilitiesLoading ? (
+									<div
+										style={{
+											height: 200,
+											display: "flex",
+											alignItems: "center",
+											justifyContent: "center",
+										}}
+									>
+										<Spin />
+									</div>
+								) : groupResponsibilities.length > 0 ? (
+									<ResponsibilityRadarChart
+										data={groupResponsibilities.map(
+											(resp): ResponsibilityData => ({
+												responsibilityId: resp.responsibilityId,
+												responsibilityName: resp.responsibilityName,
+												level: resp.averageLevel,
+											}),
+										)}
+										height={350}
+										loading={responsibilitiesLoading}
+									/>
+								) : (
+									<Text className="text-sm text-gray-400 italic">
+										No responsibility data available
+									</Text>
+								)}
+							</div>
+						)}
 					</div>{" "}
 					{/* Created Date and Action Buttons */}
 					<div

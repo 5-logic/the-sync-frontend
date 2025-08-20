@@ -8,6 +8,7 @@ import {
 	Radar,
 	ResponsiveContainer,
 	Legend,
+	Tooltip,
 } from "recharts";
 
 export interface ResponsibilityData {
@@ -38,7 +39,7 @@ export default function BaseRadarChart({
 			<ResponsiveContainer width="100%" height="100%">
 				<RadarChart
 					data={data}
-					margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
+					margin={{ top: 40, right: 40, bottom: 40, left: 40 }}
 				>
 					<PolarGrid />
 					<PolarAngleAxis
@@ -51,6 +52,36 @@ export default function BaseRadarChart({
 						tick={{ fontSize: 10, fill: "#999" }}
 						tickCount={6}
 						allowDataOverflow={false}
+					/>
+					<Tooltip
+						formatter={(value) => {
+							// Safe type conversion for value
+							let numValue: number;
+							if (typeof value === "number") {
+								numValue = value;
+							} else if (typeof value === "string") {
+								numValue = parseFloat(value);
+							} else {
+								numValue = 0;
+							}
+
+							if (isNaN(numValue)) {
+								return ["0", "Level"];
+							}
+
+							// Show decimal places only if there are non-zero decimal digits
+							const formattedValue =
+								numValue % 1 === 0 ? numValue.toString() : numValue.toFixed(2);
+
+							return [formattedValue, "Level"];
+						}}
+						labelFormatter={(label: string) => `Responsibility: ${label}`}
+						contentStyle={{
+							backgroundColor: "white",
+							border: "1px solid #d9d9d9",
+							borderRadius: "6px",
+							boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
+						}}
 					/>
 					<Radar
 						name="Level"

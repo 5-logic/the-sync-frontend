@@ -97,7 +97,7 @@ const StudentAccountForm: React.FC = () => {
 					const responsibilities = profile.studentResponsibilities.map((r) => ({
 						responsibilityId: r.responsibilityId,
 						responsibilityName: r.responsibilityName,
-						level: r.level,
+						level: Number(r.level), // Ensure level is a number
 					}));
 					setResponsibilityData(responsibilities);
 
@@ -302,7 +302,7 @@ const StudentAccountForm: React.FC = () => {
 							updatedProfile.studentResponsibilities.map((r) => ({
 								responsibilityId: r.responsibilityId,
 								responsibilityName: r.responsibilityName,
-								level: r.level,
+								level: Number(r.level), // Ensure level is a number
 							}));
 
 						const newFormValues = {
