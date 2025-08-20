@@ -2,7 +2,6 @@ import {
 	Alert,
 	Button,
 	Col,
-	Collapse,
 	Divider,
 	Modal,
 	Row,
@@ -11,6 +10,7 @@ import {
 } from "antd";
 import { useEffect, useMemo, useState } from "react";
 
+import AIReasoningCollapse from "@/components/common/AIReasoningCollapse";
 import { ListPagination } from "@/components/common/ListPagination";
 import InviteTeamMembers from "@/components/features/student/FormOrJoinGroup/CreateGroup/InviteTeamMembers";
 import SuggestedStudentCard from "@/components/features/student/GroupDashboard/SuggestedStudentCard";
@@ -270,20 +270,9 @@ export default function InviteMembersDialog({
 				<>
 					{/* AI Suggestion Reason */}
 					{suggestionReason && (
-						<Collapse
-							className="mb-6"
+						<AIReasoningCollapse
+							reason={suggestionReason}
 							style={{ marginBottom: "24px" }}
-							items={[
-								{
-									key: "ai-analysis",
-									label: "AI Analysis & Recommendation",
-									children: (
-										<div style={{ color: "#666", lineHeight: "1.6" }}>
-											{suggestionReason}
-										</div>
-									),
-								},
-							]}
 						/>
 					)}
 

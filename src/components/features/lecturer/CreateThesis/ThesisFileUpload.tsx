@@ -181,12 +181,45 @@ export default function SupportingDocumentField({
 		}
 	};
 
-	const handleTemplateDownload = () => {
+	const handleTemplateDownload = async () => {
 		try {
-			// Download template from constant URL
-			window.open(THESIS_TEMPLATE_URLS.THESIS_REGISTER_DOCUMENT, "_blank");
+			// First try to download from the remote URL
+			const response = await fetch(
+				THESIS_TEMPLATE_URLS.THESIS_REGISTER_DOCUMENT,
+				{
+					method: "HEAD", // Check if the file exists without downloading
+				},
+			);
+
+			if (response.ok) {
+				// If remote file exists, download it
+				window.open(THESIS_TEMPLATE_URLS.THESIS_REGISTER_DOCUMENT, "_blank");
+			} else {
+				// If remote file not found, fallback to local file
+				const localFileUrl = "/files/Thesis Register Document Template.docx";
+				const link = document.createElement("a");
+				link.href = localFileUrl;
+				link.download = "Thesis Register Document Template.docx";
+				document.body.appendChild(link);
+				link.click();
+				document.body.removeChild(link);
+			}
 		} catch {
-			showNotification.error("Download Failed", "Could not download template");
+			// If any error occurs, try local file as fallback
+			try {
+				const localFileUrl = "/files/Thesis Register Document Template.docx";
+				const link = document.createElement("a");
+				link.href = localFileUrl;
+				link.download = "Thesis Register Document Template.docx";
+				document.body.appendChild(link);
+				link.click();
+				document.body.removeChild(link);
+			} catch {
+				showNotification.error(
+					"Download Failed",
+					"Could not download template from either remote or local source",
+				);
+			}
 		}
 	};
 

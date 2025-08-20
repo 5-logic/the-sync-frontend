@@ -8,7 +8,6 @@ import {
 	Col,
 	Descriptions,
 	Row,
-	Space,
 	Tag,
 	Typography,
 } from "antd";
@@ -210,21 +209,12 @@ export default function StudentInfoCard({
 				</Row>
 			</Card>
 
-			{/* Expected Responsibilities */}
-			<Card title="Expected Responsibilities" loading={loading}>
+			{/* Responsibilities */}
+			<Card title="Responsibilities" loading={loading}>
 				{student.studentResponsibilities.length > 0 ? (
 					<>
-						{/* Tags */}
-						<Space wrap style={{ marginBottom: 16 }}>
-							{student.studentResponsibilities.map((responsibility) => (
-								<Tag key={responsibility.responsibilityName} color="purple">
-									{responsibility.responsibilityName}
-								</Tag>
-							))}
-						</Space>
-
 						{/* Radar Chart */}
-						<div style={{ marginTop: 16 }}>
+						<div>
 							<Text strong style={{ marginBottom: 8, display: "block" }}>
 								Responsibility Levels:
 							</Text>
@@ -243,7 +233,7 @@ export default function StudentInfoCard({
 					</>
 				) : (
 					<div className="text-center py-4">
-						<Text type="secondary">No expected responsibilities specified</Text>
+						<Text type="secondary">No responsibilities specified</Text>
 					</div>
 				)}
 			</Card>

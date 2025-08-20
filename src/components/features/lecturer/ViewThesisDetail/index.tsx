@@ -188,8 +188,8 @@ export default function ViewThesisDetail({
 					canUnpublish={!thesis.groupId}
 					onExit={handleExit}
 					onEdit={actions.handleEdit}
-					onApprove={() => modalStates.setShowApproveConfirm(true)}
-					onReject={() => modalStates.setShowRejectConfirm(true)}
+					onApprove={actions.handleApprove}
+					onReject={actions.handleReject}
 					onRegisterSubmit={actions.handleSubmit}
 					onPublishThesis={handlePublishThesis}
 					onDelete={actions.handleDelete}

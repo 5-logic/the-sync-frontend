@@ -96,6 +96,7 @@ export interface SuggestedThesis {
 	abbreviation: string;
 	supervisorsName: string[];
 	compatibility: number;
+	orientation: string;
 }
 
 export interface SuggestThesesData {
