@@ -50,6 +50,7 @@ export default function BaseRadarChart({
 						domain={[0, 5]}
 						tick={{ fontSize: 10, fill: "#999" }}
 						tickCount={6}
+						allowDataOverflow={false}
 					/>
 					<Radar
 						name="Level"
@@ -59,6 +60,7 @@ export default function BaseRadarChart({
 						fillOpacity={0.3}
 						strokeWidth={2}
 						dot={{ fill: "#1890ff", strokeWidth: 2, r: 4 }}
+						connectNulls={false}
 					/>
 					{showLegend && <Legend />}
 				</RadarChart>
@@ -71,7 +73,7 @@ export default function BaseRadarChart({
 export function prepareChartData(data: ResponsibilityData[]): ChartData[] {
 	return data.map((item) => ({
 		responsibility: item.responsibilityName,
-		level: Math.max(1, item.level), // Ensure minimum level of 1 for visibility
+		level: item.level, // Use actual level without artificial minimum
 		fullLevel: item.level, // Keep original level for calculations
 	}));
 }
