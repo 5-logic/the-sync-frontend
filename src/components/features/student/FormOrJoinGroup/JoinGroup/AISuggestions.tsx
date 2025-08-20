@@ -1,17 +1,9 @@
-import {
-	Button,
-	Card,
-	Col,
-	Progress,
-	Row,
-	Space,
-	Typography,
-	Collapse,
-} from "antd";
+import { Button, Card, Col, Progress, Row, Space, Typography } from "antd";
 import { UserOutlined } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
+import AIReasoningCollapse from "@/components/common/AIReasoningCollapse";
 import { GroupConfirmationModals } from "@/components/common/ConfirmModal";
 import { ListPagination } from "@/components/common/ListPagination";
 import {
@@ -391,58 +383,9 @@ export default function AISuggestions({
 				</div>
 
 				{/* AI Reasoning */}
-				<Collapse
-					size="small"
-					style={{
-						borderColor: "#1890ff",
-						backgroundColor: "#f6ffed",
-						marginBottom: "16px",
-					}}
-					items={[
-						{
-							key: "reason",
-							label: (
-								<Typography.Text strong style={{ color: "#1890ff" }}>
-									🤖 AI Analysis & Reasoning
-								</Typography.Text>
-							),
-							children: (
-								<Typography.Paragraph
-									style={{
-										margin: 0,
-										lineHeight: "1.6",
-									}}
-								>
-									{suggestions.reason
-										.replace(/\n{2,}/g, "\n")
-										.split("\n")
-										.map((line, index, array) => {
-											// Process each line to handle text formatting
-											const processedLine = line
-												.split(/'([^']*)'/)
-												.map((part, partIndex) => {
-													// If index is odd, it's text within single quotes - make it bold
-													if (partIndex % 2 === 1) {
-														return (
-															<strong key={`${index}-${partIndex}`}>
-																{part}
-															</strong>
-														);
-													}
-													return part;
-												});
-
-											return (
-												<span key={`line-${index}-${line.slice(0, 20)}`}>
-													{processedLine}
-													{index < array.length - 1 && <br />}
-												</span>
-											);
-										})}
-								</Typography.Paragraph>
-							),
-						},
-					]}
+				<AIReasoningCollapse
+					reason={suggestions.reason}
+					style={{ marginBottom: "16px" }}
 				/>
 
 				<Row gutter={[16, 16]}>
