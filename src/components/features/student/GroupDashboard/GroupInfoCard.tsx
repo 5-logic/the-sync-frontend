@@ -325,34 +325,44 @@ export default memo(function GroupInfoCard({
 								<Text className="text-sm text-gray-400 block font-semibold mb-2">
 									Average Responsibility Levels
 								</Text>
-								{responsibilitiesLoading ? (
-									<div
-										style={{
-											height: 200,
-											display: "flex",
-											alignItems: "center",
-											justifyContent: "center",
-										}}
-									>
-										<Spin />
-									</div>
-								) : groupResponsibilities.length > 0 ? (
-									<ResponsibilityRadarChart
-										data={groupResponsibilities.map(
-											(resp): ResponsibilityData => ({
-												responsibilityId: resp.responsibilityId,
-												responsibilityName: resp.responsibilityName,
-												level: resp.averageLevel,
-											}),
-										)}
-										height={350}
-										loading={responsibilitiesLoading}
-									/>
-								) : (
-									<Text className="text-sm text-gray-400 italic">
-										No responsibility data available
-									</Text>
-								)}
+								{(() => {
+									if (responsibilitiesLoading) {
+										return (
+											<div
+												style={{
+													height: 200,
+													display: "flex",
+													alignItems: "center",
+													justifyContent: "center",
+												}}
+											>
+												<Spin />
+											</div>
+										);
+									}
+
+									if (groupResponsibilities.length > 0) {
+										return (
+											<ResponsibilityRadarChart
+												data={groupResponsibilities.map(
+													(resp): ResponsibilityData => ({
+														responsibilityId: resp.responsibilityId,
+														responsibilityName: resp.responsibilityName,
+														level: resp.averageLevel,
+													}),
+												)}
+												height={350}
+												loading={responsibilitiesLoading}
+											/>
+										);
+									}
+
+									return (
+										<Text className="text-sm text-gray-400 italic">
+											No responsibility data available
+										</Text>
+									);
+								})()}
 							</div>
 						)}
 					</div>{" "}
