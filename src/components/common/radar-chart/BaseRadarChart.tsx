@@ -46,7 +46,7 @@ export default function BaseRadarChart({
 						tick={{ fontSize: 12, fill: "#666" }}
 					/>
 					<PolarRadiusAxis
-						angle={-90}
+						angle={90}
 						domain={[0, 5]}
 						tick={{ fontSize: 10, fill: "#999" }}
 						tickCount={6}
