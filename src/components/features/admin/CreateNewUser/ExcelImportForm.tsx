@@ -78,8 +78,15 @@ function safeStringify(value: unknown): string {
 		return toStringResult ?? stringifyObject(value);
 	}
 
-	// For primitive types, convert safely
-	return typeof value === "string" ? value : String(value);
+	// Handle primitives - avoid String() on potentially unsafe values
+	if (typeof value === "string") return value;
+	if (typeof value === "number") return value.toString();
+	if (typeof value === "boolean") return value.toString();
+	if (typeof value === "bigint") return value.toString();
+	if (typeof value === "symbol") return value.toString();
+
+	// For other types, fallback to safe conversion
+	return String(value);
 }
 
 type ExcelImportFormProps<
