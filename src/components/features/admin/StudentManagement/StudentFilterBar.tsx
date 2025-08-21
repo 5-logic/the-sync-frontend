@@ -75,89 +75,108 @@ export default function StudentFilterBar({
 	}, [semesterFilter, semesters, semestersLoading, setSemesterFilter]);
 
 	return (
-		<div className="flex items-center gap-2 w-full">
-			<Select
-				value={semesterFilter}
-				onChange={setSemesterFilter}
-				style={{ width: 200, flexShrink: 0 }}
-				size="middle"
-				loading={semestersLoading}
-				placeholder="Select semester"
-			>
-				{semesters.map((semester) => (
-					<Option key={semester.id} value={semester.id}>
-						<span
-							style={{
-								display: "flex",
-								alignItems: "center",
-								gap: "8px",
-							}}
+		<div className="w-full">
+			{/* Container với responsive behavior */}
+			<div className="flex flex-col lg:flex-row gap-3 lg:items-center">
+				{/* Top row: Filters */}
+				<div className="flex flex-col sm:flex-row gap-3 lg:gap-2 flex-1">
+					{/* Semester Select */}
+					<div className="w-full sm:w-auto lg:w-48 lg:flex-shrink-0">
+						<Select
+							value={semesterFilter}
+							onChange={setSemesterFilter}
+							style={{ width: "100%" }}
+							size="middle"
+							loading={semestersLoading}
+							placeholder="Select semester"
 						>
-							<span>{semester.name}</span>
-							{SEMESTER_STATUS_TAGS[semester.status]}
-						</span>
-					</Option>
-				))}
-			</Select>
+							{semesters.map((semester) => (
+								<Option key={semester.id} value={semester.id}>
+									<span
+										style={{
+											display: "flex",
+											alignItems: "center",
+											gap: "8px",
+										}}
+									>
+										<span>{semester.name}</span>
+										{SEMESTER_STATUS_TAGS[semester.status]}
+									</span>
+								</Option>
+							))}
+						</Select>
+					</div>
 
-			<Select
-				value={statusFilter}
-				onChange={setStatusFilter}
-				style={{ width: 120, flexShrink: 0 }}
-				size="middle"
-			>
-				<Option value="All">All Status</Option>
-				<Option value="Active">Active</Option>
-				<Option value="Inactive">Inactive</Option>
-			</Select>
+					{/* Status Select */}
+					<div className="w-full sm:w-auto lg:w-32 lg:flex-shrink-0">
+						<Select
+							value={statusFilter}
+							onChange={setStatusFilter}
+							style={{ width: "100%" }}
+							size="middle"
+						>
+							<Option value="All">All Status</Option>
+							<Option value="Active">Active</Option>
+							<Option value="Inactive">Inactive</Option>
+						</Select>
+					</div>
 
-			<Select
-				value={majorFilter}
-				onChange={setMajorFilter}
-				style={{ width: 200, flexShrink: 0 }}
-				size="middle"
-				loading={majorsLoading}
-				placeholder="Select major"
-			>
-				<Option value="All">All Majors</Option>
-				{majors.map((major) => (
-					<Option key={major.id} value={major.id}>
-						{major.name}
-					</Option>
-				))}
-			</Select>
+					{/* Major Select */}
+					<div className="w-full sm:w-auto lg:w-48 lg:flex-shrink-0">
+						<Select
+							value={majorFilter}
+							onChange={setMajorFilter}
+							style={{ width: "100%" }}
+							size="middle"
+							loading={majorsLoading}
+							placeholder="Select major"
+						>
+							<Option value="All">All Majors</Option>
+							{majors.map((major) => (
+								<Option key={major.id} value={major.id}>
+									{major.name}
+								</Option>
+							))}
+						</Select>
+					</div>
 
-			{/* Search input - expands to fill available space */}
-			<div style={{ flex: 1, minWidth: 200 }}>
-				<Input
-					placeholder="Search by Name, Email, Student Code"
-					value={searchText}
-					onChange={(e) => setSearchText(e.target.value)}
-					prefix={<SearchOutlined />}
-					size="middle"
-				/>
+					{/* Search Input */}
+					<div className="flex-1 min-w-0">
+						<Input
+							placeholder="Search by Name, Email, Student Code"
+							value={searchText}
+							onChange={(e) => setSearchText(e.target.value)}
+							prefix={<SearchOutlined />}
+							size="middle"
+							style={{ width: "100%" }}
+						/>
+					</div>
+				</div>
+
+				{/* Action buttons */}
+				<div className="flex flex-col sm:flex-row gap-3 lg:gap-2 lg:flex-shrink-0">
+					<Button
+						icon={<ReloadOutlined />}
+						onClick={onRefresh}
+						loading={loading}
+						size="middle"
+						title="Refresh data"
+						className="w-full sm:w-auto"
+					>
+						Refresh
+					</Button>
+
+					<Button
+						icon={<PlusOutlined />}
+						type="primary"
+						size="middle"
+						onClick={onCreateStudent}
+						className="w-full sm:w-auto"
+					>
+						Create New Student
+					</Button>
+				</div>
 			</div>
-
-			<Button
-				icon={<ReloadOutlined />}
-				onClick={onRefresh}
-				loading={loading}
-				size="middle"
-				title="Refresh data"
-				style={{ flexShrink: 0 }}
-			>
-				Refresh
-			</Button>
-
-			<Button
-				icon={<PlusOutlined />}
-				type="primary"
-				size="middle"
-				onClick={onCreateStudent}
-				style={{ flexShrink: 0 }}
-			>
-				Create New Student
-			</Button>
 		</div>
 	);
 }
