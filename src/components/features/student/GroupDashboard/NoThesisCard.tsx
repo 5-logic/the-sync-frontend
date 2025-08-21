@@ -70,7 +70,7 @@ export default function NoThesisCard() {
 				<Col xs={24} md={12}>
 					<ThesisOptionCard
 						title="Choose Available Thesis"
-						description="Browse and select from approved thesis from our database"
+						description="Browse and select from published thesis from our system"
 						buttonText="View Available Thesis"
 						icon={<FileTextOutlined />}
 						buttonType="primary"
@@ -80,7 +80,7 @@ export default function NoThesisCard() {
 				<Col xs={24} md={12}>
 					<ThesisOptionCard
 						title="AI Thesis Suggestions"
-						description="Get personalized thesis topic recommendations based on your interests"
+						description="Get personalized thesis topic recommendations"
 						buttonText="Get AI Suggestions"
 						icon={<BulbOutlined />}
 						buttonType="default"
