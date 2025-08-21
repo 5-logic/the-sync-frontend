@@ -460,7 +460,7 @@ export default function AssignSupervisors() {
 	const draftContentHash = useMemo(() => {
 		return Object.values(draftAssignments)
 			.map((draft) => `${draft.thesisId}:${draft.lecturerIds.join(",")}`)
-			.sort()
+			.sort((a, b) => a.localeCompare(b))
 			.join("|");
 	}, [draftAssignments]);
 
