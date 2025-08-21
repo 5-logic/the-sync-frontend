@@ -88,8 +88,16 @@ function safeStringify(value: unknown): string {
 	// Final safety check - should not reach here with objects
 	if (typeof value === "object") return "[Unexpected Object]";
 
-	// For other primitive types (function, undefined, etc), convert safely
-	return value?.toString?.() ?? String(value);
+	// Handle functions explicitly
+	if (typeof value === "function") return "[Function]";
+
+	// For remaining primitive types, use safe conversion
+	if (value != null && typeof value.toString === "function") {
+		return value.toString();
+	}
+
+	// Ultimate fallback for edge cases
+	return "[Unknown Value]";
 }
 
 type ExcelImportFormProps<
