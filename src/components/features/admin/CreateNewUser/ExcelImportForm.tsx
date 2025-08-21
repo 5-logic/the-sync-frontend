@@ -40,43 +40,46 @@ import {
 
 const { Dragger } = Upload;
 
+// Helper function to handle object stringification
+function stringifyObject(value: object): string {
+	try {
+		return JSON.stringify(value);
+	} catch {
+		return "[Complex Object]";
+	}
+}
+
+// Helper function to handle object toString
+function tryObjectToString(value: object): string | null {
+	const valueWithToString = value as { toString?: unknown };
+
+	if (
+		typeof valueWithToString.toString === "function" &&
+		value.constructor !== Object
+	) {
+		try {
+			const result = (value as { toString(): string }).toString();
+			return result === "[object Object]" ? null : result;
+		} catch {
+			return null;
+		}
+	}
+
+	return null;
+}
+
 // Helper function to safely convert unknown values to string
 function safeStringify(value: unknown): string {
 	if (value == null) return "";
 
-	// Handle objects that might stringify to '[object Object]'
+	// Handle objects
 	if (typeof value === "object") {
-		// If object has a meaningful toString method, use it
-		if (
-			typeof (value as { toString?: unknown }).toString === "function" &&
-			value.constructor !== Object
-		) {
-			try {
-				const result = (value as { toString(): string }).toString();
-				// Avoid default Object toString result
-				if (result === "[object Object]") {
-					return JSON.stringify(value);
-				}
-				return result;
-			} catch {
-				// If toString fails, fallback to JSON.stringify
-				try {
-					return JSON.stringify(value);
-				} catch {
-					return "[Complex Object]";
-				}
-			}
-		}
-		// Fallback to JSON.stringify for objects
-		try {
-			return JSON.stringify(value);
-		} catch {
-			return "[Complex Object]";
-		}
+		const toStringResult = tryObjectToString(value);
+		return toStringResult ?? stringifyObject(value);
 	}
 
-	// For primitive types, String() is safe
-	return String(value);
+	// For primitive types, convert safely
+	return typeof value === "string" ? value : String(value);
 }
 
 type ExcelImportFormProps<
