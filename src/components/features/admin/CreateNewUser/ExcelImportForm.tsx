@@ -85,8 +85,11 @@ function safeStringify(value: unknown): string {
 	if (typeof value === "bigint") return value.toString();
 	if (typeof value === "symbol") return value.toString();
 
-	// For other types, fallback to safe conversion
-	return String(value);
+	// Final safety check - should not reach here with objects
+	if (typeof value === "object") return "[Unexpected Object]";
+
+	// For other primitive types (function, undefined, etc), convert safely
+	return value?.toString?.() ?? String(value);
 }
 
 type ExcelImportFormProps<
@@ -778,7 +781,7 @@ function ImportedDataTable<
 				showIcon
 				message={
 					<Typography.Text strong>
-						{data.length} {userType === "lecturer" ? "lecturers" : "students"}
+						{data.length} {userType === "lecturer" ? "lecturers" : "students"}{" "}
 						data imported successfully
 					</Typography.Text>
 				}
