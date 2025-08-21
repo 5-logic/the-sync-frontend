@@ -456,6 +456,14 @@ export default function AssignSupervisors() {
 		});
 	};
 
+	// Calculate draft content hash for table key
+	const draftContentHash = useMemo(() => {
+		return Object.values(draftAssignments)
+			.map((draft) => `${draft.thesisId}:${draft.lecturerIds.join(",")}`)
+			.sort()
+			.join("|");
+	}, [draftAssignments]);
+
 	// Calculate valid draft count (exclude theses with 2 supervisors)
 	const validDraftCount = useMemo(() => {
 		const drafts = Object.values(draftAssignments);
@@ -507,7 +515,13 @@ export default function AssignSupervisors() {
 			},
 		];
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [getDraftAssignment, removeDraftAssignment, validDraftCount, draftCount]);
+	}, [
+		getDraftAssignment,
+		removeDraftAssignment,
+		validDraftCount,
+		draftCount,
+		draftAssignments,
+	]);
 
 	const lecturerOptions = useMemo(() => {
 		return lecturers.map((lecturer) => ({
@@ -573,7 +587,7 @@ export default function AssignSupervisors() {
 				data={filteredData}
 				columns={columns}
 				loading={loading}
-				key={`table-${validDraftCount}-${draftCount}`}
+				key={`table-${validDraftCount}-${draftCount}-${draftContentHash}`}
 			/>
 
 			<AssignSupervisorModal
