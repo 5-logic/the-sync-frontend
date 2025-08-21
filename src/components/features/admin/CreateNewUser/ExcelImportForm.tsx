@@ -47,16 +47,32 @@ function safeStringify(value: unknown): string {
 	// Handle objects that might stringify to '[object Object]'
 	if (typeof value === "object") {
 		// If object has a meaningful toString method, use it
-		if (value.toString && typeof value.toString === "function") {
-			const result = value.toString();
-			// Avoid default Object toString result
-			if (result === "[object Object]") {
-				return JSON.stringify(value);
+		if (
+			typeof (value as { toString?: unknown }).toString === "function" &&
+			value.constructor !== Object
+		) {
+			try {
+				const result = (value as { toString(): string }).toString();
+				// Avoid default Object toString result
+				if (result === "[object Object]") {
+					return JSON.stringify(value);
+				}
+				return result;
+			} catch {
+				// If toString fails, fallback to JSON.stringify
+				try {
+					return JSON.stringify(value);
+				} catch {
+					return "[Complex Object]";
+				}
 			}
-			return result;
 		}
 		// Fallback to JSON.stringify for objects
-		return JSON.stringify(value);
+		try {
+			return JSON.stringify(value);
+		} catch {
+			return "[Complex Object]";
+		}
 	}
 
 	// For primitive types, String() is safe
