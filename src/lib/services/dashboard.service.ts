@@ -18,6 +18,7 @@ export interface SupervisorLoadDistribution {
 	lecturerId: string;
 	fullName: string;
 	thesisCount: number;
+	rawThesisCount: number;
 }
 
 export interface DashboardStatistics {
