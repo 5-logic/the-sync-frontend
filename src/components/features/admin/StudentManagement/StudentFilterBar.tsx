@@ -81,7 +81,7 @@ export default function StudentFilterBar({
 				{/* Top row: Filters */}
 				<div className="flex flex-col sm:flex-row gap-3 lg:gap-2 flex-1">
 					{/* Semester Select */}
-					<div className="w-full sm:w-auto lg:w-48 lg:flex-shrink-0">
+					<div className="w-full sm:w-auto lg:w-56 lg:flex-shrink-0">
 						<Select
 							value={semesterFilter}
 							onChange={setSemesterFilter}
@@ -89,19 +89,27 @@ export default function StudentFilterBar({
 							size="middle"
 							loading={semestersLoading}
 							placeholder="Select semester"
+							dropdownMatchSelectWidth={true}
 						>
 							{semesters.map((semester) => (
 								<Option key={semester.id} value={semester.id}>
-									<span
+									<div
 										style={{
 											display: "flex",
 											alignItems: "center",
+											justifyContent: "space-between",
 											gap: "8px",
+											width: "100%",
+											paddingRight: "8px",
 										}}
 									>
-										<span>{semester.name}</span>
-										{SEMESTER_STATUS_TAGS[semester.status]}
-									</span>
+										<span style={{ flex: 1, minWidth: 0 }}>
+											{semester.name}
+										</span>
+										<span style={{ flexShrink: 0 }}>
+											{SEMESTER_STATUS_TAGS[semester.status]}
+										</span>
+									</div>
 								</Option>
 							))}
 						</Select>
