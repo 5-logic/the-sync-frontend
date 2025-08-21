@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
 import {
 	PlusOutlined,
 	ReloadOutlined,
 	SearchOutlined,
-} from '@ant-design/icons';
-import { Button, Col, Input, Row, Select } from 'antd';
-import { useEffect } from 'react';
+} from "@ant-design/icons";
+import { Button, Input, Select } from "antd";
+import { useEffect } from "react";
 
-import { SEMESTER_STATUS_TAGS } from '@/lib/constants/semester';
-import { useMajorStore, useSemesterStore } from '@/store';
+import { SEMESTER_STATUS_TAGS } from "@/lib/constants/semester";
+import { useMajorStore, useSemesterStore } from "@/store";
 
 const { Option } = Select;
 
@@ -63,7 +63,7 @@ export default function StudentFilterBar({
 		if (!semesterFilter && semesters.length > 0 && !semestersLoading) {
 			// Prefer semesters that are not in NotYet or End status
 			const activeSemesters = semesters.filter(
-				(semester) => semester.status !== 'NotYet' && semester.status !== 'End',
+				(semester) => semester.status !== "NotYet" && semester.status !== "End",
 			);
 
 			// Use active semester if available, otherwise use first semester
@@ -75,55 +75,68 @@ export default function StudentFilterBar({
 	}, [semesterFilter, semesters, semestersLoading, setSemesterFilter]);
 
 	return (
-		<Row gutter={[8, 16]} align="middle" justify="space-between">
-			<Col xs={24} md={20}>
-				<Row gutter={[8, 8]} wrap>
-					<Col>
+		<div className="w-full">
+			{/* Container với responsive behavior */}
+			<div className="flex flex-col lg:flex-row gap-3 lg:items-center">
+				{/* Top row: Filters */}
+				<div className="flex flex-col sm:flex-row gap-3 lg:gap-2 flex-1">
+					{/* Semester Select */}
+					<div className="w-full sm:w-auto lg:w-56 lg:flex-shrink-0">
 						<Select
 							value={semesterFilter}
 							onChange={setSemesterFilter}
-							style={{ width: 200 }}
+							style={{ width: "100%" }}
 							size="middle"
 							loading={semestersLoading}
 							placeholder="Select semester"
+							dropdownMatchSelectWidth={true}
 						>
 							{semesters.map((semester) => (
 								<Option key={semester.id} value={semester.id}>
-									<span
+									<div
 										style={{
-											display: 'flex',
-											alignItems: 'center',
-											gap: '8px',
+											display: "flex",
+											alignItems: "center",
+											justifyContent: "space-between",
+											gap: "8px",
+											width: "100%",
+											paddingRight: "8px",
 										}}
 									>
-										<span>{semester.name}</span>
-										{SEMESTER_STATUS_TAGS[semester.status]}
-									</span>
+										<span style={{ flex: 1, minWidth: 0 }}>
+											{semester.name}
+										</span>
+										<span style={{ flexShrink: 0 }}>
+											{SEMESTER_STATUS_TAGS[semester.status]}
+										</span>
+									</div>
 								</Option>
 							))}
 						</Select>
-					</Col>
+					</div>
 
-					<Col>
+					{/* Status Select */}
+					<div className="w-full sm:w-auto lg:w-32 lg:flex-shrink-0">
 						<Select
 							value={statusFilter}
 							onChange={setStatusFilter}
-							style={{ width: 120 }}
+							style={{ width: "100%" }}
 							size="middle"
 						>
 							<Option value="All">All Status</Option>
 							<Option value="Active">Active</Option>
 							<Option value="Inactive">Inactive</Option>
 						</Select>
-					</Col>
+					</div>
 
-					<Col>
+					{/* Major Select */}
+					<div className="w-full sm:w-auto lg:w-48 lg:flex-shrink-0">
 						<Select
 							value={majorFilter}
 							onChange={setMajorFilter}
-							style={{ width: 200 }}
+							style={{ width: "100%" }}
 							size="middle"
-							loading={majorsLoading} // Use loading from major store
+							loading={majorsLoading}
 							placeholder="Select major"
 						>
 							<Option value="All">All Majors</Option>
@@ -133,42 +146,45 @@ export default function StudentFilterBar({
 								</Option>
 							))}
 						</Select>
-					</Col>
+					</div>
 
-					<Col flex="auto">
+					{/* Search Input */}
+					<div className="flex-1 min-w-0">
 						<Input
 							placeholder="Search by Name, Email, Student Code"
 							value={searchText}
 							onChange={(e) => setSearchText(e.target.value)}
 							prefix={<SearchOutlined />}
 							size="middle"
+							style={{ width: "100%" }}
 						/>
-					</Col>
+					</div>
+				</div>
 
-					<Col>
-						<Button
-							icon={<ReloadOutlined />}
-							onClick={onRefresh}
-							loading={loading}
-							size="middle"
-							title="Refresh data"
-						>
-							Refresh
-						</Button>
-					</Col>
-				</Row>
-			</Col>
+				{/* Action buttons */}
+				<div className="flex flex-col sm:flex-row gap-3 lg:gap-2 lg:flex-shrink-0">
+					<Button
+						icon={<ReloadOutlined />}
+						onClick={onRefresh}
+						loading={loading}
+						size="middle"
+						title="Refresh data"
+						className="w-full sm:w-auto"
+					>
+						Refresh
+					</Button>
 
-			<Col xs={24} md={4} style={{ textAlign: 'right' }}>
-				<Button
-					icon={<PlusOutlined />}
-					type="primary"
-					size="middle"
-					onClick={onCreateStudent}
-				>
-					Create New Student
-				</Button>
-			</Col>
-		</Row>
+					<Button
+						icon={<PlusOutlined />}
+						type="primary"
+						size="middle"
+						onClick={onCreateStudent}
+						className="w-full sm:w-auto"
+					>
+						Create New Student
+					</Button>
+				</div>
+			</div>
+		</div>
 	);
 }

@@ -1,4 +1,4 @@
-import httpClient from '@/lib/services/_httpClient';
+import httpClient from "@/lib/services/_httpClient";
 
 export interface SummaryCard {
 	totalStudents: number;
@@ -10,7 +10,7 @@ export interface SummaryCard {
 export interface ProgressOverview {
 	totalStudentGrouped: number;
 	totalGroupPickedThesis: number;
-	thesisApproved: number;
+	thesisPublished: number;
 	totalAssignedSupervisors: number;
 }
 
@@ -18,6 +18,7 @@ export interface SupervisorLoadDistribution {
 	lecturerId: string;
 	fullName: string;
 	thesisCount: number;
+	rawThesisCount: number;
 }
 
 export interface DashboardStatistics {
