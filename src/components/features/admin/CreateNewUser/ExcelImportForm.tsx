@@ -91,9 +91,11 @@ function safeStringify(value: unknown): string {
 	// Handle functions explicitly
 	if (typeof value === "function") return "[Function]";
 
-	// For remaining primitive types, use safe conversion
+	// For remaining primitive types, use explicit type assertions after validation
 	if (value != null && typeof value.toString === "function") {
-		return value.toString();
+		// TypeScript needs explicit casting to avoid S6551 warning
+		const primitiveValue = value as string | number | boolean | bigint | symbol;
+		return primitiveValue.toString();
 	}
 
 	// Ultimate fallback for edge cases
