@@ -40,6 +40,29 @@ import {
 
 const { Dragger } = Upload;
 
+// Helper function to safely convert unknown values to string
+function safeStringify(value: unknown): string {
+	if (value == null) return "";
+
+	// Handle objects that might stringify to '[object Object]'
+	if (typeof value === "object") {
+		// If object has a meaningful toString method, use it
+		if (value.toString && typeof value.toString === "function") {
+			const result = value.toString();
+			// Avoid default Object toString result
+			if (result === "[object Object]") {
+				return JSON.stringify(value);
+			}
+			return result;
+		}
+		// Fallback to JSON.stringify for objects
+		return JSON.stringify(value);
+	}
+
+	// For primitive types, String() is safe
+	return String(value);
+}
+
 type ExcelImportFormProps<
 	T extends { id: string; email?: string; studentCode?: string },
 > = Readonly<{
@@ -112,10 +135,10 @@ function validateFieldValue<T>(
 	rowNumber: number,
 ): string[] {
 	const errors: string[] = [];
-	const stringValue = value ? String(value).trim() : "";
+	const stringValue = safeStringify(value).trim();
 
 	// All fields are now required - no field can be empty
-	if (!value || stringValue === "") {
+	if (!value || stringValue === "" || stringValue === "[object Object]") {
 		return [`Row ${rowNumber}: ${field.title} cannot be empty`];
 	}
 
@@ -156,8 +179,8 @@ function checkDuplicates<
 			(existingItem) =>
 				"email" in existingItem &&
 				typeof existingItem["email"] === "string" &&
-				String(existingItem["email"]).toLowerCase() ===
-					String(item["email"]).toLowerCase(),
+				safeStringify(existingItem["email"]).toLowerCase() ===
+					safeStringify(item["email"]).toLowerCase(),
 		);
 		if (duplicateIndex !== -1) {
 			errors.push(
@@ -207,7 +230,7 @@ function parseExcelData<T extends { id: string }>(
 			Object.entries(fieldMapping).forEach(([colIndex, fieldKey]) => {
 				const cellValue = row[parseInt(colIndex)];
 				if (cellValue !== undefined && cellValue !== null && cellValue !== "") {
-					const stringValue = String(cellValue).trim();
+					const stringValue = safeStringify(cellValue).trim();
 					item[fieldKey] = (
 						fieldKey === "studentCode" ? stringValue.toUpperCase() : stringValue
 					) as T[keyof T];
@@ -218,7 +241,8 @@ function parseExcelData<T extends { id: string }>(
 		})
 		.filter((item) =>
 			fields.some(
-				(field) => item[field.key] && String(item[field.key]).trim() !== "",
+				(field) =>
+					item[field.key] && safeStringify(item[field.key]).trim() !== "",
 			),
 		);
 }
@@ -250,7 +274,7 @@ function validateAllData<
 			// Validate select fields - all fields must have values
 			if (field.type === "select" && field.options) {
 				const value = item[field.key];
-				const stringValue = value ? String(value).trim() : "";
+				const stringValue = safeStringify(value).trim();
 				if (stringValue) {
 					const validOptions = field.options.map((opt) => opt.value);
 					if (!validOptions.includes(stringValue)) {
@@ -362,7 +386,7 @@ function validateDataBeforeImport<
 
 		fields.forEach((field) => {
 			const value = item[field.key];
-			const stringValue = value ? String(value).trim() : "";
+			const stringValue = safeStringify(value).trim();
 
 			// Check if field is empty
 			if (!value || stringValue === "") {
@@ -445,7 +469,8 @@ function createTableColumns<
 							handleFieldChange(record.id, field.key, e.target.value)
 						}
 						status={
-							!record[field.key] || String(record[field.key]).trim() === ""
+							!record[field.key] ||
+							safeStringify(record[field.key]).trim() === ""
 								? "error"
 								: undefined
 						}
@@ -456,7 +481,8 @@ function createTableColumns<
 						onChange={(val) => handleFieldChange(record.id, field.key, val)}
 						style={{ width: 120 }}
 						status={
-							!record[field.key] || String(record[field.key]).trim() === ""
+							!record[field.key] ||
+							safeStringify(record[field.key]).trim() === ""
 								? "error"
 								: undefined
 						}
