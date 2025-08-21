@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
 import {
 	PlusOutlined,
 	ReloadOutlined,
 	SearchOutlined,
-} from '@ant-design/icons';
-import { Button, Col, Input, Row, Select } from 'antd';
-import { useEffect } from 'react';
+} from "@ant-design/icons";
+import { Button, Input, Select } from "antd";
+import { useEffect } from "react";
 
-import { SEMESTER_STATUS_TAGS } from '@/lib/constants/semester';
-import { useMajorStore, useSemesterStore } from '@/store';
+import { SEMESTER_STATUS_TAGS } from "@/lib/constants/semester";
+import { useMajorStore, useSemesterStore } from "@/store";
 
 const { Option } = Select;
 
@@ -63,7 +63,7 @@ export default function StudentFilterBar({
 		if (!semesterFilter && semesters.length > 0 && !semestersLoading) {
 			// Prefer semesters that are not in NotYet or End status
 			const activeSemesters = semesters.filter(
-				(semester) => semester.status !== 'NotYet' && semester.status !== 'End',
+				(semester) => semester.status !== "NotYet" && semester.status !== "End",
 			);
 
 			// Use active semester if available, otherwise use first semester
@@ -75,100 +75,89 @@ export default function StudentFilterBar({
 	}, [semesterFilter, semesters, semestersLoading, setSemesterFilter]);
 
 	return (
-		<Row gutter={[8, 16]} align="middle" justify="space-between">
-			<Col xs={24} md={20}>
-				<Row gutter={[8, 8]} wrap>
-					<Col>
-						<Select
-							value={semesterFilter}
-							onChange={setSemesterFilter}
-							style={{ width: 200 }}
-							size="middle"
-							loading={semestersLoading}
-							placeholder="Select semester"
+		<div className="flex items-center gap-2 w-full">
+			<Select
+				value={semesterFilter}
+				onChange={setSemesterFilter}
+				style={{ width: 200, flexShrink: 0 }}
+				size="middle"
+				loading={semestersLoading}
+				placeholder="Select semester"
+			>
+				{semesters.map((semester) => (
+					<Option key={semester.id} value={semester.id}>
+						<span
+							style={{
+								display: "flex",
+								alignItems: "center",
+								gap: "8px",
+							}}
 						>
-							{semesters.map((semester) => (
-								<Option key={semester.id} value={semester.id}>
-									<span
-										style={{
-											display: 'flex',
-											alignItems: 'center',
-											gap: '8px',
-										}}
-									>
-										<span>{semester.name}</span>
-										{SEMESTER_STATUS_TAGS[semester.status]}
-									</span>
-								</Option>
-							))}
-						</Select>
-					</Col>
+							<span>{semester.name}</span>
+							{SEMESTER_STATUS_TAGS[semester.status]}
+						</span>
+					</Option>
+				))}
+			</Select>
 
-					<Col>
-						<Select
-							value={statusFilter}
-							onChange={setStatusFilter}
-							style={{ width: 120 }}
-							size="middle"
-						>
-							<Option value="All">All Status</Option>
-							<Option value="Active">Active</Option>
-							<Option value="Inactive">Inactive</Option>
-						</Select>
-					</Col>
+			<Select
+				value={statusFilter}
+				onChange={setStatusFilter}
+				style={{ width: 120, flexShrink: 0 }}
+				size="middle"
+			>
+				<Option value="All">All Status</Option>
+				<Option value="Active">Active</Option>
+				<Option value="Inactive">Inactive</Option>
+			</Select>
 
-					<Col>
-						<Select
-							value={majorFilter}
-							onChange={setMajorFilter}
-							style={{ width: 200 }}
-							size="middle"
-							loading={majorsLoading} // Use loading from major store
-							placeholder="Select major"
-						>
-							<Option value="All">All Majors</Option>
-							{majors.map((major) => (
-								<Option key={major.id} value={major.id}>
-									{major.name}
-								</Option>
-							))}
-						</Select>
-					</Col>
+			<Select
+				value={majorFilter}
+				onChange={setMajorFilter}
+				style={{ width: 200, flexShrink: 0 }}
+				size="middle"
+				loading={majorsLoading}
+				placeholder="Select major"
+			>
+				<Option value="All">All Majors</Option>
+				{majors.map((major) => (
+					<Option key={major.id} value={major.id}>
+						{major.name}
+					</Option>
+				))}
+			</Select>
 
-					<Col flex="auto">
-						<Input
-							placeholder="Search by Name, Email, Student Code"
-							value={searchText}
-							onChange={(e) => setSearchText(e.target.value)}
-							prefix={<SearchOutlined />}
-							size="middle"
-						/>
-					</Col>
-
-					<Col>
-						<Button
-							icon={<ReloadOutlined />}
-							onClick={onRefresh}
-							loading={loading}
-							size="middle"
-							title="Refresh data"
-						>
-							Refresh
-						</Button>
-					</Col>
-				</Row>
-			</Col>
-
-			<Col xs={24} md={4} style={{ textAlign: 'right' }}>
-				<Button
-					icon={<PlusOutlined />}
-					type="primary"
+			{/* Search input - expands to fill available space */}
+			<div style={{ flex: 1, minWidth: 200 }}>
+				<Input
+					placeholder="Search by Name, Email, Student Code"
+					value={searchText}
+					onChange={(e) => setSearchText(e.target.value)}
+					prefix={<SearchOutlined />}
 					size="middle"
-					onClick={onCreateStudent}
-				>
-					Create New Student
-				</Button>
-			</Col>
-		</Row>
+				/>
+			</div>
+
+			<Button
+				icon={<ReloadOutlined />}
+				onClick={onRefresh}
+				loading={loading}
+				size="middle"
+				title="Refresh data"
+				style={{ flexShrink: 0 }}
+			>
+				Refresh
+			</Button>
+
+			<Button
+				icon={<PlusOutlined />}
+				type="primary"
+				size="middle"
+				onClick={onCreateStudent}
+				style={{ flexShrink: 0 }}
+			>
+				Create New Student
+			</Button>
+		</div>
 	);
 }
