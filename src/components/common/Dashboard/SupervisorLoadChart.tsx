@@ -225,7 +225,7 @@ const SupervisorLoadChart: React.FC = () => {
 							Supervisor Load Distribution
 						</Title>
 						<Text type="secondary">
-							Number of theses assigned to each supervisor (Max load: 5 theses)
+							Number of theses assigned to each supervisor
 						</Text>
 					</Space>
 
@@ -267,7 +267,7 @@ const SupervisorLoadChart: React.FC = () => {
 						Supervisor Load Distribution
 					</Title>
 					<Text type="secondary">
-						Number of theses assigned to each supervisor (Max load: 5 theses)
+						Number of theses assigned to each supervisor
 					</Text>
 				</Space>
 
