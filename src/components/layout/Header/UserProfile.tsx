@@ -2,6 +2,7 @@
 
 import {
 	LogoutOutlined,
+	QuestionCircleOutlined,
 	SettingOutlined,
 	UserOutlined,
 } from "@ant-design/icons";
@@ -111,6 +112,20 @@ const UserProfile: React.FC = () => {
 					<Link href={getSettingsUrl() || "#"}>Settings</Link>
 				),
 		},
+		...(isMobile
+			? [
+					{
+						key: "user-guide",
+						icon: <QuestionCircleOutlined />,
+						label: "User's Guide",
+						onClick: () =>
+							window.open(
+								"https://www.youtube.com/watch?v=rsklVACTVgU",
+								"_blank",
+							),
+					},
+				]
+			: []),
 		{
 			type: "divider",
 		},
