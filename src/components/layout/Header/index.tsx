@@ -73,12 +73,14 @@ export const HeaderSection: React.FC<HeaderSectionProps> = ({
 						<Button
 							type="text"
 							icon={<QuestionCircleOutlined />}
-							onClick={() =>
-								window.open(
+							onClick={() => {
+								const newWindow = window.open(
 									"https://www.youtube.com/watch?v=rsklVACTVgU",
 									"_blank",
-								)
-							}
+									"noopener,noreferrer",
+								);
+								if (newWindow) newWindow.opener = null;
+							}}
 							style={{
 								fontSize: "16px",
 								color: "#434343",

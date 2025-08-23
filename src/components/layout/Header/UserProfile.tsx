@@ -118,11 +118,14 @@ const UserProfile: React.FC = () => {
 						key: "user-guide",
 						icon: <QuestionCircleOutlined />,
 						label: "User's Guide",
-						onClick: () =>
-							window.open(
+						onClick: () => {
+							const newWindow = window.open(
 								"https://www.youtube.com/watch?v=rsklVACTVgU",
 								"_blank",
-							),
+								"noopener,noreferrer",
+							);
+							if (newWindow) newWindow.opener = null;
+						},
 					},
 				]
 			: []),
