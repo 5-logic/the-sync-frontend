@@ -94,16 +94,17 @@ export default function InviteMembersDialog({
 		return getUserIdsByRequestType("Invite");
 	}, [getUserIdsByRequestType]);
 
-	// Combine existing members, pending join requests, and pending invite requests to exclude
+	// Combine existing members and pending invite requests to exclude
+	// Note: We no longer exclude students with pending join requests as per requirements
 	const excludeUserIds = useMemo(() => {
 		return [
 			...existingMemberIds,
-			...pendingJoinRequestUserIds,
+			// pendingJoinRequestUserIds removed - allow students with join requests to be invited
 			...pendingInviteRequestUserIds,
 		];
 	}, [
 		existingMemberIds,
-		pendingJoinRequestUserIds,
+		// pendingJoinRequestUserIds removed from dependencies
 		pendingInviteRequestUserIds,
 	]);
 
@@ -188,7 +189,8 @@ export default function InviteMembersDialog({
 		if (process.env.NODE_ENV === "development" && visible) {
 			console.log("Exclude user IDs:", {
 				existingMembers: existingMemberIds,
-				pendingJoinRequests: pendingJoinRequestUserIds,
+				// Note: We're no longer excluding students with pending join requests
+				pendingJoinRequests: pendingJoinRequestUserIds, // Still logged for reference
 				pendingInviteRequests: pendingInviteRequestUserIds,
 				total: excludeUserIds,
 			});
@@ -343,12 +345,11 @@ export default function InviteMembersDialog({
 					Select students to invite to your group. They will receive an
 					invitation request that they can accept or decline.
 				</Text>
-				{(pendingJoinRequestUserIds.length > 0 ||
-					pendingInviteRequestUserIds.length > 0) && (
+				{pendingInviteRequestUserIds.length > 0 && (
 					<div className="mt-2">
 						<Text type="secondary" className="text-xs">
-							Note: Students with pending requests (join or invite) are
-							automatically excluded from the list.
+							Note: Students with pending invite requests are automatically
+							excluded from the list.
 						</Text>
 					</div>
 				)}
