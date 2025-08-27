@@ -782,7 +782,7 @@ const SemesterTable = forwardRef<
 					<>
 						<Text>
 							Once you change the status to <Text strong>End</Text>, this
-							semester will be marked as completed and
+							semester will be marked as completed and{" "}
 							<Text strong>cannot be edited anymore</Text>. This action is
 							irreversible.
 						</Text>
