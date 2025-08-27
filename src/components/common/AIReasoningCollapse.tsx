@@ -78,13 +78,15 @@ export default function AIReasoningCollapse({
 										// Handle single quotes, but exclude possessive 's
 										// Look for pattern: 'text' but not word's or students' etc.
 										const quoteFragments: (string | JSX.Element)[] = [];
-										const quotePattern =
-											/'((?:[^']|(?<=\w)'(?=s\b)|(?<=s)'(?=\s|$))+)'/g;
+
+										// Use a simpler regex to find potential quotes
+										const quotePattern = /'([^']+)'/g;
 										let quoteMatch;
 										let quoteLastIndex = 0;
 
 										while ((quoteMatch = quotePattern.exec(part)) !== null) {
 											// Check if this is a possessive 's or pluralized possessive
+											// We'll check this separately instead of in the regex
 											const isPossessive =
 												/\w's\b/.test(quoteMatch[0]) || // word's
 												/\ws'\s/.test(quoteMatch[0]) || // words'
