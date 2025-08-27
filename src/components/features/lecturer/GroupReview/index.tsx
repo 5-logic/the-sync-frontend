@@ -1,6 +1,14 @@
 "use client";
 
-import { Alert, Card, Divider, Skeleton, Space, Typography } from "antd";
+import {
+	Alert,
+	Button,
+	Card,
+	Divider,
+	Skeleton,
+	Space,
+	Typography,
+} from "antd";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { Header } from "@/components/common/Header";
@@ -314,19 +322,31 @@ export default function GroupReviewPage() {
 					title={
 						<div>
 							Group Name:{" "}
-							<a
+							<Button
+								type="link"
 								onClick={() => setGroupInfoDialogVisible(true)}
-								style={{ cursor: "pointer" }}
+								onKeyDown={(e: React.KeyboardEvent) => {
+									if (e.key === "Enter" || e.key === " ") {
+										setGroupInfoDialogVisible(true);
+									}
+								}}
+								style={{ padding: 0 }}
 							>
 								{currentSelectedGroup.name}
-							</a>{" "}
+							</Button>{" "}
 							|{" "}
-							<a
+							<Button
+								type="link"
 								onClick={() => setThesisDetailDialogVisible(true)}
-								style={{ cursor: "pointer" }}
+								onKeyDown={(e: React.KeyboardEvent) => {
+									if (e.key === "Enter" || e.key === " ") {
+										setThesisDetailDialogVisible(true);
+									}
+								}}
+								style={{ padding: 0 }}
 							>
 								{currentSelectedGroup.englishName}
-							</a>
+							</Button>
 						</div>
 					}
 				>

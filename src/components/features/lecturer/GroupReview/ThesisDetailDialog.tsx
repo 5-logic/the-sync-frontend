@@ -10,9 +10,9 @@ import { showNotification } from "@/lib/utils/notification";
 const { Text } = Typography;
 
 interface ThesisDetailDialogProps {
-	open: boolean;
-	thesisId: string;
-	onClose: () => void;
+	readonly open: boolean;
+	readonly thesisId: string;
+	readonly onClose: () => void;
 }
 
 export default function ThesisDetailDialog({
@@ -31,6 +31,30 @@ export default function ThesisDetailDialog({
 		}
 	}, [error]);
 
+	// Render content based on loading and thesis data states
+	const renderContent = () => {
+		if (loading) {
+			return (
+				<div style={{ textAlign: "center", padding: "20px" }}>
+					<Spin size="large" />
+					<Text style={{ display: "block", marginTop: "10px" }}>
+						Loading thesis details...
+					</Text>
+				</div>
+			);
+		}
+
+		if (thesis) {
+			return <ThesisInfoCard thesis={thesis} />;
+		}
+
+		return (
+			<div style={{ textAlign: "center", padding: "20px" }}>
+				<Text type="danger">{error || "Failed to load thesis details"}</Text>
+			</div>
+		);
+	};
+
 	return (
 		<Modal
 			title="Thesis Details"
@@ -40,20 +64,7 @@ export default function ThesisDetailDialog({
 			footer={null}
 			destroyOnClose
 		>
-			{loading ? (
-				<div style={{ textAlign: "center", padding: "20px" }}>
-					<Spin size="large" />
-					<Text style={{ display: "block", marginTop: "10px" }}>
-						Loading thesis details...
-					</Text>
-				</div>
-			) : thesis ? (
-				<ThesisInfoCard thesis={thesis} />
-			) : (
-				<div style={{ textAlign: "center", padding: "20px" }}>
-					<Text type="danger">{error || "Failed to load thesis details"}</Text>
-				</div>
-			)}
+			{renderContent()}
 		</Modal>
 	);
 }

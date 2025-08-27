@@ -12,9 +12,9 @@ import { GroupDashboard } from "@/schemas/group";
 const { Text } = Typography;
 
 interface GroupInfoDialogProps {
-	open: boolean;
-	groupId: string;
-	onClose: () => void;
+	readonly open: boolean;
+	readonly groupId: string;
+	readonly onClose: () => void;
 }
 
 export default function GroupInfoDialog({
@@ -55,6 +55,30 @@ export default function GroupInfoDialog({
 		}
 	}, [open, groupId, fetchGroupDetails]);
 
+	// Render content based on loading and data states
+	const renderContent = () => {
+		if (loading) {
+			return (
+				<div style={{ textAlign: "center", padding: "20px" }}>
+					<Spin size="large" />
+					<Text style={{ display: "block", marginTop: "10px" }}>
+						Loading group details...
+					</Text>
+				</div>
+			);
+		}
+
+		if (groupData) {
+			return <GroupInfoCard group={groupData} viewOnly={true} />;
+		}
+
+		return (
+			<div style={{ textAlign: "center", padding: "20px" }}>
+				<Text type="danger">{error || "Failed to load group details"}</Text>
+			</div>
+		);
+	};
+
 	return (
 		<Modal
 			title="Group Details"
@@ -64,20 +88,7 @@ export default function GroupInfoDialog({
 			footer={null}
 			destroyOnClose
 		>
-			{loading ? (
-				<div style={{ textAlign: "center", padding: "20px" }}>
-					<Spin size="large" />
-					<Text style={{ display: "block", marginTop: "10px" }}>
-						Loading group details...
-					</Text>
-				</div>
-			) : groupData ? (
-				<GroupInfoCard group={groupData} viewOnly={true} />
-			) : (
-				<div style={{ textAlign: "center", padding: "20px" }}>
-					<Text type="danger">{error || "Failed to load group details"}</Text>
-				</div>
-			)}
+			{renderContent()}
 		</Modal>
 	);
 }
