@@ -9,6 +9,59 @@ For more information about this project, see the [README](./README.md).
 
 ---
 
+## [1.0.5] - 2025-08-27
+
+### Added
+
+#### Enhanced Group and Thesis Information Viewing
+
+- **New Dialog Components:** Added new dialog components for improved information access ([#368](https://github.com/5-logic/the-sync-frontend/pull/368))
+  - Created GroupInfoDialog component for comprehensive group details viewing
+  - Created ThesisDetailDialog component for enhanced thesis information display
+
+#### User Experience Improvements
+
+- **User Guide Access:** Enhanced user guidance with multiple access points ([#368](https://github.com/5-logic/the-sync-frontend/pull/368))
+  - Added User's Guide button in Header for desktop users
+  - Added User's Guide option in profile dropdown menu for mobile users
+
+### Changed
+
+#### Component Interaction Enhancements
+
+- **Improved Information Access:** Enhanced group and thesis information viewing capabilities ([#368](https://github.com/5-logic/the-sync-frontend/pull/368))
+  - Updated group name and thesis name to clickable buttons for easier information access
+  - Implemented renderContent function pattern for consistent dialog content rendering
+
+#### User Interface Refinements
+
+- **Code Formatting Improvements:** Enhanced code readability and consistency ([#368](https://github.com/5-logic/the-sync-frontend/pull/368))
+  - Standardized string quotation marks throughout multiple components
+  - Improved spacing and alignment in Header component
+
+### Fixed
+
+#### Security Enhancements
+
+- **Safer External Links:** Improved security for external link handling ([#368](https://github.com/5-logic/the-sync-frontend/pull/368))
+  - Added noreferrer and noopener attributes to external links for improved security
+  - Implemented proper window opener null setting to prevent reverse tabnabbing
+
+#### UI Consistency Issues
+
+- **Whitespace Corrections:** Improved text formatting consistency ([#368](https://github.com/5-logic/the-sync-frontend/pull/368))
+  - Corrected whitespace in status change warning message in SemesterTable
+  - Enhanced spacing in dropdown menus and dialog components
+
+### Technical Details
+
+- **Files Changed:** 6 files with significant improvements across group review and header components
+- **Enhanced Components:** GroupInfoDialog, ThesisDetailDialog, Header, UserProfile, SemesterTable
+- **Performance:** Better component rendering with optimized dialog patterns
+- **Accessibility:** Enhanced keyboard navigation for group and thesis information access
+
+---
+
 ## [1.0.4] - 2025-08-21
 
 ### Added
