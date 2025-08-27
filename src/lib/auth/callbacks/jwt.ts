@@ -1,11 +1,11 @@
-import { User } from 'next-auth';
-import { JWT } from 'next-auth/jwt';
+import { User } from "next-auth";
+import { JWT } from "next-auth/jwt";
 
 import {
 	fetchUserProfile,
 	getFallbackName,
 	mapProfileToToken,
-} from '@/lib/utils/auth/profile-fetcher';
+} from "@/lib/utils/auth/profile-fetcher";
 
 /**
  * JWT Callback Handler
@@ -75,8 +75,8 @@ function setTokenExpiration(
 		// Remember me: 7 days (aligns with 1-week refresh token)
 		token.accessTokenExpires = now + 7 * 24 * 60 * 60 * 1000;
 	} else {
-		// Session only: 2 hours (shorter for security)
-		token.accessTokenExpires = now + 2 * 60 * 60 * 1000;
+		// Session only: 5 hours (increased from 2 hours)
+		token.accessTokenExpires = now + 5 * 60 * 60 * 1000;
 	}
 }
 
@@ -85,7 +85,7 @@ function setTokenExpiration(
  */
 function checkTokenExpiration(token: JWT): void {
 	if (token.accessTokenExpires && Date.now() > token.accessTokenExpires) {
-		console.warn('JWT token expired, will require re-authentication');
+		console.warn("JWT token expired, will require re-authentication");
 		// Token expiration will be handled by session callback
 	}
 }
@@ -98,7 +98,7 @@ async function enrichTokenWithProfile(token: JWT, user: User): Promise<void> {
 		const profile = await fetchUserProfile({
 			id: user.id,
 			role: user.role,
-			accessToken: user.accessToken ?? '',
+			accessToken: user.accessToken ?? "",
 		});
 
 		if (profile) {
@@ -117,7 +117,7 @@ async function enrichTokenWithProfile(token: JWT, user: User): Promise<void> {
 			token.fullName = fallbackName;
 		}
 	} catch (error) {
-		console.error('Error enriching token with profile:', error);
+		console.error("Error enriching token with profile:", error);
 
 		// Fallback based on user role
 		const fallbackName = getFallbackName(user.role, {

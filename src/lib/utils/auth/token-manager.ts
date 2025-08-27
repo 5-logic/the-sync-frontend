@@ -8,7 +8,7 @@ import { CookieUtils } from "@/lib/utils/auth/cookie-utils";
 /**
  * Handles conditional storage based on remember me preference
  * Enhanced with security features and automatic cleanup
- * Aligned with backend token settings (1h access, 1w refresh)
+ * Aligned with backend token settings (5h access, 1w refresh)
  */
 export class TokenManager {
 	private static readonly ACCESS_TOKEN_KEY = "accessToken";
@@ -138,7 +138,7 @@ export class TokenManager {
 
 	/**
 	 * Fast token validation without API call
-	 * Adjusted for backend access token lifetime (1 hour)
+	 * Adjusted for backend access token lifetime (5 hours)
 	 */
 	static isTokenValid(token: string): boolean {
 		try {
@@ -150,7 +150,7 @@ export class TokenManager {
 			const payload = JSON.parse(atob(parts[1]));
 			const currentTime = Math.floor(Date.now() / 1000);
 
-			// UPDATED: Check if token is expired (with 30 second buffer for 1-hour tokens)
+			// UPDATED: Check if token is expired (with 30 second buffer for 5-hour tokens)
 			return payload.exp && payload.exp > currentTime + 30;
 		} catch {
 			return false;
