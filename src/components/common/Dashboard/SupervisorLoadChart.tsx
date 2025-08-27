@@ -7,6 +7,7 @@ import {
 	Select,
 	Skeleton,
 	Space,
+	Tooltip,
 	Typography,
 } from "antd";
 import React, { useMemo, useState } from "react";
@@ -132,6 +133,7 @@ const SupervisorLoadChart: React.FC = () => {
 			(item: SupervisorLoadDistribution) => ({
 				name: item.fullName,
 				count: item.thesisCount,
+				rawCount: item.rawThesisCount,
 				category: getLoadCategory(item.thesisCount),
 			}),
 		);
@@ -140,10 +142,12 @@ const SupervisorLoadChart: React.FC = () => {
 		if (searchTerm.trim()) {
 			const searchFilter = createSearchFilter(
 				searchTerm,
-				(item: { name: string; count: number; category: string }) => [
-					item.name,
-					item.count.toString(),
-				],
+				(item: {
+					name: string;
+					count: number;
+					rawCount: number;
+					category: string;
+				}) => [item.name, item.count.toString()],
 			);
 			filteredData = filteredData.filter(searchFilter);
 		}
@@ -225,7 +229,7 @@ const SupervisorLoadChart: React.FC = () => {
 							Supervisor Load Distribution
 						</Title>
 						<Text type="secondary">
-							Number of theses assigned to each supervisor (Max load: 5 theses)
+							Number of theses assigned to each supervisor
 						</Text>
 					</Space>
 
@@ -267,7 +271,7 @@ const SupervisorLoadChart: React.FC = () => {
 						Supervisor Load Distribution
 					</Title>
 					<Text type="secondary">
-						Number of theses assigned to each supervisor (Max load: 5 theses)
+						Number of theses assigned to each supervisor
 					</Text>
 				</Space>
 
@@ -377,36 +381,49 @@ const SupervisorLoadChart: React.FC = () => {
 							}}
 						>
 							{chartData.map((item, index) => (
-								<div
+								<Tooltip
 									key={`bar-${item.name}`}
-									style={{
-										position: "absolute",
-										top: `${CHART_CONSTANTS.positions.itemStartOffset + index * CHART_CONSTANTS.itemHeight}px`,
-										height: `${CHART_CONSTANTS.positions.barHeight}px`,
-										width: `${(item.count / chartConfig.maxValue) * 100}%`,
-										background: CATEGORY_STYLES[item.category]?.gradient,
-										transform: "translateY(-50%)",
-										transition: "all 0.8s cubic-bezier(0.4, 0, 0.2, 1)",
-										boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-										border: "1px solid rgba(255,255,255,0.4)",
-									}}
+									title={
+										<div>
+											<div>
+												<strong>{item.name}</strong>
+											</div>
+											<div>Assigned Theses: {item.rawCount}</div>
+										</div>
+									}
+									placement="top"
 								>
-									{/* Bar value label */}
 									<div
 										style={{
 											position: "absolute",
-											right: "8px",
-											top: "50%",
+											top: `${CHART_CONSTANTS.positions.itemStartOffset + index * CHART_CONSTANTS.itemHeight}px`,
+											height: `${CHART_CONSTANTS.positions.barHeight}px`,
+											width: `${(item.count / chartConfig.maxValue) * 100}%`,
+											background: CATEGORY_STYLES[item.category]?.gradient,
 											transform: "translateY(-50%)",
-											color: "white",
-											fontSize: "12px",
-											fontWeight: "bold",
-											textShadow: "0 1px 2px rgba(0,0,0,0.3)",
+											transition: "all 0.8s cubic-bezier(0.4, 0, 0.2, 1)",
+											boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+											border: "1px solid rgba(255,255,255,0.4)",
+											cursor: "pointer",
 										}}
 									>
-										{item.count}
+										{/* Bar value label */}
+										<div
+											style={{
+												position: "absolute",
+												right: "8px",
+												top: "50%",
+												transform: "translateY(-50%)",
+												color: "white",
+												fontSize: "12px",
+												fontWeight: "bold",
+												textShadow: "0 1px 2px rgba(0,0,0,0.3)",
+											}}
+										>
+											{item.count}
+										</div>
 									</div>
-								</div>
+								</Tooltip>
 							))}
 						</div>
 

@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import { ReloadOutlined, SearchOutlined } from '@ant-design/icons';
-import { Button, Col, Divider, Input, Row, Select, Space } from 'antd';
-import { useEffect, useState } from 'react';
+import { ReloadOutlined, SearchOutlined } from "@ant-design/icons";
+import { Button, Divider, Input, Select, Space } from "antd";
+import { useEffect, useState } from "react";
 
-import { Header } from '@/components/common/Header';
-import CreateMilestoneForm from '@/components/features/admin/MilestoneManagement/CreateMilestoneForm';
-import MilestoneTable from '@/components/features/admin/MilestoneManagement/MilestoneTable';
-import semesterService from '@/lib/services/semesters.service';
-import { showNotification } from '@/lib/utils/notification';
-import { MilestoneCreate } from '@/schemas/milestone';
-import { Semester } from '@/schemas/semester';
-import { useMilestoneStore } from '@/store';
+import { Header } from "@/components/common/Header";
+import CreateMilestoneForm from "@/components/features/admin/MilestoneManagement/CreateMilestoneForm";
+import MilestoneTable from "@/components/features/admin/MilestoneManagement/MilestoneTable";
+import semesterService from "@/lib/services/semesters.service";
+import { showNotification } from "@/lib/utils/notification";
+import { MilestoneCreate } from "@/schemas/milestone";
+import { Semester } from "@/schemas/semester";
+import { useMilestoneStore } from "@/store";
 
 export default function MilestoneManagement() {
 	const [semesters, setSemesters] = useState<Semester[]>([]);
@@ -37,11 +37,11 @@ export default function MilestoneManagement() {
 				if (response.success) {
 					setSemesters(response.data || []);
 				} else {
-					showNotification.error('Error', 'Failed to fetch semesters');
+					showNotification.error("Error", "Failed to fetch semesters");
 				}
 			} catch (error) {
-				console.error('Error fetching semesters:', error);
-				showNotification.error('Error', 'Failed to fetch semesters');
+				console.error("Error fetching semesters:", error);
+				showNotification.error("Error", "Failed to fetch semesters");
 			} finally {
 				setLoadingSemesters(false);
 			}
@@ -80,11 +80,11 @@ export default function MilestoneManagement() {
 			await fetchMilestones(true); // Force refresh to bypass cache
 		} catch (error) {
 			// Error handling is already done in the fetchMilestones function
-			console.error('Error refreshing milestones:', error);
+			console.error("Error refreshing milestones:", error);
 		}
 	};
 	return (
-		<Space direction="vertical" size="middle" style={{ width: '100%' }}>
+		<Space direction="vertical" size="middle" style={{ width: "100%" }}>
 			<Header
 				title="Milestones Management"
 				description="Create and manage milestones for each semester."
@@ -96,45 +96,53 @@ export default function MilestoneManagement() {
 				existingMilestones={milestones}
 				onSubmit={handleCreateMilestone}
 			/>
-			<Divider /> {/* Search, Filter and Actions Section */}
-			<Row gutter={[16, 16]} align="middle">
-				<Col xs={24} sm={12} md={8} lg={6}>
-					<Select
-						placeholder="All Semesters"
-						style={{ width: '100%' }}
-						loading={loadingSemesters}
-						onChange={handleSemesterChange}
-						allowClear
-						options={semesters.map((semester) => ({
-							value: semester.id,
-							label: semester.name,
-						}))}
-					/>
-				</Col>
-				<Col xs={24} sm={12} md={12} lg={15}>
-					<Input
-						placeholder="Search milestones..."
-						prefix={<SearchOutlined style={{ color: '#bfbfbf' }} />}
-						allowClear
-						value={searchText}
-						onChange={handleSearchChange}
-						style={{ width: '100%' }}
-					/>
-				</Col>
-				<Col xs={24} sm={24} md={4} lg={3}>
-					<div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+			<Divider />
+			{/* Search, Filter and Actions Section - Single responsive component */}
+			<div className="w-full">
+				{/* Container với responsive behavior */}
+				<div className="flex flex-col md:flex-row gap-3 md:items-center">
+					{/* Semester Select */}
+					<div className="w-full md:w-48 md:flex-shrink-0">
+						<Select
+							placeholder="All Semesters"
+							style={{ width: "100%" }}
+							loading={loadingSemesters}
+							onChange={handleSemesterChange}
+							allowClear
+							options={semesters.map((semester) => ({
+								value: semester.id,
+								label: semester.name,
+							}))}
+						/>
+					</div>
+
+					{/* Search Input */}
+					<div className="flex-1 min-w-0">
+						<Input
+							placeholder="Search milestones..."
+							prefix={<SearchOutlined style={{ color: "#bfbfbf" }} />}
+							allowClear
+							value={searchText}
+							onChange={handleSearchChange}
+							style={{ width: "100%" }}
+						/>
+					</div>
+
+					{/* Refresh Button */}
+					<div className="w-full md:w-auto md:flex-shrink-0">
 						<Button
 							icon={<ReloadOutlined />}
 							onClick={handleRefresh}
 							loading={loading}
 							title="Refresh milestones"
 							type="default"
+							className="w-full md:w-auto"
 						>
 							Refresh
 						</Button>
 					</div>
-				</Col>
-			</Row>
+				</div>
+			</div>
 			<MilestoneTable
 				data={filteredMilestones}
 				loading={loading}

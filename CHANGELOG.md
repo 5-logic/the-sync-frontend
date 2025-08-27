@@ -9,6 +9,137 @@ For more information about this project, see the [README](./README.md).
 
 ---
 
+## [1.0.5] - 2025-08-27
+
+### Added
+
+#### Enhanced Group and Thesis Information Viewing
+
+- **New Dialog Components:** Added new dialog components for improved information access ([#368](https://github.com/5-logic/the-sync-frontend/pull/368))
+  - Created GroupInfoDialog component for comprehensive group details viewing
+  - Created ThesisDetailDialog component for enhanced thesis information display
+
+#### User Experience Improvements
+
+- **User Guide Access:** Enhanced user guidance with multiple access points ([#368](https://github.com/5-logic/the-sync-frontend/pull/368))
+  - Added User's Guide button in Header for desktop users
+  - Added User's Guide option in profile dropdown menu for mobile users
+
+### Changed
+
+#### Component Interaction Enhancements
+
+- **Improved Information Access:** Enhanced group and thesis information viewing capabilities ([#368](https://github.com/5-logic/the-sync-frontend/pull/368))
+  - Updated group name and thesis name to clickable buttons for easier information access
+  - Implemented renderContent function pattern for consistent dialog content rendering
+
+#### User Interface Refinements
+
+- **Code Formatting Improvements:** Enhanced code readability and consistency ([#368](https://github.com/5-logic/the-sync-frontend/pull/368))
+  - Standardized string quotation marks throughout multiple components
+  - Improved spacing and alignment in Header component
+
+### Fixed
+
+#### Security Enhancements
+
+- **Safer External Links:** Improved security for external link handling ([#368](https://github.com/5-logic/the-sync-frontend/pull/368))
+  - Added noreferrer and noopener attributes to external links for improved security
+  - Implemented proper window opener null setting to prevent reverse tabnabbing
+
+#### UI Consistency Issues
+
+- **Whitespace Corrections:** Improved text formatting consistency ([#368](https://github.com/5-logic/the-sync-frontend/pull/368))
+  - Corrected whitespace in status change warning message in SemesterTable
+  - Enhanced spacing in dropdown menus and dialog components
+
+### Technical Details
+
+- **Files Changed:** 6 files with significant improvements across group review and header components
+- **Enhanced Components:** GroupInfoDialog, ThesisDetailDialog, Header, UserProfile, SemesterTable
+- **Performance:** Better component rendering with optimized dialog patterns
+- **Accessibility:** Enhanced keyboard navigation for group and thesis information access
+
+---
+
+## [1.0.4] - 2025-08-21
+
+### Added
+
+#### Dashboard Enhancement Features
+
+- **Refresh Functionality:** Enhanced SemesterFilter with refresh button for real-time data updates ([#367](https://github.com/5-logic/the-sync-frontend/pull/367))
+  - Added refresh button with loading state and disabled state when no semester is selected
+  - Integrated dashboard statistics and AI statistics refresh capabilities
+
+#### Enhanced Data Tracking
+
+- **Supervisor Load Analytics:** Improved supervisor workload tracking with additional metrics ([#367](https://github.com/5-logic/the-sync-frontend/pull/367))
+  - Added `rawThesisCount` to SupervisorLoadDistribution interface for enhanced data tracking
+  - Better supervisor load distribution analysis
+
+### Changed
+
+#### Code Quality & Performance Improvements
+
+- **Excel Import System Enhancement:** Comprehensive improvements to Excel import functionality ([#367](https://github.com/5-logic/the-sync-frontend/pull/367))
+  - Implemented robust `safeStringify` function for improved value handling in ExcelImportForm
+  - Enhanced function to handle primitive types, complex objects, functions, and edge cases more safely
+  - Added explicit type assertions for better type safety
+
+#### User Interface Enhancements
+
+- **Layout & Styling Improvements:** Comprehensive UI/UX improvements across multiple components ([#367](https://github.com/5-logic/the-sync-frontend/pull/367))
+  - Enhanced layout and styling for search & filter bars in admin components
+  - Improved semester select styling in StudentFilterBar
+  - Better responsive design for LecturerFilterBar and StudentFilterBar components
+  - Enhanced MilestoneManagement component layout
+
+#### Content & Terminology Updates
+
+- **Improved User Experience Text:** Enhanced text clarity and consistency across components ([#367](https://github.com/5-logic/the-sync-frontend/pull/367))
+  - Updated thesis option descriptions for better clarity and consistency
+  - Simplified tooltip titles in GroupAssignTable for improved user understanding
+  - Simplified SupervisorLoadChart text by removing max load information for cleaner presentation
+
+#### Data Model Improvements
+
+- **Terminology Standardization:** Updated data model terminology for better consistency ([#367](https://github.com/5-logic/the-sync-frontend/pull/367))
+  - Renamed `thesisApproved` to `thesisPublished` in ProgressOverview and DashboardService
+  - Better alignment with business terminology and workflow
+
+### Fixed
+
+#### Component Performance & Reliability
+
+- **Table Component Improvements:** Enhanced table component stability and performance ([#367](https://github.com/5-logic/the-sync-frontend/pull/367))
+  - Added `draftContentHash` for improved key generation in supervisor assignment table component
+  - Improved hash generation using `localeCompare` for consistent sorting
+  - Better component re-rendering optimization
+
+#### Code Standardization
+
+- **Code Quality Fixes:** Comprehensive code formatting and standardization ([#367](https://github.com/5-logic/the-sync-frontend/pull/367))
+  - Standardized string quotes throughout multiple components for consistency
+  - Improved code formatting in NoThesisCard and ExcelImportForm components
+
+### Technical Details
+
+- **Files Changed:** 12 files with 681 additions and 479 deletions
+- **Enhanced Components:** ProgressOverview, SemesterFilter, SupervisorLoadChart, ExcelImportForm, LecturerFilterBar, StudentFilterBar, GroupAssignTable, NoThesisCard
+- **Service Improvements:** Enhanced dashboard.service.ts with improved data model and terminology
+- **Performance:** Better table key generation, improved hash algorithms, enhanced component re-rendering
+- **User Experience:** Refresh functionality, improved layouts, clearer text and tooltips
+
+### Migration Notes
+
+- **API Changes:** Applications using `thesisApproved` field should update to use `thesisPublished`
+- **Data Model:** New `rawThesisCount` field in SupervisorLoadDistribution interface provides additional analytics data
+- **Component Updates:** Enhanced Excel import functionality provides better error handling and type safety
+- **UI Changes:** Improved layouts and styling may require testing for custom styling implementations
+
+---
+
 ## [1.0.3] - 2025-08-20
 
 ### Added

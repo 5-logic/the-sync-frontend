@@ -1,6 +1,14 @@
 "use client";
 
-import { Alert, Card, Divider, Skeleton, Space, Typography } from "antd";
+import {
+	Alert,
+	Button,
+	Card,
+	Divider,
+	Skeleton,
+	Space,
+	Typography,
+} from "antd";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { Header } from "@/components/common/Header";
@@ -9,6 +17,8 @@ import ReviewGroupSearchTable, {
 	ReviewGroupData,
 } from "@/components/features/lecturer/GroupReview/ReviewGroupSearchTable";
 import ReviewHeader from "@/components/features/lecturer/GroupReview/ReviewHeader";
+import GroupInfoDialog from "@/components/features/lecturer/GroupReview/GroupInfoDialog";
+import ThesisDetailDialog from "@/components/features/lecturer/GroupReview/ThesisDetailDialog";
 import { useReviews } from "@/hooks/lecturer/useReviews";
 import { useSupervisions } from "@/hooks/lecturer/useSupervisions";
 import milestoneService from "@/lib/services/milestones.service";
@@ -37,7 +47,10 @@ export default function GroupReviewPage() {
 		Record<string, boolean>
 	>({});
 
-	// Helper function to fetch milestones for a semester
+	// Dialog states
+	const [groupInfoDialogVisible, setGroupInfoDialogVisible] = useState(false);
+	const [thesisDetailDialogVisible, setThesisDetailDialogVisible] =
+		useState(false); // Helper function to fetch milestones for a semester
 	const fetchMilestonesForSemester = useCallback(async (semesterId: string) => {
 		try {
 			const response = await milestoneService.findAllBySemester(semesterId);
@@ -306,7 +319,36 @@ export default function GroupReviewPage() {
 
 			{currentSelectedGroup && (
 				<Card
-					title={`Group Name: ${currentSelectedGroup.name} | ${currentSelectedGroup.englishName}`}
+					title={
+						<div>
+							Group Name:{" "}
+							<Button
+								type="link"
+								onClick={() => setGroupInfoDialogVisible(true)}
+								onKeyDown={(e: React.KeyboardEvent) => {
+									if (e.key === "Enter" || e.key === " ") {
+										setGroupInfoDialogVisible(true);
+									}
+								}}
+								style={{ padding: 0 }}
+							>
+								{currentSelectedGroup.name}
+							</Button>{" "}
+							|{" "}
+							<Button
+								type="link"
+								onClick={() => setThesisDetailDialogVisible(true)}
+								onKeyDown={(e: React.KeyboardEvent) => {
+									if (e.key === "Enter" || e.key === " ") {
+										setThesisDetailDialogVisible(true);
+									}
+								}}
+								style={{ padding: 0 }}
+							>
+								{currentSelectedGroup.englishName}
+							</Button>
+						</div>
+					}
 				>
 					<Space direction="vertical" size="small" style={{ width: "100%" }}>
 						<Text type="secondary">
@@ -357,6 +399,24 @@ export default function GroupReviewPage() {
 						/>
 					</Space>
 				</Card>
+			)}
+
+			{/* Group Info Dialog */}
+			{currentSelectedGroup && (
+				<GroupInfoDialog
+					open={groupInfoDialogVisible}
+					groupId={currentSelectedGroup.id}
+					onClose={() => setGroupInfoDialogVisible(false)}
+				/>
+			)}
+
+			{/* Thesis Detail Dialog */}
+			{currentSelectedGroup && (
+				<ThesisDetailDialog
+					open={thesisDetailDialogVisible}
+					thesisId={currentSelectedGroup.thesisId}
+					onClose={() => setThesisDetailDialogVisible(false)}
+				/>
 			)}
 		</Space>
 	);
