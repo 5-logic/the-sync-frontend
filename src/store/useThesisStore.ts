@@ -1,26 +1,26 @@
-import { create } from 'zustand';
-import { devtools } from 'zustand/middleware';
+import { create } from "zustand";
+import { devtools } from "zustand/middleware";
 
-import thesisService from '@/lib/services/theses.service';
-import { handleApiResponse } from '@/lib/utils/handleApi';
-import { Thesis, ThesisCreate, ThesisUpdate } from '@/schemas/thesis';
+import thesisService from "@/lib/services/theses.service";
+import { handleApiResponse } from "@/lib/utils/handleApi";
+import { Thesis, ThesisCreate, ThesisUpdate } from "@/schemas/thesis";
 import {
 	cacheUtils,
 	createCachedFetchByLecturerAction,
-} from '@/store/helpers/cacheHelpers';
+} from "@/store/helpers/cacheHelpers";
 import {
 	createErrorState,
 	createSearchFilter,
 	handleActionError,
 	handleCreateError,
-} from '@/store/helpers/storeHelpers';
+} from "@/store/helpers/storeHelpers";
 
 // Type alias for thesis status filter
 type ThesisStatusFilter =
-	| 'approved'
-	| 'pending'
-	| 'rejected'
-	| 'new'
+	| "approved"
+	| "pending"
+	| "rejected"
+	| "new"
 	| undefined;
 
 // Thesis management filters
@@ -88,7 +88,7 @@ interface ThesisState {
 	submitThesis: (id: string) => Promise<boolean>;
 	reviewThesis: (
 		id: string,
-		status: 'Approved' | 'Rejected',
+		status: "Approved" | "Rejected",
 	) => Promise<boolean>;
 
 	// Error management
@@ -126,13 +126,13 @@ const getErrorMessage = (
 const thesisSearchFilter = createSearchFilter<Thesis>((thesis) => [
 	thesis.englishName,
 	thesis.vietnameseName,
-	thesis.abbreviation ?? '',
-	thesis.description ?? '',
-	thesis.domain ?? '',
+	thesis.abbreviation ?? "",
+	thesis.description ?? "",
+	thesis.domain ?? "",
 ]);
 
 // Initialize cache for thesis
-cacheUtils.initCache<Thesis[]>('thesis', {
+cacheUtils.initCache<Thesis[]>("thesis", {
 	ttl: 5 * 60 * 1000, // 5 minutes for theses
 	maxSize: 1000, // Support up to 1000 theses in cache
 	enableLocalStorage: false, // Don't store in localStorage
@@ -150,7 +150,7 @@ export const useThesisStore = create<ThesisState>()(
 			deleting: false,
 			toggling: false,
 			lastError: null,
-			searchText: '',
+			searchText: "",
 			selectedStatus: undefined,
 			selectedDomain: undefined,
 			selectedOwned: undefined,
@@ -166,21 +166,21 @@ export const useThesisStore = create<ThesisState>()(
 			// Cache utilities
 			cache: {
 				clear: () => {
-					cacheUtils.clear('thesis');
+					cacheUtils.clear("thesis");
 				},
-				stats: () => cacheUtils.getStats('thesis'),
+				stats: () => cacheUtils.getStats("thesis"),
 				invalidate: () => {
-					cacheUtils.clear('thesis');
+					cacheUtils.clear("thesis");
 				},
 			},
 
 			// Fetch all theses with sorting and caching
 			fetchTheses: async (force = false) => {
-				const cacheKey = 'all';
+				const cacheKey = "all";
 
 				// Try to get from cache first
 				if (!force) {
-					const cachedData = cacheUtils.get<Thesis[]>('thesis', cacheKey);
+					const cachedData = cacheUtils.get<Thesis[]>("thesis", cacheKey);
 					if (cachedData) {
 						// Sort cached data
 						const sortedData = [...cachedData].sort(
@@ -198,7 +198,7 @@ export const useThesisStore = create<ThesisState>()(
 				}
 
 				// Check if we should fetch
-				if (!cacheUtils.shouldFetch('thesis', force)) {
+				if (!cacheUtils.shouldFetch("thesis", force)) {
 					return;
 				}
 
@@ -217,7 +217,7 @@ export const useThesisStore = create<ThesisState>()(
 						);
 
 						// Cache the sorted data
-						cacheUtils.set('thesis', cacheKey, sortedData);
+						cacheUtils.set("thesis", cacheKey, sortedData);
 
 						set({
 							theses: sortedData,
@@ -228,13 +228,13 @@ export const useThesisStore = create<ThesisState>()(
 						get().filterTheses();
 					} else {
 						throw new Error(
-							getErrorMessage(result.error?.message, 'Failed to fetch theses'),
+							getErrorMessage(result.error?.message, "Failed to fetch theses"),
 						);
 					}
 				} catch {
 					set({
 						lastError: {
-							message: 'Failed to fetch theses',
+							message: "Failed to fetch theses",
 							statusCode: 500,
 							timestamp: new Date(),
 						},
@@ -247,7 +247,7 @@ export const useThesisStore = create<ThesisState>()(
 			// Fetch theses by lecturer ID with caching
 			fetchThesesByLecturer: createCachedFetchByLecturerAction(
 				thesisService,
-				'thesis',
+				"thesis",
 				{
 					ttl: 5 * 60 * 1000, // 5 minutes for theses
 					maxSize: 1000, // Support up to 1000 theses in cache
@@ -279,7 +279,7 @@ export const useThesisStore = create<ThesisState>()(
 						get().filterTheses();
 
 						// Update cache with new thesis instead of invalidating
-						cacheUtils.set('thesis', 'all', updatedTheses);
+						cacheUtils.set("thesis", "all", updatedTheses);
 
 						return true;
 					}
@@ -291,7 +291,7 @@ export const useThesisStore = create<ThesisState>()(
 						return false;
 					}
 				} catch (error) {
-					handleActionError(error, 'thesis', 'create', set);
+					handleActionError(error, "thesis", "create", set);
 					set({ creating: false });
 					return false;
 				}
@@ -322,16 +322,16 @@ export const useThesisStore = create<ThesisState>()(
 						get().filterTheses();
 
 						// Update cache instead of invalidating
-						cacheUtils.set('thesis', 'all', updatedTheses);
+						cacheUtils.set("thesis", "all", updatedTheses);
 
 						return true;
 					} else {
 						throw new Error(
-							getErrorMessage(result.error?.message, 'Failed to update thesis'),
+							getErrorMessage(result.error?.message, "Failed to update thesis"),
 						);
 					}
 				} catch (error) {
-					handleActionError(error, 'thesis', 'update', set);
+					handleActionError(error, "thesis", "update", set);
 					set({ updating: false });
 					return false;
 				}
@@ -357,16 +357,16 @@ export const useThesisStore = create<ThesisState>()(
 						get().filterTheses();
 
 						// Update cache with filtered data instead of invalidating
-						cacheUtils.set('thesis', 'all', updatedTheses);
+						cacheUtils.set("thesis", "all", updatedTheses);
 
 						return true;
 					} else {
 						throw new Error(
-							getErrorMessage(result.error?.message, 'Failed to delete thesis'),
+							getErrorMessage(result.error?.message, "Failed to delete thesis"),
 						);
 					}
 				} catch (error) {
-					handleActionError(error, 'thesis', 'delete', set);
+					handleActionError(error, "thesis", "delete", set);
 					set({ deleting: false });
 					return false;
 				}
@@ -380,7 +380,7 @@ export const useThesisStore = create<ThesisState>()(
 					const { theses } = get();
 					const currentThesis = theses.find((thesis) => thesis.id === id);
 					if (!currentThesis) {
-						throw new Error('Thesis not found');
+						throw new Error("Thesis not found");
 					}
 
 					// Use bulk API for single thesis toggle
@@ -406,19 +406,19 @@ export const useThesisStore = create<ThesisState>()(
 						get().filterTheses();
 
 						// Update cache
-						cacheUtils.set('thesis', 'all', updatedTheses);
+						cacheUtils.set("thesis", "all", updatedTheses);
 
 						return true;
 					} else {
 						throw new Error(
 							getErrorMessage(
 								result.error?.message,
-								'Failed to toggle publish status',
+								"Failed to toggle publish status",
 							),
 						);
 					}
 				} catch (error) {
-					handleActionError(error, 'thesis', 'toggle publish status', set);
+					handleActionError(error, "thesis", "toggle publish status", set);
 					set({ toggling: false });
 					return false;
 				}
@@ -436,7 +436,7 @@ export const useThesisStore = create<ThesisState>()(
 						const { theses } = get();
 						const updatedTheses = theses.map((thesis) =>
 							thesis.id === id
-								? { ...thesis, status: 'Pending' as const }
+								? { ...thesis, status: "Pending" as const }
 								: thesis,
 						);
 						set({
@@ -448,23 +448,23 @@ export const useThesisStore = create<ThesisState>()(
 						get().filterTheses();
 
 						// Update cache
-						cacheUtils.set('thesis', 'all', updatedTheses);
+						cacheUtils.set("thesis", "all", updatedTheses);
 
 						return true;
 					} else {
 						throw new Error(
-							getErrorMessage(result.error?.message, 'Failed to submit thesis'),
+							getErrorMessage(result.error?.message, "Failed to submit thesis"),
 						);
 					}
 				} catch (error) {
-					handleActionError(error, 'thesis', 'submit', set);
+					handleActionError(error, "thesis", "submit", set);
 					set({ toggling: false });
 					return false;
 				}
 			},
 
 			// Review thesis (approve/reject)
-			reviewThesis: async (id: string, status: 'Approved' | 'Rejected') => {
+			reviewThesis: async (id: string, status: "Approved" | "Rejected") => {
 				set({ toggling: true, lastError: null });
 				try {
 					const response = await thesisService.reviewThesis(id, {
@@ -487,7 +487,7 @@ export const useThesisStore = create<ThesisState>()(
 						get().filterTheses();
 
 						// Update cache
-						cacheUtils.set('thesis', 'all', updatedTheses);
+						cacheUtils.set("thesis", "all", updatedTheses);
 
 						return true;
 					} else {
@@ -499,7 +499,7 @@ export const useThesisStore = create<ThesisState>()(
 						);
 					}
 				} catch (error) {
-					handleActionError(error, 'thesis', 'review', set);
+					handleActionError(error, "thesis", "review", set);
 					set({ toggling: false });
 					return false;
 				}
@@ -580,8 +580,12 @@ export const useThesisStore = create<ThesisState>()(
 						filtered = filtered.filter(
 							(thesis) => thesis.lecturerId === sessionLecturerId,
 						);
+					} else {
+						// If selectedOwned is false (All Theses), show only approved theses
+						filtered = filtered.filter(
+							(thesis) => thesis.status.toLowerCase() === "approved",
+						);
 					}
-					// If selectedOwned is false, show all theses (no additional filter)
 				}
 
 				set({ filteredTheses: filtered });
@@ -589,7 +593,7 @@ export const useThesisStore = create<ThesisState>()(
 
 			// Utility functions
 			reset: () => {
-				cacheUtils.clear('thesis');
+				cacheUtils.clear("thesis");
 				set({
 					theses: [],
 					filteredTheses: [],
@@ -599,7 +603,7 @@ export const useThesisStore = create<ThesisState>()(
 					deleting: false,
 					toggling: false,
 					lastError: null,
-					searchText: '',
+					searchText: "",
 					selectedStatus: undefined,
 					selectedDomain: undefined,
 					selectedOwned: undefined,
@@ -626,7 +630,7 @@ export const useThesisStore = create<ThesisState>()(
 					thesis.id === updatedThesis.id ? updatedThesis : thesis,
 				);
 				set({ theses: updatedTheses });
-				cacheUtils.clear('thesis');
+				cacheUtils.clear("thesis");
 				get().filterTheses();
 			},
 
@@ -642,7 +646,7 @@ export const useThesisStore = create<ThesisState>()(
 			},
 		}),
 		{
-			name: 'thesis-store',
+			name: "thesis-store",
 		},
 	),
 );
