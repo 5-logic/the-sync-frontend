@@ -109,6 +109,7 @@ export default function StudentEditThesisModal({
 						initialFile={getInitialFile()}
 						onSubmit={handleSubmitWithCallback}
 						loading={updating}
+						thesis={thesis}
 					/>
 				</div>
 			)}
