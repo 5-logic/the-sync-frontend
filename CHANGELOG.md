@@ -9,6 +9,66 @@ For more information about this project, see the [README](./README.md).
 
 ---
 
+## [1.0.6] - 2025-08-29
+
+### Added
+
+#### Code Quality & Development Tools
+
+- **Prettier Configuration:** Added comprehensive Prettier configuration file for consistent code formatting ([#370](https://github.com/5-logic/the-sync-frontend/pull/370))
+  - Added `.prettierrc` with single quote standardization and import ordering
+  - Integrated @trivago/prettier-plugin-sort-imports for automatic import organization
+  - Configured tab indentation and 80-character print width for optimal readability
+
+### Changed
+
+#### Code Standardization & Consistency
+
+- **Comprehensive String Quote Standardization:** Major refactoring to standardize string quotes across the entire codebase
+  - Converted all double quotes to single quotes throughout 235+ files for consistency
+  - Standardized quotation marks in components, hooks, services, stores, and utilities
+  - Enhanced code readability and maintained consistent coding standards across the project
+
+#### Component Architecture
+
+- **Store and Type System Improvements:** Enhanced store management and type definitions
+  - Refactored multiple store files (useThesisStore, useChecklistStore, useAssignSupervisorStore, etc.) for better consistency
+  - Updated type definitions and schema files with standardized formatting
+  - Improved helper functions and utility modules for better maintainability
+
+### Fixed
+
+#### Student Thesis Management
+
+- **Thesis Form Data Passing:** Fixed critical issue in student thesis editing functionality
+  - Fixed missing thesis data prop in StudentEditThesisModal component
+  - Ensured proper data flow between modal and form components for thesis editing
+  - Improved thesis editing experience for students with complete data context
+
+#### Code Quality Issues
+
+- **Import Organization:** Improved import statements organization and consistency
+  - Standardized import order across all components and modules
+  - Enhanced code structure for better development experience
+  - Fixed formatting inconsistencies in service files and utilities
+
+### Technical Details
+
+- **Files Changed:** 236 files with 5,793 additions and 5,750 deletions
+- **Enhanced Components:** Comprehensive updates across admin, lecturer, and student feature components
+- **Service Improvements:** Standardized formatting in authentication, API services, and utility functions
+- **Store Enhancements:** Improved consistency in Zustand store implementations
+- **Configuration:** New Prettier configuration for automated code formatting
+
+### Migration Notes
+
+- **Development Setup:** New Prettier configuration may require IDE/editor updates for optimal formatting
+- **Code Standards:** All new development should follow the established single-quote standard
+- **Import Organization:** Automated import sorting may affect custom import arrangements
+- **Thesis Editing:** Students will experience improved thesis form functionality with proper data context
+
+---
+
 ## [1.0.5] - 2025-08-27
 
 ### Added
