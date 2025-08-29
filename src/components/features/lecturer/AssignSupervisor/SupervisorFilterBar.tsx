@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { BarChartOutlined, ReloadOutlined } from "@ant-design/icons";
-import { Button, Col, Row, Select } from "antd";
-import { memo, useCallback } from "react";
+import { BarChartOutlined, ReloadOutlined } from '@ant-design/icons';
+import { Button, Col, Row, Select } from 'antd';
+import { memo, useCallback } from 'react';
 
-import GroupSearchBar from "@/components/features/lecturer/AssignSupervisor/GroupSearchBar";
+import GroupSearchBar from '@/components/features/lecturer/AssignSupervisor/GroupSearchBar';
 
 const { Option } = Select;
 
@@ -77,7 +77,7 @@ const SupervisorFilterBar = memo<Props>(
 					<Select
 						value={semester}
 						onChange={handleSemesterChange}
-						style={{ width: "100%" }}
+						style={{ width: '100%' }}
 						placeholder="Filter by semester"
 					>
 						{semesterOptions.map((option) => (
@@ -91,7 +91,7 @@ const SupervisorFilterBar = memo<Props>(
 					<Select
 						value={status}
 						onChange={handleStatusChange}
-						style={{ width: "100%" }}
+						style={{ width: '100%' }}
 						placeholder="Filter by status"
 					>
 						<Option value="All">All Status</Option>
@@ -135,6 +135,6 @@ const SupervisorFilterBar = memo<Props>(
 	},
 );
 
-SupervisorFilterBar.displayName = "SupervisorFilterBar";
+SupervisorFilterBar.displayName = 'SupervisorFilterBar';
 
 export default SupervisorFilterBar;

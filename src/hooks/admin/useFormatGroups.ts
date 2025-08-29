@@ -1,8 +1,9 @@
-import { useState, useCallback } from "react";
-import groupService from "@/lib/services/groups.service";
-import { handleApiResponse, handleApiError } from "@/lib/utils/handleApi";
-import { showNotification } from "@/lib/utils/notification";
-import { ConfirmationModal } from "@/components/common/ConfirmModal";
+import { useCallback, useState } from 'react';
+
+import { ConfirmationModal } from '@/components/common/ConfirmModal';
+import groupService from '@/lib/services/groups.service';
+import { handleApiError, handleApiResponse } from '@/lib/utils/handleApi';
+import { showNotification } from '@/lib/utils/notification';
 
 export interface UseFormatGroupsReturn {
 	isFormatting: boolean;
@@ -22,14 +23,14 @@ export const useFormatGroups = (): UseFormatGroupsReturn => {
 			return new Promise<void>((resolve, reject) => {
 				// Show confirmation modal before proceeding
 				ConfirmationModal.show({
-					title: "Format Groups",
+					title: 'Format Groups',
 					message: `Are you sure you want to format all groups in "${semesterName}"?`,
 					details:
-						"This will reorganize group codes and prioritize groups with students.",
-					note: "Groups with students will be placed first, empty groups will be placed at the end. Group codes will be updated to follow the standardized format.",
-					noteType: "warning",
-					okText: "Yes, Format Groups",
-					okType: "primary",
+						'This will reorganize group codes and prioritize groups with students.',
+					note: 'Groups with students will be placed first, empty groups will be placed at the end. Group codes will be updated to follow the standardized format.',
+					noteType: 'warning',
+					okText: 'Yes, Format Groups',
+					okType: 'primary',
 					onOk: async () => {
 						try {
 							setIsFormatting(true);
@@ -41,25 +42,25 @@ export const useFormatGroups = (): UseFormatGroupsReturn => {
 							if (result.success && result.data) {
 								const formattedCount = result.data.length;
 								showNotification.success(
-									"Groups Formatted Successfully",
+									'Groups Formatted Successfully',
 									`${formattedCount} groups in "${semesterName}" have been reorganized and their codes have been updated.`,
 								);
 								resolve(); // Resolve the promise on success
 							} else {
 								showNotification.error(
-									"Format Failed",
-									result.error?.message || "Failed to format groups",
+									'Format Failed',
+									result.error?.message || 'Failed to format groups',
 								);
 								reject(
-									new Error(result.error?.message || "Failed to format groups"),
+									new Error(result.error?.message || 'Failed to format groups'),
 								);
 							}
 						} catch (error) {
 							const { message } = handleApiError(
 								error,
-								"Failed to format groups",
+								'Failed to format groups',
 							);
-							showNotification.error("Format Failed", message);
+							showNotification.error('Format Failed', message);
 							reject(error instanceof Error ? error : new Error(message));
 						} finally {
 							setIsFormatting(false);
@@ -67,7 +68,7 @@ export const useFormatGroups = (): UseFormatGroupsReturn => {
 					},
 					onCancel: () => {
 						// Reject when user cancels the operation
-						reject(new Error("User cancelled the operation"));
+						reject(new Error('User cancelled the operation'));
 					},
 				});
 			});

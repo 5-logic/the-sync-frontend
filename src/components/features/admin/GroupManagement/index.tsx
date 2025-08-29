@@ -1,20 +1,21 @@
-"use client";
-import React, { useCallback } from "react";
-import { Space } from "antd";
+'use client';
+
+import { Space } from 'antd';
+import React, { useCallback } from 'react';
 
 import CreateForm, {
 	CreateFormValues,
-} from "@/components/features/admin/GroupManagement/CreateForm";
-import { useGroupManagement } from "@/hooks/admin/useGroupManagement";
-import { useCreateGroups } from "@/hooks/admin/useCreateGroups";
-import { useGroupManagementRenderer } from "@/lib/utils/groupManagementRenderer";
+} from '@/components/features/admin/GroupManagement/CreateForm';
+import { useCreateGroups } from '@/hooks/admin/useCreateGroups';
+import { useGroupManagement } from '@/hooks/admin/useGroupManagement';
+import { useGroupManagementRenderer } from '@/lib/utils/groupManagementRenderer';
 
 const GroupManagement: React.FC = () => {
 	const { semesters } = useGroupManagement();
 	const { createGroups, isCreating } = useCreateGroups();
 	const { renderGroupAssignTable, renderUngroupedStudentsCard } =
 		useGroupManagementRenderer({
-			routePrefix: "/admin",
+			routePrefix: '/admin',
 			isAdminMode: true, // Enable admin mode for enhanced delete functionality
 		});
 
@@ -30,7 +31,7 @@ const GroupManagement: React.FC = () => {
 	);
 
 	return (
-		<Space direction="vertical" size="large" style={{ width: "100%" }}>
+		<Space direction="vertical" size="large" style={{ width: '100%' }}>
 			<CreateForm
 				onGenerate={handleGenerate}
 				loading={isCreating}

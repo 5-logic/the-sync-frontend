@@ -1,12 +1,12 @@
-import { Alert, Button, Modal, Space, Typography } from "antd";
-import { useRouter } from "next/navigation";
-import { useCallback, useState } from "react";
+import { Alert, Button, Modal, Space, Typography } from 'antd';
+import { useRouter } from 'next/navigation';
+import { useCallback, useState } from 'react';
 
-import { useSessionData } from "@/hooks/auth/useAuth";
-import { useCurrentSemester } from "@/hooks/semester/useCurrentSemester";
-import aiService, { type SuggestGroupsData } from "@/lib/services/ai.service";
-import studentsService from "@/lib/services/students.service";
-import { handleApiResponse } from "@/lib/utils/handleApi";
+import { useSessionData } from '@/hooks/auth/useAuth';
+import { useCurrentSemester } from '@/hooks/semester/useCurrentSemester';
+import aiService, { type SuggestGroupsData } from '@/lib/services/ai.service';
+import studentsService from '@/lib/services/students.service';
+import { handleApiResponse } from '@/lib/utils/handleApi';
 
 const FORM_CONFIG = {
 	BUTTON_HEIGHT: 40,
@@ -16,9 +16,9 @@ const FORM_CONFIG = {
 
 const BUTTON_STYLES = {
 	height: FORM_CONFIG.BUTTON_HEIGHT,
-	padding: "0 16px",
+	padding: '0 16px',
 	fontSize: FORM_CONFIG.BUTTON_FONT_SIZE,
-	minWidth: "auto",
+	minWidth: 'auto',
 } as const;
 
 interface JoinGroupFormProps {
@@ -50,7 +50,7 @@ export default function JoinGroupForm({
 				onSuggestionsReceived?.(response.data);
 			}
 		} catch (error) {
-			console.error("Error calling AI suggest API:", error);
+			console.error('Error calling AI suggest API:', error);
 		}
 	}, [session?.user?.id, currentSemester?.id, onSuggestionsReceived]);
 
@@ -67,7 +67,7 @@ export default function JoinGroupForm({
 			const studentResult = handleApiResponse(studentResponse);
 
 			if (!studentResult.success) {
-				console.error("Failed to fetch student data");
+				console.error('Failed to fetch student data');
 				return;
 			}
 
@@ -87,7 +87,7 @@ export default function JoinGroupForm({
 				await callAISuggestAPI();
 			}
 		} catch (error) {
-			console.error("Error in suggest groups:", error);
+			console.error('Error in suggest groups:', error);
 		} finally {
 			setLoading(false);
 		}
@@ -102,7 +102,7 @@ export default function JoinGroupForm({
 	// Handle going to profile
 	const handleGoToProfile = useCallback(() => {
 		setShowProfileDialog(false);
-		router.push("/student/account-setting");
+		router.push('/student/account-setting');
 	}, [router]);
 
 	// Handle modal close (mask click or X button)
@@ -112,7 +112,7 @@ export default function JoinGroupForm({
 	}, []);
 
 	return (
-		<div style={{ width: "100%" }}>
+		<div style={{ width: '100%' }}>
 			{/* Profile Setup Dialog */}
 			<Modal
 				title="Set Up Your Profile"
@@ -156,19 +156,19 @@ export default function JoinGroupForm({
 							type="primary"
 							style={{
 								...BUTTON_STYLES,
-								width: "100%",
-								maxWidth: "200px",
-								whiteSpace: "normal",
-								textAlign: "center",
-								wordBreak: "break-word",
+								width: '100%',
+								maxWidth: '200px',
+								whiteSpace: 'normal',
+								textAlign: 'center',
+								wordBreak: 'break-word',
 							}}
 							loading={loading}
 							onClick={handleSuggestGroups}
 						>
-							{loading ? "Finding Groups..." : "Suggest Groups by AI"}
+							{loading ? 'Finding Groups...' : 'Suggest Groups by AI'}
 						</Button>
 					}
-					style={{ width: "100%" }}
+					style={{ width: '100%' }}
 				/>
 			</div>
 
@@ -180,26 +180,26 @@ export default function JoinGroupForm({
 					type="info"
 					showIcon
 					style={{
-						width: "100%",
-						marginBottom: "16px",
-						wordBreak: "break-word",
-						wordWrap: "break-word",
-						overflowWrap: "break-word",
+						width: '100%',
+						marginBottom: '16px',
+						wordBreak: 'break-word',
+						wordWrap: 'break-word',
+						overflowWrap: 'break-word',
 					}}
 				/>
 				<Button
 					type="primary"
 					style={{
 						...BUTTON_STYLES,
-						width: "100%",
-						whiteSpace: "normal",
-						textAlign: "center",
-						wordBreak: "break-word",
+						width: '100%',
+						whiteSpace: 'normal',
+						textAlign: 'center',
+						wordBreak: 'break-word',
 					}}
 					loading={loading}
 					onClick={handleSuggestGroups}
 				>
-					{loading ? "Finding Groups..." : "Suggest Groups by AI"}
+					{loading ? 'Finding Groups...' : 'Suggest Groups by AI'}
 				</Button>
 			</div>
 		</div>

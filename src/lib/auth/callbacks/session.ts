@@ -1,5 +1,5 @@
-import { Session } from "next-auth";
-import { JWT } from "next-auth/jwt";
+import { Session } from 'next-auth';
+import { JWT } from 'next-auth/jwt';
 
 /**
  * Session Callback Handler
@@ -14,9 +14,9 @@ export async function sessionCallback({
 }): Promise<Session> {
 	// Check token expiration but don't return expired session to avoid infinite loop
 	if (token.accessTokenExpires && Date.now() > token.accessTokenExpires) {
-		console.warn("Session expired, will require re-authentication");
+		console.warn('Session expired, will require re-authentication');
 		// Instead of returning expired session, throw error to properly handle logout
-		throw new Error("Session expired");
+		throw new Error('Session expired');
 	}
 
 	// Send properties to the client

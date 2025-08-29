@@ -1,26 +1,26 @@
 import {
 	DeleteOutlined,
 	EyeOutlined,
+	FormatPainterOutlined,
 	ReloadOutlined,
 	SearchOutlined,
-	FormatPainterOutlined,
-} from "@ant-design/icons";
-import { Button, Card, Col, Input, Row, Space, Spin, Tooltip } from "antd";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import type { SortOrder } from "antd/es/table/interface";
+} from '@ant-design/icons';
+import { Button, Card, Col, Input, Row, Space, Spin, Tooltip } from 'antd';
+import type { SortOrder } from 'antd/es/table/interface';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { ConfirmationModal } from "@/components/common/ConfirmModal";
-import groupService, { Group } from "@/lib/services/groups.service";
-import { handleApiError, handleApiResponse } from "@/lib/utils/handleApi";
-import { showNotification } from "@/lib/utils/notification";
-import { isTextMatch } from "@/lib/utils/textNormalization";
-import { useGroupsStore } from "@/store/useGroupsStore";
-import { useSemesterStore } from "@/store/useSemesterStore";
-import SemesterFilter from "@/components/features/lecturer/GroupProgess/SemesterFilter";
-import { useAdminGroupActions } from "@/hooks/admin/useAdminGroupActions";
-import { useFormatGroups } from "@/hooks/admin/useFormatGroups";
+import { ConfirmationModal } from '@/components/common/ConfirmModal';
+import SemesterFilter from '@/components/features/lecturer/GroupProgess/SemesterFilter';
+import { useAdminGroupActions } from '@/hooks/admin/useAdminGroupActions';
+import { useFormatGroups } from '@/hooks/admin/useFormatGroups';
+import groupService, { Group } from '@/lib/services/groups.service';
+import { handleApiError, handleApiResponse } from '@/lib/utils/handleApi';
+import { showNotification } from '@/lib/utils/notification';
+import { isTextMatch } from '@/lib/utils/textNormalization';
+import { useGroupsStore } from '@/store/useGroupsStore';
+import { useSemesterStore } from '@/store/useSemesterStore';
 
-import CustomGroupTable from "./GroupTable";
+import CustomGroupTable from './GroupTable';
 
 interface Props {
 	readonly onView?: (group: Group) => void;
@@ -33,7 +33,7 @@ export default function GroupAssignTable({
 	onDelete,
 	isAdminMode = false,
 }: Props) {
-	const [groupSearch, setGroupSearch] = useState("");
+	const [groupSearch, setGroupSearch] = useState('');
 	const [selectedSemester, setSelectedSemester] = useState<string | null>(null);
 	const [deleteLoading, setDeleteLoading] = useState<string | null>(null);
 	const { groups, loading, fetchGroups } = useGroupsStore();
@@ -56,7 +56,7 @@ export default function GroupAssignTable({
 		if (!selectedSemester && semesters.length > 0) {
 			// Prioritize active semesters for auto-selection
 			const activeSemesters = semesters.filter(
-				(semester) => semester.status !== "NotYet" && semester.status !== "End",
+				(semester) => semester.status !== 'NotYet' && semester.status !== 'End',
 			);
 
 			// Select active semester if available, otherwise select any semester
@@ -78,7 +78,7 @@ export default function GroupAssignTable({
 			if (!semesterId || !isAdminMode) return;
 
 			const semester = semesters.find((s) => s.id === semesterId);
-			const semesterName = semester?.name || "Unknown Semester";
+			const semesterName = semester?.name || 'Unknown Semester';
 
 			try {
 				await formatGroups(semesterId, semesterName);
@@ -88,9 +88,9 @@ export default function GroupAssignTable({
 				// This will catch both API errors and user cancellation
 				if (
 					error instanceof Error &&
-					error.message !== "User cancelled the operation"
+					error.message !== 'User cancelled the operation'
 				) {
-					console.error("Format groups failed:", error);
+					console.error('Format groups failed:', error);
 				}
 				// Don't refresh if formatting failed or was cancelled
 			}
@@ -109,7 +109,7 @@ export default function GroupAssignTable({
 					});
 				} catch (error) {
 					// Error is already handled by the admin hook
-					console.error("Admin delete failed:", error);
+					console.error('Admin delete failed:', error);
 				}
 				return;
 			}
@@ -123,7 +123,7 @@ export default function GroupAssignTable({
 
 				if (result.success) {
 					showNotification.success(
-						"Group Deleted",
+						'Group Deleted',
 						`Group "${group.name}" has been deleted successfully!`,
 					);
 					handleRefresh(); // Refresh the groups list
@@ -131,14 +131,14 @@ export default function GroupAssignTable({
 				} else {
 					// Handle API response error (when success: false)
 					showNotification.error(
-						"Delete Failed",
-						result.error?.message || "Failed to delete group",
+						'Delete Failed',
+						result.error?.message || 'Failed to delete group',
 					);
 				}
 			} catch (error) {
 				// Handle actual errors (network, server errors, etc.)
-				const { message } = handleApiError(error, "Failed to delete group");
-				showNotification.error("Delete Failed", message);
+				const { message } = handleApiError(error, 'Failed to delete group');
+				showNotification.error('Delete Failed', message);
 			} finally {
 				setDeleteLoading(null);
 			}
@@ -156,13 +156,13 @@ export default function GroupAssignTable({
 
 			// Original confirmation modal for student/lecturer mode
 			ConfirmationModal.show({
-				title: "Delete Group",
-				message: "Are you sure you want to delete this group?",
+				title: 'Delete Group',
+				message: 'Are you sure you want to delete this group?',
 				details: `${group.name} (${group.code})`,
-				note: "This action cannot be undone. All group data will be permanently deleted.",
-				noteType: "danger",
-				okText: "Yes, Delete",
-				okType: "danger",
+				note: 'This action cannot be undone. All group data will be permanently deleted.',
+				noteType: 'danger',
+				okText: 'Yes, Delete',
+				okType: 'danger',
 				onOk: () => handleDeleteGroup(group),
 				loading: deleteLoading === group.id,
 			});
@@ -201,43 +201,43 @@ export default function GroupAssignTable({
 	const groupColumns = useMemo(() => {
 		return [
 			{
-				title: "Group code",
-				dataIndex: "code",
-				key: "code",
-				width: "15%",
+				title: 'Group code',
+				dataIndex: 'code',
+				key: 'code',
+				width: '15%',
 				sorter: (a: Group, b: Group) => {
 					const numA = extractGroupNumber(a.code);
 					const numB = extractGroupNumber(b.code);
 					return numA - numB;
 				},
-				sortDirections: ["ascend", "descend"] as SortOrder[],
+				sortDirections: ['ascend', 'descend'] as SortOrder[],
 			},
 			{
-				title: "Group name",
-				dataIndex: "name",
-				key: "name",
-				width: "35%",
+				title: 'Group name',
+				dataIndex: 'name',
+				key: 'name',
+				width: '35%',
 			},
 			{
-				title: "Members",
-				dataIndex: "memberCount",
-				key: "members",
-				width: "20%",
+				title: 'Members',
+				dataIndex: 'memberCount',
+				key: 'members',
+				width: '20%',
 				sorter: (a: Group, b: Group) => a.memberCount - b.memberCount,
-				sortDirections: ["ascend", "descend"] as SortOrder[],
+				sortDirections: ['ascend', 'descend'] as SortOrder[],
 			},
 			{
-				title: "Leader",
+				title: 'Leader',
 				render: (_: unknown, record: Group) =>
-					record.leader?.student?.user?.fullName || "No leader",
-				key: "leader",
-				width: "20%",
+					record.leader?.student?.user?.fullName || 'No leader',
+				key: 'leader',
+				width: '20%',
 			},
 			{
-				title: "Actions",
+				title: 'Actions',
 				render: (_: unknown, record: Group) => (
 					<Space>
-						<Tooltip title={"Assign Student"}>
+						<Tooltip title={'Assign Student'}>
 							<Button
 								type="link"
 								icon={<EyeOutlined />}
@@ -259,9 +259,9 @@ export default function GroupAssignTable({
 						)}
 					</Space>
 				),
-				key: "actions",
-				align: "center" as const,
-				width: "15%",
+				key: 'actions',
+				align: 'center' as const,
+				width: '15%',
 			},
 		];
 	}, [

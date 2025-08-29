@@ -1,10 +1,11 @@
-"use client";
+'use client';
 
-import { Card } from "antd";
+import { Card } from 'antd';
+
 import BaseRadarChart, {
 	ResponsibilityData,
 	prepareChartData,
-} from "./BaseRadarChart";
+} from './BaseRadarChart';
 
 interface ResponsibilityRadarChartProps {
 	readonly data: ResponsibilityData[];

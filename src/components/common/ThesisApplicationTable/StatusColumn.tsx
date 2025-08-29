@@ -1,18 +1,18 @@
-import { Tag } from "antd";
+import { Tag } from 'antd';
 
 // Status color mapping
 export const getStatusColor = (status: string): string => {
 	switch (status) {
-		case "Pending":
-			return "orange";
-		case "Approved":
-			return "green";
-		case "Rejected":
-			return "red";
-		case "Cancelled":
-			return "gray";
+		case 'Pending':
+			return 'orange';
+		case 'Approved':
+			return 'green';
+		case 'Rejected':
+			return 'red';
+		case 'Cancelled':
+			return 'gray';
 		default:
-			return "default";
+			return 'default';
 	}
 };
 
@@ -25,11 +25,11 @@ export function StatusColumn({ status }: StatusColumnProps) {
 }
 
 // Column definition for reuse
-export const createStatusColumn = (width: string = "12%") => ({
-	title: "Status",
-	dataIndex: "status",
-	key: "status",
+export const createStatusColumn = (width: string = '12%') => ({
+	title: 'Status',
+	dataIndex: 'status',
+	key: 'status',
 	width,
-	align: "center" as const,
+	align: 'center' as const,
 	render: (status: string) => <StatusColumn status={status} />,
 });

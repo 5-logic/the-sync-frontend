@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { Card, Steps, Typography } from "antd";
-import { useCallback, useEffect, useState } from "react";
+import { Card, Steps, Typography } from 'antd';
+import { useCallback, useEffect, useState } from 'react';
 
-import milestoneService from "@/lib/services/milestones.service";
-import { handleApiResponse } from "@/lib/utils/handleApi";
-import { convertToVietnamTime } from "@/lib/utils/milestoneUtils";
-import { Milestone } from "@/schemas/milestone";
+import milestoneService from '@/lib/services/milestones.service';
+import { handleApiResponse } from '@/lib/utils/handleApi';
+import { convertToVietnamTime } from '@/lib/utils/milestoneUtils';
+import { Milestone } from '@/schemas/milestone';
 
 const { Text } = Typography;
 
@@ -41,7 +41,7 @@ export default function MilestoneStepFilter({
 					setMilestones(result.data);
 				}
 			} catch (error) {
-				console.error("Error fetching milestones:", error);
+				console.error('Error fetching milestones:', error);
 				setMilestones([]);
 			} finally {
 				setMilestonesLoading(false);
@@ -115,16 +115,16 @@ export default function MilestoneStepFilter({
 				<div
 					style={{
 						marginTop: 16,
-						padding: "12px",
-						background: "#f5f5f5",
-						borderRadius: "6px",
+						padding: '12px',
+						background: '#f5f5f5',
+						borderRadius: '6px',
 					}}
 				>
 					<div
 						style={{
 							marginBottom: 8,
-							display: "flex",
-							alignItems: "center",
+							display: 'flex',
+							alignItems: 'center',
 							gap: 8,
 						}}
 					>
@@ -132,24 +132,24 @@ export default function MilestoneStepFilter({
 						<Text>
 							{convertToVietnamTime(
 								currentMilestone.startDate,
-							).toLocaleDateString("vi-VN")}{" "}
-							-{" "}
+							).toLocaleDateString('vi-VN')}{' '}
+							-{' '}
 							{convertToVietnamTime(
 								currentMilestone.endDate,
-							).toLocaleDateString("vi-VN")}
+							).toLocaleDateString('vi-VN')}
 						</Text>
 						<span
 							style={{
-								fontSize: "14px",
+								fontSize: '14px',
 								color: (() => {
 									const now = new Date();
 									const startDate = new Date(
 										currentMilestone.startDate.toString(),
 									);
 									const isActive = now >= startDate;
-									return isActive ? "#52c41a" : "#ff4d4f";
+									return isActive ? '#52c41a' : '#ff4d4f';
 								})(),
-								fontWeight: "bold",
+								fontWeight: 'bold',
 							}}
 						>
 							{(() => {
@@ -158,7 +158,7 @@ export default function MilestoneStepFilter({
 									currentMilestone.startDate.toString(),
 								);
 								const isActive = now >= startDate;
-								return isActive ? "Active" : "Inactive";
+								return isActive ? 'Active' : 'Inactive';
 							})()}
 						</span>
 					</div>

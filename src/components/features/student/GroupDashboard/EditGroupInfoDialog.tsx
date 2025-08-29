@@ -1,10 +1,10 @@
-import { Button, Form, Modal, Popconfirm, Spin } from "antd";
-import { useEffect, useState } from "react";
+import { Button, Form, Modal, Popconfirm, Spin } from 'antd';
+import { useEffect, useState } from 'react';
 
-import GroupFormFields from "@/components/features/student/FormOrJoinGroup/CreateGroup/GroupFormFields";
-import groupService, { GroupUpdate } from "@/lib/services/groups.service";
-import { showNotification } from "@/lib/utils/notification";
-import { GroupDashboard } from "@/schemas/group";
+import GroupFormFields from '@/components/features/student/FormOrJoinGroup/CreateGroup/GroupFormFields';
+import groupService, { GroupUpdate } from '@/lib/services/groups.service';
+import { showNotification } from '@/lib/utils/notification';
+import { GroupDashboard } from '@/schemas/group';
 
 interface EditGroupInfoDialogProps {
 	readonly visible: boolean;
@@ -32,7 +32,7 @@ export default function EditGroupInfoDialog({
 		if (visible && group) {
 			const formValues = {
 				name: group.name,
-				area: group.projectDirection || "",
+				area: group.projectDirection || '',
 			};
 
 			form.setFieldsValue(formValues);
@@ -61,7 +61,7 @@ export default function EditGroupInfoDialog({
 
 		// Check project direction/area
 		if (currentValues.area !== initialValues.area) {
-			changes.projectDirection = currentValues.area || "";
+			changes.projectDirection = currentValues.area || '';
 		}
 
 		return changes;
@@ -89,8 +89,8 @@ export default function EditGroupInfoDialog({
 			// Check if we have initial values to compare with
 			if (!initialValues) {
 				showNotification.error(
-					"Error",
-					"Unable to determine changes. Please close and reopen the dialog.",
+					'Error',
+					'Unable to determine changes. Please close and reopen the dialog.',
 				);
 				return;
 			}
@@ -99,8 +99,8 @@ export default function EditGroupInfoDialog({
 			const changedFields = getChangedFields(values, initialValues);
 
 			// Log changes in development mode
-			if (process.env.NODE_ENV === "development") {
-				console.log("Changed fields:", changedFields);
+			if (process.env.NODE_ENV === 'development') {
+				console.log('Changed fields:', changedFields);
 			}
 
 			setLoading(true);
@@ -109,8 +109,8 @@ export default function EditGroupInfoDialog({
 
 			if (response.success) {
 				showNotification.success(
-					"Success",
-					"Group information updated successfully!",
+					'Success',
+					'Group information updated successfully!',
 				);
 				// Update initial values to current values after successful update
 				setInitialValues(values);
@@ -118,15 +118,15 @@ export default function EditGroupInfoDialog({
 				onSuccess();
 			} else {
 				showNotification.error(
-					"Error",
-					response.error || "Failed to update group information.",
+					'Error',
+					response.error || 'Failed to update group information.',
 				);
 			}
 		} catch (error) {
-			console.error("Error updating group:", error);
+			console.error('Error updating group:', error);
 			showNotification.error(
-				"Error",
-				"An unexpected error occurred while updating group information.",
+				'Error',
+				'An unexpected error occurred while updating group information.',
 			);
 		} finally {
 			setLoading(false);
@@ -168,9 +168,9 @@ export default function EditGroupInfoDialog({
 			]}
 		>
 			{loading ? (
-				<div style={{ textAlign: "center", padding: "40px 0" }}>
+				<div style={{ textAlign: 'center', padding: '40px 0' }}>
 					<Spin size="large" />
-					<div style={{ marginTop: 16, color: "#666" }}>
+					<div style={{ marginTop: 16, color: '#666' }}>
 						Loading responsibilities...
 					</div>
 				</div>
@@ -179,7 +179,7 @@ export default function EditGroupInfoDialog({
 					form={form}
 					layout="vertical"
 					requiredMark={false}
-					style={{ marginTop: "20px" }}
+					style={{ marginTop: '20px' }}
 					onValuesChange={handleFormChange}
 				>
 					<GroupFormFields />

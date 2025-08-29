@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
 	Alert,
@@ -8,24 +8,24 @@ import {
 	Skeleton,
 	Space,
 	Typography,
-} from "antd";
-import { useCallback, useEffect, useMemo, useState } from "react";
+} from 'antd';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { Header } from "@/components/common/Header";
-import ReviewChecklistTable from "@/components/features/lecturer/GroupReview/ReviewChecklistTable";
+import { Header } from '@/components/common/Header';
+import GroupInfoDialog from '@/components/features/lecturer/GroupReview/GroupInfoDialog';
+import ReviewChecklistTable from '@/components/features/lecturer/GroupReview/ReviewChecklistTable';
 import ReviewGroupSearchTable, {
 	ReviewGroupData,
-} from "@/components/features/lecturer/GroupReview/ReviewGroupSearchTable";
-import ReviewHeader from "@/components/features/lecturer/GroupReview/ReviewHeader";
-import GroupInfoDialog from "@/components/features/lecturer/GroupReview/GroupInfoDialog";
-import ThesisDetailDialog from "@/components/features/lecturer/GroupReview/ThesisDetailDialog";
-import { useReviews } from "@/hooks/lecturer/useReviews";
-import { useSupervisions } from "@/hooks/lecturer/useSupervisions";
-import milestoneService from "@/lib/services/milestones.service";
-import { handleApiResponse } from "@/lib/utils/handleApi";
-import { Milestone } from "@/schemas/milestone";
+} from '@/components/features/lecturer/GroupReview/ReviewGroupSearchTable';
+import ReviewHeader from '@/components/features/lecturer/GroupReview/ReviewHeader';
+import ThesisDetailDialog from '@/components/features/lecturer/GroupReview/ThesisDetailDialog';
+import { useReviews } from '@/hooks/lecturer/useReviews';
+import { useSupervisions } from '@/hooks/lecturer/useSupervisions';
+import milestoneService from '@/lib/services/milestones.service';
+import { handleApiResponse } from '@/lib/utils/handleApi';
+import { Milestone } from '@/schemas/milestone';
 
-import ReviewersList from "./ReviewersList";
+import ReviewersList from './ReviewersList';
 
 const { Text } = Typography;
 
@@ -33,7 +33,7 @@ export default function GroupReviewPage() {
 	const { reviews, loading, error, fetchAssignedReviews } = useReviews();
 	const { fetchSupervisors } = useSupervisions();
 	const [selectedGroup, setSelectedGroup] = useState<ReviewGroupData>();
-	const [searchText, setSearchText] = useState("");
+	const [searchText, setSearchText] = useState('');
 	const [selectedSemester, setSelectedSemester] = useState<string | null>(null);
 	const [selectedMilestone, setSelectedMilestone] = useState<string | null>(
 		null,
@@ -62,7 +62,7 @@ export default function GroupReviewPage() {
 				setMilestones([]);
 			}
 		} catch (error) {
-			console.error("Error fetching milestones for time check:", error);
+			console.error('Error fetching milestones for time check:', error);
 			setMilestones([]);
 		}
 	}, []);
@@ -283,7 +283,7 @@ export default function GroupReviewPage() {
 	}, []);
 
 	return (
-		<Space direction="vertical" size="large" style={{ width: "100%" }}>
+		<Space direction="vertical" size="large" style={{ width: '100%' }}>
 			<Header
 				title="Group Review"
 				description="This section allows instructors to review each groups progress through
@@ -321,25 +321,25 @@ export default function GroupReviewPage() {
 				<Card
 					title={
 						<div>
-							Group Name:{" "}
+							Group Name:{' '}
 							<Button
 								type="link"
 								onClick={() => setGroupInfoDialogVisible(true)}
 								onKeyDown={(e: React.KeyboardEvent) => {
-									if (e.key === "Enter" || e.key === " ") {
+									if (e.key === 'Enter' || e.key === ' ') {
 										setGroupInfoDialogVisible(true);
 									}
 								}}
 								style={{ padding: 0 }}
 							>
 								{currentSelectedGroup.name}
-							</Button>{" "}
-							|{" "}
+							</Button>{' '}
+							|{' '}
 							<Button
 								type="link"
 								onClick={() => setThesisDetailDialogVisible(true)}
 								onKeyDown={(e: React.KeyboardEvent) => {
-									if (e.key === "Enter" || e.key === " ") {
+									if (e.key === 'Enter' || e.key === ' ') {
 										setThesisDetailDialogVisible(true);
 									}
 								}}
@@ -350,9 +350,9 @@ export default function GroupReviewPage() {
 						</div>
 					}
 				>
-					<Space direction="vertical" size="small" style={{ width: "100%" }}>
+					<Space direction="vertical" size="small" style={{ width: '100%' }}>
 						<Text type="secondary">
-							Supervised by:{" "}
+							Supervised by:{' '}
 							{(() => {
 								if (currentSelectedGroup.isLoadingSupervisors) {
 									return (
@@ -362,8 +362,8 @@ export default function GroupReviewPage() {
 											style={{
 												width: 150,
 												height: 16,
-												display: "inline-block",
-												verticalAlign: "middle",
+												display: 'inline-block',
+												verticalAlign: 'middle',
 											}}
 										/>
 									);
@@ -372,17 +372,17 @@ export default function GroupReviewPage() {
 								const supervisorText =
 									currentSelectedGroup.supervisorNames &&
 									currentSelectedGroup.supervisorNames.length > 0
-										? currentSelectedGroup.supervisorNames.join(", ")
-										: "No supervisors assigned";
+										? currentSelectedGroup.supervisorNames.join(', ')
+										: 'No supervisors assigned';
 
 								return supervisorText;
 							})()}
 						</Text>
 					</Space>
 
-					<Divider style={{ margin: "16px 0" }} />
+					<Divider style={{ margin: '16px 0' }} />
 
-					<Space direction="vertical" size="large" style={{ width: "100%" }}>
+					<Space direction="vertical" size="large" style={{ width: '100%' }}>
 						<ReviewHeader />
 						<ReviewersList
 							assignmentReviews={currentSelectedGroup.assignmentReviews}

@@ -1,10 +1,10 @@
-import httpClient from "@/lib/services/_httpClient";
-import { ApiResponse } from "@/schemas/_common";
+import httpClient from '@/lib/services/_httpClient';
+import { ApiResponse } from '@/schemas/_common';
 import {
-	GroupDashboard,
 	CreateMultipleGroupsRequest,
 	CreatedGroup,
-} from "@/schemas/group";
+	GroupDashboard,
+} from '@/schemas/group';
 
 // Group interfaces
 export interface GroupCreate {
@@ -61,7 +61,7 @@ export interface MilestoneSubmission {
 	groupId: string;
 	milestoneId: string;
 	documents: string[];
-	status: "Submitted" | "Not Submitted";
+	status: 'Submitted' | 'Not Submitted';
 	createdAt: string;
 	updatedAt: string;
 	milestone: {
@@ -175,7 +175,7 @@ export interface SupervisedGroup {
 }
 
 class GroupService {
-	private readonly baseUrl = "/groups";
+	private readonly baseUrl = '/groups';
 
 	async create(createGroupDto: GroupCreate): Promise<ApiResponse<Group>> {
 		const response = await httpClient.post<ApiResponse<Group>>(

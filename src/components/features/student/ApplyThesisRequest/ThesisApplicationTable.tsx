@@ -1,23 +1,23 @@
-"use client";
+'use client';
 
-import { DeleteOutlined, EyeOutlined } from "@ant-design/icons";
-import { Button, Table, Tag, Tooltip } from "antd";
-import type { ColumnsType } from "antd/es/table";
-import { useCallback, useMemo, useState } from "react";
+import { DeleteOutlined, EyeOutlined } from '@ant-design/icons';
+import { Button, Table, Tag, Tooltip } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
+import { useCallback, useMemo, useState } from 'react';
 
-import { ConfirmationModal } from "@/components/common/ConfirmModal";
+import { ConfirmationModal } from '@/components/common/ConfirmModal';
 import {
 	SearchAndFilterControls,
-	createStatusColumn,
 	createAppliedDateColumn,
+	createStatusColumn,
 	getThesisApplicationTableConfig,
-} from "@/components/common/ThesisApplicationTable";
-import { useNavigationLoader } from "@/hooks/ux";
-import { handleApiError } from "@/lib/utils/handleApi";
-import { showNotification } from "@/lib/utils/notification";
+} from '@/components/common/ThesisApplicationTable';
+import { useNavigationLoader } from '@/hooks/ux';
 import thesisApplicationService, {
 	ThesisApplication,
-} from "@/lib/services/thesis-application.service";
+} from '@/lib/services/thesis-application.service';
+import { handleApiError } from '@/lib/utils/handleApi';
+import { showNotification } from '@/lib/utils/notification';
 
 interface Props {
 	data: ThesisApplication[];
@@ -34,8 +34,8 @@ export default function ThesisApplicationTable({
 	const [cancelingId, setCancelingId] = useState<string | null>(null);
 
 	// Filter states
-	const [searchText, setSearchText] = useState("");
-	const [statusFilter, setStatusFilter] = useState<string>("");
+	const [searchText, setSearchText] = useState('');
+	const [statusFilter, setStatusFilter] = useState<string>('');
 
 	// Filter data based on search and status
 	const filteredData = useMemo(() => {
@@ -74,21 +74,21 @@ export default function ThesisApplicationTable({
 				);
 
 				showNotification.success(
-					"Application Canceled",
-					"Your thesis application has been canceled successfully!",
+					'Application Canceled',
+					'Your thesis application has been canceled successfully!',
 				);
 
 				// Refresh data
 				onRefresh();
 			} catch (error) {
-				console.error("Error canceling application:", error);
+				console.error('Error canceling application:', error);
 
 				const apiError = handleApiError(
 					error,
-					"Failed to cancel application. Please try again.",
+					'Failed to cancel application. Please try again.',
 				);
 
-				showNotification.error("Cancel Failed", apiError.message);
+				showNotification.error('Cancel Failed', apiError.message);
 			} finally {
 				setCancelingId(null);
 			}
@@ -100,14 +100,14 @@ export default function ThesisApplicationTable({
 	const handleCancelWithConfirm = useCallback(
 		(application: ThesisApplication) => {
 			ConfirmationModal.show({
-				title: "Cancel Application",
-				message: "Are you sure you want to cancel this thesis application?",
+				title: 'Cancel Application',
+				message: 'Are you sure you want to cancel this thesis application?',
 				details: application.thesis.englishName,
-				note: "This action cannot be undone.",
-				noteType: "warning",
-				okText: "Yes, Cancel",
-				cancelText: "No",
-				okType: "danger",
+				note: 'This action cannot be undone.',
+				noteType: 'warning',
+				okText: 'Yes, Cancel',
+				cancelText: 'No',
+				okType: 'danger',
 				loading: cancelingId === application.thesisId,
 				onOk: () => handleCancel(application),
 			});
@@ -121,7 +121,7 @@ export default function ThesisApplicationTable({
 			const isCanceling = cancelingId === record.thesisId;
 
 			return (
-				<div style={{ display: "flex", gap: "8px", justifyContent: "center" }}>
+				<div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
 					{/* View Detail Button */}
 					<Tooltip title="View Thesis Detail">
 						<Button
@@ -132,7 +132,7 @@ export default function ThesisApplicationTable({
 					</Tooltip>
 
 					{/* Cancel Application Button - Only show for Pending status */}
-					{record.status === "Pending" && (
+					{record.status === 'Pending' && (
 						<Tooltip title="Cancel Application">
 							<Button
 								icon={<DeleteOutlined />}
@@ -154,10 +154,10 @@ export default function ThesisApplicationTable({
 	const columns: ColumnsType<ThesisApplication> = useMemo(
 		() => [
 			{
-				title: "English Name",
-				dataIndex: ["thesis", "englishName"],
-				key: "englishName",
-				width: "40%",
+				title: 'English Name',
+				dataIndex: ['thesis', 'englishName'],
+				key: 'englishName',
+				width: '40%',
 				ellipsis: {
 					showTitle: false,
 				},
@@ -165,15 +165,15 @@ export default function ThesisApplicationTable({
 					<Tooltip title={text} placement="topLeft">
 						<div
 							style={{
-								display: "-webkit-box",
+								display: '-webkit-box',
 								WebkitLineClamp: 2,
-								WebkitBoxOrient: "vertical",
-								overflow: "hidden",
-								textOverflow: "ellipsis",
-								lineHeight: "1.5",
-								maxHeight: "3em",
-								wordBreak: "break-word",
-								whiteSpace: "normal",
+								WebkitBoxOrient: 'vertical',
+								overflow: 'hidden',
+								textOverflow: 'ellipsis',
+								lineHeight: '1.5',
+								maxHeight: '3em',
+								wordBreak: 'break-word',
+								whiteSpace: 'normal',
 							}}
 						>
 							{text}
@@ -182,24 +182,24 @@ export default function ThesisApplicationTable({
 				),
 			},
 			{
-				title: "Abbreviation",
-				dataIndex: ["thesis", "abbreviation"],
-				key: "abbreviation",
-				width: "15%",
-				align: "center" as const,
+				title: 'Abbreviation',
+				dataIndex: ['thesis', 'abbreviation'],
+				key: 'abbreviation',
+				width: '15%',
+				align: 'center' as const,
 				render: (text: string) => (
-					<Tag color="blue" style={{ fontWeight: "bold" }}>
+					<Tag color="blue" style={{ fontWeight: 'bold' }}>
 						{text}
 					</Tag>
 				),
 			},
-			createStatusColumn("12%"),
-			createAppliedDateColumn("15%"),
+			createStatusColumn('12%'),
+			createAppliedDateColumn('15%'),
 			{
-				title: "Actions",
-				key: "actions",
-				width: "18%",
-				align: "center" as const,
+				title: 'Actions',
+				key: 'actions',
+				width: '18%',
+				align: 'center' as const,
 				render: (_, record) => renderActionsColumn(record),
 			},
 		],
@@ -225,7 +225,7 @@ export default function ThesisApplicationTable({
 				dataSource={filteredData}
 				rowKey={(record) => `${record.groupId}-${record.thesisId}`}
 				loading={loading}
-				{...getThesisApplicationTableConfig("applications")}
+				{...getThesisApplicationTableConfig('applications')}
 			/>
 		</div>
 	);

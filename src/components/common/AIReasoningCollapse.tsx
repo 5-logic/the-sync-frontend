@@ -1,4 +1,4 @@
-import { Collapse, Typography } from "antd";
+import { Collapse, Typography } from 'antd';
 
 interface AIReasoningCollapseProps {
 	readonly reason: string;
@@ -13,15 +13,15 @@ export default function AIReasoningCollapse({
 		<Collapse
 			size="small"
 			style={{
-				borderColor: "#1890ff",
-				backgroundColor: "#f6ffed",
+				borderColor: '#1890ff',
+				backgroundColor: '#f6ffed',
 				...style,
 			}}
 			items={[
 				{
-					key: "ai-analysis",
+					key: 'ai-analysis',
 					label: (
-						<Typography.Text strong style={{ color: "#1890ff" }}>
+						<Typography.Text strong style={{ color: '#1890ff' }}>
 							🤖 AI Analysis & Reasoning
 						</Typography.Text>
 					),
@@ -29,12 +29,12 @@ export default function AIReasoningCollapse({
 						<Typography.Paragraph
 							style={{
 								margin: 0,
-								lineHeight: "1.6",
+								lineHeight: '1.6',
 							}}
 						>
 							{reason
-								.replace(/\n{2,}/g, "\n")
-								.split("\n")
+								.replace(/\n{2,}/g, '\n')
+								.split('\n')
 								.map((line, index, array) => {
 									// Process line to format:
 									// 1. Single quotes (excluding possessive 's)
@@ -71,7 +71,7 @@ export default function AIReasoningCollapse({
 									// Now process each string part for single quotes
 									// but exclude possessive 's patterns
 									const processedLine = parts.map((part, partIndex) => {
-										if (typeof part !== "string") {
+										if (typeof part !== 'string') {
 											return part; // Already a JSX element
 										}
 

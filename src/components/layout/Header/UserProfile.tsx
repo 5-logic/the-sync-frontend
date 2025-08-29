@@ -1,24 +1,24 @@
-"use client";
+'use client';
 
 import {
 	LogoutOutlined,
 	QuestionCircleOutlined,
 	SettingOutlined,
 	UserOutlined,
-} from "@ant-design/icons";
-import { Avatar, Dropdown, MenuProps, Modal } from "antd";
-import dynamic from "next/dynamic";
-import Image from "next/image";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+} from '@ant-design/icons';
+import { Avatar, Dropdown, MenuProps, Modal } from 'antd';
+import dynamic from 'next/dynamic';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import React, { useState } from 'react';
 
-import { useSessionData } from "@/hooks/auth/useAuth";
-import { useResponsiveLayout } from "@/hooks/ui";
-import { AuthService } from "@/lib/services/auth";
+import { useSessionData } from '@/hooks/auth/useAuth';
+import { useResponsiveLayout } from '@/hooks/ui';
+import { AuthService } from '@/lib/services/auth';
 
 const AccountSettingModal = dynamic(
-	() => import("@/components/features/admin/AccountSetting"),
+	() => import('@/components/features/admin/AccountSetting'),
 	{ ssr: false },
 );
 
@@ -27,15 +27,15 @@ const UserProfile: React.FC = () => {
 	const router = useRouter();
 	const { isMobile } = useResponsiveLayout();
 
-	const userName = session?.user?.fullName ?? session?.user?.name ?? "User";
-	const avatarSrc = session?.user?.image ?? "/images/user_avatar.png";
+	const userName = session?.user?.fullName ?? session?.user?.name ?? 'User';
+	const avatarSrc = session?.user?.image ?? '/images/user_avatar.png';
 
 	// State for admin modal
 	const [adminModalOpen, setAdminModalOpen] = useState(false);
 
 	const handleLogoutClick = () => {
 		Modal.confirm({
-			title: "Confirm Logout",
+			title: 'Confirm Logout',
 			content: (
 				<div>
 					<p>Are you sure you want to logout?</p>
@@ -45,9 +45,9 @@ const UserProfile: React.FC = () => {
 					</p>
 				</div>
 			),
-			okText: "Yes, Logout",
-			cancelText: "Cancel",
-			okType: "danger",
+			okText: 'Yes, Logout',
+			cancelText: 'Cancel',
+			okType: 'danger',
 			icon: <LogoutOutlined />,
 			maskClosable: true,
 			closable: true,
@@ -55,11 +55,11 @@ const UserProfile: React.FC = () => {
 				try {
 					// Enhanced logout that clears everything and calls backend
 					await AuthService.logout({ redirect: false });
-					router.push("/login");
+					router.push('/login');
 				} catch (error) {
-					console.error("Logout error:", error);
+					console.error('Logout error:', error);
 					// Force redirect even if logout fails
-					router.push("/login");
+					router.push('/login');
 				}
 			},
 		});
@@ -69,60 +69,60 @@ const UserProfile: React.FC = () => {
 	const getSettingsUrl = () => {
 		const userRole = session?.user?.role;
 		switch (userRole) {
-			case "student":
-				return "/student/account-setting";
-			case "lecturer":
-			case "moderator":
-				return "/lecturer/account-setting";
-			case "admin":
+			case 'student':
+				return '/student/account-setting';
+			case 'lecturer':
+			case 'moderator':
+				return '/lecturer/account-setting';
+			case 'admin':
 				return null; // use modal
 			default:
-				return "/account-setting"; // fallback
+				return '/account-setting'; // fallback
 		}
 	};
 
 	// Handle settings click
 	const handleSettingsClick = (e: React.MouseEvent) => {
-		if (session?.user?.role === "admin") {
+		if (session?.user?.role === 'admin') {
 			e.preventDefault();
 			setAdminModalOpen(true);
 		}
 	};
 
-	const menuItems: MenuProps["items"] = [
+	const menuItems: MenuProps['items'] = [
 		{
-			key: "settings",
+			key: 'settings',
 			icon: <SettingOutlined />,
 			label:
-				session?.user?.role === "admin" ? (
+				session?.user?.role === 'admin' ? (
 					<button
 						onClick={handleSettingsClick}
 						type="button"
 						style={{
-							cursor: "pointer",
-							background: "none",
-							border: "none",
+							cursor: 'pointer',
+							background: 'none',
+							border: 'none',
 							padding: 0,
-							font: "inherit",
+							font: 'inherit',
 						}}
 					>
 						Settings
 					</button>
 				) : (
-					<Link href={getSettingsUrl() || "#"}>Settings</Link>
+					<Link href={getSettingsUrl() || '#'}>Settings</Link>
 				),
 		},
 		...(isMobile
 			? [
 					{
-						key: "user-guide",
+						key: 'user-guide',
 						icon: <QuestionCircleOutlined />,
 						label: "User's Guide",
 						onClick: () => {
 							const newWindow = window.open(
-								"https://www.youtube.com/watch?v=rsklVACTVgU",
-								"_blank",
-								"noopener,noreferrer",
+								'https://www.youtube.com/watch?v=rsklVACTVgU',
+								'_blank',
+								'noopener,noreferrer',
 							);
 							if (newWindow) newWindow.opener = null;
 						},
@@ -130,12 +130,12 @@ const UserProfile: React.FC = () => {
 				]
 			: []),
 		{
-			type: "divider",
+			type: 'divider',
 		},
 		{
-			key: "logout",
+			key: 'logout',
 			icon: <LogoutOutlined />,
-			label: "Logout",
+			label: 'Logout',
 			onClick: handleLogoutClick,
 		},
 	];
@@ -145,7 +145,7 @@ const UserProfile: React.FC = () => {
 			<Dropdown
 				menu={{ items: menuItems }}
 				placement="bottomRight"
-				trigger={["click"]}
+				trigger={['click']}
 				arrow
 			>
 				<div className="flex items-center cursor-pointer hover:bg-gray-50 rounded-lg px-2 py-1 transition-colors">
@@ -168,7 +168,7 @@ const UserProfile: React.FC = () => {
 				</div>
 			</Dropdown>
 			{/* Admin Account Setting Modal */}
-			{session?.user?.role === "admin" && (
+			{session?.user?.role === 'admin' && (
 				<AccountSettingModal
 					open={adminModalOpen}
 					onClose={() => setAdminModalOpen(false)}

@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { DisconnectOutlined, EyeOutlined } from "@ant-design/icons";
-import { Button, Card, Empty, Space, Tooltip } from "antd";
+import { DisconnectOutlined, EyeOutlined } from '@ant-design/icons';
+import { Button, Card, Empty, Space, Tooltip } from 'antd';
 
-import { GroupDashboard } from "@/schemas/group";
+import { GroupDashboard } from '@/schemas/group';
 
 interface Props {
 	readonly group: GroupDashboard;
@@ -26,10 +26,10 @@ export default function ThesisCard({
 				title="Group's Thesis"
 				size="small"
 				headStyle={{
-					fontSize: "16px",
-					fontWeight: "600",
-					paddingLeft: "20px",
-					paddingRight: "20px",
+					fontSize: '16px',
+					fontWeight: '600',
+					paddingLeft: '20px',
+					paddingRight: '20px',
 				}}
 			>
 				<Empty
@@ -46,10 +46,10 @@ export default function ThesisCard({
 			title="Group's Thesis"
 			size="small"
 			headStyle={{
-				fontSize: "16px",
-				fontWeight: "600",
-				paddingLeft: "20px",
-				paddingRight: "20px",
+				fontSize: '16px',
+				fontWeight: '600',
+				paddingLeft: '20px',
+				paddingRight: '20px',
 			}}
 			extra={
 				<Space>

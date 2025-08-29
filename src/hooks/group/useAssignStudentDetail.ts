@@ -1,25 +1,26 @@
-import { useState, useEffect, useCallback } from "react";
-import { useCurrentSemester } from "@/hooks/semester/useCurrentSemester";
-import groupService from "@/lib/services/groups.service";
-import thesesService from "@/lib/services/theses.service";
-import { handleApiError, handleApiResponse } from "@/lib/utils/handleApi";
-import { showNotification } from "@/lib/utils/notification";
-import { GroupDashboard } from "@/schemas/group";
-import { Thesis } from "@/schemas/thesis";
-import { useMajorStore } from "@/store/useMajorStore";
-import { useSemesterStore } from "@/store/useSemesterStore";
-import { useStudentStore } from "@/store/useStudentStore";
+import { useCallback, useEffect, useState } from 'react';
+
+import { useCurrentSemester } from '@/hooks/semester/useCurrentSemester';
+import groupService from '@/lib/services/groups.service';
+import thesesService from '@/lib/services/theses.service';
+import { handleApiError, handleApiResponse } from '@/lib/utils/handleApi';
+import { showNotification } from '@/lib/utils/notification';
+import { GroupDashboard } from '@/schemas/group';
+import { Thesis } from '@/schemas/thesis';
+import { useMajorStore } from '@/store/useMajorStore';
+import { useSemesterStore } from '@/store/useSemesterStore';
+import { useStudentStore } from '@/store/useStudentStore';
 
 export const useAssignStudentDetail = (groupId: string) => {
 	// State
 	const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
 	const [filters, setFilters] = useState({
-		keyword: "",
-		major: "All",
+		keyword: '',
+		major: 'All',
 	});
 	const [thesisFilters, setThesisFilters] = useState({
-		keyword: "",
-		semester: "All",
+		keyword: '',
+		semester: 'All',
 	});
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [group, setGroup] = useState<GroupDashboard | null>(null);
@@ -50,14 +51,14 @@ export const useAssignStudentDetail = (groupId: string) => {
 
 	// Helper function to handle thesis operation errors
 	const handleThesisOperationError = useCallback(
-		(error: unknown, operation: "assign" | "unassign") => {
-			const operationText = operation === "assign" ? "assign" : "unassign";
-			const titleText = operation === "assign" ? "Assignment" : "Unassignment";
+		(error: unknown, operation: 'assign' | 'unassign') => {
+			const operationText = operation === 'assign' ? 'assign' : 'unassign';
+			const titleText = operation === 'assign' ? 'Assignment' : 'Unassignment';
 
 			console.error(`Error ${operationText}ing thesis:`, error);
 			const { message } = handleApiError(
 				error,
-				`Failed to ${operationText} thesis ${operation === "assign" ? "to" : "from"} group`,
+				`Failed to ${operationText} thesis ${operation === 'assign' ? 'to' : 'from'} group`,
 			);
 			showNotification.error(`${titleText} Failed`, message);
 		},
@@ -73,12 +74,12 @@ export const useAssignStudentDetail = (groupId: string) => {
 
 			if (result.success && result.data) {
 				const availableTheses = result.data.filter(
-					(thesis) => thesis.status === "Approved" && !thesis.groupId,
+					(thesis) => thesis.status === 'Approved' && !thesis.groupId,
 				);
 				setAvailableTheses(availableTheses);
 			}
 		} catch (error) {
-			console.error("Error fetching available theses:", error);
+			console.error('Error fetching available theses:', error);
 		} finally {
 			setThesesLoading(false);
 		}
@@ -100,7 +101,7 @@ export const useAssignStudentDetail = (groupId: string) => {
 			try {
 				setLoading(true);
 				const response = await groupService.findOne(groupId);
-				const result = handleApiResponse(response, "Success");
+				const result = handleApiResponse(response, 'Success');
 
 				if (result.success && result.data) {
 					setGroup(result.data);
@@ -108,10 +109,10 @@ export const useAssignStudentDetail = (groupId: string) => {
 						fetchStudentsWithoutGroup(result.data.semester.id);
 					}
 				} else {
-					console.error("Failed to fetch group:", result.error);
+					console.error('Failed to fetch group:', result.error);
 				}
 			} catch (error) {
-				console.error("Error fetching group:", error);
+				console.error('Error fetching group:', error);
 			} finally {
 				setLoading(false);
 			}
@@ -133,7 +134,7 @@ export const useAssignStudentDetail = (groupId: string) => {
 
 	// Set default semester filter when current semester is available
 	useEffect(() => {
-		if (currentSemester && thesisFilters.semester === "All") {
+		if (currentSemester && thesisFilters.semester === 'All') {
 			setThesisFilters((prev) => ({ ...prev, semester: currentSemester.id }));
 		}
 	}, [currentSemester, thesisFilters.semester]);
@@ -145,8 +146,8 @@ export const useAssignStudentDetail = (groupId: string) => {
 
 			if (group?.members && group.members.length >= 6) {
 				showNotification.error(
-					"Group Full",
-					"This group has reached maximum capacity (6 members)",
+					'Group Full',
+					'This group has reached maximum capacity (6 members)',
 				);
 				return;
 			}
@@ -154,8 +155,8 @@ export const useAssignStudentDetail = (groupId: string) => {
 			const studentId = selectedStudentIds[0];
 			if (!studentId) {
 				showNotification.error(
-					"Selection Required",
-					"Please select a student to assign",
+					'Selection Required',
+					'Please select a student to assign',
 				);
 				return;
 			}
@@ -165,8 +166,8 @@ export const useAssignStudentDetail = (groupId: string) => {
 
 			if (result.success) {
 				showNotification.success(
-					"Student Assigned",
-					"Student assigned to group successfully!",
+					'Student Assigned',
+					'Student assigned to group successfully!',
 				);
 				setIsModalOpen(false);
 				setSelectedStudentIds([]);
@@ -178,7 +179,7 @@ export const useAssignStudentDetail = (groupId: string) => {
 						setGroup(groupResult.data);
 					}
 				} catch (error) {
-					console.error("Error refreshing group data:", error);
+					console.error('Error refreshing group data:', error);
 				}
 
 				if (group?.semester?.id) {
@@ -186,17 +187,17 @@ export const useAssignStudentDetail = (groupId: string) => {
 				}
 			} else {
 				showNotification.error(
-					"Assignment Failed",
-					result.error?.message || "Failed to assign student to group",
+					'Assignment Failed',
+					result.error?.message || 'Failed to assign student to group',
 				);
 			}
 		} catch (error) {
-			console.error("Error assigning student:", error);
+			console.error('Error assigning student:', error);
 			const { message } = handleApiError(
 				error,
-				"Failed to assign student to group",
+				'Failed to assign student to group',
 			);
-			showNotification.error("Assignment Failed", message);
+			showNotification.error('Assignment Failed', message);
 		} finally {
 			setAssignLoading(false);
 		}
@@ -206,8 +207,8 @@ export const useAssignStudentDetail = (groupId: string) => {
 	const handleConfirmAssignThesis = useCallback(async () => {
 		if (!selectedThesis) {
 			showNotification.error(
-				"Selection Required",
-				"Please select a thesis to assign",
+				'Selection Required',
+				'Please select a thesis to assign',
 			);
 			return;
 		}
@@ -222,8 +223,8 @@ export const useAssignStudentDetail = (groupId: string) => {
 
 			if (result.success) {
 				showNotification.success(
-					"Thesis Assigned",
-					"Thesis assigned to group successfully!",
+					'Thesis Assigned',
+					'Thesis assigned to group successfully!',
 				);
 				setIsAssignThesisModalOpen(false);
 				setSelectedThesisKeys([]);
@@ -231,12 +232,12 @@ export const useAssignStudentDetail = (groupId: string) => {
 				await refreshGroupAndTheses();
 			} else {
 				showNotification.error(
-					"Assignment Failed",
-					result.error?.message || "Failed to assign thesis to group",
+					'Assignment Failed',
+					result.error?.message || 'Failed to assign thesis to group',
 				);
 			}
 		} catch (error) {
-			handleThesisOperationError(error, "assign");
+			handleThesisOperationError(error, 'assign');
 		} finally {
 			setAssignThesisLoading(false);
 		}

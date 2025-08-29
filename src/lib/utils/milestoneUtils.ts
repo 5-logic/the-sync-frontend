@@ -35,7 +35,7 @@ export const isWithinMilestonePeriod = (
 		// Check if current time is within milestone period
 		return now >= startOfDay && now <= endOfDay;
 	} catch (error) {
-		console.error("Error checking milestone period:", error);
+		console.error('Error checking milestone period:', error);
 		return false; // Deny access on error
 	}
 };
@@ -46,7 +46,7 @@ export const isWithinMilestonePeriod = (
  * @returns Date object in Vietnam timezone
  */
 export const convertToVietnamTime = (date: string | Date): Date => {
-	const utcDate = typeof date === "string" ? new Date(date) : date;
+	const utcDate = typeof date === 'string' ? new Date(date) : date;
 	return new Date(utcDate.getTime() + 7 * 60 * 60 * 1000);
 };
 
@@ -58,14 +58,14 @@ export const testMilestonePeriod = (
 	startDate: string,
 	endDate: string,
 ): void => {
-	console.log("=== Manual Milestone Test ===");
-	console.log("Testing dates:", startDate, "to", endDate);
-	console.log("Result:", isWithinMilestonePeriod(startDate, endDate));
-	console.log("=============================");
+	console.log('=== Manual Milestone Test ===');
+	console.log('Testing dates:', startDate, 'to', endDate);
+	console.log('Result:', isWithinMilestonePeriod(startDate, endDate));
+	console.log('=============================');
 };
 
 // Make test function available globally for debugging in browser
-if (typeof window !== "undefined") {
+if (typeof window !== 'undefined') {
 	(
 		window as typeof window & {
 			testMilestonePeriod: typeof testMilestonePeriod;

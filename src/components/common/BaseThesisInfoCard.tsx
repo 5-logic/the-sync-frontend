@@ -2,7 +2,7 @@ import {
 	DownloadOutlined,
 	HistoryOutlined,
 	UserOutlined,
-} from "@ant-design/icons";
+} from '@ant-design/icons';
 import {
 	Avatar,
 	Button,
@@ -13,15 +13,15 @@ import {
 	Space,
 	Tag,
 	Typography,
-} from "antd";
-import { useEffect, useState } from "react";
+} from 'antd';
+import { useEffect, useState } from 'react';
 
-import ThesisDocumentVersionDialog from "@/components/common/ThesisDocumentVersionDialog";
-import { getOrientationDisplay } from "@/lib/constants/orientation";
-import { StorageService } from "@/lib/services/storage.service";
-import { showNotification } from "@/lib/utils/notification";
-import { ThesisOrientation } from "@/schemas/_enums";
-import { useSemesterStore } from "@/store";
+import ThesisDocumentVersionDialog from '@/components/common/ThesisDocumentVersionDialog';
+import { getOrientationDisplay } from '@/lib/constants/orientation';
+import { StorageService } from '@/lib/services/storage.service';
+import { showNotification } from '@/lib/utils/notification';
+import { ThesisOrientation } from '@/schemas/_enums';
+import { useSemesterStore } from '@/store';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -33,7 +33,7 @@ export interface BaseThesisInfo {
 	description: string;
 	domain?: string | null;
 	orientation?: ThesisOrientation | null;
-	status: "New" | "Pending" | "Approved" | "Rejected";
+	status: 'New' | 'Pending' | 'Approved' | 'Rejected';
 	semesterId?: string;
 	thesisVersions?: Array<{
 		id: string;
@@ -56,14 +56,14 @@ interface Props {
 
 function getStatusColor(status: string): string {
 	switch (status) {
-		case "Approved":
-			return "green";
-		case "Pending":
-			return "orange";
-		case "Rejected":
-			return "red";
+		case 'Approved':
+			return 'green';
+		case 'Pending':
+			return 'orange';
+		case 'Rejected':
+			return 'red';
 		default:
-			return "default";
+			return 'default';
 	}
 }
 
@@ -81,7 +81,7 @@ export default function BaseThesisInfoCard({ thesis, supervisor }: Props) {
 		value: string | undefined,
 		fallback: string,
 	): string => {
-		return (value ?? "") === "" ? fallback : value!;
+		return (value ?? '') === '' ? fallback : value!;
 	};
 
 	const handleDownloadSupportingDocument = async () => {
@@ -92,8 +92,8 @@ export default function BaseThesisInfoCard({ thesis, supervisor }: Props) {
 
 			if (!supportingDocumentUrl) {
 				showNotification.error(
-					"Download Failed",
-					"No supporting document available for download",
+					'Download Failed',
+					'No supporting document available for download',
 				);
 				return;
 			}
@@ -104,16 +104,16 @@ export default function BaseThesisInfoCard({ thesis, supervisor }: Props) {
 			);
 
 			// Open download in new tab
-			window.open(downloadUrl, "_blank");
+			window.open(downloadUrl, '_blank');
 
 			showNotification.success(
-				"Download Started",
-				"Supporting document download has started",
+				'Download Started',
+				'Supporting document download has started',
 			);
 		} catch {
 			showNotification.error(
-				"Download Failed",
-				"Could not download supporting document",
+				'Download Failed',
+				'Could not download supporting document',
 			);
 		}
 	};
@@ -125,12 +125,12 @@ export default function BaseThesisInfoCard({ thesis, supervisor }: Props) {
 				{thesis.domain && <Tag color="blue">{thesis.domain}</Tag>}
 				{thesis.semesterId && (
 					<Tag color="purple">
-						{getSemesterById(thesis.semesterId)?.name || "Unknown Semester"}
+						{getSemesterById(thesis.semesterId)?.name || 'Unknown Semester'}
 					</Tag>
 				)}
 				<Tag color={getStatusColor(thesis.status)}>{thesis.status}</Tag>
 				<Tag color="gold">
-					Version {thesis.thesisVersions?.[0]?.version || "1.0"}
+					Version {thesis.thesisVersions?.[0]?.version || '1.0'}
 				</Tag>
 			</Space>
 
@@ -206,13 +206,13 @@ export default function BaseThesisInfoCard({ thesis, supervisor }: Props) {
 						<Avatar size={48} icon={<UserOutlined />} />
 						<div>
 							<Text strong>
-								{getDisplayValue(supervisor.name, "Unknown Lecturer Creator")}
+								{getDisplayValue(supervisor.name, 'Unknown Lecturer Creator')}
 							</Text>
 							<Paragraph style={{ marginBottom: 0 }}>
-								{getDisplayValue(supervisor.email, "No email provided")}
+								{getDisplayValue(supervisor.email, 'No email provided')}
 							</Paragraph>
 							<Paragraph style={{ marginBottom: 0 }} type="secondary">
-								{getDisplayValue(supervisor.phone, "No phone provided")}
+								{getDisplayValue(supervisor.phone, 'No phone provided')}
 							</Paragraph>
 						</div>
 					</Space>

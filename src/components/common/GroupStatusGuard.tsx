@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { Spin } from "antd";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { Spin } from 'antd';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
-import { useStudentGroupStatus } from "@/hooks/student/useStudentGroupStatus";
+import { useStudentGroupStatus } from '@/hooks/student/useStudentGroupStatus';
 
 interface GroupStatusGuardProps {
 	readonly children: React.ReactNode;
@@ -22,10 +22,10 @@ export default function GroupStatusGuard({
 		if (!loading) {
 			if (requiresGroup && !hasGroup) {
 				// Page requires group but student doesn't have one
-				router.replace("/student/join-group");
+				router.replace('/student/join-group');
 			} else if (!requiresGroup && hasGroup) {
 				// Page requires no group but student has one
-				router.replace("/student/group-dashboard");
+				router.replace('/student/group-dashboard');
 			}
 		}
 	}, [hasGroup, loading, requiresGroup, router]);

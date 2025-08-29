@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
 	BookOutlined,
@@ -12,16 +12,16 @@ import {
 	TeamOutlined,
 	UserAddOutlined,
 	UserOutlined,
-} from "@ant-design/icons";
-import { Badge, Menu } from "antd";
-import { usePathname } from "next/navigation";
+} from '@ant-design/icons';
+import { Badge, Menu } from 'antd';
+import { usePathname } from 'next/navigation';
 
 import {
 	LECTURER_MENU_KEYS,
 	getSelectedMenuKey,
-} from "@/components/layout/Sidebar/lecturer/LecturerSidebar.config";
-import { useNavigationLoader, usePermissions } from "@/hooks";
-import { DASHBOARD_PATHS } from "@/lib/auth/config/auth-constants";
+} from '@/components/layout/Sidebar/lecturer/LecturerSidebar.config';
+import { useNavigationLoader, usePermissions } from '@/hooks';
+import { DASHBOARD_PATHS } from '@/lib/auth/config/auth-constants';
 
 // Helper function to create menu item with loading and disabled logic
 const createMenuItem = (
@@ -53,7 +53,7 @@ const createBasicMenuItems = (
 	createMenuItem(
 		DASHBOARD_PATHS.LECTURER,
 		<DashboardOutlined />,
-		"Dashboard",
+		'Dashboard',
 		navigateWithLoading,
 		isNavigating,
 		targetPath,
@@ -61,7 +61,7 @@ const createBasicMenuItems = (
 	createMenuItem(
 		LECTURER_MENU_KEYS.THESIS_MANAGEMENT,
 		<BookOutlined />,
-		"Thesis Management",
+		'Thesis Management',
 		navigateWithLoading,
 		isNavigating,
 		targetPath,
@@ -69,7 +69,7 @@ const createBasicMenuItems = (
 	createMenuItem(
 		LECTURER_MENU_KEYS.REQUEST_APPLY_THESIS,
 		<FileTextOutlined />,
-		"Request Apply Thesis",
+		'Request Apply Thesis',
 		navigateWithLoading,
 		isNavigating,
 		targetPath,
@@ -77,7 +77,7 @@ const createBasicMenuItems = (
 	createMenuItem(
 		LECTURER_MENU_KEYS.GROUP_PROGRESS,
 		<TeamOutlined />,
-		"Group Progress",
+		'Group Progress',
 		navigateWithLoading,
 		isNavigating,
 		targetPath,
@@ -85,7 +85,7 @@ const createBasicMenuItems = (
 	createMenuItem(
 		LECTURER_MENU_KEYS.GROUP_REVIEW,
 		<CommentOutlined />,
-		"Group Review",
+		'Group Review',
 		navigateWithLoading,
 		isNavigating,
 		targetPath,
@@ -99,26 +99,26 @@ const createModeratorMenuItems = (
 	targetPath: string | null,
 ) => [
 	{
-		type: "divider" as const,
-		style: { margin: "8px 16px" },
+		type: 'divider' as const,
+		style: { margin: '8px 16px' },
 	},
 	{
-		key: "moderator-section",
+		key: 'moderator-section',
 		label: (
 			<span className="text-yellow-600 font-semibold flex items-center">
 				<Badge color="gold" className="mr-1 hidden-when-collapsed" />
 				<span className="hidden-when-collapsed ml-2">Moderator Panel</span>
 				<span className="visible-when-collapsed flex justify-center items-center text-yellow-500">
-					<CrownOutlined style={{ fontSize: "16px" }} />
+					<CrownOutlined style={{ fontSize: '16px' }} />
 				</span>
 			</span>
 		),
-		type: "group" as const,
+		type: 'group' as const,
 		children: [
 			createMenuItem(
 				DASHBOARD_PATHS.LECTURER_DASHBOARD_MODERATOR,
 				<DashboardOutlined />,
-				"Moderator Dashboard",
+				'Moderator Dashboard',
 				navigateWithLoading,
 				isNavigating,
 				targetPath,
@@ -126,7 +126,7 @@ const createModeratorMenuItems = (
 			createMenuItem(
 				DASHBOARD_PATHS.LECTURER_THESES_REGISTRATION,
 				<FileTextOutlined />,
-				"Theses Registration",
+				'Theses Registration',
 				navigateWithLoading,
 				isNavigating,
 				targetPath,
@@ -134,7 +134,7 @@ const createModeratorMenuItems = (
 			createMenuItem(
 				DASHBOARD_PATHS.LECTURER_ASSIGN_LIST_PUBLISH_THESIS,
 				<BookOutlined />,
-				"Publish Thesis",
+				'Publish Thesis',
 				navigateWithLoading,
 				isNavigating,
 				targetPath,
@@ -142,7 +142,7 @@ const createModeratorMenuItems = (
 			createMenuItem(
 				DASHBOARD_PATHS.LECTURER_GROUP_MANAGEMENT,
 				<UserAddOutlined />,
-				"Group Management",
+				'Group Management',
 				navigateWithLoading,
 				isNavigating,
 				targetPath,
@@ -150,7 +150,7 @@ const createModeratorMenuItems = (
 			createMenuItem(
 				DASHBOARD_PATHS.LECTURER_ASSIGN_SUPERVISOR,
 				<UserOutlined />,
-				"Assign Supervisor",
+				'Assign Supervisor',
 				navigateWithLoading,
 				isNavigating,
 				targetPath,
@@ -158,7 +158,7 @@ const createModeratorMenuItems = (
 			createMenuItem(
 				DASHBOARD_PATHS.LECTURER_ASSIGN_LECTURER_REVIEW,
 				<ScheduleOutlined />,
-				"Assign Lecturer Review",
+				'Assign Lecturer Review',
 				navigateWithLoading,
 				isNavigating,
 				targetPath,
@@ -166,7 +166,7 @@ const createModeratorMenuItems = (
 			createMenuItem(
 				DASHBOARD_PATHS.LECTURER_CHECKLIST_MANAGEMENT,
 				<CheckSquareOutlined />,
-				"Checklist Management",
+				'Checklist Management',
 				navigateWithLoading,
 				isNavigating,
 				targetPath,
@@ -205,8 +205,8 @@ export default function LecturerSidebar() {
 			selectedKeys={[getSelectedMenuKey(pathname)]}
 			items={lecturerMenuItems}
 			style={{
-				border: "none",
-				height: "100%",
+				border: 'none',
+				height: '100%',
 			}}
 		/>
 	);

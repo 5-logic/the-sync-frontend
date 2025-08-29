@@ -1,20 +1,20 @@
-"use client";
+'use client';
 
-import { Button, Col, Form, Input, Radio, Row, Spin, Typography } from "antd";
-import React, { useEffect, useState, useCallback } from "react";
+import { Button, Col, Form, Input, Radio, Row, Spin, Typography } from 'antd';
+import React, { useCallback, useEffect, useState } from 'react';
 
-import { FormLabel } from "@/components/common/FormLabel";
+import { FormLabel } from '@/components/common/FormLabel';
 import {
 	InteractiveRadarChart,
 	ResponsibilityData,
-} from "@/components/common/radar-chart";
-import { useOptimizedSession } from "@/hooks/auth/useAuth";
+} from '@/components/common/radar-chart';
+import { useOptimizedSession } from '@/hooks/auth/useAuth';
 import {
 	isValidVietnamesePhone,
 	normalizeVietnamesePhone,
-} from "@/lib/utils/validations";
-import { StudentProfile, StudentSelfUpdate } from "@/schemas/student";
-import { useMajorStore, useStudentStore } from "@/store";
+} from '@/lib/utils/validations';
+import { StudentProfile, StudentSelfUpdate } from '@/schemas/student';
+import { useMajorStore, useStudentStore } from '@/store';
 
 // TypeScript interfaces
 interface FormValues {
@@ -113,7 +113,7 @@ const StudentAccountForm: React.FC = () => {
 
 					form.setFieldsValue({
 						...formValues,
-						major: "", // Will be set by separate useEffect
+						major: '', // Will be set by separate useEffect
 					});
 
 					// Store original data for comparison
@@ -123,7 +123,7 @@ const StudentAccountForm: React.FC = () => {
 					});
 				}
 			} catch (error) {
-				console.error("Error loading profile:", error);
+				console.error('Error loading profile:', error);
 			} finally {
 				setLoadingProfile(false);
 			}
@@ -145,7 +145,7 @@ const StudentAccountForm: React.FC = () => {
 	useEffect(() => {
 		if (profileData && majors.length > 0) {
 			const majorName = getMajorName(profileData.majorId);
-			form.setFieldValue("major", majorName);
+			form.setFieldValue('major', majorName);
 
 			// Update original data with major name
 			setOriginalData((prev) => ({
@@ -245,7 +245,7 @@ const StudentAccountForm: React.FC = () => {
 
 	// Get the display value for major field
 	const majorDisplayValue = React.useMemo(() => {
-		if (!profileData?.majorId) return "";
+		if (!profileData?.majorId) return '';
 		return getMajorName(profileData.majorId);
 	}, [profileData?.majorId, getMajorName]);
 
@@ -265,7 +265,7 @@ const StudentAccountForm: React.FC = () => {
 			}
 
 			if (values.gender !== originalData.formValues.gender) {
-				profileUpdateData.gender = values.gender as "Male" | "Female";
+				profileUpdateData.gender = values.gender as 'Male' | 'Female';
 			}
 
 			const normalizedPhone = normalizeVietnamesePhone(
@@ -350,7 +350,7 @@ const StudentAccountForm: React.FC = () => {
 	// Don't render form until all data is loaded and available
 	if (!hasRequiredData) {
 		return (
-			<div style={{ textAlign: "center", padding: "40px 0" }}>
+			<div style={{ textAlign: 'center', padding: '40px 0' }}>
 				<Spin size="large" />
 			</div>
 		);
@@ -364,12 +364,12 @@ const StudentAccountForm: React.FC = () => {
 			onValuesChange={handleFormValuesChange}
 			disabled={updatingProfile}
 			initialValues={{
-				fullName: profileData?.fullName ?? "",
-				email: profileData?.email ?? "",
-				studentId: profileData?.studentCode ?? "",
+				fullName: profileData?.fullName ?? '',
+				email: profileData?.email ?? '',
+				studentId: profileData?.studentCode ?? '',
 				major: majorDisplayValue,
-				phoneNumber: profileData?.phoneNumber ?? "",
-				gender: profileData?.gender ?? "",
+				phoneNumber: profileData?.phoneNumber ?? '',
+				gender: profileData?.gender ?? '',
 			}}
 			requiredMark={false}
 		>
@@ -382,7 +382,7 @@ const StudentAccountForm: React.FC = () => {
 						name="studentId"
 						label={<FormLabel text="Student ID" isRequired isBold />}
 						rules={[
-							{ required: true, message: "Please enter your student ID" },
+							{ required: true, message: 'Please enter your student ID' },
 						]}
 					>
 						<Input disabled placeholder="Student ID" />
@@ -393,8 +393,8 @@ const StudentAccountForm: React.FC = () => {
 						name="email"
 						label={<FormLabel text="Email" isRequired isBold />}
 						rules={[
-							{ required: true, message: "Please enter your email" },
-							{ type: "email", message: "Please enter a valid email" },
+							{ required: true, message: 'Please enter your email' },
+							{ type: 'email', message: 'Please enter a valid email' },
 						]}
 					>
 						<Input disabled placeholder="Email address" />
@@ -406,7 +406,7 @@ const StudentAccountForm: React.FC = () => {
 					<Form.Item
 						name="fullName"
 						label={<FormLabel text="Full Name" isRequired isBold />}
-						rules={[{ required: true, message: "Please enter your full name" }]}
+						rules={[{ required: true, message: 'Please enter your full name' }]}
 					>
 						<Input placeholder="Enter full name" disabled={updatingProfile} />
 					</Form.Item>
@@ -415,7 +415,7 @@ const StudentAccountForm: React.FC = () => {
 					<Form.Item
 						name="major"
 						label={<FormLabel text="Major" isRequired isBold />}
-						rules={[{ required: true, message: "Please select your major" }]}
+						rules={[{ required: true, message: 'Please select your major' }]}
 					>
 						<Input disabled placeholder="Major" />
 					</Form.Item>
@@ -427,13 +427,13 @@ const StudentAccountForm: React.FC = () => {
 						name="phoneNumber"
 						label={<FormLabel text="Phone Number" isRequired isBold />}
 						rules={[
-							{ required: true, message: "Please enter your phone number" },
+							{ required: true, message: 'Please enter your phone number' },
 							{
 								validator: async (_, value) => {
 									if (!value) return;
 									if (!isValidVietnamesePhone(value)) {
 										throw new Error(
-											"Please enter a valid Vietnamese phone number",
+											'Please enter a valid Vietnamese phone number',
 										);
 									}
 								},
@@ -450,7 +450,7 @@ const StudentAccountForm: React.FC = () => {
 					<Form.Item
 						name="gender"
 						label={<FormLabel text="Gender" isRequired isBold />}
-						rules={[{ required: true, message: "Please select gender" }]}
+						rules={[{ required: true, message: 'Please select gender' }]}
 					>
 						<Radio.Group disabled={updatingProfile}>
 							<Radio value="Male">Male</Radio>

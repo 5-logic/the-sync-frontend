@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import { Card, Col, Row, Space, Typography } from "antd";
-import { memo } from "react";
+import { Card, Col, Row, Space, Typography } from 'antd';
+import { memo } from 'react';
 
-import CardLoadingSkeleton from "@/components/common/loading/CardLoadingSkeleton";
-import LecturerProgressOverviewCard from "@/components/features/lecturer/GroupProgess/LecturerProgressOverviewCard";
-import GroupInfoCard from "@/components/features/student/GroupDashboard/GroupInfoCard";
-import SupervisorInfoCard from "@/components/features/student/GroupDashboard/SupervisorInfoCard";
-import ThesisStatusCard from "@/components/features/student/GroupDashboard/ThesisStatusCard";
-import { SupervisedGroup } from "@/lib/services/groups.service";
-import { GroupDashboard } from "@/schemas/group";
-import { Milestone } from "@/schemas/milestone";
+import CardLoadingSkeleton from '@/components/common/loading/CardLoadingSkeleton';
+import LecturerProgressOverviewCard from '@/components/features/lecturer/GroupProgess/LecturerProgressOverviewCard';
+import GroupInfoCard from '@/components/features/student/GroupDashboard/GroupInfoCard';
+import SupervisorInfoCard from '@/components/features/student/GroupDashboard/SupervisorInfoCard';
+import ThesisStatusCard from '@/components/features/student/GroupDashboard/ThesisStatusCard';
+import { SupervisedGroup } from '@/lib/services/groups.service';
+import { GroupDashboard } from '@/schemas/group';
+import { Milestone } from '@/schemas/milestone';
 
 const { Title } = Typography;
 
@@ -36,7 +36,7 @@ function convertSupervisedGroupToGroupDashboard(
 		id: supervisedGroup.id,
 		name: supervisedGroup.name,
 		code: supervisedGroup.code,
-		projectDirection: supervisedGroup.projectDirection || "",
+		projectDirection: supervisedGroup.projectDirection || '',
 		createdAt: supervisedGroup.createdAt,
 		updatedAt: supervisedGroup.updatedAt,
 		semester: {
@@ -44,41 +44,41 @@ function convertSupervisedGroupToGroupDashboard(
 			name: supervisedGroup.semester.name,
 			code: supervisedGroup.semester.code,
 			status: supervisedGroup.semester.status as
-				| "NotYet"
-				| "Preparing"
-				| "Picking"
-				| "Ongoing"
-				| "End",
+				| 'NotYet'
+				| 'Preparing'
+				| 'Picking'
+				| 'Ongoing'
+				| 'End',
 			defaultThesesPerLecturer:
 				supervisedGroup.semester.defaultThesesPerLecturer,
 			maxThesesPerLecturer: supervisedGroup.semester.maxThesesPerLecturer,
 		},
 		thesis: supervisedGroup.thesis,
 		leader: {
-			userId: leaderParticipation?.student?.user?.id || "",
-			studentCode: leaderParticipation?.student?.studentCode || "",
+			userId: leaderParticipation?.student?.user?.id || '',
+			studentCode: leaderParticipation?.student?.studentCode || '',
 			user: {
-				id: leaderParticipation?.student?.user?.id || "",
+				id: leaderParticipation?.student?.user?.id || '',
 				createdAt: new Date(
-					leaderParticipation?.student?.user?.createdAt || "",
+					leaderParticipation?.student?.user?.createdAt || '',
 				),
 				updatedAt: new Date(
-					leaderParticipation?.student?.user?.updatedAt || "",
+					leaderParticipation?.student?.user?.updatedAt || '',
 				),
-				fullName: leaderParticipation?.student?.user?.fullName || "Unknown",
-				email: leaderParticipation?.student?.user?.email || "",
+				fullName: leaderParticipation?.student?.user?.fullName || 'Unknown',
+				email: leaderParticipation?.student?.user?.email || '',
 				gender:
-					(leaderParticipation?.student?.user?.gender as "Male" | "Female") ||
-					"Male",
-				phoneNumber: leaderParticipation?.student?.user?.phoneNumber || "",
+					(leaderParticipation?.student?.user?.gender as 'Male' | 'Female') ||
+					'Male',
+				phoneNumber: leaderParticipation?.student?.user?.phoneNumber || '',
 				isActive: leaderParticipation?.student?.user?.isActive || true,
 			},
 			major: leaderParticipation?.student?.major || {
-				id: "",
-				name: "Unknown",
-				code: "",
-				createdAt: "",
-				updatedAt: "",
+				id: '',
+				name: 'Unknown',
+				code: '',
+				createdAt: '',
+				updatedAt: '',
 			},
 			isLeader: true,
 		},
@@ -92,7 +92,7 @@ function convertSupervisedGroupToGroupDashboard(
 					updatedAt: new Date(participation.student.user.updatedAt),
 					fullName: participation.student.user.fullName,
 					email: participation.student.user.email,
-					gender: participation.student.user.gender as "Male" | "Female",
+					gender: participation.student.user.gender as 'Male' | 'Female',
 					phoneNumber: participation.student.user.phoneNumber,
 					isActive: participation.student.user.isActive,
 				},
@@ -106,11 +106,11 @@ function convertSupervisedGroupToGroupDashboard(
 				name: supervisedGroup.semester.name,
 				code: supervisedGroup.semester.code,
 				status: supervisedGroup.semester.status as
-					| "NotYet"
-					| "Preparing"
-					| "Picking"
-					| "Ongoing"
-					| "End",
+					| 'NotYet'
+					| 'Preparing'
+					| 'Picking'
+					| 'Ongoing'
+					| 'End',
 				defaultThesesPerLecturer:
 					supervisedGroup.semester.defaultThesesPerLecturer,
 				maxThesesPerLecturer: supervisedGroup.semester.maxThesesPerLecturer,
@@ -131,7 +131,7 @@ function GroupDetailCard({
 	}
 
 	// Check if it's a SupervisedGroup or regular GroupDashboard
-	const isSupervisedGroup = "studentGroupParticipations" in group;
+	const isSupervisedGroup = 'studentGroupParticipations' in group;
 
 	// Convert SupervisedGroup to GroupDashboard if needed for compatibility
 	const groupDashboard: GroupDashboard = isSupervisedGroup
@@ -155,7 +155,7 @@ function GroupDetailCard({
 			<Row gutter={[16, 16]}>
 				{/* Left Column - Group Information and Supervisor Information */}
 				<Col xs={24} lg={12}>
-					<Space direction="vertical" size="middle" style={{ width: "100%" }}>
+					<Space direction="vertical" size="middle" style={{ width: '100%' }}>
 						{/* Group Information */}
 						<GroupInfoCard group={groupDashboard} viewOnly={true} />
 
@@ -164,7 +164,7 @@ function GroupDetailCard({
 							<SupervisorInfoCard thesisId={thesisId} />
 						) : (
 							<Card title="Supervisor Information">
-								<div style={{ textAlign: "center", color: "#999" }}>
+								<div style={{ textAlign: 'center', color: '#999' }}>
 									No supervisor assigned yet
 								</div>
 							</Card>
@@ -174,7 +174,7 @@ function GroupDetailCard({
 
 				{/* Right Column - Thesis Status and Progress Overview */}
 				<Col xs={24} lg={12}>
-					<Space direction="vertical" size="middle" style={{ width: "100%" }}>
+					<Space direction="vertical" size="middle" style={{ width: '100%' }}>
 						{/* Thesis Status - Use ThesisStatusCard with direct data */}
 						{(() => {
 							if (isSupervisedGroup && hasThesis) {
@@ -190,7 +190,7 @@ function GroupDetailCard({
 							if (hasThesis) {
 								return (
 									<Card title="Thesis Status">
-										<div style={{ textAlign: "center", color: "#999" }}>
+										<div style={{ textAlign: 'center', color: '#999' }}>
 											Thesis information not available
 										</div>
 									</Card>
@@ -199,7 +199,7 @@ function GroupDetailCard({
 
 							return (
 								<Card title="Thesis Status">
-									<div style={{ textAlign: "center", color: "#999" }}>
+									<div style={{ textAlign: 'center', color: '#999' }}>
 										No thesis assigned yet
 									</div>
 								</Card>

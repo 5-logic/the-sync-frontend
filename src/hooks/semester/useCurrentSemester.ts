@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
+import { useSession } from 'next-auth/react';
+import { useEffect, useState } from 'react';
 
-import { Semester } from "@/schemas/semester";
-import { useSemesterStore } from "@/store";
-import studentsService from "@/lib/services/students.service";
-import { handleApiResponse } from "@/lib/utils/handleApi";
+import studentsService from '@/lib/services/students.service';
+import { handleApiResponse } from '@/lib/utils/handleApi';
+import { Semester } from '@/schemas/semester';
+import { useSemesterStore } from '@/store';
 
 /**
  * Hook to get current semester with different logic based on user role:
@@ -38,12 +38,12 @@ export const useCurrentSemester = () => {
 			setLoading(true);
 
 			try {
-				if (session.user.role === "student") {
+				if (session.user.role === 'student') {
 					// For students: Get semester from enrollment
 					const studentResponse = await studentsService.findOne(
 						session.user.id,
 					);
-					const studentResult = handleApiResponse(studentResponse, "Success");
+					const studentResult = handleApiResponse(studentResponse, 'Success');
 
 					if (studentResult.success && studentResult.data?.enrollments?.[0]) {
 						const enrollmentSemester =
@@ -58,7 +58,7 @@ export const useCurrentSemester = () => {
 					}
 				} else {
 					// For other roles: Priority order: Ongoing -> Picking -> Preparing
-					const priorityOrder = ["Ongoing", "Picking", "Preparing"];
+					const priorityOrder = ['Ongoing', 'Picking', 'Preparing'];
 
 					for (const status of priorityOrder) {
 						const semester = semesters.find((sem) => sem.status === status);
@@ -69,11 +69,11 @@ export const useCurrentSemester = () => {
 					}
 
 					// Also find preparing semester for special case handling
-					const preparing = semesters.find((sem) => sem.status === "Preparing");
+					const preparing = semesters.find((sem) => sem.status === 'Preparing');
 					setPreparingSemester(preparing || null);
 				}
 			} catch (error) {
-				console.error("Error getting current semester:", error);
+				console.error('Error getting current semester:', error);
 				setCurrentSemester(null);
 			} finally {
 				setLoading(false);
@@ -85,10 +85,10 @@ export const useCurrentSemester = () => {
 
 	// Check if we have special case: Ongoing semester with scope locked phase + Preparing semester
 	const hasPreparingNext =
-		currentSemester?.status === "Ongoing" &&
-		currentSemester?.ongoingPhase === "ScopeLocked" &&
+		currentSemester?.status === 'Ongoing' &&
+		currentSemester?.ongoingPhase === 'ScopeLocked' &&
 		preparingSemester &&
-		session?.user?.role !== "student";
+		session?.user?.role !== 'student';
 
 	return {
 		currentSemester,

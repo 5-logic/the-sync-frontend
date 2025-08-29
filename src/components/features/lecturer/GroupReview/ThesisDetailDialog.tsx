@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { Modal, Spin, Typography } from "antd";
-import React, { useEffect } from "react";
+import { Modal, Spin, Typography } from 'antd';
+import React, { useEffect } from 'react';
 
-import ThesisInfoCard from "@/components/features/lecturer/ViewThesisDetail/ThesisInfoCard";
-import { useThesisDetail } from "@/hooks/thesis";
-import { showNotification } from "@/lib/utils/notification";
+import ThesisInfoCard from '@/components/features/lecturer/ViewThesisDetail/ThesisInfoCard';
+import { useThesisDetail } from '@/hooks/thesis';
+import { showNotification } from '@/lib/utils/notification';
 
 const { Text } = Typography;
 
@@ -25,7 +25,7 @@ export default function ThesisDetailDialog({
 	useEffect(() => {
 		if (error) {
 			showNotification.error(
-				"Error",
+				'Error',
 				`Failed to load thesis details: ${error}`,
 			);
 		}
@@ -35,9 +35,9 @@ export default function ThesisDetailDialog({
 	const renderContent = () => {
 		if (loading) {
 			return (
-				<div style={{ textAlign: "center", padding: "20px" }}>
+				<div style={{ textAlign: 'center', padding: '20px' }}>
 					<Spin size="large" />
-					<Text style={{ display: "block", marginTop: "10px" }}>
+					<Text style={{ display: 'block', marginTop: '10px' }}>
 						Loading thesis details...
 					</Text>
 				</div>
@@ -49,8 +49,8 @@ export default function ThesisDetailDialog({
 		}
 
 		return (
-			<div style={{ textAlign: "center", padding: "20px" }}>
-				<Text type="danger">{error || "Failed to load thesis details"}</Text>
+			<div style={{ textAlign: 'center', padding: '20px' }}>
+				<Text type="danger">{error || 'Failed to load thesis details'}</Text>
 			</div>
 		);
 	};

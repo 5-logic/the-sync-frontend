@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useState } from 'react';
 
 import reviewsService, {
 	AssignedReview,
@@ -7,10 +7,10 @@ import reviewsService, {
 	SubmitReviewRequest,
 	SubmittedReview,
 	UpdateReviewRequest,
-} from "@/lib/services/reviews.service";
-import supervisionService from "@/lib/services/supervisions.service";
-import { handleApiResponse } from "@/lib/utils/handleApi";
-import { handleAsyncError } from "@/lib/utils/errorHandling";
+} from '@/lib/services/reviews.service';
+import supervisionService from '@/lib/services/supervisions.service';
+import { handleAsyncError } from '@/lib/utils/errorHandling';
+import { handleApiResponse } from '@/lib/utils/handleApi';
 
 interface Supervisor {
 	lecturerId: string;
@@ -64,7 +64,7 @@ export function useReviews(): UseReviewsReturn {
 
 			if (!result.success) {
 				throw new Error(
-					result.error?.message || "Failed to fetch assigned reviews",
+					result.error?.message || 'Failed to fetch assigned reviews',
 				);
 			}
 
@@ -73,8 +73,8 @@ export function useReviews(): UseReviewsReturn {
 		} catch (error) {
 			const errorMessage = handleAsyncError(
 				error,
-				"Failed to fetch assigned reviews",
-				"fetchAssignedReviews",
+				'Failed to fetch assigned reviews',
+				'fetchAssignedReviews',
 			);
 			setError(errorMessage);
 		} finally {
@@ -90,14 +90,14 @@ export function useReviews(): UseReviewsReturn {
 
 				if (!result.success) {
 					throw new Error(
-						result.error?.message || "Failed to fetch thesis supervisors",
+						result.error?.message || 'Failed to fetch thesis supervisors',
 					);
 				}
 
 				const data = result.data || [];
 				return data;
 			} catch (error) {
-				console.error("Error fetching thesis supervisors:", error);
+				console.error('Error fetching thesis supervisors:', error);
 				return [];
 			}
 		},
@@ -113,15 +113,15 @@ export function useReviews(): UseReviewsReturn {
 			const result = handleApiResponse(response);
 
 			if (!result.success) {
-				throw new Error(result.error?.message || "Failed to fetch review form");
+				throw new Error(result.error?.message || 'Failed to fetch review form');
 			}
 
 			setReviewForm(result.data || null);
 		} catch (error) {
 			const errorMessage = handleAsyncError(
 				error,
-				"Failed to fetch review form",
-				"fetchReviewForm",
+				'Failed to fetch review form',
+				'fetchReviewForm',
 			);
 			setError(errorMessage);
 		} finally {
@@ -145,15 +145,15 @@ export function useReviews(): UseReviewsReturn {
 				const result = handleApiResponse(response);
 
 				if (!result.success) {
-					throw new Error(result.error?.message || "Failed to submit review");
+					throw new Error(result.error?.message || 'Failed to submit review');
 				}
 
 				return result.data || null;
 			} catch (error) {
 				const errorMessage = handleAsyncError(
 					error,
-					"Failed to submit review",
-					"submitReview",
+					'Failed to submit review',
+					'submitReview',
 				);
 				setError(errorMessage);
 				return null;
@@ -174,7 +174,7 @@ export function useReviews(): UseReviewsReturn {
 
 			if (!result.success) {
 				throw new Error(
-					result.error?.message || "Failed to fetch submission reviews",
+					result.error?.message || 'Failed to fetch submission reviews',
 				);
 			}
 
@@ -182,8 +182,8 @@ export function useReviews(): UseReviewsReturn {
 		} catch (error) {
 			const errorMessage = handleAsyncError(
 				error,
-				"Failed to fetch submission reviews",
-				"fetchSubmissionReviews",
+				'Failed to fetch submission reviews',
+				'fetchSubmissionReviews',
 			);
 			setError(errorMessage);
 		} finally {
@@ -207,15 +207,15 @@ export function useReviews(): UseReviewsReturn {
 				const result = handleApiResponse(response);
 
 				if (!result.success) {
-					throw new Error(result.error?.message || "Failed to update review");
+					throw new Error(result.error?.message || 'Failed to update review');
 				}
 
 				return result.data || null;
 			} catch (error) {
 				const errorMessage = handleAsyncError(
 					error,
-					"Failed to update review",
-					"updateReview",
+					'Failed to update review',
+					'updateReview',
 				);
 				setError(errorMessage);
 				return null;

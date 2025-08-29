@@ -1,15 +1,14 @@
 /**
  * UI Constants and utilities
  */
-
-import { ChecklistReviewAcceptance } from "@/schemas/_enums";
+import { ChecklistReviewAcceptance } from '@/schemas/_enums';
 
 /**
  * Priority color mapping for checklist items
  */
 export const PRIORITY_COLORS = {
-	Mandatory: "red",
-	Optional: "blue",
+	Mandatory: 'red',
+	Optional: 'blue',
 } as const;
 
 /**
@@ -18,7 +17,7 @@ export const PRIORITY_COLORS = {
  * @returns Object with label and color
  */
 export const getPriorityConfig = (isRequired: boolean) => {
-	const label = isRequired ? "Mandatory" : "Optional";
+	const label = isRequired ? 'Mandatory' : 'Optional';
 	const color = PRIORITY_COLORS[label];
 	return { label, color };
 };
@@ -76,11 +75,11 @@ export const getAnsweredItems = (
  * Common responsive breakpoints for tables
  */
 export const TABLE_RESPONSIVE = {
-	xs: ["xs"],
-	sm: ["sm", "md", "lg", "xl"],
-	md: ["md", "lg", "xl"],
-	lg: ["lg", "xl"],
-	all: ["xs", "sm", "md", "lg", "xl"],
+	xs: ['xs'],
+	sm: ['sm', 'md', 'lg', 'xl'],
+	md: ['md', 'lg', 'xl'],
+	lg: ['lg', 'xl'],
+	all: ['xs', 'sm', 'md', 'lg', 'xl'],
 } as const;
 
 /**
@@ -94,5 +93,5 @@ export const DEFAULT_TABLE_CONFIG = {
 			`${range[0]}-${range[1]} of ${total} items`,
 	},
 	scroll: { x: 800 },
-	size: "middle" as const,
+	size: 'middle' as const,
 } as const;

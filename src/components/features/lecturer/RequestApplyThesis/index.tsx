@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { Space } from "antd";
-import { useEffect } from "react";
+import { Space } from 'antd';
+import { useEffect } from 'react';
 
-import { Header } from "@/components/common/Header";
-import RequestApplyThesisTable from "@/components/features/lecturer/RequestApplyThesis/RequestApplyThesisTable";
-import { useThesisRequests } from "@/hooks/lecturer/useThesisRequests";
+import { Header } from '@/components/common/Header';
+import RequestApplyThesisTable from '@/components/features/lecturer/RequestApplyThesis/RequestApplyThesisTable';
+import { useThesisRequests } from '@/hooks/lecturer/useThesisRequests';
 
 export default function RequestApplyThesis() {
 	const {
@@ -21,7 +21,7 @@ export default function RequestApplyThesis() {
 	}, [fetchThesisRequests]);
 
 	return (
-		<Space direction="vertical" size="large" style={{ width: "100%" }}>
+		<Space direction="vertical" size="large" style={{ width: '100%' }}>
 			<Header
 				title="Request Apply Thesis"
 				description="Review and manage thesis application requests from student groups. Approve or reject applications to assign theses to groups."

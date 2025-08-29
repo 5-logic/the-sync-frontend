@@ -1,15 +1,16 @@
-"use client";
+'use client';
 
-import { Modal, Descriptions, Tag, Typography } from "antd";
-import { ThesisWithRequests } from "@/types/thesis-requests";
-import { getOrientationDisplay } from "@/lib/constants/orientation";
+import { Descriptions, Modal, Tag, Typography } from 'antd';
+
+import { getOrientationDisplay } from '@/lib/constants/orientation';
+import { ThesisWithRequests } from '@/types/thesis-requests';
 
 const { Paragraph, Title } = Typography;
 
 interface Props {
 	readonly open: boolean;
 	readonly onClose: () => void;
-	readonly thesis: ThesisWithRequests["thesis"] | null;
+	readonly thesis: ThesisWithRequests['thesis'] | null;
 }
 
 export default function ThesisDetailModal({ open, onClose, thesis }: Props) {
@@ -17,14 +18,14 @@ export default function ThesisDetailModal({ open, onClose, thesis }: Props) {
 
 	const getStatusColor = (status: string) => {
 		switch (status) {
-			case "Approved":
-				return "success";
-			case "Rejected":
-				return "error";
-			case "Pending":
-				return "warning";
+			case 'Approved':
+				return 'success';
+			case 'Rejected':
+				return 'error';
+			case 'Pending':
+				return 'warning';
 			default:
-				return "default";
+				return 'default';
 		}
 	};
 
@@ -65,8 +66,8 @@ export default function ThesisDetailModal({ open, onClose, thesis }: Props) {
 					<Tag color={getStatusColor(thesis.status)}>{thesis.status}</Tag>
 				</Descriptions.Item>
 				<Descriptions.Item label="Published">
-					<Tag color={thesis.isPublish ? "success" : "error"}>
-						{thesis.isPublish ? "Yes" : "No"}
+					<Tag color={thesis.isPublish ? 'success' : 'error'}>
+						{thesis.isPublish ? 'Yes' : 'No'}
 					</Tag>
 				</Descriptions.Item>
 				<Descriptions.Item label="Lecturer">
@@ -74,8 +75,8 @@ export default function ThesisDetailModal({ open, onClose, thesis }: Props) {
 						<div>
 							<strong>{thesis.lecturer.user.fullName}</strong>
 						</div>
-						<div style={{ color: "#666" }}>{thesis.lecturer.user.email}</div>
-						<div style={{ color: "#666" }}>
+						<div style={{ color: '#666' }}>{thesis.lecturer.user.email}</div>
+						<div style={{ color: '#666' }}>
 							{thesis.lecturer.user.phoneNumber}
 						</div>
 						{thesis.lecturer.isModerator && (
@@ -90,17 +91,17 @@ export default function ThesisDetailModal({ open, onClose, thesis }: Props) {
 						<div>
 							<strong>{thesis.semester.name}</strong> ({thesis.semester.code})
 						</div>
-						<div style={{ color: "#666" }}>
+						<div style={{ color: '#666' }}>
 							Status: {thesis.semester.status}
 						</div>
-						<div style={{ color: "#666" }}>
-							Max Theses: {thesis.semester.defaultThesesPerLecturer} /{" "}
+						<div style={{ color: '#666' }}>
+							Max Theses: {thesis.semester.defaultThesesPerLecturer} /{' '}
 							{thesis.semester.maxThesesPerLecturer}
 						</div>
 					</div>
 				</Descriptions.Item>
 				<Descriptions.Item label="Description">
-					<Paragraph style={{ whiteSpace: "pre-wrap", marginBottom: 0 }}>
+					<Paragraph style={{ whiteSpace: 'pre-wrap', marginBottom: 0 }}>
 						{thesis.description}
 					</Paragraph>
 				</Descriptions.Item>

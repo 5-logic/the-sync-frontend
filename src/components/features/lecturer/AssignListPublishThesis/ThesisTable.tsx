@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import { EyeOutlined } from "@ant-design/icons";
-import { Button, Switch, Table, Tag, Tooltip } from "antd";
-import type { ColumnsType } from "antd/es/table";
-import { TableRowSelection } from "antd/es/table/interface";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { EyeOutlined } from '@ant-design/icons';
+import { Button, Switch, Table, Tag, Tooltip } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
+import { TableRowSelection } from 'antd/es/table/interface';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
-import { ThesisConfirmationModals } from "@/components/common/ConfirmModal";
-import { TablePagination } from "@/components/common/TablePagination";
-import { getSemesterTagColor } from "@/lib/utils/colorUtils";
-import { showNotification } from "@/lib/utils/notification";
-import { ThesisWithLecturer } from "@/store/usePublishThesesStore";
+import { ThesisConfirmationModals } from '@/components/common/ConfirmModal';
+import { TablePagination } from '@/components/common/TablePagination';
+import { getSemesterTagColor } from '@/lib/utils/colorUtils';
+import { showNotification } from '@/lib/utils/notification';
+import { ThesisWithLecturer } from '@/store/usePublishThesesStore';
 
 interface Props {
 	readonly theses: ThesisWithLecturer[];
@@ -79,8 +79,8 @@ export default function ThesisTable({
 		const isUnpublishing = thesis.isPublish && !newValue;
 		if (isUnpublishing && thesis.groupId) {
 			showNotification.warning(
-				"Cannot Unpublish",
-				"This thesis cannot be unpublished because it has been assigned to a student group.",
+				'Cannot Unpublish',
+				'This thesis cannot be unpublished because it has been assigned to a student group.',
 			);
 			return;
 		}
@@ -96,9 +96,9 @@ export default function ThesisTable({
 					const success = await onTogglePublish(id);
 
 					if (success) {
-						const statusText = newValue ? "published" : "unpublished";
+						const statusText = newValue ? 'published' : 'unpublished';
 						showNotification.success(
-							"Publish Status Updated",
+							'Publish Status Updated',
 							`Thesis ${statusText} successfully`,
 						);
 
@@ -183,13 +183,13 @@ export default function ThesisTable({
 		<Tooltip title={text} placement="topLeft">
 			<div
 				style={{
-					display: "-webkit-box",
+					display: '-webkit-box',
 					WebkitLineClamp: 2,
-					WebkitBoxOrient: "vertical",
-					overflow: "hidden",
-					textOverflow: "ellipsis",
-					lineHeight: "1.4",
-					maxHeight: "2.8em",
+					WebkitBoxOrient: 'vertical',
+					overflow: 'hidden',
+					textOverflow: 'ellipsis',
+					lineHeight: '1.4',
+					maxHeight: '2.8em',
 				}}
 			>
 				{text}
@@ -199,45 +199,45 @@ export default function ThesisTable({
 
 	const columns: ColumnsType<ThesisWithLecturer> = [
 		{
-			title: "English Name",
-			dataIndex: "englishName",
-			key: "englishName",
-			width: "40%",
+			title: 'English Name',
+			dataIndex: 'englishName',
+			key: 'englishName',
+			width: '40%',
 			render: (text: string) => renderThesisName(text),
 		},
 		{
-			title: "Semester",
-			key: "semester",
+			title: 'Semester',
+			key: 'semester',
 			render: (_, record) => {
-				const semesterName = record.semesterName || "Unknown";
+				const semesterName = record.semesterName || 'Unknown';
 				const color = getSemesterTagColor(semesterName);
 
 				return <Tag color={color}>{semesterName}</Tag>;
 			},
-			width: "15%",
+			width: '15%',
 		},
 		{
-			title: "Lecturer",
-			key: "lecturer",
+			title: 'Lecturer',
+			key: 'lecturer',
 			render: (_, record) => {
-				const trimmedName = (record.lecturerName ?? "").trim();
-				return trimmedName !== "" ? trimmedName : "Unknown";
+				const trimmedName = (record.lecturerName ?? '').trim();
+				return trimmedName !== '' ? trimmedName : 'Unknown';
 			},
-			width: "15%",
+			width: '15%',
 		},
 		{
-			title: "Public Access",
-			key: "publicAccess",
+			title: 'Public Access',
+			key: 'publicAccess',
 			render: (_, record) => renderSwitch(record),
-			width: "15%",
-			align: "center",
+			width: '15%',
+			align: 'center',
 		},
 		{
-			title: "Actions",
-			key: "actions",
+			title: 'Actions',
+			key: 'actions',
 			render: (_, record) => renderViewButton(record),
-			width: "10%",
-			align: "center",
+			width: '10%',
+			align: 'center',
 		},
 	];
 
@@ -258,7 +258,7 @@ export default function ThesisTable({
 			loading={loading}
 			rowSelection={rowSelection}
 			pagination={TablePagination}
-			scroll={{ x: "100%" }}
+			scroll={{ x: '100%' }}
 		/>
 	);
 }

@@ -1,14 +1,15 @@
-"use client";
+'use client';
 
-import { Modal, Typography, Space, Tag, List, Divider } from "antd";
-import { UserOutlined } from "@ant-design/icons";
-import { ThesisApplication } from "@/lib/services/thesis-application.service";
-import { ThesisRequest } from "@/types/thesis-requests";
+import { UserOutlined } from '@ant-design/icons';
+import { Divider, List, Modal, Space, Tag, Typography } from 'antd';
+
+import { ThesisApplication } from '@/lib/services/thesis-application.service';
+import { ThesisRequest } from '@/types/thesis-requests';
 
 const { Title, Text } = Typography;
 
 interface Props {
-	group: ThesisApplication["group"] | ThesisRequest["group"] | null;
+	group: ThesisApplication['group'] | ThesisRequest['group'] | null;
 	open: boolean;
 	onClose: () => void;
 }
@@ -31,7 +32,7 @@ export default function GroupDetailModal({
 			width={700}
 			destroyOnClose
 		>
-			<Space direction="vertical" size="large" style={{ width: "100%" }}>
+			<Space direction="vertical" size="large" style={{ width: '100%' }}>
 				{/* Group Name and Code */}
 				<div>
 					<Title level={4} style={{ marginBottom: 8 }}>
@@ -39,9 +40,9 @@ export default function GroupDetailModal({
 					</Title>
 					<div
 						style={{
-							display: "flex",
-							justifyContent: "space-between",
-							alignItems: "center",
+							display: 'flex',
+							justifyContent: 'space-between',
+							alignItems: 'center',
 						}}
 					>
 						<div>
@@ -70,9 +71,9 @@ export default function GroupDetailModal({
 										title={
 											<div
 												style={{
-													display: "flex",
-													justifyContent: "space-between",
-													alignItems: "center",
+													display: 'flex',
+													justifyContent: 'space-between',
+													alignItems: 'center',
 												}}
 											>
 												<div>
@@ -97,8 +98,8 @@ export default function GroupDetailModal({
 												</Text>
 												<br />
 												<Text type="secondary">
-													Phone:{" "}
-													{participation.student.user.phoneNumber || "N/A"}
+													Phone:{' '}
+													{participation.student.user.phoneNumber || 'N/A'}
 												</Text>
 												<br />
 												<Text type="secondary">

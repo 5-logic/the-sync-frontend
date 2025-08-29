@@ -1,10 +1,10 @@
-import { ThesisOrientation } from "@/schemas/_enums";
+import { ThesisOrientation } from '@/schemas/_enums';
 
 // Types for the new thesis requests API structure
 export interface ThesisRequest {
 	groupId: string;
 	thesisId: string;
-	status: "Pending" | "Approved" | "Rejected";
+	status: 'Pending' | 'Approved' | 'Rejected';
 	createdAt: string;
 	updatedAt: string;
 	group: {

@@ -1,15 +1,15 @@
-import { UserOutlined } from "@ant-design/icons";
-import { Button, Card, Grid, Space, Tag, Typography } from "antd";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { UserOutlined } from '@ant-design/icons';
+import { Button, Card, Grid, Space, Tag, Typography } from 'antd';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
-import { GroupConfirmationModals } from "@/components/common/ConfirmModal";
-import { DOMAIN_COLOR_MAP } from "@/lib/constants/domains";
+import { GroupConfirmationModals } from '@/components/common/ConfirmModal';
+import { DOMAIN_COLOR_MAP } from '@/lib/constants/domains';
 import requestService, {
 	type GroupRequest,
-} from "@/lib/services/requests.service";
-import { showNotification } from "@/lib/utils/notification";
-import { useGroupDashboardStore } from "@/store/useGroupDashboardStore";
+} from '@/lib/services/requests.service';
+import { showNotification } from '@/lib/utils/notification';
+import { useGroupDashboardStore } from '@/store/useGroupDashboardStore';
 
 const { Text } = Typography;
 const { useBreakpoint } = Grid;
@@ -73,14 +73,14 @@ export default function GroupCard({
 		hasPendingJoinRequest: existingRequests.some(
 			(request) =>
 				request.groupId === group.id &&
-				request.type === "Join" &&
-				request.status === "Pending",
+				request.type === 'Join' &&
+				request.status === 'Pending',
 		),
 		hasPendingInviteRequest: existingRequests.some(
 			(request) =>
 				request.groupId === group.id &&
-				request.type === "Invite" &&
-				request.status === "Pending",
+				request.type === 'Invite' &&
+				request.status === 'Pending',
 		),
 		isGroupFull: group.members >= 5,
 		hasNoMembers: group.members <= 0,
@@ -89,8 +89,8 @@ export default function GroupCard({
 	// Consolidated function to handle successful group join/approval
 	const handleJoinSuccess = async () => {
 		showNotification.success(
-			"Success",
-			"You have successfully joined the group!",
+			'Success',
+			'You have successfully joined the group!',
 		);
 		onRequestSent?.();
 
@@ -105,7 +105,7 @@ export default function GroupCard({
 		await refreshGroup();
 
 		// Redirect to group dashboard
-		router.push("/student/group-dashboard");
+		router.push('/student/group-dashboard');
 	};
 
 	const handleJoinRequest = () => {
@@ -125,8 +125,8 @@ export default function GroupCard({
 						} else {
 							// Request created
 							showNotification.success(
-								"Success",
-								"Join request sent successfully! The group leader will review your request.",
+								'Success',
+								'Join request sent successfully! The group leader will review your request.',
 							);
 							onRequestSent?.();
 						}
@@ -135,8 +135,8 @@ export default function GroupCard({
 						const errorMessage =
 							apiError?.response?.data?.error ||
 							(error as Error)?.message ||
-							"Failed to join the group. Please try again.";
-						showNotification.error("Error", errorMessage);
+							'Failed to join the group. Please try again.';
+						showNotification.error('Error', errorMessage);
 					} finally {
 						setIsRequesting(false);
 					}
@@ -153,14 +153,14 @@ export default function GroupCard({
 						const response = await requestService.joinGroup(group.id);
 
 						// Check response or request status to determine if directly joined
-						if (response.success && response.data?.status === "Approved") {
+						if (response.success && response.data?.status === 'Approved') {
 							// Direct join successful (auto-approved)
 							await handleJoinSuccess();
 						} else {
 							// Request created and pending
 							showNotification.success(
-								"Success",
-								"Join request sent successfully! The group leader will review your request.",
+								'Success',
+								'Join request sent successfully! The group leader will review your request.',
 							);
 							onRequestSent?.();
 						}
@@ -169,8 +169,8 @@ export default function GroupCard({
 						const errorMessage =
 							apiError?.response?.data?.error ||
 							(error as Error)?.message ||
-							"Failed to send join request. Please try again.";
-						showNotification.error("Error", errorMessage);
+							'Failed to send join request. Please try again.';
+						showNotification.error('Error', errorMessage);
 					} finally {
 						setIsRequesting(false);
 					}
@@ -195,9 +195,9 @@ export default function GroupCard({
 
 		if (hasPendingInviteRequest) {
 			return {
-				title: "You have been invited to this group - click to view details",
+				title: 'You have been invited to this group - click to view details',
 				ariaLabel: `You have been invited to ${group.name}`,
-				text: "View Invite",
+				text: 'View Invite',
 				clickHandler: handleViewDetail,
 				disabled: false,
 			};
@@ -205,9 +205,9 @@ export default function GroupCard({
 
 		if (hasPendingJoinRequest) {
 			return {
-				title: "Request already sent",
+				title: 'Request already sent',
 				ariaLabel: `Request already sent to ${group.name}`,
-				text: "Request Sent",
+				text: 'Request Sent',
 				clickHandler: undefined,
 				disabled: true,
 			};
@@ -215,9 +215,9 @@ export default function GroupCard({
 
 		if (isGroupFull) {
 			return {
-				title: "Group is full (5/5 members)",
+				title: 'Group is full (5/5 members)',
 				ariaLabel: `${group.name} is full`,
-				text: "Group Full",
+				text: 'Group Full',
 				clickHandler: undefined,
 				disabled: true,
 			};
@@ -225,18 +225,18 @@ export default function GroupCard({
 
 		if (hasNoMembers) {
 			return {
-				title: "Join this group directly",
+				title: 'Join this group directly',
 				ariaLabel: `Join ${group.name} directly`,
-				text: "Join Group",
+				text: 'Join Group',
 				clickHandler: handleJoinRequest,
 				disabled: false,
 			};
 		}
 
 		return {
-			title: "Request to Join",
+			title: 'Request to Join',
 			ariaLabel: `Request to join ${group.name}`,
-			text: "Request to Join",
+			text: 'Request to Join',
 			clickHandler: handleJoinRequest,
 			disabled: false,
 		};
@@ -245,19 +245,19 @@ export default function GroupCard({
 	// Consolidated styling functions
 	const getCardStyles = () => ({
 		borderRadius: CARD_CONFIG.BORDER_RADIUS,
-		width: "100%",
+		width: '100%',
 		minHeight: CARD_CONFIG.MIN_HEIGHT,
-		height: "100%",
-		display: "flex",
-		flexDirection: "column" as const,
+		height: '100%',
+		display: 'flex',
+		flexDirection: 'column' as const,
 	});
 
 	const getBodyStyles = () => ({
 		padding,
-		display: "flex",
-		flexDirection: "column" as const,
+		display: 'flex',
+		flexDirection: 'column' as const,
 		flex: 1,
-		justifyContent: "space-between",
+		justifyContent: 'space-between',
 	});
 
 	// Consolidated text styles with common properties
@@ -269,18 +269,18 @@ export default function GroupCard({
 		color?: string,
 	) => ({
 		fontSize: size,
-		fontWeight: fontWeight || "normal",
+		fontWeight: fontWeight || 'normal',
 		lineHeight,
-		overflow: "hidden",
-		display: "-webkit-box",
+		overflow: 'hidden',
+		display: '-webkit-box',
 		WebkitLineClamp: lineClamp,
-		WebkitBoxOrient: "vertical" as const,
-		textOverflow: "ellipsis",
-		wordBreak: "break-word" as const,
+		WebkitBoxOrient: 'vertical' as const,
+		textOverflow: 'ellipsis',
+		wordBreak: 'break-word' as const,
 		minHeight: `${size * lineHeight * lineClamp}px`,
 		maxHeight: `${size * lineHeight * lineClamp}px`,
-		whiteSpace: "normal" as const,
-		color: color || "inherit",
+		whiteSpace: 'normal' as const,
+		color: color || 'inherit',
 	});
 
 	const getTitleStyles = () => ({
@@ -291,7 +291,7 @@ export default function GroupCard({
 			TEXT_CONFIG.TITLE_LINE_HEIGHT,
 			TEXT_CONFIG.TITLE_LINE_CLAMP,
 			600,
-			"rgba(0, 0, 0, 0.88)",
+			'rgba(0, 0, 0, 0.88)',
 		),
 	});
 
@@ -301,7 +301,7 @@ export default function GroupCard({
 			TEXT_CONFIG.LEADER_LINE_HEIGHT,
 			TEXT_CONFIG.LEADER_LINE_CLAMP,
 			undefined,
-			"rgba(0, 0, 0, 0.45)",
+			'rgba(0, 0, 0, 0.45)',
 		);
 
 	const getButtonStyles = (
@@ -313,9 +313,9 @@ export default function GroupCard({
 		if (isPrimary) {
 			borderValue = undefined;
 		} else if (isDisabled) {
-			borderValue = "1px solid #d9d9d9";
+			borderValue = '1px solid #d9d9d9';
 		} else {
-			borderValue = "1px solid #222";
+			borderValue = '1px solid #222';
 		}
 
 		return {
@@ -324,10 +324,10 @@ export default function GroupCard({
 			fontWeight: 500,
 			fontSize: Math.min(fontSize - 1, 12),
 			height: CARD_CONFIG.BUTTON_HEIGHT,
-			lineHeight: "18px",
-			padding: "0 12px",
-			flex: "1 1 0",
-			minWidth: "120px",
+			lineHeight: '18px',
+			padding: '0 12px',
+			flex: '1 1 0',
+			minWidth: '120px',
 		};
 	};
 
@@ -336,13 +336,13 @@ export default function GroupCard({
 
 	return (
 		<Card hoverable style={getCardStyles()} bodyStyle={getBodyStyles()}>
-			<div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+			<div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
 				<div style={{ flex: 1 }}>
 					<div style={getTitleStyles()} title={group.name}>
 						{group.name}
 					</div>
 					<Tag
-						color={DOMAIN_COLOR_MAP[group.domain] || "default"}
+						color={DOMAIN_COLOR_MAP[group.domain] || 'default'}
 						style={{ fontSize: fontSize - 3, marginBottom: 8 }}
 					>
 						{group.domain}
@@ -352,7 +352,7 @@ export default function GroupCard({
 					</div>
 					<Space align="center" style={{ marginTop: 8 }}>
 						<UserOutlined
-							style={{ fontSize: fontSize - 1, color: "#bfbfbf" }}
+							style={{ fontSize: fontSize - 1, color: '#bfbfbf' }}
 						/>
 						<Text
 							type="secondary"
@@ -365,22 +365,22 @@ export default function GroupCard({
 				<div
 					style={{
 						marginTop: 16,
-						display: "flex",
-						flexDirection: "column",
+						display: 'flex',
+						flexDirection: 'column',
 						gap: 8,
 					}}
 				>
 					<div
 						style={{
-							display: "flex",
+							display: 'flex',
 							gap: 8,
-							flexWrap: "wrap",
+							flexWrap: 'wrap',
 						}}
 					>
 						<Button
 							style={getButtonStyles(false, hasNoMembers)}
 							title={
-								hasNoMembers ? "No members in this group" : "View Group Detail"
+								hasNoMembers ? 'No members in this group' : 'View Group Detail'
 							}
 							aria-label={
 								hasNoMembers

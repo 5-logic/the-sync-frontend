@@ -1,7 +1,7 @@
-import { z } from "zod";
+import { z } from 'zod';
 
-import { ThesisStatusSchema, ThesisOrientationSchema } from "@/schemas/_enums";
-import { SupervisionSchema, SupervisorInfoSchema } from "@/schemas/supervision";
+import { ThesisOrientationSchema, ThesisStatusSchema } from '@/schemas/_enums';
+import { SupervisionSchema, SupervisorInfoSchema } from '@/schemas/supervision';
 
 export const ThesisSchema = z.object({
 	id: z.string().uuid(),
@@ -80,7 +80,7 @@ export type ThesisVersionCreate = z.infer<typeof ThesisVersionCreateSchema>;
 export type ThesisVersionUpdate = z.infer<typeof ThesisVersionUpdateSchema>;
 
 // Re-export supervision-related types for convenience
-export type { Supervision, SupervisorInfo } from "@/schemas/supervision";
+export type { Supervision, SupervisorInfo } from '@/schemas/supervision';
 
 export const GroupInfoSchema = z.object({
 	id: z.string().uuid(),

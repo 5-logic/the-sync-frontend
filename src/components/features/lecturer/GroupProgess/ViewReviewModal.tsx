@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { Modal, Typography, Divider } from "antd";
+import { Divider, Modal, Typography } from 'antd';
 
-import { SubmissionReviewWithReviewer } from "@/lib/services/reviews.service";
+import { AssignedReviewersInfo } from '@/components/common/AssignedReviewersInfo';
 import {
-	ReviewerInfo,
 	ReviewDates,
-	ReviewItemsTable,
 	ReviewItemData,
-} from "@/components/common/ReviewComponents";
-import { AssignedReviewersInfo } from "@/components/common/AssignedReviewersInfo";
+	ReviewItemsTable,
+	ReviewerInfo,
+} from '@/components/common/ReviewComponents';
+import { SubmissionReviewWithReviewer } from '@/lib/services/reviews.service';
 
 const { Text } = Typography;
 
@@ -69,14 +69,14 @@ export default function ViewReviewModal({ open, onClose, review }: Props) {
 					<h4>General Feedback</h4>
 					<div
 						style={{
-							padding: "12px",
-							background: "#ffffffff",
-							border: "1px solid #f5f5f5",
-							borderRadius: "6px",
-							minHeight: "80px",
+							padding: '12px',
+							background: '#ffffffff',
+							border: '1px solid #f5f5f5',
+							borderRadius: '6px',
+							minHeight: '80px',
 						}}
 					>
-						<Text>{review.feedback || "No general feedback provided"}</Text>
+						<Text>{review.feedback || 'No general feedback provided'}</Text>
 					</div>
 				</div>
 

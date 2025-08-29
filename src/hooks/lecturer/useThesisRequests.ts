@@ -1,12 +1,12 @@
-import { useCallback, useState } from "react";
+import { useCallback, useState } from 'react';
 
-import { useCurrentSemester } from "@/hooks/semester";
-import { ThesisWithRequests } from "@/types/thesis-requests";
-import httpClient from "@/lib/services/_httpClient";
-import { thesisApplicationService } from "@/lib/services/thesis-application.service";
-import { ApiResponse } from "@/schemas/_common";
-import { handleApiResponse, handleApiError } from "@/lib/utils/handleApi";
-import { showNotification } from "@/lib/utils/notification";
+import { useCurrentSemester } from '@/hooks/semester';
+import httpClient from '@/lib/services/_httpClient';
+import { thesisApplicationService } from '@/lib/services/thesis-application.service';
+import { handleApiError, handleApiResponse } from '@/lib/utils/handleApi';
+import { showNotification } from '@/lib/utils/notification';
+import { ApiResponse } from '@/schemas/_common';
+import { ThesisWithRequests } from '@/types/thesis-requests';
 
 export const useThesisRequests = () => {
 	const [thesesWithRequests, setThesesWithRequests] = useState<
@@ -24,18 +24,18 @@ export const useThesisRequests = () => {
 			const response = await httpClient.get<ApiResponse<ThesisWithRequests[]>>(
 				`/thesis-application/${currentSemester.id}`,
 			);
-			const result = handleApiResponse(response.data, "Success");
+			const result = handleApiResponse(response.data, 'Success');
 
 			if (result.success && result.data) {
 				setThesesWithRequests(result.data);
 			}
 		} catch (error) {
-			console.error("Error fetching thesis requests:", error);
+			console.error('Error fetching thesis requests:', error);
 			const apiError = handleApiError(
 				error,
-				"Failed to fetch thesis requests.",
+				'Failed to fetch thesis requests.',
 			);
-			showNotification.error("Error", apiError.message);
+			showNotification.error('Error', apiError.message);
 		} finally {
 			setLoading(false);
 		}
@@ -46,7 +46,7 @@ export const useThesisRequests = () => {
 		async (
 			groupId: string,
 			thesisId: string,
-			status: "Approved" | "Rejected",
+			status: 'Approved' | 'Rejected',
 		) => {
 			try {
 				const result =
@@ -58,19 +58,19 @@ export const useThesisRequests = () => {
 
 				if (result.success) {
 					showNotification.success(
-						"Success",
+						'Success',
 						`Application ${status.toLowerCase()} successfully.`,
 					);
 					// Refresh data after status update
 					await fetchThesisRequests();
 				}
 			} catch (error) {
-				console.error("Error updating application status:", error);
+				console.error('Error updating application status:', error);
 				const apiError = handleApiError(
 					error,
-					"Failed to update application status.",
+					'Failed to update application status.',
 				);
-				showNotification.error("Error", apiError.message);
+				showNotification.error('Error', apiError.message);
 			}
 		},
 		[fetchThesisRequests],

@@ -1,18 +1,19 @@
-"use client";
+'use client';
 
-import React from "react";
-import { Space } from "antd";
-import { Header } from "@/components/common/Header";
-import { useGroupManagementRenderer } from "@/lib/utils/groupManagementRenderer";
+import { Space } from 'antd';
+import React from 'react';
+
+import { Header } from '@/components/common/Header';
+import { useGroupManagementRenderer } from '@/lib/utils/groupManagementRenderer';
 
 export default function GroupManagementPage() {
 	const { renderGroupAssignTable, renderUngroupedStudentsCard } =
 		useGroupManagementRenderer({
-			routePrefix: "/lecturer",
+			routePrefix: '/lecturer',
 		});
 
 	return (
-		<Space direction="vertical" size="large" style={{ width: "100%" }}>
+		<Space direction="vertical" size="large" style={{ width: '100%' }}>
 			<Header
 				title="Group Management"
 				description="Manage student assignments and thesis groups"

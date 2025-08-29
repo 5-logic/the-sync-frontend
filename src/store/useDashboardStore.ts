@@ -1,16 +1,16 @@
-import { create } from "zustand";
+import { create } from 'zustand';
 
 import {
 	AIStatisticsData,
 	AIStatisticsService,
-} from "@/lib/services/ai-statistics.service";
+} from '@/lib/services/ai-statistics.service';
 import {
 	DashboardService,
 	DashboardStatistics,
 	ProgressOverview,
 	SummaryCard,
 	SupervisorLoadDistribution,
-} from "@/lib/services/dashboard.service";
+} from '@/lib/services/dashboard.service';
 
 interface DashboardState {
 	// Data
@@ -85,7 +85,7 @@ export const useDashboardStore = create<DashboardState>()((set, get) => ({
 			const errorMessage =
 				error instanceof Error
 					? error.message
-					: "Failed to fetch dashboard statistics";
+					: 'Failed to fetch dashboard statistics';
 
 			set({
 				error: errorMessage,
@@ -113,7 +113,7 @@ export const useDashboardStore = create<DashboardState>()((set, get) => ({
 			const errorMessage =
 				error instanceof Error
 					? error.message
-					: "Failed to fetch AI statistics";
+					: 'Failed to fetch AI statistics';
 
 			set({
 				aiError: errorMessage,

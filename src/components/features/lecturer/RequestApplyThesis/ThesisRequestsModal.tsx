@@ -1,28 +1,29 @@
-"use client";
+'use client';
 
-import {
-	Modal,
-	Table,
-	Button,
-	Space,
-	Tag,
-	Typography,
-	Input,
-	Select,
-	Row,
-	Col,
-	Popconfirm,
-} from "antd";
 import {
 	CheckOutlined,
 	CloseOutlined,
-	SearchOutlined,
 	ReloadOutlined,
-} from "@ant-design/icons";
-import type { ColumnsType } from "antd/es/table";
-import { useState, useMemo } from "react";
-import { ThesisRequest } from "@/types/thesis-requests";
-import { isTextMatch } from "@/lib/utils/textNormalization";
+	SearchOutlined,
+} from '@ant-design/icons';
+import {
+	Button,
+	Col,
+	Input,
+	Modal,
+	Popconfirm,
+	Row,
+	Select,
+	Space,
+	Table,
+	Tag,
+	Typography,
+} from 'antd';
+import type { ColumnsType } from 'antd/es/table';
+import { useMemo, useState } from 'react';
+
+import { isTextMatch } from '@/lib/utils/textNormalization';
+import { ThesisRequest } from '@/types/thesis-requests';
 
 const { Title } = Typography;
 
@@ -50,7 +51,7 @@ export default function ThesisRequestsModal({
 	dataLoading,
 }: Props) {
 	// Filter states
-	const [searchText, setSearchText] = useState("");
+	const [searchText, setSearchText] = useState('');
 	const [statusFilter, setStatusFilter] = useState<string | undefined>(
 		undefined,
 	);
@@ -100,35 +101,35 @@ export default function ThesisRequestsModal({
 
 	const columns: ColumnsType<ThesisRequest> = [
 		{
-			title: "Group",
-			key: "group",
+			title: 'Group',
+			key: 'group',
 			render: (_, record) => (
 				<div>
 					<div>
 						<strong>{record.group.name}</strong>
 					</div>
-					<div style={{ color: "#666", fontSize: "12px" }}>
+					<div style={{ color: '#666', fontSize: '12px' }}>
 						{record.group.code}
 					</div>
 				</div>
 			),
 		},
 		{
-			title: "Leader",
-			key: "leader",
+			title: 'Leader',
+			key: 'leader',
 			render: (_, record) => {
 				const leader = getLeaderInfo(record);
-				if (!leader) return <span style={{ color: "#999" }}>No leader</span>;
+				if (!leader) return <span style={{ color: '#999' }}>No leader</span>;
 
 				return (
 					<div>
 						<div>
 							<strong>{leader.user.fullName}</strong>
 						</div>
-						<div style={{ color: "#666", fontSize: "12px" }}>
+						<div style={{ color: '#666', fontSize: '12px' }}>
 							{leader.studentCode}
 						</div>
-						<div style={{ color: "#666", fontSize: "12px" }}>
+						<div style={{ color: '#666', fontSize: '12px' }}>
 							{leader.user.email}
 						</div>
 					</div>
@@ -136,35 +137,35 @@ export default function ThesisRequestsModal({
 			},
 		},
 		{
-			title: "Created Date",
-			key: "createdAt",
-			dataIndex: "createdAt",
+			title: 'Created Date',
+			key: 'createdAt',
+			dataIndex: 'createdAt',
 			sorter: (a, b) =>
 				new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
-			defaultSortOrder: "ascend" as const,
+			defaultSortOrder: 'ascend' as const,
 			render: (_, record) => (
 				<div>
 					<div>{new Date(record.createdAt).toLocaleDateString()}</div>
-					<div style={{ color: "#666", fontSize: "12px" }}>
+					<div style={{ color: '#666', fontSize: '12px' }}>
 						{new Date(record.createdAt).toLocaleTimeString()}
 					</div>
 				</div>
 			),
 		},
 		{
-			title: "Status",
-			key: "status",
+			title: 'Status',
+			key: 'status',
 			render: (_, record) => {
 				const getStatusColor = (status: string) => {
 					switch (status) {
-						case "Approved":
-							return "success";
-						case "Rejected":
-							return "error";
-						case "Pending":
-							return "warning";
+						case 'Approved':
+							return 'success';
+						case 'Rejected':
+							return 'error';
+						case 'Pending':
+							return 'warning';
 						default:
-							return "default";
+							return 'default';
 					}
 				};
 
@@ -172,11 +173,11 @@ export default function ThesisRequestsModal({
 			},
 		},
 		{
-			title: "Actions",
-			key: "actions",
-			align: "center",
+			title: 'Actions',
+			key: 'actions',
+			align: 'center',
 			render: (_, record) => {
-				const isPending = record.status === "Pending";
+				const isPending = record.status === 'Pending';
 
 				return (
 					<Space>
@@ -250,7 +251,7 @@ export default function ThesisRequestsModal({
 						value={statusFilter}
 						onChange={setStatusFilter}
 						allowClear
-						style={{ width: "100%" }}
+						style={{ width: '100%' }}
 					>
 						<Select.Option value="Pending">Pending</Select.Option>
 						<Select.Option value="Approved">Approved</Select.Option>
@@ -262,7 +263,7 @@ export default function ThesisRequestsModal({
 						type="default"
 						icon={<ReloadOutlined />}
 						onClick={() => {
-							setSearchText("");
+							setSearchText('');
 							setStatusFilter(undefined);
 							onRefresh?.();
 						}}
@@ -287,7 +288,7 @@ export default function ThesisRequestsModal({
 						`${range[0]}-${range[1]} of ${total} requests`,
 				}}
 				locale={{
-					emptyText: "No requests found for this thesis",
+					emptyText: 'No requests found for this thesis',
 				}}
 			/>
 		</Modal>

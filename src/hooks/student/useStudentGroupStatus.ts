@@ -1,8 +1,8 @@
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
-import { useGroupDashboardStore } from "@/store/useGroupDashboardStore";
+import { useGroupDashboardStore } from '@/store/useGroupDashboardStore';
 
 export const useStudentGroupStatus = () => {
 	const { group, loading, fetchStudentGroup } = useGroupDashboardStore();
@@ -27,9 +27,9 @@ export const useStudentGroupStatus = () => {
 
 	const redirectToAppropriateScreen = () => {
 		if (hasGroup) {
-			router.push("/student/group-dashboard");
+			router.push('/student/group-dashboard');
 		} else {
-			router.push("/student/join-group");
+			router.push('/student/join-group');
 		}
 	};
 

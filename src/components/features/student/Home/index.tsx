@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { Col, Row, Space } from "antd";
+import { Col, Row, Space } from 'antd';
 
-import { Header } from "@/components/common/Header";
-import ProgressOverviewCard from "@/components/common/ProgressOverview/ProgressOverviewCard";
-import { PageContentSkeleton } from "@/components/common/loading";
-import StudentFirstLoginDashboard from "@/components/features/student/FirstLoginDashboard";
-import GroupInfoCard from "@/components/features/student/GroupDashboard/GroupInfoCard";
-import NoThesisCard from "@/components/features/student/GroupDashboard/NoThesisCard";
-import ThesisStatusCard from "@/components/features/student/GroupDashboard/ThesisStatusCard";
-import { useStudentGroupStatus } from "@/hooks/student/useStudentGroupStatus";
+import { Header } from '@/components/common/Header';
+import ProgressOverviewCard from '@/components/common/ProgressOverview/ProgressOverviewCard';
+import { PageContentSkeleton } from '@/components/common/loading';
+import StudentFirstLoginDashboard from '@/components/features/student/FirstLoginDashboard';
+import GroupInfoCard from '@/components/features/student/GroupDashboard/GroupInfoCard';
+import NoThesisCard from '@/components/features/student/GroupDashboard/NoThesisCard';
+import ThesisStatusCard from '@/components/features/student/GroupDashboard/ThesisStatusCard';
+import { useStudentGroupStatus } from '@/hooks/student/useStudentGroupStatus';
 
 export default function StudentHomePage() {
 	const { hasGroup, group, loading, isLeader } = useStudentGroupStatus();
@@ -26,7 +26,7 @@ export default function StudentHomePage() {
 
 	// If student has a group, show the normal dashboard
 	return (
-		<Space direction="vertical" size="middle" style={{ width: "100%" }}>
+		<Space direction="vertical" size="middle" style={{ width: '100%' }}>
 			<Header
 				title="Student Dashboard"
 				description="This is your personal dashboard. Here you can track your group

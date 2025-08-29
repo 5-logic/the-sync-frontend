@@ -1,23 +1,23 @@
-"use client";
+'use client';
 
 import {
 	LoadingOutlined,
 	PlusOutlined,
 	ReloadOutlined,
 	SearchOutlined,
-} from "@ant-design/icons";
-import { Button, Col, Input, Row, Select } from "antd";
-import { useEffect } from "react";
+} from '@ant-design/icons';
+import { Button, Col, Input, Row, Select } from 'antd';
+import { useEffect } from 'react';
 
-import { useCurrentSemester } from "@/hooks/semester";
-import { useNavigationLoader } from "@/hooks/ux/useNavigationLoader";
-import { useSemesterStore } from "@/store";
+import { useCurrentSemester } from '@/hooks/semester';
+import { useNavigationLoader } from '@/hooks/ux/useNavigationLoader';
+import { useSemesterStore } from '@/store';
 
 interface Props {
 	search: string;
 	onSearchChange: (val: string) => void;
-	status?: "approved" | "pending" | "rejected" | "new";
-	onStatusChange: (val?: "approved" | "pending" | "rejected" | "new") => void;
+	status?: 'approved' | 'pending' | 'rejected' | 'new';
+	onStatusChange: (val?: 'approved' | 'pending' | 'rejected' | 'new') => void;
 	owned?: boolean;
 	onOwnedChange?: (val?: boolean) => void;
 	semester?: string;
@@ -33,15 +33,15 @@ interface Props {
 }
 
 const defaultStatusOptions = [
-	{ value: "new", label: "New" },
-	{ value: "approved", label: "Approved" },
-	{ value: "pending", label: "Pending" },
-	{ value: "rejected", label: "Rejected" },
+	{ value: 'new', label: 'New' },
+	{ value: 'approved', label: 'Approved' },
+	{ value: 'pending', label: 'Pending' },
+	{ value: 'rejected', label: 'Rejected' },
 ];
 
 const ownedOptions = [
-	{ value: true, label: "My Theses" },
-	{ value: false, label: "All Theses" },
+	{ value: true, label: 'My Theses' },
+	{ value: false, label: 'All Theses' },
 ];
 
 export default function SharedThesisFilterBar({
@@ -58,8 +58,8 @@ export default function SharedThesisFilterBar({
 	showStatusFilter = true,
 	showCreateButton = true,
 	statusOptions = defaultStatusOptions,
-	createButtonPath = "/lecturer/thesis-management/create-thesis",
-	createButtonText = "Create Thesis",
+	createButtonPath = '/lecturer/thesis-management/create-thesis',
+	createButtonText = 'Create Thesis',
 }: Readonly<Props>) {
 	const { isNavigating, targetPath, navigateWithLoading } =
 		useNavigationLoader();
@@ -117,7 +117,7 @@ export default function SharedThesisFilterBar({
 						value={owned}
 						options={ownedOptions}
 						onChange={onOwnedChange}
-						style={{ width: "100%" }}
+						style={{ width: '100%' }}
 					/>
 				</Col>
 			)}
@@ -133,7 +133,7 @@ export default function SharedThesisFilterBar({
 					}))}
 					onChange={onSemesterChange}
 					loading={semesterLoading}
-					style={{ width: "100%" }}
+					style={{ width: '100%' }}
 				/>
 			</Col>
 
@@ -145,7 +145,7 @@ export default function SharedThesisFilterBar({
 						value={status}
 						options={statusOptions}
 						onChange={onStatusChange}
-						style={{ width: "100%" }}
+						style={{ width: '100%' }}
 					/>
 				</Col>
 			)}
@@ -154,7 +154,7 @@ export default function SharedThesisFilterBar({
 				<Button
 					icon={<ReloadOutlined />}
 					onClick={onRefresh}
-					style={{ width: "100%" }}
+					style={{ width: '100%' }}
 				>
 					Refresh
 				</Button>
@@ -174,7 +174,7 @@ export default function SharedThesisFilterBar({
 						onClick={handleCreateThesis}
 						loading={isCreateButtonLoading}
 						disabled={isNavigating && !isCreateButtonLoading}
-						style={{ width: "100%" }}
+						style={{ width: '100%' }}
 					>
 						{createButtonText}
 					</Button>

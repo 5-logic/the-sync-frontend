@@ -1,6 +1,6 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo } from 'react';
 
-import { useChecklistStore } from "@/store/useChecklistStore";
+import { useChecklistStore } from '@/store/useChecklistStore';
 
 /**
  * Custom hook for managing checklist details
@@ -30,9 +30,9 @@ export const useChecklistDetail = (
 
 	// Fetch checklist details when component mounts or checklistId changes
 	useEffect(() => {
-		if (autoFetch && checklistId && checklistId.trim() !== "") {
+		if (autoFetch && checklistId && checklistId.trim() !== '') {
 			fetchChecklistById(checklistId, forceRefresh).catch((error) => {
-				console.error("Failed to fetch checklist details:", error);
+				console.error('Failed to fetch checklist details:', error);
 			});
 		}
 	}, [checklistId, autoFetch, forceRefresh, fetchChecklistById]);

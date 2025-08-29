@@ -1,20 +1,20 @@
-import { Button, Card, Col, Progress, Row, Space, Typography } from "antd";
-import { UserOutlined } from "@ant-design/icons";
-import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { UserOutlined } from '@ant-design/icons';
+import { Button, Card, Col, Progress, Row, Space, Typography } from 'antd';
+import { useRouter } from 'next/navigation';
+import { useMemo, useState } from 'react';
 
-import AIReasoningCollapse from "@/components/common/AIReasoningCollapse";
-import { GroupConfirmationModals } from "@/components/common/ConfirmModal";
-import { ListPagination } from "@/components/common/ListPagination";
+import AIReasoningCollapse from '@/components/common/AIReasoningCollapse';
+import { GroupConfirmationModals } from '@/components/common/ConfirmModal';
+import { ListPagination } from '@/components/common/ListPagination';
 import {
 	type SuggestGroupsData,
 	type SuggestedGroup,
-} from "@/lib/services/ai.service";
+} from '@/lib/services/ai.service';
 import requestService, {
 	type GroupRequest,
-} from "@/lib/services/requests.service";
-import { showNotification } from "@/lib/utils/notification";
-import { useGroupDashboardStore } from "@/store/useGroupDashboardStore";
+} from '@/lib/services/requests.service';
+import { showNotification } from '@/lib/utils/notification';
+import { useGroupDashboardStore } from '@/store/useGroupDashboardStore';
 
 const { Title, Text } = Typography;
 
@@ -47,15 +47,15 @@ const AISuggestionCard: React.FC<AISuggestionCardProps> = ({
 		const pendingInviteRequest = existingRequests.find(
 			(req) =>
 				req.group.id === group.id &&
-				req.type === "Invite" &&
-				req.status === "Pending",
+				req.type === 'Invite' &&
+				req.status === 'Pending',
 		);
 
 		const pendingJoinRequest = existingRequests.find(
 			(req) =>
 				req.group.id === group.id &&
-				req.type === "Join" &&
-				req.status === "Pending",
+				req.type === 'Join' &&
+				req.status === 'Pending',
 		);
 
 		const hasNoMembers = group.memberCount === 0;
@@ -75,8 +75,8 @@ const AISuggestionCard: React.FC<AISuggestionCardProps> = ({
 
 	const handleJoinSuccess = async () => {
 		showNotification.success(
-			"Success",
-			"You have successfully joined the group!",
+			'Success',
+			'You have successfully joined the group!',
 		);
 
 		// Use the same logic as accept invite - refresh group data and redirect
@@ -90,7 +90,7 @@ const AISuggestionCard: React.FC<AISuggestionCardProps> = ({
 		await refreshGroup();
 
 		// Redirect to group dashboard
-		router.push("/student/group-dashboard");
+		router.push('/student/group-dashboard');
 	};
 
 	const executeJoinRequest = async (successMessage: string) => {
@@ -101,13 +101,13 @@ const AISuggestionCard: React.FC<AISuggestionCardProps> = ({
 			// Check if user directly joined or created a request
 			if (
 				(groupStatus.hasNoMembers && response.success) ||
-				(response.success && response.data?.status === "Approved")
+				(response.success && response.data?.status === 'Approved')
 			) {
 				// Direct join successful
 				await handleJoinSuccess();
 			} else {
 				// Request created and pending
-				showNotification.success("Success", successMessage);
+				showNotification.success('Success', successMessage);
 				onRequestSent?.();
 			}
 		} catch (error: unknown) {
@@ -118,8 +118,8 @@ const AISuggestionCard: React.FC<AISuggestionCardProps> = ({
 			const errorMessage =
 				apiError?.response?.data?.error ||
 				(error as Error)?.message ||
-				"Failed to join the group. Please try again.";
-			showNotification.error("Error", errorMessage);
+				'Failed to join the group. Please try again.';
+			showNotification.error('Error', errorMessage);
 		} finally {
 			setIsRequesting(false);
 		}
@@ -132,7 +132,7 @@ const AISuggestionCard: React.FC<AISuggestionCardProps> = ({
 				group.name,
 				() =>
 					executeJoinRequest(
-						"Join request sent successfully! The group leader will review your request.",
+						'Join request sent successfully! The group leader will review your request.',
 					),
 				isRequesting,
 			);
@@ -142,7 +142,7 @@ const AISuggestionCard: React.FC<AISuggestionCardProps> = ({
 				group.name,
 				() =>
 					executeJoinRequest(
-						"Join request sent successfully! The group leader will review your request.",
+						'Join request sent successfully! The group leader will review your request.',
 					),
 				isRequesting,
 			);
@@ -160,8 +160,8 @@ const AISuggestionCard: React.FC<AISuggestionCardProps> = ({
 
 		if (hasPendingInviteRequest) {
 			return {
-				title: "You have been invited to this group - click to view details",
-				text: "View Invite",
+				title: 'You have been invited to this group - click to view details',
+				text: 'View Invite',
 				clickHandler: handleViewDetail,
 				disabled: false,
 			};
@@ -169,8 +169,8 @@ const AISuggestionCard: React.FC<AISuggestionCardProps> = ({
 
 		if (hasPendingJoinRequest) {
 			return {
-				title: "Request already sent",
-				text: "Request Sent",
+				title: 'Request already sent',
+				text: 'Request Sent',
 				clickHandler: undefined,
 				disabled: true,
 			};
@@ -178,8 +178,8 @@ const AISuggestionCard: React.FC<AISuggestionCardProps> = ({
 
 		if (isGroupFull) {
 			return {
-				title: "Group is full (5/5 members)",
-				text: "Group Full",
+				title: 'Group is full (5/5 members)',
+				text: 'Group Full',
 				clickHandler: undefined,
 				disabled: true,
 			};
@@ -187,16 +187,16 @@ const AISuggestionCard: React.FC<AISuggestionCardProps> = ({
 
 		if (hasNoMembers) {
 			return {
-				title: "Join this group directly",
-				text: "Join Group",
+				title: 'Join this group directly',
+				text: 'Join Group',
 				clickHandler: handleJoinRequest,
 				disabled: false,
 			};
 		}
 
 		return {
-			title: "Request to Join",
-			text: "Request to Join",
+			title: 'Request to Join',
+			text: 'Request to Join',
 			clickHandler: handleJoinRequest,
 			disabled: false,
 		};
@@ -209,30 +209,30 @@ const AISuggestionCard: React.FC<AISuggestionCardProps> = ({
 			hoverable
 			size="small"
 			title={
-				<div style={{ padding: "8px 0" }}>
+				<div style={{ padding: '8px 0' }}>
 					<Space direction="vertical" size={0}>
 						<Text strong>{group.name}</Text>
-						<Text type="secondary" style={{ fontSize: "12px" }}>
+						<Text type="secondary" style={{ fontSize: '12px' }}>
 							{group.code}
 						</Text>
 					</Space>
 				</div>
 			}
-			style={{ height: "100%" }}
+			style={{ height: '100%' }}
 		>
-			<div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+			<div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
 				<div style={{ flex: 1 }}>
-					<Space direction="vertical" size="small" style={{ width: "100%" }}>
+					<Space direction="vertical" size="small" style={{ width: '100%' }}>
 						{/* Compatibility Score */}
 						<div>
 							<Row justify="space-between" align="middle">
 								<Col>
-									<Text strong style={{ fontSize: "14px" }}>
+									<Text strong style={{ fontSize: '14px' }}>
 										Compatibility
 									</Text>
 								</Col>
 								<Col>
-									<Text style={{ fontSize: "12px", fontWeight: "bold" }}>
+									<Text style={{ fontSize: '12px', fontWeight: 'bold' }}>
 										{compatibilityPercentage}%
 									</Text>
 								</Col>
@@ -240,8 +240,8 @@ const AISuggestionCard: React.FC<AISuggestionCardProps> = ({
 							<Progress
 								percent={compatibilityPercentage}
 								strokeColor={{
-									"0%": "#108ee9",
-									"100%": "#87d068",
+									'0%': '#108ee9',
+									'100%': '#87d068',
 								}}
 								showInfo={false}
 								size="small"
@@ -252,18 +252,18 @@ const AISuggestionCard: React.FC<AISuggestionCardProps> = ({
 						<div>
 							<Text
 								strong
-								style={{ fontSize: "14px", display: "block", marginBottom: 8 }}
+								style={{ fontSize: '14px', display: 'block', marginBottom: 8 }}
 							>
 								Leader
 							</Text>
-							<div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-								<UserOutlined style={{ fontSize: "14px", color: "#bfbfbf" }} />
+							<div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+								<UserOutlined style={{ fontSize: '14px', color: '#bfbfbf' }} />
 								<div>
-									<Text style={{ fontSize: "14px", fontWeight: "500" }}>
+									<Text style={{ fontSize: '14px', fontWeight: '500' }}>
 										{group.leader.fullName}
 									</Text>
 									<br />
-									<Text type="secondary" style={{ fontSize: "12px" }}>
+									<Text type="secondary" style={{ fontSize: '12px' }}>
 										{group.leader.studentCode} • {group.leader.email}
 									</Text>
 								</div>
@@ -274,12 +274,12 @@ const AISuggestionCard: React.FC<AISuggestionCardProps> = ({
 						<div>
 							<Row justify="space-between" align="middle">
 								<Col>
-									<Text strong style={{ fontSize: "14px" }}>
+									<Text strong style={{ fontSize: '14px' }}>
 										Members
 									</Text>
 								</Col>
 								<Col>
-									<Text style={{ fontSize: "12px", fontWeight: "bold" }}>
+									<Text style={{ fontSize: '12px', fontWeight: 'bold' }}>
 										{group.memberCount}/5
 									</Text>
 								</Col>
@@ -292,19 +292,19 @@ const AISuggestionCard: React.FC<AISuggestionCardProps> = ({
 				<div
 					style={{
 						marginTop: 16,
-						display: "flex",
+						display: 'flex',
 						gap: 8,
-						flexDirection: "column",
+						flexDirection: 'column',
 					}}
 				>
 					<Button
 						style={{
 							borderRadius: 6,
-							border: "1px solid #222",
+							border: '1px solid #222',
 							fontWeight: 500,
 							fontSize: 12,
 							height: 40,
-							width: "100%",
+							width: '100%',
 						}}
 						title="View Group Detail"
 						onClick={handleViewDetail}
@@ -318,7 +318,7 @@ const AISuggestionCard: React.FC<AISuggestionCardProps> = ({
 							fontWeight: 500,
 							fontSize: 12,
 							height: 40,
-							width: "100%",
+							width: '100%',
 						}}
 						title={buttonConfig.title}
 						onClick={buttonConfig.clickHandler}
@@ -358,7 +358,7 @@ export default function AISuggestions({
 	if (loading) {
 		return (
 			<Card>
-				<div style={{ textAlign: "center", padding: "40px 0" }}>
+				<div style={{ textAlign: 'center', padding: '40px 0' }}>
 					<Text>Loading AI suggestions...</Text>
 				</div>
 			</Card>
@@ -371,7 +371,7 @@ export default function AISuggestions({
 
 	return (
 		<Card>
-			<Space direction="vertical" size="large" style={{ width: "100%" }}>
+			<Space direction="vertical" size="large" style={{ width: '100%' }}>
 				<div>
 					<Title level={5} style={{ margin: 0 }}>
 						AI Group Suggestions ({suggestions.groups.length} groups found)
@@ -385,7 +385,7 @@ export default function AISuggestions({
 				{/* AI Reasoning */}
 				<AIReasoningCollapse
 					reason={suggestions.reason}
-					style={{ marginBottom: "16px" }}
+					style={{ marginBottom: '16px' }}
 				/>
 
 				<Row gutter={[16, 16]}>

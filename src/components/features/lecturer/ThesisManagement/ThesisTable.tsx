@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
 	DeleteOutlined,
@@ -7,12 +7,14 @@ import {
 	LoadingOutlined,
 	MoreOutlined,
 	SendOutlined,
-} from "@ant-design/icons";
-import { Button, Dropdown, Table, Tooltip } from "antd";
-import type { MenuProps } from "antd";
-import type { ColumnsType } from "antd/es/table";
-import { useCallback, useEffect, useMemo, useState } from "react";
+} from '@ant-design/icons';
+import { Button, Dropdown, Table, Tooltip } from 'antd';
+import type { MenuProps } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
+import { ThesisConfirmationModals } from '@/components/common/ConfirmModal';
+import { TablePagination } from '@/components/common/TablePagination';
 import {
 	createActionsColumn,
 	createDateColumn,
@@ -20,25 +22,23 @@ import {
 	createSemesterColumn,
 	createStatusColumn,
 	createTitleColumn,
-} from "@/components/common/ThesisTableColumns";
-import { ThesisConfirmationModals } from "@/components/common/ConfirmModal";
-import { TablePagination } from "@/components/common/TablePagination";
-import { useSessionData } from "@/hooks/auth/useAuth";
-import { useNavigationLoader } from "@/hooks/ux";
+} from '@/components/common/ThesisTableColumns';
+import { useSessionData } from '@/hooks/auth/useAuth';
+import { useNavigationLoader } from '@/hooks/ux';
 import {
 	BUTTON_STATES,
 	STATUS_COLORS,
 	THESIS_STATUS,
 	ThesisStatus,
-} from "@/lib/constants/thesis";
+} from '@/lib/constants/thesis';
 import {
 	THESIS_ERROR_CONFIGS,
 	THESIS_SUCCESS_CONFIGS,
 	handleThesisError,
 	handleThesisSuccess,
-} from "@/lib/utils/thesis-handlers";
-import { Thesis } from "@/schemas/thesis";
-import { useLecturerStore, useSemesterStore, useThesisStore } from "@/store";
+} from '@/lib/utils/thesis-handlers';
+import { Thesis } from '@/schemas/thesis';
+import { useLecturerStore, useSemesterStore, useThesisStore } from '@/store';
 
 interface Props {
 	data: Thesis[];
@@ -129,12 +129,12 @@ export default function ThesisTable({ data, loading }: Readonly<Props>) {
 
 	// Type-safe color mapping for status
 	const getStatusColor = useCallback((status: string): string => {
-		return STATUS_COLORS[status as ThesisStatus] ?? "default";
+		return STATUS_COLORS[status as ThesisStatus] ?? 'default';
 	}, []);
 
 	// Create dropdown menu items for each thesis with status rules
 	const getDropdownItems = useCallback(
-		(record: Thesis): MenuProps["items"] => {
+		(record: Thesis): MenuProps['items'] => {
 			// SECURITY: Check thesis ownership
 			const isThesisOwner = record.lecturerId === session?.user?.id;
 			const canEdit =
@@ -154,25 +154,25 @@ export default function ThesisTable({ data, loading }: Readonly<Props>) {
 
 			return [
 				{
-					key: "view",
-					label: "View Details",
+					key: 'view',
+					label: 'View Details',
 					icon: isViewLoading ? <LoadingOutlined spin /> : <EyeOutlined />,
 					onClick: () => handleView(record.id),
 					disabled: isNavigating && !isViewLoading,
 				},
 				{
-					key: "edit",
-					label: "Edit Thesis",
+					key: 'edit',
+					label: 'Edit Thesis',
 					icon: isEditLoading ? <LoadingOutlined spin /> : <EditOutlined />,
 					disabled: !canEdit || (isNavigating && !isEditLoading),
 					onClick: () => canEdit && handleEdit(record.id),
 				},
 				{
-					type: "divider",
+					type: 'divider',
 				},
 				{
-					key: "delete",
-					label: "Delete",
+					key: 'delete',
+					label: 'Delete',
 					icon: <DeleteOutlined />,
 					danger: true,
 					disabled: !canDelete || isNavigating,
@@ -214,7 +214,7 @@ export default function ThesisTable({ data, loading }: Readonly<Props>) {
 				return {
 					disabled: true,
 					title: BUTTON_STATES.NOT_YOUR_THESIS,
-					type: "default" as const,
+					type: 'default' as const,
 				};
 			}
 
@@ -223,25 +223,25 @@ export default function ThesisTable({ data, loading }: Readonly<Props>) {
 					return {
 						disabled: false,
 						title: BUTTON_STATES.REGISTER_SUBMIT,
-						type: "primary" as const,
+						type: 'primary' as const,
 					};
 				case THESIS_STATUS.REJECTED:
 					return {
 						disabled: false,
-						title: "Resubmit for Review",
-						type: "primary" as const,
+						title: 'Resubmit for Review',
+						type: 'primary' as const,
 					};
 				case THESIS_STATUS.PENDING:
 					return {
 						disabled: true,
 						title: BUTTON_STATES.ALREADY_SUBMITTED,
-						type: "default" as const,
+						type: 'default' as const,
 					};
 				default:
 					return {
 						disabled: true,
 						title: BUTTON_STATES.CANNOT_SUBMIT,
-						type: "default" as const,
+						type: 'default' as const,
 					};
 			}
 		},
@@ -257,7 +257,7 @@ export default function ThesisTable({ data, loading }: Readonly<Props>) {
 			const isSubmitLoading = submitLoadingThesisId === record.id;
 
 			return (
-				<div style={{ display: "flex", gap: "8px", justifyContent: "center" }}>
+				<div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
 					{/* Register Submit Button - Always visible with different states */}
 					<Tooltip title={submitProps.title}>
 						<Button
@@ -275,7 +275,7 @@ export default function ThesisTable({ data, loading }: Readonly<Props>) {
 					{/* Dropdown Menu for Edit/View/Delete */}
 					<Dropdown
 						menu={{ items: getDropdownItems(record) }}
-						trigger={["click"]}
+						trigger={['click']}
 						placement="bottomRight"
 					>
 						<Button icon={<MoreOutlined />} type="text" size="small" />
@@ -293,7 +293,7 @@ export default function ThesisTable({ data, loading }: Readonly<Props>) {
 	);
 
 	// Memoize columns to prevent unnecessary re-renders
-	const columns: ColumnsType<Props["data"][number]> = useMemo(
+	const columns: ColumnsType<Props['data'][number]> = useMemo(
 		() => [
 			createTitleColumn(),
 			createOwnerColumn(getLecturerById),

@@ -1,9 +1,9 @@
-import { z } from "zod";
+import { z } from 'zod';
 
-import { ApiResponseSchema } from "@/schemas/_common";
-import { MajorSchema } from "@/schemas/major";
-import { SemesterSchema } from "@/schemas/semester";
-import { UserSchema } from "@/schemas/user";
+import { ApiResponseSchema } from '@/schemas/_common';
+import { MajorSchema } from '@/schemas/major';
+import { SemesterSchema } from '@/schemas/semester';
+import { UserSchema } from '@/schemas/user';
 
 // ===== EXISTING GROUP SCHEMAS =====
 

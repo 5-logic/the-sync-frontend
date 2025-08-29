@@ -1,8 +1,9 @@
-import { useState, useMemo, useEffect, useCallback } from "react";
-import { useGroupsStore } from "@/store/useGroupsStore";
-import { useMajorStore } from "@/store/useMajorStore";
-import { useSemesterStore } from "@/store/useSemesterStore";
-import { useStudentStore } from "@/store/useStudentStore";
+import { useCallback, useEffect, useMemo, useState } from 'react';
+
+import { useGroupsStore } from '@/store/useGroupsStore';
+import { useMajorStore } from '@/store/useMajorStore';
+import { useSemesterStore } from '@/store/useSemesterStore';
+import { useStudentStore } from '@/store/useStudentStore';
 
 /**
  * Shared hook for group management functionality
@@ -14,12 +15,12 @@ export const useGroupManagement = () => {
 	const { semesters, fetchSemesters } = useSemesterStore();
 	const { refetch: refetchGroups } = useGroupsStore();
 
-	const [studentSearch, setStudentSearch] = useState("");
-	const [studentMajor, setStudentMajor] = useState("All");
+	const [studentSearch, setStudentSearch] = useState('');
+	const [studentMajor, setStudentMajor] = useState('All');
 
 	// Find preparing semester
 	const preparingSemester = useMemo(() => {
-		return semesters.find((semester) => semester.status === "Preparing");
+		return semesters.find((semester) => semester.status === 'Preparing');
 	}, [semesters]);
 
 	// Fetch data on component mount
@@ -60,7 +61,7 @@ export const useGroupManagement = () => {
 
 	// Major options for filter (with names displayed)
 	const majorOptions = useMemo(() => {
-		const options = ["All"];
+		const options = ['All'];
 		majors.forEach((major) => {
 			options.push(major.id);
 		});
@@ -69,7 +70,7 @@ export const useGroupManagement = () => {
 
 	// Create a mapping for major names
 	const majorNamesMap = useMemo(() => {
-		const map: Record<string, string> = { All: "All" };
+		const map: Record<string, string> = { All: 'All' };
 		majors.forEach((major) => {
 			map[major.id] = major.name;
 		});
@@ -87,7 +88,7 @@ export const useGroupManagement = () => {
 				.includes(studentSearch.toLowerCase());
 			const matchSearch = fullNameMatch || emailMatch;
 			const matchMajor =
-				studentMajor === "All" || student.majorId === studentMajor;
+				studentMajor === 'All' || student.majorId === studentMajor;
 			return matchSearch && matchMajor;
 		});
 	}, [students, studentSearch, studentMajor]);

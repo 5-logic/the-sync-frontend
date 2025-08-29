@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { Select, Space } from "antd";
-import { useEffect } from "react";
+import { Select, Space } from 'antd';
+import { useEffect } from 'react';
 
-import { Semester } from "@/schemas/semester";
-import { useSemesterStore } from "@/store/useSemesterStore";
-import { SEMESTER_STATUS_TAGS } from "@/lib/constants/semester";
+import { SEMESTER_STATUS_TAGS } from '@/lib/constants/semester';
+import { Semester } from '@/schemas/semester';
+import { useSemesterStore } from '@/store/useSemesterStore';
 
 const { Option } = Select;
 
@@ -35,7 +35,7 @@ export default function SemesterFilter({
 	const availableSemesters = semesters; // Show all semesters
 	const activeSemesters = semesters.filter(
 		(semester: Semester) =>
-			semester.status !== "NotYet" && semester.status !== "End",
+			semester.status !== 'NotYet' && semester.status !== 'End',
 	);
 
 	// Auto-select first active semester if none selected, fallback to any semester

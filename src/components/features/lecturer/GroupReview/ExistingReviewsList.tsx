@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import { EditOutlined } from "@ant-design/icons";
-import { Button, Card, List } from "antd";
-import { useEffect, useState } from "react";
+import { EditOutlined } from '@ant-design/icons';
+import { Button, Card, List } from 'antd';
+import { useEffect, useState } from 'react';
 
-import { SubmissionReviewWithReviewer } from "@/lib/services/reviews.service";
+import { AssignedReviewersInfo } from '@/components/common/AssignedReviewersInfo';
 import {
-	ReviewerInfo,
 	ReviewDates,
-} from "@/components/common/ReviewComponents";
-import { AssignedReviewersInfo } from "@/components/common/AssignedReviewersInfo";
+	ReviewerInfo,
+} from '@/components/common/ReviewComponents';
+import { SubmissionReviewWithReviewer } from '@/lib/services/reviews.service';
 
-import EditReviewModal from "./EditReviewModal";
+import EditReviewModal from './EditReviewModal';
 
 interface Props {
 	readonly reviews: SubmissionReviewWithReviewer[];
@@ -31,7 +31,7 @@ export default function ExistingReviewsList({
 	// Debug: Log reviews data to check isMainReviewer values
 	useEffect(() => {
 		if (reviews.length > 0) {
-			console.log("🔍 ExistingReviewsList - Review data check:");
+			console.log('🔍 ExistingReviewsList - Review data check:');
 			reviews.forEach((review, index) => {
 				console.log(`Review ${index + 1}:`, {
 					id: review.id,

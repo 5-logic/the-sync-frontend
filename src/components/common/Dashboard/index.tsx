@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import { useEffect } from "react";
-import { Col, Row, Space } from "antd";
+import { Col, Row, Space } from 'antd';
+import { useEffect } from 'react';
 
-import AIUsageChart from "@/components/common/Dashboard/AIUsageChart";
-import DashboardStats from "@/components/common/Dashboard/DashboardStats";
-import { GroupInfo } from "@/components/common/Dashboard/GroupTableInfo";
-import { ProgressOverview } from "@/components/common/Dashboard/ProgressOverview";
-import SemesterFilter from "@/components/common/Dashboard/SemesterFilter";
-import SupervisorLoadChart from "@/components/common/Dashboard/SupervisorLoadChart";
-import { Header } from "@/components/common/Header";
-import { useSessionData } from "@/hooks/auth/useAuth";
-import { useDashboardStore } from "@/store";
+import AIUsageChart from '@/components/common/Dashboard/AIUsageChart';
+import DashboardStats from '@/components/common/Dashboard/DashboardStats';
+import { GroupInfo } from '@/components/common/Dashboard/GroupTableInfo';
+import { ProgressOverview } from '@/components/common/Dashboard/ProgressOverview';
+import SemesterFilter from '@/components/common/Dashboard/SemesterFilter';
+import SupervisorLoadChart from '@/components/common/Dashboard/SupervisorLoadChart';
+import { Header } from '@/components/common/Header';
+import { useSessionData } from '@/hooks/auth/useAuth';
+import { useDashboardStore } from '@/store';
 
 export default function Dashboard() {
 	const { session } = useSessionData();
@@ -24,7 +24,7 @@ export default function Dashboard() {
 	} = useDashboardStore();
 
 	// Check if user is admin (not moderator)
-	const isAdmin = session?.user?.role === "admin";
+	const isAdmin = session?.user?.role === 'admin';
 
 	// Fetch AI statistics when selectedSemesterId changes and user is admin
 	useEffect(() => {
@@ -34,7 +34,7 @@ export default function Dashboard() {
 	}, [isAdmin, selectedSemesterId, fetchAIStatistics]);
 
 	return (
-		<Space direction="vertical" size="large" style={{ width: "100%" }}>
+		<Space direction="vertical" size="large" style={{ width: '100%' }}>
 			<Header
 				title="Dashboard"
 				description="Welcome to your dashboard. Here you can track student progress, manage milestones, and provide timely feedback to guide thesis development."

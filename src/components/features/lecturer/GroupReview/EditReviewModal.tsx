@@ -1,21 +1,21 @@
-"use client";
+'use client';
 
-import { Button, Divider, Input, Modal, Radio, Table, Tag } from "antd";
-import type { ColumnsType } from "antd/es/table";
-import { useCallback, useEffect, useState } from "react";
+import { Button, Divider, Input, Modal, Radio, Table, Tag } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
+import { useCallback, useEffect, useState } from 'react';
 
-import { useReviews } from "@/hooks/lecturer/useReviews";
+import {
+	ReviewDates,
+	ReviewerInfo,
+} from '@/components/common/ReviewComponents';
+import { useReviews } from '@/hooks/lecturer/useReviews';
 import {
 	SubmissionReviewWithReviewer,
 	UpdateReviewRequest,
-} from "@/lib/services/reviews.service";
-import { showNotification } from "@/lib/utils/notification";
-import { getPriorityConfig } from "@/lib/utils/uiConstants";
-import { ChecklistReviewAcceptance } from "@/schemas/_enums";
-import {
-	ReviewerInfo,
-	ReviewDates,
-} from "@/components/common/ReviewComponents";
+} from '@/lib/services/reviews.service';
+import { showNotification } from '@/lib/utils/notification';
+import { getPriorityConfig } from '@/lib/utils/uiConstants';
+import { ChecklistReviewAcceptance } from '@/schemas/_enums';
 
 interface Props {
 	readonly open: boolean;
@@ -41,9 +41,9 @@ export default function EditReviewModal({
 }: Props) {
 	const { updateReview, submitting } = useReviews();
 
-	const [feedback, setFeedback] = useState<string>("");
+	const [feedback, setFeedback] = useState<string>('');
 	const [reviewItems, setReviewItems] = useState<ReviewItemData[]>([]);
-	const [originalFeedback, setOriginalFeedback] = useState<string>("");
+	const [originalFeedback, setOriginalFeedback] = useState<string>('');
 	const [originalReviewItems, setOriginalReviewItems] = useState<
 		ReviewItemData[]
 	>([]);
@@ -51,7 +51,7 @@ export default function EditReviewModal({
 	// Initialize data when review changes
 	useEffect(() => {
 		if (review) {
-			const initialFeedback = review.feedback || "";
+			const initialFeedback = review.feedback || '';
 			const items: ReviewItemData[] = review.reviewItems.map((item) => ({
 				checklistItemId: item.checklistItemId,
 				name: item.checklistItem.name,
@@ -126,7 +126,7 @@ export default function EditReviewModal({
 
 			return (
 				current.acceptance !== original.acceptance ||
-				(current.note || "").trim() !== (original.note || "").trim()
+				(current.note || '').trim() !== (original.note || '').trim()
 			);
 		});
 	}, [feedback, originalFeedback, reviewItems, originalReviewItems]);
@@ -134,8 +134,8 @@ export default function EditReviewModal({
 	const handleSave = async () => {
 		if (!review) {
 			showNotification.error(
-				"No Review Data",
-				"Review data is not available for editing",
+				'No Review Data',
+				'Review data is not available for editing',
 			);
 			return;
 		}
@@ -154,26 +154,26 @@ export default function EditReviewModal({
 
 			if (result) {
 				showNotification.success(
-					"Review Updated",
-					"The review has been successfully updated",
+					'Review Updated',
+					'The review has been successfully updated',
 				);
 				onSuccess?.();
 				onClose();
 			} else {
 				showNotification.error(
-					"Update Failed",
-					"Failed to update the review. Please try again.",
+					'Update Failed',
+					'Failed to update the review. Please try again.',
 				);
 			}
 		} catch (error) {
-			console.error("Error updating review:", error);
+			console.error('Error updating review:', error);
 
 			const errorMessage =
 				error instanceof Error
 					? error.message
-					: "An unexpected error occurred while updating the review";
+					: 'An unexpected error occurred while updating the review';
 
-			showNotification.error("Update Failed", errorMessage);
+			showNotification.error('Update Failed', errorMessage);
 		}
 	};
 
@@ -188,13 +188,13 @@ export default function EditReviewModal({
 
 	const columns: ColumnsType<ReviewItemData> = [
 		{
-			title: "Question",
-			dataIndex: "name",
-			key: "name",
+			title: 'Question',
+			dataIndex: 'name',
+			key: 'name',
 		},
 		{
-			title: "Response",
-			key: "response",
+			title: 'Response',
+			key: 'response',
 			render: (_, record) => (
 				<Radio.Group
 					value={record.acceptance}
@@ -209,8 +209,8 @@ export default function EditReviewModal({
 			),
 		},
 		{
-			title: "Notes",
-			key: "notes",
+			title: 'Notes',
+			key: 'notes',
 			render: (_, record) => (
 				<Input
 					placeholder="Add notes..."
@@ -222,9 +222,9 @@ export default function EditReviewModal({
 			),
 		},
 		{
-			title: "Priority",
-			key: "priority",
-			align: "center",
+			title: 'Priority',
+			key: 'priority',
+			align: 'center',
 			render: (_, record) => {
 				const { label, color } = getPriorityConfig(record.isRequired);
 				return <Tag color={color}>{label}</Tag>;
@@ -262,7 +262,7 @@ export default function EditReviewModal({
 			footer={modalFooter}
 		>
 			<div>
-				<Divider style={{ margin: "16px 0" }} />
+				<Divider style={{ margin: '16px 0' }} />
 
 				{/* Review Info */}
 				<div style={{ marginBottom: 16 }}>

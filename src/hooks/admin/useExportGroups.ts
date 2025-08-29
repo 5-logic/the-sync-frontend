@@ -1,10 +1,10 @@
-import { useCallback } from "react";
+import { useCallback } from 'react';
 
-import { calculateRowSpansForExport } from "@/components/features/admin/CapstoneProjectManagement/calculateRowSpan";
-import { exportToExcel } from "@/lib/utils/excelExporter";
-import { showNotification } from "@/lib/utils/notification";
-import { getCleanThesisNameForExport } from "@/lib/utils/thesisUtils";
-import { type GroupTableData } from "@/store/useCapstoneManagementStore";
+import { calculateRowSpansForExport } from '@/components/features/admin/CapstoneProjectManagement/calculateRowSpan';
+import { exportToExcel } from '@/lib/utils/excelExporter';
+import { showNotification } from '@/lib/utils/notification';
+import { getCleanThesisNameForExport } from '@/lib/utils/thesisUtils';
+import { type GroupTableData } from '@/store/useCapstoneManagementStore';
 
 export const useExportGroups = () => {
 	const handleExportExcel = useCallback(
@@ -16,8 +16,8 @@ export const useExportGroups = () => {
 			// Check if semester is selected
 			if (!selectedSemesterId) {
 				showNotification.error(
-					"Export Not Allowed",
-					"Please select a semester first",
+					'Export Not Allowed',
+					'Please select a semester first',
 				);
 				return;
 			}
@@ -25,8 +25,8 @@ export const useExportGroups = () => {
 			// Check if there's data to export
 			if (filteredData.length === 0) {
 				showNotification.error(
-					"Export Not Allowed",
-					"No data available to export",
+					'Export Not Allowed',
+					'No data available to export',
 				);
 				return;
 			}
@@ -38,8 +38,8 @@ export const useExportGroups = () => {
 				name: item.name,
 				major: item.major,
 				thesisName: getCleanThesisNameForExport(item.thesisName),
-				abbreviation: item.abbreviation || "",
-				supervisor: item.supervisor || "",
+				abbreviation: item.abbreviation || '',
+				supervisor: item.supervisor || '',
 			}));
 
 			const exportData = calculateRowSpansForExport(mappedData);
@@ -51,7 +51,7 @@ export const useExportGroups = () => {
 				data: exportData,
 				selectedSemester: selectedSemesterId,
 				semesterDisplayName: semesterDisplayName,
-				filename: `Groups_${semesterDisplayName}_${new Date().toISOString().split("T")[0]}.xlsx`,
+				filename: `Groups_${semesterDisplayName}_${new Date().toISOString().split('T')[0]}.xlsx`,
 			});
 
 			// Remove duplicate success notification - it's already handled in exportToExcel

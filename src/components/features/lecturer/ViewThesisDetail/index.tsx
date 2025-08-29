@@ -1,27 +1,27 @@
-"use client";
+'use client';
 
-import { Modal, Space, Spin, Typography } from "antd";
-import { useParams, useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { Modal, Space, Spin, Typography } from 'antd';
+import { useParams, useRouter } from 'next/navigation';
+import { useMemo, useState } from 'react';
 
-import { ThesisConfirmationModals } from "@/components/common/ConfirmModal";
-import { Header } from "@/components/common/Header";
-import ContentLoader from "@/components/common/loading/ContentLoader";
-import ActionButtons from "@/components/features/lecturer/ViewThesisDetail/ActionButtons";
-import DuplicateThesesSection from "@/components/features/lecturer/ViewThesisDetail/DuplicateThesesSection";
-import ThesisInfoCard from "@/components/features/lecturer/ViewThesisDetail/ThesisInfoCard";
-import { useSessionData } from "@/hooks/auth/useAuth";
-import { usePermissions } from "@/hooks/auth/usePermissions";
-import { useThesisActions, useThesisDetail } from "@/hooks/thesis";
-import { showNotification } from "@/lib/utils/notification";
-import { usePublishThesesStore } from "@/store/usePublishThesesStore";
+import { ThesisConfirmationModals } from '@/components/common/ConfirmModal';
+import { Header } from '@/components/common/Header';
+import ContentLoader from '@/components/common/loading/ContentLoader';
+import ActionButtons from '@/components/features/lecturer/ViewThesisDetail/ActionButtons';
+import DuplicateThesesSection from '@/components/features/lecturer/ViewThesisDetail/DuplicateThesesSection';
+import ThesisInfoCard from '@/components/features/lecturer/ViewThesisDetail/ThesisInfoCard';
+import { useSessionData } from '@/hooks/auth/useAuth';
+import { usePermissions } from '@/hooks/auth/usePermissions';
+import { useThesisActions, useThesisDetail } from '@/hooks/thesis';
+import { showNotification } from '@/lib/utils/notification';
+import { usePublishThesesStore } from '@/store/usePublishThesesStore';
 
 interface ViewThesisDetailProps {
-	readonly mode?: "thesis-management" | "publish-list";
+	readonly mode?: 'thesis-management' | 'publish-list';
 }
 
 export default function ViewThesisDetail({
-	mode = "thesis-management",
+	mode = 'thesis-management',
 }: Readonly<ViewThesisDetailProps>) {
 	const { id: thesisId } = useParams() as { id: string };
 	const router = useRouter();
@@ -61,7 +61,7 @@ export default function ViewThesisDetail({
 		// Business rule: Cannot unpublish if thesis has group assigned
 		if (isCurrentlyPublished && thesis.groupId) {
 			showNotification.warning(
-				"Cannot unpublish thesis that has been assigned to a group.",
+				'Cannot unpublish thesis that has been assigned to a group.',
 			);
 			return;
 		}
@@ -78,20 +78,20 @@ export default function ViewThesisDetail({
 					);
 					if (success) {
 						const actionText = isCurrentlyPublished
-							? "unpublished"
-							: "published";
+							? 'unpublished'
+							: 'published';
 						showNotification.success(`Thesis ${actionText} successfully!`);
 						router.back();
 					} else {
-						const actionText = isCurrentlyPublished ? "unpublish" : "publish";
+						const actionText = isCurrentlyPublished ? 'unpublish' : 'publish';
 						showNotification.error(
 							`Failed to ${actionText} thesis. Please try again.`,
 						);
 					}
 				} catch (error) {
-					console.error("Error updating thesis publish status:", error);
+					console.error('Error updating thesis publish status:', error);
 					showNotification.error(
-						"An unexpected error occurred while updating the thesis.",
+						'An unexpected error occurred while updating the thesis.',
 					);
 				} finally {
 					setPublishLoading(false);
@@ -103,9 +103,9 @@ export default function ViewThesisDetail({
 
 	// Handle exit action based on mode
 	const handleExit = async () => {
-		if (mode === "publish-list") {
+		if (mode === 'publish-list') {
 			// If in publish mode, go back to publish list
-			router.push("/lecturer/assign-list-publish-thesis");
+			router.push('/lecturer/assign-list-publish-thesis');
 		} else {
 			// Otherwise use the default thesis actions handler
 			actions.handleExit();
@@ -117,19 +117,19 @@ export default function ViewThesisDetail({
 			<ContentLoader>
 				<div
 					style={{
-						textAlign: "center",
-						padding: "20px",
-						minHeight: "calc(100vh - 280px)",
-						display: "flex",
-						flexDirection: "column",
-						justifyContent: "center",
-						alignItems: "center",
+						textAlign: 'center',
+						padding: '20px',
+						minHeight: 'calc(100vh - 280px)',
+						display: 'flex',
+						flexDirection: 'column',
+						justifyContent: 'center',
+						alignItems: 'center',
 					}}
 				>
 					<Spin size="large" />
 					<Typography.Text
 						type="secondary"
-						style={{ display: "block", marginTop: 16 }}
+						style={{ display: 'block', marginTop: 16 }}
 					>
 						{loadingMessage}
 					</Typography.Text>
@@ -143,20 +143,20 @@ export default function ViewThesisDetail({
 			<ContentLoader>
 				<div
 					style={{
-						textAlign: "center",
-						padding: "20px",
-						minHeight: "calc(100vh - 280px)",
-						display: "flex",
-						flexDirection: "column",
-						justifyContent: "center",
-						alignItems: "center",
+						textAlign: 'center',
+						padding: '20px',
+						minHeight: 'calc(100vh - 280px)',
+						display: 'flex',
+						flexDirection: 'column',
+						justifyContent: 'center',
+						alignItems: 'center',
 					}}
 				>
 					<Typography.Title level={4} type="danger">
 						Error Loading Thesis
 					</Typography.Title>
 					<Typography.Text type="secondary">
-						{error ?? "The requested thesis could not be found."}
+						{error ?? 'The requested thesis could not be found.'}
 					</Typography.Text>
 				</div>
 			</ContentLoader>
@@ -164,13 +164,13 @@ export default function ViewThesisDetail({
 	}
 
 	return (
-		<Space direction="vertical" style={{ width: "100%" }}>
+		<Space direction="vertical" style={{ width: '100%' }}>
 			<Header
 				title="Thesis Detail"
 				description="View comprehensive thesis information, supervisor details, and manage
 				approval status."
 			/>
-			<div style={{ display: "grid", gap: "24px" }}>
+			<div style={{ display: 'grid', gap: '24px' }}>
 				<ThesisInfoCard thesis={thesis} />
 
 				<ActionButtons

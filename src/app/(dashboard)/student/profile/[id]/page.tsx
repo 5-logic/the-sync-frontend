@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import { Alert, Button, Spin } from "antd";
-import { useParams, useRouter } from "next/navigation";
+import { Alert, Button, Spin } from 'antd';
+import { useParams, useRouter } from 'next/navigation';
 
-import StudentInfoCard from "@/components/features/student/StudentInfoCard";
-import { useStudentInvite } from "@/hooks/student/useStudentInvite";
+import StudentInfoCard from '@/components/features/student/StudentInfoCard';
+import { useStudentInvite } from '@/hooks/student/useStudentInvite';
 import {
 	useStudentGroup,
 	useStudentProfile,
-} from "@/hooks/student/useStudentProfile";
-import { useStudentRequestStatus } from "@/hooks/student/useStudentRequestStatus";
-import { useGroupDashboardStore } from "@/store/useGroupDashboardStore";
+} from '@/hooks/student/useStudentProfile';
+import { useStudentRequestStatus } from '@/hooks/student/useStudentRequestStatus';
+import { useGroupDashboardStore } from '@/store/useGroupDashboardStore';
 
 export default function StudentProfilePage() {
 	const params = useParams();
@@ -50,7 +50,7 @@ export default function StudentProfilePage() {
 	const isLeader = isCurrentUserGroupLeader(currentUserGroup || undefined);
 
 	const handleGoBackToGroup = () => {
-		router.push("/student/group-dashboard");
+		router.push('/student/group-dashboard');
 	};
 
 	if (studentLoading) {

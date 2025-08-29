@@ -1,23 +1,23 @@
-"use client";
+'use client';
 
-import { Button, Card, Col, Row, Space, Spin, Tooltip } from "antd";
-import { useRouter } from "next/navigation";
-import { useMemo } from "react";
+import { Button, Card, Col, Row, Space, Spin, Tooltip } from 'antd';
+import { useRouter } from 'next/navigation';
+import { useMemo } from 'react';
 
-import { Header } from "@/components/common/Header";
-import AssignConfirmModal from "@/components/features/lecturer/AssignStudentDetail/AssignConfirmModal";
-import AssignThesisModal from "@/components/features/lecturer/AssignStudentDetail/AssignThesisModal";
-import AvailableThesesTable from "@/components/features/lecturer/AssignStudentDetail/AvailableThesesTable";
-import GroupInfoCard from "@/components/features/lecturer/AssignStudentDetail/GroupInfoCard";
-import TeamMembers from "@/components/features/lecturer/AssignStudentDetail/TeamMembers";
-import ThesisCard from "@/components/features/lecturer/AssignStudentDetail/ThesisCard";
-import ThesisDetailModal from "@/components/features/lecturer/AssignStudentDetail/ThesisDetailModal";
-import ThesisFilterBar from "@/components/features/lecturer/AssignStudentDetail/ThesisFilterBar";
-import StudentFilterBar from "@/components/features/lecturer/GroupManagement/StudentFilterBar";
-import StudentTable from "@/components/features/lecturer/GroupManagement/StudentTable";
-import { useAssignStudentDetail } from "@/hooks/group/useAssignStudentDetail";
-import { useThesisOperations } from "@/hooks/group/useThesisOperations";
-import { Thesis } from "@/schemas/thesis";
+import { Header } from '@/components/common/Header';
+import AssignConfirmModal from '@/components/features/lecturer/AssignStudentDetail/AssignConfirmModal';
+import AssignThesisModal from '@/components/features/lecturer/AssignStudentDetail/AssignThesisModal';
+import AvailableThesesTable from '@/components/features/lecturer/AssignStudentDetail/AvailableThesesTable';
+import GroupInfoCard from '@/components/features/lecturer/AssignStudentDetail/GroupInfoCard';
+import TeamMembers from '@/components/features/lecturer/AssignStudentDetail/TeamMembers';
+import ThesisCard from '@/components/features/lecturer/AssignStudentDetail/ThesisCard';
+import ThesisDetailModal from '@/components/features/lecturer/AssignStudentDetail/ThesisDetailModal';
+import ThesisFilterBar from '@/components/features/lecturer/AssignStudentDetail/ThesisFilterBar';
+import StudentFilterBar from '@/components/features/lecturer/GroupManagement/StudentFilterBar';
+import StudentTable from '@/components/features/lecturer/GroupManagement/StudentTable';
+import { useAssignStudentDetail } from '@/hooks/group/useAssignStudentDetail';
+import { useThesisOperations } from '@/hooks/group/useThesisOperations';
+import { Thesis } from '@/schemas/thesis';
 
 interface AssignStudentDetailProps {
 	readonly groupId: string;
@@ -94,12 +94,12 @@ export default function AssignStudentDetail({
 
 	// Computed values
 	const majorOptions = useMemo(
-		() => ["All", ...majors.map((major) => major.id)],
+		() => ['All', ...majors.map((major) => major.id)],
 		[majors],
 	);
 	const majorNamesMap = useMemo(
 		() => ({
-			All: "All",
+			All: 'All',
 			...majors.reduce(
 				(acc, major) => ({ ...acc, [major.id]: major.name }),
 				{},
@@ -109,12 +109,12 @@ export default function AssignStudentDetail({
 	);
 
 	const semesterOptions = useMemo(
-		() => ["All", ...semesters.map((semester) => semester.id)],
+		() => ['All', ...semesters.map((semester) => semester.id)],
 		[semesters],
 	);
 	const semesterNamesMap = useMemo(
 		() => ({
-			All: "All",
+			All: 'All',
 			...semesters.reduce(
 				(acc, semester) => ({ ...acc, [semester.id]: semester.name }),
 				{},
@@ -132,7 +132,7 @@ export default function AssignStudentDetail({
 						.includes(filters.keyword.toLowerCase()) ||
 					student.email.toLowerCase().includes(filters.keyword.toLowerCase());
 				const majorMatch =
-					filters.major === "All" || student.majorId === filters.major;
+					filters.major === 'All' || student.majorId === filters.major;
 				return keywordMatch && majorMatch;
 			}),
 		[students, filters],
@@ -154,7 +154,7 @@ export default function AssignStudentDetail({
 						.toLowerCase()
 						.includes(thesisFilters.keyword.toLowerCase());
 				const semesterMatch =
-					thesisFilters.semester === "All" ||
+					thesisFilters.semester === 'All' ||
 					thesis.semesterId === thesisFilters.semester;
 				return keywordMatch && semesterMatch;
 			}),
@@ -169,22 +169,22 @@ export default function AssignStudentDetail({
 
 	const getAssignButtonTooltip = () => {
 		if (isGroupFull) {
-			return "Group has reached maximum capacity (6 members)";
+			return 'Group has reached maximum capacity (6 members)';
 		}
 		if (selectedStudentIds.length === 0) {
-			return "Please select a student to assign";
+			return 'Please select a student to assign';
 		}
-		return "";
+		return '';
 	};
 
 	const getAssignThesisButtonTooltip = () => {
 		if (groupHasThesis) {
-			return "Group already has a thesis assigned";
+			return 'Group already has a thesis assigned';
 		}
 		if (!selectedThesis) {
-			return "Please select a thesis to assign";
+			return 'Please select a thesis to assign';
 		}
-		return "";
+		return '';
 	};
 
 	// Thesis selection and view handlers
@@ -207,7 +207,7 @@ export default function AssignStudentDetail({
 
 	if (loading) {
 		return (
-			<div style={{ textAlign: "center", padding: "50px" }}>
+			<div style={{ textAlign: 'center', padding: '50px' }}>
 				<Spin size="large" tip="Loading group details..." />
 			</div>
 		);
@@ -218,15 +218,15 @@ export default function AssignStudentDetail({
 	}
 
 	return (
-		<Space direction="vertical" size={24} style={{ width: "100%" }}>
+		<Space direction="vertical" size={24} style={{ width: '100%' }}>
 			<Header
 				title={
-					isAdminMode ? "Assign Student to Group" : "Assign Student & Thesis"
+					isAdminMode ? 'Assign Student to Group' : 'Assign Student & Thesis'
 				}
 				description={
 					isAdminMode
-						? "Facilitate the grouping process by assigning ungrouped students to available project groups."
-						: "Facilitate the grouping process by assigning ungrouped students to available project groups and assign thesis topics."
+						? 'Facilitate the grouping process by assigning ungrouped students to available project groups.'
+						: 'Facilitate the grouping process by assigning ungrouped students to available project groups and assign thesis topics.'
 				}
 				badgeText={headerBadgeText}
 			/>
@@ -234,7 +234,7 @@ export default function AssignStudentDetail({
 			{/* Two-column layout for group info and team members */}
 			<Row gutter={[16, 16]}>
 				<Col xs={24} lg={15}>
-					<Space direction="vertical" size={16} style={{ width: "100%" }}>
+					<Space direction="vertical" size={16} style={{ width: '100%' }}>
 						<GroupInfoCard group={group} />
 						<ThesisCard
 							group={group}
@@ -256,11 +256,11 @@ export default function AssignStudentDetail({
 					<div
 						style={{
 							marginBottom: 16,
-							padding: "8px 12px",
-							backgroundColor: "#f6ffed",
-							border: "1px solid #b7eb8f",
-							borderRadius: "6px",
-							color: "#389e0d",
+							padding: '8px 12px',
+							backgroundColor: '#f6ffed',
+							border: '1px solid #b7eb8f',
+							borderRadius: '6px',
+							color: '#389e0d',
 						}}
 					>
 						✓ This group has reached maximum capacity (6 members). Student
@@ -332,11 +332,11 @@ export default function AssignStudentDetail({
 						<div
 							style={{
 								marginBottom: 16,
-								padding: "8px 12px",
-								backgroundColor: "#f6ffed",
-								border: "1px solid #b7eb8f",
-								borderRadius: "6px",
-								color: "#389e0d",
+								padding: '8px 12px',
+								backgroundColor: '#f6ffed',
+								border: '1px solid #b7eb8f',
+								borderRadius: '6px',
+								color: '#389e0d',
 							}}
 						>
 							✓ This group already has a thesis assigned. Thesis assignment is

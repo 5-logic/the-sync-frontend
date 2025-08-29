@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
 	Card,
@@ -9,10 +9,10 @@ import {
 	Space,
 	Tooltip,
 	Typography,
-} from "antd";
-import React, { useMemo } from "react";
+} from 'antd';
+import React, { useMemo } from 'react';
 
-import type { AIStatistic } from "@/lib/services/ai-statistics.service";
+import type { AIStatistic } from '@/lib/services/ai-statistics.service';
 
 const { Text, Title } = Typography;
 
@@ -34,16 +34,16 @@ const SVG_SIZE = CHART_SIZE + SVG_PADDING * 2;
 
 // Colors for different AI types
 const AI_TYPE_COLORS = {
-	CheckDuplicateThesis: "#1890ff",
-	SuggestThesis: "#52c41a",
-	SuggestParticipants: "#faad14",
+	CheckDuplicateThesis: '#1890ff',
+	SuggestThesis: '#52c41a',
+	SuggestParticipants: '#faad14',
 } as const;
 
 // Labels for display
 const AI_TYPE_LABELS = {
-	CheckDuplicateThesis: "Duplicate Check",
-	SuggestThesis: "Thesis Suggestion",
-	SuggestParticipants: "Participant Suggestion",
+	CheckDuplicateThesis: 'Duplicate Check',
+	SuggestThesis: 'Thesis Suggestion',
+	SuggestParticipants: 'Participant Suggestion',
 } as const;
 
 const AIUsageChart: React.FC<AIUsageChartProps> = ({
@@ -121,15 +121,15 @@ const AIUsageChart: React.FC<AIUsageChartProps> = ({
 	if (loading) {
 		return (
 			<Card>
-				<Space direction="vertical" size="middle" style={{ width: "100%" }}>
-					<Space direction="vertical" size="small" style={{ width: "100%" }}>
+				<Space direction="vertical" size="middle" style={{ width: '100%' }}>
+					<Space direction="vertical" size="small" style={{ width: '100%' }}>
 						<Skeleton.Input active size="large" style={{ width: 250 }} />
 						<Skeleton.Input active size="small" style={{ width: 350 }} />
 					</Space>
 					<Row gutter={[24, 16]} align="middle">
 						{/* Left Column - Pie Chart Skeleton */}
 						<Col xs={24} sm={24} md={12} lg={10} xl={8}>
-							<div style={{ textAlign: "center", padding: "20px 0" }}>
+							<div style={{ textAlign: 'center', padding: '20px 0' }}>
 								<Skeleton.Avatar active size={SVG_SIZE} shape="circle" />
 							</div>
 						</Col>
@@ -138,16 +138,16 @@ const AIUsageChart: React.FC<AIUsageChartProps> = ({
 							<Space
 								direction="vertical"
 								size="small"
-								style={{ width: "100%" }}
+								style={{ width: '100%' }}
 							>
 								{[1, 2, 3].map((i) => (
 									<div
 										key={`legend-skeleton-${i}`}
 										style={{
-											display: "flex",
-											alignItems: "center",
+											display: 'flex',
+											alignItems: 'center',
 											gap: 12,
-											padding: "12px 16px",
+											padding: '12px 16px',
 										}}
 									>
 										<Skeleton.Avatar active size={20} shape="circle" />
@@ -171,8 +171,8 @@ const AIUsageChart: React.FC<AIUsageChartProps> = ({
 	if (error || !statistics || statistics.length === 0 || totalCalls === 0) {
 		return (
 			<Card>
-				<Space direction="vertical" size="middle" style={{ width: "100%" }}>
-					<Space direction="vertical" size="small" style={{ width: "100%" }}>
+				<Space direction="vertical" size="middle" style={{ width: '100%' }}>
+					<Space direction="vertical" size="small" style={{ width: '100%' }}>
 						<Title level={4} style={{ margin: 0 }}>
 							AI Usage Statistics
 						</Title>
@@ -180,12 +180,12 @@ const AIUsageChart: React.FC<AIUsageChartProps> = ({
 							Track AI feature usage across the system this semester.
 						</Text>
 					</Space>
-					<div style={{ textAlign: "center", padding: "40px 0" }}>
+					<div style={{ textAlign: 'center', padding: '40px 0' }}>
 						<Empty
 							description={
 								error
-									? "Error loading AI usage data"
-									: "No AI usage data available for this semester"
+									? 'Error loading AI usage data'
+									: 'No AI usage data available for this semester'
 							}
 							image={Empty.PRESENTED_IMAGE_SIMPLE}
 						/>
@@ -197,9 +197,9 @@ const AIUsageChart: React.FC<AIUsageChartProps> = ({
 
 	return (
 		<Card>
-			<Space direction="vertical" size="middle" style={{ width: "100%" }}>
+			<Space direction="vertical" size="middle" style={{ width: '100%' }}>
 				{/* Header */}
-				<Space direction="vertical" size="small" style={{ width: "100%" }}>
+				<Space direction="vertical" size="small" style={{ width: '100%' }}>
 					<Title level={4} style={{ margin: 0 }}>
 						AI Usage Statistics
 					</Title>
@@ -212,16 +212,16 @@ const AIUsageChart: React.FC<AIUsageChartProps> = ({
 				<Row gutter={[24, 16]} align="middle">
 					{/* Left Column - Pie Chart */}
 					<Col xs={24} sm={24} md={12} lg={10} xl={8}>
-						<div style={{ textAlign: "center", padding: "20px 0" }}>
-							<div style={{ position: "relative", display: "inline-block" }}>
+						<div style={{ textAlign: 'center', padding: '20px 0' }}>
+							<div style={{ position: 'relative', display: 'inline-block' }}>
 								<svg width={SVG_SIZE} height={SVG_SIZE}>
 									{/* Data segments */}
 									{chartData.map((segment) => (
 										<Tooltip
 											key={`tooltip-${segment.type}`}
 											title={
-												<div style={{ textAlign: "center" }}>
-													<div style={{ fontWeight: "bold", marginBottom: 4 }}>
+												<div style={{ textAlign: 'center' }}>
+													<div style={{ fontWeight: 'bold', marginBottom: 4 }}>
 														{segment.label}
 													</div>
 													<div>
@@ -240,17 +240,17 @@ const AIUsageChart: React.FC<AIUsageChartProps> = ({
 												stroke="white"
 												strokeWidth={2}
 												style={{
-													transition: "all 0.1s ease-in-out",
-													cursor: "pointer",
+													transition: 'all 0.1s ease-in-out',
+													cursor: 'pointer',
 												}}
 												onMouseEnter={(e) => {
-													e.currentTarget.style.filter = "brightness(1.15)";
-													e.currentTarget.style.transform = "scale(1.05)";
+													e.currentTarget.style.filter = 'brightness(1.15)';
+													e.currentTarget.style.transform = 'scale(1.05)';
 													e.currentTarget.style.transformOrigin = `${SVG_SIZE / 2}px ${SVG_SIZE / 2}px`;
 												}}
 												onMouseLeave={(e) => {
-													e.currentTarget.style.filter = "brightness(1)";
-													e.currentTarget.style.transform = "scale(1)";
+													e.currentTarget.style.filter = 'brightness(1)';
+													e.currentTarget.style.transform = 'scale(1)';
 												}}
 											/>
 										</Tooltip>
@@ -260,23 +260,23 @@ const AIUsageChart: React.FC<AIUsageChartProps> = ({
 								{/* Center text */}
 								<div
 									style={{
-										position: "absolute",
-										top: "50%",
-										left: "50%",
-										transform: "translate(-50%, -50%)",
-										textAlign: "center",
+										position: 'absolute',
+										top: '50%',
+										left: '50%',
+										transform: 'translate(-50%, -50%)',
+										textAlign: 'center',
 									}}
 								>
 									<div
 										style={{
-											fontSize: "24px",
-											fontWeight: "bold",
-											color: "#262626",
+											fontSize: '24px',
+											fontWeight: 'bold',
+											color: '#262626',
 										}}
 									>
 										{totalCalls}
 									</div>
-									<div style={{ fontSize: "14px", color: "#8c8c8c" }}>
+									<div style={{ fontSize: '14px', color: '#8c8c8c' }}>
 										Total Calls
 									</div>
 								</div>
@@ -286,45 +286,45 @@ const AIUsageChart: React.FC<AIUsageChartProps> = ({
 
 					{/* Right Column - Legend */}
 					<Col xs={24} sm={24} md={12} lg={14} xl={16}>
-						<Space direction="vertical" size="small" style={{ width: "100%" }}>
+						<Space direction="vertical" size="small" style={{ width: '100%' }}>
 							{chartData.map((segment) => (
 								<button
 									key={`legend-${segment.type}`}
 									type="button"
 									style={{
-										display: "flex",
-										alignItems: "center",
-										justifyContent: "space-between",
-										padding: "12px 16px",
-										borderRadius: "8px",
-										backgroundColor: "#fafafa",
-										border: "1px solid #f0f0f0",
-										transition: "all 0.2s ease",
-										cursor: "pointer",
-										width: "100%",
+										display: 'flex',
+										alignItems: 'center',
+										justifyContent: 'space-between',
+										padding: '12px 16px',
+										borderRadius: '8px',
+										backgroundColor: '#fafafa',
+										border: '1px solid #f0f0f0',
+										transition: 'all 0.2s ease',
+										cursor: 'pointer',
+										width: '100%',
 									}}
 									onMouseEnter={(e) => {
-										e.currentTarget.style.backgroundColor = "#f5f5f5";
-										e.currentTarget.style.transform = "translateY(-1px)";
+										e.currentTarget.style.backgroundColor = '#f5f5f5';
+										e.currentTarget.style.transform = 'translateY(-1px)';
 										e.currentTarget.style.boxShadow =
-											"0 2px 8px rgba(0,0,0,0.1)";
+											'0 2px 8px rgba(0,0,0,0.1)';
 									}}
 									onMouseLeave={(e) => {
-										e.currentTarget.style.backgroundColor = "#fafafa";
-										e.currentTarget.style.transform = "translateY(0)";
-										e.currentTarget.style.boxShadow = "none";
+										e.currentTarget.style.backgroundColor = '#fafafa';
+										e.currentTarget.style.transform = 'translateY(0)';
+										e.currentTarget.style.boxShadow = 'none';
 									}}
 								>
 									<div
-										style={{ display: "flex", alignItems: "center", gap: 12 }}
+										style={{ display: 'flex', alignItems: 'center', gap: 12 }}
 									>
 										<div
 											style={{
 												width: 20,
 												height: 20,
-												borderRadius: "50%",
+												borderRadius: '50%',
 												backgroundColor: segment.color,
-												boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+												boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
 											}}
 										/>
 										<Text strong style={{ fontSize: 15 }}>
@@ -332,7 +332,7 @@ const AIUsageChart: React.FC<AIUsageChartProps> = ({
 										</Text>
 									</div>
 									<Space size={16}>
-										<Text style={{ fontSize: 14, color: "#595959" }}>
+										<Text style={{ fontSize: 14, color: '#595959' }}>
 											{segment.count} calls
 										</Text>
 										<Text strong style={{ fontSize: 15, color: segment.color }}>

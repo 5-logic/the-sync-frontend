@@ -1,10 +1,10 @@
-import { useState } from "react";
-import { AxiosError } from "axios";
+import { AxiosError } from 'axios';
+import { useState } from 'react';
 
-import groupService from "@/lib/services/groups.service";
-import { CreateMultipleGroupsRequest, CreatedGroup } from "@/schemas/group";
-import { useGroupsStore } from "@/store/useGroupsStore";
-import { showNotification } from "@/lib/utils/notification";
+import groupService from '@/lib/services/groups.service';
+import { showNotification } from '@/lib/utils/notification';
+import { CreateMultipleGroupsRequest, CreatedGroup } from '@/schemas/group';
+import { useGroupsStore } from '@/store/useGroupsStore';
 
 interface UseCreateGroupsResult {
 	createGroups: (
@@ -20,21 +20,21 @@ interface UseCreateGroupsResult {
 const getErrorDetails = (statusCode: number, errorMessage: string) => {
 	if (statusCode === 404) {
 		return {
-			title: "Semester Not Found",
+			title: 'Semester Not Found',
 			description:
 				errorMessage ||
-				"The selected semester does not exist. Please refresh and try again.",
+				'The selected semester does not exist. Please refresh and try again.',
 		};
 	}
 	if (statusCode === 400) {
 		return {
-			title: "Cannot Create Groups",
+			title: 'Cannot Create Groups',
 			description: errorMessage,
 		};
 	}
 	if (statusCode === 403) {
 		return {
-			title: "Access Denied",
+			title: 'Access Denied',
 			description:
 				errorMessage ||
 				"You don't have permission to create groups. Admin access required.",
@@ -42,14 +42,14 @@ const getErrorDetails = (statusCode: number, errorMessage: string) => {
 	}
 	if (statusCode >= 500) {
 		return {
-			title: "Server Error",
+			title: 'Server Error',
 			description:
 				errorMessage ||
-				"A server error occurred. Please try again later or contact support.",
+				'A server error occurred. Please try again later or contact support.',
 		};
 	}
 	return {
-		title: "Group Creation Failed",
+		title: 'Group Creation Failed',
 		description: errorMessage,
 	};
 };
@@ -61,7 +61,7 @@ const handleApiResponseError = (
 	response: { success: boolean; error?: string; statusCode?: number },
 	setError: (error: string) => void,
 ) => {
-	const errorMessage = response.error || "Failed to create groups";
+	const errorMessage = response.error || 'Failed to create groups';
 	setError(errorMessage);
 
 	const { title: errorTitle, description: errorDescription } = getErrorDetails(
@@ -99,17 +99,17 @@ const handleAxiosError = (
  */
 const getErrorMessageAndTitle = (err: Error) => {
 	let errorMessage = err.message;
-	let errorTitle = "Group Creation Failed";
+	let errorTitle = 'Group Creation Failed';
 
-	if (err.message.includes("Network Error") || err.message.includes("fetch")) {
-		errorTitle = "Connection Error";
+	if (err.message.includes('Network Error') || err.message.includes('fetch')) {
+		errorTitle = 'Connection Error';
 		errorMessage =
-			"Unable to connect to the server. Please check your internet connection and try again.";
-	} else if (err.message.includes("timeout")) {
-		errorTitle = "Request Timeout";
-		errorMessage = "The request took too long to complete. Please try again.";
-	} else if (err.message.includes("required")) {
-		errorTitle = "Missing Information";
+			'Unable to connect to the server. Please check your internet connection and try again.';
+	} else if (err.message.includes('timeout')) {
+		errorTitle = 'Request Timeout';
+		errorMessage = 'The request took too long to complete. Please try again.';
+	} else if (err.message.includes('required')) {
+		errorTitle = 'Missing Information';
 		// Keep the original validation message
 	}
 
@@ -135,11 +135,11 @@ export const useCreateGroups = (): UseCreateGroupsResult => {
 		try {
 			// Validate input
 			if (!request.semesterId || !request.numberOfGroup) {
-				throw new Error("Semester ID and number of groups are required");
+				throw new Error('Semester ID and number of groups are required');
 			}
 
 			if (request.numberOfGroup < 1) {
-				throw new Error("Number of groups must be at least 1");
+				throw new Error('Number of groups must be at least 1');
 			}
 
 			const response = await groupService.createMultipleGroups(request);
@@ -149,10 +149,10 @@ export const useCreateGroups = (): UseCreateGroupsResult => {
 			}
 
 			// Show success notification with backend response data
-			const groupCodes = response.data.map((group) => group.code).join(", ");
+			const groupCodes = response.data.map((group) => group.code).join(', ');
 
 			showNotification.success(
-				"Groups Created Successfully",
+				'Groups Created Successfully',
 				`Successfully created ${response.data.length} groups: ${groupCodes}`,
 				6, // Show longer for user to read group codes
 			);
@@ -171,9 +171,9 @@ export const useCreateGroups = (): UseCreateGroupsResult => {
 			}
 
 			// Handle other error types
-			const defaultErrorMessage = "An unexpected error occurred";
+			const defaultErrorMessage = 'An unexpected error occurred';
 			let errorMessage = defaultErrorMessage;
-			let errorTitle = "Group Creation Failed";
+			let errorTitle = 'Group Creation Failed';
 
 			if (err instanceof Error) {
 				const { errorMessage: msg, errorTitle: title } =

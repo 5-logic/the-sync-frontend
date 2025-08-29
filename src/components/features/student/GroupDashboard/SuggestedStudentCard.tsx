@@ -1,12 +1,12 @@
-import { PlusOutlined } from "@ant-design/icons";
-import { Button, Card, Col, Flex, Progress, Row, Typography } from "antd";
+import { PlusOutlined } from '@ant-design/icons';
+import { Button, Card, Col, Flex, Progress, Row, Typography } from 'antd';
 
 import {
-	ResponsibilityRadarChart,
 	ResponsibilityData,
-} from "@/components/common/radar-chart";
-import type { SuggestedStudent } from "@/lib/services/ai.service";
-import { useMajorStore } from "@/store";
+	ResponsibilityRadarChart,
+} from '@/components/common/radar-chart';
+import type { SuggestedStudent } from '@/lib/services/ai.service';
+import { useMajorStore } from '@/store';
 
 const { Text, Title } = Typography;
 
@@ -31,13 +31,13 @@ export default function SuggestedStudentCard({
 
 	// Get major name from cache
 	const major = getMajorById(student.majorId);
-	const majorName = major ? `${major.name} (${major.code})` : "Unknown Major";
+	const majorName = major ? `${major.name} (${major.code})` : 'Unknown Major';
 
 	// Get progress color based on compatibility percentage
 	const getProgressColor = (percentage: number) => {
-		if (percentage >= 0.7) return "#52c41a"; // green
-		if (percentage >= 0.5) return "#faad14"; // orange
-		return "#ff4d4f"; // red
+		if (percentage >= 0.7) return '#52c41a'; // green
+		if (percentage >= 0.5) return '#faad14'; // orange
+		return '#ff4d4f'; // red
 	};
 
 	// Convert studentResponsibilities to ResponsibilityData format
@@ -55,7 +55,7 @@ export default function SuggestedStudentCard({
 		<Card
 			size="small"
 			className="mb-3"
-			bodyStyle={{ padding: "12px" }}
+			bodyStyle={{ padding: '12px' }}
 			extra={
 				<Button
 					type="primary"
@@ -65,7 +65,7 @@ export default function SuggestedStudentCard({
 					disabled={isSelected}
 					onClick={handleAdd}
 				>
-					{isSelected ? "Added" : "Add"}
+					{isSelected ? 'Added' : 'Add'}
 				</Button>
 			}
 		>
@@ -76,24 +76,24 @@ export default function SuggestedStudentCard({
 						align="flex-start"
 						gap={8}
 						className="mb-2"
-						style={{ minHeight: "85px", maxHeight: "100px" }}
+						style={{ minHeight: '85px', maxHeight: '100px' }}
 					>
 						<div
-							style={{ minHeight: "80px", maxHeight: "95px", width: "100%" }}
+							style={{ minHeight: '80px', maxHeight: '95px', width: '100%' }}
 						>
 							<Title
 								level={5}
 								className="mb-0 text-sm"
 								style={{
-									lineHeight: "18px",
-									minHeight: "18px",
-									maxHeight: "36px", // Allow for 2 lines
-									overflow: "hidden",
-									textOverflow: "ellipsis",
-									display: "-webkit-box",
+									lineHeight: '18px',
+									minHeight: '18px',
+									maxHeight: '36px', // Allow for 2 lines
+									overflow: 'hidden',
+									textOverflow: 'ellipsis',
+									display: '-webkit-box',
 									WebkitLineClamp: 2,
-									WebkitBoxOrient: "vertical",
-									marginBottom: "4px",
+									WebkitBoxOrient: 'vertical',
+									marginBottom: '4px',
 								}}
 							>
 								{student.fullName}
@@ -102,11 +102,11 @@ export default function SuggestedStudentCard({
 								type="secondary"
 								className="text-xs"
 								style={{
-									lineHeight: "16px",
-									minHeight: "40px", // Ensure minimum space for student info
-									display: "block",
-									overflow: "hidden",
-									textOverflow: "ellipsis",
+									lineHeight: '16px',
+									minHeight: '40px', // Ensure minimum space for student info
+									display: 'block',
+									overflow: 'hidden',
+									textOverflow: 'ellipsis',
 								}}
 							>
 								{student.studentCode} • {student.email}
@@ -117,7 +117,7 @@ export default function SuggestedStudentCard({
 					</Flex>
 
 					{/* Compatibility Percentage */}
-					<div className="mb-2" style={{ marginTop: "12px" }}>
+					<div className="mb-2" style={{ marginTop: '12px' }}>
 						<Flex align="center" gap={6}>
 							<Text strong className="text-xs">
 								Compatibility:

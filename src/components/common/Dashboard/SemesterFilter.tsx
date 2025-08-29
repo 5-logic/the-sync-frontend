@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { ReloadOutlined } from "@ant-design/icons";
-import { Button, Select, Space, Tooltip, Typography } from "antd";
-import React, { useEffect } from "react";
+import { ReloadOutlined } from '@ant-design/icons';
+import { Button, Select, Space, Tooltip, Typography } from 'antd';
+import React, { useEffect } from 'react';
 
-import { useDashboardStore, useSemesterStore } from "@/store";
+import { useDashboardStore, useSemesterStore } from '@/store';
 
 const { Text } = Typography;
 
@@ -38,9 +38,9 @@ const SemesterFilter: React.FC<SemesterFilterProps> = ({ style }) => {
 			// Find active semester (Preparing, Picking, or Ongoing)
 			const activeSemester = semesters.find(
 				(semester) =>
-					semester.status === "Preparing" ||
-					semester.status === "Picking" ||
-					semester.status === "Ongoing",
+					semester.status === 'Preparing' ||
+					semester.status === 'Picking' ||
+					semester.status === 'Ongoing',
 			);
 
 			// If no active semester, select the most recent one
@@ -64,7 +64,7 @@ const SemesterFilter: React.FC<SemesterFilterProps> = ({ style }) => {
 
 	return (
 		<Space direction="vertical" size="small" style={style}>
-			<Text strong style={{ fontSize: "14px" }}>
+			<Text strong style={{ fontSize: '14px' }}>
 				Semester
 			</Text>
 			<Space size="small">

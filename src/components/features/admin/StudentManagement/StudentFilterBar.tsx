@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
 import {
 	PlusOutlined,
 	ReloadOutlined,
 	SearchOutlined,
-} from "@ant-design/icons";
-import { Button, Input, Select } from "antd";
-import { useEffect } from "react";
+} from '@ant-design/icons';
+import { Button, Input, Select } from 'antd';
+import { useEffect } from 'react';
 
-import { SEMESTER_STATUS_TAGS } from "@/lib/constants/semester";
-import { useMajorStore, useSemesterStore } from "@/store";
+import { SEMESTER_STATUS_TAGS } from '@/lib/constants/semester';
+import { useMajorStore, useSemesterStore } from '@/store';
 
 const { Option } = Select;
 
@@ -63,7 +63,7 @@ export default function StudentFilterBar({
 		if (!semesterFilter && semesters.length > 0 && !semestersLoading) {
 			// Prefer semesters that are not in NotYet or End status
 			const activeSemesters = semesters.filter(
-				(semester) => semester.status !== "NotYet" && semester.status !== "End",
+				(semester) => semester.status !== 'NotYet' && semester.status !== 'End',
 			);
 
 			// Use active semester if available, otherwise use first semester
@@ -85,7 +85,7 @@ export default function StudentFilterBar({
 						<Select
 							value={semesterFilter}
 							onChange={setSemesterFilter}
-							style={{ width: "100%" }}
+							style={{ width: '100%' }}
 							size="middle"
 							loading={semestersLoading}
 							placeholder="Select semester"
@@ -95,12 +95,12 @@ export default function StudentFilterBar({
 								<Option key={semester.id} value={semester.id}>
 									<div
 										style={{
-											display: "flex",
-											alignItems: "center",
-											justifyContent: "space-between",
-											gap: "8px",
-											width: "100%",
-											paddingRight: "8px",
+											display: 'flex',
+											alignItems: 'center',
+											justifyContent: 'space-between',
+											gap: '8px',
+											width: '100%',
+											paddingRight: '8px',
 										}}
 									>
 										<span style={{ flex: 1, minWidth: 0 }}>
@@ -120,7 +120,7 @@ export default function StudentFilterBar({
 						<Select
 							value={statusFilter}
 							onChange={setStatusFilter}
-							style={{ width: "100%" }}
+							style={{ width: '100%' }}
 							size="middle"
 						>
 							<Option value="All">All Status</Option>
@@ -134,7 +134,7 @@ export default function StudentFilterBar({
 						<Select
 							value={majorFilter}
 							onChange={setMajorFilter}
-							style={{ width: "100%" }}
+							style={{ width: '100%' }}
 							size="middle"
 							loading={majorsLoading}
 							placeholder="Select major"
@@ -156,7 +156,7 @@ export default function StudentFilterBar({
 							onChange={(e) => setSearchText(e.target.value)}
 							prefix={<SearchOutlined />}
 							size="middle"
-							style={{ width: "100%" }}
+							style={{ width: '100%' }}
 						/>
 					</div>
 				</div>

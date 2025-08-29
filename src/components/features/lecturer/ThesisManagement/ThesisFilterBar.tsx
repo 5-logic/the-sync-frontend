@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import SharedThesisFilterBar from "@/components/common/SharedThesisFilterBar";
-import { useSessionData } from "@/hooks/auth/useAuth";
+import SharedThesisFilterBar from '@/components/common/SharedThesisFilterBar';
+import { useSessionData } from '@/hooks/auth/useAuth';
 
 interface Props {
 	search: string;
 	onSearchChange: (val: string) => void;
-	status?: "approved" | "pending" | "rejected" | "new";
-	onStatusChange: (val?: "approved" | "pending" | "rejected" | "new") => void;
+	status?: 'approved' | 'pending' | 'rejected' | 'new';
+	onStatusChange: (val?: 'approved' | 'pending' | 'rejected' | 'new') => void;
 	owned?: boolean;
 	onOwnedChange: (val?: boolean) => void;
 	semester?: string;
@@ -20,19 +20,19 @@ export default function ThesisFilterBar(props: Readonly<Props>) {
 
 	// Check if user is moderator
 	const isModerator =
-		session?.user?.role === "moderator" || session?.user?.isModerator;
+		session?.user?.role === 'moderator' || session?.user?.isModerator;
 
 	// Define status options based on user role
 	const statusOptions = isModerator
 		? [
-				{ value: "approved", label: "Approved" },
-				{ value: "rejected", label: "Rejected" },
+				{ value: 'approved', label: 'Approved' },
+				{ value: 'rejected', label: 'Rejected' },
 			]
 		: [
-				{ value: "new", label: "New" },
-				{ value: "approved", label: "Approved" },
-				{ value: "pending", label: "Pending" },
-				{ value: "rejected", label: "Rejected" },
+				{ value: 'new', label: 'New' },
+				{ value: 'approved', label: 'Approved' },
+				{ value: 'pending', label: 'Pending' },
+				{ value: 'rejected', label: 'Rejected' },
 			];
 
 	return (

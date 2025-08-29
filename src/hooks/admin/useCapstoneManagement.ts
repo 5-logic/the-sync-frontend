@@ -1,12 +1,12 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo } from 'react';
 
-import { calculateRowSpans } from "@/components/features/admin/CapstoneProjectManagement/calculateRowSpan";
-import { getCleanThesisNameForSearch } from "@/lib/utils/thesisUtils";
-import { Semester } from "@/schemas/semester";
+import { calculateRowSpans } from '@/components/features/admin/CapstoneProjectManagement/calculateRowSpan';
+import { getCleanThesisNameForSearch } from '@/lib/utils/thesisUtils';
+import { Semester } from '@/schemas/semester';
 import {
 	type GroupTableData,
 	useCapstoneManagementStore,
-} from "@/store/useCapstoneManagementStore";
+} from '@/store/useCapstoneManagementStore';
 
 export const useCapstoneManagement = (
 	selectedSemesterId: string,
@@ -74,7 +74,7 @@ export const useCapstoneManagement = (
 		const semester = semesters.find(
 			(s: Semester) => s.id === selectedSemesterId,
 		);
-		return semester?.name || "";
+		return semester?.name || '';
 	}, [semesters, selectedSemesterId]);
 
 	return {

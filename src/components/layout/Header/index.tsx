@@ -2,14 +2,14 @@ import {
 	MenuFoldOutlined,
 	MenuUnfoldOutlined,
 	QuestionCircleOutlined,
-} from "@ant-design/icons";
-import { Button, Layout, Tooltip } from "antd";
-import React from "react";
+} from '@ant-design/icons';
+import { Button, Layout, Tooltip } from 'antd';
+import React from 'react';
 
-import { HeaderSectionProps } from "@/components/layout/CollapsibleLayout/CollapsibleLayout.types";
-import { CurrentSemesterTag } from "@/components/layout/Header/CurrentSemesterTag";
-import UserProfile from "@/components/layout/Header/UserProfile";
-import { useResponsiveLayout } from "@/hooks/ui";
+import { HeaderSectionProps } from '@/components/layout/CollapsibleLayout/CollapsibleLayout.types';
+import { CurrentSemesterTag } from '@/components/layout/Header/CurrentSemesterTag';
+import UserProfile from '@/components/layout/Header/UserProfile';
+import { useResponsiveLayout } from '@/hooks/ui';
 
 const { Header } = Layout;
 
@@ -25,22 +25,22 @@ export const HeaderSection: React.FC<HeaderSectionProps> = ({
 			style={{
 				padding: 0,
 				background: colorBgContainer,
-				display: "flex",
-				alignItems: "center",
-				justifyContent: "space-between",
-				boxShadow: "0 1px 4px rgba(0,21,41,.08)",
+				display: 'flex',
+				alignItems: 'center',
+				justifyContent: 'space-between',
+				boxShadow: '0 1px 4px rgba(0,21,41,.08)',
 				zIndex: 50,
-				position: "sticky",
+				position: 'sticky',
 				top: 0,
 			}}
 		>
-			<div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+			<div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
 				<Button
 					type="text"
 					icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
 					onClick={onToggle}
 					style={{
-						fontSize: "16px",
+						fontSize: '16px',
 						width: 64,
 						height: 64,
 					}}
@@ -54,7 +54,7 @@ export const HeaderSection: React.FC<HeaderSectionProps> = ({
 					style={{
 						fontSize: 16,
 						fontWeight: 500,
-						color: "#434343",
+						color: '#434343',
 					}}
 				></div>
 			</div>
@@ -62,8 +62,8 @@ export const HeaderSection: React.FC<HeaderSectionProps> = ({
 			<div
 				style={{
 					paddingRight: 24,
-					display: "flex",
-					alignItems: "center",
+					display: 'flex',
+					alignItems: 'center',
 					gap: 8,
 				}}
 			>
@@ -75,17 +75,17 @@ export const HeaderSection: React.FC<HeaderSectionProps> = ({
 							icon={<QuestionCircleOutlined />}
 							onClick={() => {
 								const newWindow = window.open(
-									"https://www.youtube.com/watch?v=rsklVACTVgU",
-									"_blank",
-									"noopener,noreferrer",
+									'https://www.youtube.com/watch?v=rsklVACTVgU',
+									'_blank',
+									'noopener,noreferrer',
 								);
 								if (newWindow) newWindow.opener = null;
 							}}
 							style={{
-								fontSize: "16px",
-								color: "#434343",
-								display: "flex",
-								alignItems: "center",
+								fontSize: '16px',
+								color: '#434343',
+								display: 'flex',
+								alignItems: 'center',
 								gap: 4,
 							}}
 						>

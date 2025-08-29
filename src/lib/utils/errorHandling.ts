@@ -19,7 +19,7 @@ export const handleAsyncError = (
 	if (context) {
 		console.error(`Error in ${context}:`, error);
 	} else {
-		console.error("Error:", error);
+		console.error('Error:', error);
 	}
 
 	return errorMessage;
@@ -63,9 +63,9 @@ export const withLoadingState = async <T>(
 		return await operation();
 	} catch (error) {
 		const errorMessage =
-			error instanceof Error ? error.message : "Operation failed";
+			error instanceof Error ? error.message : 'Operation failed';
 		setError?.(errorMessage);
-		console.error("Operation error:", error);
+		console.error('Operation error:', error);
 		return null;
 	} finally {
 		setLoading(false);

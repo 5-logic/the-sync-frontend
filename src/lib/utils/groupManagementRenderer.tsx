@@ -1,10 +1,11 @@
-import React from "react";
-import { Card } from "antd";
-import { useRouter } from "next/navigation";
-import GroupAssignTable from "@/components/features/lecturer/GroupManagement/GroupAssignTable";
-import StudentFilterBar from "@/components/features/lecturer/GroupManagement/StudentFilterBar";
-import StudentTable from "@/components/features/lecturer/GroupManagement/StudentTable";
-import { useGroupManagement } from "@/hooks/admin/useGroupManagement";
+import { Card } from 'antd';
+import { useRouter } from 'next/navigation';
+import React from 'react';
+
+import GroupAssignTable from '@/components/features/lecturer/GroupManagement/GroupAssignTable';
+import StudentFilterBar from '@/components/features/lecturer/GroupManagement/StudentFilterBar';
+import StudentTable from '@/components/features/lecturer/GroupManagement/StudentTable';
+import { useGroupManagement } from '@/hooks/admin/useGroupManagement';
 
 interface GroupManagementRendererProps {
 	routePrefix: string;
@@ -40,7 +41,7 @@ export const useGroupManagementRenderer = ({
 				router.push(`${routePrefix}/group-management/${group.id}`);
 			}}
 			onDelete={(group) => {
-				console.log("Group deleted:", group.name);
+				console.log('Group deleted:', group.name);
 				// Optional: You can add additional logic here if needed
 			}}
 		/>

@@ -1,26 +1,26 @@
-"use client";
+'use client';
 
-import { Empty, Space, Spin } from "antd";
-import { useParams } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { Empty, Space, Spin } from 'antd';
+import { useParams } from 'next/navigation';
+import { useCallback, useEffect, useState } from 'react';
 
-import { Header } from "@/components/common/Header";
-import ActionButtons from "@/components/features/student/ViewThesisDetail/ActionButtons";
-import AssignedGroupCard from "@/components/features/student/ViewThesisDetail/AssignedGroupCard";
-import ThesisInfoCard from "@/components/features/student/ViewThesisDetail/ThesisInfoCard";
-import { useSessionData } from "@/hooks/auth/useAuth";
-import { useCurrentSemester } from "@/hooks/semester";
-import groupsService from "@/lib/services/groups.service";
-import lecturerService from "@/lib/services/lecturers.service";
-import supervisionService from "@/lib/services/supervisions.service";
-import thesesService from "@/lib/services/theses.service";
+import { Header } from '@/components/common/Header';
+import ActionButtons from '@/components/features/student/ViewThesisDetail/ActionButtons';
+import AssignedGroupCard from '@/components/features/student/ViewThesisDetail/AssignedGroupCard';
+import ThesisInfoCard from '@/components/features/student/ViewThesisDetail/ThesisInfoCard';
+import { useSessionData } from '@/hooks/auth/useAuth';
+import { useCurrentSemester } from '@/hooks/semester';
+import groupsService from '@/lib/services/groups.service';
+import lecturerService from '@/lib/services/lecturers.service';
+import supervisionService from '@/lib/services/supervisions.service';
+import thesesService from '@/lib/services/theses.service';
 import thesisApplicationService, {
 	ThesisApplication,
-} from "@/lib/services/thesis-application.service";
-import { handleApiResponse } from "@/lib/utils/handleApi";
-import { GroupDashboard } from "@/schemas/group";
-import { Lecturer } from "@/schemas/lecturer";
-import { ThesisWithRelations } from "@/schemas/thesis";
+} from '@/lib/services/thesis-application.service';
+import { handleApiResponse } from '@/lib/utils/handleApi';
+import { GroupDashboard } from '@/schemas/group';
+import { Lecturer } from '@/schemas/lecturer';
+import { ThesisWithRelations } from '@/schemas/thesis';
 
 interface SupervisorInfo {
 	id: string;
@@ -60,7 +60,7 @@ export default function StudentThesisDetailPage() {
 			const groupResponse = await groupsService.getStudentGroupById(
 				session.user.id,
 			);
-			const groupResult = handleApiResponse(groupResponse, "Success");
+			const groupResult = handleApiResponse(groupResponse, 'Success');
 
 			if (groupResult.success && groupResult.data) {
 				const group = Array.isArray(groupResult.data)
@@ -76,7 +76,7 @@ export default function StudentThesisDetailPage() {
 						);
 					const applicationsResult = handleApiResponse(
 						applicationsResponse,
-						"Success",
+						'Success',
 					);
 
 					if (applicationsResult.success && applicationsResult.data) {
@@ -85,7 +85,7 @@ export default function StudentThesisDetailPage() {
 				}
 			}
 		} catch (error) {
-			console.error("Error fetching applications:", error);
+			console.error('Error fetching applications:', error);
 		} finally {
 			setApplicationsLoading(false);
 		}
@@ -101,11 +101,11 @@ export default function StudentThesisDetailPage() {
 		): Promise<Lecturer | undefined> => {
 			try {
 				const lecturerResponse = await lecturerService.findOne(lecturerId);
-				const lecturerResult = handleApiResponse(lecturerResponse, "Success");
+				const lecturerResult = handleApiResponse(lecturerResponse, 'Success');
 
 				return lecturerResult.success ? lecturerResult.data : undefined;
 			} catch (error) {
-				console.error("Error fetching lecturer details:", error);
+				console.error('Error fetching lecturer details:', error);
 				return undefined;
 			}
 		};
@@ -116,7 +116,7 @@ export default function StudentThesisDetailPage() {
 		): Promise<SupervisorInfo | null> => {
 			try {
 				const lecturerResponse = await lecturerService.findOne(lecturerId);
-				const lecturerResult = handleApiResponse(lecturerResponse, "Success");
+				const lecturerResult = handleApiResponse(lecturerResponse, 'Success');
 
 				if (lecturerResult.success && lecturerResult.data) {
 					return {
@@ -138,7 +138,7 @@ export default function StudentThesisDetailPage() {
 					await supervisionService.getByThesisId(thesisId);
 				const supervisionResult = handleApiResponse(
 					supervisionResponse,
-					"Success",
+					'Success',
 				);
 
 				if (!supervisionResult.success || !supervisionResult.data) {
@@ -154,7 +154,7 @@ export default function StudentThesisDetailPage() {
 					(supervisor): supervisor is SupervisorInfo => supervisor !== null,
 				);
 			} catch (error) {
-				console.error("Error fetching supervisors:", error);
+				console.error('Error fetching supervisors:', error);
 				return [];
 			}
 		};
@@ -165,13 +165,13 @@ export default function StudentThesisDetailPage() {
 		): Promise<GroupDashboard | null> => {
 			try {
 				const groupResponse = await groupsService.findOne(groupId);
-				const groupResult = handleApiResponse(groupResponse, "Success");
+				const groupResult = handleApiResponse(groupResponse, 'Success');
 
 				return groupResult.success && groupResult.data
 					? groupResult.data
 					: null;
 			} catch (error) {
-				console.error("Error fetching group details:", error);
+				console.error('Error fetching group details:', error);
 				return null;
 			}
 		};
@@ -181,7 +181,7 @@ export default function StudentThesisDetailPage() {
 
 			// Fetch thesis data with relations
 			const thesisResponse = await thesesService.findOneWithRelations(thesisId);
-			const thesisResult = handleApiResponse(thesisResponse, "Success");
+			const thesisResult = handleApiResponse(thesisResponse, 'Success');
 
 			if (!thesisResult.success || !thesisResult.data) {
 				return;
@@ -210,7 +210,7 @@ export default function StudentThesisDetailPage() {
 			// Set assigned group or clear it
 			setAssignedGroup(groupData);
 		} catch (error) {
-			console.error("Error fetching thesis details:", error);
+			console.error('Error fetching thesis details:', error);
 		} finally {
 			setLoading(false);
 		}
@@ -233,7 +233,7 @@ export default function StudentThesisDetailPage() {
 
 	if (loading) {
 		return (
-			<div style={{ textAlign: "center", padding: "50px" }}>
+			<div style={{ textAlign: 'center', padding: '50px' }}>
 				<Spin size="large" tip="Loading thesis details..." />
 			</div>
 		);
@@ -244,7 +244,7 @@ export default function StudentThesisDetailPage() {
 	}
 
 	return (
-		<Space direction="vertical" size="large" style={{ width: "100%" }}>
+		<Space direction="vertical" size="large" style={{ width: '100%' }}>
 			{/* Header */}
 			<Header
 				title="Thesis Detail"

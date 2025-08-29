@@ -1,6 +1,6 @@
-import httpClient from "@/lib/services/_httpClient";
-import { ApiResponse } from "@/schemas/_common";
-import { SubmissionDetail } from "@/schemas/submission";
+import httpClient from '@/lib/services/_httpClient';
+import { ApiResponse } from '@/schemas/_common';
+import { SubmissionDetail } from '@/schemas/submission';
 
 // API response interfaces for milestone submissions list
 export interface SubmissionGroup {
@@ -33,7 +33,7 @@ export interface SubmissionThesis {
 
 export interface SubmissionItem {
 	id: string;
-	status: "Submitted" | "NotSubmitted";
+	status: 'Submitted' | 'NotSubmitted';
 	documents: string[];
 	createdAt: string;
 	group: SubmissionGroup;
@@ -73,8 +73,8 @@ export interface SubmissionDetailResponse {
  * Handles submission-related API operations
  */
 class SubmissionService {
-	private readonly baseUrl = "/groups";
-	private readonly submissionsUrl = "/submissions";
+	private readonly baseUrl = '/groups';
+	private readonly submissionsUrl = '/submissions';
 
 	/**
 	 * Get submission for specific group and milestone

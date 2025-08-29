@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { Card, Progress, Skeleton, Space, Tooltip, Typography } from "antd";
+import { Card, Progress, Skeleton, Space, Tooltip, Typography } from 'antd';
 
-import { useDashboardStore } from "@/store";
+import { useDashboardStore } from '@/store';
 
 const { Title, Text } = Typography;
 
@@ -13,27 +13,27 @@ export function ProgressOverview() {
 	if (loading) {
 		return (
 			<Card>
-				<Space direction="vertical" size="middle" style={{ width: "100%" }}>
+				<Space direction="vertical" size="middle" style={{ width: '100%' }}>
 					<Skeleton.Input active size="large" style={{ width: 200 }} />
 					<Skeleton.Input active size="small" style={{ width: 400 }} />
-					<div style={{ borderTop: "1px solid #e8e8e8", paddingTop: "16px" }}>
+					<div style={{ borderTop: '1px solid #e8e8e8', paddingTop: '16px' }}>
 						{[
-							"students-grouped",
-							"groups-thesis",
-							"thesis-approved",
-							"supervisors-assigned",
+							'students-grouped',
+							'groups-thesis',
+							'thesis-approved',
+							'supervisors-assigned',
 						].map((progressType) => (
 							<Space
 								key={`progress-skeleton-${progressType}`}
 								direction="vertical"
 								size="small"
-								style={{ width: "100%", marginBottom: 16 }}
+								style={{ width: '100%', marginBottom: 16 }}
 							>
 								<Skeleton.Input active size="small" style={{ width: 150 }} />
 								<Skeleton.Button
 									active
 									size="small"
-									style={{ width: "100%", height: 6 }}
+									style={{ width: '100%', height: 6 }}
 								/>
 							</Space>
 						))}
@@ -48,28 +48,28 @@ export function ProgressOverview() {
 		if (error || !progressOverview || !summaryCard) {
 			return [
 				{
-					label: "Students Grouped",
+					label: 'Students Grouped',
 					percent: 0,
-					color: "#1890ff",
-					tooltip: "0 of 0 students grouped",
+					color: '#1890ff',
+					tooltip: '0 of 0 students grouped',
 				},
 				{
-					label: "Groups with Picked Thesis",
+					label: 'Groups with Picked Thesis',
 					percent: 0,
-					color: "#52c41a",
-					tooltip: "0 of 0 groups picked thesis",
+					color: '#52c41a',
+					tooltip: '0 of 0 groups picked thesis',
 				},
 				{
-					label: "Thesis Published",
+					label: 'Thesis Published',
 					percent: 0,
-					color: "#faad14",
-					tooltip: "0 of 0 theses published",
+					color: '#faad14',
+					tooltip: '0 of 0 theses published',
 				},
 				{
-					label: "Assigned Supervisors",
+					label: 'Assigned Supervisors',
 					percent: 0,
-					color: "#722ed1",
-					tooltip: "0 of 0 supervisors assigned",
+					color: '#722ed1',
+					tooltip: '0 of 0 supervisors assigned',
 				},
 			];
 		}
@@ -110,27 +110,27 @@ export function ProgressOverview() {
 
 		return [
 			{
-				label: "Students Grouped",
+				label: 'Students Grouped',
 				percent: studentsGroupedPercent,
-				color: "#1890ff",
+				color: '#1890ff',
 				tooltip: `${progressOverview.totalStudentGrouped} of ${summaryCard.totalStudents} students grouped`,
 			},
 			{
-				label: "Groups with Picked Thesis",
+				label: 'Groups with Picked Thesis',
 				percent: groupsPickedThesisPercent,
-				color: "#52c41a",
+				color: '#52c41a',
 				tooltip: `${progressOverview.totalGroupPickedThesis} of ${summaryCard.totalGroups} groups picked thesis`,
 			},
 			{
-				label: "Thesis Published",
+				label: 'Thesis Published',
 				percent: thesesApprovedPercent,
-				color: "#faad14",
+				color: '#faad14',
 				tooltip: `${progressOverview.thesisPublished} of ${summaryCard.totalTheses} theses published`,
 			},
 			{
-				label: "Assigned Supervisors",
+				label: 'Assigned Supervisors',
 				percent: assignedSupervisorsPercent,
-				color: "#722ed1",
+				color: '#722ed1',
 				tooltip: `${progressOverview.totalAssignedSupervisors} of ${summaryCard.totalLecturers} supervisors assigned`,
 			},
 		];
@@ -140,8 +140,8 @@ export function ProgressOverview() {
 
 	return (
 		<Card>
-			<Space direction="vertical" size="middle" style={{ width: "100%" }}>
-				<Space direction="vertical" size="small" style={{ width: "100%" }}>
+			<Space direction="vertical" size="middle" style={{ width: '100%' }}>
+				<Space direction="vertical" size="small" style={{ width: '100%' }}>
 					<Title level={4} style={{ margin: 0 }}>
 						Semester Progress Overview
 					</Title>
@@ -154,9 +154,9 @@ export function ProgressOverview() {
 					direction="vertical"
 					size="middle"
 					style={{
-						borderTop: "1px solid #e8e8e8",
-						width: "100%",
-						paddingTop: "16px",
+						borderTop: '1px solid #e8e8e8',
+						width: '100%',
+						paddingTop: '16px',
 					}}
 				>
 					{progressData.map((item) => (
@@ -164,13 +164,13 @@ export function ProgressOverview() {
 							key={item.label}
 							direction="vertical"
 							size="small"
-							style={{ width: "100%" }}
+							style={{ width: '100%' }}
 						>
-							<Space style={{ width: "100%", justifyContent: "space-between" }}>
-								<Text strong style={{ fontSize: "14px" }}>
+							<Space style={{ width: '100%', justifyContent: 'space-between' }}>
+								<Text strong style={{ fontSize: '14px' }}>
 									{item.label}
 								</Text>
-								<Text strong style={{ fontSize: "14px" }}>
+								<Text strong style={{ fontSize: '14px' }}>
 									{item.percent}%
 								</Text>
 							</Space>

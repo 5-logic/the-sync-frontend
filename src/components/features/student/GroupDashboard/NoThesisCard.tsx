@@ -1,6 +1,6 @@
-import { BulbOutlined, FileTextOutlined } from "@ant-design/icons";
-import { Button, Card, Col, Divider, Row, Typography } from "antd";
-import { useRouter } from "next/navigation";
+import { BulbOutlined, FileTextOutlined } from '@ant-design/icons';
+import { Button, Card, Col, Divider, Row, Typography } from 'antd';
+import { useRouter } from 'next/navigation';
 
 const { Title, Text } = Typography;
 
@@ -10,7 +10,7 @@ interface ThesisOptionCardProps {
 	readonly description: string;
 	readonly buttonText: string;
 	readonly icon: React.ReactNode;
-	readonly buttonType?: "primary" | "default";
+	readonly buttonType?: 'primary' | 'default';
 	readonly onClick?: () => void;
 }
 
@@ -19,7 +19,7 @@ function ThesisOptionCard({
 	description,
 	buttonText,
 	icon,
-	buttonType = "primary",
+	buttonType = 'primary',
 	onClick,
 }: ThesisOptionCardProps) {
 	return (
@@ -52,11 +52,11 @@ export default function NoThesisCard() {
 	const router = useRouter();
 
 	const handleViewAvailableThesis = () => {
-		router.push("/student/list-thesis");
+		router.push('/student/list-thesis');
 	};
 
 	const handleGetAISuggestions = () => {
-		router.push("/student/list-thesis");
+		router.push('/student/list-thesis');
 	};
 
 	return (

@@ -1,8 +1,8 @@
-import { Col, Form, Input, Row, Select } from "antd";
-import { memo, useMemo } from "react";
+import { Col, Form, Input, Row, Select } from 'antd';
+import { memo, useMemo } from 'react';
 
-import { FormLabel } from "@/components/common/FormLabel";
-import { THESIS_DOMAINS } from "@/lib/constants/domains";
+import { FormLabel } from '@/components/common/FormLabel';
+import { THESIS_DOMAINS } from '@/lib/constants/domains';
 
 // Constants for better maintainability
 const VALIDATION_RULES = {
@@ -26,7 +26,7 @@ function GroupFormFields() {
 	// Memoize group name rules to prevent re-creation on every render
 	const getGroupNameRules = useMemo(
 		() => [
-			{ required: true, message: "Please enter group name" },
+			{ required: true, message: 'Please enter group name' },
 			{
 				min: VALIDATION_RULES.GROUP_NAME.MIN_LENGTH,
 				message: `Group name must be at least ${VALIDATION_RULES.GROUP_NAME.MIN_LENGTH} characters`,
@@ -61,7 +61,7 @@ function GroupFormFields() {
 						allowClear
 						showSearch
 						filterOption={(input, option) =>
-							(option?.label ?? "").toLowerCase().includes(input.toLowerCase())
+							(option?.label ?? '').toLowerCase().includes(input.toLowerCase())
 						}
 					/>
 				</Form.Item>

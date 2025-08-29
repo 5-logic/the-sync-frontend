@@ -1,51 +1,51 @@
-"use client";
+'use client';
 
-import { Breadcrumb as AntBreadcrumb } from "antd";
-import { usePathname } from "next/navigation";
-import { useMemo } from "react";
+import { Breadcrumb as AntBreadcrumb } from 'antd';
+import { usePathname } from 'next/navigation';
+import { useMemo } from 'react';
 
 // Define route mapping for breadcrumb titles
 const ROUTE_TITLES: Record<string, string> = {
 	// Admin routes
-	"/admin": "Admin Dashboard",
-	"/admin/lecturer-management": "Lecturer Management",
-	"/admin/students-management": "Student Management",
-	"/admin/group-management": "Group Management",
-	"/admin/milestone-management": "Milestone Management",
-	"/admin/semester-settings": "Semester Settings",
-	"/admin/create-new-lecturer": "Create New Lecturer",
-	"/admin/create-new-student": "Create New Student",
+	'/admin': 'Admin Dashboard',
+	'/admin/lecturer-management': 'Lecturer Management',
+	'/admin/students-management': 'Student Management',
+	'/admin/group-management': 'Group Management',
+	'/admin/milestone-management': 'Milestone Management',
+	'/admin/semester-settings': 'Semester Settings',
+	'/admin/create-new-lecturer': 'Create New Lecturer',
+	'/admin/create-new-student': 'Create New Student',
 
 	// Lecturer routes
-	"/lecturer": "Lecturer Dashboard",
-	"/lecturer/thesis-management": "Thesis Management",
-	"/lecturer/group-progress": "Group Progress",
-	"/lecturer/group-review": "Group Review",
-	"/lecturer/checklist-management": "Checklist Management",
-	"/lecturer/checklist-detail": "Checklist Detail",
-	"/lecturer/checklist-edit": "Edit Checklist",
-	"/lecturer/create-checklist": "Create Checklist",
-	"/lecturer/thesis-management/create-thesis": "Create Thesis",
-	"/lecturer/account-setting": "Account Setting",
-	"/lecturer/assign-lecturer-review": "Assign Lecturer Review",
-	"/lecturer/assign-list-publish-thesis": "Assign List Publish Thesis",
-	"/lecturer/group-management": "Group Management",
-	"/lecturer/assign-supervisor": "Assign Supervisor",
-	"/lecturer/thesis-version-control": "Thesis Version Control",
+	'/lecturer': 'Lecturer Dashboard',
+	'/lecturer/thesis-management': 'Thesis Management',
+	'/lecturer/group-progress': 'Group Progress',
+	'/lecturer/group-review': 'Group Review',
+	'/lecturer/checklist-management': 'Checklist Management',
+	'/lecturer/checklist-detail': 'Checklist Detail',
+	'/lecturer/checklist-edit': 'Edit Checklist',
+	'/lecturer/create-checklist': 'Create Checklist',
+	'/lecturer/thesis-management/create-thesis': 'Create Thesis',
+	'/lecturer/account-setting': 'Account Setting',
+	'/lecturer/assign-lecturer-review': 'Assign Lecturer Review',
+	'/lecturer/assign-list-publish-thesis': 'Assign List Publish Thesis',
+	'/lecturer/group-management': 'Group Management',
+	'/lecturer/assign-supervisor': 'Assign Supervisor',
+	'/lecturer/thesis-version-control': 'Thesis Version Control',
 
 	// Student routes
-	"/student": "Student Dashboard",
-	"/student/join-group": "Join Group",
-	"/student/group-dashboard": "Group Dashboard",
-	"/student/group-detail": "Group Detail",
-	"/student/invite-to-group": "Invite to Group",
-	"/student/list-thesis": "List Thesis",
-	"/student/apply-thesis-request": "Apply Thesis Request",
-	"/student/suggested-thesis": "Suggested Thesis",
-	"/student/track-progress": "Track Progress",
-	"/student/account-setting": "Account Setting",
-	"/student/profile": "Profile",
-	"/student/first-login-dashboard": "First Login Dashboard",
+	'/student': 'Student Dashboard',
+	'/student/join-group': 'Join Group',
+	'/student/group-dashboard': 'Group Dashboard',
+	'/student/group-detail': 'Group Detail',
+	'/student/invite-to-group': 'Invite to Group',
+	'/student/list-thesis': 'List Thesis',
+	'/student/apply-thesis-request': 'Apply Thesis Request',
+	'/student/suggested-thesis': 'Suggested Thesis',
+	'/student/track-progress': 'Track Progress',
+	'/student/account-setting': 'Account Setting',
+	'/student/profile': 'Profile',
+	'/student/first-login-dashboard': 'First Login Dashboard',
 };
 
 // Define patterns for dynamic routes
@@ -57,72 +57,72 @@ const DYNAMIC_ROUTE_PATTERNS: Array<{
 	// Lecturer dynamic routes
 	{
 		pattern: /^\/lecturer\/thesis-management\/(.+)\/edit-thesis$/,
-		getTitle: () => "Edit Thesis",
-		getParentPath: () => "/lecturer/thesis-management",
+		getTitle: () => 'Edit Thesis',
+		getParentPath: () => '/lecturer/thesis-management',
 	},
 	{
 		pattern: /^\/lecturer\/thesis-management\/(.+)$/,
-		getTitle: () => "Thesis Detail",
-		getParentPath: () => "/lecturer/thesis-management",
+		getTitle: () => 'Thesis Detail',
+		getParentPath: () => '/lecturer/thesis-management',
 	},
 	{
 		pattern: /^\/lecturer\/group-progress\/(.+)$/,
-		getTitle: () => "Group Detail",
-		getParentPath: () => "/lecturer/group-progress",
+		getTitle: () => 'Group Detail',
+		getParentPath: () => '/lecturer/group-progress',
 	},
 	{
 		pattern: /^\/lecturer\/group-review\/(.+)$/,
-		getTitle: () => "Review Detail",
-		getParentPath: () => "/lecturer/group-review",
+		getTitle: () => 'Review Detail',
+		getParentPath: () => '/lecturer/group-review',
 	},
 	{
 		pattern: /^\/lecturer\/checklist-detail\/(.+)$/,
-		getTitle: () => "Checklist Detail",
-		getParentPath: () => "/lecturer/checklist-management",
+		getTitle: () => 'Checklist Detail',
+		getParentPath: () => '/lecturer/checklist-management',
 	},
 	{
 		pattern: /^\/lecturer\/checklist-edit\/(.+)$/,
-		getTitle: () => "Edit Checklist",
-		getParentPath: () => "/lecturer/checklist-management",
+		getTitle: () => 'Edit Checklist',
+		getParentPath: () => '/lecturer/checklist-management',
 	},
 	{
 		pattern: /^\/lecturer\/group-management\/(.+)$/,
-		getTitle: () => "Assign Student & Thesis",
-		getParentPath: () => "/lecturer/group-management",
+		getTitle: () => 'Assign Student & Thesis',
+		getParentPath: () => '/lecturer/group-management',
 	},
 
 	// Student dynamic routes - add patterns for any dynamic routes here
 	{
 		pattern: /^\/student\/list-thesis\/(.+)$/,
-		getTitle: () => "Thesis Detail",
-		getParentPath: () => "/student/list-thesis",
+		getTitle: () => 'Thesis Detail',
+		getParentPath: () => '/student/list-thesis',
 	},
 	{
 		pattern: /^\/student\/group-detail\/(.+)$/,
-		getTitle: () => "Group Detail",
-		getParentPath: () => "/student",
+		getTitle: () => 'Group Detail',
+		getParentPath: () => '/student',
 	},
 	{
 		pattern: /^\/student\/profile\/(.+)$/,
-		getTitle: () => "Student Profile",
-		getParentPath: () => "/student",
+		getTitle: () => 'Student Profile',
+		getParentPath: () => '/student',
 	},
 
 	// Admin dynamic routes (if any)
 	{
 		pattern: /^\/admin\/group-management\/(.+)$/,
-		getTitle: () => "Assign Student & Thesis",
-		getParentPath: () => "/admin/group-management",
+		getTitle: () => 'Assign Student & Thesis',
+		getParentPath: () => '/admin/group-management',
 	},
 	{
 		pattern: /^\/admin\/lecturer-management\/(.+)$/,
-		getTitle: () => "Lecturer Detail",
-		getParentPath: () => "/admin/lecturer-management",
+		getTitle: () => 'Lecturer Detail',
+		getParentPath: () => '/admin/lecturer-management',
 	},
 	{
 		pattern: /^\/admin\/students-management\/(.+)$/,
-		getTitle: () => "Student Detail",
-		getParentPath: () => "/admin/students-management",
+		getTitle: () => 'Student Detail',
+		getParentPath: () => '/admin/students-management',
 	},
 ];
 
@@ -174,7 +174,7 @@ function getStaticRouteBreadcrumbs(segments: string[]): BreadcrumbItem[] {
 	const items: BreadcrumbItem[] = [];
 
 	for (let i = 0; i < segments.length; i++) {
-		const path = "/" + segments.slice(0, i + 1).join("/");
+		const path = '/' + segments.slice(0, i + 1).join('/');
 		const title = ROUTE_TITLES[path];
 
 		if (title) {
@@ -193,11 +193,11 @@ export default function Breadcrumb({ className, style }: BreadcrumbProps) {
 
 	const breadcrumbItems = useMemo((): BreadcrumbItem[] => {
 		// Split pathname into segments
-		const segments = pathname.split("/").filter(Boolean);
+		const segments = pathname.split('/').filter(Boolean);
 
 		// Handle homepage
 		if (segments.length === 0) {
-			return [{ title: "Home" }];
+			return [{ title: 'Home' }];
 		}
 
 		// First check if it's a dynamic route

@@ -1,28 +1,28 @@
-import React, { useMemo, useState, useCallback } from "react";
+import { DeleteOutlined, EyeOutlined, SearchOutlined } from '@ant-design/icons';
 import {
-	Card,
-	Tag,
 	Button,
-	Input,
-	Space,
+	Card,
 	Col,
+	Input,
 	Row,
+	Space,
 	Table,
+	Tag,
 	Tooltip,
-} from "antd";
-import { DeleteOutlined, SearchOutlined, EyeOutlined } from "@ant-design/icons";
-import { ColumnsType } from "antd/es/table";
+} from 'antd';
+import { ColumnsType } from 'antd/es/table';
+import React, { useCallback, useMemo, useState } from 'react';
 
-import { TablePagination } from "@/components/common/TablePagination";
-import { isTextMatch } from "@/lib/utils/textNormalization";
+import { TablePagination } from '@/components/common/TablePagination';
+import { isTextMatch } from '@/lib/utils/textNormalization';
 
 // Constants
 const COLUMN_WIDTHS = {
-	CODE: "15%",
-	NAME: "35%",
-	MEMBERS: "20%",
-	STATUS: "15%",
-	ACTIONS: "15%",
+	CODE: '15%',
+	NAME: '35%',
+	MEMBERS: '20%',
+	STATUS: '15%',
+	ACTIONS: '15%',
 } as const;
 
 export interface AdminGroup {
@@ -31,7 +31,7 @@ export interface AdminGroup {
 	semester: string;
 	members: number;
 	maxMembers: number;
-	status: "Active" | "Full";
+	status: 'Active' | 'Full';
 }
 
 interface GroupsTableProps {
@@ -45,7 +45,7 @@ const GroupsTable: React.FC<GroupsTableProps> = ({
 	onDelete,
 	onViewDetail,
 }) => {
-	const [groupSearch, setGroupSearch] = useState("");
+	const [groupSearch, setGroupSearch] = useState('');
 
 	const handleSearchChange = useCallback(
 		(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -68,7 +68,7 @@ const GroupsTable: React.FC<GroupsTableProps> = ({
 
 	const renderStatus = useCallback(
 		(_: unknown, record: AdminGroup) =>
-			record.status === "Active" ? (
+			record.status === 'Active' ? (
 				<Tag color="green">Active</Tag>
 			) : (
 				<Tag color="gray">Full</Tag>
@@ -106,34 +106,34 @@ const GroupsTable: React.FC<GroupsTableProps> = ({
 	const columns: ColumnsType<AdminGroup> = useMemo(
 		() => [
 			{
-				title: "Group code",
-				dataIndex: "id",
-				key: "code",
+				title: 'Group code',
+				dataIndex: 'id',
+				key: 'code',
 				width: COLUMN_WIDTHS.CODE,
 			},
 			{
-				title: "Group name",
-				dataIndex: "name",
-				key: "name",
+				title: 'Group name',
+				dataIndex: 'name',
+				key: 'name',
 				width: COLUMN_WIDTHS.NAME,
 			},
 			{
-				title: "Members",
+				title: 'Members',
 				render: renderMembersCount,
-				key: "members",
+				key: 'members',
 				width: COLUMN_WIDTHS.MEMBERS,
 			},
 			{
-				title: "Status",
+				title: 'Status',
 				render: renderStatus,
-				key: "status",
+				key: 'status',
 				width: COLUMN_WIDTHS.STATUS,
 			},
 			{
-				title: "Actions",
+				title: 'Actions',
 				render: renderActions,
-				key: "actions",
-				align: "center" as const,
+				key: 'actions',
+				align: 'center' as const,
 				width: COLUMN_WIDTHS.ACTIONS,
 			},
 		],
@@ -164,7 +164,7 @@ const GroupsTable: React.FC<GroupsTableProps> = ({
 				columns={columns}
 				rowKey="id"
 				pagination={TablePagination}
-				scroll={{ x: "max-content" }}
+				scroll={{ x: 'max-content' }}
 				aria-label="Groups table"
 			/>
 		</Card>

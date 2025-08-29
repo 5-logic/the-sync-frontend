@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
 import {
 	PlusOutlined,
 	ReloadOutlined,
 	SearchOutlined,
-} from "@ant-design/icons";
-import { Button, Input, Select } from "antd";
+} from '@ant-design/icons';
+import { Button, Input, Select } from 'antd';
 
-import { useLecturerStore } from "@/store/useLecturerStore";
+import { useLecturerStore } from '@/store/useLecturerStore';
 
 const { Option } = Select;
 
@@ -41,7 +41,7 @@ export default function LecturerFilterBar({
 						<Select
 							value={selectedStatus}
 							onChange={setSelectedStatus}
-							style={{ width: "100%" }}
+							style={{ width: '100%' }}
 							placeholder="Select Status"
 							size="middle"
 						>
@@ -56,7 +56,7 @@ export default function LecturerFilterBar({
 						<Select
 							value={selectedModerator}
 							onChange={setSelectedModerator}
-							style={{ width: "100%" }}
+							style={{ width: '100%' }}
 							placeholder="Select Role"
 							size="middle"
 						>
@@ -71,9 +71,9 @@ export default function LecturerFilterBar({
 							placeholder="Search by name, email"
 							value={searchText}
 							onChange={(e) => setSearchText(e.target.value)}
-							prefix={<SearchOutlined style={{ color: "#aaa" }} />}
+							prefix={<SearchOutlined style={{ color: '#aaa' }} />}
 							size="middle"
-							style={{ width: "100%" }}
+							style={{ width: '100%' }}
 						/>
 					</div>
 				</div>

@@ -1,26 +1,26 @@
-"use client";
+'use client';
 
-import { ReloadOutlined, SearchOutlined } from "@ant-design/icons";
-import { Button, Col, Empty, Input, Row, Select, Space, Spin } from "antd";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { ReloadOutlined, SearchOutlined } from '@ant-design/icons';
+import { Button, Col, Empty, Input, Row, Select, Space, Spin } from 'antd';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import AIReasoningCollapse from "@/components/common/AIReasoningCollapse";
-import { ConfirmationModal } from "@/components/common/ConfirmModal";
-import { Header } from "@/components/common/Header";
-import { ListPagination } from "@/components/common/ListPagination";
-import AISuggestThesisCard from "@/components/features/student/ViewListThesis/AISuggestThesisCard";
-import ThesisCard from "@/components/features/student/ViewListThesis/ThesisCard";
-import { useStudentGroupStatus } from "@/hooks/student/useStudentGroupStatus";
-import { useThesisApplications } from "@/hooks/student/useThesisApplications";
-import { getSortedDomains } from "@/lib/constants/domains";
-import aiService, { SuggestedThesis } from "@/lib/services/ai.service";
-import lecturersService from "@/lib/services/lecturers.service";
-import studentsService from "@/lib/services/students.service";
-import thesesService from "@/lib/services/theses.service";
-import { handleApiResponse } from "@/lib/utils/handleApi";
-import { Thesis, ThesisWithRelations } from "@/schemas/thesis";
+import AIReasoningCollapse from '@/components/common/AIReasoningCollapse';
+import { ConfirmationModal } from '@/components/common/ConfirmModal';
+import { Header } from '@/components/common/Header';
+import { ListPagination } from '@/components/common/ListPagination';
+import AISuggestThesisCard from '@/components/features/student/ViewListThesis/AISuggestThesisCard';
+import ThesisCard from '@/components/features/student/ViewListThesis/ThesisCard';
+import { useStudentGroupStatus } from '@/hooks/student/useStudentGroupStatus';
+import { useThesisApplications } from '@/hooks/student/useThesisApplications';
+import { getSortedDomains } from '@/lib/constants/domains';
+import aiService, { SuggestedThesis } from '@/lib/services/ai.service';
+import lecturersService from '@/lib/services/lecturers.service';
+import studentsService from '@/lib/services/students.service';
+import thesesService from '@/lib/services/theses.service';
+import { handleApiResponse } from '@/lib/utils/handleApi';
+import { Thesis, ThesisWithRelations } from '@/schemas/thesis';
 
 const { Option } = Select;
 
@@ -31,7 +31,7 @@ const convertToThesisWithRelations = async (
 	try {
 		// Fetch lecturer info for this thesis
 		const lecturerResponse = await lecturersService.findOne(thesis.lecturerId);
-		const lecturerResult = handleApiResponse(lecturerResponse, "Success");
+		const lecturerResult = handleApiResponse(lecturerResponse, 'Success');
 
 		if (!lecturerResult.success || !lecturerResult.data) {
 			return null;
@@ -59,7 +59,7 @@ const convertToThesisWithRelations = async (
 				}>) || [], // Use actual data from thesis
 		};
 	} catch (error) {
-		console.error("Error converting thesis:", error);
+		console.error('Error converting thesis:', error);
 		return null;
 	}
 };
@@ -74,7 +74,7 @@ export default function ViewListThesis() {
 	} = useThesisApplications();
 	const router = useRouter();
 	const [currentPage, setCurrentPage] = useState(1);
-	const [searchText, setSearchText] = useState("");
+	const [searchText, setSearchText] = useState('');
 	const [selectedDomain, setSelectedDomain] = useState<string | undefined>(
 		undefined,
 	);
@@ -88,7 +88,7 @@ export default function ViewListThesis() {
 	// AI Suggest states
 	const [showAISuggestions, setShowAISuggestions] = useState(false);
 	const [aiSuggestions, setAISuggestions] = useState<SuggestedThesis[]>([]);
-	const [aiReason, setAIReason] = useState<string>("");
+	const [aiReason, setAIReason] = useState<string>('');
 	const [aiLoading, setAILoading] = useState(false);
 	const [aiCurrentPage, setAICurrentPage] = useState(1);
 
@@ -111,17 +111,17 @@ export default function ViewListThesis() {
 
 				// First, get student profile to get semester info
 				const studentResponse = await studentsService.findOne(studentId);
-				const studentResult = handleApiResponse(studentResponse, "Success");
+				const studentResult = handleApiResponse(studentResponse, 'Success');
 
 				if (!studentResult.success || !studentResult.data) {
-					console.error("Failed to fetch student profile");
+					console.error('Failed to fetch student profile');
 					return;
 				}
 
 				// Get the semester from student's enrollment
 				const enrollment = studentResult.data.enrollments?.[0];
 				if (!enrollment?.semester?.id) {
-					console.error("No enrollment or semester found for student");
+					console.error('No enrollment or semester found for student');
 					return;
 				}
 
@@ -129,12 +129,12 @@ export default function ViewListThesis() {
 				const thesesResponse = await thesesService.findBySemester(
 					enrollment.semester.id,
 				);
-				const thesesResult = handleApiResponse(thesesResponse, "Success");
+				const thesesResult = handleApiResponse(thesesResponse, 'Success');
 
 				if (thesesResult.success && thesesResult.data) {
 					// Filter only published theses
 					const publishedTheses = thesesResult.data.filter(
-						(thesis) => thesis.isPublish && thesis.status === "Approved",
+						(thesis) => thesis.isPublish && thesis.status === 'Approved',
 					);
 
 					// Convert each thesis to ThesisWithRelations format
@@ -149,7 +149,7 @@ export default function ViewListThesis() {
 					setTheses(validTheses);
 				}
 			} catch (error) {
-				console.error("Error fetching theses:", error);
+				console.error('Error fetching theses:', error);
 			} finally {
 				setLoading(false);
 				setRefreshing(false);
@@ -186,20 +186,20 @@ export default function ViewListThesis() {
 		if (!isGroupInfoComplete()) {
 			// Show confirmation modal for incomplete group info
 			ConfirmationModal.show({
-				title: "Group Information Incomplete",
+				title: 'Group Information Incomplete',
 				message:
-					"Your group is missing some important information for better AI recommendations.",
-				details: "Project direction is needed for accurate suggestions.",
-				note: "You can continue anyway, but the suggestions might be less accurate.",
-				noteType: "warning",
-				okText: "Continue Anyway",
-				cancelText: "Go to Group",
-				okType: "primary",
+					'Your group is missing some important information for better AI recommendations.',
+				details: 'Project direction is needed for accurate suggestions.',
+				note: 'You can continue anyway, but the suggestions might be less accurate.',
+				noteType: 'warning',
+				okText: 'Continue Anyway',
+				cancelText: 'Go to Group',
+				okType: 'primary',
 				onOk: () => {
 					fetchAISuggestions();
 				},
 				onCancel: () => {
-					router.push("/student/group-dashboard");
+					router.push('/student/group-dashboard');
 				},
 			});
 		} else {
@@ -223,7 +223,7 @@ export default function ViewListThesis() {
 				setAICurrentPage(1); // Reset to first page
 			}
 		} catch (error) {
-			console.error("Error fetching AI suggestions:", error);
+			console.error('Error fetching AI suggestions:', error);
 		} finally {
 			setAILoading(false);
 		}
@@ -290,7 +290,7 @@ export default function ViewListThesis() {
 			if (aiLoading) {
 				return (
 					<Col span={24}>
-						<div style={{ textAlign: "center", padding: "50px" }}>
+						<div style={{ textAlign: 'center', padding: '50px' }}>
 							<Spin size="large" tip="Getting AI recommendations..." />
 						</div>
 					</Col>
@@ -302,7 +302,7 @@ export default function ViewListThesis() {
 					<Col xs={24} sm={12} md={8} key={suggestion.id}>
 						<AISuggestThesisCard
 							suggestion={suggestion}
-							studentRole={isLeader ? "leader" : "member"}
+							studentRole={isLeader ? 'leader' : 'member'}
 							onThesisUpdate={handleRefresh}
 						/>
 					</Col>
@@ -322,7 +322,7 @@ export default function ViewListThesis() {
 				<Col xs={24} sm={12} md={8} key={thesis.id}>
 					<ThesisCard
 						thesis={thesis}
-						studentRole={isLeader ? "leader" : "member"}
+						studentRole={isLeader ? 'leader' : 'member'}
 						applications={applications}
 						applicationsLoading={!applicationsInitialized}
 						onThesisUpdate={handleRefresh}
@@ -341,7 +341,7 @@ export default function ViewListThesis() {
 
 	if (loading) {
 		return (
-			<div style={{ textAlign: "center", padding: "50px" }}>
+			<div style={{ textAlign: 'center', padding: '50px' }}>
 				<Spin size="large" tip="Loading theses..." />
 			</div>
 		);
@@ -351,21 +351,21 @@ export default function ViewListThesis() {
 		<Space
 			direction="vertical"
 			size="large"
-			style={{ width: "100%", position: "relative" }}
+			style={{ width: '100%', position: 'relative' }}
 		>
 			{/* Refresh Loading Overlay */}
 			{refreshing && (
 				<div
 					style={{
-						position: "absolute",
+						position: 'absolute',
 						top: 0,
 						left: 0,
 						right: 0,
 						bottom: 0,
-						backgroundColor: "rgba(255, 255, 255, 0.8)",
-						display: "flex",
-						justifyContent: "center",
-						alignItems: "center",
+						backgroundColor: 'rgba(255, 255, 255, 0.8)',
+						display: 'flex',
+						justifyContent: 'center',
+						alignItems: 'center',
 						zIndex: 1000,
 					}}
 				>
@@ -376,11 +376,11 @@ export default function ViewListThesis() {
 			<Row justify="space-between" align="top" gutter={[16, 16]}>
 				<Col flex="auto">
 					<Header
-						title={showAISuggestions ? "AI Suggested Thesis" : "List Thesis"}
+						title={showAISuggestions ? 'AI Suggested Thesis' : 'List Thesis'}
 						description={
 							showAISuggestions
 								? "AI-recommended thesis topics based on your group's project direction."
-								: "Browse available thesis topics proposed and published by lecturers. You can view details and apply once your group is ready."
+								: 'Browse available thesis topics proposed and published by lecturers. You can view details and apply once your group is ready.'
 						}
 					/>
 				</Col>
@@ -395,7 +395,7 @@ export default function ViewListThesis() {
 								onClick={handleAISuggest}
 								loading={aiLoading}
 							>
-								{aiLoading ? "Getting AI Suggestions..." : "AI Suggest"}
+								{aiLoading ? 'Getting AI Suggestions...' : 'AI Suggest'}
 							</Button>
 						)}
 					</Space>
@@ -419,7 +419,7 @@ export default function ViewListThesis() {
 						<Select
 							placeholder="Filter by Domain"
 							allowClear
-							style={{ width: "100%" }}
+							style={{ width: '100%' }}
 							value={selectedDomain}
 							onChange={(value) => setSelectedDomain(value)}
 						>
@@ -434,7 +434,7 @@ export default function ViewListThesis() {
 						<Select
 							placeholder="Filter by Supervisor"
 							allowClear
-							style={{ width: "100%" }}
+							style={{ width: '100%' }}
 							value={selectedSupervisor}
 							onChange={(value) => setSelectedSupervisor(value)}
 						>

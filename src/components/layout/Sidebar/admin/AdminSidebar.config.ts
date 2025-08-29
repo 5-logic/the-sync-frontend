@@ -4,13 +4,13 @@
  */
 
 export const ADMIN_MENU_KEYS = {
-	DASHBOARD: "/admin",
-	STUDENTS_MANAGEMENT: "/admin/students-management",
-	GROUP_MANAGEMENT: "/admin/group-management",
-	LECTURER_MANAGEMENT: "/admin/lecturer-management",
-	MILESTONE_MANAGEMENT: "/admin/milestone-management",
-	CAPSTONE_DEFENSE: "/admin/capstone-defense-results",
-	SEMESTER_SETTINGS: "/admin/semester-settings",
+	DASHBOARD: '/admin',
+	STUDENTS_MANAGEMENT: '/admin/students-management',
+	GROUP_MANAGEMENT: '/admin/group-management',
+	LECTURER_MANAGEMENT: '/admin/lecturer-management',
+	MILESTONE_MANAGEMENT: '/admin/milestone-management',
+	CAPSTONE_DEFENSE: '/admin/capstone-defense-results',
+	SEMESTER_SETTINGS: '/admin/semester-settings',
 } as const;
 
 /**
@@ -19,17 +19,17 @@ export const ADMIN_MENU_KEYS = {
  */
 export const ADMIN_PATH_MAPPING = {
 	[ADMIN_MENU_KEYS.STUDENTS_MANAGEMENT]: [
-		"/admin/students-management",
-		"/admin/create-new-student",
+		'/admin/students-management',
+		'/admin/create-new-student',
 	],
-	[ADMIN_MENU_KEYS.GROUP_MANAGEMENT]: ["/admin/group-management"],
+	[ADMIN_MENU_KEYS.GROUP_MANAGEMENT]: ['/admin/group-management'],
 	[ADMIN_MENU_KEYS.LECTURER_MANAGEMENT]: [
-		"/admin/lecturer-management",
-		"/admin/create-new-lecturer",
+		'/admin/lecturer-management',
+		'/admin/create-new-lecturer',
 	],
-	[ADMIN_MENU_KEYS.MILESTONE_MANAGEMENT]: ["/admin/milestone-management"],
-	[ADMIN_MENU_KEYS.CAPSTONE_DEFENSE]: ["/admin/capstone-defense-results"],
-	[ADMIN_MENU_KEYS.SEMESTER_SETTINGS]: ["/admin/semester-settings"],
+	[ADMIN_MENU_KEYS.MILESTONE_MANAGEMENT]: ['/admin/milestone-management'],
+	[ADMIN_MENU_KEYS.CAPSTONE_DEFENSE]: ['/admin/capstone-defense-results'],
+	[ADMIN_MENU_KEYS.SEMESTER_SETTINGS]: ['/admin/semester-settings'],
 } as const;
 
 /**

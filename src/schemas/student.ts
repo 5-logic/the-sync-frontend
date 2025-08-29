@@ -1,7 +1,7 @@
-import { z } from "zod";
+import { z } from 'zod';
 
-import { GenderSchema } from "@/schemas/_enums";
-import { UserSchema } from "@/schemas/user";
+import { GenderSchema } from '@/schemas/_enums';
+import { UserSchema } from '@/schemas/user';
 
 // Common field definitions to reduce duplication
 const uuidField = z.string().uuid();

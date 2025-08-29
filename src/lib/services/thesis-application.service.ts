@@ -1,12 +1,12 @@
-import httpClient from "@/lib/services/_httpClient";
-import { ApiResponse } from "@/schemas/_common";
-import { ThesisOrientation } from "@/schemas/_enums";
+import httpClient from '@/lib/services/_httpClient';
+import { ApiResponse } from '@/schemas/_common';
+import { ThesisOrientation } from '@/schemas/_enums';
 
 // Thesis application interface
 export interface ThesisApplication {
 	groupId: string;
 	thesisId: string;
-	status: "Pending" | "Approved" | "Rejected" | "Cancelled";
+	status: 'Pending' | 'Approved' | 'Rejected' | 'Cancelled';
 	createdAt: string;
 	updatedAt: string;
 	thesis: {
@@ -73,7 +73,7 @@ export interface ThesisApplication {
 }
 
 class ThesisApplicationService {
-	private readonly baseUrl = "/thesis-application";
+	private readonly baseUrl = '/thesis-application';
 
 	// Apply for thesis
 	async applyForThesis(
@@ -124,7 +124,7 @@ class ThesisApplicationService {
 	async updateThesisApplicationStatus(
 		groupId: string,
 		thesisId: string,
-		status: "Approved" | "Rejected",
+		status: 'Approved' | 'Rejected',
 	): Promise<ApiResponse<void>> {
 		const response = await httpClient.put<ApiResponse<void>>(
 			`${this.baseUrl}/${groupId}/${thesisId}`,

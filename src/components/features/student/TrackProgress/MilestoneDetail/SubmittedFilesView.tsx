@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
 import {
 	CheckCircleTwoTone,
 	FileTextOutlined,
 	UserOutlined,
-} from "@ant-design/icons";
-import { Avatar, Button, Flex, Space, Typography } from "antd";
+} from '@ant-design/icons';
+import { Avatar, Button, Flex, Space, Typography } from 'antd';
 
-import { StorageService } from "@/lib/services/storage.service";
-import { SubmissionReviewWithReviewer } from "@/lib/services/reviews.service";
+import { SubmissionReviewWithReviewer } from '@/lib/services/reviews.service';
+import { StorageService } from '@/lib/services/storage.service';
 
 interface SubmittedFilesViewProps {
 	readonly documents: string[];
@@ -24,13 +24,13 @@ export function SubmittedFilesView({
 	reviews = [],
 }: SubmittedFilesViewProps) {
 	return (
-		<Space direction="vertical" size={12} style={{ width: "100%" }}>
+		<Space direction="vertical" size={12} style={{ width: '100%' }}>
 			<Flex
 				justify="space-between"
 				align="center"
 				style={{
-					backgroundColor: "#f5f5f5",
-					border: "1px solid #cec7c7ff",
+					backgroundColor: '#f5f5f5',
+					border: '1px solid #cec7c7ff',
 					padding: 12,
 					borderRadius: 8,
 				}}
@@ -47,13 +47,13 @@ export function SubmittedFilesView({
 				<div
 					key={url}
 					style={{
-						display: "flex",
-						alignItems: "center",
-						justifyContent: "space-between",
-						padding: "12px 16px",
-						border: "1px solid #d9d9d9",
+						display: 'flex',
+						alignItems: 'center',
+						justifyContent: 'space-between',
+						padding: '12px 16px',
+						border: '1px solid #d9d9d9',
 						borderRadius: 8,
-						backgroundColor: "#fff",
+						backgroundColor: '#fff',
 						marginBottom: 8,
 						gap: 8,
 						minWidth: 0,
@@ -61,34 +61,34 @@ export function SubmittedFilesView({
 				>
 					<div
 						style={{
-							display: "flex",
-							alignItems: "center",
+							display: 'flex',
+							alignItems: 'center',
 							gap: 8,
 							minWidth: 0,
 							flex: 1,
 						}}
 					>
-						<FileTextOutlined style={{ color: "#52c41a", flexShrink: 0 }} />
+						<FileTextOutlined style={{ color: '#52c41a', flexShrink: 0 }} />
 						<div style={{ minWidth: 0, flex: 1 }}>
 							<div
 								style={{
 									fontWeight: 500,
-									wordBreak: "break-all",
-									overflow: "hidden",
-									textOverflow: "ellipsis",
-									whiteSpace: "nowrap",
-									maxWidth: "100%",
+									wordBreak: 'break-all',
+									overflow: 'hidden',
+									textOverflow: 'ellipsis',
+									whiteSpace: 'nowrap',
+									maxWidth: '100%',
 								}}
 								title={StorageService.getFileNameFromUrl(url)}
 							>
 								{StorageService.getFileNameFromUrl(url)}
 							</div>
-							<div style={{ color: "#666", fontSize: 13 }}>Submitted file</div>
+							<div style={{ color: '#666', fontSize: 13 }}>Submitted file</div>
 						</div>
 					</div>
 					<Button
 						type="link"
-						onClick={() => window.open(url, "_blank")}
+						onClick={() => window.open(url, '_blank')}
 						style={{ flexShrink: 0 }}
 					>
 						Download
@@ -106,7 +106,7 @@ export function SubmittedFilesView({
 			{/* Feedback section - display actual reviews */}
 			{reviews.length > 0 && (
 				<div style={{ marginTop: 12 }}>
-					<Typography.Text strong style={{ display: "block", marginBottom: 8 }}>
+					<Typography.Text strong style={{ display: 'block', marginBottom: 8 }}>
 						📝 Reviews
 					</Typography.Text>
 					{reviews.map((review) => (
@@ -115,8 +115,8 @@ export function SubmittedFilesView({
 							align="flex-start"
 							gap={12}
 							style={{
-								backgroundColor: "#fafafa",
-								border: "1px solid #f0f0f0",
+								backgroundColor: '#fafafa',
+								border: '1px solid #f0f0f0',
 								padding: 12,
 								marginBottom: 8,
 								borderRadius: 8,
@@ -127,16 +127,16 @@ export function SubmittedFilesView({
 								<Typography.Text strong>
 									Reviewer
 									{review.isMainReviewer && (
-										<span style={{ color: "#1890ff", marginLeft: 4 }}>
+										<span style={{ color: '#1890ff', marginLeft: 4 }}>
 											(Main Reviewer)
 										</span>
 									)}
 								</Typography.Text>
 								<Typography.Paragraph style={{ margin: 0 }}>
-									{review.feedback || "No feedback provided yet."}
+									{review.feedback || 'No feedback provided yet.'}
 								</Typography.Paragraph>
 								<Typography.Text type="secondary" style={{ fontSize: 12 }}>
-									{new Date(review.updatedAt).toLocaleDateString("vi-VN")}
+									{new Date(review.updatedAt).toLocaleDateString('vi-VN')}
 								</Typography.Text>
 							</Space>
 						</Flex>

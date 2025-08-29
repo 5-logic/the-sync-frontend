@@ -1,12 +1,12 @@
-import { useCallback, useState } from "react";
+import { useCallback, useState } from 'react';
 
 import reviewsService, {
 	SubmissionReviewsResponse,
-} from "@/lib/services/reviews.service";
-import { handleApiResponse } from "@/lib/utils/handleApi";
-import { handleAsyncError } from "@/lib/utils/errorHandling";
+} from '@/lib/services/reviews.service';
+import { handleAsyncError } from '@/lib/utils/errorHandling';
+import { handleApiResponse } from '@/lib/utils/handleApi';
 
-type AssignedReviewer = SubmissionReviewsResponse["assignmentReviews"][0];
+type AssignedReviewer = SubmissionReviewsResponse['assignmentReviews'][0];
 
 interface UseStudentReviewsReturn {
 	assignedReviewers: AssignedReviewer[] | null;
@@ -35,7 +35,7 @@ export function useStudentReviews(): UseStudentReviewsReturn {
 
 			if (!result.success) {
 				throw new Error(
-					result.error?.message || "Failed to fetch assigned reviewers",
+					result.error?.message || 'Failed to fetch assigned reviewers',
 				);
 			}
 
@@ -49,8 +49,8 @@ export function useStudentReviews(): UseStudentReviewsReturn {
 		} catch (error) {
 			const errorMessage = handleAsyncError(
 				error,
-				"Failed to fetch assigned reviewers",
-				"fetchAssignedReviewers",
+				'Failed to fetch assigned reviewers',
+				'fetchAssignedReviewers',
 			);
 			setError(errorMessage);
 		} finally {

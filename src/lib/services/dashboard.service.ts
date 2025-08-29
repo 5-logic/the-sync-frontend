@@ -1,4 +1,4 @@
-import httpClient from "@/lib/services/_httpClient";
+import httpClient from '@/lib/services/_httpClient';
 
 export interface SummaryCard {
 	totalStudents: number;

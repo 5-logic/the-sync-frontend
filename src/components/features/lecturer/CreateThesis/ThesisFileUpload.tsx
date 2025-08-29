@@ -1,21 +1,21 @@
-"use client";
+'use client';
 
 import {
 	CloudUploadOutlined,
 	DeleteOutlined,
 	DownloadOutlined,
 	UploadOutlined,
-} from "@ant-design/icons";
-import { Button, Col, Form, Row, Space, Upload } from "antd";
-import { useEffect, useState } from "react";
+} from '@ant-design/icons';
+import { Button, Col, Form, Row, Space, Upload } from 'antd';
+import { useEffect, useState } from 'react';
 
-import { FormLabel } from "@/components/common/FormLabel";
-import { THESIS_TEMPLATE_URLS } from "@/lib/constants";
-import { StorageService } from "@/lib/services/storage.service";
-import { showNotification } from "@/lib/utils/notification";
+import { FormLabel } from '@/components/common/FormLabel';
+import { THESIS_TEMPLATE_URLS } from '@/lib/constants';
+import { StorageService } from '@/lib/services/storage.service';
+import { showNotification } from '@/lib/utils/notification';
 
 interface Props {
-	mode: "create" | "edit";
+	mode: 'create' | 'edit';
 	initialFile?: {
 		name: string;
 		size: number;
@@ -28,7 +28,7 @@ interface Props {
 }
 
 interface FileChangeState {
-	action: "none" | "delete" | "replace";
+	action: 'none' | 'delete' | 'replace';
 	newFile?: File;
 }
 
@@ -41,7 +41,7 @@ export default function SupportingDocumentField({
 	const [uploadedFile, setUploadedFile] = useState(initialFile || null);
 	const [uploading, setUploading] = useState(false);
 	const [fileChangeState, setFileChangeState] = useState<FileChangeState>({
-		action: "none",
+		action: 'none',
 	});
 	const [lastInitialFile, setLastInitialFile] = useState(initialFile);
 	const [userHasInteracted, setUserHasInteracted] = useState(false);
@@ -49,23 +49,23 @@ export default function SupportingDocumentField({
 	useEffect(() => {
 		// Only reset state when initialFile actually changes to a different file
 		// Compare by URL and name to detect real changes, not just reference changes
-		const prevFileUrl = lastInitialFile?.url || "";
-		const prevFileName = lastInitialFile?.name || "";
-		const currentFileUrl = initialFile?.url || "";
-		const currentFileName = initialFile?.name || "";
+		const prevFileUrl = lastInitialFile?.url || '';
+		const prevFileName = lastInitialFile?.name || '';
+		const currentFileUrl = initialFile?.url || '';
+		const currentFileName = initialFile?.name || '';
 
 		const hasInitialFileChanged =
 			prevFileUrl !== currentFileUrl || prevFileName !== currentFileName;
 
 		// Don't reset if user has already performed delete/replace actions
-		const userHasChanges = fileChangeState.action !== "none";
+		const userHasChanges = fileChangeState.action !== 'none';
 
 		if (hasInitialFileChanged && !userHasChanges && !userHasInteracted) {
 			setLastInitialFile(initialFile);
 			// Reset to initial state only when initialFile content actually changes
 			// and user hasn't made any changes yet
 			setUploadedFile(initialFile || null);
-			setFileChangeState({ action: "none" });
+			setFileChangeState({ action: 'none' });
 		}
 	}, [initialFile, lastInitialFile, fileChangeState.action, userHasInteracted]);
 
@@ -73,7 +73,7 @@ export default function SupportingDocumentField({
 		try {
 			setUploading(true);
 
-			const fileUrl = await StorageService.uploadFile(file, "support-doc");
+			const fileUrl = await StorageService.uploadFile(file, 'support-doc');
 
 			const uploadedFileInfo = {
 				name: file.name,
@@ -84,7 +84,7 @@ export default function SupportingDocumentField({
 			setUploadedFile(uploadedFileInfo);
 			onFileChange(uploadedFileInfo);
 
-			showNotification.success("Upload Success", "File uploaded successfully!");
+			showNotification.success('Upload Success', 'File uploaded successfully!');
 		} catch {
 			// Error notification is already shown in StorageService
 		} finally {
@@ -94,7 +94,7 @@ export default function SupportingDocumentField({
 
 	const handleEditModeUpload = (file: File) => {
 		const newState = {
-			action: "replace" as const,
+			action: 'replace' as const,
 			newFile: file,
 		};
 
@@ -105,7 +105,7 @@ export default function SupportingDocumentField({
 		const newFileInfo = {
 			name: file.name,
 			size: file.size,
-			url: "", // No URL yet since we haven't uploaded
+			url: '', // No URL yet since we haven't uploaded
 		};
 
 		setUploadedFile(newFileInfo);
@@ -114,7 +114,7 @@ export default function SupportingDocumentField({
 		onFileChange({
 			name: file.name,
 			size: file.size,
-			url: "pending-upload", // Special marker to indicate pending upload
+			url: 'pending-upload', // Special marker to indicate pending upload
 		});
 
 		// No notification needed - UI already shows the change clearly
@@ -124,7 +124,7 @@ export default function SupportingDocumentField({
 		// Mark that user has interacted with the component
 		setUserHasInteracted(true);
 
-		if (mode === "create") {
+		if (mode === 'create') {
 			await handleCreateModeUpload(file);
 		} else {
 			handleEditModeUpload(file);
@@ -135,7 +135,7 @@ export default function SupportingDocumentField({
 		// Mark that user has interacted with the component
 		setUserHasInteracted(true);
 
-		if (mode === "create") {
+		if (mode === 'create') {
 			// In create mode, delete immediately since thesis isn't saved yet
 			// This won't affect version history as thesis doesn't exist yet
 			try {
@@ -145,8 +145,8 @@ export default function SupportingDocumentField({
 				setUploadedFile(null);
 				onFileChange(null);
 				showNotification.success(
-					"Delete Success",
-					"File deleted successfully!",
+					'Delete Success',
+					'File deleted successfully!',
 				);
 			} catch {
 				// Error notification is already shown in StorageService
@@ -155,7 +155,7 @@ export default function SupportingDocumentField({
 			// In edit mode, just mark for deletion without actually deleting
 			// Files are preserved for version history
 			const newState = {
-				action: "delete" as const,
+				action: 'delete' as const,
 			};
 
 			setFileChangeState(newState);
@@ -174,10 +174,10 @@ export default function SupportingDocumentField({
 				const downloadUrl = await StorageService.getDownloadUrl(
 					uploadedFile.url,
 				);
-				window.open(downloadUrl, "_blank");
+				window.open(downloadUrl, '_blank');
 			}
 		} catch {
-			showNotification.error("Download Failed", "Could not download file");
+			showNotification.error('Download Failed', 'Could not download file');
 		}
 	};
 
@@ -187,19 +187,19 @@ export default function SupportingDocumentField({
 			const response = await fetch(
 				THESIS_TEMPLATE_URLS.THESIS_REGISTER_DOCUMENT,
 				{
-					method: "HEAD", // Check if the file exists without downloading
+					method: 'HEAD', // Check if the file exists without downloading
 				},
 			);
 
 			if (response.ok) {
 				// If remote file exists, download it
-				window.open(THESIS_TEMPLATE_URLS.THESIS_REGISTER_DOCUMENT, "_blank");
+				window.open(THESIS_TEMPLATE_URLS.THESIS_REGISTER_DOCUMENT, '_blank');
 			} else {
 				// If remote file not found, fallback to local file
-				const localFileUrl = "/files/Thesis Register Document Template.docx";
-				const link = document.createElement("a");
+				const localFileUrl = '/files/Thesis Register Document Template.docx';
+				const link = document.createElement('a');
 				link.href = localFileUrl;
-				link.download = "Thesis Register Document Template.docx";
+				link.download = 'Thesis Register Document Template.docx';
 				document.body.appendChild(link);
 				link.click();
 				document.body.removeChild(link);
@@ -207,17 +207,17 @@ export default function SupportingDocumentField({
 		} catch {
 			// If any error occurs, try local file as fallback
 			try {
-				const localFileUrl = "/files/Thesis Register Document Template.docx";
-				const link = document.createElement("a");
+				const localFileUrl = '/files/Thesis Register Document Template.docx';
+				const link = document.createElement('a');
 				link.href = localFileUrl;
-				link.download = "Thesis Register Document Template.docx";
+				link.download = 'Thesis Register Document Template.docx';
 				document.body.appendChild(link);
 				link.click();
 				document.body.removeChild(link);
 			} catch {
 				showNotification.error(
-					"Download Failed",
-					"Could not download template from either remote or local source",
+					'Download Failed',
+					'Could not download template from either remote or local source',
 				);
 			}
 		}
@@ -226,17 +226,17 @@ export default function SupportingDocumentField({
 	// Shared file validation function
 	const validateFile = (file: File): boolean => {
 		const isAllowed =
-			file.type.includes("word") ||
-			file.name.endsWith(".docx") ||
-			file.name.endsWith(".doc");
+			file.type.includes('word') ||
+			file.name.endsWith('.docx') ||
+			file.name.endsWith('.doc');
 
 		if (!isAllowed) {
-			showNotification.error("Error", "Only DOC, DOCX files are allowed!");
+			showNotification.error('Error', 'Only DOC, DOCX files are allowed!');
 			return false;
 		}
 
 		if (file.size / 1024 / 1024 > 10) {
-			showNotification.error("Error", "File must be smaller than 10MB!");
+			showNotification.error('Error', 'File must be smaller than 10MB!');
 			return false;
 		}
 
@@ -265,15 +265,15 @@ export default function SupportingDocumentField({
 
 	// Helper function to get help text based on mode and file state
 	const getHelpText = () => {
-		if (mode === "create") {
-			return "Support for DOC, DOCX (Max: 10MB)";
+		if (mode === 'create') {
+			return 'Support for DOC, DOCX (Max: 10MB)';
 		}
 
-		if (fileChangeState.action === "none") {
-			return "Support for DOC, DOCX (Max: 10MB). Changes will be applied when you save the thesis.";
+		if (fileChangeState.action === 'none') {
+			return 'Support for DOC, DOCX (Max: 10MB). Changes will be applied when you save the thesis.';
 		}
 
-		return "File changes will be applied when you save the thesis.";
+		return 'File changes will be applied when you save the thesis.';
 	};
 
 	return (
@@ -282,7 +282,7 @@ export default function SupportingDocumentField({
 				<Col>
 					<FormLabel text="Supporting Documents" isRequired isBold />
 				</Col>
-				{mode === "create" && (
+				{mode === 'create' && (
 					<Col>
 						<Button
 							icon={<DownloadOutlined />}
@@ -304,32 +304,32 @@ export default function SupportingDocumentField({
 					{
 						validator: (_, value) => {
 							// For create mode, file is always required
-							if (mode === "create") {
+							if (mode === 'create') {
 								if (!value || value.length === 0) {
 									return Promise.reject(
-										new Error("Please upload your document"),
+										new Error('Please upload your document'),
 									);
 								}
 								return Promise.resolve();
 							}
 
 							// For edit mode, file is required unless there's an initial file and no deletion action
-							if (mode === "edit") {
+							if (mode === 'edit') {
 								const hasCurrentFile = value && value.length > 0;
 								const hasInitialFile = initialFile;
-								const isDeleting = fileChangeState.action === "delete";
+								const isDeleting = fileChangeState.action === 'delete';
 
 								// If user deleted the file and hasn't uploaded a new one, it's invalid
 								if (isDeleting && !hasCurrentFile) {
 									return Promise.reject(
-										new Error("Please upload a supporting document"),
+										new Error('Please upload a supporting document'),
 									);
 								}
 
 								// If no initial file and no current file, it's invalid
 								if (!hasInitialFile && !hasCurrentFile) {
 									return Promise.reject(
-										new Error("Please upload your document"),
+										new Error('Please upload your document'),
 									);
 								}
 
@@ -350,72 +350,72 @@ export default function SupportingDocumentField({
 						<p className="ant-upload-drag-icon">
 							<CloudUploadOutlined />
 						</p>
-						<p>{uploading ? "Uploading..." : "Click or drag file to upload"}</p>
-						<p style={{ color: "#999" }}>Support DOC, DOCX (Max: 10MB)</p>
+						<p>{uploading ? 'Uploading...' : 'Click or drag file to upload'}</p>
+						<p style={{ color: '#999' }}>Support DOC, DOCX (Max: 10MB)</p>
 					</Upload.Dragger>
 				) : (
 					<div
 						style={{
-							border: "1px solid #d9d9d9",
+							border: '1px solid #d9d9d9',
 							borderRadius: 8,
 							padding: 16,
-							background: "#fafafa",
+							background: '#fafafa',
 						}}
 					>
 						<div
 							style={{
-								display: "flex",
-								justifyContent: "space-between",
-								alignItems: "flex-start",
+								display: 'flex',
+								justifyContent: 'space-between',
+								alignItems: 'flex-start',
 							}}
 						>
 							<div>
 								<div style={{ fontWeight: 500 }}>
 									{uploadedFile.name}
-									{mode === "edit" && fileChangeState.action === "replace" && (
-										<span style={{ color: "#1890ff", marginLeft: 8 }}>
+									{mode === 'edit' && fileChangeState.action === 'replace' && (
+										<span style={{ color: '#1890ff', marginLeft: 8 }}>
 											(New file selected)
 										</span>
 									)}
 								</div>
-								<div style={{ color: "#666", fontSize: 13 }}>
+								<div style={{ color: '#666', fontSize: 13 }}>
 									{(uploadedFile.size / 1024 / 1024).toFixed(1)} MB
-									{mode === "create" && (
+									{mode === 'create' && (
 										<>
-											{" "}
-											• Uploaded on{" "}
-											{new Date().toLocaleDateString("en-US", {
-												month: "short",
-												day: "numeric",
-												year: "numeric",
+											{' '}
+											• Uploaded on{' '}
+											{new Date().toLocaleDateString('en-US', {
+												month: 'short',
+												day: 'numeric',
+												year: 'numeric',
 											})}
 										</>
 									)}
-									{mode === "edit" && fileChangeState.action === "none" && (
+									{mode === 'edit' && fileChangeState.action === 'none' && (
 										<> • Current file</>
 									)}
-									{mode === "edit" && fileChangeState.action === "replace" && (
+									{mode === 'edit' && fileChangeState.action === 'replace' && (
 										<> • Will replace current file when saved</>
 									)}
 								</div>
 							</div>
 							<DeleteOutlined
-								style={{ color: "red", cursor: "pointer", fontSize: 16 }}
+								style={{ color: 'red', cursor: 'pointer', fontSize: 16 }}
 								onClick={handleFileDelete}
 								title={
-									mode === "edit"
-										? "Mark file for deletion (will be deleted when thesis is saved)"
-										: "Delete file immediately"
+									mode === 'edit'
+										? 'Mark file for deletion (will be deleted when thesis is saved)'
+										: 'Delete file immediately'
 								}
 							/>
 						</div>
 
 						<div style={{ marginTop: 16 }}>
-							{mode === "create" ? (
+							{mode === 'create' ? (
 								<Space>
 									<Upload {...newFileUploadProps}>
 										<Button icon={<UploadOutlined />} loading={uploading}>
-											{uploading ? "Uploading..." : "Upload New File"}
+											{uploading ? 'Uploading...' : 'Upload New File'}
 										</Button>
 									</Upload>
 
@@ -428,7 +428,7 @@ export default function SupportingDocumentField({
 								</Space>
 							) : (
 								<Space>
-									{fileChangeState.action === "none" && (
+									{fileChangeState.action === 'none' && (
 										<>
 											<Upload {...newFileUploadProps}>
 												<Button icon={<UploadOutlined />}>Replace File</Button>
@@ -443,12 +443,12 @@ export default function SupportingDocumentField({
 										</>
 									)}
 
-									{fileChangeState.action === "replace" && (
+									{fileChangeState.action === 'replace' && (
 										<Button
 											icon={<UploadOutlined />}
 											onClick={() => {
 												// Reset to show original file
-												const resetState = { action: "none" as const };
+												const resetState = { action: 'none' as const };
 												setFileChangeState(resetState);
 												onFileChangeStateUpdate?.(resetState);
 												setUploadedFile(initialFile || null);
@@ -471,7 +471,7 @@ export default function SupportingDocumentField({
 								</Space>
 							)}
 
-							<div style={{ fontSize: 12, color: "#999", marginTop: 4 }}>
+							<div style={{ fontSize: 12, color: '#999', marginTop: 4 }}>
 								{getHelpText()}
 							</div>
 						</div>

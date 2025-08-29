@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { Modal, Select, Space, Typography } from "antd";
-import { memo, useCallback, useEffect, useState } from "react";
+import { Modal, Select, Space, Typography } from 'antd';
+import { memo, useCallback, useEffect, useState } from 'react';
 
-import SupervisorLoadChart from "@/components/common/Dashboard/SupervisorLoadChart";
-import { useDashboardStore } from "@/store";
-import { useSemesterStore } from "@/store/useSemesterStore";
+import SupervisorLoadChart from '@/components/common/Dashboard/SupervisorLoadChart';
+import { useDashboardStore } from '@/store';
+import { useSemesterStore } from '@/store/useSemesterStore';
 
 const { Title } = Typography;
 
@@ -19,7 +19,7 @@ interface Props {
  * Shows semester filter and Supervisor Load Distribution chart
  */
 const WorkloadDialog = memo<Props>(({ open, onCancel }) => {
-	const [selectedSemester, setSelectedSemester] = useState<string>("");
+	const [selectedSemester, setSelectedSemester] = useState<string>('');
 
 	// Dashboard store for supervisor load data
 	const { fetchDashboardStatistics } = useDashboardStore();
@@ -74,8 +74,8 @@ const WorkloadDialog = memo<Props>(({ open, onCancel }) => {
 			destroyOnClose
 			centered
 		>
-			<Space direction="vertical" size="large" style={{ width: "100%" }}>
-				<Space direction="vertical" size="small" style={{ width: "100%" }}>
+			<Space direction="vertical" size="large" style={{ width: '100%' }}>
+				<Space direction="vertical" size="small" style={{ width: '100%' }}>
 					<Title level={5} style={{ margin: 0 }}>
 						Filter by Semester
 					</Title>
@@ -98,6 +98,6 @@ const WorkloadDialog = memo<Props>(({ open, onCancel }) => {
 	);
 });
 
-WorkloadDialog.displayName = "WorkloadDialog";
+WorkloadDialog.displayName = 'WorkloadDialog';
 
 export default WorkloadDialog;

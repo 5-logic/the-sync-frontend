@@ -1,22 +1,22 @@
-"use client";
+'use client';
 
-import { ArrowLeftOutlined } from "@ant-design/icons";
-import { Button, Row, Space } from "antd";
-import { useRouter } from "next/navigation";
-import { useCallback, useMemo } from "react";
+import { ArrowLeftOutlined } from '@ant-design/icons';
+import { Button, Row, Space } from 'antd';
+import { useRouter } from 'next/navigation';
+import { useCallback, useMemo } from 'react';
 
-import { ConfirmationModal } from "@/components/common/ConfirmModal";
-import { useSemesterStatus } from "@/hooks/student/useSemesterStatus";
-import { useStudentGroupStatus } from "@/hooks/student/useStudentGroupStatus";
-import { useThesisRegistration } from "@/hooks/thesis";
+import { ConfirmationModal } from '@/components/common/ConfirmModal';
+import { useSemesterStatus } from '@/hooks/student/useSemesterStatus';
+import { useStudentGroupStatus } from '@/hooks/student/useStudentGroupStatus';
+import { useThesisRegistration } from '@/hooks/thesis';
 import thesisApplicationService, {
 	ThesisApplication,
-} from "@/lib/services/thesis-application.service";
-import { handleApiError } from "@/lib/utils/handleApi";
-import { showNotification } from "@/lib/utils/notification";
-import { ThesisWithRelations } from "@/schemas/thesis";
-import { cacheUtils } from "@/store/helpers/cacheHelpers";
-import { useGroupDashboardStore } from "@/store/useGroupDashboardStore";
+} from '@/lib/services/thesis-application.service';
+import { handleApiError } from '@/lib/utils/handleApi';
+import { showNotification } from '@/lib/utils/notification';
+import { ThesisWithRelations } from '@/schemas/thesis';
+import { cacheUtils } from '@/store/helpers/cacheHelpers';
+import { useGroupDashboardStore } from '@/store/useGroupDashboardStore';
 
 interface Props {
 	readonly thesis: ThesisWithRelations;
@@ -47,12 +47,12 @@ export default function ActionButtons({
 	const hasApplicationForThesis = useMemo(() => {
 		return applications.some(
 			(app: ThesisApplication) =>
-				app.thesisId === thesis.id && app.status === "Pending",
+				app.thesisId === thesis.id && app.status === 'Pending',
 		);
 	}, [applications, thesis.id]);
 
 	const handleBackToList = useCallback(() => {
-		router.push("/student/list-thesis");
+		router.push('/student/list-thesis');
 	}, [router]);
 
 	const handleRegisterThesis = useCallback(async () => {
@@ -61,7 +61,7 @@ export default function ActionButtons({
 			onThesisUpdate?.();
 
 			// Clear relevant caches and refresh group data in background
-			cacheUtils.clear("semesterStatus");
+			cacheUtils.clear('semesterStatus');
 			fetchStudentGroup(true); // Remove await to not block UI
 			resetInitialization();
 		});
@@ -80,7 +80,7 @@ export default function ActionButtons({
 			onThesisUpdate?.();
 
 			// Clear relevant caches and refresh group data in background
-			cacheUtils.clear("semesterStatus");
+			cacheUtils.clear('semesterStatus');
 			fetchStudentGroup(true); // Remove await to not block UI
 			resetInitialization();
 		});
@@ -97,15 +97,15 @@ export default function ActionButtons({
 		if (!group?.id) return;
 
 		ConfirmationModal.show({
-			title: "Cancel Application",
+			title: 'Cancel Application',
 			message:
-				"Are you sure you want to cancel your application for this thesis?",
+				'Are you sure you want to cancel your application for this thesis?',
 			details: thesis.englishName,
-			note: "This action cannot be undone.",
-			noteType: "warning",
-			okText: "Yes, Cancel",
-			cancelText: "No",
-			okType: "danger",
+			note: 'This action cannot be undone.',
+			noteType: 'warning',
+			okText: 'Yes, Cancel',
+			cancelText: 'No',
+			okType: 'danger',
 			onOk: async () => {
 				try {
 					await thesisApplicationService.cancelThesisApplication(
@@ -114,8 +114,8 @@ export default function ActionButtons({
 					);
 
 					showNotification.success(
-						"Application Canceled",
-						"Your thesis application has been canceled successfully!",
+						'Application Canceled',
+						'Your thesis application has been canceled successfully!',
 					);
 
 					// Refresh applications first to update button state immediately
@@ -125,18 +125,18 @@ export default function ActionButtons({
 					onThesisUpdate?.();
 
 					// Clear caches
-					cacheUtils.clear("semesterStatus");
+					cacheUtils.clear('semesterStatus');
 					fetchStudentGroup(true);
 					resetInitialization();
 				} catch (error) {
-					console.error("Error canceling application:", error);
+					console.error('Error canceling application:', error);
 
 					const apiError = handleApiError(
 						error,
-						"Failed to cancel application. Please try again.",
+						'Failed to cancel application. Please try again.',
 					);
 
-					showNotification.error("Cancel Failed", apiError.message);
+					showNotification.error('Cancel Failed', apiError.message);
 				}
 			},
 		});
@@ -201,7 +201,7 @@ export default function ActionButtons({
 								: undefined
 						}
 					>
-						{isRegistering ? "Applying..." : "Apply Thesis"}
+						{isRegistering ? 'Applying...' : 'Apply Thesis'}
 					</Button>
 				)}
 				{showUnregisterButton && (
@@ -212,7 +212,7 @@ export default function ActionButtons({
 						loading={isRegistering}
 						disabled={disabled}
 					>
-						{isRegistering ? "Unpicking..." : "Unpick Thesis"}
+						{isRegistering ? 'Unpicking...' : 'Unpick Thesis'}
 					</Button>
 				)}
 				{showCancelApplicationButton && (

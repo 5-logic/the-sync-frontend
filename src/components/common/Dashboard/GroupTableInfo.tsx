@@ -1,25 +1,25 @@
-import { Card, Space, Spin, Table, Typography } from "antd";
-import React, { useMemo, useState } from "react";
+import { Card, Space, Spin, Table, Typography } from 'antd';
+import React, { useMemo, useState } from 'react';
 
-import { TablePagination } from "@/components/common/TablePagination";
-import { getColumns } from "@/components/features/admin/CapstoneProjectManagement/Columns";
-import { FilterBar } from "@/components/features/admin/CapstoneProjectManagement/FilterBar";
-import { useCapstoneManagement } from "@/hooks/admin/useCapstoneManagement";
-import { useExportGroups } from "@/hooks/admin/useExportGroups";
-import { useSessionData } from "@/hooks/auth/useAuth";
-import { useDebouncedSearch } from "@/hooks/ui/useDebounce";
-import { type GroupTableData } from "@/store/useCapstoneManagementStore";
+import { TablePagination } from '@/components/common/TablePagination';
+import { getColumns } from '@/components/features/admin/CapstoneProjectManagement/Columns';
+import { FilterBar } from '@/components/features/admin/CapstoneProjectManagement/FilterBar';
+import { useCapstoneManagement } from '@/hooks/admin/useCapstoneManagement';
+import { useExportGroups } from '@/hooks/admin/useExportGroups';
+import { useSessionData } from '@/hooks/auth/useAuth';
+import { useDebouncedSearch } from '@/hooks/ui/useDebounce';
+import { type GroupTableData } from '@/store/useCapstoneManagementStore';
 
 const { Title, Text } = Typography;
 
 export function GroupInfo() {
 	const { searchValue, debouncedSearchValue, setSearchValue } =
-		useDebouncedSearch("", 300);
-	const [selectedSemesterId, setSelectedSemesterId] = useState<string>("");
+		useDebouncedSearch('', 300);
+	const [selectedSemesterId, setSelectedSemesterId] = useState<string>('');
 
 	// Get user session to check role
 	const { session } = useSessionData();
-	const isAdmin = session?.user?.role === "admin";
+	const isAdmin = session?.user?.role === 'admin';
 
 	// Use export hook
 	const { handleExportExcel } = useExportGroups();
@@ -63,7 +63,7 @@ export function GroupInfo() {
 
 	return (
 		<Card>
-			<Space direction="vertical" size="large" style={{ width: "100%" }}>
+			<Space direction="vertical" size="large" style={{ width: '100%' }}>
 				<div>
 					<Title level={4} style={{ margin: 0, marginBottom: 8 }}>
 						Groups Table
@@ -94,16 +94,16 @@ export function GroupInfo() {
 						rowKey="studentId"
 						pagination={TablePagination}
 						bordered
-						scroll={{ x: "max-content" }}
+						scroll={{ x: 'max-content' }}
 						size="small"
 					/>
 
-					<Text type="secondary" style={{ marginTop: 16, display: "block" }}>
-						List includes {filteredData.length} students and{" "}
+					<Text type="secondary" style={{ marginTop: 16, display: 'block' }}>
+						List includes {filteredData.length} students and{' '}
 						{
 							new Set(filteredData.map((item: GroupTableData) => item.groupId))
 								.size
-						}{" "}
+						}{' '}
 						thesis projects
 					</Text>
 				</Spin>

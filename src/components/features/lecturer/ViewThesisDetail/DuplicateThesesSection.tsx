@@ -1,11 +1,12 @@
-"use client";
+'use client';
 
-import { Card, Col, Row, Typography, Empty, Spin, Alert } from "antd";
-import { useEffect } from "react";
+import { Alert, Card, Col, Empty, Row, Spin, Typography } from 'antd';
+import { useEffect } from 'react';
 
-import DuplicateThesisCard from "./DuplicateThesisCard";
-import { useAiDuplicateCheck } from "@/hooks/thesis/useAiDuplicateCheck";
-import { THESIS_STATUS } from "@/lib/constants/thesis";
+import { useAiDuplicateCheck } from '@/hooks/thesis/useAiDuplicateCheck';
+import { THESIS_STATUS } from '@/lib/constants/thesis';
+
+import DuplicateThesisCard from './DuplicateThesisCard';
 
 interface Props {
 	readonly thesisId: string;
@@ -40,7 +41,7 @@ export default function DuplicateThesesSection({
 	const renderContent = () => {
 		if (loading) {
 			return (
-				<div style={{ textAlign: "center", padding: "40px 0" }}>
+				<div style={{ textAlign: 'center', padding: '40px 0' }}>
 					<Spin size="large" />
 					<div style={{ marginTop: 16 }}>
 						<Typography.Text type="secondary">
@@ -69,7 +70,7 @@ export default function DuplicateThesesSection({
 			<div>
 				<Alert
 					message={`Found ${duplicateTheses.length} similar thesis${
-						duplicateTheses.length > 1 ? "es" : ""
+						duplicateTheses.length > 1 ? 'es' : ''
 					}`}
 					description="Review the similarity percentages and thesis details below to ensure there's no duplication."
 					type="warning"
@@ -90,10 +91,10 @@ export default function DuplicateThesesSection({
 	return (
 		<Card
 			title={
-				<div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+				<div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
 					<Typography.Text strong>Similar Theses Detection</Typography.Text>
 					{duplicateTheses.length > 0 && (
-						<Typography.Text type="danger" style={{ fontSize: "12px" }}>
+						<Typography.Text type="danger" style={{ fontSize: '12px' }}>
 							({duplicateTheses.length} found)
 						</Typography.Text>
 					)}

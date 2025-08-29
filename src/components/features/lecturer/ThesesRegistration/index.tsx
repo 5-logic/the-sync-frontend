@@ -1,22 +1,23 @@
-"use client";
+'use client';
 
-import { Alert, Space } from "antd";
-import { useEffect, useMemo } from "react";
+import { Alert, Space } from 'antd';
+import { useEffect, useMemo } from 'react';
 
-import { Header } from "@/components/common/Header";
-import ThesesRegistrationFilterBar from "./ThesesRegistrationFilterBar";
-import ThesesRegistrationTable from "./ThesesRegistrationTable";
-import { useThesisStore } from "@/store";
-import { createSearchFilter } from "@/store/helpers/storeHelpers";
-import { Thesis } from "@/schemas/thesis";
+import { Header } from '@/components/common/Header';
+import { Thesis } from '@/schemas/thesis';
+import { useThesisStore } from '@/store';
+import { createSearchFilter } from '@/store/helpers/storeHelpers';
+
+import ThesesRegistrationFilterBar from './ThesesRegistrationFilterBar';
+import ThesesRegistrationTable from './ThesesRegistrationTable';
 
 // Create search filter for theses (same logic as in store)
 const thesisSearchFilter = createSearchFilter<Thesis>((thesis) => [
 	thesis.englishName,
 	thesis.vietnameseName,
-	thesis.abbreviation ?? "",
-	thesis.description ?? "",
-	thesis.domain ?? "",
+	thesis.abbreviation ?? '',
+	thesis.description ?? '',
+	thesis.domain ?? '',
 ]);
 
 export default function ThesesRegistration() {
@@ -75,7 +76,7 @@ export default function ThesesRegistration() {
 	};
 
 	return (
-		<Space direction="vertical" size="large" style={{ width: "100%" }}>
+		<Space direction="vertical" size="large" style={{ width: '100%' }}>
 			<Header
 				title="Theses Registration"
 				description="Review and approve/reject pending thesis submissions"

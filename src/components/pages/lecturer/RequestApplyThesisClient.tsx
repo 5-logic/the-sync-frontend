@@ -1,9 +1,9 @@
-import { Suspense, lazy } from "react";
+import { Suspense, lazy } from 'react';
 
-import { TableLoadingSkeleton } from "@/components/common/loading";
+import { TableLoadingSkeleton } from '@/components/common/loading';
 
 const RequestApplyThesis = lazy(
-	() => import("@/components/features/lecturer/RequestApplyThesis"),
+	() => import('@/components/features/lecturer/RequestApplyThesis'),
 );
 
 export default function RequestApplyThesisClient() {

@@ -1,38 +1,38 @@
-"use client";
+'use client';
 
 import {
 	EyeOutlined,
-	UnorderedListOutlined,
 	ReloadOutlined,
 	SearchOutlined,
-} from "@ant-design/icons";
+	UnorderedListOutlined,
+} from '@ant-design/icons';
 import {
+	Badge,
 	Button,
+	Col,
+	Input,
+	Row,
+	Select,
 	Space,
 	Table,
-	Badge,
 	Tag,
-	Input,
-	Select,
-	Row,
-	Col,
-} from "antd";
-import type { ColumnsType } from "antd/es/table";
-import { useState, useMemo } from "react";
+} from 'antd';
+import type { ColumnsType } from 'antd/es/table';
+import { useMemo, useState } from 'react';
 
-import ThesisDetailModal from "@/components/features/lecturer/RequestApplyThesis/ThesisDetailModal";
-import ThesisRequestsModal from "@/components/features/lecturer/RequestApplyThesis/ThesisRequestsModal";
-import GroupDetailModal from "@/components/features/lecturer/RequestApplyThesis/GroupDetailModal";
-import { ThesisWithRequests, ThesisRequest } from "@/types/thesis-requests";
+import GroupDetailModal from '@/components/features/lecturer/RequestApplyThesis/GroupDetailModal';
+import ThesisDetailModal from '@/components/features/lecturer/RequestApplyThesis/ThesisDetailModal';
+import ThesisRequestsModal from '@/components/features/lecturer/RequestApplyThesis/ThesisRequestsModal';
+import { THESIS_DOMAINS } from '@/lib/constants/domains';
+import {
+	ORIENTATION_LABELS,
+	getOrientationDisplay,
+} from '@/lib/constants/orientation';
+import { isTextMatch } from '@/lib/utils/textNormalization';
+import { ThesisRequest, ThesisWithRequests } from '@/types/thesis-requests';
 
 // Type alias for Group from ThesisRequest
-type GroupWithDetails = ThesisRequest["group"];
-import {
-	getOrientationDisplay,
-	ORIENTATION_LABELS,
-} from "@/lib/constants/orientation";
-import { THESIS_DOMAINS } from "@/lib/constants/domains";
-import { isTextMatch } from "@/lib/utils/textNormalization";
+type GroupWithDetails = ThesisRequest['group'];
 
 interface Props {
 	readonly data: ThesisWithRequests[];
@@ -41,7 +41,7 @@ interface Props {
 	readonly updateApplicationStatus: (
 		groupId: string,
 		thesisId: string,
-		status: "Approved" | "Rejected",
+		status: 'Approved' | 'Rejected',
 	) => Promise<void>;
 }
 
@@ -53,7 +53,7 @@ export default function RequestApplyThesisTable({
 }: Props) {
 	// Modal states
 	const [selectedThesis, setSelectedThesis] = useState<
-		ThesisWithRequests["thesis"] | null
+		ThesisWithRequests['thesis'] | null
 	>(null);
 	const [selectedThesisForRequests, setSelectedThesisForRequests] =
 		useState<ThesisWithRequests | null>(null);
@@ -63,7 +63,7 @@ export default function RequestApplyThesisTable({
 	const [actionLoading, setActionLoading] = useState(false);
 
 	// Filter states
-	const [searchText, setSearchText] = useState("");
+	const [searchText, setSearchText] = useState('');
 	const [orientationFilter, setOrientationFilter] = useState<
 		string | undefined
 	>(undefined);
@@ -76,7 +76,7 @@ export default function RequestApplyThesisTable({
 	const handleApprove = async (groupId: string, thesisId: string) => {
 		setActionLoading(true);
 		try {
-			await updateApplicationStatus(groupId, thesisId, "Approved");
+			await updateApplicationStatus(groupId, thesisId, 'Approved');
 			onRefresh();
 		} finally {
 			setActionLoading(false);
@@ -86,7 +86,7 @@ export default function RequestApplyThesisTable({
 	const handleReject = async (groupId: string, thesisId: string) => {
 		setActionLoading(true);
 		try {
-			await updateApplicationStatus(groupId, thesisId, "Rejected");
+			await updateApplicationStatus(groupId, thesisId, 'Rejected');
 			onRefresh();
 		} finally {
 			setActionLoading(false);
@@ -121,29 +121,29 @@ export default function RequestApplyThesisTable({
 	}, [data, searchText, orientationFilter, domainFilter]);
 
 	const getPendingRequestsCount = (
-		requests: ThesisWithRequests["requests"],
+		requests: ThesisWithRequests['requests'],
 	) => {
-		return requests.filter((request) => request.status === "Pending").length;
+		return requests.filter((request) => request.status === 'Pending').length;
 	};
 
 	// Get approved group for a thesis
-	const getApprovedGroup = (requests: ThesisWithRequests["requests"]) => {
+	const getApprovedGroup = (requests: ThesisWithRequests['requests']) => {
 		const approvedRequest = requests.find(
-			(request) => request.status === "Approved",
+			(request) => request.status === 'Approved',
 		);
 		return approvedRequest?.group || null;
 	};
 
 	const columns: ColumnsType<ThesisWithRequests> = [
 		{
-			title: "Thesis Information",
-			key: "thesis",
+			title: 'Thesis Information',
+			key: 'thesis',
 			render: (_, record) => (
 				<div>
 					<div>
 						<strong>{record.thesis.englishName}</strong>
 					</div>
-					<div style={{ color: "#666", fontSize: "14px", marginTop: 4 }}>
+					<div style={{ color: '#666', fontSize: '14px', marginTop: 4 }}>
 						{record.thesis.vietnameseName}
 					</div>
 					<div style={{ marginTop: 8 }}>
@@ -164,17 +164,17 @@ export default function RequestApplyThesisTable({
 					</div>
 				</div>
 			),
-			width: "50%",
+			width: '50%',
 		},
 		{
-			title: "Assigned Group",
-			key: "assignedGroup",
+			title: 'Assigned Group',
+			key: 'assignedGroup',
 			render: (_, record) => {
 				const approvedGroup = getApprovedGroup(record.requests);
 
 				if (!approvedGroup) {
 					return (
-						<span style={{ color: "#999", fontStyle: "italic" }}>
+						<span style={{ color: '#999', fontStyle: 'italic' }}>
 							No group assigned
 						</span>
 					);
@@ -185,22 +185,22 @@ export default function RequestApplyThesisTable({
 						<Button
 							type="link"
 							onClick={() => setSelectedGroup(approvedGroup)}
-							style={{ padding: 0, height: "auto", fontWeight: "500" }}
+							style={{ padding: 0, height: 'auto', fontWeight: '500' }}
 						>
 							{approvedGroup.name}
 						</Button>
-						<div style={{ color: "#666", fontSize: "12px", marginTop: 2 }}>
+						<div style={{ color: '#666', fontSize: '12px', marginTop: 2 }}>
 							{approvedGroup.code}
 						</div>
 					</div>
 				);
 			},
-			width: "25%",
+			width: '25%',
 		},
 		{
-			title: "Actions",
-			key: "actions",
-			align: "center",
+			title: 'Actions',
+			key: 'actions',
+			align: 'center',
 			render: (_, record) => {
 				const pendingCount = getPendingRequestsCount(record.requests);
 
@@ -230,7 +230,7 @@ export default function RequestApplyThesisTable({
 					</Space>
 				);
 			},
-			width: "25%",
+			width: '25%',
 		},
 	];
 
@@ -254,7 +254,7 @@ export default function RequestApplyThesisTable({
 						onChange={setOrientationFilter}
 						allowClear
 						showSearch
-						style={{ width: "100%" }}
+						style={{ width: '100%' }}
 					>
 						{Object.entries(ORIENTATION_LABELS).map(([key, label]) => (
 							<Select.Option key={key} value={key}>
@@ -270,7 +270,7 @@ export default function RequestApplyThesisTable({
 						onChange={setDomainFilter}
 						allowClear
 						showSearch
-						style={{ width: "100%" }}
+						style={{ width: '100%' }}
 					>
 						{THESIS_DOMAINS.map((domain) => (
 							<Select.Option key={domain} value={domain}>
@@ -305,7 +305,7 @@ export default function RequestApplyThesisTable({
 						`${range[0]}-${range[1]} of ${total} theses`,
 				}}
 				locale={{
-					emptyText: "No thesis applications found",
+					emptyText: 'No thesis applications found',
 				}}
 			/>
 

@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
 import {
-	RadarChart,
-	PolarGrid,
+	Legend,
 	PolarAngleAxis,
+	PolarGrid,
 	PolarRadiusAxis,
 	Radar,
+	RadarChart,
 	ResponsiveContainer,
-	Legend,
 	Tooltip,
-} from "recharts";
+} from 'recharts';
 
 export interface ResponsibilityData {
 	responsibilityId: string;
@@ -35,7 +35,7 @@ export default function BaseRadarChart({
 	showLegend = true,
 }: BaseRadarChartProps) {
 	return (
-		<div style={{ height, width: "100%" }}>
+		<div style={{ height, width: '100%' }}>
 			<ResponsiveContainer width="100%" height="100%">
 				<RadarChart
 					data={data}
@@ -44,12 +44,12 @@ export default function BaseRadarChart({
 					<PolarGrid />
 					<PolarAngleAxis
 						dataKey="responsibility"
-						tick={{ fontSize: 12, fill: "#666" }}
+						tick={{ fontSize: 12, fill: '#666' }}
 					/>
 					<PolarRadiusAxis
 						angle={90}
 						domain={[0, 5]}
-						tick={{ fontSize: 10, fill: "#999" }}
+						tick={{ fontSize: 10, fill: '#999' }}
 						tickCount={6}
 						allowDataOverflow={false}
 					/>
@@ -57,30 +57,30 @@ export default function BaseRadarChart({
 						formatter={(value) => {
 							// Safe type conversion for value
 							let numValue: number;
-							if (typeof value === "number") {
+							if (typeof value === 'number') {
 								numValue = value;
-							} else if (typeof value === "string") {
+							} else if (typeof value === 'string') {
 								numValue = parseFloat(value);
 							} else {
 								numValue = 0;
 							}
 
 							if (isNaN(numValue)) {
-								return ["0", "Level"];
+								return ['0', 'Level'];
 							}
 
 							// Show decimal places only if there are non-zero decimal digits
 							const formattedValue =
 								numValue % 1 === 0 ? numValue.toString() : numValue.toFixed(2);
 
-							return [formattedValue, "Level"];
+							return [formattedValue, 'Level'];
 						}}
 						labelFormatter={(label: string) => `Responsibility: ${label}`}
 						contentStyle={{
-							backgroundColor: "white",
-							border: "1px solid #d9d9d9",
-							borderRadius: "6px",
-							boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
+							backgroundColor: 'white',
+							border: '1px solid #d9d9d9',
+							borderRadius: '6px',
+							boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
 						}}
 					/>
 					<Radar
@@ -90,7 +90,7 @@ export default function BaseRadarChart({
 						fill="#1890ff"
 						fillOpacity={0.3}
 						strokeWidth={2}
-						dot={{ fill: "#1890ff", strokeWidth: 2, r: 4 }}
+						dot={{ fill: '#1890ff', strokeWidth: 2, r: 4 }}
 						connectNulls={false}
 					/>
 					{showLegend && <Legend />}

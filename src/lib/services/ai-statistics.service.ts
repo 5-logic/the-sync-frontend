@@ -1,7 +1,7 @@
-import httpClient from "@/lib/services/_httpClient";
+import httpClient from '@/lib/services/_httpClient';
 
 export interface AIStatistic {
-	type: "CheckDuplicateThesis" | "SuggestThesis" | "SuggestParticipants";
+	type: 'CheckDuplicateThesis' | 'SuggestThesis' | 'SuggestParticipants';
 	count: number;
 }
 

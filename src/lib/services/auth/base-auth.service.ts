@@ -1,13 +1,13 @@
-import httpClient from "@/lib/services/_httpClient";
-import { AuthErrorHandler } from "@/lib/services/auth/auth-error-handler";
-import { TokenManager } from "@/lib/utils/auth/token-manager";
+import httpClient from '@/lib/services/_httpClient';
+import { AuthErrorHandler } from '@/lib/services/auth/auth-error-handler';
+import { TokenManager } from '@/lib/utils/auth/token-manager';
 import {
 	LoginResponseSchema,
 	RefreshResponseSchema,
 	RefreshToken,
 	RefreshTokenData,
 	TokenData,
-} from "@/schemas/auth";
+} from '@/schemas/auth';
 
 /**
  * Base Authentication Service
@@ -88,7 +88,7 @@ export abstract class BaseAuthService {
 		} catch (error: unknown) {
 			// Even if logout request fails, clear local tokens
 			TokenManager.clearTokens();
-			console.warn("Logout request failed, but tokens cleared locally:", error);
+			console.warn('Logout request failed, but tokens cleared locally:', error);
 		}
 	}
 }

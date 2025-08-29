@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { ReloadOutlined, SearchOutlined } from "@ant-design/icons";
-import { Button, Input, Select } from "antd";
+import { ReloadOutlined, SearchOutlined } from '@ant-design/icons';
+import { Button, Input, Select } from 'antd';
 
 interface SearchAndFilterControlsProps {
 	readonly searchText: string;
@@ -21,16 +21,16 @@ export default function SearchAndFilterControls({
 	onStatusFilterChange,
 	onRefresh,
 	loading = false,
-	searchPlaceholder = "Search by thesis name...",
+	searchPlaceholder = 'Search by thesis name...',
 	showCancelledStatus = false,
 }: SearchAndFilterControlsProps) {
 	return (
 		<div
 			style={{
 				marginBottom: 16,
-				display: "flex",
-				gap: "12px",
-				alignItems: "center",
+				display: 'flex',
+				gap: '12px',
+				alignItems: 'center',
 			}}
 		>
 			{/* Search Input */}
@@ -47,7 +47,7 @@ export default function SearchAndFilterControls({
 			<Select
 				placeholder="Filter by status"
 				value={statusFilter || undefined}
-				onChange={(value) => onStatusFilterChange(value || "")}
+				onChange={(value) => onStatusFilterChange(value || '')}
 				style={{ width: 160 }}
 				allowClear
 			>

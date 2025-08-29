@@ -1,7 +1,8 @@
-import { Tag, Typography, Table, Radio } from "antd";
-import type { ColumnsType } from "antd/es/table";
-import { SubmissionReviewWithReviewer } from "@/lib/services/reviews.service";
-import { getPriorityConfig } from "@/lib/utils/uiConstants";
+import { Radio, Table, Tag, Typography } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
+
+import { SubmissionReviewWithReviewer } from '@/lib/services/reviews.service';
+import { getPriorityConfig } from '@/lib/utils/uiConstants';
 
 const { Text } = Typography;
 
@@ -12,10 +13,10 @@ interface ReviewerInfoProps {
 
 export function ReviewerInfo({
 	review,
-	label = "Reviewed by",
+	label = 'Reviewed by',
 }: ReviewerInfoProps) {
 	return (
-		<div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+		<div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
 			<strong>{label}:</strong>
 			<Text strong>{review.lecturer.user.fullName}</Text>
 			{review.isMainReviewer === true ? (
@@ -70,25 +71,25 @@ export function ReviewItemsTable({
 }: ReviewItemsTableProps) {
 	const columns: ColumnsType<ReviewItemData> = [
 		{
-			title: "Question",
-			dataIndex: "name",
-			key: "name",
-			width: showDescription ? "25%" : "35%",
+			title: 'Question',
+			dataIndex: 'name',
+			key: 'name',
+			width: showDescription ? '25%' : '35%',
 		},
 		...(showDescription
 			? [
 					{
-						title: "Description",
-						dataIndex: "description",
-						key: "description",
-						width: "25%",
+						title: 'Description',
+						dataIndex: 'description',
+						key: 'description',
+						width: '25%',
 					},
 				]
 			: []),
 		{
-			title: "Response",
-			key: "response",
-			width: "20%",
+			title: 'Response',
+			key: 'response',
+			width: '20%',
 			render: (_, record) => (
 				<Radio.Group value={record.acceptance} disabled>
 					<Radio value="Yes">Yes</Radio>
@@ -98,17 +99,17 @@ export function ReviewItemsTable({
 			),
 		},
 		{
-			title: "Notes",
-			dataIndex: "note",
-			key: "notes",
-			width: "20%",
+			title: 'Notes',
+			dataIndex: 'note',
+			key: 'notes',
+			width: '20%',
 			render: (note) => note || <Text type="secondary">No notes</Text>,
 		},
 		{
-			title: "Priority",
-			key: "priority",
-			align: "center",
-			width: "10%",
+			title: 'Priority',
+			key: 'priority',
+			align: 'center',
+			width: '10%',
 			render: (_, record) => {
 				const { label, color } = getPriorityConfig(record.isRequired);
 				return <Tag color={color}>{label}</Tag>;

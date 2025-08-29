@@ -1,25 +1,25 @@
-"use client";
+'use client';
 
-import { Alert, Space } from "antd";
-import { useSession } from "next-auth/react";
-import { useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Alert, Space } from 'antd';
+import { useSession } from 'next-auth/react';
+import { useSearchParams } from 'next/navigation';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { Header } from "@/components/common/Header";
-import GroupDetailCard from "@/components/features/lecturer/GroupProgess/GroupDetailCard";
-import GroupSearchTable from "@/components/features/lecturer/GroupProgess/GroupSearchTable";
-import MilestoneDetailCard from "@/components/features/lecturer/GroupProgess/MilestoneDetailCard";
-import { useMilestones } from "@/hooks/lecturer/useMilestones";
-import { useSupervisedGroups } from "@/hooks/lecturer/useSupervisedGroups";
-import { SupervisedGroup } from "@/lib/services/groups.service";
-import { Milestone } from "@/schemas/milestone";
-import { useLecturerStore, useSemesterStore } from "@/store";
+import { Header } from '@/components/common/Header';
+import GroupDetailCard from '@/components/features/lecturer/GroupProgess/GroupDetailCard';
+import GroupSearchTable from '@/components/features/lecturer/GroupProgess/GroupSearchTable';
+import MilestoneDetailCard from '@/components/features/lecturer/GroupProgess/MilestoneDetailCard';
+import { useMilestones } from '@/hooks/lecturer/useMilestones';
+import { useSupervisedGroups } from '@/hooks/lecturer/useSupervisedGroups';
+import { SupervisedGroup } from '@/lib/services/groups.service';
+import { Milestone } from '@/schemas/milestone';
+import { useLecturerStore, useSemesterStore } from '@/store';
 
 export default function GroupProgressPage() {
 	const [selectedGroup, setSelectedGroup] = useState<
 		SupervisedGroup | undefined
 	>(undefined);
-	const [searchText, setSearchText] = useState<string>("");
+	const [searchText, setSearchText] = useState<string>('');
 	const [selectedSemester, setSelectedSemester] = useState<string | null>(null);
 	const [milestoneChanging, setMilestoneChanging] = useState<boolean>(false);
 	const currentUserIdRef = useRef<string | null>(null);
@@ -29,7 +29,7 @@ export default function GroupProgressPage() {
 
 	// Get query params to auto-select group
 	const searchParams = useSearchParams();
-	const groupIdFromQuery = searchParams.get("groupId");
+	const groupIdFromQuery = searchParams.get('groupId');
 
 	// Store hooks for cached data
 	const { fetchLecturers } = useLecturerStore();
@@ -104,10 +104,10 @@ export default function GroupProgressPage() {
 
 		const keyword = searchText.toLowerCase();
 		return groups.filter((group) => {
-			const name = group.name?.toLowerCase() || "";
-			const projectDirection = group.projectDirection?.toLowerCase() || "";
-			const code = group.code?.toLowerCase() || "";
-			const englishName = group.thesis?.englishName?.toLowerCase() || "";
+			const name = group.name?.toLowerCase() || '';
+			const projectDirection = group.projectDirection?.toLowerCase() || '';
+			const code = group.code?.toLowerCase() || '';
+			const englishName = group.thesis?.englishName?.toLowerCase() || '';
 
 			return (
 				name.includes(keyword) ||
@@ -134,7 +134,7 @@ export default function GroupProgressPage() {
 	const handleRefresh = useCallback(() => {
 		// Chỉ refresh nếu có user context để tránh fetch với wrong user
 		if (!currentUserIdRef.current) {
-			console.warn("Cannot refresh without valid user context");
+			console.warn('Cannot refresh without valid user context');
 			return;
 		}
 
@@ -174,8 +174,8 @@ export default function GroupProgressPage() {
 					);
 					if (groupDetailElement) {
 						groupDetailElement.scrollIntoView({
-							behavior: "smooth",
-							block: "start",
+							behavior: 'smooth',
+							block: 'start',
 						});
 					}
 				}, 100);
@@ -204,16 +204,16 @@ export default function GroupProgressPage() {
 	return (
 		<div
 			style={{
-				padding: "0 8px 16px 0",
-				height: "100%",
-				display: "flex",
-				flexDirection: "column",
+				padding: '0 8px 16px 0',
+				height: '100%',
+				display: 'flex',
+				flexDirection: 'column',
 			}}
 		>
 			<Space
 				direction="vertical"
 				size="large"
-				style={{ width: "100%", flex: 1 }}
+				style={{ width: '100%', flex: 1 }}
 			>
 				<Header
 					title="Group Progress"
@@ -240,7 +240,7 @@ export default function GroupProgressPage() {
 					/>
 				)}
 
-				<Space direction="vertical" size="middle" style={{ width: "100%" }}>
+				<Space direction="vertical" size="middle" style={{ width: '100%' }}>
 					<GroupSearchTable
 						data={filteredGroups}
 						searchText={searchText}
@@ -256,7 +256,7 @@ export default function GroupProgressPage() {
 				</Space>
 
 				{selectedGroup && (
-					<Space direction="vertical" size="large" style={{ width: "100%" }}>
+					<Space direction="vertical" size="large" style={{ width: '100%' }}>
 						{/* Group Details Section */}
 						<GroupDetailCard
 							group={selectedGroup}

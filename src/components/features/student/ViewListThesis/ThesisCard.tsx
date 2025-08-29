@@ -1,27 +1,27 @@
-"use client";
+'use client';
 
-import { UserOutlined } from "@ant-design/icons";
-import { Avatar, Button, Card, Col, Row, Space, Tag, Typography } from "antd";
-import { useRouter } from "next/navigation";
-import { useState, useMemo, useEffect } from "react";
+import { UserOutlined } from '@ant-design/icons';
+import { Avatar, Button, Card, Col, Row, Space, Tag, Typography } from 'antd';
+import { useRouter } from 'next/navigation';
+import { useEffect, useMemo, useState } from 'react';
 
-import { ConfirmationModal } from "@/components/common/ConfirmModal";
-import { useSemesterStatus } from "@/hooks/student/useSemesterStatus";
-import { useStudentGroupStatus } from "@/hooks/student/useStudentGroupStatus";
-import { useThesisRegistration } from "@/hooks/thesis";
-import { DOMAIN_COLOR_MAP } from "@/lib/constants/domains";
-import { getOrientationDisplay } from "@/lib/constants/orientation";
+import { ConfirmationModal } from '@/components/common/ConfirmModal';
+import { useSemesterStatus } from '@/hooks/student/useSemesterStatus';
+import { useStudentGroupStatus } from '@/hooks/student/useStudentGroupStatus';
+import { useThesisRegistration } from '@/hooks/thesis';
+import { DOMAIN_COLOR_MAP } from '@/lib/constants/domains';
+import { getOrientationDisplay } from '@/lib/constants/orientation';
 import thesisApplicationService, {
 	ThesisApplication,
-} from "@/lib/services/thesis-application.service";
-import { handleApiError } from "@/lib/utils/handleApi";
-import { showNotification } from "@/lib/utils/notification";
-import { ThesisWithRelations } from "@/schemas/thesis";
-import { cacheUtils } from "@/store/helpers/cacheHelpers";
+} from '@/lib/services/thesis-application.service';
+import { handleApiError } from '@/lib/utils/handleApi';
+import { showNotification } from '@/lib/utils/notification';
+import { ThesisWithRelations } from '@/schemas/thesis';
+import { cacheUtils } from '@/store/helpers/cacheHelpers';
 
 interface Props {
 	readonly thesis: ThesisWithRelations;
-	readonly studentRole?: "leader" | "member" | "guest";
+	readonly studentRole?: 'leader' | 'member' | 'guest';
 	readonly applications?: ThesisApplication[];
 	readonly applicationsLoading?: boolean;
 	readonly onThesisUpdate?: () => void | Promise<void>;
@@ -47,8 +47,8 @@ export default function ThesisCard({
 
 	// Get domain color
 	const domainColor = thesis.domain
-		? DOMAIN_COLOR_MAP[thesis.domain] || "default"
-		: "default";
+		? DOMAIN_COLOR_MAP[thesis.domain] || 'default'
+		: 'default';
 
 	// Check if current group has application for this thesis
 	const hasApplicationForThesis = useMemo(() => {
@@ -58,7 +58,7 @@ export default function ThesisCard({
 		// Then check server data
 		return applications.some(
 			(app: ThesisApplication) =>
-				app.thesisId === thesis.id && app.status === "Pending",
+				app.thesisId === thesis.id && app.status === 'Pending',
 		);
 	}, [applications, thesis.id, localPendingApplication]);
 
@@ -67,7 +67,7 @@ export default function ThesisCard({
 		if (localPendingApplication) {
 			const serverHasApplication = applications.some(
 				(app: ThesisApplication) =>
-					app.thesisId === thesis.id && app.status === "Pending",
+					app.thesisId === thesis.id && app.status === 'Pending',
 			);
 			if (serverHasApplication) {
 				setLocalPendingApplication(false);
@@ -86,7 +86,7 @@ export default function ThesisCard({
 
 	// Determine if register button should be enabled
 	const canRegister =
-		studentRole === "leader" &&
+		studentRole === 'leader' &&
 		hasGroup &&
 		!isThesisTaken &&
 		!hasApplicationForThesis &&
@@ -94,7 +94,7 @@ export default function ThesisCard({
 
 	// Determine if unregister button should be shown
 	const canUnregister =
-		studentRole === "leader" &&
+		studentRole === 'leader' &&
 		hasGroup &&
 		isThesisAssignedToGroup &&
 		isAllDataLoaded;
@@ -102,7 +102,7 @@ export default function ThesisCard({
 	// Show loading button when data is still being loaded
 	const showLoadingButton =
 		!isAllDataLoaded &&
-		studentRole === "leader" &&
+		studentRole === 'leader' &&
 		hasGroup &&
 		!isThesisAssignedToGroup &&
 		!localPendingApplication;
@@ -123,7 +123,7 @@ export default function ThesisCard({
 			setLocalPendingApplication(true);
 
 			// Clear relevant caches
-			cacheUtils.clear("semesterStatus");
+			cacheUtils.clear('semesterStatus');
 
 			// Refresh group data to update UI
 			resetInitialization();
@@ -140,7 +140,7 @@ export default function ThesisCard({
 	const handleUnregisterThesis = () => {
 		unregisterThesis(thesis.englishName, () => {
 			// Clear relevant caches
-			cacheUtils.clear("semesterStatus");
+			cacheUtils.clear('semesterStatus');
 
 			// Refresh group data to update UI
 			resetInitialization();
@@ -155,15 +155,15 @@ export default function ThesisCard({
 		if (!group) return;
 
 		ConfirmationModal.show({
-			title: "Cancel Application",
+			title: 'Cancel Application',
 			message:
-				"Are you sure you want to cancel your application for this thesis?",
+				'Are you sure you want to cancel your application for this thesis?',
 			details: thesis.englishName,
-			note: "This action cannot be undone.",
-			noteType: "warning",
-			okText: "Yes, Cancel",
-			cancelText: "No",
-			okType: "danger",
+			note: 'This action cannot be undone.',
+			noteType: 'warning',
+			okText: 'Yes, Cancel',
+			cancelText: 'No',
+			okType: 'danger',
 			onOk: async () => {
 				try {
 					await thesisApplicationService.cancelThesisApplication(
@@ -172,8 +172,8 @@ export default function ThesisCard({
 					);
 
 					showNotification.success(
-						"Application Canceled",
-						"Your thesis application has been canceled successfully!",
+						'Application Canceled',
+						'Your thesis application has been canceled successfully!',
 					);
 
 					// Clear local pending state immediately
@@ -185,14 +185,14 @@ export default function ThesisCard({
 					// Then refresh thesis list
 					onThesisUpdate?.();
 				} catch (error) {
-					console.error("Error canceling application:", error);
+					console.error('Error canceling application:', error);
 
 					const apiError = handleApiError(
 						error,
-						"Failed to cancel application. Please try again.",
+						'Failed to cancel application. Please try again.',
 					);
 
-					showNotification.error("Cancel Failed", apiError.message);
+					showNotification.error('Cancel Failed', apiError.message);
 				}
 			},
 		});
@@ -201,68 +201,68 @@ export default function ThesisCard({
 	// Get button tooltip message based on current state
 	const getButtonTooltip = (): string => {
 		if (hasApplicationForThesis) {
-			return "You have a pending application for this thesis";
+			return 'You have a pending application for this thesis';
 		}
 		if (isThesisTaken) {
-			return "This thesis is already taken by another group";
+			return 'This thesis is already taken by another group';
 		}
 		if (!hasGroup) {
-			return "You need to be in a group to apply";
+			return 'You need to be in a group to apply';
 		}
-		if (studentRole !== "leader") {
-			return "Only group leaders can apply for thesis";
+		if (studentRole !== 'leader') {
+			return 'Only group leaders can apply for thesis';
 		}
 		if (!canRegisterThesis) {
 			return 'Application is only available during the "Picking" phase or "Ongoing - Scope Adjustable" phase';
 		}
-		return "Apply for this thesis";
+		return 'Apply for this thesis';
 	};
 
 	// Get register button text based on current state
 	const getRegisterButtonText = (): string => {
 		if (isRegistering) {
-			return "Processing...";
+			return 'Processing...';
 		}
 		if (showLoadingButton) {
-			return "Checking...";
+			return 'Checking...';
 		}
 		if (hasApplicationForThesis) {
-			return "Cancel Application";
+			return 'Cancel Application';
 		}
 		if (isThesisTaken) {
-			return "Taken";
+			return 'Taken';
 		}
-		return "Apply Thesis";
+		return 'Apply Thesis';
 	};
 
 	return (
 		<Card
 			title={null}
 			style={{
-				height: "100%",
-				display: "flex",
-				flexDirection: "column",
+				height: '100%',
+				display: 'flex',
+				flexDirection: 'column',
 				borderRadius: 12,
 			}}
-			bodyStyle={{ display: "flex", flexDirection: "column", flexGrow: 1 }}
+			bodyStyle={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}
 		>
 			<Space
 				direction="vertical"
 				size="middle"
-				style={{ width: "100%", flexGrow: 1 }}
+				style={{ width: '100%', flexGrow: 1 }}
 			>
 				<Typography.Title
 					level={5}
 					style={{
 						marginBottom: 0,
-						display: "-webkit-box",
+						display: '-webkit-box',
 						WebkitLineClamp: 2,
-						WebkitBoxOrient: "vertical",
-						overflow: "hidden",
-						textOverflow: "ellipsis",
-						lineHeight: "1.4",
-						minHeight: "2.8em", // Always maintain 2 lines height
-						maxHeight: "2.8em", // 2 lines * 1.4 line-height
+						WebkitBoxOrient: 'vertical',
+						overflow: 'hidden',
+						textOverflow: 'ellipsis',
+						lineHeight: '1.4',
+						minHeight: '2.8em', // Always maintain 2 lines height
+						maxHeight: '2.8em', // 2 lines * 1.4 line-height
 					}}
 				>
 					{thesis.englishName}
@@ -271,14 +271,14 @@ export default function ThesisCard({
 				<Typography.Text
 					type="secondary"
 					style={{
-						display: "-webkit-box",
+						display: '-webkit-box',
 						WebkitLineClamp: 4,
-						WebkitBoxOrient: "vertical",
-						overflow: "hidden",
-						textOverflow: "ellipsis",
-						lineHeight: "1.4",
-						minHeight: "5.6em", // Always maintain 4 lines height
-						maxHeight: "5.6em", // 4 lines * 1.4 line-height
+						WebkitBoxOrient: 'vertical',
+						overflow: 'hidden',
+						textOverflow: 'ellipsis',
+						lineHeight: '1.4',
+						minHeight: '5.6em', // Always maintain 4 lines height
+						maxHeight: '5.6em', // 4 lines * 1.4 line-height
 					}}
 				>
 					{thesis.description}
@@ -327,7 +327,7 @@ export default function ThesisCard({
 							disabled={!isAllDataLoaded}
 							title="Unpick this thesis"
 						>
-							{isRegistering ? "Unpicking..." : "Unpick Thesis"}
+							{isRegistering ? 'Unpicking...' : 'Unpick Thesis'}
 						</Button>
 					) : (
 						<Button

@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { ReloadOutlined, SearchOutlined } from "@ant-design/icons";
-import { Button, Col, Input, Row, Select } from "antd";
-import { useEffect, useState } from "react";
+import { ReloadOutlined, SearchOutlined } from '@ant-design/icons';
+import { Button, Col, Input, Row, Select } from 'antd';
+import { useEffect, useState } from 'react';
 
-import semestersService from "@/lib/services/semesters.service";
-import { handleApiResponse } from "@/lib/utils/handleApi";
-import { Semester } from "@/schemas/semester";
+import semestersService from '@/lib/services/semesters.service';
+import { handleApiResponse } from '@/lib/utils/handleApi';
+import { Semester } from '@/schemas/semester';
 
 interface Filters {
 	readonly searchText?: string;
@@ -44,7 +44,7 @@ export default function ThesisFilterBar({
 					setSemesters(result.data || []);
 				}
 			} catch (error) {
-				console.error("Error fetching semesters:", error);
+				console.error('Error fetching semesters:', error);
 			} finally {
 				setSemestersLoading(false);
 			}
@@ -71,7 +71,7 @@ export default function ThesisFilterBar({
 	};
 
 	const isPublishValue =
-		typeof currentFilters.isPublish === "boolean"
+		typeof currentFilters.isPublish === 'boolean'
 			? currentFilters.isPublish
 			: undefined;
 
@@ -82,8 +82,8 @@ export default function ThesisFilterBar({
 					placeholder="Search by thesis name or lecturer name..."
 					prefix={<SearchOutlined />}
 					allowClear
-					style={{ width: "100%" }}
-					value={currentFilters.searchText ?? ""}
+					style={{ width: '100%' }}
+					value={currentFilters.searchText ?? ''}
 					onChange={(e) => handleNameChange(e.target.value)}
 				/>
 			</Col>
@@ -92,7 +92,7 @@ export default function ThesisFilterBar({
 				<Select
 					placeholder="Filter by Semester"
 					allowClear
-					style={{ width: "100%" }}
+					style={{ width: '100%' }}
 					value={currentFilters.semesterId}
 					onChange={(value) => handleSemesterChange(value)}
 					loading={semestersLoading}
@@ -109,7 +109,7 @@ export default function ThesisFilterBar({
 				<Select
 					placeholder="Filter by Public Access"
 					allowClear
-					style={{ width: "100%" }}
+					style={{ width: '100%' }}
 					value={isPublishValue}
 					onChange={(value) => handlePublishChange(value)}
 				>
@@ -123,7 +123,7 @@ export default function ThesisFilterBar({
 					icon={<ReloadOutlined />}
 					onClick={onRefresh}
 					loading={loading}
-					style={{ width: "100%" }}
+					style={{ width: '100%' }}
 				>
 					Refresh
 				</Button>

@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { Suspense, lazy } from "react";
+import { Suspense, lazy } from 'react';
 
-import { TableLoadingSkeleton } from "@/components/common/loading";
+import { TableLoadingSkeleton } from '@/components/common/loading';
 
 const ThesesRegistration = lazy(
-	() => import("@/components/features/lecturer/ThesesRegistration"),
+	() => import('@/components/features/lecturer/ThesesRegistration'),
 );
 
 export default function ThesesRegistrationClient() {

@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from 'react';
 
-import { useCurrentSemester } from "@/hooks/semester";
+import { useCurrentSemester } from '@/hooks/semester';
 
 export const useSemesterStatus = () => {
 	const { currentSemester, loading: semesterLoading } = useCurrentSemester();
@@ -14,13 +14,13 @@ export const useSemesterStatus = () => {
 		}
 	}, [currentSemester]);
 
-	const isPicking = semesterStatus === "Picking";
+	const isPicking = semesterStatus === 'Picking';
 
 	// New logic: Allow thesis registration/unregistration in both Picking and Ongoing-ScopeAdjustable
 	const canRegisterThesis =
-		semesterStatus === "Picking" ||
-		(semesterStatus === "Ongoing" &&
-			currentSemester?.ongoingPhase === "ScopeAdjustable");
+		semesterStatus === 'Picking' ||
+		(semesterStatus === 'Ongoing' &&
+			currentSemester?.ongoingPhase === 'ScopeAdjustable');
 
 	const refreshStatus = useCallback(() => {
 		// Since we're now using useCurrentSemester, we don't need manual refresh

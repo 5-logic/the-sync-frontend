@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import { Table } from "antd";
-import type { ColumnsType, TableProps } from "antd/es/table";
-import { memo } from "react";
+import { Table } from 'antd';
+import type { ColumnsType, TableProps } from 'antd/es/table';
+import { memo } from 'react';
 
-import { TablePagination } from "@/components/common/TablePagination";
-import { type SupervisorAssignmentData } from "@/store/useAssignSupervisorStore";
+import { TablePagination } from '@/components/common/TablePagination';
+import { type SupervisorAssignmentData } from '@/store/useAssignSupervisorStore';
 
 interface Props {
 	readonly data: SupervisorAssignmentData[];
 	readonly columns: ColumnsType<SupervisorAssignmentData>;
 	readonly loading?: boolean;
 	readonly rowKey?: string | ((record: SupervisorAssignmentData) => string);
-	readonly onChange?: TableProps<SupervisorAssignmentData>["onChange"];
+	readonly onChange?: TableProps<SupervisorAssignmentData>['onChange'];
 }
 
 /**
@@ -21,7 +21,7 @@ interface Props {
  * Responsive design with percentage-based widths
  */
 const ThesisOverviewTable = memo<Props>(
-	({ data, columns, loading = false, rowKey = "id", onChange }) => {
+	({ data, columns, loading = false, rowKey = 'id', onChange }) => {
 		return (
 			<Table
 				rowKey={rowKey}
@@ -32,12 +32,12 @@ const ThesisOverviewTable = memo<Props>(
 				onChange={onChange}
 				tableLayout="fixed"
 				size="small"
-				scroll={{ x: "max-content" }}
+				scroll={{ x: 'max-content' }}
 			/>
 		);
 	},
 );
 
-ThesisOverviewTable.displayName = "ThesisOverviewTable";
+ThesisOverviewTable.displayName = 'ThesisOverviewTable';
 
 export default ThesisOverviewTable;

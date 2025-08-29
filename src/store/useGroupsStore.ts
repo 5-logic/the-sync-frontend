@@ -1,10 +1,10 @@
-import { create } from "zustand";
+import { create } from 'zustand';
 
-import groupService, { type Group } from "@/lib/services/groups.service";
-import { cacheUtils } from "@/store/helpers/cacheHelpers";
+import groupService, { type Group } from '@/lib/services/groups.service';
+import { cacheUtils } from '@/store/helpers/cacheHelpers';
 
 // Initialize cache for groups
-cacheUtils.initCache<Group[]>("groups", {
+cacheUtils.initCache<Group[]>('groups', {
 	ttl: 5 * 60 * 1000, // 5 minutes
 	maxSize: 1000, // Support up to 1000 groups in cache
 	enableLocalStorage: false, // Don't store in localStorage
@@ -28,7 +28,7 @@ export const useGroupsStore = create<GroupsState>((set, get) => ({
 		const { loading } = get();
 
 		// Check for cached data first
-		const cachedGroups = cacheUtils.get<Group[]>("groups", "all");
+		const cachedGroups = cacheUtils.get<Group[]>('groups', 'all');
 
 		// If we have cache and it's not forced, use cache immediately without loading
 		if (!force && cachedGroups) {
@@ -49,17 +49,17 @@ export const useGroupsStore = create<GroupsState>((set, get) => ({
 
 			if (response.success) {
 				set({ groups: response.data, error: null });
-				cacheUtils.set("groups", "all", response.data);
+				cacheUtils.set('groups', 'all', response.data);
 			} else {
-				set({ error: response.error || "Failed to fetch groups" });
+				set({ error: response.error || 'Failed to fetch groups' });
 			}
 		} catch (error) {
-			console.error("Error fetching groups:", error);
+			console.error('Error fetching groups:', error);
 			set({
 				error:
 					error instanceof Error
 						? error.message
-						: "An unexpected error occurred",
+						: 'An unexpected error occurred',
 			});
 		} finally {
 			set({ loading: false });
@@ -68,7 +68,7 @@ export const useGroupsStore = create<GroupsState>((set, get) => ({
 
 	refetch: async () => {
 		// Clear cache to force fresh data from server
-		cacheUtils.clear("groups");
+		cacheUtils.clear('groups');
 		// Force refresh and show loading state
 		set({ loading: true, error: null });
 		await get().fetchGroups(true);

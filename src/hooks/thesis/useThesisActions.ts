@@ -1,15 +1,15 @@
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
-import { ThesisConfirmationModals } from "@/components/common/ConfirmModal";
-import { TIMING } from "@/lib/constants/thesis";
+import { ThesisConfirmationModals } from '@/components/common/ConfirmModal';
+import { TIMING } from '@/lib/constants/thesis';
 import {
 	THESIS_ERROR_CONFIGS,
 	THESIS_SUCCESS_CONFIGS,
 	handleThesisError,
 	handleThesisSuccess,
-} from "@/lib/utils/thesis-handlers";
-import { useThesisStore } from "@/store";
+} from '@/lib/utils/thesis-handlers';
+import { useThesisStore } from '@/store';
 
 export const useThesisActions = (thesisId: string) => {
 	const router = useRouter();
@@ -30,13 +30,13 @@ export const useThesisActions = (thesisId: string) => {
 		setExitLoading(true);
 		// Small delay for smooth UX
 		await new Promise((resolve) => setTimeout(resolve, TIMING.EXIT_DELAY));
-		router.push("/lecturer/thesis-management");
+		router.push('/lecturer/thesis-management');
 	};
 
 	const handleSubmit = async () => {
 		// Find thesis title for confirmation modal
 		const thesis = theses.find((t) => t.id === thesisId);
-		const thesisTitle = thesis?.englishName ?? "this thesis";
+		const thesisTitle = thesis?.englishName ?? 'this thesis';
 
 		// Show normal confirmation modal without duplicate checking
 		ThesisConfirmationModals.submit(
@@ -49,7 +49,7 @@ export const useThesisActions = (thesisId: string) => {
 					if (success) {
 						handleThesisSuccess(THESIS_SUCCESS_CONFIGS.SUBMIT, router);
 					} else {
-						throw new Error("Submit failed");
+						throw new Error('Submit failed');
 					}
 				} catch (error) {
 					handleThesisError(
@@ -66,7 +66,7 @@ export const useThesisActions = (thesisId: string) => {
 	const handleDelete = async () => {
 		// Find thesis title for confirmation modal
 		const thesis = theses.find((t) => t.id === thesisId);
-		const thesisTitle = thesis?.englishName ?? "this thesis";
+		const thesisTitle = thesis?.englishName ?? 'this thesis';
 
 		// Show confirmation modal before deleting
 		ThesisConfirmationModals.delete(thesisTitle, async () => {
@@ -77,7 +77,7 @@ export const useThesisActions = (thesisId: string) => {
 				if (success) {
 					handleThesisSuccess(THESIS_SUCCESS_CONFIGS.DELETE, router);
 				} else {
-					throw new Error("Delete failed");
+					throw new Error('Delete failed');
 				}
 			} catch (error) {
 				handleThesisError(error, THESIS_ERROR_CONFIGS.DELETE, setDeleteLoading);
@@ -90,13 +90,13 @@ export const useThesisActions = (thesisId: string) => {
 		ThesisConfirmationModals.approve(async () => {
 			try {
 				setApproveLoading(true);
-				const success = await reviewThesis(thesisId, "Approved");
+				const success = await reviewThesis(thesisId, 'Approved');
 
 				if (success) {
 					setShowApproveConfirm(false);
 					handleThesisSuccess(THESIS_SUCCESS_CONFIGS.APPROVE, router);
 				} else {
-					throw new Error("Approve failed");
+					throw new Error('Approve failed');
 				}
 			} catch (error) {
 				handleThesisError(
@@ -111,13 +111,13 @@ export const useThesisActions = (thesisId: string) => {
 	const handleReject = async () => {
 		try {
 			setRejectLoading(true);
-			const success = await reviewThesis(thesisId, "Rejected");
+			const success = await reviewThesis(thesisId, 'Rejected');
 
 			if (success) {
 				setShowRejectConfirm(false);
 				handleThesisSuccess(THESIS_SUCCESS_CONFIGS.REJECT, router);
 			} else {
-				throw new Error("Reject failed");
+				throw new Error('Reject failed');
 			}
 		} catch (error) {
 			handleThesisError(error, THESIS_ERROR_CONFIGS.REJECT, setRejectLoading);

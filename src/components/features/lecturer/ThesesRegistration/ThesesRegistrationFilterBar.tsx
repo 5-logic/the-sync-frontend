@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import SharedThesisFilterBar from "@/components/common/SharedThesisFilterBar";
+import SharedThesisFilterBar from '@/components/common/SharedThesisFilterBar';
 
 interface Props {
 	search: string;
 	onSearchChange: (val: string) => void;
-	status?: "approved" | "pending" | "rejected" | "new";
-	onStatusChange: (val?: "approved" | "pending" | "rejected" | "new") => void;
+	status?: 'approved' | 'pending' | 'rejected' | 'new';
+	onStatusChange: (val?: 'approved' | 'pending' | 'rejected' | 'new') => void;
 	semester?: string;
 	onSemesterChange: (val?: string) => void;
 	onRefresh: () => void;
 }
 
-const statusOptions = [{ value: "pending", label: "Pending" }];
+const statusOptions = [{ value: 'pending', label: 'Pending' }];
 
 export default function ThesesRegistrationFilterBar({
 	search,

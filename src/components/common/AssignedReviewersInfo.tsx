@@ -1,5 +1,6 @@
-import { Tag, Typography, Space } from "antd";
-import { SubmissionReviewWithReviewer } from "@/lib/services/reviews.service";
+import { Space, Tag, Typography } from 'antd';
+
+import { SubmissionReviewWithReviewer } from '@/lib/services/reviews.service';
 
 const { Text } = Typography;
 
@@ -10,14 +11,14 @@ interface AssignedReviewersInfoProps {
 
 export function AssignedReviewersInfo({
 	review,
-	label = "Assigned Reviewers",
+	label = 'Assigned Reviewers',
 }: AssignedReviewersInfoProps) {
 	const assignedReviewers = review.assignedReviewers || [];
 
 	if (assignedReviewers.length === 0) {
 		// Fallback to single reviewer display if no assignedReviewers data
 		return (
-			<div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+			<div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
 				<strong>{label}:</strong>
 				<Text strong>{review.lecturer.user.fullName}</Text>
 				{review.isMainReviewer === true ? (
@@ -45,7 +46,7 @@ export function AssignedReviewersInfo({
 				{sortedReviewers.map((assignment) => (
 					<div
 						key={assignment.reviewerId}
-						style={{ display: "flex", alignItems: "center", gap: 8 }}
+						style={{ display: 'flex', alignItems: 'center', gap: 8 }}
 					>
 						<Text strong>{assignment.reviewer.user.fullName}</Text>
 						{assignment.isMainReviewer ? (

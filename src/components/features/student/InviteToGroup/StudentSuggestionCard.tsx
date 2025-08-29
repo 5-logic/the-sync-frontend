@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { UserOutlined } from "@ant-design/icons";
-import { Avatar, Button, Card, Typography } from "antd";
-import React from "react";
+import { UserOutlined } from '@ant-design/icons';
+import { Avatar, Button, Card, Typography } from 'antd';
+import React from 'react';
 
 import {
-	ResponsibilityRadarChart,
 	ResponsibilityData,
-} from "@/components/common/radar-chart";
-import { Student } from "@/schemas/student";
+	ResponsibilityRadarChart,
+} from '@/components/common/radar-chart';
+import { Student } from '@/schemas/student';
 
 const { Paragraph } = Typography;
 
@@ -24,10 +24,10 @@ export const StudentSuggestionCard: React.FC<{ student: Student }> = ({
 	};
 
 	let majorName = s.majorId;
-	if (s.majorId === "SE") {
-		majorName = "Software Engineering";
-	} else if (s.majorId === "AI") {
-		majorName = "Artificial Intelligence";
+	if (s.majorId === 'SE') {
+		majorName = 'Software Engineering';
+	} else if (s.majorId === 'AI') {
+		majorName = 'Artificial Intelligence';
 	}
 
 	// Convert studentResponsibilities to ResponsibilityData format
@@ -41,7 +41,7 @@ export const StudentSuggestionCard: React.FC<{ student: Student }> = ({
 	return (
 		<Card
 			hoverable
-			style={{ width: "100%", textAlign: "center" }}
+			style={{ width: '100%', textAlign: 'center' }}
 			bodyStyle={{ paddingTop: 16, paddingBottom: 16 }}
 		>
 			<Avatar size={64} icon={<UserOutlined />} style={{ marginBottom: 12 }} />
@@ -58,7 +58,7 @@ export const StudentSuggestionCard: React.FC<{ student: Student }> = ({
 			{responsibilityData.length > 0 ? (
 				<div style={{ marginBottom: 16 }}>
 					<Paragraph
-						style={{ marginBottom: 8, fontSize: "12px", color: "#666" }}
+						style={{ marginBottom: 8, fontSize: '12px', color: '#666' }}
 					>
 						Responsibilities:
 					</Paragraph>

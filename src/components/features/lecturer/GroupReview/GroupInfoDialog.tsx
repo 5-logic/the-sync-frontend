@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { Modal, Spin, Typography } from "antd";
-import React, { useCallback, useEffect, useState } from "react";
+import { Modal, Spin, Typography } from 'antd';
+import React, { useCallback, useEffect, useState } from 'react';
 
-import GroupInfoCard from "@/components/features/student/GroupDashboard/GroupInfoCard";
-import groupService from "@/lib/services/groups.service";
-import { handleApiResponse } from "@/lib/utils/handleApi";
-import { showNotification } from "@/lib/utils/notification";
-import { GroupDashboard } from "@/schemas/group";
+import GroupInfoCard from '@/components/features/student/GroupDashboard/GroupInfoCard';
+import groupService from '@/lib/services/groups.service';
+import { handleApiResponse } from '@/lib/utils/handleApi';
+import { showNotification } from '@/lib/utils/notification';
+import { GroupDashboard } from '@/schemas/group';
 
 const { Text } = Typography;
 
@@ -37,13 +37,13 @@ export default function GroupInfoDialog({
 				setGroupData(result.data as GroupDashboard);
 			} else {
 				const errorMessage =
-					result.error?.message || "Failed to load group details";
+					result.error?.message || 'Failed to load group details';
 				setError(errorMessage);
-				showNotification.error("Error", errorMessage);
+				showNotification.error('Error', errorMessage);
 			}
 		} catch (err) {
-			setError("An unexpected error occurred while loading group data");
-			console.error("Error fetching group details:", err);
+			setError('An unexpected error occurred while loading group data');
+			console.error('Error fetching group details:', err);
 		} finally {
 			setLoading(false);
 		}
@@ -59,9 +59,9 @@ export default function GroupInfoDialog({
 	const renderContent = () => {
 		if (loading) {
 			return (
-				<div style={{ textAlign: "center", padding: "20px" }}>
+				<div style={{ textAlign: 'center', padding: '20px' }}>
 					<Spin size="large" />
-					<Text style={{ display: "block", marginTop: "10px" }}>
+					<Text style={{ display: 'block', marginTop: '10px' }}>
 						Loading group details...
 					</Text>
 				</div>
@@ -73,8 +73,8 @@ export default function GroupInfoDialog({
 		}
 
 		return (
-			<div style={{ textAlign: "center", padding: "20px" }}>
-				<Text type="danger">{error || "Failed to load group details"}</Text>
+			<div style={{ textAlign: 'center', padding: '20px' }}>
+				<Text type="danger">{error || 'Failed to load group details'}</Text>
 			</div>
 		);
 	};

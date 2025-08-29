@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 
-import { useCurrentSemester } from "@/hooks/semester/useCurrentSemester";
-import { useSemesterStore } from "@/store";
+import { useCurrentSemester } from '@/hooks/semester/useCurrentSemester';
+import { useSemesterStore } from '@/store';
 
 /**
  * Custom hook for managing semester filtering in milestones timeline component
@@ -9,7 +9,7 @@ import { useSemesterStore } from "@/store";
  * Each semester has its own specific milestones
  */
 export function useMilestonesSemesterFilter() {
-	const [selectedSemester, setSelectedSemester] = useState<string>("");
+	const [selectedSemester, setSelectedSemester] = useState<string>('');
 	const { currentSemester } = useCurrentSemester();
 
 	// Use centralized semester store

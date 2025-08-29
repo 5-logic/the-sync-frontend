@@ -1,11 +1,12 @@
-import { useCallback } from "react";
-import { ConfirmationModal } from "@/components/common/ConfirmModal";
-import groupService from "@/lib/services/groups.service";
-import thesesService from "@/lib/services/theses.service";
-import { handleApiResponse } from "@/lib/utils/handleApi";
-import { showNotification } from "@/lib/utils/notification";
-import { GroupDashboard } from "@/schemas/group";
-import { Thesis } from "@/schemas/thesis";
+import { useCallback } from 'react';
+
+import { ConfirmationModal } from '@/components/common/ConfirmModal';
+import groupService from '@/lib/services/groups.service';
+import thesesService from '@/lib/services/theses.service';
+import { handleApiResponse } from '@/lib/utils/handleApi';
+import { showNotification } from '@/lib/utils/notification';
+import { GroupDashboard } from '@/schemas/group';
+import { Thesis } from '@/schemas/thesis';
 
 interface UseThesisOperationsProps {
 	group: GroupDashboard | null;
@@ -13,7 +14,7 @@ interface UseThesisOperationsProps {
 	refreshGroupAndTheses: () => Promise<void>;
 	handleThesisOperationError: (
 		error: unknown,
-		operation: "assign" | "unassign",
+		operation: 'assign' | 'unassign',
 	) => void;
 	setIsThesisDetailModalOpen: (open: boolean) => void;
 	setViewingThesis: (thesis: Thesis | null) => void;
@@ -64,8 +65,8 @@ export const useThesisOperations = ({
 					return { showUnassignButton: true }; // From Group's Thesis card
 				}
 			} catch (error) {
-				console.error("Error fetching thesis details:", error);
-				showNotification.error("Error", "Failed to load thesis details");
+				console.error('Error fetching thesis details:', error);
+				showNotification.error('Error', 'Failed to load thesis details');
 			}
 		}
 		// Return default value if no thesis or error
@@ -77,13 +78,13 @@ export const useThesisOperations = ({
 		if (!group?.thesis) return;
 
 		ConfirmationModal.show({
-			title: "Unassign Thesis",
-			message: "Are you sure you want to unassign this thesis from the group?",
+			title: 'Unassign Thesis',
+			message: 'Are you sure you want to unassign this thesis from the group?',
 			details: `${group.thesis.englishName} (${group.thesis.abbreviation})`,
-			note: "This action will remove the thesis assignment from the group. The thesis will become available for other groups.",
-			noteType: "warning",
-			okText: "Yes, Unassign",
-			okType: "danger",
+			note: 'This action will remove the thesis assignment from the group. The thesis will become available for other groups.',
+			noteType: 'warning',
+			okText: 'Yes, Unassign',
+			okType: 'danger',
 			onOk: async () => {
 				try {
 					setUnassignThesisLoading(true);
@@ -92,8 +93,8 @@ export const useThesisOperations = ({
 
 					if (result.success) {
 						showNotification.success(
-							"Thesis Unassigned",
-							"Thesis has been unassigned from the group successfully!",
+							'Thesis Unassigned',
+							'Thesis has been unassigned from the group successfully!',
 						);
 
 						setIsThesisDetailModalOpen(false);
@@ -101,12 +102,12 @@ export const useThesisOperations = ({
 						await refreshGroupAndTheses();
 					} else {
 						showNotification.error(
-							"Unassignment Failed",
-							result.error?.message || "Failed to unassign thesis from group",
+							'Unassignment Failed',
+							result.error?.message || 'Failed to unassign thesis from group',
 						);
 					}
 				} catch (error) {
-					handleThesisOperationError(error, "unassign");
+					handleThesisOperationError(error, 'unassign');
 				} finally {
 					setUnassignThesisLoading(false);
 				}

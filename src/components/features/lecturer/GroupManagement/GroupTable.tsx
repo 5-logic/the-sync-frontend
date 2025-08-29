@@ -1,8 +1,8 @@
-import { Table } from "antd";
-import { ColumnsType } from "antd/es/table";
+import { Table } from 'antd';
+import { ColumnsType } from 'antd/es/table';
 
-import { TablePagination } from "@/components/common/TablePagination";
-import { Group } from "@/lib/services/groups.service";
+import { TablePagination } from '@/components/common/TablePagination';
+import { Group } from '@/lib/services/groups.service';
 
 interface CustomGroupTableProps {
 	readonly data: Group[];
@@ -19,7 +19,7 @@ export default function CustomGroupTable({
 			columns={columns}
 			rowKey="id"
 			pagination={TablePagination}
-			scroll={{ x: "max-content" }}
+			scroll={{ x: 'max-content' }}
 		/>
 	);
 }

@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { BookOutlined, EditOutlined } from "@ant-design/icons";
-import { Button, Card, Space, Tag, Tooltip, Typography } from "antd";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { BookOutlined, EditOutlined } from '@ant-design/icons';
+import { Button, Card, Space, Tag, Tooltip, Typography } from 'antd';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
-import StudentEditThesisModal from "@/components/features/student/GroupDashboard/StudentEditThesisModal";
-import { DOMAIN_COLOR_MAP } from "@/lib/constants/domains";
-import thesesService from "@/lib/services/theses.service";
+import StudentEditThesisModal from '@/components/features/student/GroupDashboard/StudentEditThesisModal';
+import { DOMAIN_COLOR_MAP } from '@/lib/constants/domains';
+import thesesService from '@/lib/services/theses.service';
 
 const { Title, Text } = Typography;
 
@@ -62,7 +62,7 @@ export default function ThesisStatusCard({
 				setThesis(response.data);
 			}
 		} catch (error) {
-			console.error("Failed to fetch thesis:", error);
+			console.error('Failed to fetch thesis:', error);
 		} finally {
 			setLoading(false);
 		}
@@ -99,8 +99,8 @@ export default function ThesisStatusCard({
 	}
 	// Get domain color
 	const domainColor = thesis.domain
-		? DOMAIN_COLOR_MAP[thesis.domain] || "default"
-		: "default";
+		? DOMAIN_COLOR_MAP[thesis.domain] || 'default'
+		: 'default';
 
 	// Only render modal when actually needed to avoid unnecessary renders
 	const renderModal = editModalVisible && thesisId && (
@@ -119,17 +119,17 @@ export default function ThesisStatusCard({
 					<Space
 						onClick={handleCardClick}
 						style={{
-							cursor: isDashboardView ? "pointer" : "default",
-							transition: "color 0.2s ease",
+							cursor: isDashboardView ? 'pointer' : 'default',
+							transition: 'color 0.2s ease',
 						}}
 						onMouseEnter={(e) => {
 							if (isDashboardView) {
-								e.currentTarget.style.color = "#1890ff";
+								e.currentTarget.style.color = '#1890ff';
 							}
 						}}
 						onMouseLeave={(e) => {
 							if (isDashboardView) {
-								e.currentTarget.style.color = "";
+								e.currentTarget.style.color = '';
 							}
 						}}
 					>
@@ -152,7 +152,7 @@ export default function ThesisStatusCard({
 				}
 				hoverable={isDashboardView}
 			>
-				<Space direction="vertical" size="middle" style={{ width: "100%" }}>
+				<Space direction="vertical" size="middle" style={{ width: '100%' }}>
 					<Space direction="vertical" size={4}>
 						<Text type="secondary">Thesis title</Text>
 						<Title level={5} style={{ margin: 0 }}>
@@ -164,14 +164,14 @@ export default function ThesisStatusCard({
 						<Text type="secondary">Description</Text>
 						<div
 							style={{
-								display: "-webkit-box",
+								display: '-webkit-box',
 								WebkitLineClamp: 3,
-								WebkitBoxOrient: "vertical",
-								overflow: "hidden",
-								textOverflow: "ellipsis",
-								lineHeight: "1.5em",
-								maxHeight: "4.5em", // 3 lines × 1.5 line-height
-								wordBreak: "break-word",
+								WebkitBoxOrient: 'vertical',
+								overflow: 'hidden',
+								textOverflow: 'ellipsis',
+								lineHeight: '1.5em',
+								maxHeight: '4.5em', // 3 lines × 1.5 line-height
+								wordBreak: 'break-word',
 							}}
 						>
 							{thesis.description}

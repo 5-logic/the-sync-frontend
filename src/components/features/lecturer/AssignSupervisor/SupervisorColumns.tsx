@@ -1,27 +1,27 @@
-import { DeleteOutlined } from "@ant-design/icons";
-import { Button, Space, Tag, Typography } from "antd";
-import type { ColumnsType } from "antd/es/table";
+import { DeleteOutlined } from '@ant-design/icons';
+import { Button, Space, Tag, Typography } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
 
-import { getSemesterTagColor } from "@/lib/utils/colorUtils";
-import { type SupervisorAssignmentData } from "@/store/useAssignSupervisorStore";
-import { type DraftAssignment } from "@/store/useDraftAssignmentStore";
+import { getSemesterTagColor } from '@/lib/utils/colorUtils';
+import { type SupervisorAssignmentData } from '@/store/useAssignSupervisorStore';
+import { type DraftAssignment } from '@/store/useDraftAssignmentStore';
 
 const { Text } = Typography;
 
 // UI Constants for table layout - responsive design with percentages
 export const TABLE_WIDTHS = {
-	ABBREVIATION: "10%", // Shortened for more space
-	TITLE: "40%", // Reduced for new column
-	SEMESTER: "12%",
-	STATUS: "12%", // New column for pick status
-	SUPERVISOR: "16%",
-	ACTIONS: "10%",
+	ABBREVIATION: '10%', // Shortened for more space
+	TITLE: '40%', // Reduced for new column
+	SEMESTER: '12%',
+	STATUS: '12%', // New column for pick status
+	SUPERVISOR: '16%',
+	ACTIONS: '10%',
 } as const;
 
 export const TEXT_DISPLAY = {
 	MAX_LINES: 2,
-	LINE_HEIGHT: "1.4",
-	MAX_HEIGHT: "2.8em", // 2 lines * 1.4 line-height
+	LINE_HEIGHT: '1.4',
+	MAX_HEIGHT: '2.8em', // 2 lines * 1.4 line-height
 } as const;
 
 /**
@@ -35,7 +35,7 @@ export const renderSupervisors = (supervisors: string[]) =>
 			))}
 		</div>
 	) : (
-		"-"
+		'-'
 	);
 
 /**
@@ -62,8 +62,8 @@ export const createSupervisorRenderer = (
 					{/* Show current supervisors if any exist */}
 					{supervisors.length > 0 && (
 						<div style={{ marginTop: 8 }}>
-							<Text type="secondary" style={{ fontSize: "11px" }}>
-								Current: {supervisors.join(", ")}
+							<Text type="secondary" style={{ fontSize: '11px' }}>
+								Current: {supervisors.join(', ')}
 							</Text>
 						</div>
 					)}
@@ -79,7 +79,7 @@ export const createSupervisorRenderer = (
 				))}
 			</div>
 		) : (
-			"-"
+			'-'
 		);
 	};
 };
@@ -97,7 +97,7 @@ export const createActionRenderer = (
 	return (_: unknown, record: SupervisorAssignmentData) => {
 		const draft = getDraftAssignment(record.thesisId);
 		const supervisorCount = record.supervisors.length;
-		const buttonText = supervisorCount >= 2 ? "Change" : "Assign";
+		const buttonText = supervisorCount >= 2 ? 'Change' : 'Assign';
 
 		return (
 			<Space size="small">
@@ -112,11 +112,11 @@ export const createActionRenderer = (
 						onClick={() => removeDraftAssignment(record.thesisId)}
 						title="Remove draft assignment"
 						style={{
-							display: "flex",
-							alignItems: "center",
-							justifyContent: "center",
-							padding: "4px 8px",
-							borderRadius: "4px",
+							display: 'flex',
+							alignItems: 'center',
+							justifyContent: 'center',
+							padding: '4px 8px',
+							borderRadius: '4px',
 						}}
 					/>
 				)}
@@ -144,24 +144,24 @@ const sortByPickedStatus = (
  */
 export const baseColumns: ColumnsType<SupervisorAssignmentData> = [
 	{
-		title: "Abbreviation",
-		dataIndex: "abbreviation",
-		key: "abbreviation",
+		title: 'Abbreviation',
+		dataIndex: 'abbreviation',
+		key: 'abbreviation',
 		width: TABLE_WIDTHS.ABBREVIATION,
 		ellipsis: {
 			showTitle: false,
 		},
 		sorter: (a, b) => a.abbreviation.localeCompare(b.abbreviation),
-		sortDirections: ["ascend", "descend"],
+		sortDirections: ['ascend', 'descend'],
 		render: (text: string) => (
 			<div
 				style={{
-					overflow: "hidden",
-					textOverflow: "ellipsis",
-					whiteSpace: "nowrap",
-					textAlign: "left",
-					width: "100%",
-					paddingLeft: "8px",
+					overflow: 'hidden',
+					textOverflow: 'ellipsis',
+					whiteSpace: 'nowrap',
+					textAlign: 'left',
+					width: '100%',
+					paddingLeft: '8px',
 				}}
 				title={text}
 			>
@@ -170,21 +170,21 @@ export const baseColumns: ColumnsType<SupervisorAssignmentData> = [
 		),
 	},
 	{
-		title: "English Name",
-		dataIndex: "thesisTitle",
-		key: "thesisTitle",
+		title: 'English Name',
+		dataIndex: 'thesisTitle',
+		key: 'thesisTitle',
 		width: TABLE_WIDTHS.TITLE,
 		ellipsis: false,
 		sorter: (a, b) => a.thesisTitle.localeCompare(b.thesisTitle),
-		sortDirections: ["ascend", "descend"],
+		sortDirections: ['ascend', 'descend'],
 		render: (text: string) => (
 			<div
 				style={{
-					display: "-webkit-box",
+					display: '-webkit-box',
 					WebkitLineClamp: TEXT_DISPLAY.MAX_LINES,
-					WebkitBoxOrient: "vertical",
-					overflow: "hidden",
-					textOverflow: "ellipsis",
+					WebkitBoxOrient: 'vertical',
+					overflow: 'hidden',
+					textOverflow: 'ellipsis',
 					lineHeight: TEXT_DISPLAY.LINE_HEIGHT,
 					maxHeight: TEXT_DISPLAY.MAX_HEIGHT,
 				}}
@@ -195,23 +195,23 @@ export const baseColumns: ColumnsType<SupervisorAssignmentData> = [
 		),
 	},
 	{
-		title: "Semester",
-		dataIndex: "semester",
-		key: "semester",
+		title: 'Semester',
+		dataIndex: 'semester',
+		key: 'semester',
 		width: TABLE_WIDTHS.SEMESTER,
-		align: "center" as const,
+		align: 'center' as const,
 		ellipsis: {
 			showTitle: false,
 		},
 		sorter: (a, b) => a.semester.localeCompare(b.semester),
-		sortDirections: ["ascend", "descend"],
+		sortDirections: ['ascend', 'descend'],
 		render: (semester: string) => (
 			<div
 				style={{
-					display: "flex",
-					alignItems: "center",
-					justifyContent: "center",
-					height: "100%",
+					display: 'flex',
+					alignItems: 'center',
+					justifyContent: 'center',
+					height: '100%',
 				}}
 			>
 				<Tag color={getSemesterTagColor(semester)} title={semester}>
@@ -221,32 +221,32 @@ export const baseColumns: ColumnsType<SupervisorAssignmentData> = [
 		),
 	},
 	{
-		title: "Status",
-		dataIndex: "isPicked",
-		key: "isPicked",
+		title: 'Status',
+		dataIndex: 'isPicked',
+		key: 'isPicked',
 		width: TABLE_WIDTHS.STATUS,
-		align: "center" as const,
+		align: 'center' as const,
 		sorter: sortByPickedStatus,
-		sortDirections: ["ascend", "descend"],
+		sortDirections: ['ascend', 'descend'],
 		render: (isPicked: boolean) => (
 			<div
 				style={{
-					display: "flex",
-					alignItems: "center",
-					justifyContent: "center",
-					height: "100%",
+					display: 'flex',
+					alignItems: 'center',
+					justifyContent: 'center',
+					height: '100%',
 				}}
 			>
-				<Tag color={isPicked ? "green" : "orange"}>
-					{isPicked ? "Picked" : "Not picked"}
+				<Tag color={isPicked ? 'green' : 'orange'}>
+					{isPicked ? 'Picked' : 'Not picked'}
 				</Tag>
 			</div>
 		),
 	},
 	{
-		title: "Supervisor",
-		dataIndex: "supervisors",
-		key: "supervisors",
+		title: 'Supervisor',
+		dataIndex: 'supervisors',
+		key: 'supervisors',
 		width: TABLE_WIDTHS.SUPERVISOR,
 		render: renderSupervisors,
 	},

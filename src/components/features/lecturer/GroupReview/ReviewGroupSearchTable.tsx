@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { EyeOutlined, ReloadOutlined, SearchOutlined } from "@ant-design/icons";
-import { Button, Empty, Input, Space, Table } from "antd";
-import type { ColumnsType } from "antd/es/table";
+import { EyeOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
+import { Button, Empty, Input, Space, Table } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
 
-import { TablePagination } from "@/components/common/TablePagination";
-import SemesterFilter from "@/components/features/lecturer/GroupProgess/SemesterFilter";
-import MilestoneStepFilter from "@/components/features/lecturer/GroupReview/MilestoneStepFilter";
-import { AssignmentReviewer } from "@/lib/services/reviews.service";
+import { TablePagination } from '@/components/common/TablePagination';
+import SemesterFilter from '@/components/features/lecturer/GroupProgess/SemesterFilter';
+import MilestoneStepFilter from '@/components/features/lecturer/GroupReview/MilestoneStepFilter';
+import { AssignmentReviewer } from '@/lib/services/reviews.service';
 
 // Review group data type
 export interface ReviewGroupData {
@@ -69,43 +69,43 @@ export default function ReviewGroupSearchTable({
 }: Readonly<Props>) {
 	const columns: ColumnsType<ReviewGroupData> = [
 		{
-			title: "Group Name",
-			dataIndex: "name",
-			key: "name",
-			responsive: ["xs", "sm", "md", "lg", "xl"],
+			title: 'Group Name',
+			dataIndex: 'name',
+			key: 'name',
+			responsive: ['xs', 'sm', 'md', 'lg', 'xl'],
 		},
 		{
-			title: "Group Code",
-			dataIndex: "code",
-			key: "code",
-			responsive: ["sm", "md", "lg", "xl"],
+			title: 'Group Code',
+			dataIndex: 'code',
+			key: 'code',
+			responsive: ['sm', 'md', 'lg', 'xl'],
 		},
 		{
-			title: "English Name",
-			key: "englishName",
+			title: 'English Name',
+			key: 'englishName',
 			width: 500,
-			responsive: ["md", "lg", "xl"],
-			render: (_, record) => record.englishName || "-",
+			responsive: ['md', 'lg', 'xl'],
+			render: (_, record) => record.englishName || '-',
 		},
 		{
-			title: "Project Direction",
-			dataIndex: "projectDirection",
-			key: "projectDirection",
-			responsive: ["lg", "xl"],
-			render: (value: string) => value || "-",
+			title: 'Project Direction',
+			dataIndex: 'projectDirection',
+			key: 'projectDirection',
+			responsive: ['lg', 'xl'],
+			render: (value: string) => value || '-',
 		},
 		{
-			title: "Members",
-			key: "memberCount",
-			responsive: ["sm", "md", "lg", "xl"],
-			render: (_, record) => record.memberCount || "-",
+			title: 'Members',
+			key: 'memberCount',
+			responsive: ['sm', 'md', 'lg', 'xl'],
+			render: (_, record) => record.memberCount || '-',
 		},
 
 		{
-			title: "Actions",
-			align: "center",
-			key: "actions",
-			responsive: ["xs", "sm", "md", "lg", "xl"],
+			title: 'Actions',
+			align: 'center',
+			key: 'actions',
+			responsive: ['xs', 'sm', 'md', 'lg', 'xl'],
 			width: 80,
 			render: (_, record) => {
 				return (
@@ -121,14 +121,14 @@ export default function ReviewGroupSearchTable({
 	];
 
 	return (
-		<Space direction="vertical" size="small" style={{ width: "100%" }}>
+		<Space direction="vertical" size="small" style={{ width: '100%' }}>
 			<div
 				style={{
-					display: "flex",
+					display: 'flex',
 					gap: 8,
 					marginBottom: 8,
-					flexWrap: "wrap",
-					alignItems: "center",
+					flexWrap: 'wrap',
+					alignItems: 'center',
 				}}
 			>
 				<Input
@@ -176,7 +176,7 @@ export default function ReviewGroupSearchTable({
 				rowKey="id"
 				loading={loading}
 				rowClassName={(record) =>
-					record.id === selectedGroup?.id ? "ant-table-row-selected" : ""
+					record.id === selectedGroup?.id ? 'ant-table-row-selected' : ''
 				}
 				size="middle"
 				scroll={{ x: 800 }}

@@ -1,9 +1,9 @@
-import { useState, useCallback } from "react";
-import { AxiosError } from "axios";
+import { AxiosError } from 'axios';
+import { useCallback, useState } from 'react';
 
-import groupService from "@/lib/services/groups.service";
-import { showNotification } from "@/lib/utils/notification";
-import { GroupConfirmationModals } from "@/components/common/ConfirmModal";
+import { GroupConfirmationModals } from '@/components/common/ConfirmModal';
+import groupService from '@/lib/services/groups.service';
+import { showNotification } from '@/lib/utils/notification';
 
 /**
  * Hook for admin-specific group actions like delete
@@ -19,12 +19,12 @@ export const useAdminGroupActions = () => {
 		switch (statusCode) {
 			case 400:
 				// Group contains students: "Cannot delete group SU25QN004. Group contains 5 student(s)"
-				showNotification.error("Cannot Delete Group", error, 6);
+				showNotification.error('Cannot Delete Group', error, 6);
 				break;
 			case 404:
 				// Group not found: "Group not found"
 				showNotification.error(
-					"Group Not Found",
+					'Group Not Found',
 					error || "The group you're trying to delete no longer exists.",
 					4,
 				);
@@ -32,9 +32,9 @@ export const useAdminGroupActions = () => {
 			default:
 				// Generic error - use the actual error message from response
 				showNotification.error(
-					"Delete Failed",
+					'Delete Failed',
 					error ||
-						"Failed to delete the group. Please try again or contact support if the problem persists.",
+						'Failed to delete the group. Please try again or contact support if the problem persists.',
 					4,
 				);
 		}
@@ -62,7 +62,7 @@ export const useAdminGroupActions = () => {
 							if (response.success) {
 								// Handle success response: {"success":true,"statusCode":200,"data":true}
 								showNotification.success(
-									"Group Deleted Successfully",
+									'Group Deleted Successfully',
 									`Group "${groupName}" has been permanently deleted.`,
 									5,
 								);
@@ -86,10 +86,10 @@ export const useAdminGroupActions = () => {
 
 							// Handle network/server errors
 							handleDeleteError(
-								"An unexpected error occurred. Please try again.",
+								'An unexpected error occurred. Please try again.',
 								500,
 							);
-							console.error("Error deleting group:", error);
+							console.error('Error deleting group:', error);
 						} finally {
 							setLoading(false);
 							resolve();

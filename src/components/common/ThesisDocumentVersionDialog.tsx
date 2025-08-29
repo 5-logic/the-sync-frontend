@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { DownloadOutlined, FileTextOutlined } from "@ant-design/icons";
-import { Button, Modal, Select, Space, Typography, Empty } from "antd";
-import { useState } from "react";
+import { DownloadOutlined, FileTextOutlined } from '@ant-design/icons';
+import { Button, Empty, Modal, Select, Space, Typography } from 'antd';
+import { useState } from 'react';
 
-import { StorageService } from "@/lib/services/storage.service";
-import { showNotification } from "@/lib/utils/notification";
+import { StorageService } from '@/lib/services/storage.service';
+import { showNotification } from '@/lib/utils/notification';
 
 const { Option } = Select;
 const { Text, Title } = Typography;
@@ -29,7 +29,7 @@ export default function ThesisDocumentVersionDialog({
 	thesisVersions,
 	thesisTitle,
 }: Props) {
-	const [selectedVersionId, setSelectedVersionId] = useState<string>("");
+	const [selectedVersionId, setSelectedVersionId] = useState<string>('');
 	const [downloading, setDownloading] = useState(false);
 
 	// Set default selected version when dialog opens
@@ -48,8 +48,8 @@ export default function ThesisDocumentVersionDialog({
 	const handleDownload = async () => {
 		if (!selectedVersion?.supportingDocument) {
 			showNotification.error(
-				"Download Failed",
-				"No document available for this version",
+				'Download Failed',
+				'No document available for this version',
 			);
 			return;
 		}
@@ -63,17 +63,17 @@ export default function ThesisDocumentVersionDialog({
 			);
 
 			// Open download in new tab
-			window.open(downloadUrl, "_blank");
+			window.open(downloadUrl, '_blank');
 
 			showNotification.success(
-				"Download Started",
+				'Download Started',
 				`Version ${selectedVersion.version} document download has started`,
 			);
 		} catch (error) {
-			console.error("Download error:", error);
+			console.error('Download error:', error);
 			showNotification.error(
-				"Download Failed",
-				"Could not download the document",
+				'Download Failed',
+				'Could not download the document',
 			);
 		} finally {
 			setDownloading(false);
@@ -85,7 +85,7 @@ export default function ThesisDocumentVersionDialog({
 		try {
 			return StorageService.getFileNameFromUrl(url);
 		} catch {
-			return "Document";
+			return 'Document';
 		}
 	};
 
@@ -113,7 +113,7 @@ export default function ThesisDocumentVersionDialog({
 			width={600}
 			destroyOnClose
 		>
-			<Space direction="vertical" size={16} style={{ width: "100%" }}>
+			<Space direction="vertical" size={16} style={{ width: '100%' }}>
 				{/* Thesis Title */}
 				<div>
 					<Text strong style={{ fontSize: 16 }}>
@@ -125,11 +125,11 @@ export default function ThesisDocumentVersionDialog({
 				{thesisVersions.length > 0 ? (
 					<>
 						<div>
-							<Text strong style={{ marginBottom: 8, display: "block" }}>
+							<Text strong style={{ marginBottom: 8, display: 'block' }}>
 								Select Version:
 							</Text>
 							<Select
-								style={{ width: "100%" }}
+								style={{ width: '100%' }}
 								placeholder="Choose a document version"
 								value={selectedVersionId}
 								onChange={setSelectedVersionId}
@@ -154,9 +154,9 @@ export default function ThesisDocumentVersionDialog({
 							<div
 								style={{
 									padding: 16,
-									backgroundColor: "#f6f6f6",
+									backgroundColor: '#f6f6f6',
 									borderRadius: 8,
-									border: "1px solid #d9d9d9",
+									border: '1px solid #d9d9d9',
 								}}
 							>
 								<Title level={5} style={{ marginBottom: 8 }}>
@@ -171,15 +171,15 @@ export default function ThesisDocumentVersionDialog({
 													type="link"
 													style={{
 														padding: 0,
-														height: "auto",
-														fontSize: "inherit",
-														textAlign: "left",
-														whiteSpace: "normal",
-														wordWrap: "break-word",
-														wordBreak: "break-all",
-														lineHeight: "1.4",
-														display: "inline-block",
-														maxWidth: "100%",
+														height: 'auto',
+														fontSize: 'inherit',
+														textAlign: 'left',
+														whiteSpace: 'normal',
+														wordWrap: 'break-word',
+														wordBreak: 'break-all',
+														lineHeight: '1.4',
+														display: 'inline-block',
+														maxWidth: '100%',
 													}}
 													onClick={handleDownload}
 													loading={downloading}

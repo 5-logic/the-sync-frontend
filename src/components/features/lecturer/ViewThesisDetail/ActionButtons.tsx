@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
 	CheckOutlined,
@@ -7,10 +7,10 @@ import {
 	EyeInvisibleOutlined,
 	EyeOutlined,
 	SendOutlined,
-} from "@ant-design/icons";
-import { Button, Col, Row, Space } from "antd";
+} from '@ant-design/icons';
+import { Button, Col, Row, Space } from 'antd';
 
-import { THESIS_STATUS } from "@/lib/constants/thesis";
+import { THESIS_STATUS } from '@/lib/constants/thesis';
 
 interface ActionButtonProps {
 	onApprove?: () => void;
@@ -29,7 +29,7 @@ interface ActionButtonProps {
 	approveLoading?: boolean;
 	rejectLoading?: boolean;
 	publishLoading?: boolean;
-	mode?: "thesis-management" | "publish-list";
+	mode?: 'thesis-management' | 'publish-list';
 	isPublished?: boolean;
 	canUnpublish?: boolean;
 }
@@ -51,7 +51,7 @@ export default function ActionButtons({
 	approveLoading = false,
 	rejectLoading = false,
 	publishLoading = false,
-	mode = "thesis-management",
+	mode = 'thesis-management',
 	isPublished = false,
 	canUnpublish = true,
 }: Readonly<ActionButtonProps>) {
@@ -60,10 +60,10 @@ export default function ActionButtons({
 	const showModeratorActions = canModerate && status === THESIS_STATUS.PENDING;
 
 	// SECURITY FIX: Only show register submit button for thesis owner (in thesis management mode)
-	const showRegisterSubmit = isThesisOwner && mode === "thesis-management";
+	const showRegisterSubmit = isThesisOwner && mode === 'thesis-management';
 
 	// Show publish thesis button when in publish-list mode
-	const showPublishThesis = mode === "publish-list";
+	const showPublishThesis = mode === 'publish-list';
 
 	// SECURITY FIX: Only allow delete for thesis owner AND correct status
 	const canDelete =
@@ -81,20 +81,20 @@ export default function ActionButtons({
 	const getRegisterSubmitProps = () => {
 		if (status === THESIS_STATUS.PENDING) {
 			return {
-				children: "Already Submitted",
+				children: 'Already Submitted',
 				disabled: true,
 				loading: false,
 			};
 		}
 		if (status === THESIS_STATUS.REJECTED) {
 			return {
-				children: "Resubmit for Review",
+				children: 'Resubmit for Review',
 				disabled: false,
 				loading: submitLoading,
 			};
 		}
 		return {
-			children: "Register Submit",
+			children: 'Register Submit',
 			disabled: status !== THESIS_STATUS.NEW,
 			loading: submitLoading,
 		};
@@ -179,7 +179,7 @@ export default function ActionButtons({
 									loading={publishLoading}
 									disabled={isPublished && !canUnpublish}
 								>
-									{isPublished ? "Unpublish Thesis" : "Publish Thesis"}
+									{isPublished ? 'Unpublish Thesis' : 'Publish Thesis'}
 								</Button>
 							)}
 

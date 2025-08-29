@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { UserOutlined } from "@ant-design/icons";
+import { UserOutlined } from '@ant-design/icons';
 import {
 	Avatar,
 	Button,
@@ -11,27 +11,27 @@ import {
 	Space,
 	Tag,
 	Typography,
-} from "antd";
-import { useRouter } from "next/navigation";
+} from 'antd';
+import { useRouter } from 'next/navigation';
 
-import { ConfirmationModal } from "@/components/common/ConfirmModal";
-import { useSemesterStatus } from "@/hooks/student/useSemesterStatus";
-import { useStudentGroupStatus } from "@/hooks/student/useStudentGroupStatus";
-import { useThesisApplications } from "@/hooks/student/useThesisApplications";
-import { useThesisRegistration } from "@/hooks/thesis";
-import { getOrientationDisplay } from "@/lib/constants/orientation";
-import { SuggestedThesis } from "@/lib/services/ai.service";
+import { ConfirmationModal } from '@/components/common/ConfirmModal';
+import { useSemesterStatus } from '@/hooks/student/useSemesterStatus';
+import { useStudentGroupStatus } from '@/hooks/student/useStudentGroupStatus';
+import { useThesisApplications } from '@/hooks/student/useThesisApplications';
+import { useThesisRegistration } from '@/hooks/thesis';
+import { getOrientationDisplay } from '@/lib/constants/orientation';
+import { SuggestedThesis } from '@/lib/services/ai.service';
 import thesisApplicationService, {
 	ThesisApplication,
-} from "@/lib/services/thesis-application.service";
-import { handleApiError } from "@/lib/utils/handleApi";
-import { showNotification } from "@/lib/utils/notification";
-import { ThesisOrientation } from "@/schemas/_enums";
-import { cacheUtils } from "@/store/helpers/cacheHelpers";
+} from '@/lib/services/thesis-application.service';
+import { handleApiError } from '@/lib/utils/handleApi';
+import { showNotification } from '@/lib/utils/notification';
+import { ThesisOrientation } from '@/schemas/_enums';
+import { cacheUtils } from '@/store/helpers/cacheHelpers';
 
 interface Props {
 	readonly suggestion: SuggestedThesis;
-	readonly studentRole?: "leader" | "member" | "guest";
+	readonly studentRole?: 'leader' | 'member' | 'guest';
 	readonly onThesisUpdate?: () => void | Promise<void>;
 }
 
@@ -54,7 +54,7 @@ export default function AISuggestThesisCard({
 	// Check if current group has application for this thesis
 	const hasApplicationForThesis = applications.some(
 		(app: ThesisApplication) =>
-			app.thesisId === suggestion.id && app.status === "Pending",
+			app.thesisId === suggestion.id && app.status === 'Pending',
 	);
 
 	// Check if thesis is already taken by another group (we don't have groupId in SuggestedThesis, so we'll assume it's available)
@@ -68,7 +68,7 @@ export default function AISuggestThesisCard({
 
 	// Determine if register button should be enabled
 	const canRegister =
-		studentRole === "leader" &&
+		studentRole === 'leader' &&
 		hasGroup &&
 		!isThesisTaken &&
 		!hasApplicationForThesis &&
@@ -77,7 +77,7 @@ export default function AISuggestThesisCard({
 
 	// Determine if unregister button should be shown
 	const canUnregister =
-		studentRole === "leader" &&
+		studentRole === 'leader' &&
 		hasGroup &&
 		isThesisAssignedToGroup &&
 		isAllDataLoaded;
@@ -95,7 +95,7 @@ export default function AISuggestThesisCard({
 	const handleRegisterThesis = () => {
 		registerThesis(suggestion.id, suggestion.englishName, () => {
 			// Clear relevant caches
-			cacheUtils.clear("semesterStatus");
+			cacheUtils.clear('semesterStatus');
 
 			// Refresh group data to update UI
 			resetInitialization();
@@ -113,15 +113,15 @@ export default function AISuggestThesisCard({
 		if (!group?.id) return;
 
 		ConfirmationModal.show({
-			title: "Cancel Application",
+			title: 'Cancel Application',
 			message:
-				"Are you sure you want to cancel your application for this thesis?",
+				'Are you sure you want to cancel your application for this thesis?',
 			details: suggestion.englishName,
-			note: "This action cannot be undone.",
-			noteType: "warning",
-			okText: "Yes, Cancel",
-			cancelText: "No",
-			okType: "danger",
+			note: 'This action cannot be undone.',
+			noteType: 'warning',
+			okText: 'Yes, Cancel',
+			cancelText: 'No',
+			okType: 'danger',
 			onOk: async () => {
 				try {
 					await thesisApplicationService.cancelThesisApplication(
@@ -130,8 +130,8 @@ export default function AISuggestThesisCard({
 					);
 
 					showNotification.success(
-						"Application Canceled",
-						"Your thesis application has been canceled successfully!",
+						'Application Canceled',
+						'Your thesis application has been canceled successfully!',
 					);
 
 					// Refresh applications to update button state
@@ -140,14 +140,14 @@ export default function AISuggestThesisCard({
 					// Refresh thesis list
 					onThesisUpdate?.();
 				} catch (error) {
-					console.error("Error canceling application:", error);
+					console.error('Error canceling application:', error);
 
 					const apiError = handleApiError(
 						error,
-						"Failed to cancel application. Please try again.",
+						'Failed to cancel application. Please try again.',
 					);
 
-					showNotification.error("Cancel Failed", apiError.message);
+					showNotification.error('Cancel Failed', apiError.message);
 				}
 			},
 		});
@@ -157,7 +157,7 @@ export default function AISuggestThesisCard({
 	const handleUnregisterThesis = () => {
 		unregisterThesis(suggestion.englishName, () => {
 			// Clear relevant caches
-			cacheUtils.clear("semesterStatus");
+			cacheUtils.clear('semesterStatus');
 
 			// Refresh group data to update UI
 			resetInitialization();
@@ -173,49 +173,49 @@ export default function AISuggestThesisCard({
 	// Get button tooltip message based on current state
 	const getButtonTooltip = (): string => {
 		if (isThesisAssignedToGroup) {
-			return "This thesis is already assigned to your group";
+			return 'This thesis is already assigned to your group';
 		}
 		if (hasApplicationForThesis) {
-			return "You have a pending application for this thesis";
+			return 'You have a pending application for this thesis';
 		}
 		if (isThesisTaken) {
-			return "This thesis is already taken by another group";
+			return 'This thesis is already taken by another group';
 		}
 		if (!hasGroup) {
-			return "You need to be in a group to apply";
+			return 'You need to be in a group to apply';
 		}
-		if (studentRole !== "leader") {
-			return "Only group leaders can apply for thesis";
+		if (studentRole !== 'leader') {
+			return 'Only group leaders can apply for thesis';
 		}
 		if (!canRegisterThesis) {
 			return 'Application is only available during the "Picking" phase or "Ongoing - Scope Adjustable" phase';
 		}
-		return "Apply for this thesis";
+		return 'Apply for this thesis';
 	};
 
 	// Get register button text based on current state
 	const getRegisterButtonText = (): string => {
 		if (isRegistering) {
-			return "Processing...";
+			return 'Processing...';
 		}
 		if (!isAllDataLoaded) {
-			return "Checking...";
+			return 'Checking...';
 		}
 		if (hasApplicationForThesis) {
-			return "Cancel Application";
+			return 'Cancel Application';
 		}
 		if (isThesisTaken) {
-			return "Taken";
+			return 'Taken';
 		}
-		return "Apply Thesis";
+		return 'Apply Thesis';
 	};
 
 	// Get progress color based on compatibility score
 	const getProgressColor = (score: number): string => {
-		if (score >= 0.9) return "#52c41a"; // Green
-		if (score >= 0.7) return "#1890ff"; // Blue
-		if (score >= 0.5) return "#faad14"; // Orange
-		return "#ff4d4f"; // Red
+		if (score >= 0.9) return '#52c41a'; // Green
+		if (score >= 0.7) return '#1890ff'; // Blue
+		if (score >= 0.5) return '#faad14'; // Orange
+		return '#ff4d4f'; // Red
 	};
 
 	// Convert compatibility to percentage
@@ -223,25 +223,25 @@ export default function AISuggestThesisCard({
 
 	return (
 		<Card
-			style={{ height: "100%", display: "flex", flexDirection: "column" }}
-			bodyStyle={{ flex: 1, display: "flex", flexDirection: "column" }}
+			style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
+			bodyStyle={{ flex: 1, display: 'flex', flexDirection: 'column' }}
 			hoverable
 		>
 			<Space
 				direction="vertical"
 				size="middle"
-				style={{ width: "100%", flex: 1 }}
+				style={{ width: '100%', flex: 1 }}
 			>
 				{/* AI Score Section */}
 				<div>
 					<Row justify="space-between" align="middle">
 						<Col>
-							<Typography.Text strong style={{ color: "#1890ff" }}>
+							<Typography.Text strong style={{ color: '#1890ff' }}>
 								AI Match Score
 							</Typography.Text>
 						</Col>
 						<Col>
-							<Typography.Text strong style={{ fontSize: "16px" }}>
+							<Typography.Text strong style={{ fontSize: '16px' }}>
 								{compatibilityPercentage}%
 							</Typography.Text>
 						</Col>
@@ -260,10 +260,10 @@ export default function AISuggestThesisCard({
 						level={4}
 						style={{
 							margin: 0,
-							marginBottom: "8px",
-							minHeight: "84px",
-							maxHeight: "84px",
-							lineHeight: "1.4",
+							marginBottom: '8px',
+							minHeight: '84px',
+							maxHeight: '84px',
+							lineHeight: '1.4',
 						}}
 						ellipsis={{
 							rows: 3,
@@ -274,10 +274,10 @@ export default function AISuggestThesisCard({
 					</Typography.Title>
 
 					{/* Tags Section */}
-					<div style={{ marginBottom: "8px" }}>
+					<div style={{ marginBottom: '8px' }}>
 						{/* Abbreviation */}
 						{suggestion.abbreviation && (
-							<Tag color="geekblue" style={{ marginRight: "8px" }}>
+							<Tag color="geekblue" style={{ marginRight: '8px' }}>
 								{suggestion.abbreviation}
 							</Tag>
 						)}
@@ -304,11 +304,11 @@ export default function AISuggestThesisCard({
 				<div style={{ flex: 1 }}>
 					<Typography.Text
 						strong
-						style={{ fontSize: "14px", marginBottom: "8px", display: "block" }}
+						style={{ fontSize: '14px', marginBottom: '8px', display: 'block' }}
 					>
 						Supervisors:
 					</Typography.Text>
-					<Space direction="vertical" size="small" style={{ width: "100%" }}>
+					<Space direction="vertical" size="small" style={{ width: '100%' }}>
 						{suggestion.supervisorsName.map((supervisor) => (
 							<Row key={supervisor} align="middle" gutter={8}>
 								<Col>
@@ -339,7 +339,7 @@ export default function AISuggestThesisCard({
 								disabled={!isAllDataLoaded}
 								title="Unpick this thesis"
 							>
-								{isRegistering ? "Unpicking..." : "Unpick Thesis"}
+								{isRegistering ? 'Unpicking...' : 'Unpick Thesis'}
 							</Button>
 						) : (
 							<Button

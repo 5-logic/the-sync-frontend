@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { TeamOutlined, UserOutlined } from "@ant-design/icons";
+import { TeamOutlined, UserOutlined } from '@ant-design/icons';
 import {
 	Avatar,
 	Button,
@@ -10,16 +10,16 @@ import {
 	Row,
 	Tag,
 	Typography,
-} from "antd";
-import Link from "next/link";
+} from 'antd';
+import Link from 'next/link';
 
-import { ConfirmationModal } from "@/components/common/ConfirmModal";
+import { ConfirmationModal } from '@/components/common/ConfirmModal';
 import {
-	ResponsibilityRadarChart,
 	ResponsibilityData,
-} from "@/components/common/radar-chart";
-import { GroupDashboard } from "@/schemas/group";
-import { StudentProfile } from "@/schemas/student";
+	ResponsibilityRadarChart,
+} from '@/components/common/radar-chart';
+import { GroupDashboard } from '@/schemas/group';
+import { StudentProfile } from '@/schemas/student';
 
 const { Title, Text } = Typography;
 
@@ -59,10 +59,10 @@ export default function StudentInfoCard({
 		if (!student) return;
 
 		ConfirmationModal.show({
-			title: "Send Invitation",
+			title: 'Send Invitation',
 			message: `Are you sure you want to send an invitation to ${student.fullName}?`,
-			okText: "Yes, Send",
-			cancelText: "Cancel",
+			okText: 'Yes, Send',
+			cancelText: 'Cancel',
 			onOk: onSendInvite || (() => {}),
 		});
 	};
@@ -71,11 +71,11 @@ export default function StudentInfoCard({
 		if (!student) return;
 
 		ConfirmationModal.show({
-			title: "Cancel Invitation",
+			title: 'Cancel Invitation',
 			message: `Are you sure you want to cancel the invitation to ${student.fullName}?`,
-			okText: "Yes, Cancel",
-			cancelText: "No",
-			okType: "danger",
+			okText: 'Yes, Cancel',
+			cancelText: 'No',
+			okType: 'danger',
 			onOk: onCancelInvite || (() => {}),
 		});
 	};
@@ -84,10 +84,10 @@ export default function StudentInfoCard({
 		if (!student) return;
 
 		ConfirmationModal.show({
-			title: "Approve Join Request",
+			title: 'Approve Join Request',
 			message: `Are you sure you want to approve ${student.fullName}'s request to join your group?`,
-			okText: "Yes, Approve",
-			cancelText: "Cancel",
+			okText: 'Yes, Approve',
+			cancelText: 'Cancel',
 			onOk: onApproveJoinRequest || (() => {}),
 		});
 	};
@@ -96,11 +96,11 @@ export default function StudentInfoCard({
 		if (!student) return;
 
 		ConfirmationModal.show({
-			title: "Reject Join Request",
+			title: 'Reject Join Request',
 			message: `Are you sure you want to reject ${student.fullName}'s request to join your group?`,
-			okText: "Yes, Reject",
-			cancelText: "Cancel",
-			okType: "danger",
+			okText: 'Yes, Reject',
+			cancelText: 'Cancel',
+			okType: 'danger',
 			onOk: onRejectJoinRequest || (() => {}),
 		});
 	};
@@ -188,8 +188,8 @@ export default function StudentInfoCard({
 						</Tag>
 					</Descriptions.Item>
 					<Descriptions.Item label="Status">
-						<Tag color={student.isActive ? "green" : "red"}>
-							{student.isActive ? "Active" : "Inactive"}
+						<Tag color={student.isActive ? 'green' : 'red'}>
+							{student.isActive ? 'Active' : 'Inactive'}
 						</Tag>
 					</Descriptions.Item>
 					<Descriptions.Item label="Joined">
@@ -215,7 +215,7 @@ export default function StudentInfoCard({
 					<>
 						{/* Radar Chart */}
 						<div>
-							<Text strong style={{ marginBottom: 8, display: "block" }}>
+							<Text strong style={{ marginBottom: 8, display: 'block' }}>
 								Responsibility Levels:
 							</Text>
 							<ResponsibilityRadarChart
@@ -259,7 +259,7 @@ export default function StudentInfoCard({
 							<Tag color="blue">{studentGroup.code}</Tag>
 						</Descriptions.Item>
 						<Descriptions.Item label="Project Direction">
-							{studentGroup.projectDirection || "Not specified"}
+							{studentGroup.projectDirection || 'Not specified'}
 						</Descriptions.Item>
 						<Descriptions.Item label="Leader">
 							<div className="flex items-center gap-2">
@@ -282,10 +282,10 @@ export default function StudentInfoCard({
 			{showGroupActions && (
 				<div
 					style={{
-						display: "flex",
-						justifyContent: "flex-end",
-						gap: "12px",
-						marginTop: "24px",
+						display: 'flex',
+						justifyContent: 'flex-end',
+						gap: '12px',
+						marginTop: '24px',
 					}}
 				>
 					{/* Go Back to Group button - Always show when showGroupActions is true */}

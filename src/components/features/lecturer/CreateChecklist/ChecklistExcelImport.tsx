@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { CloudUploadOutlined } from "@ant-design/icons";
-import { Card, Col, Row, Space, Typography, Upload } from "antd";
-import { DraggerProps } from "antd/es/upload";
-import { RcFile } from "antd/es/upload/interface";
-import { useState } from "react";
-import * as XLSX from "xlsx";
+import { CloudUploadOutlined } from '@ant-design/icons';
+import { Card, Col, Row, Space, Typography, Upload } from 'antd';
+import { DraggerProps } from 'antd/es/upload';
+import { RcFile } from 'antd/es/upload/interface';
+import { useState } from 'react';
+import * as XLSX from 'xlsx';
 
-import { DownloadTemplateButton } from "@/components/common/DownloadTemplateButton";
-import { showNotification } from "@/lib/utils/notification";
-import { ChecklistItem } from "@/schemas/checklist";
+import { DownloadTemplateButton } from '@/components/common/DownloadTemplateButton';
+import { showNotification } from '@/lib/utils/notification';
+import { ChecklistItem } from '@/schemas/checklist';
 
 const { Dragger: AntDragger } = Upload;
 
@@ -28,28 +28,28 @@ interface ExcelChecklistItem {
 // Field configuration for checklist items
 const checklistFields = [
 	{
-		title: "Name",
-		key: "name" as keyof ExcelChecklistItem,
-		type: "text" as const,
+		title: 'Name',
+		key: 'name' as keyof ExcelChecklistItem,
+		type: 'text' as const,
 		required: true,
-		width: "30%",
+		width: '30%',
 	},
 	{
-		title: "Description",
-		key: "description" as keyof ExcelChecklistItem,
-		type: "text" as const,
+		title: 'Description',
+		key: 'description' as keyof ExcelChecklistItem,
+		type: 'text' as const,
 		required: true,
-		width: "50%",
+		width: '50%',
 	},
 	{
-		title: "Priority",
-		key: "isRequired" as keyof ExcelChecklistItem,
-		type: "select" as const,
+		title: 'Priority',
+		key: 'isRequired' as keyof ExcelChecklistItem,
+		type: 'select' as const,
 		required: false,
-		width: "20%",
+		width: '20%',
 		options: [
-			{ label: "Mandatory", value: "true" },
-			{ label: "Optional", value: "false" },
+			{ label: 'Mandatory', value: 'true' },
+			{ label: 'Optional', value: 'false' },
 		],
 	},
 ];
@@ -86,12 +86,12 @@ function validateLength(
 // Field-specific validators
 const fieldValidators = {
 	name: (value: string, rowNumber: number): string[] =>
-		validateLength(value, rowNumber, "Name", fieldValidationRules.name),
+		validateLength(value, rowNumber, 'Name', fieldValidationRules.name),
 	description: (value: string, rowNumber: number): string[] =>
 		validateLength(
 			value,
 			rowNumber,
-			"Description",
+			'Description',
 			fieldValidationRules.description,
 		),
 } as const;
@@ -103,26 +103,26 @@ function validateFieldValue(
 	rowNumber: number,
 ): string[] {
 	const errors: string[] = [];
-	let stringValue = "";
+	let stringValue = '';
 
 	if (
-		typeof value === "string" ||
-		typeof value === "number" ||
-		typeof value === "boolean"
+		typeof value === 'string' ||
+		typeof value === 'number' ||
+		typeof value === 'boolean'
 	) {
 		// Clean the string more thoroughly to handle Excel formatting issues
 		stringValue = String(value)
 			.trim()
-			.replace(/\s+/g, " ") // Replace multiple whitespace with single space
-			.replace(/[\u00A0\u2000-\u200B\u2028\u2029\uFEFF]/g, "") // Remove various Unicode whitespace chars
+			.replace(/\s+/g, ' ') // Replace multiple whitespace with single space
+			.replace(/[\u00A0\u2000-\u200B\u2028\u2029\uFEFF]/g, '') // Remove various Unicode whitespace chars
 			.trim();
 	} else if (Array.isArray(value)) {
-		stringValue = value.join(", ").trim();
+		stringValue = value.join(', ').trim();
 	}
 	// For objects and other types, stringValue remains ''
 
 	// Check if required field is empty
-	if (field.required && (!value || stringValue === "")) {
+	if (field.required && (!value || stringValue === '')) {
 		return [`Row ${rowNumber}: ${field.title} cannot be empty`];
 	}
 
@@ -161,14 +161,14 @@ function checkDuplicates(
 
 // Helper function to check if cell value is valid
 function isValidCellValue(cellValue: unknown): boolean {
-	return cellValue !== undefined && cellValue !== null && cellValue !== "";
+	return cellValue !== undefined && cellValue !== null && cellValue !== '';
 }
 
 // Helper function to convert boolean field values
 function convertBooleanField(cellValue: unknown): boolean {
 	const stringValue = String(cellValue).toLowerCase().trim();
 	return (
-		stringValue === "true" || stringValue === "mandatory" || stringValue === "1"
+		stringValue === 'true' || stringValue === 'mandatory' || stringValue === '1'
 	);
 }
 
@@ -195,7 +195,7 @@ function parseExcelData(
 
 	if (Object.keys(fieldMapping).length === 0) {
 		throw new Error(
-			"No matching columns found. Please ensure your Excel headers match the template.",
+			'No matching columns found. Please ensure your Excel headers match the template.',
 		);
 	}
 
@@ -210,14 +210,14 @@ function parseExcelData(
 			Object.entries(fieldMapping).forEach(([colIndex, fieldKey]) => {
 				const cellValue = row[parseInt(colIndex)];
 				if (isValidCellValue(cellValue)) {
-					if (fieldKey === "isRequired") {
+					if (fieldKey === 'isRequired') {
 						item[fieldKey] = convertBooleanField(cellValue);
 					} else {
 						// Clean Excel string values more thoroughly
 						const cleanValue = String(cellValue)
 							.trim()
-							.replace(/\s+/g, " ") // Replace multiple whitespace with single space
-							.replace(/[\u00A0\u2000-\u200B\u2028\u2029\uFEFF]/g, "") // Remove various Unicode whitespace chars
+							.replace(/\s+/g, ' ') // Replace multiple whitespace with single space
+							.replace(/[\u00A0\u2000-\u200B\u2028\u2029\uFEFF]/g, '') // Remove various Unicode whitespace chars
 							.trim();
 						item[fieldKey] = cleanValue;
 					}
@@ -228,7 +228,7 @@ function parseExcelData(
 		})
 		.filter((item) =>
 			fields.some(
-				(field) => item[field.key] && String(item[field.key]).trim() !== "",
+				(field) => item[field.key] && String(item[field.key]).trim() !== '',
 			),
 		);
 }
@@ -295,14 +295,14 @@ function processExcelFile(
 	fields: {
 		title: string;
 		key: keyof ExcelChecklistItem;
-		type: "text" | "select";
+		type: 'text' | 'select';
 		options?: { label: string; value: string }[];
 		required?: boolean;
 	}[],
 ): { validatedData: ExcelChecklistItem[]; validationErrors: string[] } | null {
 	try {
 		const workbook = XLSX.read(data, {
-			type: "buffer",
+			type: 'buffer',
 			cellText: false, // Use raw cell values instead of formatted text
 			cellDates: false,
 			raw: true, // Get raw values to avoid formatting issues
@@ -312,27 +312,27 @@ function processExcelFile(
 		const jsonData = XLSX.utils.sheet_to_json(worksheet, {
 			header: 1,
 			raw: true, // Get raw values
-			defval: "", // Default value for empty cells
+			defval: '', // Default value for empty cells
 		}) as string[][];
 
 		if (jsonData.length < 2) {
 			throw new Error(
-				"Excel file must contain at least a header row and one data row",
+				'Excel file must contain at least a header row and one data row',
 			);
 		}
 
 		const parsedData = parseExcelData(jsonData, fields);
 
 		if (parsedData.length === 0) {
-			throw new Error("No valid data found in Excel file");
+			throw new Error('No valid data found in Excel file');
 		}
 
 		return validateAllData(parsedData, fields);
 	} catch (error) {
-		console.error("Error processing Excel file:", error);
+		console.error('Error processing Excel file:', error);
 		showNotification.error(
-			"File Processing Error",
-			error instanceof Error ? error.message : "Failed to process Excel file",
+			'File Processing Error',
+			error instanceof Error ? error.message : 'Failed to process Excel file',
 		);
 		return null;
 	}
@@ -341,10 +341,10 @@ function processExcelFile(
 // Helper function to handle validation errors
 function handleValidationErrors(validationErrors: string[]): void {
 	const errorMessage =
-		validationErrors.slice(0, 10).join("\n") +
+		validationErrors.slice(0, 10).join('\n') +
 		(validationErrors.length > 10
 			? `\n... and ${validationErrors.length - 10} more errors`
-			: "");
+			: '');
 
 	showNotification.error(
 		`Validation Failed (${validationErrors.length} errors)`,
@@ -354,8 +354,8 @@ function handleValidationErrors(validationErrors: string[]): void {
 
 // Constants for file validation
 const EXCEL_MIME_TYPES = [
-	"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-	"application/vnd.ms-excel",
+	'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+	'application/vnd.ms-excel',
 ];
 const MAX_FILE_SIZE_MB = 100;
 
@@ -368,7 +368,7 @@ function validateFile(file: RcFile): {
 	if (!isExcel) {
 		return {
 			isValid: false,
-			errorMessage: "You can only upload Excel (.xlsx, .xls) files!",
+			errorMessage: 'You can only upload Excel (.xlsx, .xls) files!',
 		};
 	}
 
@@ -392,8 +392,8 @@ function transformToChecklistItems(
 		name: item.name,
 		description: item.description,
 		isRequired: item.isRequired,
-		acceptance: "NotAvailable" as const,
-		checklistId: "",
+		acceptance: 'NotAvailable' as const,
+		checklistId: '',
 		createdAt: new Date(),
 		updatedAt: new Date(),
 	}));
@@ -406,12 +406,12 @@ export default function ChecklistExcelImport({
 	const [fileList, setFileList] = useState<RcFile[]>([]);
 
 	const draggerProps: DraggerProps = {
-		name: "file",
+		name: 'file',
 		beforeUpload: (file) => {
 			const { isValid, errorMessage } = validateFile(file);
 
 			if (!isValid) {
-				showNotification.warning("Invalid File", errorMessage);
+				showNotification.warning('Invalid File', errorMessage);
 				return Upload.LIST_IGNORE;
 			}
 
@@ -438,7 +438,7 @@ export default function ChecklistExcelImport({
 						setFileList([]);
 
 						showNotification.success(
-							"Import Successful",
+							'Import Successful',
 							`${validatedData.length} items imported to checklist form successfully.`,
 						);
 					}
@@ -451,32 +451,32 @@ export default function ChecklistExcelImport({
 		fileList: fileList.map((file) => ({
 			uid: file.uid,
 			name: file.name,
-			status: "done" as const,
+			status: 'done' as const,
 		})),
 		onRemove: () => {
 			setFileList([]);
 		},
 		maxCount: 1,
-		accept: ".xlsx,.xls",
+		accept: '.xlsx,.xls',
 	};
 
 	return (
-		<Space direction="vertical" size="large" style={{ width: "100%" }}>
+		<Space direction="vertical" size="large" style={{ width: '100%' }}>
 			<Card
 				style={{
-					border: "1px solid #f0f0f0",
+					border: '1px solid #f0f0f0',
 					borderRadius: 8,
-					background: "#fafafa",
+					background: '#fafafa',
 					marginBottom: 16,
 				}}
 			>
 				<Row align="middle" justify="space-between" gutter={[16, 16]} wrap>
 					<Col xs={24} sm={24} md={16}>
-						<Typography.Text type="secondary" style={{ display: "block" }}>
+						<Typography.Text type="secondary" style={{ display: 'block' }}>
 							Please fill the template including Name, Description and Priority.
 						</Typography.Text>
 					</Col>
-					<Col xs={24} sm={24} md={8} style={{ textAlign: "right" }}>
+					<Col xs={24} sm={24} md={8} style={{ textAlign: 'right' }}>
 						<DownloadTemplateButton
 							templateFileName="Create Checklist Template.xlsx"
 							buttonText="Download Checklist Template"

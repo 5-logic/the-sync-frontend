@@ -1,13 +1,13 @@
-import { Card, Select, Spin, Steps, Typography } from "antd";
-import dayjs from "dayjs";
-import React, { useEffect, useState } from "react";
+import { Card, Select, Spin, Steps, Typography } from 'antd';
+import dayjs from 'dayjs';
+import React, { useEffect, useState } from 'react';
 
-import { useMilestonesSemesterFilter } from "@/hooks/lecturer/useMilestonesSemesterFilter";
-import milestonesService from "@/lib/services/milestones.service";
-import { formatDateRange, getMilestoneStatus } from "@/lib/utils/dateFormat";
-import { handleApiResponse } from "@/lib/utils/handleApi";
-import { Milestone } from "@/schemas/milestone";
-import { Semester } from "@/schemas/semester";
+import { useMilestonesSemesterFilter } from '@/hooks/lecturer/useMilestonesSemesterFilter';
+import milestonesService from '@/lib/services/milestones.service';
+import { formatDateRange, getMilestoneStatus } from '@/lib/utils/dateFormat';
+import { handleApiResponse } from '@/lib/utils/handleApi';
+import { Milestone } from '@/schemas/milestone';
+import { Semester } from '@/schemas/semester';
 
 const { Text } = Typography;
 const { Option } = Select;
@@ -43,7 +43,7 @@ const MilestonesTimeline: React.FC = () => {
 					setMilestones(sortedMilestones);
 				}
 			} catch (error) {
-				console.error("Error fetching milestones:", error);
+				console.error('Error fetching milestones:', error);
 			} finally {
 				setLoading(false);
 			}
@@ -56,7 +56,7 @@ const MilestonesTimeline: React.FC = () => {
 	const getCurrentMilestoneIndex = (): number => {
 		return milestones.findIndex((milestone) => {
 			const status = getMilestoneStatus(milestone.startDate, milestone.endDate);
-			return status === "In Progress";
+			return status === 'In Progress';
 		});
 	};
 
@@ -66,30 +66,30 @@ const MilestonesTimeline: React.FC = () => {
 		const dateRange = formatDateRange(milestone.startDate, milestone.endDate);
 
 		// Determine step status for Steps component
-		const getStepStatus = (): "wait" | "process" | "finish" | "error" => {
-			if (status === "Ended") return "finish";
-			if (status === "In Progress") return "process";
-			return "wait";
+		const getStepStatus = (): 'wait' | 'process' | 'finish' | 'error' => {
+			if (status === 'Ended') return 'finish';
+			if (status === 'In Progress') return 'process';
+			return 'wait';
 		};
 
 		// Get color based on status
 		const getStatusColor = (): string => {
-			if (status === "Ended") return "#52c41a";
-			if (status === "In Progress") return "#1890ff";
-			return "#8c8c8c";
+			if (status === 'Ended') return '#52c41a';
+			if (status === 'In Progress') return '#1890ff';
+			return '#8c8c8c';
 		};
 
 		return {
 			title: milestone.name,
 			description: (
 				<div>
-					<Text type="secondary" style={{ fontSize: "12px" }}>
+					<Text type="secondary" style={{ fontSize: '12px' }}>
 						{dateRange}
 					</Text>
 					<br />
 					<Text
 						style={{
-							fontSize: "11px",
+							fontSize: '11px',
 							color: getStatusColor(),
 						}}
 					>
@@ -109,7 +109,7 @@ const MilestonesTimeline: React.FC = () => {
 	const renderMainContent = () => {
 		if (!isDataReady) {
 			return (
-				<div style={{ textAlign: "center", padding: "40px 0" }}>
+				<div style={{ textAlign: 'center', padding: '40px 0' }}>
 					<Spin size="large" />
 				</div>
 			);
@@ -117,11 +117,11 @@ const MilestonesTimeline: React.FC = () => {
 
 		if (milestones.length === 0) {
 			const emptyMessage = selectedSemester
-				? "No milestones found for selected semester"
-				: "Please select a semester to view milestones";
+				? 'No milestones found for selected semester'
+				: 'Please select a semester to view milestones';
 
 			return (
-				<div style={{ textAlign: "center", color: "#999", padding: "40px 0" }}>
+				<div style={{ textAlign: 'center', color: '#999', padding: '40px 0' }}>
 					{emptyMessage}
 				</div>
 			);
@@ -132,7 +132,7 @@ const MilestonesTimeline: React.FC = () => {
 				direction="horizontal"
 				current={currentStep >= 0 ? currentStep : milestones.length}
 				items={stepsData}
-				style={{ marginTop: "16px" }}
+				style={{ marginTop: '16px' }}
 			/>
 		);
 	};
@@ -168,7 +168,7 @@ const MilestonesTimeline: React.FC = () => {
 				<Select
 					value={selectedSemester}
 					onChange={setSelectedSemester}
-					style={{ width: "100%" }}
+					style={{ width: '100%' }}
 					placeholder="Select semester"
 					loading={semestersLoading}
 				>

@@ -1,4 +1,4 @@
-import httpClient from "@/lib/services/_httpClient";
+import httpClient from '@/lib/services/_httpClient';
 
 // AI Suggestion interfaces
 export interface SuggestGroupsRequest {
@@ -125,7 +125,7 @@ export interface ThesisSuggestion {
 }
 
 class AIService {
-	private readonly baseUrl = "/ai";
+	private readonly baseUrl = '/ai';
 
 	/**
 	 * Suggest groups for a student based on their responsibilities

@@ -1,5 +1,5 @@
-import httpClient from "@/lib/services/_httpClient";
-import { ApiResponse } from "@/schemas/_common";
+import httpClient from '@/lib/services/_httpClient';
+import { ApiResponse } from '@/schemas/_common';
 
 // Interfaces from review.service.ts
 export interface ReviewerAssignment {
@@ -51,7 +51,7 @@ export interface EligibleReviewerResponse {
 
 export type GetEligibleReviewersResult = EligibleReviewerResponse[];
 
-export type ReviewAcceptance = "Yes" | "No" | "NotAvailable";
+export type ReviewAcceptance = 'Yes' | 'No' | 'NotAvailable';
 
 export interface ReviewSubmission {
 	id: string;
@@ -153,7 +153,7 @@ export interface AssignmentReviewer {
 }
 
 class ReviewsService {
-	private readonly baseUrl = "/reviews";
+	private readonly baseUrl = '/reviews';
 
 	/**
 	 * Get assigned reviews for lecturer
@@ -227,14 +227,14 @@ class ReviewsService {
 							isModerator: false,
 							user: {
 								id: review.lecturerId,
-								fullName: "Unknown Reviewer",
-								email: "",
-								password: "",
-								gender: "",
-								phoneNumber: "",
+								fullName: 'Unknown Reviewer',
+								email: '',
+								password: '',
+								gender: '',
+								phoneNumber: '',
 								isActive: true,
-								createdAt: "",
-								updatedAt: "",
+								createdAt: '',
+								updatedAt: '',
 							},
 						},
 						isMainReviewer: reviewerInfo?.isMainReviewer || false,

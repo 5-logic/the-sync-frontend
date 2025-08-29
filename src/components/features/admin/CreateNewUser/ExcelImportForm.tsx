@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { CloudUploadOutlined, DeleteOutlined } from "@ant-design/icons";
+import { CloudUploadOutlined, DeleteOutlined } from '@ant-design/icons';
 import {
 	Alert,
 	Button,
@@ -16,27 +16,27 @@ import {
 	Tooltip,
 	Typography,
 	Upload,
-} from "antd";
-import type { ColumnsType } from "antd/es/table";
-import type { RcFile } from "antd/es/upload";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import * as XLSX from "xlsx";
+} from 'antd';
+import type { ColumnsType } from 'antd/es/table';
+import type { RcFile } from 'antd/es/upload';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import * as XLSX from 'xlsx';
 
-import { DownloadTemplateButton } from "@/components/common/DownloadTemplateButton";
-import { FormLabel } from "@/components/common/FormLabel";
-import { useCurrentSemester } from "@/hooks/semester/useCurrentSemester";
-import { SEMESTER_STATUS_TAGS } from "@/lib/constants/semester";
-import { showNotification } from "@/lib/utils/notification";
-import { SemesterStatus } from "@/schemas/_enums";
-import { LecturerCreate } from "@/schemas/lecturer";
-import { ImportStudent, ImportStudentItem } from "@/schemas/student";
+import { DownloadTemplateButton } from '@/components/common/DownloadTemplateButton';
+import { FormLabel } from '@/components/common/FormLabel';
+import { useCurrentSemester } from '@/hooks/semester/useCurrentSemester';
+import { SEMESTER_STATUS_TAGS } from '@/lib/constants/semester';
+import { showNotification } from '@/lib/utils/notification';
+import { SemesterStatus } from '@/schemas/_enums';
+import { LecturerCreate } from '@/schemas/lecturer';
+import { ImportStudent, ImportStudentItem } from '@/schemas/student';
 import {
 	useLecturerStore,
 	useMajorStore,
 	useSemesterStore,
 	useStudentStore,
-} from "@/store";
+} from '@/store';
 
 const { Dragger } = Upload;
 
@@ -45,7 +45,7 @@ function stringifyObject(value: object): string {
 	try {
 		return JSON.stringify(value);
 	} catch {
-		return "[Complex Object]";
+		return '[Complex Object]';
 	}
 }
 
@@ -54,12 +54,12 @@ function tryObjectToString(value: object): string | null {
 	const valueWithToString = value as { toString?: unknown };
 
 	if (
-		typeof valueWithToString.toString === "function" &&
+		typeof valueWithToString.toString === 'function' &&
 		value.constructor !== Object
 	) {
 		try {
 			const result = (value as { toString(): string }).toString();
-			return result === "[object Object]" ? null : result;
+			return result === '[object Object]' ? null : result;
 		} catch {
 			return null;
 		}
@@ -70,36 +70,36 @@ function tryObjectToString(value: object): string | null {
 
 // Helper function to safely convert unknown values to string
 function safeStringify(value: unknown): string {
-	if (value == null) return "";
+	if (value == null) return '';
 
 	// Handle objects
-	if (typeof value === "object") {
+	if (typeof value === 'object') {
 		const toStringResult = tryObjectToString(value);
 		return toStringResult ?? stringifyObject(value);
 	}
 
 	// Handle primitives - avoid String() on potentially unsafe values
-	if (typeof value === "string") return value;
-	if (typeof value === "number") return value.toString();
-	if (typeof value === "boolean") return value.toString();
-	if (typeof value === "bigint") return value.toString();
-	if (typeof value === "symbol") return value.toString();
+	if (typeof value === 'string') return value;
+	if (typeof value === 'number') return value.toString();
+	if (typeof value === 'boolean') return value.toString();
+	if (typeof value === 'bigint') return value.toString();
+	if (typeof value === 'symbol') return value.toString();
 
 	// Final safety check - should not reach here with objects
-	if (typeof value === "object") return "[Unexpected Object]";
+	if (typeof value === 'object') return '[Unexpected Object]';
 
 	// Handle functions explicitly
-	if (typeof value === "function") return "[Function]";
+	if (typeof value === 'function') return '[Function]';
 
 	// For remaining primitive types, use explicit type assertions after validation
-	if (value != null && typeof value.toString === "function") {
+	if (value != null && typeof value.toString === 'function') {
 		// TypeScript needs explicit casting to avoid S6551 warning
 		const primitiveValue = value as string | number | boolean | bigint | symbol;
 		return primitiveValue.toString();
 	}
 
 	// Ultimate fallback for edge cases
-	return "[Unknown Value]";
+	return '[Unknown Value]';
 }
 
 type ExcelImportFormProps<
@@ -110,7 +110,7 @@ type ExcelImportFormProps<
 		title: string;
 		width?: string;
 		key: keyof T;
-		type: "text" | "select";
+		type: 'text' | 'select';
 		options?: { label: string; value: string }[];
 		required?: boolean;
 	}[];
@@ -118,7 +118,7 @@ type ExcelImportFormProps<
 	templateFileName?: string;
 	requireSemester?: boolean;
 	requireMajor?: boolean;
-	userType?: "student" | "lecturer"; // Add user type prop
+	userType?: 'student' | 'lecturer'; // Add user type prop
 }>;
 
 // Field-specific validators
@@ -161,7 +161,7 @@ const fieldValidators = {
 	},
 
 	gender: (value: string, rowNumber: number): string[] => {
-		return ["Male", "Female"].includes(value)
+		return ['Male', 'Female'].includes(value)
 			? []
 			: [`Row ${rowNumber}: Gender must be either 'Male' or 'Female'`];
 	},
@@ -177,7 +177,7 @@ function validateFieldValue<T>(
 	const stringValue = safeStringify(value).trim();
 
 	// All fields are now required - no field can be empty
-	if (!value || stringValue === "" || stringValue === "[object Object]") {
+	if (!value || stringValue === '' || stringValue === '[object Object]') {
 		return [`Row ${rowNumber}: ${field.title} cannot be empty`];
 	}
 
@@ -199,31 +199,31 @@ function checkDuplicates<
 	const errors: string[] = [];
 
 	// Check for duplicate student codes
-	if ("studentCode" in item && item["studentCode"]) {
+	if ('studentCode' in item && item['studentCode']) {
 		const duplicateIndex = validatedData.findIndex(
 			(existingItem) =>
-				"studentCode" in existingItem &&
-				existingItem["studentCode"] === item["studentCode"],
+				'studentCode' in existingItem &&
+				existingItem['studentCode'] === item['studentCode'],
 		);
 		if (duplicateIndex !== -1) {
 			errors.push(
-				`Row ${rowNumber}: Duplicate Student Code '${item["studentCode"]}' found in row ${duplicateIndex + 2}`,
+				`Row ${rowNumber}: Duplicate Student Code '${item['studentCode']}' found in row ${duplicateIndex + 2}`,
 			);
 		}
 	}
 
 	// Check for duplicate emails
-	if ("email" in item && item["email"]) {
+	if ('email' in item && item['email']) {
 		const duplicateIndex = validatedData.findIndex(
 			(existingItem) =>
-				"email" in existingItem &&
-				typeof existingItem["email"] === "string" &&
-				safeStringify(existingItem["email"]).toLowerCase() ===
-					safeStringify(item["email"]).toLowerCase(),
+				'email' in existingItem &&
+				typeof existingItem['email'] === 'string' &&
+				safeStringify(existingItem['email']).toLowerCase() ===
+					safeStringify(item['email']).toLowerCase(),
 		);
 		if (duplicateIndex !== -1) {
 			errors.push(
-				`Row ${rowNumber}: Duplicate email '${item["email"]}' found in row ${duplicateIndex + 2}`,
+				`Row ${rowNumber}: Duplicate email '${item['email']}' found in row ${duplicateIndex + 2}`,
 			);
 		}
 	}
@@ -254,24 +254,24 @@ function parseExcelData<T extends { id: string }>(
 
 	if (Object.keys(fieldMapping).length === 0) {
 		throw new Error(
-			"No matching columns found. Please ensure your Excel headers match the template.",
+			'No matching columns found. Please ensure your Excel headers match the template.',
 		);
 	}
 
 	// Convert rows to objects
 	return dataRows
 		.filter((row) =>
-			row.some((cell) => cell !== undefined && cell !== null && cell !== ""),
+			row.some((cell) => cell !== undefined && cell !== null && cell !== ''),
 		)
 		.map((row, index) => {
 			const item = { id: `imported-${Date.now()}-${index}` } as Partial<T>;
 
 			Object.entries(fieldMapping).forEach(([colIndex, fieldKey]) => {
 				const cellValue = row[parseInt(colIndex)];
-				if (cellValue !== undefined && cellValue !== null && cellValue !== "") {
+				if (cellValue !== undefined && cellValue !== null && cellValue !== '') {
 					const stringValue = safeStringify(cellValue).trim();
 					item[fieldKey] = (
-						fieldKey === "studentCode" ? stringValue.toUpperCase() : stringValue
+						fieldKey === 'studentCode' ? stringValue.toUpperCase() : stringValue
 					) as T[keyof T];
 				}
 			});
@@ -281,7 +281,7 @@ function parseExcelData<T extends { id: string }>(
 		.filter((item) =>
 			fields.some(
 				(field) =>
-					item[field.key] && safeStringify(item[field.key]).trim() !== "",
+					item[field.key] && safeStringify(item[field.key]).trim() !== '',
 			),
 		);
 }
@@ -311,14 +311,14 @@ function validateAllData<
 			rowErrors.push(...fieldErrors);
 
 			// Validate select fields - all fields must have values
-			if (field.type === "select" && field.options) {
+			if (field.type === 'select' && field.options) {
 				const value = item[field.key];
 				const stringValue = safeStringify(value).trim();
 				if (stringValue) {
 					const validOptions = field.options.map((opt) => opt.value);
 					if (!validOptions.includes(stringValue)) {
 						rowErrors.push(
-							`Row ${rowNumber}: Invalid ${field.title}. Valid options: ${validOptions.join(", ")}`,
+							`Row ${rowNumber}: Invalid ${field.title}. Valid options: ${validOptions.join(', ')}`,
 						);
 					}
 				}
@@ -347,13 +347,13 @@ function processExcelFile<
 	fields: {
 		title: string;
 		key: keyof T;
-		type: "text" | "select";
+		type: 'text' | 'select';
 		options?: { label: string; value: string }[];
 		required?: boolean;
 	}[],
 ): { validatedData: T[]; validationErrors: string[] } | null {
 	try {
-		const workbook = XLSX.read(data, { type: "binary" });
+		const workbook = XLSX.read(data, { type: 'binary' });
 		const sheetName = workbook.SheetNames[0];
 		const worksheet = workbook.Sheets[sheetName];
 		const jsonData = XLSX.utils.sheet_to_json(worksheet, {
@@ -362,24 +362,24 @@ function processExcelFile<
 
 		if (jsonData.length < 2) {
 			showNotification.error(
-				"Error",
-				"Excel file must have at least 2 rows (header and data)",
+				'Error',
+				'Excel file must have at least 2 rows (header and data)',
 			);
 			return null;
 		}
 
 		const parsedData = parseExcelData(jsonData, fields);
 		if (parsedData.length === 0) {
-			showNotification.error("Error", "No valid data found in Excel file");
+			showNotification.error('Error', 'No valid data found in Excel file');
 			return null;
 		}
 
 		return validateAllData(parsedData, fields);
 	} catch (error) {
-		console.error("Error parsing Excel file:", error);
+		console.error('Error parsing Excel file:', error);
 		showNotification.error(
-			"Error",
-			"Failed to parse Excel file. Please check the file format and try again.",
+			'Error',
+			'Failed to parse Excel file. Please check the file format and try again.',
 		);
 		return null;
 	}
@@ -393,12 +393,12 @@ function validateUploadPrerequisites(
 	selectedMajor: string,
 ): boolean {
 	if (requireSemester && !selectedSemester) {
-		showNotification.error("Error", "Please select a semester first");
+		showNotification.error('Error', 'Please select a semester first');
 		return false;
 	}
 
 	if (requireMajor && !selectedMajor) {
-		showNotification.error("Error", "Please select a major first");
+		showNotification.error('Error', 'Please select a major first');
 		return false;
 	}
 
@@ -428,7 +428,7 @@ function validateDataBeforeImport<
 			const stringValue = safeStringify(value).trim();
 
 			// Check if field is empty
-			if (!value || stringValue === "") {
+			if (!value || stringValue === '') {
 				errors.push(`Row ${rowNumber}: ${field.title} is required`);
 				return;
 			}
@@ -444,11 +444,11 @@ function validateDataBeforeImport<
 			}
 
 			// Validate select fields
-			if (field.type === "select" && field.options) {
+			if (field.type === 'select' && field.options) {
 				const validOptions = field.options.map((opt) => opt.value);
 				if (!validOptions.includes(stringValue)) {
 					errors.push(
-						`Row ${rowNumber}: Invalid ${field.title}. Valid options: ${validOptions.join(", ")}`,
+						`Row ${rowNumber}: Invalid ${field.title}. Valid options: ${validOptions.join(', ')}`,
 					);
 				}
 			}
@@ -464,10 +464,10 @@ function validateDataBeforeImport<
 // Helper function to handle validation errors
 function handleValidationErrors(validationErrors: string[]): void {
 	const errorMessage =
-		validationErrors.slice(0, 10).join("\n") +
+		validationErrors.slice(0, 10).join('\n') +
 		(validationErrors.length > 10
 			? `\n... and ${validationErrors.length - 10} more errors`
-			: "");
+			: '');
 
 	showNotification.error(
 		`Validation Failed (${validationErrors.length} errors)`,
@@ -483,7 +483,7 @@ function createTableColumns<
 		title: string;
 		width?: string;
 		key: keyof T;
-		type: "text" | "select";
+		type: 'text' | 'select';
 		options?: { label: string; value: string }[];
 		required?: boolean;
 	}[],
@@ -495,13 +495,13 @@ function createTableColumns<
 			title: (
 				<span>
 					{field.title}
-					{field.required && <span style={{ color: "red" }}> *</span>}
+					{field.required && <span style={{ color: 'red' }}> *</span>}
 				</span>
 			),
 			dataIndex: field.key as string,
 			width: field.width ?? 200,
 			render: (_: unknown, record: T) =>
-				field.type === "text" ? (
+				field.type === 'text' ? (
 					<Input
 						value={record[field.key] as string}
 						onChange={(e) =>
@@ -509,8 +509,8 @@ function createTableColumns<
 						}
 						status={
 							!record[field.key] ||
-							safeStringify(record[field.key]).trim() === ""
-								? "error"
+							safeStringify(record[field.key]).trim() === ''
+								? 'error'
 								: undefined
 						}
 					/>
@@ -521,8 +521,8 @@ function createTableColumns<
 						style={{ width: 120 }}
 						status={
 							!record[field.key] ||
-							safeStringify(record[field.key]).trim() === ""
-								? "error"
+							safeStringify(record[field.key]).trim() === ''
+								? 'error'
 								: undefined
 						}
 					>
@@ -535,8 +535,8 @@ function createTableColumns<
 				),
 		})),
 		{
-			title: "Action",
-			width: "10%",
+			title: 'Action',
+			width: '10%',
 			render: (_: unknown, record: T) => (
 				<Tooltip title="Delete">
 					<Button
@@ -556,12 +556,12 @@ function SemesterAlerts({
 	requireSemester,
 	semesterLoading,
 	hasAvailableSemesters,
-	userType = "student",
+	userType = 'student',
 }: Readonly<{
 	requireSemester: boolean;
 	semesterLoading: boolean;
 	hasAvailableSemesters: boolean;
-	userType?: "student" | "lecturer";
+	userType?: 'student' | 'lecturer';
 }>) {
 	if (!requireSemester) return null;
 
@@ -574,13 +574,13 @@ function SemesterAlerts({
 				description={
 					<div>
 						<p>
-							{userType === "lecturer" ? "Lecturer" : "Student"} accounts can
-							only be created for semesters with <strong>Preparing</strong>{" "}
+							{userType === 'lecturer' ? 'Lecturer' : 'Student'} accounts can
+							only be created for semesters with <strong>Preparing</strong>{' '}
 							status.
 						</p>
 						<p>
 							Currently, there are no semesters in these statuses available for
-							{userType === "lecturer" ? " lecturer" : " student"} creation.
+							{userType === 'lecturer' ? ' lecturer' : ' student'} creation.
 						</p>
 					</div>
 				}
@@ -594,12 +594,12 @@ function SemesterAlerts({
 			<Alert
 				type="info"
 				showIcon
-				message={`${userType === "lecturer" ? "Lecturer" : "Student"} Creation Policy`}
+				message={`${userType === 'lecturer' ? 'Lecturer' : 'Student'} Creation Policy`}
 				description={
 					<div>
-						{userType === "lecturer" ? "Lecturer" : "Student"} accounts can only
+						{userType === 'lecturer' ? 'Lecturer' : 'Student'} accounts can only
 						be created for semesters with
-						<Tag color="orange" style={{ margin: "0 4px" }}>
+						<Tag color="orange" style={{ margin: '0 4px' }}>
 							Preparing
 						</Tag>
 						status.
@@ -654,9 +654,9 @@ function SelectionForm({
 					<Col xs={24} sm={getColumnSpan()}>
 						<Form.Item
 							name="semester"
-							rules={[{ required: true, message: "Please select a semester" }]}
+							rules={[{ required: true, message: 'Please select a semester' }]}
 							label={FormLabel({
-								text: "Semester",
+								text: 'Semester',
 								isRequired: true,
 								isBold: true,
 							})}
@@ -664,15 +664,15 @@ function SelectionForm({
 							<Select
 								placeholder={
 									hasAvailableSemesters
-										? "Select semester (Preparing status only)"
-										: "No available semesters for user creation"
+										? 'Select semester (Preparing status only)'
+										: 'No available semesters for user creation'
 								}
 								loading={semesterLoading}
 								onChange={handleSemesterChange}
 								disabled={!hasAvailableSemesters}
 								notFoundContent={
 									!semesterLoading && !hasAvailableSemesters
-										? "No semesters with Preparing status found"
+										? 'No semesters with Preparing status found'
 										: undefined
 								}
 							>
@@ -693,9 +693,9 @@ function SelectionForm({
 					<Col xs={24} sm={getColumnSpan()}>
 						<Form.Item
 							name="major"
-							rules={[{ required: true, message: "Please select a major" }]}
+							rules={[{ required: true, message: 'Please select a major' }]}
 							label={FormLabel({
-								text: "Major",
+								text: 'Major',
 								isRequired: true,
 								isBold: true,
 							})}
@@ -708,7 +708,7 @@ function SelectionForm({
 								disabled={!majors.length}
 								notFoundContent={
 									!majorLoading && !majors.length
-										? "No majors found"
+										? 'No majors found'
 										: undefined
 								}
 							>
@@ -733,18 +733,18 @@ function getUploadText(
 	selectedSemester: string,
 	requireMajor: boolean,
 	selectedMajor: string,
-	userType: "student" | "lecturer" = "student",
+	userType: 'student' | 'lecturer' = 'student',
 ): string {
 	if (requireSemester && !hasAvailableSemesters) {
 		return `No available semesters for ${userType} creation`;
 	}
 	if (requireSemester && !selectedSemester) {
-		return "Please select a semester first";
+		return 'Please select a semester first';
 	}
 	if (requireMajor && !selectedMajor) {
-		return "Please select a major first";
+		return 'Please select a major first';
 	}
-	return "Drag and drop Excel file here, or click to browse";
+	return 'Drag and drop Excel file here, or click to browse';
 }
 
 // Component for imported data table
@@ -761,7 +761,7 @@ function ImportedDataTable<
 	selectedSemester,
 	requireMajor,
 	selectedMajor,
-	userType = "student",
+	userType = 'student',
 	hasValidationErrors = false,
 }: Readonly<{
 	data: T[];
@@ -774,28 +774,28 @@ function ImportedDataTable<
 	selectedSemester: string;
 	requireMajor: boolean;
 	selectedMajor: string;
-	userType?: "student" | "lecturer";
+	userType?: 'student' | 'lecturer';
 	hasValidationErrors?: boolean;
 }>) {
 	if (data.length === 0) return null;
 
-	const userTypeText = userType === "lecturer" ? "Lecturers" : "Students";
+	const userTypeText = userType === 'lecturer' ? 'Lecturers' : 'Students';
 	const buttonText = creatingMany
 		? `Creating ${userTypeText}...`
 		: `Import All ${userTypeText} (${data.length})`;
 
 	return (
-		<Space direction="vertical" style={{ width: "100%" }} size="middle">
+		<Space direction="vertical" style={{ width: '100%' }} size="middle">
 			<Alert
 				type="success"
 				showIcon
 				message={
 					<Typography.Text strong>
-						{data.length} {userType === "lecturer" ? "lecturers" : "students"}{" "}
+						{data.length} {userType === 'lecturer' ? 'lecturers' : 'students'}{' '}
 						data imported successfully
 					</Typography.Text>
 				}
-				style={{ borderColor: "#bbf7d0", color: "#15803d" }}
+				style={{ borderColor: '#bbf7d0', color: '#15803d' }}
 			/>
 			{hasValidationErrors && (
 				<Alert
@@ -817,7 +817,7 @@ function ImportedDataTable<
 				}}
 				bordered
 				rowKey="id"
-				scroll={{ x: "850" }}
+				scroll={{ x: '850' }}
 			/>
 			<Row justify="end" gutter={8}>
 				<Col>
@@ -867,14 +867,14 @@ export default function ExcelImportForm<
 	templateFileName,
 	requireSemester = false,
 	requireMajor = false,
-	userType = "student", // Default to student
+	userType = 'student', // Default to student
 }: ExcelImportFormProps<T>) {
 	const router = useRouter();
 	const [form] = Form.useForm();
 	const [fileList, setFileList] = useState<RcFile[]>([]);
 	const [data, setData] = useState<T[]>([]);
-	const [selectedSemester, setSelectedSemester] = useState<string>("");
-	const [selectedMajor, setSelectedMajor] = useState<string>("");
+	const [selectedSemester, setSelectedSemester] = useState<string>('');
+	const [selectedMajor, setSelectedMajor] = useState<string>('');
 
 	// Store hooks
 	const {
@@ -910,11 +910,11 @@ export default function ExcelImportForm<
 
 	// Determine which loading state to use based on user type
 	const creatingMany =
-		userType === "lecturer" ? creatingManyLecturers : creatingManyStudents;
+		userType === 'lecturer' ? creatingManyLecturers : creatingManyStudents;
 
 	// Computed values
 	const availableSemesters = semesters.filter(
-		(semester) => semester.status === "Preparing",
+		(semester) => semester.status === 'Preparing',
 	);
 	const hasAvailableSemesters = availableSemesters.length > 0;
 
@@ -946,13 +946,13 @@ export default function ExcelImportForm<
 				availableSemesters.find(
 					(semester) =>
 						semester.id === currentSemester?.id &&
-						semester.status === "Preparing",
+						semester.status === 'Preparing',
 				) || availableSemesters[0];
 
 			if (targetSemester) {
 				setSelectedSemester(targetSemester.id);
 				// Also set form field value for Ant Design Form
-				form.setFieldValue("semester", targetSemester.id);
+				form.setFieldValue('semester', targetSemester.id);
 			}
 		}
 	}, [
@@ -985,7 +985,7 @@ export default function ExcelImportForm<
 		reader.onload = (e) => {
 			const data = e.target?.result;
 			if (!data) {
-				showNotification.error("Error", "Failed to read file");
+				showNotification.error('Error', 'Failed to read file');
 				return;
 			}
 
@@ -1006,13 +1006,13 @@ export default function ExcelImportForm<
 			// Success notification will be shown after successful database creation
 
 			showNotification.success(
-				"File Processed",
-				`${validatedData.length} ${userType === "lecturer" ? "lecturers" : "students"} ready for import.`,
+				'File Processed',
+				`${validatedData.length} ${userType === 'lecturer' ? 'lecturers' : 'students'} ready for import.`,
 			);
 		};
 
 		reader.onerror = () =>
-			showNotification.error("Error", "Failed to read file");
+			showNotification.error('Error', 'Failed to read file');
 		reader.readAsArrayBuffer(file);
 
 		// Return false to prevent Ant Design's default upload behavior
@@ -1051,20 +1051,20 @@ export default function ExcelImportForm<
 	const resetFormState = () => {
 		setData([]);
 		setFileList([]);
-		setSelectedSemester("");
-		setSelectedMajor("");
+		setSelectedSemester('');
+		setSelectedMajor('');
 		form.resetFields();
 	};
 
 	// Helper function to handle lecturer import
 	const handleLecturerImport = async (): Promise<boolean> => {
 		const lecturersToCreate: LecturerCreate[] = data.map((item) => ({
-			email: String(item.email ?? ""),
-			fullName: String(item.fullName ?? ""),
-			phoneNumber: String(item.phoneNumber ?? ""),
-			gender: (item.gender === "Male" || item.gender === "Female"
+			email: String(item.email ?? ''),
+			fullName: String(item.fullName ?? ''),
+			phoneNumber: String(item.phoneNumber ?? ''),
+			gender: (item.gender === 'Male' || item.gender === 'Female'
 				? item.gender
-				: "Male") as "Male" | "Female",
+				: 'Male') as 'Male' | 'Female',
 		}));
 
 		try {
@@ -1074,17 +1074,17 @@ export default function ExcelImportForm<
 			if (success) {
 				await fetchLecturers();
 				showNotification.success(
-					"Import Successful",
+					'Import Successful',
 					`${data.length} lecturers have been imported successfully.`,
 				);
 				return true;
 			}
 			return false;
 		} catch (error) {
-			console.error("Error creating lecturers:", error);
+			console.error('Error creating lecturers:', error);
 			showNotification.error(
-				"Error",
-				"Failed to create lecturers. Please try again.",
+				'Error',
+				'Failed to create lecturers. Please try again.',
 			);
 			return false;
 		}
@@ -1093,8 +1093,8 @@ export default function ExcelImportForm<
 	// Helper function to handle student import
 	const handleStudentImport = async (): Promise<boolean> => {
 		// Get semester ID from form to ensure consistency
-		const formSemesterId = form.getFieldValue("semester") || selectedSemester;
-		const formMajorId = form.getFieldValue("major") || selectedMajor;
+		const formSemesterId = form.getFieldValue('semester') || selectedSemester;
+		const formMajorId = form.getFieldValue('major') || selectedMajor;
 
 		const importStudentDto: ImportStudent = {
 			semesterId: formSemesterId!,
@@ -1121,18 +1121,18 @@ export default function ExcelImportForm<
 					await fetchStudents();
 				}
 				showNotification.success(
-					"Import Successful",
+					'Import Successful',
 					`${data.length} students have been imported successfully.`,
 				);
-				router.push("/admin/students-management");
+				router.push('/admin/students-management');
 				return true;
 			}
 			return false;
 		} catch (error) {
-			console.error("Error creating students:", error);
+			console.error('Error creating students:', error);
 			showNotification.error(
-				"Error",
-				"Failed to create students. Please try again.",
+				'Error',
+				'Failed to create students. Please try again.',
 			);
 			return false;
 		}
@@ -1141,8 +1141,8 @@ export default function ExcelImportForm<
 	const handleImportAll = async () => {
 		// Get current values from form to ensure accuracy
 		const currentSemesterId =
-			form.getFieldValue("semester") || selectedSemester;
-		const currentMajorId = form.getFieldValue("major") || selectedMajor;
+			form.getFieldValue('semester') || selectedSemester;
+		const currentMajorId = form.getFieldValue('major') || selectedMajor;
 
 		if (
 			!validateUploadPrerequisites(
@@ -1159,10 +1159,10 @@ export default function ExcelImportForm<
 		const validation = validateDataBeforeImport(data, fields);
 		if (!validation.isValid) {
 			const errorMessage =
-				validation.errors.slice(0, 10).join("\n") +
+				validation.errors.slice(0, 10).join('\n') +
 				(validation.errors.length > 10
 					? `\n... and ${validation.errors.length - 10} more errors`
-					: "");
+					: '');
 
 			showNotification.error(
 				`Validation Failed (${validation.errors.length} errors)`,
@@ -1172,7 +1172,7 @@ export default function ExcelImportForm<
 		}
 
 		const success =
-			userType === "lecturer"
+			userType === 'lecturer'
 				? await handleLecturerImport()
 				: await handleStudentImport();
 
@@ -1206,10 +1206,10 @@ export default function ExcelImportForm<
 	// Helper function to validate file type
 	const isExcelFile = (file: RcFile): boolean => {
 		const validMimeTypes = [
-			"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-			"application/vnd.ms-excel",
+			'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+			'application/vnd.ms-excel',
 		];
-		const validExtensions = [".xlsx", ".xls"];
+		const validExtensions = ['.xlsx', '.xls'];
 		return (
 			validMimeTypes.includes(file.type) ||
 			validExtensions.some((ext) => file.name.endsWith(ext))
@@ -1222,7 +1222,7 @@ export default function ExcelImportForm<
 	};
 
 	return (
-		<Space direction="vertical" size="middle" style={{ width: "100%" }}>
+		<Space direction="vertical" size="middle" style={{ width: '100%' }}>
 			<SemesterAlerts
 				requireSemester={requireSemester}
 				semesterLoading={semesterLoading}
@@ -1245,18 +1245,18 @@ export default function ExcelImportForm<
 			/>
 			<Card
 				style={{
-					border: "1px solid #f0f0f0",
+					border: '1px solid #f0f0f0',
 					borderRadius: 8,
-					background: "#fafafa",
+					background: '#fafafa',
 				}}
 			>
 				<Row align="middle" justify="space-between" gutter={[16, 16]} wrap>
 					<Col xs={24} sm={24} md={16}>
-						<Typography.Text type="secondary" style={{ display: "block" }}>
+						<Typography.Text type="secondary" style={{ display: 'block' }}>
 							{note}
 						</Typography.Text>
 					</Col>
-					<Col xs={24} sm={24} md={8} style={{ textAlign: "right" }}>
+					<Col xs={24} sm={24} md={8} style={{ textAlign: 'right' }}>
 						<DownloadTemplateButton templateFileName={templateFileName!} />
 					</Col>
 				</Row>
@@ -1269,14 +1269,14 @@ export default function ExcelImportForm<
 
 					if (!isExcel) {
 						showNotification.warning(
-							"Warning",
-							"You can only upload Excel (.xlsx, .xls) files!",
+							'Warning',
+							'You can only upload Excel (.xlsx, .xls) files!',
 						);
 						return Upload.LIST_IGNORE;
 					}
 
 					if (!isLt100MB) {
-						showNotification.error("Error", "File must be smaller than 100MB!");
+						showNotification.error('Error', 'File must be smaller than 100MB!');
 						return Upload.LIST_IGNORE;
 					}
 

@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { Button, Card, Col, Form, Input, Row } from "antd";
+import { Button, Card, Col, Form, Input, Row } from 'antd';
 
 export const StudentSearch = () => {
 	return (

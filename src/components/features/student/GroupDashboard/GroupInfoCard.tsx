@@ -1,27 +1,27 @@
-import { ReloadOutlined } from "@ant-design/icons";
-import { Button, Card, Divider, Space, Spin, Typography } from "antd";
-import { useRouter } from "next/navigation";
-import { memo, useEffect, useState } from "react";
+import { ReloadOutlined } from '@ant-design/icons';
+import { Button, Card, Divider, Space, Spin, Typography } from 'antd';
+import { useRouter } from 'next/navigation';
+import { memo, useEffect, useState } from 'react';
 
 import {
-	ResponsibilityRadarChart,
 	ResponsibilityData,
-} from "@/components/common/radar-chart";
-import EditGroupInfoDialog from "@/components/features/student/GroupDashboard/EditGroupInfoDialog";
-import { GroupConfirmationModals } from "@/components/features/student/GroupDashboard/GroupConfirmationModals";
-import GroupMembersCard from "@/components/features/student/GroupDashboard/GroupMembersCard";
-import InviteMembersDialog from "@/components/features/student/GroupDashboard/InviteMembersDialog";
-import { useSessionData } from "@/hooks/auth/useAuth";
-import { GROUP_MAX_MEMBERS } from "@/lib/constants/group";
+	ResponsibilityRadarChart,
+} from '@/components/common/radar-chart';
+import EditGroupInfoDialog from '@/components/features/student/GroupDashboard/EditGroupInfoDialog';
+import { GroupConfirmationModals } from '@/components/features/student/GroupDashboard/GroupConfirmationModals';
+import GroupMembersCard from '@/components/features/student/GroupDashboard/GroupMembersCard';
+import InviteMembersDialog from '@/components/features/student/GroupDashboard/InviteMembersDialog';
+import { useSessionData } from '@/hooks/auth/useAuth';
+import { GROUP_MAX_MEMBERS } from '@/lib/constants/group';
 import groupService, {
 	GroupResponsibilityAverage,
-} from "@/lib/services/groups.service";
-import { formatDate } from "@/lib/utils/dateFormat";
-import { handleApiError } from "@/lib/utils/handleApi";
-import { showNotification } from "@/lib/utils/notification";
-import { GroupDashboard } from "@/schemas/group";
-import { useRequestsStore } from "@/store";
-import { useGroupDashboardStore } from "@/store/useGroupDashboardStore";
+} from '@/lib/services/groups.service';
+import { formatDate } from '@/lib/utils/dateFormat';
+import { handleApiError } from '@/lib/utils/handleApi';
+import { showNotification } from '@/lib/utils/notification';
+import { GroupDashboard } from '@/schemas/group';
+import { useRequestsStore } from '@/store';
+import { useGroupDashboardStore } from '@/store/useGroupDashboardStore';
 
 const { Title, Text } = Typography;
 
@@ -65,12 +65,12 @@ export default memo(function GroupInfoCard({
 					setGroupResponsibilities(response.data);
 				}
 			} catch (error) {
-				console.error("Error fetching group responsibilities:", error);
+				console.error('Error fetching group responsibilities:', error);
 				const { message } = handleApiError(
 					error,
-					"Failed to fetch group responsibilities",
+					'Failed to fetch group responsibilities',
 				);
-				showNotification.error("Fetch Failed", message);
+				showNotification.error('Fetch Failed', message);
 			} finally {
 				setResponsibilitiesLoading(false);
 			}
@@ -106,8 +106,8 @@ export default memo(function GroupInfoCard({
 			}
 		} catch {
 			showNotification.error(
-				"Refresh Failed",
-				"Failed to refresh group information. Please try again.",
+				'Refresh Failed',
+				'Failed to refresh group information. Please try again.',
 			);
 		} finally {
 			setIsRefreshing(false);
@@ -121,35 +121,35 @@ export default memo(function GroupInfoCard({
 	const hasReachedMaxMembers = localGroup.members.length >= GROUP_MAX_MEMBERS;
 
 	// Check if semester is in PREPARING status (can leave group and invite members even with thesis)
-	const canLeaveOrInvite = localGroup.semester.status === "Preparing";
+	const canLeaveOrInvite = localGroup.semester.status === 'Preparing';
 
 	// Check if semester is NOT in PREPARING status - hide action buttons
-	const shouldHideActionButtons = localGroup.semester.status !== "Preparing";
+	const shouldHideActionButtons = localGroup.semester.status !== 'Preparing';
 
 	// Helper function to get Leave Group button title
 	const getLeaveGroupButtonTitle = () => {
 		if (!canLeaveOrInvite) {
-			return "Cannot leave group during this semester status";
+			return 'Cannot leave group during this semester status';
 		}
 		if (isCurrentUserLeader && localGroup.members.length > 1) {
-			return "Transfer leadership before leaving";
+			return 'Transfer leadership before leaving';
 		}
-		return "Leave this group";
+		return 'Leave this group';
 	};
 
 	const handleLeaveGroup = async () => {
 		if (!canLeaveOrInvite) {
 			showNotification.error(
-				"Cannot Leave Group",
-				"Cannot leave group. Semester is not in PREPARING status.",
+				'Cannot Leave Group',
+				'Cannot leave group. Semester is not in PREPARING status.',
 			);
 			return;
 		}
 
 		if (isCurrentUserLeader && localGroup.members.length > 1) {
 			showNotification.error(
-				"Transfer Leadership Required",
-				"As a leader, you must transfer leadership to another member before leaving the group.",
+				'Transfer Leadership Required',
+				'As a leader, you must transfer leadership to another member before leaving the group.',
 			);
 			return;
 		}
@@ -157,15 +157,15 @@ export default memo(function GroupInfoCard({
 		setIsLeaving(true);
 		try {
 			await groupService.leaveGroup(localGroup.id);
-			showNotification.success("Success", "Successfully left the group!");
+			showNotification.success('Success', 'Successfully left the group!');
 			// Clear group data from store
 			clearGroup();
 			// Navigate to form or join group page since user no longer has a group
-			router.push("/student/join-group");
+			router.push('/student/join-group');
 		} catch {
 			showNotification.error(
-				"Error",
-				"Failed to leave group. Please try again.",
+				'Error',
+				'Failed to leave group. Please try again.',
 			);
 		} finally {
 			setIsLeaving(false);
@@ -175,12 +175,12 @@ export default memo(function GroupInfoCard({
 	// Helper function to get Invite Members button title
 	const getInviteMembersButtonTitle = () => {
 		if (!canLeaveOrInvite) {
-			return "Cannot invite members during this semester status";
+			return 'Cannot invite members during this semester status';
 		}
 		if (hasReachedMaxMembers) {
 			return `Cannot invite more members. Maximum ${GROUP_MAX_MEMBERS} members allowed.`;
 		}
-		return "Invite new members to this group";
+		return 'Invite new members to this group';
 	};
 
 	const showLeaveGroupConfirm = () => {
@@ -201,7 +201,7 @@ export default memo(function GroupInfoCard({
 
 	const handleCardClick = () => {
 		if (isDashboardView) {
-			router.push("/student/group-dashboard");
+			router.push('/student/group-dashboard');
 		}
 	};
 
@@ -218,17 +218,17 @@ export default memo(function GroupInfoCard({
 							className="text-base font-bold text-gray-600 mb-3"
 							onClick={handleCardClick}
 							style={{
-								cursor: isDashboardView ? "pointer" : "default",
-								transition: "color 0.2s ease",
+								cursor: isDashboardView ? 'pointer' : 'default',
+								transition: 'color 0.2s ease',
 							}}
 							onMouseEnter={(e) => {
 								if (isDashboardView) {
-									e.currentTarget.style.color = "#1890ff";
+									e.currentTarget.style.color = '#1890ff';
 								}
 							}}
 							onMouseLeave={(e) => {
 								if (isDashboardView) {
-									e.currentTarget.style.color = "";
+									e.currentTarget.style.color = '';
 								}
 							}}
 						>
@@ -264,7 +264,7 @@ export default memo(function GroupInfoCard({
 					<div className="space-y-4">
 						{/* Basic Group Info */}
 						<div
-							className={`grid grid-cols-1 gap-4 ${isDashboardView ? "md:grid-cols-2" : "md:grid-cols-3"}`}
+							className={`grid grid-cols-1 gap-4 ${isDashboardView ? 'md:grid-cols-2' : 'md:grid-cols-3'}`}
 						>
 							<div>
 								<Text className="text-sm text-gray-400 block font-semibold">
@@ -288,7 +288,7 @@ export default memo(function GroupInfoCard({
 									</Text>
 								</div>
 							)}
-						</div>{" "}
+						</div>{' '}
 						{/* Project Direction */}
 						<div>
 							<Text className="text-sm text-gray-400 block font-semibold">
@@ -309,7 +309,7 @@ export default memo(function GroupInfoCard({
 							{isDashboardView ? (
 								<Text className="text-sm text-gray-600">
 									{localGroup.members.length} member
-									{localGroup.members.length !== 1 ? "s" : ""}
+									{localGroup.members.length !== 1 ? 's' : ''}
 								</Text>
 							) : (
 								<GroupMembersCard
@@ -331,9 +331,9 @@ export default memo(function GroupInfoCard({
 											<div
 												style={{
 													height: 200,
-													display: "flex",
-													alignItems: "center",
-													justifyContent: "center",
+													display: 'flex',
+													alignItems: 'center',
+													justifyContent: 'center',
 												}}
 											>
 												<Spin />
@@ -365,10 +365,10 @@ export default memo(function GroupInfoCard({
 								})()}
 							</div>
 						)}
-					</div>{" "}
+					</div>{' '}
 					{/* Created Date and Action Buttons */}
 					<div
-						className={`flex flex-col sm:flex-row sm:items-end ${viewOnly ? "sm:justify-start" : "sm:justify-between"} gap-4 pt-4`}
+						className={`flex flex-col sm:flex-row sm:items-end ${viewOnly ? 'sm:justify-start' : 'sm:justify-between'} gap-4 pt-4`}
 					>
 						<div className="flex-shrink-0">
 							<Text className="text-sm text-gray-400 block font-semibold">

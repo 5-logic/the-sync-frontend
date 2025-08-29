@@ -1,22 +1,22 @@
-import { useRouter } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useRouter } from 'next/navigation';
+import { useCallback, useState } from 'react';
 
-import { useSessionData } from "@/hooks/auth/useAuth";
-import { TIMING } from "@/lib/constants/thesis";
-import { showNotification } from "@/lib/utils/notification";
+import { useSessionData } from '@/hooks/auth/useAuth';
+import { TIMING } from '@/lib/constants/thesis';
+import { showNotification } from '@/lib/utils/notification';
 import {
 	THESIS_SUCCESS_CONFIGS,
 	handleThesisSuccess,
-} from "@/lib/utils/thesis-handlers";
+} from '@/lib/utils/thesis-handlers';
 import {
 	ThesisCreate,
 	ThesisUpdate,
 	ThesisWithRelations,
-} from "@/schemas/thesis";
-import { useThesisStore } from "@/store";
+} from '@/schemas/thesis';
+import { useThesisStore } from '@/store';
 
 interface UseThesisFormOptions {
-	mode: "create" | "edit";
+	mode: 'create' | 'edit';
 	thesisId?: string;
 	thesis?: ThesisWithRelations | null;
 }
@@ -34,7 +34,7 @@ export const useThesisForm = ({
 
 	// Transform thesis data for form initial values
 	const getFormInitialValues = useCallback(() => {
-		if (mode === "create" || !thesis) return undefined;
+		if (mode === 'create' || !thesis) return undefined;
 
 		return {
 			englishName: thesis.englishName,
@@ -48,7 +48,7 @@ export const useThesisForm = ({
 
 	// Get initial file info for edit mode
 	const getInitialFile = useCallback(() => {
-		if (mode === "create" || !thesis) return null;
+		if (mode === 'create' || !thesis) return null;
 
 		// Extract supporting document from thesisVersions (latest version)
 		const latestVersion = thesis.thesisVersions?.[0];
@@ -56,9 +56,9 @@ export const useThesisForm = ({
 
 		// Extract filename from URL
 		const url = latestVersion.supportingDocument;
-		const urlParts = url.split("/");
-		const lastPart = urlParts[urlParts.length - 1] ?? "";
-		const filename = lastPart === "" ? "thesis-document.docx" : lastPart;
+		const urlParts = url.split('/');
+		const lastPart = urlParts[urlParts.length - 1] ?? '';
+		const filename = lastPart === '' ? 'thesis-document.docx' : lastPart;
 
 		return {
 			name: filename,
@@ -70,7 +70,7 @@ export const useThesisForm = ({
 	// Helper functions to reduce cognitive complexity
 	const validateAuthentication = useCallback(() => {
 		if (!session?.user?.id) {
-			showNotification.error("Error", "User not authenticated");
+			showNotification.error('Error', 'User not authenticated');
 			return false;
 		}
 		return true;
@@ -100,13 +100,13 @@ export const useThesisForm = ({
 
 	const handleEditThesis = useCallback(
 		async (values: Record<string, unknown>) => {
-			if (!thesisId) throw new Error("Thesis ID is required for update");
+			if (!thesisId) throw new Error('Thesis ID is required for update');
 
 			const success = await updateThesis(thesisId, values as ThesisUpdate);
 
 			if (success) {
-				showNotification.success("Success", "Thesis updated successfully!");
-				router.push("/lecturer/thesis-management");
+				showNotification.success('Success', 'Thesis updated successfully!');
+				router.push('/lecturer/thesis-management');
 			}
 			// Don't throw error here - let the store handle error notifications
 			// The store already shows specific error messages from backend
@@ -123,7 +123,7 @@ export const useThesisForm = ({
 			try {
 				setLoading(true);
 
-				if (mode === "create") {
+				if (mode === 'create') {
 					const success = await handleCreateThesis(values);
 					// Don't call handleError for create mode - store already handles errors
 					if (!success) {
@@ -138,7 +138,7 @@ export const useThesisForm = ({
 				}
 			} catch (error) {
 				// Only handle unexpected errors (like missing thesisId)
-				console.error("Unexpected error in thesis form:", error);
+				console.error('Unexpected error in thesis form:', error);
 				setLoading(false);
 			}
 		},

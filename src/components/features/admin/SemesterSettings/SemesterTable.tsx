@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
 import {
 	DeleteOutlined,
 	EditOutlined,
 	ExclamationCircleOutlined,
-} from "@ant-design/icons";
+} from '@ant-design/icons';
 import {
 	Alert,
 	Button,
@@ -18,8 +18,8 @@ import {
 	Table,
 	Tooltip,
 	Typography,
-} from "antd";
-import type { ColumnsType } from "antd/es/table";
+} from 'antd';
+import type { ColumnsType } from 'antd/es/table';
 import {
 	forwardRef,
 	useCallback,
@@ -27,16 +27,16 @@ import {
 	useImperativeHandle,
 	useMemo,
 	useState,
-} from "react";
+} from 'react';
 
-import { FormLabel } from "@/components/common/FormLabel";
+import { FormLabel } from '@/components/common/FormLabel';
 import {
 	SEMESTER_STATUS_TAGS,
 	SEMESTER_STATUS_TEXT,
-} from "@/lib/constants/semester";
-import { SemesterStatus } from "@/schemas/_enums";
-import { Semester, SemesterUpdate } from "@/schemas/semester";
-import { useSemesterStore } from "@/store";
+} from '@/lib/constants/semester';
+import { SemesterStatus } from '@/schemas/_enums';
+import { Semester, SemesterUpdate } from '@/schemas/semester';
+import { useSemesterStore } from '@/store';
 
 const { Option } = Select;
 const { Text } = Typography;
@@ -52,17 +52,17 @@ export interface SemesterTableRef {
 }
 
 const STATUS_ORDER: SemesterStatus[] = [
-	"NotYet",
-	"Preparing",
-	"Picking",
-	"Ongoing",
-	"End",
+	'NotYet',
+	'Preparing',
+	'Picking',
+	'Ongoing',
+	'End',
 ];
 
 const SemesterTable = forwardRef<
 	SemesterTableRef,
 	{
-		statusFilter: SemesterStatus | "All";
+		statusFilter: SemesterStatus | 'All';
 		searchText: string;
 	}
 >(({ statusFilter, searchText }, ref) => {
@@ -112,8 +112,8 @@ const SemesterTable = forwardRef<
 			const activeSemester = semesters.find(
 				(semester) =>
 					semester.id !== excludeId &&
-					semester.status !== "NotYet" &&
-					semester.status !== "End",
+					semester.status !== 'NotYet' &&
+					semester.status !== 'End',
 			);
 			return activeSemester ?? null;
 		},
@@ -127,14 +127,14 @@ const SemesterTable = forwardRef<
 			newStatus: SemesterStatus,
 		): { allowed: boolean; reason?: string; activeSemester?: Semester } => {
 			// If changing to NotYet or End, always allow
-			if (newStatus === "NotYet" || newStatus === "End") {
+			if (newStatus === 'NotYet' || newStatus === 'End') {
 				return { allowed: true };
 			}
 
 			// If current status is already not NotYet/End, allow (same semester progression)
 			if (
-				currentSemester.status !== "NotYet" &&
-				currentSemester.status !== "End"
+				currentSemester.status !== 'NotYet' &&
+				currentSemester.status !== 'End'
 			) {
 				return { allowed: true };
 			}
@@ -144,9 +144,9 @@ const SemesterTable = forwardRef<
 			if (activeSemester) {
 				// Special case: Allow changing to "Preparing" if the active semester is "Ongoing" with phase "ScopeLocked"
 				if (
-					newStatus === "Preparing" &&
-					activeSemester.status === "Ongoing" &&
-					activeSemester.ongoingPhase === "ScopeLocked"
+					newStatus === 'Preparing' &&
+					activeSemester.status === 'Ongoing' &&
+					activeSemester.ongoingPhase === 'ScopeLocked'
 				) {
 					return { allowed: true };
 				}
@@ -166,10 +166,10 @@ const SemesterTable = forwardRef<
 	// Check if semester can be edited (End status cannot be edited)
 	const canEditSemester = useCallback(
 		(semester: Semester): { canEdit: boolean; reason?: string } => {
-			if (semester.status === "End") {
+			if (semester.status === 'End') {
 				return {
 					canEdit: false,
-					reason: "Cannot edit semester with End status",
+					reason: 'Cannot edit semester with End status',
 				};
 			}
 			return { canEdit: true };
@@ -189,13 +189,13 @@ const SemesterTable = forwardRef<
 
 			// Check if there's an active semester with Ongoing status and ScopeLocked phase
 			const ongoingSemester = semesters.find(
-				(sem) => sem.status === "Ongoing" && sem.ongoingPhase === "ScopeLocked",
+				(sem) => sem.status === 'Ongoing' && sem.ongoingPhase === 'ScopeLocked',
 			);
 
 			// Special case: If current status is NotYet and there's an Ongoing semester with ScopeLocked phase,
 			// allow direct transition to Preparing
-			if (currentStatus === "NotYet" && ongoingSemester) {
-				availableStatuses.push("Preparing");
+			if (currentStatus === 'NotYet' && ongoingSemester) {
+				availableStatuses.push('Preparing');
 			}
 
 			if (currentIndex < STATUS_ORDER.length - 1) {
@@ -203,14 +203,14 @@ const SemesterTable = forwardRef<
 
 				// Rule: If current status is Ongoing and next status is End,
 				// only allow if current phase is ScopeLocked
-				if (currentStatus === "Ongoing" && nextStatus === "End") {
-					if (currentPhase === "ScopeLocked") {
+				if (currentStatus === 'Ongoing' && nextStatus === 'End') {
+					if (currentPhase === 'ScopeLocked') {
 						availableStatuses.push(nextStatus);
 					}
 				} else if (
 					!(
-						currentStatus === "NotYet" &&
-						nextStatus === "Preparing" &&
+						currentStatus === 'NotYet' &&
+						nextStatus === 'Preparing' &&
 						ongoingSemester
 					)
 				) {
@@ -232,7 +232,7 @@ const SemesterTable = forwardRef<
 		return semesters
 			.filter((item) => {
 				const matchStatus =
-					statusFilter === "All" || item.status === statusFilter;
+					statusFilter === 'All' || item.status === statusFilter;
 				const matchSearch =
 					!searchText || item.name.toLowerCase().includes(searchLower);
 				return matchStatus && matchSearch;
@@ -252,7 +252,7 @@ const SemesterTable = forwardRef<
 			if (!editCheck.canEdit) {
 				// Show notification or modal instead of opening edit form
 				Modal.info({
-					title: "Cannot Edit Semester",
+					title: 'Cannot Edit Semester',
 					content: editCheck.reason,
 					centered: true,
 				});
@@ -277,9 +277,9 @@ const SemesterTable = forwardRef<
 	const handleDelete = useCallback(
 		async (record: Semester) => {
 			// Only allow delete for NotYet status
-			if (record.status !== "NotYet") {
+			if (record.status !== 'NotYet') {
 				Modal.warning({
-					title: "Cannot Delete",
+					title: 'Cannot Delete',
 					content: 'Only semesters with "Not Yet" status can be deleted.',
 					centered: true,
 				});
@@ -295,12 +295,12 @@ const SemesterTable = forwardRef<
 					</Space>
 				),
 				content: (
-					<Space direction="vertical" size="middle" style={{ width: "100%" }}>
+					<Space direction="vertical" size="middle" style={{ width: '100%' }}>
 						<Typography.Text>
 							Are you sure you want to delete this semester?
 						</Typography.Text>
 
-						<Space direction="vertical" size="small" style={{ width: "100%" }}>
+						<Space direction="vertical" size="small" style={{ width: '100%' }}>
 							<div>
 								<Typography.Text strong>Semester: </Typography.Text>
 								<Typography.Text>{record.name}</Typography.Text>
@@ -320,9 +320,9 @@ const SemesterTable = forwardRef<
 						/>
 					</Space>
 				),
-				okText: "Delete",
-				okType: "danger",
-				cancelText: "Cancel",
+				okText: 'Delete',
+				okType: 'danger',
+				cancelText: 'Cancel',
 				centered: true,
 				width: 480,
 				onOk: async () => {
@@ -335,10 +335,10 @@ const SemesterTable = forwardRef<
 
 	// Helper function to validate edit permissions
 	const validateEditPermissions = useCallback((record: Semester): boolean => {
-		if (record.status === "End") {
+		if (record.status === 'End') {
 			Modal.error({
-				title: "Edit Not Allowed",
-				content: "Cannot edit semester with End status",
+				title: 'Edit Not Allowed',
+				content: 'Cannot edit semester with End status',
 				centered: true,
 			});
 			return false;
@@ -355,15 +355,15 @@ const SemesterTable = forwardRef<
 			},
 		): boolean => {
 			// Rule 1: Ongoing -> End requires ScopeLocked phase
-			if (record.status === "Ongoing" && values.status === "End") {
+			if (record.status === 'Ongoing' && values.status === 'End') {
 				const currentPhase =
-					form.getFieldValue("ongoingPhase") ?? record.ongoingPhase;
-				if (currentPhase !== "ScopeLocked") {
+					form.getFieldValue('ongoingPhase') ?? record.ongoingPhase;
+				if (currentPhase !== 'ScopeLocked') {
 					form.setFields([
 						{
-							name: "status",
+							name: 'status',
 							errors: [
-								"Cannot change status to End. Phase must be ScopeLocked first.",
+								'Cannot change status to End. Phase must be ScopeLocked first.',
 							],
 						},
 					]);
@@ -376,8 +376,8 @@ const SemesterTable = forwardRef<
 			if (!statusCheck.allowed) {
 				form.setFields([
 					{
-						name: "status",
-						errors: [statusCheck.reason ?? "Status change not allowed"],
+						name: 'status',
+						errors: [statusCheck.reason ?? 'Status change not allowed'],
 					},
 				]);
 				return false;
@@ -416,7 +416,7 @@ const SemesterTable = forwardRef<
 			}
 			if (values.ongoingPhase !== original.ongoingPhase) {
 				payload.ongoingPhase =
-					values.status === "Ongoing" ? values.ongoingPhase : undefined;
+					values.status === 'Ongoing' ? values.ongoingPhase : undefined;
 			}
 			if (
 				values.defaultThesesPerLecturer !== original.defaultThesesPerLecturer
@@ -475,7 +475,7 @@ const SemesterTable = forwardRef<
 				handleUpdateSuccess();
 			}
 		} catch (error) {
-			console.error("Form validation error:", error);
+			console.error('Form validation error:', error);
 		}
 	}, [
 		form,
@@ -502,14 +502,14 @@ const SemesterTable = forwardRef<
 			setSelectedStatus(value);
 
 			// Clear ongoing phase if status is not Ongoing
-			if (value !== "Ongoing") {
-				form.setFieldValue("ongoingPhase", undefined);
+			if (value !== 'Ongoing') {
+				form.setFieldValue('ongoingPhase', undefined);
 			}
 
 			// Clear status field error when user changes status
 			form.setFields([
 				{
-					name: "status",
+					name: 'status',
 					errors: [],
 				},
 			]);
@@ -521,12 +521,12 @@ const SemesterTable = forwardRef<
 		(value: string) => {
 			// When phase changes, recalculate available statuses
 			setIsFormChanged(true);
-			form.setFieldValue("ongoingPhase", value);
+			form.setFieldValue('ongoingPhase', value);
 
 			// Clear status field error when phase changes
 			form.setFields([
 				{
-					name: "status",
+					name: 'status',
 					errors: [],
 				},
 			]);
@@ -558,28 +558,28 @@ const SemesterTable = forwardRef<
 	const columns: ColumnsType<Semester> = useMemo(
 		() => [
 			{
-				title: "Semester Name",
-				dataIndex: "name",
-				key: "name",
+				title: 'Semester Name',
+				dataIndex: 'name',
+				key: 'name',
 				width: 200,
 			},
 			{
-				title: "Semester Code",
-				dataIndex: "code",
-				key: "code",
+				title: 'Semester Code',
+				dataIndex: 'code',
+				key: 'code',
 				width: 150,
 			},
 			{
-				title: "Status",
-				dataIndex: "status",
-				key: "status",
+				title: 'Status',
+				dataIndex: 'status',
+				key: 'status',
 				width: 120,
 				render: (status: SemesterStatus) =>
 					SEMESTER_STATUS_TAGS[status] ?? status,
 			},
 			{
-				title: "Actions",
-				key: "actions",
+				title: 'Actions',
+				key: 'actions',
 				width: 100,
 				render: (_: unknown, record: Semester) => {
 					const editCheck = canEditSemester(record);
@@ -588,8 +588,8 @@ const SemesterTable = forwardRef<
 							<Tooltip
 								title={
 									editCheck.canEdit
-										? "Edit"
-										: (editCheck.reason ?? "Cannot edit this semester")
+										? 'Edit'
+										: (editCheck.reason ?? 'Cannot edit this semester')
 								}
 							>
 								<Button
@@ -604,14 +604,14 @@ const SemesterTable = forwardRef<
 									}
 									style={{
 										opacity: editCheck.canEdit ? 1 : 0.5,
-										cursor: editCheck.canEdit ? "pointer" : "not-allowed",
+										cursor: editCheck.canEdit ? 'pointer' : 'not-allowed',
 									}}
 								/>
 							</Tooltip>
 							<Tooltip
 								title={
-									record.status === "NotYet"
-										? "Delete"
+									record.status === 'NotYet'
+										? 'Delete'
 										: 'Cannot delete - Status must be "Not Yet"'
 								}
 							>
@@ -621,7 +621,7 @@ const SemesterTable = forwardRef<
 									type="text"
 									danger
 									disabled={
-										record.status !== "NotYet" ||
+										record.status !== 'NotYet' ||
 										Boolean(updating) ||
 										Boolean(deleting)
 									}
@@ -641,7 +641,7 @@ const SemesterTable = forwardRef<
 		if (!editingRecord) return STATUS_ORDER;
 
 		// Ưu tiên lấy giá trị từ form trước, sau đó mới lấy từ record
-		const formPhase = form.getFieldValue("ongoingPhase");
+		const formPhase = form.getFieldValue('ongoingPhase');
 		const currentPhase =
 			formPhase !== undefined ? formPhase : editingRecord.ongoingPhase;
 		return getAvailableStatuses(editingRecord.status, currentPhase);
@@ -653,29 +653,29 @@ const SemesterTable = forwardRef<
 			if (!editingRecord) return {};
 
 			// Ưu tiên lấy giá trị từ form trước
-			const formPhase = form.getFieldValue("ongoingPhase");
+			const formPhase = form.getFieldValue('ongoingPhase');
 			const currentPhase =
 				formPhase !== undefined ? formPhase : editingRecord.ongoingPhase;
 
 			// Rule 1: Ongoing -> End requires ScopeLocked phase
 			if (
-				editingRecord.status === "Ongoing" &&
-				status === "End" &&
-				currentPhase !== "ScopeLocked"
+				editingRecord.status === 'Ongoing' &&
+				status === 'End' &&
+				currentPhase !== 'ScopeLocked'
 			) {
 				return {
 					disabled: true,
-					title: "Phase must be ScopeLocked to change status to End",
+					title: 'Phase must be ScopeLocked to change status to End',
 				};
 			}
 
 			// Rule 2: Check if status change is allowed (only for active statuses)
-			if (status !== "NotYet" && status !== "End") {
+			if (status !== 'NotYet' && status !== 'End') {
 				const statusCheck = isStatusChangeAllowed(editingRecord, status);
 				if (!statusCheck.allowed) {
 					return {
 						disabled: true,
-						title: statusCheck.reason ?? "Status change not allowed",
+						title: statusCheck.reason ?? 'Status change not allowed',
 					};
 				}
 			}
@@ -692,30 +692,30 @@ const SemesterTable = forwardRef<
 		const activeSemester = hasActiveSemester(editingRecord.id);
 		if (
 			activeSemester &&
-			(editingRecord.status === "NotYet" || editingRecord.status === "End")
+			(editingRecord.status === 'NotYet' || editingRecord.status === 'End')
 		) {
 			// Special case: If the active semester is Ongoing with ScopeLocked phase,
 			// and we're trying to change a NotYet semester to Preparing, show different message
 			if (
-				editingRecord.status === "NotYet" &&
-				activeSemester.status === "Ongoing" &&
-				activeSemester.ongoingPhase === "ScopeLocked"
+				editingRecord.status === 'NotYet' &&
+				activeSemester.status === 'Ongoing' &&
+				activeSemester.ongoingPhase === 'ScopeLocked'
 			) {
 				return (
 					<div
 						style={{
-							background: "#e6f7ff",
-							border: "1px solid #91d5ff",
-							borderRadius: "6px",
-							padding: "8px 12px",
-							marginBottom: "16px",
-							fontSize: "14px",
-							color: "#1890ff",
+							background: '#e6f7ff',
+							border: '1px solid #91d5ff',
+							borderRadius: '6px',
+							padding: '8px 12px',
+							marginBottom: '16px',
+							fontSize: '14px',
+							color: '#1890ff',
 						}}
 					>
-						<strong>Notice:</strong> Semester{" "}
-						<strong>{activeSemester.name}</strong> is currently in{" "}
-						<strong>{activeSemester.status}</strong> status with phase{" "}
+						<strong>Notice:</strong> Semester{' '}
+						<strong>{activeSemester.name}</strong> is currently in{' '}
+						<strong>{activeSemester.status}</strong> status with phase{' '}
 						<strong>{activeSemester.ongoingPhase}</strong>. You can now change
 						this semester status to <strong>Preparing</strong> to prepare for
 						the next semester.
@@ -726,17 +726,17 @@ const SemesterTable = forwardRef<
 			return (
 				<div
 					style={{
-						background: "#fff7e6",
-						border: "1px solid #ffd591",
-						borderRadius: "6px",
-						padding: "8px 12px",
-						marginBottom: "16px",
-						fontSize: "14px",
-						color: "#d48806",
+						background: '#fff7e6',
+						border: '1px solid #ffd591',
+						borderRadius: '6px',
+						padding: '8px 12px',
+						marginBottom: '16px',
+						fontSize: '14px',
+						color: '#d48806',
 					}}
 				>
-					<strong>Notice:</strong> Semester{" "}
-					<strong>{activeSemester.name}</strong> is currently in{" "}
+					<strong>Notice:</strong> Semester{' '}
+					<strong>{activeSemester.name}</strong> is currently in{' '}
 					<strong>{activeSemester.status}</strong> status. You cannot change
 					status for this semester.
 				</div>
@@ -748,7 +748,7 @@ const SemesterTable = forwardRef<
 
 	// Show End status warning
 	const endStatusWarning = useMemo(() => {
-		if (!editingRecord || editingRecord.status !== "End") return null;
+		if (!editingRecord || editingRecord.status !== 'End') return null;
 
 		return (
 			<Alert
@@ -769,8 +769,8 @@ const SemesterTable = forwardRef<
 	const endStatusSelectionWarning = useMemo(() => {
 		if (
 			!editingRecord ||
-			selectedStatus !== "End" ||
-			editingRecord.status === "End"
+			selectedStatus !== 'End' ||
+			editingRecord.status === 'End'
 		)
 			return null;
 
@@ -782,7 +782,7 @@ const SemesterTable = forwardRef<
 					<>
 						<Text>
 							Once you change the status to <Text strong>End</Text>, this
-							semester will be marked as completed and{" "}
+							semester will be marked as completed and{' '}
 							<Text strong>cannot be edited anymore</Text>. This action is
 							irreversible.
 						</Text>
@@ -810,10 +810,10 @@ const SemesterTable = forwardRef<
 					showTotal: (total, range) =>
 						`${range[0]}-${range[1]} of ${total} items`,
 					showSizeChanger: true,
-					pageSizeOptions: ["5", "10", "20", "50"],
+					pageSizeOptions: ['5', '10', '20', '50'],
 					showQuickJumper: true,
 				}}
-				scroll={{ x: "max-content" }}
+				scroll={{ x: 'max-content' }}
 				size="middle"
 			/>
 
@@ -844,7 +844,7 @@ const SemesterTable = forwardRef<
 					form={form}
 					layout="vertical"
 					requiredMark={false}
-					style={{ marginTop: "16px" }}
+					style={{ marginTop: '16px' }}
 					onValuesChange={handleFormChange}
 				>
 					<Row gutter={16}>
@@ -852,12 +852,12 @@ const SemesterTable = forwardRef<
 							<Form.Item
 								name="name"
 								label={FormLabel({
-									text: "Semester Name",
+									text: 'Semester Name',
 									isRequired: true,
 									isBold: true,
 								})}
 								rules={[
-									{ required: true, message: "Semester name is required" },
+									{ required: true, message: 'Semester name is required' },
 								]}
 							>
 								<Input
@@ -871,12 +871,12 @@ const SemesterTable = forwardRef<
 							<Form.Item
 								name="code"
 								label={FormLabel({
-									text: "Semester Code",
+									text: 'Semester Code',
 									isRequired: true,
 									isBold: true,
 								})}
 								rules={[
-									{ required: true, message: "Semester code is required" },
+									{ required: true, message: 'Semester code is required' },
 								]}
 							>
 								<Input
@@ -890,24 +890,24 @@ const SemesterTable = forwardRef<
 					<Form.Item
 						name="defaultThesesPerLecturer"
 						label={FormLabel({
-							text: "Default Theses Per Lecturer",
+							text: 'Default Theses Per Lecturer',
 							isBold: true,
 						})}
 						rules={[
 							{
-								required: selectedStatus === "Preparing",
+								required: selectedStatus === 'Preparing',
 								message:
-									"Default theses per lecturer is required when status is Preparing",
+									'Default theses per lecturer is required when status is Preparing',
 							},
 							{
-								type: "number",
+								type: 'number',
 								min: 1,
-								message: "Default theses per lecturer must be at least 1",
+								message: 'Default theses per lecturer must be at least 1',
 								transform: (value) => (value ? Number(value) : undefined),
 							},
 							({ getFieldValue }) => ({
 								validator(_, value) {
-									const maxTheses = getFieldValue("maxThesesPerLecturer");
+									const maxTheses = getFieldValue('maxThesesPerLecturer');
 									if (!value || !maxTheses) {
 										return Promise.resolve();
 									}
@@ -916,13 +916,13 @@ const SemesterTable = forwardRef<
 									}
 									return Promise.reject(
 										new Error(
-											"Default theses must be less than or equal to max theses",
+											'Default theses must be less than or equal to max theses',
 										),
 									);
 								},
 							}),
 						]}
-						dependencies={["maxThesesPerLecturer"]}
+						dependencies={['maxThesesPerLecturer']}
 					>
 						<Input
 							placeholder="Enter default theses per lecturer"
@@ -936,25 +936,25 @@ const SemesterTable = forwardRef<
 					<Form.Item
 						name="maxThesesPerLecturer"
 						label={FormLabel({
-							text: "Max Theses Per Lecturer",
+							text: 'Max Theses Per Lecturer',
 							isBold: true,
 						})}
 						rules={[
 							{
-								required: selectedStatus === "Preparing",
+								required: selectedStatus === 'Preparing',
 								message:
-									"Max theses per lecturer is required when status is Preparing",
+									'Max theses per lecturer is required when status is Preparing',
 							},
 							{
-								type: "number",
+								type: 'number',
 								min: 1,
-								message: "Max theses per lecturer must be at least 1",
+								message: 'Max theses per lecturer must be at least 1',
 								transform: (value) => (value ? Number(value) : undefined),
 							},
 							({ getFieldValue }) => ({
 								validator(_, value) {
 									const defaultTheses = getFieldValue(
-										"defaultThesesPerLecturer",
+										'defaultThesesPerLecturer',
 									);
 									if (!value || !defaultTheses) {
 										return Promise.resolve();
@@ -964,13 +964,13 @@ const SemesterTable = forwardRef<
 									}
 									return Promise.reject(
 										new Error(
-											"Max theses must be greater than or equal to default theses",
+											'Max theses must be greater than or equal to default theses',
 										),
 									);
 								},
 							}),
 						]}
-						dependencies={["defaultThesesPerLecturer"]}
+						dependencies={['defaultThesesPerLecturer']}
 					>
 						<Input
 							placeholder="Enter max theses per lecturer"
@@ -984,7 +984,7 @@ const SemesterTable = forwardRef<
 					<Form.Item
 						name="status"
 						label={FormLabel({
-							text: "Status",
+							text: 'Status',
 							isRequired: true,
 							isBold: true,
 						})}
@@ -1006,18 +1006,18 @@ const SemesterTable = forwardRef<
 						</Select>
 					</Form.Item>
 
-					{selectedStatus === "Ongoing" && (
+					{selectedStatus === 'Ongoing' && (
 						<Form.Item
 							name="ongoingPhase"
 							label={FormLabel({
-								text: "Ongoing Phase",
+								text: 'Ongoing Phase',
 								isRequired: true,
 								isBold: true,
 							})}
 							rules={[
 								{
 									required: true,
-									message: "Ongoing phase is required when status is Ongoing",
+									message: 'Ongoing phase is required when status is Ongoing',
 								},
 							]}
 						>
@@ -1037,6 +1037,6 @@ const SemesterTable = forwardRef<
 	);
 });
 
-SemesterTable.displayName = "SemesterTable";
+SemesterTable.displayName = 'SemesterTable';
 
 export default SemesterTable;

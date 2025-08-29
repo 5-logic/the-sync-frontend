@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { Suspense, lazy } from "react";
+import { Suspense, lazy } from 'react';
 
-import { TableLoadingSkeleton } from "@/components/common/loading";
+import { TableLoadingSkeleton } from '@/components/common/loading';
 
 // Lazy load the FormOrJoinGroup component for better performance
 const JoinGroup = lazy(
-	() => import("@/components/features/student/FormOrJoinGroup"),
+	() => import('@/components/features/student/FormOrJoinGroup'),
 );
 
 /**

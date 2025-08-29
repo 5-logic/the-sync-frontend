@@ -1,10 +1,10 @@
-import { FormLabel } from "../common/FormLabel";
-import { ArrowLeftOutlined } from "@ant-design/icons";
-import { Button, Form, Input, Typography } from "antd";
-import { useEffect, useState } from "react";
+import { FormLabel } from '../common/FormLabel';
+import { ArrowLeftOutlined } from '@ant-design/icons';
+import { Button, Form, Input, Typography } from 'antd';
+import { useEffect, useState } from 'react';
 
-import LoginFormLayout from "@/components/layout/LoginFormLayout";
-import { OtpVerificationSchema } from "@/schemas/forgot-password";
+import LoginFormLayout from '@/components/layout/LoginFormLayout';
+import { OtpVerificationSchema } from '@/schemas/forgot-password';
 
 const { Text } = Typography;
 const { OTP: AntdOTP } = Input;
@@ -48,7 +48,7 @@ export const PasswordResetOtpForm = ({
 	// Reset form when resetTrigger changes
 	useEffect(() => {
 		if (resetTrigger > 0) {
-			form.resetFields(["otpCode"]);
+			form.resetFields(['otpCode']);
 			setIsFormValid(false);
 		}
 	}, [resetTrigger, form]);
@@ -58,7 +58,7 @@ export const PasswordResetOtpForm = ({
 		{
 			validator: async (_: unknown, value: string) => {
 				if (!value) {
-					return Promise.reject(new Error("OTP is required"));
+					return Promise.reject(new Error('OTP is required'));
 				}
 				try {
 					OtpVerificationSchema.parse({ otpCode: value });
@@ -66,7 +66,7 @@ export const PasswordResetOtpForm = ({
 				} catch (error: unknown) {
 					const zodError = error as { errors?: Array<{ message: string }> };
 					return Promise.reject(
-						new Error(zodError.errors?.[0]?.message || "Invalid OTP"),
+						new Error(zodError.errors?.[0]?.message || 'Invalid OTP'),
 					);
 				}
 			},
@@ -76,7 +76,7 @@ export const PasswordResetOtpForm = ({
 	// Handle OTP input change with sanitization
 	const handleOtpChange = (value: string) => {
 		// Set form value
-		form.setFieldValue("otpCode", value);
+		form.setFieldValue('otpCode', value);
 
 		// Validate using schema
 		setIsFormValid(
@@ -104,9 +104,9 @@ export const PasswordResetOtpForm = ({
 						onChange={handleOtpChange}
 						size="large"
 						style={{
-							display: "flex",
-							justifyContent: "center",
-							gap: "8px",
+							display: 'flex',
+							justifyContent: 'center',
+							gap: '8px',
 						}}
 					/>
 				</Form.Item>
@@ -120,34 +120,34 @@ export const PasswordResetOtpForm = ({
 						block
 						size="large"
 						style={{
-							marginTop: "8px",
+							marginTop: '8px',
 						}}
 					>
-						{loading ? "Verifying..." : "Verify OTP"}
+						{loading ? 'Verifying...' : 'Verify OTP'}
 					</Button>
 				</Form.Item>
 
-				<div style={{ textAlign: "center", marginTop: "1rem" }}>
-					<Text style={{ color: "#6b7280" }}>
-						Didn&apos;t receive the code?{" "}
+				<div style={{ textAlign: 'center', marginTop: '1rem' }}>
+					<Text style={{ color: '#6b7280' }}>
+						Didn&apos;t receive the code?{' '}
 					</Text>
 					<Button
 						type="link"
 						onClick={onResendOtp}
 						loading={resendLoading}
-						style={{ padding: 0, height: "auto", fontSize: "14px" }}
+						style={{ padding: 0, height: 'auto', fontSize: '14px' }}
 					>
-						{resendLoading ? "Sending..." : "Resend OTP"}
+						{resendLoading ? 'Sending...' : 'Resend OTP'}
 					</Button>
 				</div>
 
 				{onBackToEmail && (
-					<div style={{ textAlign: "center", marginTop: "16px" }}>
+					<div style={{ textAlign: 'center', marginTop: '16px' }}>
 						<Button
 							type="link"
 							icon={<ArrowLeftOutlined />}
 							onClick={onBackToEmail}
-							style={{ fontSize: "14px" }}
+							style={{ fontSize: '14px' }}
 						>
 							Back to Email
 						</Button>

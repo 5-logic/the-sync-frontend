@@ -1,15 +1,16 @@
-import React, { useCallback } from "react";
-import { Form, InputNumber, Select, Space, Row, Col, Button, Card } from "antd";
-import { Header } from "@/components/common/Header";
-import { FormLabel } from "@/components/common/FormLabel";
-import { SEMESTER_STATUS_TAGS } from "@/lib/constants/semester";
+import { Button, Card, Col, Form, InputNumber, Row, Select, Space } from 'antd';
+import React, { useCallback } from 'react';
+
+import { FormLabel } from '@/components/common/FormLabel';
+import { Header } from '@/components/common/Header';
+import { SEMESTER_STATUS_TAGS } from '@/lib/constants/semester';
 
 const { Option } = Select;
 
 // Constants
 const MIN_GROUPS = 1;
 const MAX_GROUPS = 100; // From schema validation
-const FORM_ID = "group-management-form";
+const FORM_ID = 'group-management-form';
 
 export interface CreateFormValues {
 	semesterId: string;
@@ -37,7 +38,7 @@ const CreateForm: React.FC<CreateFormProps> = ({
 	const handleFinish = useCallback(
 		(values: CreateFormValues) => {
 			onGenerate(values);
-			form.resetFields(["numberOfGroups"]);
+			form.resetFields(['numberOfGroups']);
 		},
 		[form, onGenerate],
 	);
@@ -47,7 +48,7 @@ const CreateForm: React.FC<CreateFormProps> = ({
 	}, [form]);
 
 	return (
-		<Space direction="vertical" size="large" style={{ width: "100%" }}>
+		<Space direction="vertical" size="large" style={{ width: '100%' }}>
 			<Header
 				title="Group Management"
 				description="Create and manage groups for capstone projects."
@@ -67,7 +68,7 @@ const CreateForm: React.FC<CreateFormProps> = ({
 							<Form.Item
 								label={<FormLabel text="Semester" isRequired={true} />}
 								name="semesterId"
-								rules={[{ required: true, message: "Please select semester" }]}
+								rules={[{ required: true, message: 'Please select semester' }]}
 							>
 								<Select
 									placeholder="Select semester"
@@ -76,7 +77,7 @@ const CreateForm: React.FC<CreateFormProps> = ({
 									disabled={loading}
 								>
 									{semesters
-										.filter((semester) => semester.status === "Preparing")
+										.filter((semester) => semester.status === 'Preparing')
 										.map((semester) => (
 											<Option key={semester.id} value={semester.id}>
 												<Space>
@@ -103,9 +104,9 @@ const CreateForm: React.FC<CreateFormProps> = ({
 								}
 								name="numberOfGroups"
 								rules={[
-									{ required: true, message: "Enter number of groups" },
+									{ required: true, message: 'Enter number of groups' },
 									{
-										type: "number",
+										type: 'number',
 										min: MIN_GROUPS,
 										max: MAX_GROUPS,
 										message: `Number must be between ${MIN_GROUPS} and ${MAX_GROUPS}`,
@@ -115,7 +116,7 @@ const CreateForm: React.FC<CreateFormProps> = ({
 								<InputNumber
 									min={MIN_GROUPS}
 									max={MAX_GROUPS}
-									style={{ width: "100%" }}
+									style={{ width: '100%' }}
 									placeholder="Enter number"
 									aria-label="Number of groups to create"
 								/>

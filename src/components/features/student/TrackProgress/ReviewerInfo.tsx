@@ -1,12 +1,12 @@
-import React from "react";
-import { Avatar, Spin, Typography, Space } from "antd";
-import { UserOutlined } from "@ant-design/icons";
+import { UserOutlined } from '@ant-design/icons';
+import { Avatar, Space, Spin, Typography } from 'antd';
+import React from 'react';
 
-import { SubmissionReviewsResponse } from "@/lib/services/reviews.service";
+import { SubmissionReviewsResponse } from '@/lib/services/reviews.service';
 
 const { Text } = Typography;
 
-type AssignedReviewer = SubmissionReviewsResponse["assignmentReviews"][0];
+type AssignedReviewer = SubmissionReviewsResponse['assignmentReviews'][0];
 
 interface ReviewerInfoProps {
 	reviewersData: AssignedReviewer[] | null;
@@ -60,7 +60,7 @@ const ReviewerInfo: React.FC<ReviewerInfoProps> = ({
 				</Text>
 				<Text type="secondary" className="text-xs ml-2">
 					({assignedReviewers.length} reviewer
-					{assignedReviewers.length > 1 ? "s" : ""})
+					{assignedReviewers.length > 1 ? 's' : ''})
 				</Text>
 			</div>
 			<Space direction="vertical" size="small" className="w-full">

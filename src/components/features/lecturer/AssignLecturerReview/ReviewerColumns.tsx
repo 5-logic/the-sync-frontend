@@ -1,9 +1,9 @@
-import { DeleteOutlined } from "@ant-design/icons";
-import { Button, Space, Typography } from "antd";
+import { DeleteOutlined } from '@ant-design/icons';
+import { Button, Space, Typography } from 'antd';
 
-import { GroupTableProps } from "@/components/features/lecturer/AssignLecturerReview/GroupTable";
-import { Lecturer } from "@/lib/services/reviews.service";
-import { DraftReviewerAssignment } from "@/store/useDraftReviewerAssignmentStore";
+import { GroupTableProps } from '@/components/features/lecturer/AssignLecturerReview/GroupTable';
+import { Lecturer } from '@/lib/services/reviews.service';
+import { DraftReviewerAssignment } from '@/store/useDraftReviewerAssignmentStore';
 
 const { Text } = Typography;
 
@@ -24,31 +24,31 @@ export const TABLE_WIDTHS = {
  */
 export const baseColumns = [
 	{
-		title: "Group Code",
-		dataIndex: "code",
-		key: "code",
+		title: 'Group Code',
+		dataIndex: 'code',
+		key: 'code',
 		width: TABLE_WIDTHS.GROUP_CODE,
 		sorter: (a: GroupTableProps, b: GroupTableProps) =>
 			a.code.localeCompare(b.code),
 	},
 	{
-		title: "Group Name",
-		dataIndex: "name",
-		key: "name",
+		title: 'Group Name',
+		dataIndex: 'name',
+		key: 'name',
 		width: TABLE_WIDTHS.GROUP_NAME,
 		sorter: (a: GroupTableProps, b: GroupTableProps) =>
 			a.name.localeCompare(b.name),
 	},
 	{
-		title: "Thesis Title",
-		dataIndex: "title",
-		key: "title",
+		title: 'Thesis Title',
+		dataIndex: 'title',
+		key: 'title',
 		width: TABLE_WIDTHS.THESIS_TITLE,
 	},
 	{
-		title: "Supervisors",
-		dataIndex: "supervisors",
-		key: "supervisors",
+		title: 'Supervisors',
+		dataIndex: 'supervisors',
+		key: 'supervisors',
 		width: TABLE_WIDTHS.SUPERVISORS,
 		render: (supervisors: Lecturer[]) =>
 			supervisors.length > 0 ? (
@@ -58,13 +58,13 @@ export const baseColumns = [
 					))}
 				</div>
 			) : (
-				"-"
+				'-'
 			),
 	},
 	{
-		title: "Reviewers",
-		dataIndex: "reviewers",
-		key: "reviewers",
+		title: 'Reviewers',
+		dataIndex: 'reviewers',
+		key: 'reviewers',
 		width: TABLE_WIDTHS.REVIEWERS,
 		// This will be replaced by createReviewerRenderer
 	},
@@ -81,7 +81,7 @@ export const createReviewerRenderer = (
 ) => {
 	// eslint-disable-next-line react/display-name
 	return (reviewers: Lecturer[], record: GroupTableProps) => {
-		if (!record.submissionId) return "-";
+		if (!record.submissionId) return '-';
 
 		const draft = getDraftReviewerAssignment(record.submissionId);
 
@@ -90,13 +90,13 @@ export const createReviewerRenderer = (
 			const draftReviewers = [];
 			if (draft.mainReviewerName) {
 				draftReviewers.push({
-					key: "main",
+					key: 'main',
 					text: `Main: ${draft.mainReviewerName}`,
 				});
 			}
 			if (draft.secondaryReviewerName) {
 				draftReviewers.push({
-					key: "secondary",
+					key: 'secondary',
 					text: `Secondary: ${draft.secondaryReviewerName}`,
 				});
 			}
@@ -111,8 +111,8 @@ export const createReviewerRenderer = (
 					{/* Show current reviewers if any exist */}
 					{reviewers.length > 0 && (
 						<div style={{ marginTop: 8 }}>
-							<Text type="secondary" style={{ fontSize: "11px" }}>
-								Current: {reviewers.map((r) => r.fullName).join(", ")}
+							<Text type="secondary" style={{ fontSize: '11px' }}>
+								Current: {reviewers.map((r) => r.fullName).join(', ')}
 							</Text>
 						</div>
 					)}
@@ -128,7 +128,7 @@ export const createReviewerRenderer = (
 				))}
 			</div>
 		) : (
-			"-"
+			'-'
 		);
 	};
 };
@@ -156,7 +156,7 @@ export const createActionRenderer = (
 
 		const draft = getDraftReviewerAssignment(record.submissionId);
 		const reviewerCount = record.reviewers.length;
-		const buttonText = reviewerCount >= 2 ? "Change" : "Assign";
+		const buttonText = reviewerCount >= 2 ? 'Change' : 'Assign';
 
 		return (
 			<Space size="small">
@@ -171,11 +171,11 @@ export const createActionRenderer = (
 						onClick={() => removeDraftReviewerAssignment(record.submissionId!)}
 						title="Remove draft reviewer assignment"
 						style={{
-							display: "flex",
-							alignItems: "center",
-							justifyContent: "center",
-							padding: "4px 8px",
-							borderRadius: "4px",
+							display: 'flex',
+							alignItems: 'center',
+							justifyContent: 'center',
+							padding: '4px 8px',
+							borderRadius: '4px',
 						}}
 					/>
 				)}

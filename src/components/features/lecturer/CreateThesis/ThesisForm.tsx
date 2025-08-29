@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import { QuestionCircleOutlined } from "@ant-design/icons";
-import { Button, Col, Form, Input, Row, Select, Tooltip } from "antd";
-import { useEffect, useState } from "react";
+import { QuestionCircleOutlined } from '@ant-design/icons';
+import { Button, Col, Form, Input, Row, Select, Tooltip } from 'antd';
+import { useEffect, useState } from 'react';
 
-import { FormLabel } from "@/components/common/FormLabel";
-import SupportingDocumentField from "@/components/features/lecturer/CreateThesis/ThesisFileUpload";
-import { getSortedDomains } from "@/lib/constants/domains";
-import { ORIENTATION_LABELS } from "@/lib/constants/orientation";
-import { StorageService } from "@/lib/services/storage.service";
-import { useSemesterStore } from "@/store/useSemesterStore";
+import { FormLabel } from '@/components/common/FormLabel';
+import SupportingDocumentField from '@/components/features/lecturer/CreateThesis/ThesisFileUpload';
+import { getSortedDomains } from '@/lib/constants/domains';
+import { ORIENTATION_LABELS } from '@/lib/constants/orientation';
+import { StorageService } from '@/lib/services/storage.service';
+import { useSemesterStore } from '@/store/useSemesterStore';
 
 type Props = Readonly<{
-	mode: "create" | "edit";
+	mode: 'create' | 'edit';
 	initialValues?: Record<string, unknown>;
 	initialFile?: {
 		name: string;
@@ -34,7 +34,7 @@ interface UploadedFile {
 }
 
 interface FileChangeState {
-	action: "none" | "delete" | "replace";
+	action: 'none' | 'delete' | 'replace';
 	newFile?: File;
 	originalFileUrl?: string; // Store original file URL to delete later
 }
@@ -52,7 +52,7 @@ export default function ThesisForm({
 	const [hasFileChanged, setHasFileChanged] = useState(false);
 	const [hasFormChanged, setHasFormChanged] = useState(false);
 	const [fileChangeState, setFileChangeState] = useState<FileChangeState>({
-		action: "none",
+		action: 'none',
 		originalFileUrl: initialFile?.url,
 	});
 
@@ -74,7 +74,7 @@ export default function ThesisForm({
 	// Find the preparing semester
 	const preparingSemester = semesters.find(
 		(semester) =>
-			semester.status === "Preparing" || semester.status === "Picking",
+			semester.status === 'Preparing' || semester.status === 'Picking',
 	);
 
 	// Get current semester (the one that thesis belongs to)
@@ -84,29 +84,29 @@ export default function ThesisForm({
 
 	// Check if editing is allowed
 	const isEditAllowed = () => {
-		if (mode === "create") {
+		if (mode === 'create') {
 			// For create mode, need preparing semester
 			return !!preparingSemester;
 		}
 
-		if (mode === "edit") {
+		if (mode === 'edit') {
 			// For edit mode, check specific conditions
 			if (!currentSemester) return false;
 
 			// Don't allow if thesis status is pending
-			if (thesis?.status === "Pending") return false;
+			if (thesis?.status === 'Pending') return false;
 
 			// Allow if semester status is Preparing, Picking, or Ongoing with ScopeAdjustable
 			if (
-				currentSemester.status === "Preparing" ||
-				currentSemester.status === "Picking"
+				currentSemester.status === 'Preparing' ||
+				currentSemester.status === 'Picking'
 			) {
 				return true;
 			}
 
 			if (
-				currentSemester.status === "Ongoing" &&
-				currentSemester.ongoingPhase === "ScopeAdjustable"
+				currentSemester.status === 'Ongoing' &&
+				currentSemester.ongoingPhase === 'ScopeAdjustable'
 			) {
 				return true;
 			}
@@ -123,7 +123,7 @@ export default function ThesisForm({
 			setUploadedFile(initialFile);
 			setHasFileChanged(false); // Reset flag for initial file
 		} else if (
-			mode === "edit" &&
+			mode === 'edit' &&
 			Array.isArray(initialValues?.supportingDocument) &&
 			initialValues.supportingDocument.length > 0
 		) {
@@ -139,7 +139,7 @@ export default function ThesisForm({
 
 	// Initialize form change state after initial values are set
 	useEffect(() => {
-		if (mode === "edit" && initialValues) {
+		if (mode === 'edit' && initialValues) {
 			// Reset change state when initial values are loaded
 			setHasFormChanged(false);
 			setHasFileChanged(false);
@@ -148,7 +148,7 @@ export default function ThesisForm({
 
 	// Function to check if form values have changed
 	const checkFormChanges = () => {
-		if (mode === "create") {
+		if (mode === 'create') {
 			setHasFormChanged(true);
 			return;
 		}
@@ -162,12 +162,12 @@ export default function ThesisForm({
 
 		// Compare current values with initial values
 		const fieldsToCompare = [
-			"englishName",
-			"vietnameseName",
-			"abbreviation",
-			"description",
-			"domain",
-			"orientation",
+			'englishName',
+			'vietnameseName',
+			'abbreviation',
+			'description',
+			'domain',
+			'orientation',
 		];
 		const hasChanges = fieldsToCompare.some((field) => {
 			const currentValue = currentValues[field];
@@ -189,7 +189,7 @@ export default function ThesisForm({
 
 	// Function to get only changed fields
 	const getChangedFields = (values: Record<string, unknown>) => {
-		if (mode === "create") {
+		if (mode === 'create') {
 			// For create mode, return all values
 			const semesterId = preparingSemester?.id;
 
@@ -198,7 +198,7 @@ export default function ThesisForm({
 			return {
 				...restValues,
 				semesterId,
-				supportingDocument: uploadedFile?.url ?? "",
+				supportingDocument: uploadedFile?.url ?? '',
 			};
 		}
 
@@ -208,23 +208,23 @@ export default function ThesisForm({
 
 		// Check each field for changes
 		const fieldsToCheck = [
-			"englishName",
-			"vietnameseName",
-			"abbreviation",
-			"description",
-			"domain",
-			"orientation",
+			'englishName',
+			'vietnameseName',
+			'abbreviation',
+			'description',
+			'domain',
+			'orientation',
 		];
 		fieldsToCheck.forEach((field) => {
 			const currentValue = currentValues[field];
 			const initialValue = initialValues?.[field];
 
 			// Special handling for domain field: treat empty string and undefined as equivalent
-			if (field === "domain") {
+			if (field === 'domain') {
 				const normalizedCurrent =
-					currentValue === undefined ? "" : currentValue;
+					currentValue === undefined ? '' : currentValue;
 				const normalizedInitial =
-					initialValue === undefined || initialValue === "" ? "" : initialValue;
+					initialValue === undefined || initialValue === '' ? '' : initialValue;
 				if (normalizedCurrent !== normalizedInitial) {
 					changedFields[field] = normalizedCurrent;
 				}
@@ -245,23 +245,23 @@ export default function ThesisForm({
 
 		// Handle file operations for edit mode only
 		if (
-			mode === "edit" &&
+			mode === 'edit' &&
 			hasFileChanged &&
-			fileChangeState.action !== "none"
+			fileChangeState.action !== 'none'
 		) {
 			try {
-				if (fileChangeState.action === "delete") {
+				if (fileChangeState.action === 'delete') {
 					// Keep file for version history - don't delete from storage
 					// Just remove the reference in the database
-					formData = { ...formData, supportingDocument: "" };
+					formData = { ...formData, supportingDocument: '' };
 				} else if (
-					fileChangeState.action === "replace" &&
+					fileChangeState.action === 'replace' &&
 					fileChangeState.newFile
 				) {
 					// Upload new file
 					const newFileUrl = await StorageService.uploadFile(
 						fileChangeState.newFile,
-						"support-doc",
+						'support-doc',
 					);
 
 					// Keep old file for version history - don't delete
@@ -270,7 +270,7 @@ export default function ThesisForm({
 					formData = { ...formData, supportingDocument: newFileUrl };
 				}
 			} catch (error) {
-				console.error("Error handling file operations:", error);
+				console.error('Error handling file operations:', error);
 				// Continue with form submission even if file operations fail
 				// The error notification is already shown by StorageService
 			}
@@ -282,22 +282,22 @@ export default function ThesisForm({
 	// Helper function to get button text based on mode and loading state
 	const getButtonText = () => {
 		if (semestersLoading) {
-			return "Loading semesters...";
+			return 'Loading semesters...';
 		}
 		if (!isEditAllowed()) {
-			if (mode === "create") {
-				return "No preparing semester found";
+			if (mode === 'create') {
+				return 'No preparing semester found';
 			} else {
-				return "Editing not allowed";
+				return 'Editing not allowed';
 			}
 		}
 		if (loading) {
-			return mode === "create" ? "Creating..." : "Updating...";
+			return mode === 'create' ? 'Creating...' : 'Updating...';
 		}
-		if (mode === "edit" && !hasFormChanged) {
-			return "No changes to update";
+		if (mode === 'edit' && !hasFormChanged) {
+			return 'No changes to update';
 		}
-		return mode === "create" ? "Create Thesis" : "Update Thesis";
+		return mode === 'create' ? 'Create Thesis' : 'Update Thesis';
 	};
 
 	return (
@@ -305,12 +305,12 @@ export default function ThesisForm({
 			form={form}
 			layout="vertical"
 			requiredMark={false}
-			style={{ width: "100%" }}
+			style={{ width: '100%' }}
 			initialValues={{
 				...initialValues,
 				// Convert empty string to undefined for domain field to show placeholder
 				domain:
-					initialValues?.domain === "" ? undefined : initialValues?.domain,
+					initialValues?.domain === '' ? undefined : initialValues?.domain,
 				// Set proper initial value for supportingDocument field to prevent auto-reset
 				supportingDocument: initialFile ? [initialFile] : [],
 			}}
@@ -322,7 +322,7 @@ export default function ThesisForm({
 				label={
 					<FormLabel text="Thesis Title (English name)" isRequired isBold />
 				}
-				rules={[{ required: true, message: "Please enter your English title" }]}
+				rules={[{ required: true, message: 'Please enter your English title' }]}
 			>
 				<Input placeholder="Enter your English title" />
 			</Form.Item>
@@ -333,7 +333,7 @@ export default function ThesisForm({
 					<FormLabel text="Thesis Title (Vietnamese name)" isRequired isBold />
 				}
 				rules={[
-					{ required: true, message: "Please enter your Vietnamese title" },
+					{ required: true, message: 'Please enter your Vietnamese title' },
 				]}
 			>
 				<Input placeholder="Enter your Vietnamese title" />
@@ -342,7 +342,7 @@ export default function ThesisForm({
 			<Form.Item
 				name="abbreviation"
 				label={<FormLabel text="Abbreviation" isRequired isBold />}
-				rules={[{ required: true, message: "Please enter an abbreviation" }]}
+				rules={[{ required: true, message: 'Please enter an abbreviation' }]}
 			>
 				<Input placeholder="Enter abbreviation" />
 			</Form.Item>
@@ -372,7 +372,7 @@ export default function ThesisForm({
 			<Form.Item
 				name="description"
 				label={<FormLabel text="Thesis Description" isRequired isBold />}
-				rules={[{ required: true, message: "Please describe your thesis" }]}
+				rules={[{ required: true, message: 'Please describe your thesis' }]}
 			>
 				<Input.TextArea
 					placeholder="Describe your thesis..."
@@ -385,14 +385,14 @@ export default function ThesisForm({
 			<Form.Item
 				name="orientation"
 				label={
-					<div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+					<div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
 						<FormLabel text="Thesis Orientation" isBold />
 						<Tooltip
 							title="Choose the focus area of your thesis: SE (Software Engineering), AI (Artificial Intelligence), or Neutral (combination of both)"
 							placement="topLeft"
 						>
 							<QuestionCircleOutlined
-								style={{ color: "#8c8c8c", cursor: "help" }}
+								style={{ color: '#8c8c8c', cursor: 'help' }}
 							/>
 						</Tooltip>
 					</div>
@@ -414,7 +414,7 @@ export default function ThesisForm({
 					onFileChange={(file) => {
 						handleFileChange(file);
 						// Set form field for validation purposes, but we'll use the URL in submit
-						form.setFieldValue("supportingDocument", file ? [file] : []);
+						form.setFieldValue('supportingDocument', file ? [file] : []);
 					}}
 					onFileChangeStateUpdate={setFileChangeState}
 				/>
@@ -431,7 +431,7 @@ export default function ThesisForm({
 							loading ||
 							semestersLoading ||
 							!isEditAllowed() ||
-							(mode === "edit" && !hasFormChanged)
+							(mode === 'edit' && !hasFormChanged)
 						}
 					>
 						{getButtonText()}

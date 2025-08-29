@@ -1,4 +1,4 @@
-import { SearchOutlined } from "@ant-design/icons";
+import { SearchOutlined } from '@ant-design/icons';
 import {
 	Card,
 	Col,
@@ -9,12 +9,12 @@ import {
 	Space,
 	Tooltip,
 	Typography,
-} from "antd";
-import React, { useMemo, useState } from "react";
+} from 'antd';
+import React, { useMemo, useState } from 'react';
 
-import type { SupervisorLoadDistribution } from "@/lib/services/dashboard.service";
-import { createSearchFilter } from "@/lib/utils/textNormalization";
-import { useDashboardStore } from "@/store";
+import type { SupervisorLoadDistribution } from '@/lib/services/dashboard.service';
+import { createSearchFilter } from '@/lib/utils/textNormalization';
+import { useDashboardStore } from '@/store';
 
 const { Text, Title } = Typography;
 
@@ -38,29 +38,29 @@ const CHART_CONSTANTS = {
 
 // Helper function to get category based on thesis count
 const getLoadCategory = (count: number): string => {
-	if (count >= 6) return "Over Load";
-	if (count >= 4) return "High Load";
-	if (count >= 2) return "Moderate Load";
-	return "Low Load";
+	if (count >= 6) return 'Over Load';
+	if (count >= 4) return 'High Load';
+	if (count >= 2) return 'Moderate Load';
+	return 'Low Load';
 };
 
 // Kết hợp colors và gradients thành một object để dễ quản lý
 const CATEGORY_STYLES: Record<string, { color: string; gradient: string }> = {
-	"Over Load": {
-		color: "#ff4757",
-		gradient: "linear-gradient(135deg, #ff4757 0%, #ff3838 100%)",
+	'Over Load': {
+		color: '#ff4757',
+		gradient: 'linear-gradient(135deg, #ff4757 0%, #ff3838 100%)',
 	},
-	"High Load": {
-		color: "#ffa502",
-		gradient: "linear-gradient(135deg, #ffa502 0%, #ff9500 100%)",
+	'High Load': {
+		color: '#ffa502',
+		gradient: 'linear-gradient(135deg, #ffa502 0%, #ff9500 100%)',
 	},
-	"Moderate Load": {
-		color: "#3742fa",
-		gradient: "linear-gradient(135deg, #3742fa 0%, #2f3542 100%)",
+	'Moderate Load': {
+		color: '#3742fa',
+		gradient: 'linear-gradient(135deg, #3742fa 0%, #2f3542 100%)',
 	},
-	"Low Load": {
-		color: "#2ed573",
-		gradient: "linear-gradient(135deg, #2ed573 0%, #1dd1a1 100%)",
+	'Low Load': {
+		color: '#2ed573',
+		gradient: 'linear-gradient(135deg, #2ed573 0%, #1dd1a1 100%)',
 	},
 } as const;
 
@@ -92,21 +92,21 @@ const SearchFilterControls: React.FC<{
 		</Col>
 		<Col xs={24} sm={8} md={6} lg={5}>
 			<Select
-				style={{ width: "100%" }}
+				style={{ width: '100%' }}
 				placeholder="Filter category"
 				value={selectedCategory}
 				onChange={setSelectedCategory}
 				allowClear
 				options={[
-					{ label: "Over Load", value: "Over Load" },
-					{ label: "High Load", value: "High Load" },
-					{ label: "Moderate Load", value: "Moderate Load" },
-					{ label: "Low Load", value: "Low Load" },
+					{ label: 'Over Load', value: 'Over Load' },
+					{ label: 'High Load', value: 'High Load' },
+					{ label: 'Moderate Load', value: 'Moderate Load' },
+					{ label: 'Low Load', value: 'Low Load' },
 				]}
 			/>
 		</Col>
 		<Col xs={24} sm={24} md={4} lg={3}>
-			<Text type="secondary" style={{ fontSize: "12px", textAlign: "right" }}>
+			<Text type="secondary" style={{ fontSize: '12px', textAlign: 'right' }}>
 				{currentCount}/{totalCount}
 			</Text>
 		</Col>
@@ -117,7 +117,7 @@ const SupervisorLoadChart: React.FC = () => {
 	const { supervisorLoadDistribution, loading, error } = useDashboardStore();
 
 	// State for search and filter
-	const [searchTerm, setSearchTerm] = useState("");
+	const [searchTerm, setSearchTerm] = useState('');
 	const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
 	// Transform API data to chart format with search and filter
@@ -196,16 +196,16 @@ const SupervisorLoadChart: React.FC = () => {
 	if (loading) {
 		return (
 			<Card>
-				<Space direction="vertical" size="middle" style={{ width: "100%" }}>
+				<Space direction="vertical" size="middle" style={{ width: '100%' }}>
 					<Skeleton.Input active size="large" style={{ width: 300 }} />
 					<Skeleton.Input active size="small" style={{ width: 400 }} />
-					<div style={{ padding: "20px 0" }}>
-						{["bar-1", "bar-2", "bar-3", "bar-4", "bar-5"].map((barId) => (
+					<div style={{ padding: '20px 0' }}>
+						{['bar-1', 'bar-2', 'bar-3', 'bar-4', 'bar-5'].map((barId) => (
 							<div key={`skeleton-${barId}`} style={{ marginBottom: 16 }}>
 								<Skeleton.Button
 									active
 									size="large"
-									style={{ width: "100%", height: 40 }}
+									style={{ width: '100%', height: 40 }}
 								/>
 							</div>
 						))}
@@ -223,8 +223,8 @@ const SupervisorLoadChart: React.FC = () => {
 
 		return (
 			<Card>
-				<Space direction="vertical" size="middle" style={{ width: "100%" }}>
-					<Space direction="vertical" size="small" style={{ width: "100%" }}>
+				<Space direction="vertical" size="middle" style={{ width: '100%' }}>
+					<Space direction="vertical" size="small" style={{ width: '100%' }}>
 						<Title level={4} style={{ margin: 0 }}>
 							Supervisor Load Distribution
 						</Title>
@@ -245,16 +245,16 @@ const SupervisorLoadChart: React.FC = () => {
 						/>
 					)}
 
-					<div style={{ padding: "40px", textAlign: "center" }}>
+					<div style={{ padding: '40px', textAlign: 'center' }}>
 						<Text type="secondary">
 							{(() => {
 								if (error) {
-									return "Error loading supervisor load data";
+									return 'Error loading supervisor load data';
 								}
 								if (hasData && isFiltered) {
-									return "No supervisors match your search criteria";
+									return 'No supervisors match your search criteria';
 								}
-								return "No supervisor load data available for this semester";
+								return 'No supervisor load data available for this semester';
 							})()}
 						</Text>
 					</div>
@@ -265,8 +265,8 @@ const SupervisorLoadChart: React.FC = () => {
 
 	return (
 		<Card>
-			<Space direction="vertical" size="middle" style={{ width: "100%" }}>
-				<Space direction="vertical" size="small" style={{ width: "100%" }}>
+			<Space direction="vertical" size="middle" style={{ width: '100%' }}>
+				<Space direction="vertical" size="small" style={{ width: '100%' }}>
 					<Title level={4} style={{ margin: 0 }}>
 						Supervisor Load Distribution
 					</Title>
@@ -285,24 +285,24 @@ const SupervisorLoadChart: React.FC = () => {
 					totalCount={supervisorLoadDistribution?.length || 0}
 				/>
 
-				<div style={{ padding: "5px" }}>
+				<div style={{ padding: '5px' }}>
 					{/* Chart container with grid */}
 					<div
 						style={{
-							position: "relative",
-							backgroundColor: "#fafafa",
-							borderRadius: "18px",
+							position: 'relative',
+							backgroundColor: '#fafafa',
+							borderRadius: '18px',
 							padding: `${CHART_CONSTANTS.padding.chart}px`,
-							border: "1px solid #e8e8e8",
-							overflow: "visible",
+							border: '1px solid #e8e8e8',
+							overflow: 'visible',
 							minHeight: `${chartConfig.minHeight}px`,
-							boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+							boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
 						}}
 					>
 						{/* Grid lines */}
 						<div
 							style={{
-								position: "absolute",
+								position: 'absolute',
 								top: CHART_CONSTANTS.positions.gridTop,
 								left: CHART_CONSTANTS.positions.yAxisWidth,
 								right: 20,
@@ -313,13 +313,13 @@ const SupervisorLoadChart: React.FC = () => {
 								<div
 									key={`grid-${i}`}
 									style={{
-										position: "absolute",
+										position: 'absolute',
 										left: `${(i / chartConfig.maxValue) * 100}%`,
 										top: 0,
 										bottom: 0,
-										width: "1px",
+										width: '1px',
 										borderLeft:
-											i === 0 ? "1px solid #d9d9d9" : "1px dashed #dad5d5ff",
+											i === 0 ? '1px solid #d9d9d9' : '1px dashed #dad5d5ff',
 										zIndex: 1,
 									}}
 								/>
@@ -329,12 +329,12 @@ const SupervisorLoadChart: React.FC = () => {
 								<div
 									key={`h-${item.name}`}
 									style={{
-										position: "absolute",
+										position: 'absolute',
 										left: 0,
 										right: 0,
 										top: `${CHART_CONSTANTS.positions.itemStartOffset + index * CHART_CONSTANTS.itemHeight}px`,
-										height: "1px",
-										borderTop: "1px dashed #dad5d5ff",
+										height: '1px',
+										borderTop: '1px dashed #dad5d5ff',
 										zIndex: 1,
 									}}
 								/>
@@ -344,7 +344,7 @@ const SupervisorLoadChart: React.FC = () => {
 						{/* Y-axis labels */}
 						<div
 							style={{
-								position: "absolute",
+								position: 'absolute',
 								left: 0,
 								top: CHART_CONSTANTS.positions.gridTop,
 								bottom: 50,
@@ -355,13 +355,13 @@ const SupervisorLoadChart: React.FC = () => {
 								<div
 									key={`y-label-${item.name}`}
 									style={{
-										position: "absolute",
-										right: "12px",
+										position: 'absolute',
+										right: '12px',
 										top: `${CHART_CONSTANTS.positions.itemStartOffset + index * CHART_CONSTANTS.itemHeight}px`,
-										fontSize: "13px",
-										color: "#4a4a4a",
-										fontWeight: "500",
-										transform: "translateY(-50%)",
+										fontSize: '13px',
+										color: '#4a4a4a',
+										fontWeight: '500',
+										transform: 'translateY(-50%)',
 									}}
 								>
 									{item.name}
@@ -372,7 +372,7 @@ const SupervisorLoadChart: React.FC = () => {
 						{/* Chart bars */}
 						<div
 							style={{
-								position: "absolute",
+								position: 'absolute',
 								left: CHART_CONSTANTS.positions.yAxisWidth,
 								top: CHART_CONSTANTS.positions.gridTop,
 								bottom: 50,
@@ -395,29 +395,29 @@ const SupervisorLoadChart: React.FC = () => {
 								>
 									<div
 										style={{
-											position: "absolute",
+											position: 'absolute',
 											top: `${CHART_CONSTANTS.positions.itemStartOffset + index * CHART_CONSTANTS.itemHeight}px`,
 											height: `${CHART_CONSTANTS.positions.barHeight}px`,
 											width: `${(item.count / chartConfig.maxValue) * 100}%`,
 											background: CATEGORY_STYLES[item.category]?.gradient,
-											transform: "translateY(-50%)",
-											transition: "all 0.8s cubic-bezier(0.4, 0, 0.2, 1)",
-											boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-											border: "1px solid rgba(255,255,255,0.4)",
-											cursor: "pointer",
+											transform: 'translateY(-50%)',
+											transition: 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
+											boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+											border: '1px solid rgba(255,255,255,0.4)',
+											cursor: 'pointer',
 										}}
 									>
 										{/* Bar value label */}
 										<div
 											style={{
-												position: "absolute",
-												right: "8px",
-												top: "50%",
-												transform: "translateY(-50%)",
-												color: "white",
-												fontSize: "12px",
-												fontWeight: "bold",
-												textShadow: "0 1px 2px rgba(0,0,0,0.3)",
+												position: 'absolute',
+												right: '8px',
+												top: '50%',
+												transform: 'translateY(-50%)',
+												color: 'white',
+												fontSize: '12px',
+												fontWeight: 'bold',
+												textShadow: '0 1px 2px rgba(0,0,0,0.3)',
 											}}
 										>
 											{item.count}
@@ -430,25 +430,25 @@ const SupervisorLoadChart: React.FC = () => {
 						{/* X-axis labels with axis line */}
 						<div
 							style={{
-								position: "absolute",
-								bottom: "20px",
+								position: 'absolute',
+								bottom: '20px',
 								left: CHART_CONSTANTS.positions.yAxisWidth,
 								right: 20,
 								height: `${CHART_CONSTANTS.positions.axisHeight}px`,
-								borderTop: "2px solid #d9d9d9",
+								borderTop: '2px solid #d9d9d9',
 							}}
 						>
 							{chartConfig.gridValues.map((i) => (
 								<div
 									key={`x-label-${i}`}
 									style={{
-										position: "absolute",
+										position: 'absolute',
 										left: `${(i / chartConfig.maxValue) * 100}%`,
-										transform: "translateX(-50%)",
-										fontSize: "12px",
-										color: "#595959",
-										marginTop: "6px",
-										fontWeight: "500",
+										transform: 'translateX(-50%)',
+										fontSize: '12px',
+										color: '#595959',
+										marginTop: '6px',
+										fontWeight: '500',
 									}}
 								>
 									{i}
@@ -460,8 +460,8 @@ const SupervisorLoadChart: React.FC = () => {
 					{/* Legend */}
 					<div
 						style={{
-							borderTop: "1px solid #e8e8e8",
-							paddingTop: "20px",
+							borderTop: '1px solid #e8e8e8',
+							paddingTop: '20px',
 							padding: `${CHART_CONSTANTS.padding.legend}px 20px`,
 						}}
 					>
@@ -471,19 +471,19 @@ const SupervisorLoadChart: React.FC = () => {
 									<Space size="small" align="center">
 										<div
 											style={{
-												width: "18px",
-												height: "14px",
+												width: '18px',
+												height: '14px',
 												background: style.gradient,
-												borderRadius: "7px",
-												boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-												border: "1px solid rgba(255,255,255,0.2)",
+												borderRadius: '7px',
+												boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+												border: '1px solid rgba(255,255,255,0.2)',
 											}}
 										/>
 										<Text
 											style={{
-												fontSize: "13px",
-												color: "#4a4a4a",
-												fontWeight: "500",
+												fontSize: '13px',
+												color: '#4a4a4a',
+												fontWeight: '500',
 											}}
 										>
 											{label}

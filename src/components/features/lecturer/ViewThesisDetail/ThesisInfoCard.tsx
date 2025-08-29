@@ -1,8 +1,8 @@
 import BaseThesisInfoCard, {
 	type BaseThesisInfo,
 	type SupervisorInfo,
-} from "@/components/common/BaseThesisInfoCard";
-import { Thesis } from "@/schemas/thesis";
+} from '@/components/common/BaseThesisInfoCard';
+import { Thesis } from '@/schemas/thesis';
 
 // Enhanced thesis type cho UI display
 type EnhancedThesis = Thesis & {

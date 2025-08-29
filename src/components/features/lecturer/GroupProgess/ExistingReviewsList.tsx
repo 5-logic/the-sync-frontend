@@ -1,17 +1,16 @@
-"use client";
+'use client';
 
-import { EyeOutlined } from "@ant-design/icons";
-import { Button, Card, List, Skeleton } from "antd";
-import { useState } from "react";
+import { EyeOutlined } from '@ant-design/icons';
+import { Button, Card, List, Skeleton } from 'antd';
+import { useState } from 'react';
 
-import { SubmissionReviewWithReviewer } from "@/lib/services/reviews.service";
+import { AssignedReviewersInfo } from '@/components/common/AssignedReviewersInfo';
 import {
-	ReviewerInfo,
 	ReviewDates,
-} from "@/components/common/ReviewComponents";
-import { AssignedReviewersInfo } from "@/components/common/AssignedReviewersInfo";
-
-import ViewReviewModal from "@/components/features/lecturer/GroupProgess/ViewReviewModal";
+	ReviewerInfo,
+} from '@/components/common/ReviewComponents';
+import ViewReviewModal from '@/components/features/lecturer/GroupProgess/ViewReviewModal';
+import { SubmissionReviewWithReviewer } from '@/lib/services/reviews.service';
 
 interface Props {
 	readonly reviews: SubmissionReviewWithReviewer[];
